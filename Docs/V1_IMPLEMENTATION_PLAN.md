@@ -4,8 +4,8 @@
 | --- | --- |
 | Project | Personal Growth OS |
 | Document | V1_IMPLEMENTATION_PLAN.md |
-| Version | v0.2 |
-| Status | Planning Draft — Owner Review Required |
+| Version | v0.3 |
+| Status | Owner Accepted Implementation Planning Baseline |
 | Foundation Baseline | Owner-accepted Foundation v0.2 implementation baseline at ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd |
 | Last Updated | 2026-07-16 |
 
@@ -28,7 +28,7 @@
 5. 复杂度必须由当前 V1 场景证明合理。
 6. 不为 AI、跨平台、iCloud 同步或未知未来需求提前建设架构。
 7. Export / Import 是 V1 的真实能力，但 V1 不建设复杂备份系统。
-8. 本计划通过条件性审查不等于批准实施；在收到明确实施批准前，不开始 S0 或任何子 Stage。
+8. 本计划被接受为实施规划基线不等于批准实施；在收到明确实施批准前，不开始 S0 或任何子 Stage。
 
 ---
 
@@ -1311,7 +1311,9 @@ At minimum:
 
 # Owner Review Decision
 
-Decision: APPROVE_WITH_CONDITIONS.
+Decision: APPROVED AS IMPLEMENTATION PLANNING BASELINE.
+
+All previously stated Owner Conditions have been addressed in document version v0.2.
 
 The following architecture choices are Owner Accepted for this implementation baseline:
 
@@ -1332,6 +1334,16 @@ Implementation has not started.
 
 S0 and every product implementation sub Stage remain unapproved.
 
-Do not create a commit until the Owner responds: Approved to commit.
+This document is approved for merge into main as the current V1 implementation planning baseline.
 
 Implementation remains unapproved.
+
+---
+
+# Change History
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v0.1 | 2026-07-16 | Initial implementation planning baseline draft. |
+| v0.2 | 2026-07-16 | Addressed all Owner Conditions and retained implementation approval gates. |
+| v0.3 | 2026-07-16 | Recorded final Owner acceptance of the implementation planning baseline; implementation stages remain unapproved. |
