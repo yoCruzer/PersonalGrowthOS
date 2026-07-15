@@ -4,16 +4,16 @@
 | --- | --- |
 | Project | Personal Growth OS |
 | Document | V1_IMPLEMENTATION_PLAN.md |
-| Version | v0.1 |
+| Version | v0.2 |
 | Status | Planning Draft — Owner Review Required |
-| Foundation Baseline | Foundation Documents v0.2 at ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd |
+| Foundation Baseline | Owner-accepted Foundation v0.2 implementation baseline at ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd |
 | Last Updated | 2026-07-16 |
 
 ---
 
 # Purpose
 
-本文档把已批准的 Foundation Documents v0.2 转化为可逐 Stage 执行、验证和退出的 V1 实施计划。
+本文档把 Owner-accepted Foundation v0.2 implementation baseline 转化为可逐步执行、验证和退出的 V1 实施计划。
 
 本文档只定义实施边界、架构选择、阶段顺序和验收标准。它不批准任何实现工作，也不修改 Foundation Documents 中的产品范围。
 
@@ -24,11 +24,11 @@
 1. Done is better than perfect.
 2. Good enough to build.
 3. 先打通 Capture → Persist → Timeline 的最小闭环。
-4. 每个 Stage 必须独立可验证，并在退出条件满足后停止。
+4. S0–S10 是 Macro Stages；每个 Macro Stage 必须先拆成经 Owner 独立批准的可执行子 Stage。
 5. 复杂度必须由当前 V1 场景证明合理。
 6. 不为 AI、跨平台、iCloud 同步或未知未来需求提前建设架构。
 7. Export / Import 是 V1 的真实能力，但 V1 不建设复杂备份系统。
-8. 本计划通过 Owner Review 前，不开始任何 Implementation Stage。
+8. 本计划通过条件性审查不等于批准实施；在收到明确实施批准前，不开始 S0 或任何子 Stage。
 
 ---
 
@@ -42,6 +42,8 @@
 4. CORE_MODEL.md
 5. INFORMATION_ARCHITECTURE.md
 6. V1_SCOPE.md
+
+这些 Foundation Documents 的文档生命周期状态仍为 Foundation Draft v0.2。本计划仅记录它们已被 Owner 接受为当前实施基线（Owner Accepted）；这不把 Foundation Documents 的状态改为 Approved。
 
 规划时未发现 Prompt 与 Foundation Documents 的产品范围冲突。Prompt 对持久化、图片和导入导出提出了实现级问题；本计划在不改变 Foundation 决策的前提下给出推荐。
 
@@ -87,7 +89,7 @@ Local First does not mean Local Only。网络、同步和云端都不是核心�
 | Search | 本地基础包含搜索；V1 不建立独立全文索引 |
 | Review | EntryKind.review，不建立独立 Review 生命周期或模块 |
 
-该方案优先使用 iOS 17 原生能力，保持 SwiftUI 集成和测试便利，同时避免把 V1 拆成多个 package、重复 domain/persistence model 或通用知识图谱。
+该方案优先使用 iOS 17 原生能力，保持 SwiftUI 集成和测试便利，同时避免把 V1 拆成多个 package、重复 Domain/Persistence model 或通用知识图谱。
 
 ---
 
@@ -95,11 +97,11 @@ Local First does not mean Local Only。网络、同步和云端都不是核心�
 
 ## Decision
 
-Stage 0 开始实施时，应立即创建一个 iOS App target、一个 Unit Test target 和一个轻量 UI Test target。
+Macro Stage S0 获得实施批准并开始时，应立即创建一个 iOS App target、一个 Unit Test target 和一个轻量 UI Test target。
 
 V1 不同时建立 Swift Package。当前代码规模、单平台边界和单一 App 交付物不足以证明 package 级模块化的成本合理。模块边界先通过目录、访问控制和小型协议表达；只有真实编译时间、复用或团队边界证明必要时，才评估拆包。
 
-UI 不直接操作文件系统或编码导出包。ViewModel / feature logic 通过窄接口调用 EntryStore、MediaStore、SearchService 和 ImportExportService。V1 不建立重复的完整 Domain DTO 与 Persistence Model 映射层；只有 Export / Import 使用独立 Codable transfer DTO。
+UI 不直接操作文件系统或编码导出包。ViewModel / feature logic 通过窄接口调用 EntryStore、MediaStore、SearchService 和 ImportExportService。V1 采用唯一 canonical persisted model 策略，不建立字段重复的完整 Domain Model 与 SwiftData Model 映射层；只有 Export / Import 使用独立 Codable transfer DTO。
 
 ## Recommended Directory Structure
 
@@ -160,8 +162,8 @@ PersonalGrowthOSUITests/
 | Area | Responsibility | V1 Boundary |
 | --- | --- | --- |
 | App | Dependency composition, lifecycle, root navigation | No service locator framework |
-| Domain | Stable concepts, enums, validation rules | No generic domain framework |
-| Persistence | SwiftData schema, queries, writes, migrations | No CloudKit |
+| Domain | Enums, value objects, validation rules and business behavior | No duplicate persisted entity model or generic domain framework |
+| Persistence | Canonical SwiftData models, Schema, Container, Repository and Migration | No second field-equivalent model and no CloudKit |
 | Media | Image copy, metadata, thumbnails, cleanup | No video, Live Photo, OCR |
 | ImportExport | Versioned transfer DTO, package validation, restore | No merge import |
 | Features | Screen-level state and user flows | No reusable design system project |
@@ -173,22 +175,34 @@ PersonalGrowthOSUITests/
 
 All persisted objects use an explicit app-owned UUID. SwiftData PersistentIdentifier is an implementation detail and must not be the exported identity.
 
+## Canonical Model Strategy
+
+V1 has one canonical persisted model for each persisted concept.
+
+- Macro Stage S1 defines Entry's stable semantics, enums, value rules, validation and business behavior. It does not create a second field-complete Entry entity.
+- Macro Stage S2 creates the V1 canonical SwiftData Entry model. That model is the primary V1 Entry implementation used through repositories.
+- Domain/ contains enums, value objects, validation rules and business behavior that do not duplicate the complete persisted field set.
+- Persistence/ contains canonical SwiftData Models, VersionedSchema, ModelContainer configuration, repositories and migrations.
+- Features consume the canonical model through focused repository/service interfaces rather than mapping every field into a parallel entity.
+- ImportExport/ may define versioned transfer DTOs because the portable package contract must be independent of SwiftData internals.
+- Names or structures equivalent to DomainEntry plus PersistentEntry, with substantially the same fields and lifecycle, are prohibited in V1.
+
 ## Required Objects and Concepts
 
 | Object / Concept | Conceptual Fields and Rules | Delivery |
 | --- | --- | --- |
-| Entry | id, kind, status, optional title/body, createdAt, occurredAt, updatedAt, optional periodStart/periodEnd | Minimal form in Stage 1; complete in Stage 4 |
-| EntryKind | quickNote, review | Stage 1; review behavior in Stage 8 |
-| EntryStatus | inbox, organized, archived | Stage 1; full flows in Stage 5 |
-| Habit | id, name, lifecycle status, timestamps | Stage 6 |
-| HabitLog | id, habitID, occurredAt, completion/result, optional quantity/unit, optional linkedEntryID | Stage 6 |
-| Goal | id, kind, title, lifecycle status, timestamps, optional completion boundary | Stage 7 |
-| GoalKind | standard, flag | Stage 7 |
-| Tag | id, display name, normalized name, timestamps | Stage 5 |
-| Link | id, typed source/target IDs, link kind, createdAt | Stage 5 onward |
-| ImageMetadata | id, entryID, relative path, original filename/type, byte count, pixel size, checksum, sort order, timestamps | Minimal in Stage 2; complete in Stage 4 |
-| GoalLifecycleEvent | id, goalID, event kind, occurredAt | Stage 7 |
-| ExportManifest | package/schema/app versions, export ID/time, counts, file hashes and sizes | Transfer DTO in Stage 9 |
+| Entry | id, kind, status, optional title/body, createdAt, occurredAt, updatedAt, optional periodStart/periodEnd | Minimal semantics in Macro S1; canonical persistence in Macro S2; complete in Macro S4 |
+| EntryKind | quickNote, review | Macro S1; review behavior in Macro S8 |
+| EntryStatus | inbox, organized, archived | Macro S1; full flows in Macro S5 |
+| Habit | id, name, lifecycle status, timestamps | Macro S6 |
+| HabitLog | id, habitID, occurredAt, completion/result, optional quantity/unit, optional linkedEntryID | Macro S6 |
+| Goal | id, kind, title, lifecycle status, timestamps, optional completion boundary | Macro S7 |
+| GoalKind | standard, flag | Macro S7 |
+| Tag | id, display name, normalized name, timestamps | Macro S5 |
+| Link | id, typed source/target IDs, link kind, createdAt | Macro S5 onward |
+| ImageMetadata | id, entryID, relative path, original filename/type, byte count, pixel size, checksum, sort order, timestamps | Minimal in Macro S2; complete in Macro S4 |
+| GoalLifecycleEvent | id, goalID, event kind, occurredAt | Macro S7 |
+| ExportManifest | package/schema/app versions, export ID/time, counts, file hashes and sizes | Transfer DTO in Macro S9 |
 
 All listed concepts are required for V1, but they do not all belong in the first runnable slice. No AI, sync, Journey, Place, People, Project or analytics entity is reserved in the persisted schema.
 
@@ -219,6 +233,21 @@ Allowed link kinds are limited to:
 - Review Entry reviews Goal.
 
 Each link validates the allowed source/target kinds, preserves app-owned UUIDs for export, and prevents an identical duplicate link. HabitLog uses an explicit optional linkedEntryID rather than owning media or rich text.
+
+## Link and Deletion Invariants
+
+- The active database must never contain a Link whose source or target object does not exist.
+- Archive preserves the object and all of its Links.
+- Permanent delete is a coordinated operation that removes or safely updates every related Link before the result becomes visible.
+- Entry permanent delete removes Links where that Entry is source or target. If it is linked from a HabitLog, the HabitLog remains only when its structured fact remains valid and its linkedEntryID is cleared in the same operation.
+- Review Entry deletion follows the Entry rule and removes all reviewsEntry, reviewsHabit and reviewsGoal Links owned by that Review Entry.
+- Habit permanent delete removes its HabitLogs and all Entry/Habit, Habit/Goal and Review/Habit Links; linked Entries remain.
+- Goal permanent delete removes its lifecycle events and all Entry/Goal, Habit/Goal and Review/Goal Links; Entries, Habits and Review Entries remain.
+- Tag permanent delete removes every Entry/Tag Link; Entries remain.
+- A failed delete must roll back both object and Link changes, including any media Trash movement.
+- Import, schema migration, recovery and launch integrity checks validate that no dangling Link is published.
+
+Deletion behavior is implemented and tested with each object family rather than deferred to final integration.
 
 ## Deferred and Reserved Items
 
@@ -365,7 +394,7 @@ Caches/
 
 ## Resource Budget
 
-Initial V1 guardrails:
+Provisional implementation guardrails:
 
 - Maximum nine images per Entry.
 - Accept common still-image formats supported by iOS decoding; no RAW workflow, Live Photo or video.
@@ -374,7 +403,17 @@ Initial V1 guardrails:
 - Thumbnail target: at most 512 pixels on the longest edge.
 - Display decoding uses target-size downsampling and avoids holding multiple originals in memory.
 
-These thresholds must be verified on the oldest supported test device in Stage 4. Changing a threshold is an implementation tuning decision; silently recompressing the original is not.
+The 25 MiB and 80-megapixel values are provisional implementation guardrails, not Foundation decisions or long-term product contracts. Macro Stage S4 must measure real devices and may adjust these values without a schema migration. Silently recompressing the original remains prohibited.
+
+## Capture Draft and Atomic Save
+
+- Cancelling Photos selection leaves the existing text draft unchanged.
+- Photos permission denial, picker interruption and system interruption leave the draft recoverable in the active capture flow.
+- Before copying media, the App checks that available capacity can cover staged originals, final originals and a safety reserve.
+- A multi-image save uses all-or-nothing semantics in V1: either the Entry, all ImageMetadata and all originals commit, or none becomes active.
+- Disk exhaustion, any file-copy failure or database-save failure must not publish a partial Entry or leave orphaned originals.
+- Failure cleanup removes only files created by the failed operation and never discards the user's existing text draft.
+- Settings provides a basic media-storage usage value; disk-related errors also state that storage capacity is the blocking condition.
 
 ## Deletion and Recovery
 
@@ -402,7 +441,17 @@ PersonalGrowthOS-export-YYYYMMDD-HHMMSS.zip
     └── image-uuid-2.jpg
 ~~~
 
-The package contract is independent of the ZIP implementation. Stage 9 must first confirm an Apple-platform implementation that emits standard ZIP. If the system API is insufficient, one narrowly scoped, maintained ZIP dependency may be proposed for separate Owner approval; no dependency is added by this planning Stage.
+The package contract is independent of the ZIP implementation. Macro Stage S9 must first confirm an Apple-platform implementation that emits standard ZIP. If the system API is insufficient, one narrowly scoped, maintained ZIP dependency may be proposed for separate Owner approval; no dependency is added by this planning Stage.
+
+## Export Privacy and Temporary Files
+
+- The V1 ZIP is not encrypted.
+- Before export or share, the App warns that the package may contain private Entry text and original images and should be handled as sensitive data.
+- Export is assembled in an App-private temporary directory.
+- After the share/export flow completes, is cancelled or fails, the App removes temporary package and assembly files.
+- Cleanup is retried on the next launch after interruption.
+- Ordinary logs never record Entry body text, original image bytes, full sensitive paths or transfer DTO payloads.
+- Diagnostics may record redacted object IDs, counts, sizes, schema versions and error categories.
 
 ## manifest.json
 
@@ -448,29 +497,55 @@ SwiftData internal IDs and absolute sandbox paths are never exported.
 
 V1 supports:
 
-> Full export + import into an empty database, or an explicitly confirmed erase-and-restore mode.
+> Full export + import into an empty database.
+
+Empty-database import is the minimum required V1 restore capability.
+
+Erase-and-restore may be exposed only if the old active data set is retained, the new data set is validated before publication, and every failure path can roll back to the old data. If those conditions are not proven, V1 ships empty-database import only.
 
 V1 does not support merge import.
 
 Consequences:
 
-- A non-empty target is rejected unless the user explicitly chooses replace/restore.
+- A non-empty target is rejected unless a proven-safe erase-and-restore mode is available and the user explicitly confirms it.
 - IDs are preserved exactly.
 - ID collision is impossible in an accepted empty target; any duplicate ID inside the package fails preflight.
 - Duplicate import into an existing data set is rejected instead of silently duplicating records.
 - Complex conflict resolution is deferred.
 
+## Import Resource Limits
+
+Initial V1 safety limits are configuration values, not Foundation contracts:
+
+| Resource | Initial hard limit |
+| --- | --- |
+| Compressed ZIP size | 8 GiB |
+| Total expanded size | 24 GiB and no more than available capacity minus a 1 GiB safety reserve |
+| Archive file count | 100,000 |
+| Decoded object count | 500,000 |
+| Compression ratio | 100:1 for the whole package or any individual archive member |
+
+Preflight rejects a package before extraction or object insertion when a limit is exceeded. Limits may be tuned from measured V1 data without changing the persistence schema or transfer identity.
+
+Archive handling also rejects:
+
+- Absolute paths, parent traversal, symbolic links and paths outside the staging root.
+- Duplicate normalized paths or case-colliding paths.
+- Unexpected executable/special file types.
+- Declared sizes, checksums or counts that do not match extracted content.
+- A media file that exceeds the current supported image guardrails.
+
 ## Import Flow
 
 1. Copy the selected ZIP to an App-owned staging location.
-2. Defend against unsafe paths, unexpected files, expansion-size abuse and unsupported schema.
+2. Enforce package size, expanded size, file count, object count, compression-ratio and safe-path limits before publishing any data.
 3. Decode manifest and data into transfer DTOs without mutating active data.
-4. Validate checksums, object IDs, relationship endpoints, Entry content rules and image ownership.
+4. Validate checksums, object IDs, relationship endpoints, Entry content rules, image ownership and absence of dangling Links.
 5. Treat a missing or corrupt referenced original image as a blocking package error.
 6. Build an isolated temporary SwiftData store and temporary media tree.
 7. Save and re-read the temporary data set; verify counts, IDs, links and image checksums.
 8. For empty restore, publish the temporary data set.
-9. For replace/restore, retain the old data set until the new one passes relaunch validation, then purge it.
+9. Expose replace/restore only when the old data set remains recoverable until the new one passes relaunch validation; otherwise do not offer this mode.
 10. On any failure, delete staging output and leave the active data set unchanged.
 
 An unsupported newer schema is rejected with a clear error. Older schema import is supported only when an explicit transfer-schema migrator exists and is covered by fixtures.
@@ -503,7 +578,17 @@ V1 does not include:
 - Pinyin expansion, synonym search or language segmentation.
 - Cloud search.
 
-Initial acceptance: typical personal data sets return useful local results without visible blocking on the oldest supported device. Stage 5 must define and measure a concrete fixture size before accepting performance.
+Initial acceptance: typical personal data sets return useful local results without visible blocking on the oldest supported device. Macro Stage S5 must define and measure a concrete fixture size before accepting performance.
+
+## Search Delivery Ownership
+
+| Macro Stage | Search responsibility |
+| --- | --- |
+| S5 | Implement global search for Entry and Tag; Review Entry is already compatible through the Entry path |
+| S6 | Add Habit to global Search when Habit is implemented |
+| S7 | Add Goal, including GoalKind.flag, to global Search when Goal is implemented |
+| S8 | Verify Review Entry continues to reuse the Entry search path; do not add a separate Review index |
+| S10 | Run full search regression only; do not use integration as a late stage to add missing Habit or Goal search |
 
 ---
 
@@ -534,6 +619,16 @@ Global
 
 The shell is activated incrementally. The first runnable slice only needs Today, global Quick Capture and Timeline. Library, Growth, Search and Settings become functional in later Stages.
 
+Goal responsibilities remain distinct:
+
+| Surface | Goal / Flag responsibility |
+| --- | --- |
+| Today | Lightweight visibility for Active Goals / Flags that are useful today |
+| Growth | Create, inspect and manage Goal / Flag lifecycle and relationships |
+| Timeline | Show bounded Goal lifecycle events as history |
+
+Today is not a ToDo list. It does not require daily Goal updates or turn Goal status into daily tasks.
+
 This plan does not define colors, animation, typography, high-fidelity layouts or a reusable visual design system.
 
 ---
@@ -560,7 +655,7 @@ See Entry in Timeline
 Relaunch and see the same Entry
 ~~~
 
-One image is included early because image-only Entry is a Foundation invariant and the database/file-system consistency boundary is a major architectural risk. The slice limits the source to Photos Library and one image; camera and up to nine images are completed in Stage 4.
+One image is included early because image-only Entry is a Foundation invariant and the database/file-system consistency boundary is a major architectural risk. The slice limits the source to Photos Library and one image; camera and up to nine images are completed in Macro Stage S4.
 
 ## In Scope
 
@@ -576,6 +671,8 @@ One image is included early because image-only Entry is a Foundation invariant a
 - Timeline ordered by occurredAt with a stable tie-breaker.
 - Relaunch persistence.
 - Clear save failure without losing the capture draft.
+- Photos picker cancellation, permission denial and system interruption preserve existing text.
+- Available-capacity preflight before copying the selected original.
 
 ## Out of Scope
 
@@ -604,6 +701,7 @@ One image is included early because image-only Entry is a Foundation invariant a
 - Persistence: save, fetch and re-open an on-disk store.
 - Media: copy an image, persist a relative path, re-open and load it.
 - Failure: simulated database save failure removes only newly staged media and preserves the draft.
+- Failure: picker cancellation, permission denial, system interruption, insufficient disk and file-copy failure preserve text and publish no partial Entry.
 - UI smoke: launch → capture text → save → Timeline; relaunch → Entry remains.
 - Manual: repeat with one image-only Entry on a real device.
 
@@ -615,19 +713,48 @@ One image is included early because image-only Entry is a Foundation invariant a
 - No permanent image reference uses a temporary URL or Photos asset identifier.
 - Automated tests for the slice pass.
 - No Habit, Goal, Review, Search or Export / Import scope has leaked into the slice.
+- Informal real-life Dogfooding begins; the formal 30-day V1 observation does not.
 
 ---
 
-# Stage Breakdown
+# Dogfooding and Formal V1 Observation
 
-## Stage 0 — Project Skeleton and Test Harness
+- After Macro Stage S3 satisfies its technical Exit Criteria, informal real-life Dogfooding begins immediately.
+- Dogfooding during S3–S9 is continuous product feedback, not a formal V1 exit clock.
+- Findings may refine later approved sub Stages, fix Daily Driver blockers and tune implementation guardrails without expanding Foundation scope.
+- Completing a Dogfooding period does not approve the next sub Stage.
+- The Foundation-defined formal continuous 30-day V1 Exit Observation begins only after Macro Stage S10 reaches technical exit.
+- Days before S10 technical exit do not count toward the formal 30-day observation.
+
+---
+
+# Macro Stage Governance
+
+S0–S10 are Macro Stages / Implementation Phases. They describe sequencing and responsibility, not one-shot Codex implementation tasks.
+
+Before any Macro Stage begins:
+
+1. Create one or more small executable sub Stage documents or task definitions.
+2. Give each sub Stage an independent Goal, In Scope, Out of Scope, Validation and Exit Criteria.
+3. Obtain explicit Owner approval for that sub Stage.
+4. Execute only the approved sub Stage and stop at its Exit Criteria.
+
+Macro Stages S4, S5, S6, S7 and S9 should normally be split into multiple small sub Stages because they cross several persistence, UI or failure boundaries.
+
+Passing one sub Stage never approves the next sub Stage or the rest of its Macro Stage.
+
+---
+
+# Macro Stage Breakdown
+
+## Macro Stage S0 — Project Skeleton and Test Harness
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S0 |
+| Macro Stage ID | S0 |
 | Stage Name | Project Skeleton and Test Harness |
 | Goal | Establish a launchable iPhone project and test harness without product features |
-| Dependencies | Owner approval of this implementation plan |
+| Dependencies | Explicit Owner approval of a small executable S0 sub Stage after this plan is accepted |
 | Files / Modules likely involved | App, Support, PersonalGrowthOSTests, PersonalGrowthOSUITests |
 | Risk Notes | Early package/module abstraction could slow the first slice |
 
@@ -654,11 +781,11 @@ Exit Criteria:
 - Both test targets run.
 - Project structure matches this plan without Swift Package extraction.
 
-## Stage 1 — Entry Domain Foundation
+## Macro Stage S1 — Entry Domain Foundation
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S1 |
+| Macro Stage ID | S1 |
 | Stage Name | Entry Domain Foundation |
 | Goal | Define the minimum stable Entry concepts and validation |
 | Dependencies | S0 |
@@ -673,10 +800,12 @@ In Scope:
 - createdAt, occurredAt and updatedAt semantics.
 - Optional review period fields.
 - Text/image presence and nine-image maximum validation.
+- Entry enums, value objects, stable value rules, validation and business behavior.
 
 Out of Scope:
 
-- SwiftData models, Review UI, links, image I/O and feature screens.
+- The canonical SwiftData Entry model, Review UI, links, image I/O and feature screens.
+- Any field-complete DomainEntry or other entity that would duplicate the S2 persisted model.
 
 Validation:
 
@@ -685,12 +814,13 @@ Validation:
 Exit Criteria:
 
 - Domain rules express every Foundation Entry invariant without implementation-only UI assumptions.
+- S1 has not created a second complete Entry model or persistence field mirror.
 
-## Stage 2 — Local Persistence and Media Foundations
+## Macro Stage S2 — Local Persistence and Media Foundations
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S2 |
+| Macro Stage ID | S2 |
 | Stage Name | Local Persistence and Media Foundations |
 | Goal | Establish SwiftData, repository seams and safe one-image media storage |
 | Dependencies | S1 |
@@ -700,7 +830,8 @@ Exit Criteria:
 In Scope:
 
 - Initial VersionedSchema and ModelContainer configuration.
-- Entry and minimal ImageMetadata persistence.
+- The single canonical SwiftData Entry model as V1's primary Entry implementation.
+- Minimal ImageMetadata persistence.
 - Explicit app UUID uniqueness rules.
 - In-memory and temporary on-disk test configurations.
 - Media staging, atomic move, checksum and relative paths.
@@ -709,6 +840,7 @@ In Scope:
 Out of Scope:
 
 - UI, camera, multiple images, delete workflow and import/export.
+- A parallel DomainEntry/PersistentEntry mapping layer with duplicate fields.
 
 Validation:
 
@@ -721,12 +853,13 @@ Exit Criteria:
 
 - Entry and one owned image can be persisted and reloaded through service boundaries.
 - Failure leaves no newly orphaned final file.
+- Features and repositories share the canonical SwiftData Entry model while Domain supplies enums, value rules and behavior.
 
-## Stage 3 — First Runnable Capture → Timeline Slice
+## Macro Stage S3 — First Runnable Capture → Timeline Slice
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S3 |
+| Macro Stage ID | S3 |
 | Stage Name | First Runnable Capture → Timeline Slice |
 | Goal | Deliver the first real restart-safe vertical slice |
 | Dependencies | S2 |
@@ -736,6 +869,8 @@ Exit Criteria:
 In Scope:
 
 - Everything defined in First Runnable Vertical Slice.
+- Explicit draft preservation for picker cancellation, permission denial and system interruption.
+- Disk-capacity preflight and failure paths that publish neither a half Entry nor an orphan original.
 
 Out of Scope:
 
@@ -744,16 +879,18 @@ Out of Scope:
 Validation:
 
 - Unit, persistence, media, UI smoke and real-device manual checks defined above.
+- Inject picker, permission, interruption, low-disk, copy and database-save failures.
 
 Exit Criteria:
 
 - All First Runnable Vertical Slice exit criteria pass.
+- Informal Dogfooding starts after technical exit; no formal 30-day observation days are counted.
 
-## Stage 4 — Rich Entry Media and Editing
+## Macro Stage S4 — Rich Entry Media and Editing
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S4 |
+| Macro Stage ID | S4 |
 | Stage Name | Rich Entry Media and Editing |
 | Goal | Complete V1 Rich Entry creation, editing and image lifecycle |
 | Dependencies | S3 |
@@ -769,6 +906,10 @@ In Scope:
 - Edit text, occurredAt and image selection.
 - Archive and confirmed permanent delete with Trash recovery.
 - Resource-budget measurement on the oldest supported device.
+- Multi-image save with all-or-nothing transaction semantics.
+- Capacity preflight for staging and final originals.
+- Basic media-storage usage visibility in Settings and actionable low-disk errors.
+- Adjustment of the provisional 25 MiB / 80-megapixel guardrails from measured evidence without schema migration.
 
 Out of Scope:
 
@@ -779,6 +920,8 @@ Validation:
 - Unit tests for image metadata and nine-image limit.
 - Memory/disk tests with boundary-size fixtures.
 - Delete interruption and recovery tests.
+- Multi-image partial-copy, low-disk and database-save failure tests.
+- Picker cancellation, permission denial and system interruption draft-preservation tests.
 - Manual text, image and mixed Entry flows, including backdated occurredAt.
 
 Exit Criteria:
@@ -787,12 +930,14 @@ Exit Criteria:
 - Original images remain unchanged and exportable.
 - Delete cannot remove another Entry's media.
 - Resource thresholds are documented from measurements.
+- No failed multi-image save leaves a partial Entry or orphaned original.
+- The measured guardrails remain implementation configuration, not persistence schema or Foundation contract.
 
-## Stage 5 — Library, Inbox, Tags and Search
+## Macro Stage S5 — Library, Inbox, Tags and Search
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S5 |
+| Macro Stage ID | S5 |
 | Stage Name | Library, Inbox, Tags and Search |
 | Goal | Make Entries organizable and findable without adding management pressure |
 | Dependencies | S4 |
@@ -804,9 +949,10 @@ In Scope:
 - Inbox, All Entries and Archived views.
 - organized and archived transitions.
 - Lightweight Tags and Entry-Tag links.
-- Global basic local search across Entry and Tag.
-- Review Entry compatibility in shared Entry queries.
+- Global basic local search across Entry, Review Entry through the Entry path, and Tag.
+- Review Entry compatibility in shared Entry search queries without a separate index.
 - Search performance fixture and measurement.
+- Entry and Tag permanent-delete Link cleanup.
 
 Out of Scope:
 
@@ -816,6 +962,7 @@ Validation:
 
 - State transition and archive tests.
 - Tag/link uniqueness tests.
+- Entry/Tag relation deletion, rollback and dangling-Link tests.
 - Chinese literal substring and normalized Latin search tests.
 - Manual organize-without-required-tag flow.
 
@@ -823,12 +970,13 @@ Exit Criteria:
 
 - Users can leave content in Inbox, organize it, archive it and find it again.
 - Search meets the measured fixture threshold without a separate index.
+- Entry and Tag deletion cannot publish dangling Links.
 
-## Stage 6 — Habit and HabitLog
+## Macro Stage S6 — Habit and HabitLog
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S6 |
+| Macro Stage ID | S6 |
 | Stage Name | Habit and HabitLog |
 | Goal | Add structured habit tracking without duplicating Entry media |
 | Dependencies | S5 |
@@ -843,6 +991,8 @@ In Scope:
 - Optional linked Entry for text or image insight.
 - Today habit check-in and habit history.
 - Timeline rule that keeps ordinary logs aggregated or filtered.
+- Habit integration into global Search.
+- Habit permanent-delete cleanup for HabitLogs and related Links while preserving linked Entries.
 
 Out of Scope:
 
@@ -853,6 +1003,8 @@ Validation:
 - Habit/HabitLog lifecycle tests.
 - HabitLog-to-Entry relationship tests.
 - Assert HabitLog schema has no image ownership.
+- Habit search result tests.
+- Habit relation deletion, rollback and dangling-Link tests.
 - Manual simple and rich check-in flows.
 
 Exit Criteria:
@@ -860,12 +1012,14 @@ Exit Criteria:
 - Habit check-in is fast.
 - Rich insight uses an Entry.
 - Timeline remains useful with dense HabitLog fixtures.
+- Habit is searchable before S6 exits.
+- Habit deletion leaves no dangling Links.
 
-## Stage 7 — Goal, Flag and Core Relationships
+## Macro Stage S7 — Goal, Flag and Core Relationships
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S7 |
+| Macro Stage ID | S7 |
 | Stage Name | Goal, Flag and Core Relationships |
 | Goal | Complete Growth with Goal, GoalKind.flag and bounded relationships |
 | Dependencies | S6 |
@@ -880,6 +1034,11 @@ In Scope:
 - Entry relates to Goal and Habit.
 - Goal lifecycle events in Timeline.
 - Duplicate and invalid-link prevention.
+- Goal and GoalKind.flag integration into global Search.
+- Lightweight Today display of Active Goals / Flags that are useful for daily context.
+- Today does not turn Goals into ToDo items or require daily Goal updates.
+- Clear responsibility split: Today shows lightweight active context, Growth manages lifecycle/relationships, and Timeline shows lifecycle history.
+- Goal permanent-delete cleanup for lifecycle events and related Links.
 
 Out of Scope:
 
@@ -890,6 +1049,9 @@ Validation:
 - GoalKind.flag unit tests.
 - Lifecycle and GoalLifecycleEvent tests.
 - Link direction, endpoint and restoration-ready ID tests.
+- Goal/Flag global search tests.
+- Goal relation deletion, rollback and dangling-Link tests.
+- Today/Goal responsibility and no-required-daily-update UI tests.
 - Manual Goal and Flag flows.
 
 Exit Criteria:
@@ -897,12 +1059,15 @@ Exit Criteria:
 - Flag is only a Goal kind.
 - Habit → Goal direction is consistent in storage and UI.
 - Timeline shows bounded Goal lifecycle events.
+- Goal and Flag are searchable before S7 exits.
+- Today shows lightweight Active Goals / Flags without becoming a ToDo list.
+- Goal deletion leaves no dangling Links.
 
-## Stage 8 — Lightweight Manual Review
+## Macro Stage S8 — Lightweight Manual Review
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S8 |
+| Macro Stage ID | S8 |
 | Stage Name | Lightweight Manual Review |
 | Goal | Enable manual reflection using EntryKind.review |
 | Dependencies | S7 |
@@ -915,6 +1080,8 @@ In Scope:
 - Optional periodStart and periodEnd.
 - Links to Entry, Habit and Goal.
 - Participation in Timeline, Library and Search.
+- Explicit verification that Review Entry continues to reuse the Entry search path.
+- Review Entry permanent-delete cleanup for all review Links.
 
 Out of Scope:
 
@@ -924,19 +1091,22 @@ Validation:
 
 - EntryKind.review and period validation tests.
 - Link tests for all three target kinds.
+- Review deletion, rollback and dangling-Link tests.
 - Manual daily/weekly and Goal/Habit review examples.
 - Search and Timeline integration tests.
 
 Exit Criteria:
 
 - Review reuses Entry storage and lifecycle.
+- Review reuses Entry search and does not introduce a separate search index.
+- Review deletion leaves no dangling Links.
 - No automatic or analytics capability is present.
 
-## Stage 9 — Export / Import Recovery
+## Macro Stage S9 — Export / Import Recovery
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S9 |
+| Macro Stage ID | S9 |
 | Stage Name | Export / Import Recovery |
 | Goal | Deliver real manual backup, transfer and full restore |
 | Dependencies | S8 and stable V1 schema |
@@ -950,8 +1120,11 @@ In Scope:
 - Original media files and SHA-256 integrity metadata.
 - Full export.
 - Preflighted import into empty database.
-- Explicit erase-and-restore mode if safely supported.
+- Explicit erase-and-restore only if retained-old-data rollback is proven.
 - Isolated staging, rollback, ID and relationship preservation.
+- Unencrypted-export privacy warning and temporary export cleanup.
+- Import size/count/compression/path resource limits.
+- Redacted logging and post-import dangling-Link validation.
 
 Out of Scope:
 
@@ -963,18 +1136,25 @@ Validation:
 - Image, ID and relationship restoration.
 - Missing image, corrupt manifest, duplicate ID and incompatible schema fixtures.
 - Interrupted import leaves active data unchanged.
+- Oversized ZIP, expansion limit, file/object count, compression-ratio and unsafe-path fixtures.
+- Export completion/cancellation/failure temporary-file cleanup tests.
+- Assert ordinary logs contain no Entry body, image bytes or sensitive full paths.
+- Post-import/recovery dangling-Link validation.
 - Manual delete-App-data equivalent and restore on device.
 
 Exit Criteria:
 
 - A complete V1 data set can be exported, removed and restored with IDs, links and originals intact.
+- Empty-database import is complete and usable.
+- Erase-and-restore is exposed only if old-data retention and rollback tests pass.
 - Failure never publishes a partial data set.
+- Import, recovery and re-open publish no dangling Links.
 
-## Stage 10 — V1 Integration and Daily Driver Readiness
+## Macro Stage S10 — V1 Integration and Daily Driver Readiness
 
 | Item | Plan |
 | --- | --- |
-| Stage ID | S10 |
+| Macro Stage ID | S10 |
 | Stage Name | V1 Integration and Daily Driver Readiness |
 | Goal | Integrate the complete V1 scope and begin evidence-based Daily Driver validation |
 | Dependencies | S9 |
@@ -986,6 +1166,7 @@ In Scope:
 - Final Today, Timeline, Growth and Library shell.
 - Global Quick Capture, Search and Settings access.
 - End-to-end regression suite.
+- Full Search regression for Entry/Review Entry/Tag/Habit/Goal; S10 does not add a missing S6/S7 search implementation.
 - Performance, disk, accessibility and failure-message pass for core workflows.
 - Manual V1 acceptance checklist.
 - Start the Foundation-defined 30-day real-use observation only after technical exit.
@@ -1007,6 +1188,7 @@ Exit Criteria:
 - Core workflows work offline.
 - No known issue blocks daily real use.
 - Product is ready to enter the 30-day V1 real-world usage criterion, not declared a Release Candidate.
+- The formal 30-day observation clock starts only after these technical Exit Criteria pass; S3–S9 Dogfooding days are excluded.
 
 ---
 
@@ -1023,6 +1205,8 @@ At minimum:
 - HabitLog structured facts and optional Entry relation.
 - Habit supports Goal direction.
 - Link endpoint validation and duplicate prevention.
+- Link deletion policy for Entry, Review Entry, Habit, Goal and Tag.
+- Archive preserving Links.
 - ImageMetadata ownership, ordering, path and checksum.
 - Export / Import DTO encoding and decoding.
 - Relationship reconstruction from explicit UUIDs.
@@ -1036,10 +1220,13 @@ At minimum:
 - Update and explicit save.
 - Archive without media deletion.
 - Permanent delete with owned-media cleanup.
+- Permanent object delete with related-Link cleanup or safe reference update.
+- Relationship rollback after an injected delete failure.
 - App/process restart recovery through on-disk store reopen.
 - Initial and subsequent schema migration fixtures.
 - Database/file consistency after injected failure.
 - Missing referenced file and orphaned file detection.
+- Dangling-Link detection after migration, recovery and re-open.
 
 Use in-memory stores for fast isolated behavior tests and temporary on-disk stores for migration, restart and file consistency.
 
@@ -1057,6 +1244,11 @@ At minimum:
 - Unsupported schema version.
 - Duplicate object ID in a package.
 - Interrupted/failing import.
+- Maximum compressed/expanded size, file count, object count and compression-ratio enforcement.
+- Unsafe path, symlink and normalized-path collision rejection.
+- Temporary export cleanup after completion, cancellation and failure.
+- Log-redaction assertions for Entry body, image content and sensitive paths.
+- No dangling Links after import or rollback.
 - Re-export after restore produces an equivalent logical data set.
 
 ## Manual Validation
@@ -1073,6 +1265,7 @@ At minimum:
 - Create a lightweight Review and link Entry/Habit/Goal.
 - Search Entry, Review Entry, Habit, Goal and Tag.
 - Export manually.
+- Confirm the unencrypted-package privacy warning before sharing.
 - Remove the active data set and restore it by import.
 - Repeat the first slice and restore flow on a real iPhone without network.
 
@@ -1085,8 +1278,10 @@ At minimum:
 | Image storage growth | Device storage exhaustion | Nine-image cap, admission budget, visible sizes, original-only source plus rebuildable thumbnails |
 | Large-image memory peak | Crash during capture or Timeline scrolling | Metadata-first ingestion, target-size downsampling, no multi-original decode |
 | Database/file inconsistency | Missing memories or orphaned files | Staging coordinator, atomic moves, Trash recovery, integrity scan and failure injection tests |
+| Dangling Links | Broken navigation, search or restore | Transactional relationship cleanup plus post-delete/import/migration integrity validation |
+| Multi-image partial save | Half Entry or orphan originals | Capacity preflight and all-or-nothing Entry/media commit |
 | SwiftData migration failure | Existing data becomes unreadable | VersionedSchema from day one, fixture migrations, pre-release backup rehearsal |
-| Import duplicate data | Repeated objects and images | Empty/replace-only V1 mode, explicit UUID validation, reject non-empty target |
+| Import duplicate data | Repeated objects and images | Empty-store import by default, explicit UUID validation, and replace only after proven rollback |
 | ID collision | Broken relationships | Preserve app UUIDs, reject duplicate package IDs, no merge import |
 | Delete and restore failure | Irrecoverable loss | Archive distinct from delete, recoverable Trash, isolated restore and retained old data set |
 | Foundation scope expansion | V1 never becomes usable | Stage-level Out of Scope, Owner gates, move unrelated requests to V2 |
@@ -1095,15 +1290,18 @@ At minimum:
 | Review becomes a subsystem | Templates, analytics and automation delay V1 | Keep EntryKind.review and explicit exclusions; no Review lifecycle |
 | iCloud, AI or maps distract V1 | Core offline loop delayed | No capabilities, entities or abstractions for them in V1 |
 | ZIP implementation choice | Non-portable export or dependency sprawl | Contract standard ZIP first; separately approve one focused implementation if platform API is insufficient |
+| Unencrypted export exposure | Private text or originals shared unintentionally | Explicit warning, private staging, prompt cleanup and redacted logs |
+| Malicious or extreme import | Disk/memory exhaustion or unsafe extraction | Hard size/count/ratio limits, safe-path validation and isolated staging |
 | Search performance | Slow Library with long history | Measure bounded fixture; add index only after failure is observed |
 
 ---
 
-# Stage Gates and Change Control
+# Macro Stage Gates and Change Control
 
-- Each Stage requires an explicit task and must stop at its Exit Criteria.
-- Passing one Stage does not implicitly approve the next.
-- A Stage may refine implementation details but may not expand V1 Scope.
+- Each Macro Stage is a planning phase and must be decomposed before implementation.
+- Each executable sub Stage requires an explicit Owner-approved task with Goal, In Scope, Out of Scope, Validation and Exit Criteria.
+- Passing one sub Stage does not implicitly approve the next sub Stage or its remaining Macro Stage.
+- A sub Stage may refine implementation details but may not expand V1 Scope.
 - A Foundation contradiction stops implementation and returns to Owner Review.
 - Schema changes after real data exists require a migration fixture and export/import compatibility review.
 - Media and import destructive paths require failure injection before manual acceptance.
@@ -1111,15 +1309,20 @@ At minimum:
 
 ---
 
-# Owner Review Decisions
+# Owner Review Decision
 
-Owner should explicitly accept or revise:
+Decision: APPROVE_WITH_CONDITIONS.
+
+The following architecture choices are Owner Accepted for this implementation baseline:
 
 1. SwiftData as the V1 persistence choice, with VersionedSchema from the first persisted build.
 2. No Swift Package or multi-module project at V1 start.
 3. Including one Photos Library image in the first runnable slice to validate cross-store consistency early.
-4. Original-file preservation plus the initial 25 MiB / 80-megapixel admission guardrails.
-5. Standard ZIP + JSON and V1 empty/replace-only restore, with merge import deferred.
+4. Original-file preservation plus provisional, adjustable 25 MiB / 80-megapixel implementation guardrails.
+5. Standard ZIP with manifest.json, data.json and media/.
+6. Empty-database import as a required V1 capability.
+7. Erase-and-restore only when retained-old-data rollback is proven.
+8. Merge import deferred and Out of Scope for V1.
 
 ---
 
@@ -1127,4 +1330,8 @@ Owner should explicitly accept or revise:
 
 Implementation has not started.
 
-The first implementation stage remains unapproved pending Owner Review.
+S0 and every product implementation sub Stage remain unapproved.
+
+Do not create a commit until the Owner responds: Approved to commit.
+
+Implementation remains unapproved.
