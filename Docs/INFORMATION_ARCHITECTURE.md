@@ -4,7 +4,7 @@
 | ---------------- | ----------------------------- |
 | **Project**      | Personal Growth OS            |
 | **Document**     | `INFORMATION_ARCHITECTURE.md` |
-| **Version**      | v0.1                          |
+| **Version**      | v0.2                          |
 | **Status**       | Foundation Draft              |
 | **Last Updated** | 2026-07-15                    |
 
@@ -141,9 +141,11 @@ Today's Habits
 Active Goals
 ```
 
+V1 支持用户手动创建轻量 Review Entry，但 Today 不要求设置独立 Review 区域。
+
 未来可以增加：
 
-* 今日 Review；
+* Review 提示；
 * 今日 Journey；
 * 今日推荐回顾。
 
@@ -170,10 +172,10 @@ Timeline 是所有历史内容的主要浏览入口。
 Timeline 展示：
 
 * Entry；
+* Review Entry；
 * 重要 HabitLog；
 * Goal 生命周期事件；
 * Journey（未来）；
-* Review（未来）。
 
 Timeline 应帮助用户：
 
@@ -267,11 +269,11 @@ HabitLog 是具体执行记录。
 Goals 管理：
 
 * Goal；
-* Flag；
+* Flag 的独立产品表达；
 * Goal 生命周期；
-* Goal Review。
+* 与 Goal 关联的 Review Entry。
 
-Flag 暂作为 Goal 的一种类型。
+V1 的核心实体是 Goal，Flag 是 `GoalKind.flag`，不是另一套独立核心模型。
 
 未来如果行为明显不同，再独立建模。
 
@@ -322,7 +324,7 @@ Archived
 * Places；
 * People；
 * Projects；
-* Reviews；
+* Review Entry 独立浏览视图；
 * Attachments。
 
 ---
@@ -372,10 +374,12 @@ Quick Capture 不属于任何单独模块。
 ```text
 点击 +
 
-输入内容
+输入文字和/或添加图片
 
 保存
 ```
+
+只要至少存在正文或一张图片，即可保存 Entry。正文不是必填项，因此 Quick Capture 支持仅文字、仅图片和图文混合。
 
 默认：
 
@@ -427,13 +431,14 @@ V1 至少支持：
 * Goal；
 * Tag。
 
+Review Entry 作为 Entry 的一种类型参与搜索。
+
 未来：
 
 支持：
 
 * Journey；
 * Place；
-* Review；
 * Project。
 
 搜索不要求用户：
@@ -467,10 +472,6 @@ Data Export
 
 Data Import
 
-Backup
-
-Restore
-
 Sync（Future）
 
 About
@@ -478,15 +479,13 @@ About
 
 其中：
 
-Data Export、
+Data Export 和 Data Import 是 V1 的实际能力，而不只是架构预留。
 
-Import、
+基础导出覆盖 V1 核心数据和原始图片，可使用统一导出包承载结构化数据、原始图片和基础完整性信息，用于手动备份和设备迁移。
 
-Backup
+基础导入与导出格式相对应，并在导入后尽量恢复对象标识、关联关系和图片。
 
-属于长期能力。
-
-应在架构上预留。
+自动定时备份、复杂备份管理和多设备实时同步不属于 V1。Local First does not mean Local Only，未来仍可增加用户选择的同步能力。
 
 ---
 
@@ -540,6 +539,8 @@ Input
 Save
 ```
 
+Input 可以是文字、图片或两者组合。
+
 ---
 
 ## Flow 2 — Habit Check-in
@@ -558,13 +559,15 @@ Complete
 
 如果补充心得：
 
-自动关联：
+创建并关联：
 
 HabitLog
 
-*
++
 
 Entry。
+
+简单打卡只创建 HabitLog。文字心得和图片由关联 Entry 承载，HabitLog 不直接拥有图片文件。
 
 ---
 
@@ -588,7 +591,7 @@ Save
 
 ---
 
-## Flow 4 — Review History
+## Flow 4 — Browse History
 
 ```text
 Timeline
@@ -604,7 +607,29 @@ Open Entry
 
 ---
 
-## Flow 5 — Organize
+## Flow 5 — Manual Review
+
+```text
+Create Review Entry
+
+↓
+
+Select Optional Period
+
+↓
+
+Relate Entries / Habit / Goal
+
+↓
+
+Save
+```
+
+Review 使用 `EntryKind.review`，由用户手动创建。自动 Review、AI Review、复杂统计和模板不属于 V1。
+
+---
+
+## Flow 6 — Organize
 
 ```text
 Library
@@ -683,7 +708,7 @@ Personal Growth OS。
 * Journey；
 * Places；
 * Projects；
-* Reviews；
+* 自动或高级 Review；
 * People；
 * AI Assistant。
 
@@ -709,6 +734,11 @@ Personal Growth OS。
 * Growth 管理长期成长对象。
 * Library 管理整理与检索。
 * Inbox 是缓冲区，而不是待办列表。
+* Review 在 V1 中是用户手动创建的 `EntryKind.review`，可关联 Entry、Habit 和 Goal。
+* 简单打卡只创建 HabitLog；文字和图片由关联 Entry 承载。
+* Flag 是 `GoalKind.flag`，而不是独立核心实体。
+* Quick Capture 支持仅文字、仅图片和图文混合。
+* Data Export 和 Data Import 是 V1 的实际备份与迁移能力。
 * 高价值内容优先展示，低价值内容可以聚合展示。
 
 ---
@@ -728,7 +758,7 @@ Foundation Documents：
 * `VISION.md`
 * `DESIGN_PRINCIPLES.md`
 * `CORE_MODEL.md`
-* `V1_SCOPE.md`（Planned）
+* `V1_SCOPE.md`
 * `ROADMAP.md`（Planned）
 
 ---
@@ -738,3 +768,4 @@ Foundation Documents：
 | Version | Date       | Change                    |
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
+| v0.2    | 2026-07-15 | Reconciled review, capture, habit-log, flag, and data-transfer flows. |

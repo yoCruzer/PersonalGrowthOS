@@ -4,7 +4,7 @@
 | ---------------- | ---------------------- |
 | **Project**      | Personal Growth OS     |
 | **Document**     | `DESIGN_PRINCIPLES.md` |
-| **Version**      | v0.1                   |
+| **Version**      | v0.2                   |
 | **Status**       | Foundation Draft       |
 | **Last Updated** | 2026-07-15             |
 
@@ -77,7 +77,11 @@
 
 原始记录具有不可替代的价值。
 
-无论未来如何整理、分类、关联或使用 AI，总应该保留用户最初记录下来的内容。
+Preserve the Original 主要约束系统自动处理，包括自动分类、自动摘要、格式转换和未来 AI 处理。
+
+这些能力不得不可逆地覆盖用户输入。未来的 AI、自动摘要或自动分类结果，应作为附加信息或建议，而不是替换原始用户内容。
+
+用户可以主动修改自己的 Entry。V1 不要求保存每次用户编辑的完整历史版本，也不因此引入复杂版本控制系统。
 
 成长不仅来自最终结论，也来自认知变化的过程。
 
@@ -281,7 +285,8 @@ Foundation Document 的目标，是消除重大方向上的不确定性，而不
 
 * 产品始终以用户成长为中心，而不是以活跃度为中心；
 * 记录优先于整理；
-* 原始内容应长期保留；
+* 用户可以主动编辑 Entry，V1 不要求完整版本历史；
+* 系统自动处理不得不可逆地覆盖用户输入，自动处理结果应作为附加信息或建议；
 * 默认保护用户隐私；
 * Local First 是长期架构原则，而不是 Local Only；
 * 用户始终拥有自己的数据；
@@ -307,8 +312,8 @@ Foundation Documents：
 
 * `VISION.md`
 * `CORE_MODEL.md`
-* `INFORMATION_ARCHITECTURE.md`（Planned）
-* `V1_SCOPE.md`（Planned）
+* `INFORMATION_ARCHITECTURE.md`
+* `V1_SCOPE.md`
 * `ROADMAP.md`（Planned）
 
 ---
@@ -318,3 +323,4 @@ Foundation Documents：
 | Version | Date       | Change                    |
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
+| v0.2    | 2026-07-15 | Clarified original-content preservation and document status. |

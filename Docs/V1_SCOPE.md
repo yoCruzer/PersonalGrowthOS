@@ -4,7 +4,7 @@
 | ---------------- | ------------------ |
 | **Project**      | Personal Growth OS |
 | **Document**     | `V1_SCOPE.md`      |
-| **Version**      | v0.1               |
+| **Version**      | v0.2               |
 | **Status**       | Foundation Draft   |
 | **Last Updated** | 2026-07-15         |
 
@@ -122,6 +122,8 @@ V1 包含以下核心能力。
 * 仅图片；
 * 图文混合。
 
+只要至少存在正文或一张图片，即可保存 Entry；正文不是必填项。
+
 ---
 
 ## Quick Capture
@@ -131,6 +133,8 @@ V1 包含以下核心能力。
 支持：
 
 * 一步创建 Entry；
+* 输入文字和/或添加图片；
+* 仅文字、仅图片和图文混合；
 * 默认进入 Inbox；
 * 后续整理。
 
@@ -145,9 +149,10 @@ V1 包含以下核心能力。
 展示：
 
 * Entry；
+* Review Entry；
 * HabitLog；
 * Goal 生命周期事件；
-* Flag 生命周期事件。
+* Flag 相关的 Goal 生命周期事件。
 
 Timeline 应帮助用户重新理解自己的成长。
 
@@ -162,6 +167,10 @@ Timeline 应帮助用户重新理解自己的成长。
 * HabitLog；
 * Habit 生命周期管理。
 
+HabitLog 保存完成状态、发生时间、数量、单位和简单结果等结构化打卡事实。
+
+简单打卡只创建 HabitLog。用户添加文字心得或图片时，创建 HabitLog 和关联 Entry；图片与富文本由 Entry 承载，HabitLog 不直接拥有图片文件。
+
 ---
 
 ## Goal / Flag
@@ -169,13 +178,29 @@ Timeline 应帮助用户重新理解自己的成长。
 支持：
 
 * 创建 Goal；
-* 创建 Flag；
+* 以 Flag 的产品表达创建 `GoalKind.flag`；
 * 生命周期管理；
 * 与 Entry 建立关联。
 
 V1 中：
 
-Flag 作为 Goal 的一种特殊类型。
+核心实体是 Goal，Flag 是 `GoalKind.flag`，不是另一套独立核心模型。
+
+---
+
+## Lightweight Manual Review
+
+V1 支持轻量手动 Review。
+
+Review：
+
+* 使用 `EntryKind.review`；
+* 由用户手动创建；
+* 可以具有 `periodStart` 和 `periodEnd` 表达的可选回顾时间范围；
+* 可以关联 Entry、Habit 和 Goal；
+* 作为 Entry 参与 Timeline、Library 和 Search。
+
+V1 不为 Review 建立独立的重量级核心实体或生命周期，也不包含自动总结、AI 分析、统计图表和复杂模板。
 
 ---
 
@@ -229,17 +254,19 @@ V1 的核心能力应完全支持离线使用。
 
 ---
 
-## Data Ownership Foundation
+## Data Export / Import
 
-V1 应为长期数据所有权建立基础。
+V1 必须提供实际可用的基础 Data Export 和 Data Import，而不只是架构预留。
 
-包括：
+基础导出：
 
-* 数据导出；
-* 数据导入（基础能力）；
-* 数据备份与恢复的架构预留。
+* 覆盖 V1 核心数据和原始图片；
+* 可由统一导出包承载结构化数据、原始图片和基础完整性信息；
+* 可用于手动备份和设备迁移。
 
-同步能力可在后续版本逐步完善。
+基础导入与导出格式相对应，并在导入后尽量恢复对象标识、关联关系和图片。
+
+V1 不要求自动定时备份、增量备份、多版本备份管理、复杂冲突合并或复杂加密容器。Local First does not mean Local Only；同步能力可在后续版本逐步完善。
 
 ---
 
@@ -369,6 +396,34 @@ V1 聚焦于：
 
 ---
 
+## Automatic / Advanced Review
+
+包括：
+
+* 自动周报、月报和年度总结；
+* 自动选择重要记录；
+* AI Review；
+* 统计图表和情绪分析；
+* 复杂模板；
+* 自动生成成长结论；
+* 重量级独立 Review 生命周期。
+
+轻量手动 Review 已进入 V1，以上自动或高级能力不属于 V1。
+
+---
+
+## iCloud Multi-device Sync
+
+包括：
+
+* iCloud 多设备同步；
+* 跨设备实时同步；
+* 复杂冲突合并。
+
+这些能力可在后续版本逐步完善，但不属于 V1。
+
+---
+
 ## Cross-platform
 
 V1 聚焦：
@@ -461,7 +516,7 @@ Growth
 
 ↓
 
-Review（基础回顾）
+Review（轻量手动回顾）
 ```
 
 形成一个完整的成长闭环。
@@ -559,8 +614,12 @@ V1 不追求功能完整。
 * V1 面向自己及需求相似的用户。
 * Rich Entry（文字 + 图片）属于 V1 核心能力。
 * 图片是 Entry 的核心内容，而不是附件。
+* Quick Capture 支持仅文字、仅图片和图文混合，正文不是必填项。
+* HabitLog 只保存结构化打卡事实，图片与富文本由关联 Entry 承载。
+* Habit 支持 Goal；Flag 是 `GoalKind.flag`，不是独立核心实体。
+* 轻量手动 Review 使用 `EntryKind.review`，属于 V1；自动、AI 和高级 Review 不属于 V1。
 * 产品采用 Local First。
-* 产品遵循 Data Ownership。
+* 基础 Data Export 和 Data Import 是 V1 实际可用的备份与迁移能力。
 * V1 聚焦记录、成长与回顾。
 * AI、Journey、OCR、家庭共享等能力全部进入 V2。
 * Success Criteria 以真实使用为标准，而不是功能数量。
@@ -593,3 +652,4 @@ Foundation Documents：
 | Version | Date       | Change                    |
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
+| v0.2    | 2026-07-15 | Reconciled V1 review, capture, habit-log, flag, and data-transfer scope. |

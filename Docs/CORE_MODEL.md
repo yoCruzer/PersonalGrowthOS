@@ -4,7 +4,7 @@
 | ---------------- | ------------------ |
 | **Project**      | Personal Growth OS |
 | **Document**     | `CORE_MODEL.md`    |
-| **Version**      | v0.1               |
+| **Version**      | v0.2               |
 | **Status**       | Foundation Draft   |
 | **Last Updated** | 2026-07-15         |
 
@@ -123,6 +123,32 @@ Entry 不要求：
 
 ---
 
+## Time Semantics
+
+Entry 区分三种长期稳定的时间语义：
+
+* `createdAt`：记录进入系统的时间；
+* `occurredAt`：事情实际发生的时间；
+* `updatedAt`：记录最后修改的时间。
+
+用户可以在今天补录多年以前的经历，因此 `createdAt` 与 `occurredAt` 不应被视为同一概念。
+
+---
+
+# Review Entry
+
+V1 的轻量手动 Review 是一种特殊类型的 Entry：
+
+```text
+EntryKind.review
+```
+
+Review Entry 由用户手动创建，可以具有 `periodStart` 和 `periodEnd` 表达的可选回顾时间范围，并可以关联 Entry、Habit 或 Goal。
+
+Review 在 V1 中不是独立的重量级核心实体，也不包含自动总结、AI 分析、统计图表或复杂模板。
+
+---
+
 # Habit
 
 ## Purpose
@@ -155,13 +181,17 @@ HabitLog 表示一次 Habit 的实际执行。
 * 今天阅读 30 分钟；
 * 今天完成英语学习。
 
-HabitLog 属于具体发生的事件。
+HabitLog 负责保存结构化打卡事实，例如：
 
-它可以：
+* 完成状态；
+* 发生时间；
+* 数量；
+* 单位；
+* 简单结果。
 
-* 包含备注；
-* 包含图片；
-* 自动出现在 Timeline 中。
+用户只做简单打卡时，只创建 HabitLog，不强制创建 Entry。
+
+用户添加文字心得或图片时，创建 HabitLog 和关联 Entry。图片和富文本内容由 Entry 承载，HabitLog 不直接拥有图片文件。
 
 一个 Habit 可以拥有多个 HabitLog。
 
@@ -192,9 +222,7 @@ Goal 是长期存在的对象。
 
 ---
 
-# Flag
-
-## Purpose
+## Goal Kind: Flag
 
 Flag 表示一种具有明确完成条件的挑战或承诺。
 
@@ -206,7 +234,7 @@ Flag 表示一种具有明确完成条件的挑战或承诺。
 
 V1 中：
 
-Flag 作为 Goal 的一种特殊类型。
+Flag 是 Goal 的一种类型，即 `GoalKind.flag`，而不是另一套独立核心模型。
 
 未来如有必要，可独立建模。
 
@@ -243,17 +271,22 @@ Entry
     │
     ├── relates to Goal
     ├── relates to Habit
-    ├── uses Tag
-    └── belongs to Timeline
+    └── uses Tag
 
 Habit
     │
-    └── owns HabitLogs
+    ├── owns HabitLogs
+    └── supports Goal
 
 Goal
     │
-    ├── supports Habits
     └── relates to Entries
+
+Review Entry
+    │
+    ├── reviews Entries
+    ├── reviews Habit
+    └── reviews Goal
 ```
 
 关系存在的目的只有一个：
@@ -275,14 +308,14 @@ Timeline 不是一种对象。
 Timeline 可以包含：
 
 * Entry；
+* Review Entry；
 * HabitLog；
 * Goal 生命周期事件；
-* Flag 生命周期事件。
+* Flag 相关的 Goal 生命周期事件。
 
 未来可以增加：
 
 * Journey；
-* Review；
 * Place。
 
 Timeline 是展示层，而不是数据实体。
@@ -293,7 +326,15 @@ Timeline 是展示层，而不是数据实体。
 
 Inbox 不是对象。
 
-它是 Entry 的一种状态。
+Entry 的基本状态包括：
+
+```text
+inbox
+organized
+archived
+```
+
+Inbox 是 Entry 的一种状态，也可以作为过滤视图呈现。
 
 它表示：
 
@@ -415,10 +456,13 @@ Core Model 应长期保持：
 
 * Entry 是系统最基础的记录对象。
 * Entry 采用 Rich Entry 模型，支持文字、图片或两者组合。
-* Habit 与 HabitLog 分离建模。
-* Flag 在 V1 中作为 Goal 的一种特殊类型。
+* Entry 区分记录创建、实际发生和最后修改三种时间语义。
+* Review 在 V1 中是 `EntryKind.review`，而不是独立核心实体。
+* Habit 与 HabitLog 分离建模；HabitLog 保存结构化打卡事实，图片和富文本由关联 Entry 承载。
+* Habit 支持 Goal，而不是由 Goal 支持 Habit。
+* Flag 在 V1 中是 `GoalKind.flag`，而不是独立核心实体。
 * Timeline 是视图，不是实体。
-* Inbox 是 Entry 的状态，不是独立对象。
+* Entry 使用 `inbox`、`organized`、`archived` 三种基本状态；Inbox 不是独立对象。
 * Tag 是辅助组织能力，而不是核心数据结构。
 * 对象之间允许建立自然关联，但不构建复杂知识图谱。
 
@@ -449,3 +493,4 @@ Foundation Documents：
 | Version | Date       | Change                    |
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
+| v0.2    | 2026-07-15 | Reconciled review, relationship, entry-state, and media-ownership semantics. |

@@ -4,7 +4,7 @@
 | ---------------- | ------------------ |
 | **Project**      | Personal Growth OS |
 | **Document**     | `VISION.md`        |
-| **Version**      | v0.1               |
+| **Version**      | v0.2               |
 | **Status**       | Foundation Draft   |
 | **Last Updated** | 2026-07-15         |
 
@@ -374,7 +374,7 @@ Personal Growth OS 的成功，
 当前仍待进一步讨论：
 
 * 是否需要形成正式的品牌名称（Personal Growth OS 当前作为项目名称）。
-* 是否需要进一步明确目标用户画像（仅自己、独立开发者、普通用户等）。
+* V1 目标用户已经确定；长期市场定位将在真实使用验证后再决定。
 * 是否需要补充产品设计伦理（Design Ethics）相关内容。
 
 ---
@@ -385,8 +385,8 @@ Foundation Documents：
 
 * `DESIGN_PRINCIPLES.md`
 * `CORE_MODEL.md`
-* `INFORMATION_ARCHITECTURE.md`（Planned）
-* `V1_SCOPE.md`（Planned）
+* `INFORMATION_ARCHITECTURE.md`
+* `V1_SCOPE.md`
 * `ROADMAP.md`（Planned）
 
 ---
@@ -396,3 +396,4 @@ Foundation Documents：
 | Version | Date       | Change                    |
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
+| v0.2    | 2026-07-15 | Reconciled target-user and document-status decisions. |
