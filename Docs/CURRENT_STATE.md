@@ -4,10 +4,11 @@
 | --- | --- |
 | Project | Personal Growth OS |
 | Last verified | 2026-07-17 |
-| Current branch | `main` |
-| Pre-Batch-0 implementation baseline | `2bf1be85c01d8d96af035a12684bd2d98c7f183e` (`build: bootstrap native ios project`) |
+| Current branch | `feat/s0b-composition-test-harness` |
+| Approved S0B starting baseline | `2fb65ef1d75b0f24472873e2904a0de9618f6ff1` (`docs: establish repository foundation`) |
+| S0 status | Complete: S0A project bootstrap and S0B composition/test harness are implemented |
 | Product functionality | Not started |
-| Current executable state | Static native iOS placeholder with minimal Unit Test and UI Test targets |
+| Current executable state | Static native iOS placeholder with explicit startup composition and deterministic Unit/UI test seams |
 
 ## Authoritative Product Baseline
 
@@ -27,8 +28,9 @@
 - The V1 implementation planning baseline is recorded in `Docs/V1_IMPLEMENTATION_PLAN.md` v0.3.
 - The S0 execution planning baseline and S0A/S0B split are recorded in `Docs/S0_EXECUTION_PLAN.md` v0.3.
 - S0A — Native Xcode Project Bootstrap is present on `main` in commit `2bf1be85c01d8d96af035a12684bd2d98c7f183e`.
-- Macro Stage S0 is partially complete: S0A is present and S0B is pending.
-- Batch 0 establishes the long-term development contract, agent bootstrap, verified-state handoff, and next-task handoff.
+- Batch 0 — Repository Foundation is present on `main` in commit `2fb65ef1d75b0f24472873e2904a0de9618f6ff1`.
+- S0B — Composition and Test Harness Foundation is implemented and verified on `feat/s0b-composition-test-harness`.
+- Macro Stage S0 is complete. No S1 or product functionality has started.
 
 ## Verified Executable Baseline
 
@@ -40,9 +42,13 @@ The repository contains:
 - UI Test target `PersonalGrowthOSUITests`;
 - shared scheme `PersonalGrowthOS`;
 - Debug and Release build configurations;
-- SwiftUI `@main` lifecycle and a static `RootPlaceholderView`;
-- one minimal target-execution Unit Test;
-- one minimal App-launch UI Test.
+- SwiftUI `@main` lifecycle and the unchanged static `RootPlaceholderView`;
+- `AppConfiguration`, which resolves only standard and UI-testing launch modes from one centralized `ProcessInfo` boundary;
+- `AppContainer`, which contains only the resolved startup configuration;
+- explicit one-time composition in `PersonalGrowthOSApp` and container injection into `RootPlaceholderView`;
+- stable `root-placeholder` accessibility identification for launch verification;
+- five focused configuration/composition Unit Tests;
+- one identifier-based UI launch smoke test.
 
 The project is configured for iPhone, iOS 17.0, automatic signing, and bundle identifier `com.yocruzer.PersonalGrowthOS`. No shared Development Team, Storyboard, entitlements, capabilities, or package dependency is present.
 
@@ -62,18 +68,21 @@ The existing Foundation and implementation planning baselines establish these de
 ## Known Limitations
 
 - The App displays only static bootstrap text and has no product behavior.
-- S0B composition, launch-configuration, and deterministic UI-test seams are not implemented.
 - No domain model, SwiftData schema, persistence, media handling, navigation, feature UI, search, or import/export exists.
-- Existing tests prove only that the test target runs and the App launches; they do not test product behavior.
+- The current tests verify only the S0 startup configuration, composition root, and placeholder launch seam; they do not test product behavior.
 - `Docs/S0_EXECUTION_PLAN.md`, `Docs/S0A_TASK.md`, and `Docs/V1_IMPLEMENTATION_PLAN.md` retain historical planning-status language written before the S0A bootstrap commit. The commit and current repository contents are the evidence of the implemented S0A baseline.
 - `Docs/ROADMAP.md` remains planned and absent; this does not block the next approved implementation batch.
 
 ## Repository Health
 
-- The working tree was clean at the start of Batch 0.
-- `main`, `origin/main`, and the S0A bootstrap reference all pointed to `2bf1be85c01d8d96af035a12684bd2d98c7f183e` before the Batch 0 commit.
+- The working tree was clean at the start of S0B.
+- The S0B branch was created from the approved `main` commit `2fb65ef1d75b0f24472873e2904a0de9618f6ff1`.
 - Xcode 26.5 (build 17F42) discovers the expected project, three targets, two configurations, and shared scheme.
 - A Debug build succeeded on an iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`).
-- The full shared scheme test run passed on that simulator: 2 tests passed, 0 failed, and 0 skipped.
+- The full shared scheme test run passed on that simulator: 6 tests passed, 0 failed, and 0 skipped (5 Unit Tests and 1 UI Test).
+- An independent repeat of the UI smoke test passed: 1 test passed, 0 failed, and 0 skipped.
+- A standard launch without UI-testing inputs was installed, launched, and visually confirmed to show the original `Personal Growth OS` / `Project Bootstrap` placeholder.
 - Static checks confirm iOS 17.0, iPhone-only targeting, automatic signing, expected bundle identifiers, and no persisted Development Team, Storyboard, entitlement, capability, or package dependency.
-- Documentation whitespace validation (`git diff --check`) passes.
+- Static checks also confirm no SwiftData, product domain model, product service, third-party dependency, or scattered `ProcessInfo` access.
+- Repository whitespace validation (`git diff --check`) passes.
+- The S0B branch is clean after its single batch commit.
