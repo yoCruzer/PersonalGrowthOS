@@ -70,7 +70,9 @@ enum CaptureImageLoadError: Error {
 
 struct QuickCaptureView: View {
     let mediaStore: MediaStore
-    let didSave: () -> Void
+    let navigationTitle: String
+    let saveDraft: ((EntryCreationDraft) throws -> Entry)?
+    let didSave: (Entry) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -79,6 +81,25 @@ struct QuickCaptureView: View {
     @State private var isSaving = false
     @State private var temporaryImageURLs: [URL] = []
     @State private var isShowingCamera = false
+
+    init(mediaStore: MediaStore, didSave: @escaping () -> Void) {
+        self.mediaStore = mediaStore
+        navigationTitle = "Quick Capture"
+        saveDraft = nil
+        self.didSave = { _ in didSave() }
+    }
+
+    init(
+        mediaStore: MediaStore,
+        navigationTitle: String,
+        saveDraft: @escaping (EntryCreationDraft) throws -> Entry,
+        didSave: @escaping (Entry) -> Void
+    ) {
+        self.mediaStore = mediaStore
+        self.navigationTitle = navigationTitle
+        self.saveDraft = saveDraft
+        self.didSave = didSave
+    }
 
     var body: some View {
         let photoButtonTitle = draft.imageSources.isEmpty
@@ -144,7 +165,7 @@ struct QuickCaptureView: View {
                     }
                 }
             }
-            .navigationTitle("Quick Capture")
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -226,16 +247,22 @@ struct QuickCaptureView: View {
     private func save() {
         isSaving = true
         do {
-            let service = EntryCreationService(
-                persistence: ModelContextEntryPersistence(context: modelContext),
-                mediaStore: mediaStore
-            )
-            _ = try service.create(EntryCreationDraft(
+            let entryDraft = EntryCreationDraft(
                 body: draft.body,
                 images: draft.imageSources
-            ))
+            )
+            let entry: Entry
+            if let saveDraft {
+                entry = try saveDraft(entryDraft)
+            } else {
+                let service = EntryCreationService(
+                    persistence: ModelContextEntryPersistence(context: modelContext),
+                    mediaStore: mediaStore
+                )
+                entry = try service.create(entryDraft)
+            }
             removeTemporaryImages()
-            didSave()
+            didSave(entry)
         } catch {
             isSaving = false
             draft.reportSaveFailure(error)

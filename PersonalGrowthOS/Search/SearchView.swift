@@ -19,7 +19,7 @@ struct GlobalSearchView: View {
                         systemImage: "magnifyingglass",
                         description: Text("Search Entry text, titles, reviews and tags on this device.")
                     )
-                } else if results.entries.isEmpty && results.tags.isEmpty {
+                } else if results.entries.isEmpty && results.tags.isEmpty && results.habits.isEmpty {
                     ContentUnavailableView.search(text: query)
                 } else {
                     List {
@@ -50,6 +50,22 @@ struct GlobalSearchView: View {
                                     } label: {
                                         Label(tag.displayName, systemImage: "tag")
                                     }
+                                }
+                            }
+                        }
+                        if !results.habits.isEmpty {
+                            Section("Habits") {
+                                ForEach(results.habits) { habit in
+                                    NavigationLink {
+                                        HabitDetailView(
+                                            habit: habit,
+                                            mediaStore: mediaStore,
+                                            thumbnailStore: thumbnailStore
+                                        )
+                                    } label: {
+                                        Label(habit.name, systemImage: "repeat")
+                                    }
+                                    .accessibilityIdentifier("search-habit-\(habit.normalizedName)")
                                 }
                             }
                         }

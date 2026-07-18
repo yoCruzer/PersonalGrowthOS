@@ -110,16 +110,29 @@ enum PersonalGrowthSchemaV2: VersionedSchema {
     }
 }
 
+enum PersonalGrowthSchemaV3: VersionedSchema {
+    static let versionIdentifier = Schema.Version(3, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [Entry.self, ImageMetadata.self, Tag.self, ObjectLink.self, Habit.self, HabitLog.self]
+    }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [PersonalGrowthSchemaV1.self, PersonalGrowthSchemaV2.self]
+        [PersonalGrowthSchemaV1.self, PersonalGrowthSchemaV2.self, PersonalGrowthSchemaV3.self]
     }
 
     static var stages: [MigrationStage] {
-        [MigrationStage.lightweight(
-            fromVersion: PersonalGrowthSchemaV1.self,
-            toVersion: PersonalGrowthSchemaV2.self
-        )]
+        [
+            MigrationStage.lightweight(
+                fromVersion: PersonalGrowthSchemaV1.self,
+                toVersion: PersonalGrowthSchemaV2.self
+            ),
+            MigrationStage.lightweight(
+                fromVersion: PersonalGrowthSchemaV2.self,
+                toVersion: PersonalGrowthSchemaV3.self
+            )
+        ]
     }
 }
 
@@ -127,7 +140,7 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV2.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV3.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
@@ -136,7 +149,7 @@ enum PersistenceContainerFactory {
     static func makeOnDisk(at storeURL: URL) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV2.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV3.self),
             url: storeURL,
             cloudKitDatabase: .none
         ))
@@ -144,7 +157,7 @@ enum PersistenceContainerFactory {
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV2.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV3.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )
@@ -314,6 +327,7 @@ final class EntryCreationService {
 @MainActor
 protocol EntryDeletingPersistence: AnyObject {
     func deleteLinks(involving objectID: UUID) throws
+    func clearHabitLogEntryReferences(linkedTo entryID: UUID) throws
     func delete(_ entry: Entry)
     func save() throws
     func rollback()
@@ -321,6 +335,7 @@ protocol EntryDeletingPersistence: AnyObject {
 
 extension EntryDeletingPersistence {
     func deleteLinks(involving objectID: UUID) throws {}
+    func clearHabitLogEntryReferences(linkedTo entryID: UUID) throws {}
 }
 
 extension ModelContextEntryPersistence: EntryDeletingPersistence {
@@ -331,6 +346,13 @@ extension ModelContextEntryPersistence: EntryDeletingPersistence {
             }
         )
         try context.fetch(descriptor).forEach(context.delete)
+    }
+
+    func clearHabitLogEntryReferences(linkedTo entryID: UUID) throws {
+        let descriptor = FetchDescriptor<HabitLog>(
+            predicate: #Predicate { $0.linkedEntryID == entryID }
+        )
+        try context.fetch(descriptor).forEach { $0.linkedEntryID = nil }
     }
 
     func delete(_ entry: Entry) {
@@ -582,6 +604,7 @@ final class EntryDeletionService {
             for image in entry.images {
                 trashedFiles.append(try mediaStore.moveToTrash(image.relativePath))
             }
+            try persistence.clearHabitLogEntryReferences(linkedTo: entry.id)
             try persistence.deleteLinks(involving: entry.id)
             persistence.delete(entry)
             try persistence.save()

@@ -44,10 +44,12 @@ final class Tag {
 enum LinkObjectType: String, Codable, Sendable {
     case entry
     case tag
+    case habit
 }
 
 enum ObjectLinkKind: String, Codable, Sendable {
     case entryUsesTag
+    case entryRelatesHabit
 }
 
 @Model
@@ -117,27 +119,50 @@ final class ObjectLink {
 
 enum LinkIntegrityError: Error, Equatable {
     case danglingLinks([UUID])
+    case danglingHabitLogs([UUID])
 }
 
 @MainActor
 enum LinkIntegrityService {
     static func validate(context: ModelContext) throws {
         let links = try context.fetch(FetchDescriptor<ObjectLink>())
-        guard !links.isEmpty else { return }
         let entryIDs = Set(try context.fetch(FetchDescriptor<Entry>()).map(\.id))
         let tagIDs = Set(try context.fetch(FetchDescriptor<Tag>()).map(\.id))
+        let habitIDs = Set(try context.fetch(FetchDescriptor<Habit>()).map(\.id))
         let danglingIDs = links.compactMap { link -> UUID? in
-            guard link.kind == .entryUsesTag,
-                  link.sourceType == .entry,
-                  link.targetType == .tag,
-                  entryIDs.contains(link.sourceID),
-                  tagIDs.contains(link.targetID) else {
-                return link.id
+            switch link.kind {
+            case .entryUsesTag:
+                guard link.sourceType == .entry,
+                      link.targetType == .tag,
+                      entryIDs.contains(link.sourceID),
+                      tagIDs.contains(link.targetID) else {
+                    return link.id
+                }
+            case .entryRelatesHabit:
+                guard link.sourceType == .entry,
+                      link.targetType == .habit,
+                      entryIDs.contains(link.sourceID),
+                      habitIDs.contains(link.targetID) else {
+                    return link.id
+                }
             }
             return nil
         }
         guard danglingIDs.isEmpty else {
             throw LinkIntegrityError.danglingLinks(danglingIDs.sorted { $0.uuidString < $1.uuidString })
+        }
+
+        let danglingLogIDs = try context.fetch(FetchDescriptor<HabitLog>()).compactMap { log -> UUID? in
+            guard habitIDs.contains(log.habitID),
+                  log.linkedEntryID.map(entryIDs.contains) ?? true else {
+                return log.id
+            }
+            return nil
+        }
+        guard danglingLogIDs.isEmpty else {
+            throw LinkIntegrityError.danglingHabitLogs(
+                danglingLogIDs.sorted { $0.uuidString < $1.uuidString }
+            )
         }
     }
 }
@@ -253,6 +278,13 @@ final class TagLinkService {
 struct LocalSearchResults {
     let entries: [Entry]
     let tags: [Tag]
+    let habits: [Habit]
+
+    init(entries: [Entry] = [], tags: [Tag] = [], habits: [Habit] = []) {
+        self.entries = entries
+        self.tags = tags
+        self.habits = habits
+    }
 }
 
 @MainActor
@@ -284,7 +316,14 @@ final class LocalSearchService {
             tag.normalizedName.contains(normalizedQuery)
                 || TextSearchNormalizer.normalize(tag.displayName).contains(normalizedQuery)
         }
-        return LocalSearchResults(entries: entries, tags: tags)
+        let habits = try context.fetch(FetchDescriptor<Habit>(sortBy: [
+            SortDescriptor(\Habit.normalizedName, order: .forward),
+            SortDescriptor(\Habit.id, order: .forward)
+        ])).filter { habit in
+            habit.normalizedName.contains(normalizedQuery)
+                || TextSearchNormalizer.normalize(habit.name).contains(normalizedQuery)
+        }
+        return LocalSearchResults(entries: entries, tags: tags, habits: habits)
     }
 }
 

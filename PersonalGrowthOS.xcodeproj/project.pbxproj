@@ -27,6 +27,10 @@
 		B00000000000000000000018 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* LibraryView.swift */; };
 		B00000000000000000000019 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* SearchView.swift */; };
 		B00000000000000000000020 /* OrganizationSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* OrganizationSearchTests.swift */; };
+		B00000000000000000000021 /* HabitDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000024 /* HabitDomain.swift */; };
+		B00000000000000000000022 /* HabitFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000025 /* HabitFoundation.swift */; };
+		B00000000000000000000023 /* HabitViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000026 /* HabitViews.swift */; };
+		B00000000000000000000024 /* HabitFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* HabitFoundationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +74,10 @@
 		A00000000000000000000021 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		A00000000000000000000022 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		A00000000000000000000023 /* OrganizationSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganizationSearchTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000024 /* HabitDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Habit/HabitDomain.swift; sourceTree = "<group>"; };
+		A00000000000000000000025 /* HabitFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitFoundation.swift; sourceTree = "<group>"; };
+		A00000000000000000000026 /* HabitViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitViews.swift; sourceTree = "<group>"; };
+		A00000000000000000000027 /* HabitFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitFoundationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +128,8 @@
 				C00000000000000000000011 /* Organization */,
 				C00000000000000000000012 /* Library */,
 				C00000000000000000000013 /* Search */,
+				C00000000000000000000014 /* Habit */,
+				C00000000000000000000015 /* Growth */,
 				A00000000000000000000003 /* Assets.xcassets */,
 			);
 			path = PersonalGrowthOS;
@@ -132,6 +142,7 @@
 				A00000000000000000000012 /* EntryDomainTests.swift */,
 				A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */,
 				A00000000000000000000023 /* OrganizationSearchTests.swift */,
+				A00000000000000000000027 /* HabitFoundationTests.swift */,
 			);
 			path = PersonalGrowthOSTests;
 			sourceTree = "<group>";
@@ -167,6 +178,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000011 /* EntryDomain.swift */,
+				A00000000000000000000024 /* HabitDomain.swift */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -220,6 +232,22 @@
 				A00000000000000000000022 /* SearchView.swift */,
 			);
 			path = Search;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000014 /* Habit */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000025 /* HabitFoundation.swift */,
+			);
+			path = Habit;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000015 /* Growth */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000026 /* HabitViews.swift */,
+			);
+			path = Growth;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -365,6 +393,9 @@
 				B00000000000000000000017 /* OrganizationFoundation.swift in Sources */,
 				B00000000000000000000018 /* LibraryView.swift in Sources */,
 				B00000000000000000000019 /* SearchView.swift in Sources */,
+				B00000000000000000000021 /* HabitDomain.swift in Sources */,
+				B00000000000000000000022 /* HabitFoundation.swift in Sources */,
+				B00000000000000000000023 /* HabitViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,6 +407,7 @@
 				B00000000000000000000009 /* EntryDomainTests.swift in Sources */,
 				B00000000000000000000012 /* PersistenceMediaFoundationTests.swift in Sources */,
 				B00000000000000000000020 /* OrganizationSearchTests.swift in Sources */,
+				B00000000000000000000024 /* HabitFoundationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

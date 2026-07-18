@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S5 technically complete — S6 ready to begin |
-| Completed Macro Stages | S1, S2, S3, S4, S5 |
+| Current Macro Stage | S6 technically complete — S7 ready to begin |
+| Completed Macro Stages | S1, S2, S3, S4, S5, S6 |
 
 ## Program Baseline
 
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-Milestone A (S1–S4) is complete and passed. S5 has passed its technical gate; S6 is the next active Stage boundary.
+Milestone A (S1–S4) is complete and passed. S6 has passed its technical gate; S7 is the next active Stage boundary.
 
 ## Current Internal Task
 
-Implement S6 Habit and HabitLog according to the authorized implementation plan.
+Implement S7 Goal, Flag and Core Relationships according to the authorized implementation plan.
 
 ## Completed Macro Stages
 
@@ -37,20 +37,21 @@ Implement S6 Habit and HabitLog according to the authorized implementation plan.
 - S3 — First Runnable Capture → Timeline Slice. Production local composition, Today/Timeline navigation, Quick Capture, one-photo selection, draft-preserving errors, Timeline preview and relaunch persistence are implemented.
 - S4 — Rich Entry Media and Editing. Ordered 0–9 image capture, camera entry point, image validation/budgets, Entry detail/edit/archive/delete, thumbnail cache, media usage, Trash rollback and launch recovery are implemented.
 - S5 — Library, Inbox, Tags and Search. Inbox/All Entries/Archived views, optional normalized Tags, typed Entry-Tag Links, organization transitions, deletion cleanup and global local Entry/Review/Tag search are implemented.
+- S6 — Habit and HabitLog. Habit lifecycle, structured facts, one-tap and rich Entry-linked check-ins, Today/Growth/history UI, Timeline aggregation, Habit search and deletion invariants are implemented.
 
 ## Latest Verified Commit
 
-S5 Stage commit `feat: add library tags and search` (the commit containing this status update); parent `8927bc3562985b0131a70b1d73704d1d7ecb8124` records the Milestone A review pass.
+S6 Stage commit `feat: add habit tracking` (the commit containing this status update); parent `b77199a4afc334fb02ef01888c70748992931d3c` is the verified S5 Stage commit.
 
 ## Latest Build Result
 
-S5 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised the prior critical paths plus organize-without-required-Tag and Tag creation → Entry link → global search → linked Entry navigation.
+S6 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus Growth Habit creation → Today one-tap check-in → history and rich insight Entry creation → Habit search → Habit detail navigation.
 
 ## Latest Test Result
 
-S5 full validation: 55 Unit Tests and 8 UI Tests passed with 0 failures and 0 skips. New coverage includes V1→V2 migration, Tag normalization/uniqueness, Entry-Tag uniqueness, state transitions, Entry/Tag deletion cleanup and rollback, dangling-Link detection, Chinese literal substring search, normalized Latin search, Review/Tag search and the two S5 UI acceptance paths.
+S6 full validation: 67 Unit Tests and 10 UI Tests passed with 0 failures and 0 skips. New coverage includes V2→V3 migration, Habit lifecycle and rollback, non-active check-in rejection, structured HabitLog facts, atomic rich text/photo check-in, media rollback, Entry/Habit deletion preservation and cleanup, dangling relationship detection, dense-log aggregation and Habit search.
 
-The representative search fixture contains 5,000 Entries and 250 Tags. Three measured local searches completed in 0.427, 0.424 and 0.455 seconds on the same simulator, all below the explicit 1.0-second threshold. Peak physical memory was 75,952.128, 76,263.424 and 76,611.584 kB; measured physical-memory deltas were 331.776, 348.160 and 282.624 kB. The result supports retaining the simple local scan without FTS or a separate index.
+The representative search fixture contains 5,000 Entries and 250 Tags and now also queries Habit. Three final measured searches completed in 0.542, 0.475 and 0.484 seconds on the same simulator, all below the explicit 1.0-second threshold. Peak physical memory was 81,276.928, 81,715.200 and 85,086.208 kB. The result supports retaining the simple local scan without FTS or a separate index.
 
 Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMetric` for three isolated iterations on the same simulator. Each iteration copied/checksummed an exact 25 MiB valid PNG and downsampled a valid 80MP 1-bit PNG to at most 512px. Clock results were 0.210, 0.215 and 0.220 seconds; process physical peaks were 105,467.904, 105,467.904 and 105,504.768 kB; net physical-memory changes were 32.768, 0 and 36.864 kB. XCTest process-accounted logical writes were 0, 24.576 and 24.576 kB, while explicit file assertions verified a 25 MiB final Original and zero Staging bytes. The provisional 25 MiB / 80MP / 100 MiB reserve guardrails are retained: the accepted boundary completed without instability, local previews now downsample from URL, and the 100 MiB reserve remains greater than the 50 MiB staging-plus-final peak for a maximum-size original. Physical-device tuning remains Owner-deferred.
 
@@ -76,12 +77,17 @@ Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMet
 - Tag uniqueness and Latin search use compatibility, case and width normalization; Chinese search uses literal normalized substring matching.
 - Global Search scans Entry title/body, including Review Entries through the shared Entry path, plus Tags. The measured S5 fixture does not justify an FTS or separate index.
 - Entry and Tag permanent deletion clean related Links in the same save boundary; launch-time integrity validation rejects dangling Links.
+- SwiftData schema V3 adds canonical `Habit` and `HabitLog` models through an explicit V2→V3 lightweight migration.
+- Simple check-in creates only HabitLog. Rich check-in atomically saves Entry, HabitLog and Entry→Habit Link; media remains Entry-owned.
+- Entry deletion clears linked HabitLog references while retaining structured facts. Habit deletion removes its logs and Links while preserving Entries; both failure paths roll back.
+- Timeline aggregates only ordinary HabitLogs by day. Logs with a linked insight Entry are excluded so the Entry is not represented twice.
+- Shared-scheme Unit Tests are non-parallel because simulator-clone contention invalidated wall-clock search/resource measurements; UI Tests were already non-parallel.
 
 ## Known Limitations
 
-- Growth arrives in S6; the current shell exposes Today, Timeline and Library, with global Search and Quick Capture.
+- The current shell exposes Today, Timeline, Growth and Library, with global Search and Quick Capture. Growth contains Habits; Goals/Flags arrive in S7.
 - Camera and real Photos Picker/permission behavior are implemented but remain Owner-deferred physical-device validation.
-- Entry mutations currently use the shared main `ModelContext`; isolating unrelated unsaved UI changes from a rollback is retained as a non-blocking architectural follow-up because changing context ownership is not a low-risk Milestone A patch.
+- Entry, Tag and Habit mutations currently use the shared main `ModelContext`; isolating unrelated unsaved UI changes from a rollback is retained as a non-blocking architectural follow-up because changing context ownership is not yet a low-risk patch.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
 
 ## Active Blockers
@@ -90,7 +96,7 @@ None.
 
 ## Next Action
 
-Begin S6 with its Habit/HabitLog schema and domain slice.
+Begin S7 with its Goal/GoalKind/GoalLifecycleEvent schema and domain slice.
 
 ## Repository State
 
@@ -103,5 +109,6 @@ Begin S6 with its Habit/HabitLog schema and domain slice.
 - S4: committed and verified at `92207c0b2dff58bbf2b28870cd9ff6630badaec1`.
 - Milestone A: PASS. Review Manifest recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`; final reviewed implementation head `90d7ff533081e81e646bde4ad3faaadfc67984e9`.
 - S5: committed and verified by `feat: add library tags and search`.
-- S6: ready to begin after the S5 commit.
-- S7–S10: not started.
+- S6: committed and verified by `feat: add habit tracking`.
+- S7: ready to begin after the S6 commit.
+- S8–S10: not started.

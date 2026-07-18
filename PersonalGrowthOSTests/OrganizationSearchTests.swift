@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class OrganizationSearchTests: XCTestCase {
-    func testV1StoreMigratesToV2WithoutChangingEntryIdentity() throws {
+    func testV1StoreMigratesToCurrentSchemaWithoutChangingEntryIdentity() throws {
         let fixture = try OrganizationFixture()
         defer { fixture.remove() }
         let entryID = UUID()

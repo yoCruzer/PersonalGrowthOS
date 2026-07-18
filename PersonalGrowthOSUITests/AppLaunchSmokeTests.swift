@@ -175,4 +175,60 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["Learning"].tap()
         XCTAssertTrue(app.staticTexts["Searchable reflection"].waitForExistence(timeout: 5))
     }
+
+    func testTodayHabitCheckInAppearsInHistory() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        let name = app.textFields["new-habit-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Read")
+        app.buttons["add-habit"].tap()
+        app.keyboards.buttons["return"].tap()
+
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.buttons["Check in Read"].waitForExistence(timeout: 5))
+        app.buttons["Check in Read"].tap()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["habit-read"].tap()
+        XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
+    }
+
+    func testHabitInsightCreatesLinkedEntryAndHabitIsSearchable() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        let name = app.textFields["new-habit-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Reflect")
+        app.buttons["add-habit"].tap()
+        app.keyboards.buttons["return"].tap()
+        app.buttons["habit-reflect"].tap()
+        app.buttons["habit-check-in-insight"].tap()
+
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("Habit insight entry")
+        app.buttons["capture-save"].tap()
+        XCTAssertTrue(app.staticTexts["Linked Entry"].waitForExistence(timeout: 5))
+
+        app.buttons["global-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("reflect")
+        XCTAssertTrue(app.buttons["search-habit-reflect"].waitForExistence(timeout: 5))
+        app.buttons["search-habit-reflect"].tap()
+        XCTAssertTrue(app.navigationBars["Reflect"].waitForExistence(timeout: 5))
+    }
 }

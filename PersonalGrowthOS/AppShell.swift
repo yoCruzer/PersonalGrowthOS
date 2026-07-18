@@ -4,6 +4,7 @@ import SwiftUI
 enum AppTab: Hashable {
     case today
     case timeline
+    case growth
     case library
 }
 
@@ -20,7 +21,8 @@ struct AppShell: View {
             NavigationStack {
                 TodayView(
                     openCapture: { isCapturing = true },
-                    openStorage: { isShowingStorage = true }
+                    openStorage: { isShowingStorage = true },
+                    mediaStore: container.mediaStore
                 )
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
@@ -34,6 +36,15 @@ struct AppShell: View {
             }
             .tabItem { Label("Timeline", systemImage: "clock") }
             .tag(AppTab.timeline)
+
+            NavigationStack {
+                GrowthView(
+                    mediaStore: container.mediaStore,
+                    thumbnailStore: container.thumbnailStore
+                )
+            }
+            .tabItem { Label("Growth", systemImage: "leaf") }
+            .tag(AppTab.growth)
 
             NavigationStack {
                 LibraryView(
@@ -99,6 +110,18 @@ struct AppShell: View {
 private struct TodayView: View {
     let openCapture: () -> Void
     let openStorage: () -> Void
+    let mediaStore: MediaStore
+
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: [
+        SortDescriptor(\Habit.normalizedName, order: .forward),
+        SortDescriptor(\Habit.id, order: .forward)
+    ]) private var habits: [Habit]
+    @State private var errorMessage: String?
+
+    private var activeHabits: [Habit] {
+        habits.filter { $0.status == .active }
+    }
 
     var body: some View {
         List {
@@ -111,6 +134,27 @@ private struct TodayView: View {
             } footer: {
                 Text("Save a thought or photo now. Organize it later if you want.")
             }
+            if !activeHabits.isEmpty {
+                Section {
+                    ForEach(activeHabits) { habit in
+                        Button {
+                            checkIn(habit)
+                        } label: {
+                            HStack {
+                                Text(habit.name)
+                                Spacer()
+                                Label("Check In", systemImage: "checkmark.circle")
+                                    .labelStyle(.titleAndIcon)
+                            }
+                        }
+                        .accessibilityLabel("Check in \(habit.name)")
+                    }
+                } header: {
+                    Text("Today's Habits")
+                } footer: {
+                    Text("Missing a day is not failure. Check in when the habit happens.")
+                }
+            }
         }
         .navigationTitle("Today")
         .toolbar {
@@ -118,6 +162,25 @@ private struct TodayView: View {
                 Image(systemName: "gear")
             }
             .accessibilityLabel("Settings")
+        }
+        .alert("Could Not Check In", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "Please try again.")
+        }
+    }
+
+    private func checkIn(_ habit: Habit) {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).checkIn(habit)
+        } catch {
+            errorMessage = "The check-in was not saved."
         }
     }
 }
@@ -131,30 +194,63 @@ private struct TimelineView: View {
         SortDescriptor(\Entry.createdAt, order: .reverse),
         SortDescriptor(\Entry.id, order: .forward)
     ]) private var entries: [Entry]
+    @Query(sort: [
+        SortDescriptor(\HabitLog.occurredAt, order: .reverse),
+        SortDescriptor(\HabitLog.id, order: .forward)
+    ]) private var habitLogs: [HabitLog]
+    @Query private var habits: [Habit]
     @State private var showsArchived = false
 
     private var displayedEntries: [Entry] {
         entries.filter { showsArchived ? $0.status == .archived : $0.status != .archived }
     }
 
+    private var habitActivity: [HabitDaySummary] {
+        guard !showsArchived else { return [] }
+        return HabitTimelineAggregator.summarize(logs: habitLogs, habits: habits)
+    }
+
     var body: some View {
         Group {
-            if displayedEntries.isEmpty {
+            if displayedEntries.isEmpty && habitActivity.isEmpty {
                 ContentUnavailableView(
                     showsArchived ? "No Archived Entries" : "No Entries Yet",
                     systemImage: showsArchived ? "archivebox" : "clock",
                     description: Text(showsArchived ? "Archived entries will appear here." : "Your captures will appear here.")
                 )
             } else {
-                List(displayedEntries) { entry in
-                    NavigationLink {
-                        EntryDetailView(
-                            entry: entry,
-                            mediaStore: mediaStore,
-                            thumbnailStore: thumbnailStore
-                        )
-                    } label: {
-                        TimelineRow(entry: entry, thumbnailStore: thumbnailStore)
+                List {
+                    if !displayedEntries.isEmpty {
+                        Section("Entries") {
+                            ForEach(displayedEntries) { entry in
+                                NavigationLink {
+                                    EntryDetailView(
+                                        entry: entry,
+                                        mediaStore: mediaStore,
+                                        thumbnailStore: thumbnailStore
+                                    )
+                                } label: {
+                                    TimelineRow(entry: entry, thumbnailStore: thumbnailStore)
+                                }
+                            }
+                        }
+                    }
+                    if !habitActivity.isEmpty {
+                        Section("Habit Activity") {
+                            ForEach(habitActivity) { summary in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    LabeledContent(
+                                        summary.day.formatted(date: .abbreviated, time: .omitted),
+                                        value: "\(summary.logCount) check-in\(summary.logCount == 1 ? "" : "s")"
+                                    )
+                                    if !summary.habitNames.isEmpty {
+                                        Text(summary.habitNames.joined(separator: ", "))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
