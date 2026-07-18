@@ -2,31 +2,34 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Execution Governance Review |
-| Status | Awaiting Owner Review |
+| Current checkpoint | V1 Autonomous Execution Governance Re-review |
+| Status | Required corrections completed; awaiting Independent Governance Re-review |
 | Governance branch | `docs/v1-autonomous-governance` |
-| Governance preparation | Complete and ready for review |
+| Reviewed commit | `c418600d6ba98bd9eea8cd55cec23f15e46481b2` — PASS WITH REQUIRED CORRECTIONS |
+| Governance state | Owner Re-review Draft |
 | Product execution authorization | Not granted |
 
 ## Objective
 
-Review and, if appropriate, accept the governance-only changes that introduce the V1 Autonomous Execution Plan and align current governance documents with the verified repository state.
+Obtain Independent Governance Re-review of the cumulative governance diff after addressing the required Authority Chain, validation-boundary, state-machine and Governance Adoption corrections.
 
 Governance Preparation does not approve S1–S10 or any product implementation.
 
 ## Scope
 
-- Review `Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md`.
-- Review the Macro Stage Governance changes in `Docs/V1_IMPLEMENTATION_PLAN.md`.
-- Review the verified baseline and handoff recorded in `Docs/CURRENT_STATE.md`.
-- Review the initial `Docs/V1_AUTONOMOUS_STATUS.md`.
-- Request governance corrections if needed, without entering product implementation.
+- Review the cumulative `8c05a9fc...HEAD` governance diff.
+- Verify the correction-only `c418600d...HEAD` diff addresses all required findings.
+- Confirm the Development Contract authority chain is unchanged and correctly followed.
+- Confirm the three-state Governance / Program model cannot skip startup authorization.
+- Confirm S3 and S10 use an Autonomous Candidate Technical Gate while retaining Owner-deferred physical-device validation.
+- Confirm Governance Preparation, Finalization and Program Startup remain separate transitions.
 
 ## Constraints
 
 - Only review and correct governance changes on `docs/v1-autonomous-governance`.
 - Do not start S1–S10.
 - Do not create `feat/v1-autonomous-build`.
+- Do not merge or rebase into `main` and do not execute Governance Finalization.
 - Do not add or modify product code, SwiftData, persistence, media, navigation or feature UI.
 - Do not modify Swift files, tests or the Xcode project.
 - Preserve the Foundation Documents, `DEVELOPMENT_CONTRACT.md`, and `AGENTS.md`.
@@ -34,9 +37,9 @@ Governance Preparation does not approve S1–S10 or any product implementation.
 
 ## Success Criteria
 
-- Owner reviews and accepts the governance changes or requests governance-only corrections.
-- Accepted governance is incorporated into `main` through an Owner-controlled review and merge decision.
-- A separate explicit Autonomous Build startup authorization is issued before any S1–S10 work begins.
+- Independent Governance Reviewer evaluates the new cumulative diff and returns PASS or further governance-only corrections.
+- Required corrections are traceable in a separate commit after `c418600d...`.
+- Reviewer PASS is followed by a separate Owner Finalization decision; it does not authorize merge or Program startup in this task.
 
 ## Out of Scope
 
@@ -44,8 +47,8 @@ Governance Preparation does not approve S1–S10 or any product implementation.
 - Product domain models, SwiftData, persistence, media, navigation and feature UI.
 - Swift, test or Xcode project changes.
 - Creating the autonomous execution branch.
-- Merging to `main` or starting the V1 Autonomous Build Program before explicit Owner approval.
+- Governance Finalization, merging to `main`, or starting the V1 Autonomous Build Program.
 
 ## Stop Point
 
-Stop after the governance commit is reviewed and reported. Even after governance acceptance, wait for one explicit Owner authorization to start the V1 Autonomous Build Program.
+Stop after the correction commit is pushed and reported for Independent Governance Re-review. Reviewer PASS still requires Owner Finalization, and accepted governance still requires one separate explicit Owner startup authorization before the V1 Autonomous Build Program can begin.

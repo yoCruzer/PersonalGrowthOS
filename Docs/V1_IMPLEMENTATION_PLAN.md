@@ -4,10 +4,10 @@
 | --- | --- |
 | Project | Personal Growth OS |
 | Document | V1_IMPLEMENTATION_PLAN.md |
-| Version | v0.3 |
-| Status | Owner Accepted Implementation Planning Baseline |
+| Version | v0.4 |
+| Status | Owner Accepted Implementation Planning Baseline — Governance Revision Draft |
 | Foundation Baseline | Owner-accepted Foundation v0.2 implementation baseline at ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd |
-| Last Updated | 2026-07-16 |
+| Last Updated | 2026-07-18 |
 
 ---
 
@@ -28,7 +28,7 @@
 5. 复杂度必须由当前 V1 场景证明合理。
 6. 不为 AI、跨平台、iCloud 同步或未知未来需求提前建设架构。
 7. Export / Import 是 V1 的真实能力，但 V1 不建设复杂备份系统。
-8. 本计划被接受为实施规划基线不等于批准实施；在收到明确实施批准前，不开始 S0 或任何子 Stage。
+8. 本计划被接受为实施规划基线不等于批准实施；Autonomous Execution Program 只有在 `Docs/CURRENT_TASK.md` 明确记录 Owner startup authorization 后才能开始。
 
 ---
 
@@ -403,7 +403,7 @@ Provisional implementation guardrails:
 - Thumbnail target: at most 512 pixels on the longest edge.
 - Display decoding uses target-size downsampling and avoids holding multiple originals in memory.
 
-The 25 MiB and 80-megapixel values are provisional implementation guardrails, not Foundation decisions or long-term product contracts. Macro Stage S4 must measure real devices and may adjust these values without a schema migration. Silently recompressing the original remains prohibited.
+The 25 MiB and 80-megapixel values are provisional implementation guardrails, not Foundation decisions or long-term product contracts. Macro Stage S4 must exercise repeatable boundary fixtures and simulator-based technical checks and may adjust these values without a schema migration. Physical-device tuning remains Owner-deferred validation and does not block technical continuation. Silently recompressing the original remains prohibited.
 
 ## Capture Draft and Atomic Save
 
@@ -578,7 +578,7 @@ V1 does not include:
 - Pinyin expansion, synonym search or language segmentation.
 - Cloud search.
 
-Initial acceptance: typical personal data sets return useful local results without visible blocking on the oldest supported device. Macro Stage S5 must define and measure a concrete fixture size before accepting performance.
+Initial technical acceptance: a concrete, representative personal-data fixture returns useful local results without visible blocking in the available iPhone Simulator. Macro Stage S5 must define and measure that fixture before accepting performance. Oldest-supported physical-device confirmation remains Owner-deferred validation.
 
 ## Search Delivery Ownership
 
@@ -702,8 +702,8 @@ One image is included early because image-only Entry is a Foundation invariant a
 - Media: copy an image, persist a relative path, re-open and load it.
 - Failure: simulated database save failure removes only newly staged media and preserves the draft.
 - Failure: picker cancellation, permission denial, system interruption, insufficient disk and file-copy failure preserve text and publish no partial Entry.
-- UI smoke: launch → capture text → save → Timeline; relaunch → Entry remains.
-- Manual: repeat with one image-only Entry on a real device.
+- UI smoke on an available iPhone Simulator: launch → capture text → save → Timeline; relaunch → Entry remains.
+- Owner-deferred physical-device validation: repeat with one image-only Entry on a real iPhone and verify real Photos Picker / permission behavior.
 
 ## Exit Criteria
 
@@ -711,20 +711,37 @@ One image is included early because image-only Entry is a Foundation invariant a
 - Both appear in Timeline immediately after a successful save.
 - Both survive process termination and relaunch.
 - No permanent image reference uses a temporary URL or Photos asset identifier.
-- Automated tests for the slice pass.
+- The slice's Autonomous Candidate Technical Gate passes through automated tests, temporary data/media fixtures and an available iPhone Simulator.
 - No Habit, Goal, Review, Search or Export / Import scope has leaked into the slice.
-- Informal real-life Dogfooding begins; the formal 30-day V1 observation does not.
+- Owner-deferred physical-device validation is retained for final Owner Manual Validation and does not block S3 → S4.
 
 ---
 
 # Dogfooding and Formal V1 Observation
 
-- After Macro Stage S3 satisfies its technical Exit Criteria, informal real-life Dogfooding begins immediately.
-- Dogfooding during S3–S9 is continuous product feedback, not a formal V1 exit clock.
-- Findings may refine later approved sub Stages, fix Daily Driver blockers and tune implementation guardrails without expanding Foundation scope.
-- Completing a Dogfooding period does not approve the next sub Stage.
-- The Foundation-defined formal continuous 30-day V1 Exit Observation begins only after Macro Stage S10 reaches technical exit.
-- Days before S10 technical exit do not count toward the formal 30-day observation.
+- After Macro Stage S3 satisfies its Autonomous Candidate Technical Gate, Codex continues to S4 when the applicable Program authorization covers it; real-iPhone validation is not an S3 continuation gate.
+- Owner may separately perform informal real-life Dogfooding during S3–S9, but it is optional feedback and does not block autonomous engineering progress or count toward formal V1 exit.
+- Findings may refine later approved work, fix Daily Driver blockers and tune implementation guardrails without expanding Foundation scope.
+- Formal Dogfooding and the Foundation-defined continuous 30-day V1 Exit Observation are Owner-deferred physical-device validation after S10 technical completion and Owner acceptance of the Candidate.
+- Codex must not claim that real-life Dogfooding or any day of the formal 30-day observation has been completed.
+
+---
+
+# Validation Responsibility in an Autonomous Execution Program
+
+## Autonomous Candidate Technical Gate
+
+Codex must complete the applicable technical evidence for each Stage using an available iPhone Simulator, Unit Tests, UI Tests, in-memory or temporary on-disk SwiftData, temporary media directories, synthetic fixtures, database reopen/restart checks, isolated Export / Import, failure injection, data/media consistency tests, static checks, full diff review and a clean working tree.
+
+Passing this technical gate allows Codex to continue to the next authorized Stage. It does not require a Development Team, physical-device signing, Owner data or a real iPhone.
+
+## Owner-deferred Physical-device Validation
+
+Real-iPhone installation and launch, real Photos Picker and permission behavior, physical-device image experience, performance, memory, disk and interaction review, Owner real-life content, real-iPhone Daily Driver blocker review, formal Dogfooding and the continuous 30-day observation remain required Owner validation. They are retained for the final `Owner Manual Validation Checklist` and must not be claimed by Codex.
+
+These checks are gates before Owner acceptance of the V1 Candidate, formal Dogfooding or the 30-day Exit Observation. They do not block S3 → S4, S9 → S10 or V1 Candidate Technical Completion. Lack of a persisted Development Team or physical-device signing does not itself require an intermediate escalation.
+
+If concrete evidence shows that continuing without a physical-device result would endanger user-data integrity, depend on unresolved Apple platform behavior or commit the project to an irreversible design, the applicable mandatory escalation still applies.
 
 ---
 
@@ -749,6 +766,8 @@ Owner 可以通过明确的 Autonomous Execution Program 一次性批准多个 M
 2. Codex 完成一个内部 Stage 后可以自主进入下一个已授权 Stage，不再逐个等待 Owner 批准。
 3. 自主执行必须服从 Foundation Documents、`DEVELOPMENT_CONTRACT.md`、获批的 Autonomous Execution Program、明确升级条件和最终 Owner Review。
 4. 一次性执行授权不构成自动接受、自动合并到 `main`、自动发布或未来范围授权。
+
+Autonomous Execution Program 只有在 `Docs/CURRENT_TASK.md` 明确记录 Owner startup authorization 后生效。Governance Baseline 被接受或进入 `main` 本身不启动 Program。
 
 ---
 
@@ -885,13 +904,15 @@ Out of Scope:
 
 Validation:
 
-- Unit, persistence, media, UI smoke and real-device manual checks defined above.
+- Autonomous Candidate Technical Gate: Unit, persistence, media and iPhone Simulator UI smoke checks defined above.
 - Inject picker, permission, interruption, low-disk, copy and database-save failures.
+- Owner-deferred physical-device validation: real-iPhone image-only capture, Photos Picker, permissions and interaction checks are retained for the final Owner Manual Validation Checklist.
 
 Exit Criteria:
 
-- All First Runnable Vertical Slice exit criteria pass.
-- Informal Dogfooding starts after technical exit; no formal 30-day observation days are counted.
+- All automated and simulator-based First Runnable Vertical Slice technical Exit Criteria pass.
+- Missing Development Team, physical-device signing or real-iPhone evidence does not block S3 → S4.
+- Physical-device validation and formal Dogfooding remain Owner-deferred and are not claimed complete by Codex.
 
 ## Macro Stage S4 — Rich Entry Media and Editing
 
@@ -912,7 +933,7 @@ In Scope:
 - Thumbnail cache and downsampled display.
 - Edit text, occurredAt and image selection.
 - Archive and confirmed permanent delete with Trash recovery.
-- Resource-budget measurement on the oldest supported device.
+- Resource-budget validation with repeatable boundary fixtures and an available iPhone Simulator; oldest-supported physical-device measurement is Owner-deferred.
 - Multi-image save with all-or-nothing transaction semantics.
 - Capacity preflight for staging and final originals.
 - Basic media-storage usage visibility in Settings and actionable low-disk errors.
@@ -1147,7 +1168,8 @@ Validation:
 - Export completion/cancellation/failure temporary-file cleanup tests.
 - Assert ordinary logs contain no Entry body, image bytes or sensitive full paths.
 - Post-import/recovery dangling-Link validation.
-- Manual delete-App-data equivalent and restore on device.
+- Autonomous technical gate: delete the isolated simulator/test data set and restore it from the export package.
+- Owner-deferred physical-device validation: repeat the delete/restore rehearsal on a real iPhone.
 
 Exit Criteria:
 
@@ -1175,8 +1197,8 @@ In Scope:
 - End-to-end regression suite.
 - Full Search regression for Entry/Review Entry/Tag/Habit/Goal; S10 does not add a missing S6/S7 search implementation.
 - Performance, disk, accessibility and failure-message pass for core workflows.
-- Manual V1 acceptance checklist.
-- Start the Foundation-defined 30-day real-use observation only after technical exit.
+- Generate the final `Owner Manual Validation Checklist`.
+- Prepare, but do not start or claim, the Foundation-defined formal Dogfooding and 30-day real-use observation.
 
 Out of Scope:
 
@@ -1184,18 +1206,18 @@ Out of Scope:
 
 Validation:
 
-- All automated suites.
-- Full manual matrix in this document.
-- Export/delete/restore rehearsal.
-- Daily-use blocker review on a real iPhone.
+- Autonomous Candidate Technical Gate: all automated suites, iPhone Simulator critical paths, isolated Export / Import delete-and-restore rehearsal, failure injection, static checks and complete diff review.
+- Owner-deferred physical-device validation: the full manual matrix, real-iPhone install/launch, Photos Picker and permissions, physical-device performance/memory/disk/interaction, real-life content and Daily Driver blocker review.
 
 Exit Criteria:
 
 - Every Foundation V1 capability is present and no explicit out-of-scope capability was added.
 - Core workflows work offline.
-- No known issue blocks daily real use.
-- Product is ready to enter the 30-day V1 real-world usage criterion, not declared a Release Candidate.
-- The formal 30-day observation clock starts only after these technical Exit Criteria pass; S3–S9 Dogfooding days are excluded.
+- No known technical issue blocks the simulator- and fixture-validated core workflows.
+- The Autonomous Candidate Technical Gate passes and a V1 Candidate Technical Completion is produced.
+- Missing Development Team, physical-device signing or real-iPhone evidence does not block S9 → S10 or S10 technical completion.
+- Product is ready for Owner Manual Validation, not declared accepted or a Release Candidate.
+- Formal Dogfooding and the 30-day observation begin only after Owner completes the applicable physical-device review and explicitly decides to start them; Codex does not start or claim that clock.
 
 ---
 
@@ -1258,7 +1280,9 @@ At minimum:
 - No dangling Links after import or rollback.
 - Re-export after restore produces an equivalent logical data set.
 
-## Manual Validation
+## Owner-deferred Physical-device Validation
+
+Codex must generate these items as the final `Owner Manual Validation Checklist`. They are retained requirements for Owner acceptance and real-life validation, but they do not block autonomous Stage continuation or V1 Candidate Technical Completion.
 
 At minimum:
 
@@ -1275,6 +1299,9 @@ At minimum:
 - Confirm the unencrypted-package privacy warning before sharing.
 - Remove the active data set and restore it by import.
 - Repeat the first slice and restore flow on a real iPhone without network.
+- Verify real Photos Picker and permission behavior.
+- Review physical-device performance, memory, disk use and interaction quality.
+- Perform a real-iPhone Daily Driver blocker review before formal Dogfooding.
 
 ---
 
@@ -1308,7 +1335,9 @@ At minimum:
 - Each Macro Stage is a planning phase and must retain clear engineering, validation, commit and rollback boundaries during implementation.
 - By default, each executable sub Stage requires an explicit Owner-approved task with Goal, In Scope, Out of Scope, Validation and Exit Criteria.
 - An explicit Autonomous Execution Program may approve multiple Macro Stages at once; within that approved range, passing one internal Stage permits autonomous continuation without a new Owner approval.
+- The Autonomous Execution Program is active only when `Docs/CURRENT_TASK.md` explicitly records Owner startup authorization; governance acceptance alone does not activate it.
 - Autonomous continuation remains subject to the Foundation Documents, the Development Contract, the approved Program's escalation conditions and final Owner Review.
+- Autonomous Stage continuation is governed by the Autonomous Candidate Technical Gate; Owner-deferred physical-device validation is retained for final Owner review and does not block S3 → S4, S9 → S10 or Candidate Technical Completion.
 - A sub Stage may refine implementation details but may not expand V1 Scope.
 - A Foundation contradiction stops implementation and returns to Owner Review.
 - Schema changes after real data exists require a migration fixture and export/import compatibility review.
@@ -1338,11 +1367,11 @@ The following architecture choices are Owner Accepted for this implementation ba
 
 # Planning Status
 
-Implementation has not started.
+Macro Stage S0 is complete on `main`. Product implementation has not started.
 
-S0 and every product implementation sub Stage remain unapproved.
+S1–S10 remain unstarted and have no startup authorization.
 
-This document is approved for merge into main as the current V1 implementation planning baseline.
+The underlying product implementation planning baseline remains Owner accepted. The v0.4 governance and validation-boundary revision is an Owner Re-review Draft on `docs/v1-autonomous-governance` and has not entered `main`.
 
 Implementation remains unapproved.
 
@@ -1355,3 +1384,4 @@ Implementation remains unapproved.
 | v0.1 | 2026-07-16 | Initial implementation planning baseline draft. |
 | v0.2 | 2026-07-16 | Addressed all Owner Conditions and retained implementation approval gates. |
 | v0.3 | 2026-07-16 | Recorded final Owner acceptance of the implementation planning baseline; implementation stages remain unapproved. |
+| v0.4 | 2026-07-18 | Added the Autonomous Execution Program mechanism and Current Task startup-authorization requirement; distinguished the Autonomous Candidate Technical Gate from Owner-deferred physical-device validation without changing S1–S10 product scope. |

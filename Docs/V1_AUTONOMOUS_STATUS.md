@@ -2,8 +2,9 @@
 
 | Item | Verified value |
 | --- | --- |
-| Program status | Not started — awaiting explicit Owner approval |
-| Governance preparation | Complete on `docs/v1-autonomous-governance`; awaiting Owner Review |
+| Program status | Not started — no startup authorization |
+| Governance preparation | Required corrections completed on `docs/v1-autonomous-governance`; awaiting Independent Governance Re-review |
+| Governance state | Owner Re-review Draft |
 | Product stages | S1–S10 have not started |
 | Proposed execution branch | `feat/v1-autonomous-build` — not created |
 
@@ -17,15 +18,15 @@ Not established. At Program startup, Codex must verify the exact clean `main` Co
 
 ## Program Status
 
-The V1 Autonomous Build Program has not started. Governance Preparation is complete and is awaiting Owner Review. No S1–S10 product execution is authorized.
+The V1 Autonomous Build Program has not started. Governance corrections are complete and await Independent Governance Re-review. No S1–S10 product execution or startup authorization exists.
 
 ## Current Macro Stage
 
-None. The current boundary is Governance Review, not a product Macro Stage.
+None. The current boundary is Governance Re-review, not a product Macro Stage.
 
 ## Current Internal Task
 
-Review and, if needed, correct the governance-only changes without modifying product code.
+Independent Reviewer evaluates the corrected cumulative governance diff. No Governance Finalization or product work is allowed in this task.
 
 ## Completed Macro Stages
 
@@ -33,9 +34,9 @@ None within the V1 Autonomous Build Program. Macro Stage S0 was completed before
 
 ## Latest Verified Commit
 
-`8c05a9fc849b71ab21123db605762f6b23a91df9` — `build: establish composition and test harness`.
+`c418600d6ba98bd9eea8cd55cec23f15e46481b2` — `docs: adopt v1 autonomous execution governance`.
 
-The Governance Preparation commit must be verified from Git history at handoff; this file does not guess or self-reference its future Commit SHA.
+The latest verified executable baseline remains `8c05a9fc849b71ab21123db605762f6b23a91df9`. The correction Commit SHA is verified and reported in the final handoff; this file does not guess or self-reference it.
 
 ## Latest Build Result
 
@@ -48,10 +49,13 @@ Verified S0B baseline: the full shared scheme test run passed with 6 tests passe
 ## Important Decisions
 
 - Governance adoption does not authorize product implementation.
+- The Development Contract authority chain controls; this Autonomous Plan cannot reorder or override it.
+- Governance uses three states: Owner Review Draft → Owner Accepted Governance Baseline — Awaiting Startup Authorization → Program Authorized / Running.
 - The default governance mode remains independent sub-Stage Owner approval.
-- An explicit Autonomous Execution Program may approve multiple Macro Stages at once.
+- An explicit Autonomous Execution Program may approve multiple Macro Stages at once only after `Docs/CURRENT_TASK.md` records Owner startup authorization.
 - Under such approval, internal Stages remain engineering, validation, commit, status, failure-isolation and rollback boundaries without requiring repeated Owner approval.
 - Autonomous execution remains subordinate to the Foundation Documents, `DEVELOPMENT_CONTRACT.md`, mandatory escalation conditions and final Owner Review.
+- Simulator/automated Autonomous Candidate Technical Gates allow Stage continuation; physical-device and real-life checks are retained for the final Owner Manual Validation Checklist.
 - All future S1–S10 product implementation must occur on `feat/v1-autonomous-build`, created only after separate explicit Owner authorization.
 
 ## Known Limitations
@@ -63,18 +67,21 @@ Verified S0B baseline: the full shared scheme test run passed with 6 tests passe
 
 ## Active Blockers
 
-- Owner has not yet accepted the Governance Preparation changes.
+- Independent Governance Re-review has not yet returned PASS.
+- Owner has not made a Governance Finalization decision.
 - Owner has not issued explicit authorization to start the V1 Autonomous Build Program.
 
 ## Next Action
 
-Owner reviews the governance commit. If governance is accepted and incorporated into `main`, wait for a separate explicit instruction to create `feat/v1-autonomous-build` and begin S1–S10.
+Independent Governance Reviewer reviews the new cumulative diff. If it passes, stop for Owner Finalization. Even after accepted governance is incorporated into `main`, wait for a separate explicit startup instruction before creating `feat/v1-autonomous-build` or beginning S1–S10.
 
 ## Repository State
 
 - Governance Preparation branch: `docs/v1-autonomous-governance`.
-- Starting `main`, local `origin/main`, remote `main`, and starting `HEAD`: `8c05a9fc849b71ab21123db605762f6b23a91df9`.
+- Governance branch baseline, local `main`, local `origin/main`, and remote `main`: `8c05a9fc849b71ab21123db605762f6b23a91df9`.
+- Governance correction task starting `HEAD`: `c418600d6ba98bd9eea8cd55cec23f15e46481b2`.
 - S0A and S0B are complete; S0B is present on `main` in the starting baseline.
+- Initial Governance Preparation commit `c418600d6ba98bd9eea8cd55cec23f15e46481b2` is the reviewed correction baseline; the new correction Commit SHA is recorded in the final handoff, not guessed here.
 - S1–S10 are unstarted.
 - `feat/v1-autonomous-build` has not been created.
 - Governance Preparation is documentation-only. The final governance Commit SHA and clean working tree are verified and reported in the handoff rather than guessed in this file.
