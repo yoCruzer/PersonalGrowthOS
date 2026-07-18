@@ -24,7 +24,7 @@
 1. Done is better than perfect.
 2. Good enough to build.
 3. 先打通 Capture → Persist → Timeline 的最小闭环。
-4. S0–S10 是 Macro Stages；每个 Macro Stage 必须先拆成经 Owner 独立批准的可执行子 Stage。
+4. S0–S10 是 Macro Stages；默认模式下，每个 Macro Stage 必须先拆成经 Owner 独立批准的可执行子 Stage。Owner 也可以通过明确的 Autonomous Execution Program 一次性批准多个 Macro Stages。
 5. 复杂度必须由当前 V1 场景证明合理。
 6. 不为 AI、跨平台、iCloud 同步或未知未来需求提前建设架构。
 7. Export / Import 是 V1 的真实能力，但 V1 不建设复杂备份系统。
@@ -732,7 +732,7 @@ One image is included early because image-only Entry is a Foundation invariant a
 
 S0–S10 are Macro Stages / Implementation Phases. They describe sequencing and responsibility, not one-shot Codex implementation tasks.
 
-Before any Macro Stage begins:
+默认采用逐子 Stage 独立批准模式。在此模式下，任何 Macro Stage 开始前：
 
 1. Create one or more small executable sub Stage documents or task definitions.
 2. Give each sub Stage an independent Goal, In Scope, Out of Scope, Validation and Exit Criteria.
@@ -741,7 +741,14 @@ Before any Macro Stage begins:
 
 Macro Stages S4, S5, S6, S7 and S9 should normally be split into multiple small sub Stages because they cross several persistence, UI or failure boundaries.
 
-Passing one sub Stage never approves the next sub Stage or the rest of its Macro Stage.
+Passing one sub Stage never approves the next sub Stage or the rest of its Macro Stage unless the Owner has separately approved an Autonomous Execution Program that explicitly covers them.
+
+Owner 可以通过明确的 Autonomous Execution Program 一次性批准多个 Macro Stages。该批准必须定义授权范围、执行分支、验证要求、升级条件、Git 规则和最终 Owner Review 边界。在该 Program 的批准范围内：
+
+1. 内部 Stage 继续作为工程、验证、提交、状态记录、故障定位和回滚边界。
+2. Codex 完成一个内部 Stage 后可以自主进入下一个已授权 Stage，不再逐个等待 Owner 批准。
+3. 自主执行必须服从 Foundation Documents、`DEVELOPMENT_CONTRACT.md`、获批的 Autonomous Execution Program、明确升级条件和最终 Owner Review。
+4. 一次性执行授权不构成自动接受、自动合并到 `main`、自动发布或未来范围授权。
 
 ---
 
@@ -1298,9 +1305,10 @@ At minimum:
 
 # Macro Stage Gates and Change Control
 
-- Each Macro Stage is a planning phase and must be decomposed before implementation.
-- Each executable sub Stage requires an explicit Owner-approved task with Goal, In Scope, Out of Scope, Validation and Exit Criteria.
-- Passing one sub Stage does not implicitly approve the next sub Stage or its remaining Macro Stage.
+- Each Macro Stage is a planning phase and must retain clear engineering, validation, commit and rollback boundaries during implementation.
+- By default, each executable sub Stage requires an explicit Owner-approved task with Goal, In Scope, Out of Scope, Validation and Exit Criteria.
+- An explicit Autonomous Execution Program may approve multiple Macro Stages at once; within that approved range, passing one internal Stage permits autonomous continuation without a new Owner approval.
+- Autonomous continuation remains subject to the Foundation Documents, the Development Contract, the approved Program's escalation conditions and final Owner Review.
 - A sub Stage may refine implementation details but may not expand V1 Scope.
 - A Foundation contradiction stops implementation and returns to Owner Review.
 - Schema changes after real data exists require a migration fixture and export/import compatibility review.
