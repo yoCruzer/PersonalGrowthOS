@@ -254,6 +254,10 @@ private struct EntryEditorView: View {
     private func load(_ items: [PhotosPickerItem]) {
         isLoading = true
         errorMessage = nil
+        let existingAddedCount = imageItems.reduce(0) { count, item in
+            if case .added = item { return count + 1 }
+            return count
+        }
         Task {
             var newURLs: [URL] = []
             do {
@@ -272,17 +276,13 @@ private struct EntryEditorView: View {
                     newURLs.append(url)
                     sources.append(MediaSource(
                         url: url,
-                        originalFilename: "Selected Photo \(index + 1).\(fileExtension)",
+                        originalFilename: "Selected Photo \(existingAddedCount + index + 1).\(fileExtension)",
                         contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
                     ))
                 }
-                removeTemporaryFiles()
-                temporaryURLs = newURLs
-                imageItems.removeAll {
-                    if case .added = $0 { return true }
-                    return false
-                }
+                temporaryURLs.append(contentsOf: newURLs)
                 imageItems.append(contentsOf: sources.map { .added(UUID(), $0) })
+                selectedItems = []
                 isLoading = false
             } catch {
                 for url in newURLs { try? FileManager.default.removeItem(at: url) }
