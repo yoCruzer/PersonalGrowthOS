@@ -5,7 +5,7 @@
 | Project | Personal Growth OS |
 | Document | V1_IMPLEMENTATION_PLAN.md |
 | Version | v0.4 |
-| Status | Owner Accepted Implementation Planning Baseline — Governance Revision Draft |
+| Status | Owner Accepted Implementation Planning Baseline |
 | Foundation Baseline | Owner-accepted Foundation v0.2 implementation baseline at ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd |
 | Last Updated | 2026-07-18 |
 
@@ -1371,7 +1371,7 @@ Macro Stage S0 is complete on `main`. Product implementation has not started.
 
 S1–S10 remain unstarted and have no startup authorization.
 
-The underlying product implementation planning baseline remains Owner accepted. The v0.4 governance and validation-boundary revision is an Owner Re-review Draft on `docs/v1-autonomous-governance` and has not entered `main`.
+The v0.4 implementation planning baseline, including its accepted governance and validation-boundary revision, is present on `main`.
 
 Implementation remains unapproved.
 

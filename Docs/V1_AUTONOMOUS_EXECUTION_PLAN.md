@@ -4,8 +4,8 @@
 | ------------------------ | -------------------------------------------- |
 | Project                  | Personal Growth OS                           |
 | Document                 | `V1_AUTONOMOUS_EXECUTION_PLAN.md`            |
-| Version                  | v0.2                                         |
-| Status                   | Owner Re-review Draft                        |
+| Version                  | v0.3                                         |
+| Status                   | Owner Accepted Governance Baseline — Awaiting Startup Authorization |
 | Last Updated             | 2026-07-18                                   |
 | Program Type             | Isolated-branch autonomous V1 implementation |
 | Program Coverage Upon Explicit Startup Authorization | Macro Stage S1 through Macro Stage S10 |
@@ -1224,5 +1224,6 @@ Program 进入 State 3 后，具体 UI、局部类型设计、文件组织和普
 
 | Version | Date       | Change                                                                           |
 | ------- | ---------- | -------------------------------------------------------------------------------- |
+| v0.3    | 2026-07-18 | Owner accepted Governance Head `a750d00ac914cdab16fc9418a39771c9bfb27676`; baseline entered State 2 — Awaiting Startup Authorization. |
 | v0.2    | 2026-07-18 | Aligned the Contract authority chain and escalation rules; added the three-state governance model; separated autonomous technical gates from Owner-deferred physical-device validation; and corrected Governance Preparation, Finalization and Startup transitions. |
 | v0.1    | 2026-07-18 | Initial Owner Review Draft defining isolated-branch autonomous S1–S10 execution. |
