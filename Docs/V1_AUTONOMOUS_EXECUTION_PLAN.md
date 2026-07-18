@@ -245,10 +245,12 @@ Governance Finalization 结束后进入 State 2，而不是 State 3。
 
 1. 确认当前位于 clean `main`；
 2. 记录准确的 `main` Commit SHA；
-3. 确认 `Docs/CURRENT_TASK.md` 已记录 Autonomous Startup Authorization；
-4. 创建 `feat/v1-autonomous-build`；
-5. 更新 Current Task 和 Autonomous Status 为 Program Authorized / Running；
-6. 开始 S1。
+3. 从该 SHA 创建 `feat/v1-autonomous-build`；
+4. 在执行分支立即更新 `Docs/CURRENT_TASK.md` 和 `Docs/V1_AUTONOMOUS_STATUS.md`，记录 Owner startup authorization、Program baseline、当前执行分支和 Program Authorized / Running 状态；
+5. 创建独立的 startup state Commit，并确认该 Commit 成功且工作区 clean；
+6. 仅在 startup state Commit 完成后开始 S1。
+
+创建执行分支和提交 startup state 是 State 2 → State 3 的受控过渡动作，不是 S1 产品实现。不得要求在创建执行分支前修改 `main` 上的 `Docs/CURRENT_TASK.md`，也不得在 startup state Commit 之前进行任何 S1 产品修改。
 
 开始产品实现需要明确的 Owner 指令，例如：
 
@@ -258,7 +260,7 @@ Governance Finalization 结束后进入 State 2，而不是 State 3。
 并按照 Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md 自主执行 S1–S10。
 ```
 
-该指令被 `Docs/CURRENT_TASK.md` 记录且 Program Startup 检查全部通过后，S1–S10 才不再需要逐 Stage 获得新的 Owner 批准。
+该指令在执行分支的 startup state Commit 中被 `Docs/CURRENT_TASK.md` 和 `Docs/V1_AUTONOMOUS_STATUS.md` 记录，且 Program Startup 检查全部通过后，S1–S10 才不再需要逐 Stage 获得新的 Owner 批准。
 
 ---
 
@@ -270,16 +272,21 @@ Codex 在正式开始执行时必须：
 2. 确认当前位于 `main`；
 3. 确认工作区 clean；
 4. 确认本计划和相关治理更新已经存在于 `main`；
-5. 确认 `Docs/CURRENT_TASK.md` 明确记录 Owner 的 Autonomous Startup Authorization；
+5. 确认 Owner 已给出独立、明确的 Autonomous Startup Authorization；
 6. 记录当前 `main` 的准确 Commit SHA；
-7. 将该 SHA 写入 `Docs/V1_AUTONOMOUS_STATUS.md`；
-8. 从该 Commit 创建：
+7. 从该 Commit 创建：
 
 ```text
 feat/v1-autonomous-build
 ```
 
+8. 在该执行分支更新 `Docs/CURRENT_TASK.md` 和 `Docs/V1_AUTONOMOUS_STATUS.md`，记录授权、Program baseline、执行分支和 Program Authorized / Running 状态；
+9. 创建并验证 startup state Commit；
+10. 确认工作区 clean 后开始 S1。
+
 所有 S1–S10 产品实现必须发生在该隔离分支上。
+
+startup state Commit 必须早于任何 S1 产品修改。Program Startup 不要求、也不允许为了记录启动授权而先修改 `main` 上的 `Docs/CURRENT_TASK.md`。
 
 不得直接在 `main` 上实现产品功能。
 

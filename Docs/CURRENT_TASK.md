@@ -51,4 +51,4 @@ Governance Preparation does not approve S1–S10 or any product implementation.
 
 ## Stop Point
 
-Stop after the correction commit is pushed and reported for Independent Governance Re-review. Reviewer PASS still requires Owner Finalization, and accepted governance still requires one separate explicit Owner startup authorization before the V1 Autonomous Build Program can begin.
+Stop after Independent Governance Re-review is completed and reported. If the result is PASS, continue to wait for the Owner's Governance Finalization decision. This task must not execute Finalization, merge to `main`, create the execution branch, or start the V1 Autonomous Build Program.
