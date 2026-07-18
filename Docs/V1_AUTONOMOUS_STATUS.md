@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S1 — Entry Domain Foundation |
-| Product modification at startup | None; S1 product code has not been modified before the startup state Commit |
+| Current Macro Stage | S2 — Local Persistence and Media Foundations |
+| Completed Macro Stages | S1 |
 
 ## Program Baseline
 
@@ -24,27 +24,27 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-S1 — Entry Domain Foundation.
+S2 — Local Persistence and Media Foundations.
 
 ## Current Internal Task
 
-Complete the independent startup state Commit, verify the working tree is clean, then implement and test Entry enums, value rules, time semantics, status transitions, review-period validation and text/image content validation.
+Define the initial VersionedSchema and canonical persisted Entry/ImageMetadata models, add focused repository and ModelContainer configuration seams, and implement staged one-image storage with checksum, relative paths and failure cleanup.
 
 ## Completed Macro Stages
 
-None within the V1 Autonomous Build Program. Macro Stage S0 was completed before this Program and is included in the baseline.
+S1 — Entry Domain Foundation. Entry identity, kinds, statuses, timestamps, review period and content/image-count rules are implemented without a duplicate field-complete Entry entity.
 
 ## Latest Verified Commit
 
-`b82d6e656592663f679440e318d00bef06f50556` — verified Program baseline. The startup state Commit is the next commit.
+`0481cff3675af826996eb5f138615368b975014e` — verified Program Startup commit. S1 validation is complete; its Stage commit contains this status update.
 
 ## Latest Build Result
 
-Verified S0B baseline: Debug build succeeded with Xcode 26.5 (build 17F42) on an iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). Program Startup is documentation-only and does not claim a new build.
+S1: the shared App scheme built successfully as part of the focused Unit Test run on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`).
 
 ## Latest Test Result
 
-Verified S0B baseline: the shared scheme passed 6 tests with 0 failures and 0 skips (5 Unit Tests and 1 UI Test). Program Startup is documentation-only and does not claim a new test run.
+S1: 15 Unit Tests passed with 0 failures and 0 skips, including 10 focused Entry domain tests and the 5 existing composition tests.
 
 ## Important Decisions
 
@@ -53,11 +53,12 @@ Verified S0B baseline: the shared scheme passed 6 tests with 0 failures and 0 sk
 - All S1–S10 product work occurs only on `feat/v1-autonomous-build`.
 - S1 begins only after the startup state Commit is complete and the working tree is clean.
 - Simulator and automated technical gates control autonomous continuation; physical-device and real-life validation remain Owner-deferred.
+- S1 uses small domain value types and rules only; the single canonical persisted Entry model remains owned by S2.
 
 ## Known Limitations
 
-- The App still displays the S0 static placeholder and has no product functionality.
-- No domain model, SwiftData schema, persistence, media handling, product navigation, feature UI, search or import/export exists yet.
+- The App still displays the S0 static placeholder and has no runnable product flow.
+- SwiftData schema, persistence, media handling, product navigation, feature UI, search and import/export do not exist yet.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
 
 ## Active Blockers
@@ -66,12 +67,12 @@ None.
 
 ## Next Action
 
-Create and verify `docs: start v1 autonomous build program`, then begin S1 without modifying Foundation Documents or the Development Contract.
+Create the coherent S1 Stage commit, verify the working tree is clean, then begin S2.
 
 ## Repository State
 
 - Program baseline: `b82d6e656592663f679440e318d00bef06f50556`.
 - Current branch: `feat/v1-autonomous-build`.
 - Program state: State 3 — Program Authorized / Running.
-- S1–S10 product changes: not started at Program Startup.
-- Startup transition changes: only `Docs/CURRENT_TASK.md` and this status file.
+- S1: validation complete and ready for its Stage commit.
+- S2–S10: not started.

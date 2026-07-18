@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — S1 Entry Domain Foundation |
+| Current checkpoint | V1 Autonomous Build Program — S2 Local Persistence and Media Foundations |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S1 — Entry Domain Foundation |
+| Current Macro Stage | S2 — Local Persistence and Media Foundations |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is S1: define the minimum stable Entry concepts, value rules, validation and business behavior without creating a second field-complete Entry model.
+The immediate objective is S2: establish the initial versioned SwiftData schema, the canonical persisted Entry and ImageMetadata models, focused repository seams and safe one-image media storage.
 
 ## Scope
 
@@ -42,6 +42,6 @@ The immediate objective is S1: define the minimum stable Entry concepts, value r
 
 ## Current Boundary
 
-Program Startup is complete once the independent startup state Commit is created and the working tree is clean. No S1 product code has been modified before that Commit.
+Program Startup and S1 are complete. S1 introduced only Entry identity, enums, value rules, validation and business behavior plus focused Unit Tests; it did not create a field-complete Entry entity.
 
-After the startup Commit, begin S1 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
+Proceed with S2 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
