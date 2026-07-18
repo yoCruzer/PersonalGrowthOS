@@ -2,46 +2,46 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Awaiting Startup Authorization |
-| Status | State 2 — Owner Accepted Governance Baseline — Awaiting Startup Authorization |
-| Accepted governance head | `a750d00ac914cdab16fc9418a39771c9bfb27676` |
-| Governance state | Owner Accepted Governance Baseline — Awaiting Startup Authorization |
-| Product execution authorization | Not granted |
+| Current checkpoint | V1 Autonomous Build Program — S1 Entry Domain Foundation |
+| Status | State 3 — Program Authorized / Running |
+| Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
+| Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
+| Execution branch | `feat/v1-autonomous-build` |
+| Authorized coverage | Macro Stages S1–S10 |
+| Current Macro Stage | S1 — Entry Domain Foundation |
 
 ## Objective
 
-Wait for an independent, explicit Owner startup instruction for the V1 Autonomous Build Program.
+Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-Governance acceptance and Finalization do not approve S1–S10 product execution.
+The immediate objective is S1: define the minimum stable Entry concepts, value rules, validation and business behavior without creating a second field-complete Entry model.
 
 ## Scope
 
-- Preserve State 2 while waiting for Owner direction.
-- Accept and verify a future startup instruction only as a separate task.
-- Keep the accepted governance and implementation planning baselines unchanged.
+- Execute S1–S10 according to `Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md` and `Docs/V1_IMPLEMENTATION_PLAN.md`.
+- Keep every Macro Stage as an engineering, validation, status and Commit boundary.
+- Maintain `Docs/V1_AUTONOMOUS_STATUS.md` throughout execution.
+- Use the Autonomous Candidate Technical Gate for Stage continuation.
+- Stop only at successful Candidate completion or a Mandatory Escalation condition.
 
 ## Constraints
 
-- Do not start S1–S10.
-- Do not create `feat/v1-autonomous-build`.
-- Do not add or modify product code, SwiftData, persistence, media, navigation or feature UI.
-- Do not modify Swift files, tests or the Xcode project.
-- Preserve the Foundation Documents, `DEVELOPMENT_CONTRACT.md`, and `AGENTS.md`.
-- Do not treat accepted governance or this Finalization as startup authorization.
+- All product implementation must remain on `feat/v1-autonomous-build`.
+- Preserve the Foundation Documents and `DEVELOPMENT_CONTRACT.md`.
+- Do not add V2 capabilities, third-party dependencies, external services, unapproved Capabilities or Entitlements.
+- Do not merge into or modify remote `main`, force push, publish, release or tag.
+- Do not use Owner data for destructive testing.
+- Do not claim Owner-deferred physical-device validation or the formal 30-day observation is complete.
 
 ## Success Criteria
 
-- Repository remains in State 2 with no product execution branch and no S1–S10 work.
-- The next state transition occurs only after a separate Owner startup instruction is received and recorded.
+- S1–S10 meet their technical Exit Criteria with coherent Stage commits.
+- Milestone A, B and C gates and independent internal reviews are complete.
+- Final build, automated tests, simulator critical paths and isolated Export / Import recovery pass.
+- Final current-context documents accurately describe a clean V1 Candidate at the Owner Review boundary.
 
-## Out of Scope
+## Current Boundary
 
-- S1–S10 implementation.
-- Product domain models, SwiftData, persistence, media, navigation and feature UI.
-- Swift, test or Xcode project changes.
-- Creating the autonomous execution branch.
-- Starting the V1 Autonomous Build Program or entering State 3.
+Program Startup is complete once the independent startup state Commit is created and the working tree is clean. No S1 product code has been modified before that Commit.
 
-## Stop Point
-
-Stop in State 2 and wait for an independent Owner Startup Authorization. Do not create the execution branch or begin S1 until that separate authorization is recorded and the Program Startup checks pass.
+After the startup Commit, begin S1 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
