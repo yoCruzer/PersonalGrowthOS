@@ -7,7 +7,7 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S4 complete — Milestone A follow-up fixes validated; final fixed-commit re-review pending |
+| Current Macro Stage | S5 ready to begin — Milestone A passed |
 | Completed Macro Stages | S1, S2, S3, S4 |
 
 ## Program Baseline
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-S4 is technically complete. The first fixed-commit re-review found two resource-safety/evidence blockers; both and the directly related Medium findings are resolved in a validated follow-up candidate. Final fixed-commit re-review remains before S5.
+Milestone A (S1–S4) is complete and passed. S5 is the active Stage boundary.
 
 ## Current Internal Task
 
-Commit the validated Milestone A follow-up, run final independent read-only re-review against that fixed commit, record the Milestone A Review Manifest and enter S5.
+Implement S5 Library, Inbox, Tags and Search according to the authorized implementation plan.
 
 ## Completed Macro Stages
 
@@ -39,7 +39,7 @@ Commit the validated Milestone A follow-up, run final independent read-only re-r
 
 ## Latest Verified Commit
 
-`bc38f31a40c1e544ec2e2d9b8a6e4faaab45c097` — first Milestone A review-fix commit. The resource-safety follow-up is validated and awaiting its fixed commit.
+`90d7ff533081e81e646bde4ad3faaadfc67984e9` — final reviewed Milestone A implementation head.
 
 ## Latest Build Result
 
@@ -82,7 +82,7 @@ None.
 
 ## Next Action
 
-Create the Milestone A follow-up commit, run final fixed-commit independent re-review, then record the manifest.
+Begin S5 with its schema/domain slice, then proceed through repository and UI slices to the Stage gate.
 
 ## Repository State
 
@@ -93,6 +93,5 @@ Create the Milestone A follow-up commit, run final fixed-commit independent re-r
 - S2: committed and verified.
 - S3: committed and verified.
 - S4: committed and verified at `92207c0b2dff58bbf2b28870cd9ff6630badaec1`.
-- Milestone A first review fix: committed at `bc38f31a40c1e544ec2e2d9b8a6e4faaab45c097`.
-- Milestone A follow-up: 45 Unit Tests, 6 UI Tests and three resource-metric iterations passed; fixed commit and final re-review pending.
+- Milestone A: PASS. Review Manifest recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`; final reviewed implementation head `90d7ff533081e81e646bde4ad3faaadfc67984e9`.
 - S5–S10: not started.
