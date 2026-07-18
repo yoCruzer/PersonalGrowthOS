@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B00000000000000000000001 /* PersonalGrowthOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* PersonalGrowthOSApp.swift */; };
-		B00000000000000000000002 /* RootPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* RootPlaceholderView.swift */; };
+		B00000000000000000000002 /* AppShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* AppShell.swift */; };
 		B00000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000003 /* Assets.xcassets */; };
 		B00000000000000000000004 /* AppCompositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000004 /* AppCompositionTests.swift */; };
 		B00000000000000000000005 /* AppLaunchSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000005 /* AppLaunchSmokeTests.swift */; };
@@ -19,6 +19,7 @@
 		B00000000000000000000010 /* PersistenceFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* PersistenceFoundation.swift */; };
 		B00000000000000000000011 /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000014 /* MediaStore.swift */; };
 		B00000000000000000000012 /* PersistenceMediaFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */; };
+		B00000000000000000000013 /* QuickCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000016 /* QuickCaptureView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,7 +41,7 @@
 
 /* Begin PBXFileReference section */
 		A00000000000000000000001 /* PersonalGrowthOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalGrowthOSApp.swift; sourceTree = "<group>"; };
-		A00000000000000000000002 /* RootPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootPlaceholderView.swift; sourceTree = "<group>"; };
+		A00000000000000000000002 /* AppShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShell.swift; sourceTree = "<group>"; };
 		A00000000000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00000000000000000000004 /* AppCompositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCompositionTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000005 /* AppLaunchSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchSmokeTests.swift; sourceTree = "<group>"; };
@@ -54,6 +55,7 @@
 		A00000000000000000000013 /* PersistenceFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceFoundation.swift; sourceTree = "<group>"; };
 		A00000000000000000000014 /* MediaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceMediaFoundationTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000016 /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,11 +97,12 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000001 /* PersonalGrowthOSApp.swift */,
-				A00000000000000000000002 /* RootPlaceholderView.swift */,
+				A00000000000000000000002 /* AppShell.swift */,
 				C00000000000000000000006 /* App */,
 				C00000000000000000000007 /* Domain */,
 				C00000000000000000000008 /* Persistence */,
 				C00000000000000000000009 /* Media */,
+				C00000000000000000000010 /* Capture */,
 				A00000000000000000000003 /* Assets.xcassets */,
 			);
 			path = PersonalGrowthOS;
@@ -164,6 +167,14 @@
 				A00000000000000000000014 /* MediaStore.swift */,
 			);
 			path = Media;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000010 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000016 /* QuickCaptureView.swift */,
+			);
+			path = Capture;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -296,12 +307,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				B00000000000000000000001 /* PersonalGrowthOSApp.swift in Sources */,
-				B00000000000000000000002 /* RootPlaceholderView.swift in Sources */,
+				B00000000000000000000002 /* AppShell.swift in Sources */,
 				B00000000000000000000006 /* AppConfiguration.swift in Sources */,
 				B00000000000000000000007 /* AppContainer.swift in Sources */,
 				B00000000000000000000008 /* EntryDomain.swift in Sources */,
 				B00000000000000000000010 /* PersistenceFoundation.swift in Sources */,
 				B00000000000000000000011 /* MediaStore.swift in Sources */,
+				B00000000000000000000013 /* QuickCaptureView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -7,9 +7,11 @@ struct AppConfiguration: Equatable {
     }
 
     static let uiTestingLaunchArgument = "-PGOSUITesting"
+    static let resetDataLaunchArgument = "-PGOSResetData"
     static let uiTestingEnvironmentKey = "PGOS_UI_TESTING"
 
     let launchMode: LaunchMode
+    let resetDataOnLaunch: Bool
 
     static func current(processInfo: ProcessInfo = .processInfo) -> AppConfiguration {
         resolve(arguments: processInfo.arguments, environment: processInfo.environment)
@@ -22,6 +24,9 @@ struct AppConfiguration: Equatable {
         let isUITesting = arguments.contains(uiTestingLaunchArgument)
             || environment[uiTestingEnvironmentKey] == "1"
 
-        return AppConfiguration(launchMode: isUITesting ? .uiTesting : .standard)
+        return AppConfiguration(
+            launchMode: isUITesting ? .uiTesting : .standard,
+            resetDataOnLaunch: isUITesting && arguments.contains(resetDataLaunchArgument)
+        )
     }
 }

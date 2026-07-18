@@ -149,6 +149,33 @@ final class PersistenceMediaFoundationTests: XCTestCase {
         XCTAssertEqual(try fixture.originalFiles(), [])
     }
 
+    func testInsufficientCapacityPublishesNoEntryOrFile() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        try Data("image".utf8).write(to: fixture.sourceURL)
+        let persistence = RecordingEntryPersistence()
+        let service = EntryCreationService(
+            persistence: persistence,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { 1 })
+        )
+
+        XCTAssertThrowsError(try service.create(EntryCreationDraft(
+            body: "Keep this draft",
+            image: MediaSource(
+                url: fixture.sourceURL,
+                originalFilename: "memory.jpg",
+                contentType: "image/jpeg"
+            )
+        ))) {
+            XCTAssertEqual(
+                $0 as? MediaStoreError,
+                .insufficientCapacity(requiredBytes: 10, availableBytes: 1)
+            )
+        }
+        XCTAssertNil(persistence.insertedEntry)
+        XCTAssertEqual(try fixture.originalFiles(), [])
+    }
+
     private func saveFixtureEntry(id: UUID, storeURL: URL) throws {
         let container = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
         let repository = EntryRepository(context: container.mainContext)

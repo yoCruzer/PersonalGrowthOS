@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S3 — First Runnable Capture → Timeline Slice |
-| Completed Macro Stages | S1, S2 |
+| Current Macro Stage | S4 — Rich Entry Media and Editing |
+| Completed Macro Stages | S1, S2, S3 |
 
 ## Program Baseline
 
@@ -24,28 +24,29 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-S3 — First Runnable Capture → Timeline Slice.
+S4 — Rich Entry Media and Editing.
 
 ## Current Internal Task
 
-Compose the production on-disk container and media root, replace the placeholder with Today/Timeline navigation and a Quick Capture sheet, preserve capture drafts across recoverable image-selection failures, and verify text capture plus relaunch in UI tests.
+Extend capture to ordered multi-image drafts, add Entry detail/edit/archive/permanent-delete paths, implement thumbnail caching and Trash-based media deletion recovery, expose media usage, and validate all-or-nothing failure paths.
 
 ## Completed Macro Stages
 
 - S1 — Entry Domain Foundation. Entry identity, kinds, statuses, timestamps, review period and content/image-count rules are implemented without a duplicate field-complete Entry entity.
 - S2 — Local Persistence and Media Foundations. Explicit V1 SwiftData schema, canonical Entry/ImageMetadata models, in-memory/on-disk containers, Entry repository, staged image copy and save-failure cleanup are implemented.
+- S3 — First Runnable Capture → Timeline Slice. Production local composition, Today/Timeline navigation, Quick Capture, one-photo selection, draft-preserving errors, Timeline preview and relaunch persistence are implemented.
 
 ## Latest Verified Commit
 
-`5b00f49f36e9022f37e4876c03f125d56707e5bb` — verified S1 Stage commit. S2 validation is complete; its Stage commit contains this status update.
+`bfa3388d5d2c286c167b942c800c41d7c20978fd` — verified S2 Stage commit. S3 validation is complete; its Stage commit contains this status update.
 
 ## Latest Build Result
 
-S2: the shared App scheme built successfully as part of the full Unit Test run on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`).
+S3: the shared App scheme built successfully; the installed App launched on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`) and was visually checked on Today with working Today/Timeline navigation and Quick Capture access.
 
 ## Latest Test Result
 
-S2: 22 Unit Tests passed with 0 failures and 0 skips, including 7 focused persistence/media tests. Coverage includes in-memory save/update/fetch, on-disk reopen, checksum/relative-path copy, image-backed Entry persistence, missing-source cleanup, injected database-save cleanup and UUID collision preservation.
+S3: 24 Unit Tests passed with 0 failures and 0 skips. Two UI Tests passed with 0 failures and 0 skips, including reset isolated data → capture text → Timeline → terminate → relaunch → persisted Timeline verification.
 
 ## Important Decisions
 
@@ -57,11 +58,13 @@ S2: 22 Unit Tests passed with 0 failures and 0 skips, including 7 focused persis
 - S1 uses small domain value types and rules only; the single canonical persisted Entry model remains owned by S2.
 - SwiftData uses `PersonalGrowthSchemaV1` and an explicit migration plan from the first persisted build; CloudKit is disabled.
 - Original image bytes live only in the private media tree. SwiftData stores metadata and relative paths; the media store rejects an existing UUID destination rather than risking deletion.
+- Standard and UI-test data roots are separated. Destructive UI reset is honored only in explicit UI-testing launch mode.
+- S3 uses system Photos Picker and generic private-copy metadata; no Photos asset identifier or temporary URL is persisted.
 
 ## Known Limitations
 
-- The App still displays the S0 static placeholder and has no runnable product flow.
-- Product navigation, feature UI, multi-image editing, search and import/export do not exist yet.
+- S3 supports only Today and Timeline; the complete four-area shell is deferred to later authorized Stages.
+- Capture currently supports one selected photo and no camera; multi-image capture, editing, archive and permanent delete are S4 work.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
 
 ## Active Blockers
@@ -70,7 +73,7 @@ None.
 
 ## Next Action
 
-Create the coherent S2 Stage commit, verify the working tree is clean, then begin S3.
+Create the coherent S3 Stage commit, verify the working tree is clean, then begin S4.
 
 ## Repository State
 
@@ -78,5 +81,6 @@ Create the coherent S2 Stage commit, verify the working tree is clean, then begi
 - Current branch: `feat/v1-autonomous-build`.
 - Program state: State 3 — Program Authorized / Running.
 - S1: committed and verified.
-- S2: validation complete and ready for its Stage commit.
-- S3–S10: not started.
+- S2: committed and verified.
+- S3: validation complete and ready for its Stage commit.
+- S4–S10: not started.

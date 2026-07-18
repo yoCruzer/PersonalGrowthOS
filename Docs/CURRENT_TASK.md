@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — S3 First Runnable Capture → Timeline Slice |
+| Current checkpoint | V1 Autonomous Build Program — S4 Rich Entry Media and Editing |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S3 — First Runnable Capture → Timeline Slice |
+| Current Macro Stage | S4 — Rich Entry Media and Editing |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is S3: replace the placeholder with the first restart-safe Today → Quick Capture → Timeline slice for text-only and one-image Entries.
+The immediate objective is S4: complete Rich Entry creation, detail/editing, archive/permanent deletion and multi-image media lifecycle while preserving originals and all-or-nothing failure behavior.
 
 ## Scope
 
@@ -42,6 +42,6 @@ The immediate objective is S3: replace the placeholder with the first restart-sa
 
 ## Current Boundary
 
-Program Startup, S1 and S2 are complete. S2 introduced the single canonical SwiftData Entry model, explicit V1 schema/container, focused repository seam and safe one-image private media storage with failure cleanup.
+Program Startup and S1–S3 are complete. S3 replaced the placeholder with a restart-safe Today → Quick Capture → Timeline slice, including text capture, one selected photo, draft-preserving failure behavior and an isolated UI-test store.
 
-Proceed with S3 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
+Proceed with S4 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.

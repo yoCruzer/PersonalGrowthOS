@@ -20,6 +20,7 @@ enum MediaStoreError: Error, Equatable {
     case originalTooLarge(maximumBytes: Int64)
     case invalidRelativePath
     case destinationAlreadyExists
+    case insufficientCapacity(requiredBytes: Int64, availableBytes: Int64)
 }
 
 final class MediaStore {
@@ -27,10 +28,20 @@ final class MediaStore {
 
     let rootURL: URL
     private let fileManager: FileManager
+    private let availableCapacity: () throws -> Int64
 
-    init(rootURL: URL, fileManager: FileManager = .default) {
+    init(
+        rootURL: URL,
+        fileManager: FileManager = .default,
+        availableCapacity: (() throws -> Int64)? = nil
+    ) {
         self.rootURL = rootURL.standardizedFileURL
         self.fileManager = fileManager
+        self.availableCapacity = availableCapacity ?? {
+            let values = try rootURL.deletingLastPathComponent()
+                .resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+            return values.volumeAvailableCapacityForImportantUsage ?? 0
+        }
     }
 
     func storeOriginal(_ source: MediaSource, id: UUID = UUID()) throws -> StoredMediaFile {
@@ -42,6 +53,14 @@ final class MediaStore {
         let byteCount = (attributes[.size] as? NSNumber)?.int64Value ?? 0
         guard byteCount <= Self.maximumOriginalByteCount else {
             throw MediaStoreError.originalTooLarge(maximumBytes: Self.maximumOriginalByteCount)
+        }
+        let requiredCapacity = byteCount * 2
+        let capacity = try availableCapacity()
+        guard capacity >= requiredCapacity else {
+            throw MediaStoreError.insufficientCapacity(
+                requiredBytes: requiredCapacity,
+                availableBytes: capacity
+            )
         }
 
         let fileExtension = try validatedExtension(for: source.contentType)
