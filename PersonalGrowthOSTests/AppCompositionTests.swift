@@ -84,13 +84,13 @@ final class AppCompositionTests: XCTestCase {
         )
         let draft = CaptureDraftState()
         draft.body = "Keep my words"
-        draft.finishImageLoad(with: .success(source))
+        draft.finishImageLoad(with: .success([source]))
 
         draft.beginImageLoad()
         draft.finishImageLoad(with: .failure(InjectedFailure()))
 
         XCTAssertEqual(draft.body, "Keep my words")
-        XCTAssertEqual(draft.imageSource?.url, source.url)
+        XCTAssertEqual(draft.imageSources.first?.url, source.url)
         XCTAssertNotNil(draft.errorMessage)
     }
 }

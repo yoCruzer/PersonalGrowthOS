@@ -6,6 +6,22 @@ struct AppContainer {
     let configuration: AppConfiguration
     let modelContainer: ModelContainer
     let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    init(
+        configuration: AppConfiguration,
+        modelContainer: ModelContainer,
+        mediaStore: MediaStore,
+        thumbnailStore: ThumbnailStore? = nil
+    ) {
+        self.configuration = configuration
+        self.modelContainer = modelContainer
+        self.mediaStore = mediaStore
+        self.thumbnailStore = thumbnailStore ?? ThumbnailStore(
+            rootURL: mediaStore.rootURL.appendingPathComponent("ThumbnailCache", isDirectory: true),
+            mediaStore: mediaStore
+        )
+    }
 
     static func make(
         configuration: AppConfiguration,
@@ -34,10 +50,26 @@ struct AppContainer {
             at: storeDirectory.appendingPathComponent("PersonalGrowthOS.sqlite")
         )
 
+        let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
+        let imageMetadata = try modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>())
+        try mediaStore.recoverInterruptedTrash(
+            referencedOriginalPaths: Set(imageMetadata.map(\.relativePath))
+        )
+        let caches = try fileManager.url(
+            for: .cachesDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
         return AppContainer(
             configuration: configuration,
             modelContainer: modelContainer,
-            mediaStore: MediaStore(rootURL: rootURL, fileManager: fileManager)
+            mediaStore: mediaStore,
+            thumbnailStore: ThumbnailStore(
+                rootURL: caches.appendingPathComponent("PersonalGrowthOS/Thumbnails", isDirectory: true),
+                mediaStore: mediaStore,
+                fileManager: fileManager
+            )
         )
     }
 }

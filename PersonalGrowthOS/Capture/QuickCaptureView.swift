@@ -2,11 +2,12 @@ import PhotosUI
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
+import UIKit
 
 @MainActor
 final class CaptureDraftState: ObservableObject {
     @Published var body = ""
-    @Published private(set) var imageSource: MediaSource?
+    @Published private(set) var imageSources: [MediaSource] = []
     @Published private(set) var errorMessage: String?
     @Published private(set) var isLoadingImage = false
 
@@ -15,15 +16,21 @@ final class CaptureDraftState: ObservableObject {
         errorMessage = nil
     }
 
-    func finishImageLoad(with result: Result<MediaSource, Error>) {
+    func finishImageLoad(with result: Result<[MediaSource], Error>) {
         isLoadingImage = false
         switch result {
-        case .success(let source):
-            imageSource = source
+        case .success(let sources):
+            imageSources = sources
             errorMessage = nil
         case .failure:
             errorMessage = "The photo could not be loaded. Your text is still here."
         }
+    }
+
+    func appendCameraImage(_ source: MediaSource) {
+        guard imageSources.count < EntryRules.maximumImageCount else { return }
+        imageSources.append(source)
+        errorMessage = nil
     }
 
     func reportSaveFailure(_ error: Error) {
@@ -36,7 +43,7 @@ final class CaptureDraftState: ObservableObject {
     }
 }
 
-private enum CaptureImageLoadError: Error {
+enum CaptureImageLoadError: Error {
     case noData
     case unsupportedType
 }
@@ -48,12 +55,15 @@ struct QuickCaptureView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @StateObject private var draft = CaptureDraftState()
-    @State private var selectedItem: PhotosPickerItem?
+    @State private var selectedItems: [PhotosPickerItem] = []
     @State private var isSaving = false
-    @State private var temporaryImageURL: URL?
+    @State private var temporaryImageURLs: [URL] = []
+    @State private var isShowingCamera = false
 
     var body: some View {
-        let photoButtonTitle = draft.imageSource == nil ? "Choose Photo" : "Replace Photo"
+        let photoButtonTitle = draft.imageSources.isEmpty
+            ? "Choose Photos"
+            : "Replace \(draft.imageSources.count) Photos"
 
         NavigationStack {
             Form {
@@ -64,7 +74,11 @@ struct QuickCaptureView: View {
                 }
 
                 Section("Photo") {
-                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                    PhotosPicker(
+                        selection: $selectedItems,
+                        maxSelectionCount: EntryRules.maximumImageCount,
+                        matching: .images
+                    ) {
                         Label(
                             photoButtonTitle,
                             systemImage: "photo"
@@ -72,8 +86,18 @@ struct QuickCaptureView: View {
                     }
                     .accessibilityIdentifier("capture-photo-picker")
 
-                    if draft.imageSource != nil {
-                        Label("Photo ready", systemImage: "checkmark.circle.fill")
+                    Button {
+                        isShowingCamera = true
+                    } label: {
+                        Label("Take Photo", systemImage: "camera")
+                    }
+                    .disabled(
+                        !UIImagePickerController.isSourceTypeAvailable(.camera)
+                            || draft.imageSources.count >= EntryRules.maximumImageCount
+                    )
+
+                    if !draft.imageSources.isEmpty {
+                        Label("\(draft.imageSources.count) photo(s) ready", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                     }
                     if draft.isLoadingImage {
@@ -101,36 +125,63 @@ struct QuickCaptureView: View {
                         .accessibilityIdentifier("capture-save")
                 }
             }
-            .onChange(of: selectedItem) { _, item in
-                guard let item else { return }
-                load(item)
+            .onChange(of: selectedItems) { _, items in
+                guard !items.isEmpty else { return }
+                load(items)
             }
-            .onDisappear { removeTemporaryImage() }
+            .sheet(isPresented: $isShowingCamera) {
+                CameraCaptureView(
+                    completion: { result in
+                        isShowingCamera = false
+                        switch result {
+                        case .success(let source):
+                            temporaryImageURLs.append(source.url)
+                            draft.appendCameraImage(source)
+                        case .failure(let error):
+                            draft.finishImageLoad(with: .failure(error))
+                        }
+                    },
+                    cancellation: {
+                        isShowingCamera = false
+                    }
+                )
+                .ignoresSafeArea()
+            }
+            .onDisappear { removeTemporaryImages() }
         }
     }
 
-    private func load(_ item: PhotosPickerItem) {
+    private func load(_ items: [PhotosPickerItem]) {
         draft.beginImageLoad()
         Task {
+            var newURLs: [URL] = []
             do {
-                guard let data = try await item.loadTransferable(type: Data.self) else {
-                    throw CaptureImageLoadError.noData
+                var sources: [MediaSource] = []
+                for item in items {
+                    guard let data = try await item.loadTransferable(type: Data.self) else {
+                        throw CaptureImageLoadError.noData
+                    }
+                    guard let type = item.supportedContentTypes.first(where: { $0.conforms(to: .image) }),
+                          let fileExtension = type.preferredFilenameExtension else {
+                        throw CaptureImageLoadError.unsupportedType
+                    }
+                    let url = FileManager.default.temporaryDirectory
+                        .appendingPathComponent("PGOS-Capture-\(UUID().uuidString).\(fileExtension)")
+                    try data.write(to: url, options: .atomic)
+                    newURLs.append(url)
+                    sources.append(MediaSource(
+                        url: url,
+                        originalFilename: "Selected Photo.\(fileExtension)",
+                        contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
+                    ))
                 }
-                guard let type = item.supportedContentTypes.first(where: { $0.conforms(to: .image) }),
-                      let fileExtension = type.preferredFilenameExtension else {
-                    throw CaptureImageLoadError.unsupportedType
-                }
-                removeTemporaryImage()
-                let url = FileManager.default.temporaryDirectory
-                    .appendingPathComponent("PGOS-Capture-\(UUID().uuidString).\(fileExtension)")
-                try data.write(to: url, options: .atomic)
-                temporaryImageURL = url
-                draft.finishImageLoad(with: .success(MediaSource(
-                    url: url,
-                    originalFilename: "Selected Photo.\(fileExtension)",
-                    contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
-                )))
+                removeTemporaryImages()
+                temporaryImageURLs = newURLs
+                draft.finishImageLoad(with: .success(sources))
             } catch {
+                for url in newURLs {
+                    try? FileManager.default.removeItem(at: url)
+                }
                 draft.finishImageLoad(with: .failure(error))
             }
         }
@@ -145,9 +196,9 @@ struct QuickCaptureView: View {
             )
             _ = try service.create(EntryCreationDraft(
                 body: draft.body,
-                image: draft.imageSource
+                images: draft.imageSources
             ))
-            removeTemporaryImage()
+            removeTemporaryImages()
             didSave()
         } catch {
             isSaving = false
@@ -155,10 +206,69 @@ struct QuickCaptureView: View {
         }
     }
 
-    private func removeTemporaryImage() {
-        if let temporaryImageURL {
-            try? FileManager.default.removeItem(at: temporaryImageURL)
-            self.temporaryImageURL = nil
+    private func removeTemporaryImages() {
+        for url in temporaryImageURLs {
+            try? FileManager.default.removeItem(at: url)
+        }
+        temporaryImageURLs = []
+    }
+}
+
+private struct CameraCaptureView: UIViewControllerRepresentable {
+    let completion: (Result<MediaSource, Error>) -> Void
+    let cancellation: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(completion: completion, cancellation: cancellation)
+    }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let controller = UIImagePickerController()
+        controller.sourceType = .camera
+        controller.delegate = context.coordinator
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    final class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+        let completion: (Result<MediaSource, Error>) -> Void
+        let cancellation: () -> Void
+
+        init(
+            completion: @escaping (Result<MediaSource, Error>) -> Void,
+            cancellation: @escaping () -> Void
+        ) {
+            self.completion = completion
+            self.cancellation = cancellation
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            cancellation()
+            picker.dismiss(animated: true)
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            do {
+                guard let image = info[.originalImage] as? UIImage,
+                      let data = image.jpegData(compressionQuality: 1) else {
+                    throw CaptureImageLoadError.noData
+                }
+                let url = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("PGOS-Camera-\(UUID().uuidString).jpg")
+                try data.write(to: url, options: .atomic)
+                completion(.success(MediaSource(
+                    url: url,
+                    originalFilename: "Camera Photo.jpg",
+                    contentType: "image/jpeg"
+                )))
+            } catch {
+                completion(.failure(error))
+            }
+            picker.dismiss(animated: true)
         }
     }
 }

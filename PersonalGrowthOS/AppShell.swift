@@ -1,4 +1,3 @@
-import ImageIO
 import SwiftData
 import SwiftUI
 
@@ -12,17 +11,24 @@ struct AppShell: View {
 
     @State private var selectedTab: AppTab = .today
     @State private var isCapturing = false
+    @State private var isShowingStorage = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                TodayView(openCapture: { isCapturing = true })
+                TodayView(
+                    openCapture: { isCapturing = true },
+                    openStorage: { isShowingStorage = true }
+                )
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
             .tag(AppTab.today)
 
             NavigationStack {
-                TimelineView(mediaStore: container.mediaStore)
+                TimelineView(
+                    mediaStore: container.mediaStore,
+                    thumbnailStore: container.thumbnailStore
+                )
             }
             .tabItem { Label("Timeline", systemImage: "clock") }
             .tag(AppTab.timeline)
@@ -34,11 +40,15 @@ struct AppShell: View {
                 isCapturing = false
             }
         }
+        .sheet(isPresented: $isShowingStorage) {
+            MediaStorageView(mediaStore: container.mediaStore)
+        }
     }
 }
 
 private struct TodayView: View {
     let openCapture: () -> Void
+    let openStorage: () -> Void
 
     var body: some View {
         List {
@@ -53,13 +63,20 @@ private struct TodayView: View {
             }
         }
         .navigationTitle("Today")
+        .toolbar {
+            Button(action: openStorage) {
+                Image(systemName: "gear")
+            }
+            .accessibilityLabel("Settings")
+        }
     }
 }
 
 private struct TimelineView: View {
     let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
 
-    @Query(sort: [
+    @Query(filter: #Predicate<Entry> { $0.statusRawValue != "archived" }, sort: [
         SortDescriptor(\Entry.occurredAt, order: .reverse),
         SortDescriptor(\Entry.createdAt, order: .reverse)
     ]) private var entries: [Entry]
@@ -74,7 +91,15 @@ private struct TimelineView: View {
                 )
             } else {
                 List(entries) { entry in
-                    TimelineRow(entry: entry, mediaStore: mediaStore)
+                    NavigationLink {
+                        EntryDetailView(
+                            entry: entry,
+                            mediaStore: mediaStore,
+                            thumbnailStore: thumbnailStore
+                        )
+                    } label: {
+                        TimelineRow(entry: entry, thumbnailStore: thumbnailStore)
+                    }
                 }
             }
         }
@@ -83,9 +108,43 @@ private struct TimelineView: View {
     }
 }
 
+private struct MediaStorageView: View {
+    let mediaStore: MediaStore
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var byteCount: Int64?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    LabeledContent("Original photos") {
+                        if let byteCount {
+                            Text(ByteCountFormatter.string(fromByteCount: byteCount, countStyle: .file))
+                        } else {
+                            ProgressView()
+                        }
+                    }
+                } header: {
+                    Text("Media Storage")
+                } footer: {
+                    Text("Original photos are stored privately on this device.")
+                }
+            }
+            .navigationTitle("Settings")
+            .toolbar {
+                Button("Done") { dismiss() }
+            }
+            .task {
+                byteCount = try? mediaStore.originalsByteCount()
+            }
+        }
+    }
+}
+
 private struct TimelineRow: View {
     let entry: Entry
-    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -96,7 +155,7 @@ private struct TimelineRow: View {
                 Text(body)
             }
             if let image = entry.images.sorted(by: { $0.sortOrder < $1.sortOrder }).first {
-                DownsampledOriginalView(mediaStore: mediaStore, relativePath: image.relativePath)
+                DownsampledOriginalView(metadata: image, thumbnailStore: thumbnailStore)
             }
             Text(entry.occurredAt, style: .date)
                 .font(.caption)
@@ -107,12 +166,12 @@ private struct TimelineRow: View {
     }
 }
 
-private struct DownsampledOriginalView: View {
-    let mediaStore: MediaStore
-    let relativePath: String
+struct DownsampledOriginalView: View {
+    let metadata: ImageMetadata
+    let thumbnailStore: ThumbnailStore
 
     var body: some View {
-        if let image = downsampledImage() {
+        if let image = thumbnailStore.image(for: metadata) {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
@@ -125,21 +184,6 @@ private struct DownsampledOriginalView: View {
         }
     }
 
-    private func downsampledImage() -> UIImage? {
-        guard let url = try? mediaStore.fileURL(for: relativePath),
-              let source = CGImageSourceCreateWithURL(url as CFURL, nil) else {
-            return nil
-        }
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: 512
-        ]
-        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
-            return nil
-        }
-        return UIImage(cgImage: cgImage)
-    }
 }
 
 extension Entry: Identifiable {}

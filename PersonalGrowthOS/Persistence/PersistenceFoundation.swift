@@ -208,7 +208,20 @@ struct EntryCreationDraft {
     var title: String?
     var body: String?
     var occurredAt: Date?
-    var image: MediaSource?
+    var images: [MediaSource]
+
+    init(
+        title: String? = nil,
+        body: String? = nil,
+        occurredAt: Date? = nil,
+        image: MediaSource? = nil,
+        images: [MediaSource] = []
+    ) {
+        self.title = title
+        self.body = body
+        self.occurredAt = occurredAt
+        self.images = image.map { [$0] } ?? images
+    }
 }
 
 @MainActor
@@ -228,23 +241,28 @@ final class EntryCreationService {
     }
 
     func create(_ draft: EntryCreationDraft) throws -> Entry {
-        try EntryRules.validateContent(body: draft.body, imageCount: draft.image == nil ? 0 : 1)
+        try EntryRules.validateContent(body: draft.body, imageCount: draft.images.count)
 
-        var storedFile: StoredMediaFile?
+        var storedFiles: [StoredMediaFile] = []
         do {
-            if let image = draft.image {
-                storedFile = try mediaStore.storeOriginal(image)
+            try mediaStore.ensureCapacity(for: draft.images)
+            for image in draft.images {
+                storedFiles.append(try mediaStore.storeOriginal(image))
             }
 
             let timestamp = now()
-            let metadata = storedFile.map {
-                ImageMetadata(
-                    id: $0.id,
-                    relativePath: $0.relativePath,
-                    originalFilename: draft.image?.originalFilename ?? "image",
-                    contentType: draft.image?.contentType ?? "application/octet-stream",
-                    byteCount: $0.byteCount,
-                    checksum: $0.checksum,
+            let metadata = zip(storedFiles, draft.images).enumerated().map { index, pair in
+                let (storedFile, source) = pair
+                return ImageMetadata(
+                    id: storedFile.id,
+                    relativePath: storedFile.relativePath,
+                    originalFilename: source.originalFilename,
+                    contentType: source.contentType,
+                    byteCount: storedFile.byteCount,
+                    pixelWidth: storedFile.pixelWidth,
+                    pixelHeight: storedFile.pixelHeight,
+                    checksum: storedFile.checksum,
+                    sortOrder: index,
                     createdAt: timestamp
                 )
             }
@@ -253,19 +271,203 @@ final class EntryCreationService {
                 body: draft.body,
                 createdAt: timestamp,
                 occurredAt: draft.occurredAt,
-                images: metadata.map { [$0] } ?? []
+                images: metadata
             )
-            metadata?.entry = entry
+            metadata.forEach { $0.entry = entry }
 
             persistence.insert(entry)
             try persistence.save()
             return entry
         } catch {
             persistence.rollback()
-            if let storedFile {
+            for storedFile in storedFiles {
                 try? mediaStore.removeOriginal(at: storedFile.relativePath)
             }
             throw error
         }
+    }
+}
+
+@MainActor
+protocol EntryDeletingPersistence: AnyObject {
+    func delete(_ entry: Entry)
+    func save() throws
+    func rollback()
+}
+
+extension ModelContextEntryPersistence: EntryDeletingPersistence {
+    func delete(_ entry: Entry) {
+        context.delete(entry)
+    }
+}
+
+@MainActor
+protocol EntryEditingPersistence: AnyObject {
+    func delete(_ image: ImageMetadata)
+    func save() throws
+    func rollback()
+}
+
+extension ModelContextEntryPersistence: EntryEditingPersistence {
+    func delete(_ image: ImageMetadata) {
+        context.delete(image)
+    }
+}
+
+struct EntryEditingDraft {
+    let title: String?
+    let body: String?
+    let occurredAt: Date
+    let retainedImageIDs: Set<UUID>
+    let addedImages: [MediaSource]
+}
+
+@MainActor
+final class EntryEditingService {
+    private let persistence: any EntryEditingPersistence
+    private let mediaStore: MediaStore
+    private let now: () -> Date
+    private let thumbnailCleanup: (UUID) -> Void
+
+    init(
+        persistence: any EntryEditingPersistence,
+        mediaStore: MediaStore,
+        now: @escaping () -> Date = Date.init,
+        thumbnailCleanup: @escaping (UUID) -> Void = { _ in }
+    ) {
+        self.persistence = persistence
+        self.mediaStore = mediaStore
+        self.now = now
+        self.thumbnailCleanup = thumbnailCleanup
+    }
+
+    func update(_ entry: Entry, with draft: EntryEditingDraft) throws {
+        let retained = entry.images
+            .filter { draft.retainedImageIDs.contains($0.id) }
+            .sorted { $0.sortOrder < $1.sortOrder }
+        let removed = entry.images.filter { !draft.retainedImageIDs.contains($0.id) }
+        let finalImageCount = retained.count + draft.addedImages.count
+        try EntryRules.validateContent(body: draft.body, imageCount: finalImageCount)
+
+        let originalTitle = entry.title
+        let originalBody = entry.body
+        let originalOccurredAt = entry.occurredAt
+        let originalUpdatedAt = entry.updatedAt
+        let originalImages = entry.images
+        var addedFiles: [StoredMediaFile] = []
+        var trashedFiles: [TrashedMediaFile] = []
+
+        do {
+            try mediaStore.ensureCapacity(for: draft.addedImages)
+            for source in draft.addedImages {
+                addedFiles.append(try mediaStore.storeOriginal(source))
+            }
+            for image in removed {
+                trashedFiles.append(try mediaStore.moveToTrash(image.relativePath))
+            }
+
+            let timestamp = now()
+            let addedMetadata = zip(addedFiles, draft.addedImages).enumerated().map { offset, pair in
+                let (file, source) = pair
+                return ImageMetadata(
+                    id: file.id,
+                    relativePath: file.relativePath,
+                    originalFilename: source.originalFilename,
+                    contentType: source.contentType,
+                    byteCount: file.byteCount,
+                    pixelWidth: file.pixelWidth,
+                    pixelHeight: file.pixelHeight,
+                    checksum: file.checksum,
+                    sortOrder: retained.count + offset,
+                    createdAt: timestamp
+                )
+            }
+            retained.enumerated().forEach { index, image in image.sortOrder = index }
+            addedMetadata.forEach { $0.entry = entry }
+            removed.forEach { persistence.delete($0) }
+            entry.title = draft.title
+            entry.body = draft.body
+            entry.occurredAt = draft.occurredAt
+            entry.updatedAt = timestamp
+            entry.images = retained + addedMetadata
+            try persistence.save()
+        } catch {
+            persistence.rollback()
+            for file in addedFiles {
+                try? mediaStore.removeOriginal(at: file.relativePath)
+            }
+            for file in trashedFiles.reversed() {
+                try? mediaStore.restoreFromTrash(file)
+            }
+            entry.title = originalTitle
+            entry.body = originalBody
+            entry.occurredAt = originalOccurredAt
+            entry.updatedAt = originalUpdatedAt
+            entry.images = originalImages
+            originalImages.forEach { $0.entry = entry }
+            throw error
+        }
+
+        for file in trashedFiles {
+            try? mediaStore.purgeTrash(file)
+        }
+        removed.forEach { thumbnailCleanup($0.id) }
+    }
+}
+
+@MainActor
+final class EntryDeletionService {
+    private let persistence: any EntryDeletingPersistence
+    private let mediaStore: MediaStore
+    private let now: () -> Date
+    private let thumbnailCleanup: (UUID) -> Void
+
+    init(
+        persistence: any EntryDeletingPersistence,
+        mediaStore: MediaStore,
+        now: @escaping () -> Date = Date.init,
+        thumbnailCleanup: @escaping (UUID) -> Void = { _ in }
+    ) {
+        self.persistence = persistence
+        self.mediaStore = mediaStore
+        self.now = now
+        self.thumbnailCleanup = thumbnailCleanup
+    }
+
+    func archive(_ entry: Entry) throws {
+        let originalStatus = entry.status
+        let originalUpdatedAt = entry.updatedAt
+        entry.status = .archived
+        entry.updatedAt = now()
+        do {
+            try persistence.save()
+        } catch {
+            persistence.rollback()
+            entry.status = originalStatus
+            entry.updatedAt = originalUpdatedAt
+            throw error
+        }
+    }
+
+    func permanentlyDelete(_ entry: Entry) throws {
+        let imageIDs = entry.images.map(\.id)
+        var trashedFiles: [TrashedMediaFile] = []
+        do {
+            for image in entry.images {
+                trashedFiles.append(try mediaStore.moveToTrash(image.relativePath))
+            }
+            persistence.delete(entry)
+            try persistence.save()
+        } catch {
+            persistence.rollback()
+            for trashedFile in trashedFiles.reversed() {
+                try? mediaStore.restoreFromTrash(trashedFile)
+            }
+            throw error
+        }
+        for trashedFile in trashedFiles {
+            try? mediaStore.purgeTrash(trashedFile)
+        }
+        imageIDs.forEach(thumbnailCleanup)
     }
 }

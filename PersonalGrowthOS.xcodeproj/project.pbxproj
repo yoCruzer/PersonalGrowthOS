@@ -20,6 +20,8 @@
 		B00000000000000000000011 /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000014 /* MediaStore.swift */; };
 		B00000000000000000000012 /* PersistenceMediaFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */; };
 		B00000000000000000000013 /* QuickCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000016 /* QuickCaptureView.swift */; };
+		B00000000000000000000014 /* EntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000017 /* EntryDetailView.swift */; };
+		B00000000000000000000015 /* ThumbnailStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000018 /* ThumbnailStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +58,8 @@
 		A00000000000000000000014 /* MediaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceMediaFoundationTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000016 /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
+		A00000000000000000000017 /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
+		A00000000000000000000018 /* ThumbnailStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,6 +169,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000014 /* MediaStore.swift */,
+				A00000000000000000000018 /* ThumbnailStore.swift */,
 			);
 			path = Media;
 			sourceTree = "<group>";
@@ -173,6 +178,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000016 /* QuickCaptureView.swift */,
+				A00000000000000000000017 /* EntryDetailView.swift */,
 			);
 			path = Capture;
 			sourceTree = "<group>";
@@ -314,6 +320,8 @@
 				B00000000000000000000010 /* PersistenceFoundation.swift in Sources */,
 				B00000000000000000000011 /* MediaStore.swift in Sources */,
 				B00000000000000000000013 /* QuickCaptureView.swift in Sources */,
+				B00000000000000000000014 /* EntryDetailView.swift in Sources */,
+				B00000000000000000000015 /* ThumbnailStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

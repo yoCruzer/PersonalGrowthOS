@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — S4 Rich Entry Media and Editing |
+| Current checkpoint | V1 Autonomous Build Program — Milestone A Independent Review |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S4 — Rich Entry Media and Editing |
+| Current Macro Stage | S4 complete — Milestone A review before S5 |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is S4: complete Rich Entry creation, detail/editing, archive/permanent deletion and multi-image media lifecycle while preserving originals and all-or-nothing failure behavior.
+The immediate objective is to fix the S4 Stage commit, run the required independent Milestone A reviews against that commit, resolve any Critical/High findings and record the Milestone A Review Manifest before entering S5.
 
 ## Scope
 
@@ -42,6 +42,6 @@ The immediate objective is S4: complete Rich Entry creation, detail/editing, arc
 
 ## Current Boundary
 
-Program Startup and S1–S3 are complete. S3 replaced the placeholder with a restart-safe Today → Quick Capture → Timeline slice, including text capture, one selected photo, draft-preserving failure behavior and an isolated UI-test store.
+Program Startup and S1–S4 are technically complete. Milestone A's full shared-scheme gate passed 36 tests with no failures or skips on the iPhone 17 Pro simulator.
 
-Proceed with S4 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
+Complete the fixed-commit Milestone A review, then proceed with S5 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
