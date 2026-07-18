@@ -4,6 +4,7 @@ import SwiftUI
 enum AppTab: Hashable {
     case today
     case timeline
+    case library
 }
 
 struct AppShell: View {
@@ -12,6 +13,7 @@ struct AppShell: View {
     @State private var selectedTab: AppTab = .today
     @State private var isCapturing = false
     @State private var isShowingStorage = false
+    @State private var isSearching = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -32,6 +34,15 @@ struct AppShell: View {
             }
             .tabItem { Label("Timeline", systemImage: "clock") }
             .tag(AppTab.timeline)
+
+            NavigationStack {
+                LibraryView(
+                    mediaStore: container.mediaStore,
+                    thumbnailStore: container.thumbnailStore
+                )
+            }
+            .tabItem { Label("Library", systemImage: "books.vertical") }
+            .tag(AppTab.library)
         }
         .accessibilityIdentifier("app-shell")
         .sheet(isPresented: $isCapturing) {
@@ -46,19 +57,39 @@ struct AppShell: View {
                 integrityReport: container.mediaIntegrityReport
             )
         }
+        .sheet(isPresented: $isSearching) {
+            GlobalSearchView(
+                mediaStore: container.mediaStore,
+                thumbnailStore: container.thumbnailStore
+            )
+        }
         .overlay(alignment: .bottomTrailing) {
-            Button {
-                isCapturing = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.title2.bold())
-                    .frame(width: 52, height: 52)
-                    .background(.tint, in: Circle())
-                    .foregroundStyle(.white)
-                    .shadow(radius: 4, y: 2)
+            VStack(spacing: 12) {
+                Button {
+                    isSearching = true
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.headline.bold())
+                        .frame(width: 44, height: 44)
+                        .background(.regularMaterial, in: Circle())
+                        .shadow(radius: 3, y: 1)
+                }
+                .accessibilityLabel("Search")
+                .accessibilityIdentifier("global-search-button")
+
+                Button {
+                    isCapturing = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2.bold())
+                        .frame(width: 52, height: 52)
+                        .background(.tint, in: Circle())
+                        .foregroundStyle(.white)
+                        .shadow(radius: 4, y: 2)
+                }
+                .accessibilityLabel("Quick Capture")
+                .accessibilityIdentifier("global-capture-button")
             }
-            .accessibilityLabel("Quick Capture")
-            .accessibilityIdentifier("global-capture-button")
             .padding(.trailing, 20)
             .padding(.bottom, 72)
         }
@@ -215,7 +246,7 @@ private struct MediaStorageView: View {
     }
 }
 
-private struct TimelineRow: View {
+struct TimelineRow: View {
     let entry: Entry
     let thumbnailStore: ThumbnailStore
 

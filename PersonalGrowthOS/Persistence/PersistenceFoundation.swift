@@ -103,13 +103,23 @@ enum PersonalGrowthSchemaV1: VersionedSchema {
     }
 }
 
+enum PersonalGrowthSchemaV2: VersionedSchema {
+    static let versionIdentifier = Schema.Version(2, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [Entry.self, ImageMetadata.self, Tag.self, ObjectLink.self]
+    }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [PersonalGrowthSchemaV1.self]
+        [PersonalGrowthSchemaV1.self, PersonalGrowthSchemaV2.self]
     }
 
     static var stages: [MigrationStage] {
-        []
+        [MigrationStage.lightweight(
+            fromVersion: PersonalGrowthSchemaV1.self,
+            toVersion: PersonalGrowthSchemaV2.self
+        )]
     }
 }
 
@@ -117,7 +127,7 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV1.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV2.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
@@ -126,7 +136,7 @@ enum PersistenceContainerFactory {
     static func makeOnDisk(at storeURL: URL) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV1.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV2.self),
             url: storeURL,
             cloudKitDatabase: .none
         ))
@@ -134,7 +144,7 @@ enum PersistenceContainerFactory {
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV1.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV2.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )
@@ -303,12 +313,26 @@ final class EntryCreationService {
 
 @MainActor
 protocol EntryDeletingPersistence: AnyObject {
+    func deleteLinks(involving objectID: UUID) throws
     func delete(_ entry: Entry)
     func save() throws
     func rollback()
 }
 
+extension EntryDeletingPersistence {
+    func deleteLinks(involving objectID: UUID) throws {}
+}
+
 extension ModelContextEntryPersistence: EntryDeletingPersistence {
+    func deleteLinks(involving objectID: UUID) throws {
+        let descriptor = FetchDescriptor<ObjectLink>(
+            predicate: #Predicate {
+                $0.sourceID == objectID || $0.targetID == objectID
+            }
+        )
+        try context.fetch(descriptor).forEach(context.delete)
+    }
+
     func delete(_ entry: Entry) {
         context.delete(entry)
     }
@@ -521,24 +545,25 @@ final class EntryDeletionService {
     }
 
     func archive(_ entry: Entry) throws {
-        let originalStatus = entry.status
-        let originalUpdatedAt = entry.updatedAt
-        entry.status = .archived
-        entry.updatedAt = now()
-        do {
-            try persistence.save()
-        } catch {
-            persistence.rollback()
-            entry.status = originalStatus
-            entry.updatedAt = originalUpdatedAt
-            throw error
-        }
+        try transition(entry, to: .archived)
+    }
+
+    func organize(_ entry: Entry) throws {
+        try transition(entry, to: .organized)
+    }
+
+    func moveToInbox(_ entry: Entry) throws {
+        try transition(entry, to: .inbox)
     }
 
     func restore(_ entry: Entry) throws {
+        try transition(entry, to: .organized)
+    }
+
+    private func transition(_ entry: Entry, to status: EntryStatus) throws {
         let originalStatus = entry.status
         let originalUpdatedAt = entry.updatedAt
-        entry.status = .organized
+        entry.status = status
         entry.updatedAt = now()
         do {
             try persistence.save()
@@ -557,6 +582,7 @@ final class EntryDeletionService {
             for image in entry.images {
                 trashedFiles.append(try mediaStore.moveToTrash(image.relativePath))
             }
+            try persistence.deleteLinks(involving: entry.id)
             persistence.delete(entry)
             try persistence.save()
         } catch let operationError {

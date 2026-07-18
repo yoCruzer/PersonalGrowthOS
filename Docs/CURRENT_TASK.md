@@ -8,13 +8,13 @@
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S5 ready to begin — Milestone A passed |
+| Current Macro Stage | S5 technically complete — S6 ready to begin |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is to implement S5 Library, Inbox, Tags and Search as the next coherent Stage boundary.
+The immediate objective is to implement S6 Habit and HabitLog as the next coherent Stage.
 
 ## Scope
 
@@ -42,6 +42,8 @@ The immediate objective is to implement S5 Library, Inbox, Tags and Search as th
 
 ## Current Boundary
 
-Program Startup and S1–S4 are technically complete. Milestone A passed four independent review lenses with no remaining Critical/High findings. The final evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
+Program Startup and S1–S5 are technically complete. Milestone A passed four independent review lenses with no remaining Critical/High findings. The final Milestone A evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
 
-Read the S5 plan boundary, implement and validate Library/Inbox/Tags/Search, update current context and create the S5 Stage commit.
+S5 delivers Library Inbox/All Entries/Archived views, optional Tags and Entry-Tag Links, organization transitions, relation-safe deletion and global local Entry/Review/Tag search. The full gate passed 55 Unit Tests and 8 UI Tests with no failures or skips. A 5,000-Entry/250-Tag fixture searched in 0.427, 0.424 and 0.455 seconds against a 1.0-second simulator threshold.
+
+Read the S6 boundary and implement Habit/HabitLog lifecycle, fast and rich check-ins, useful Timeline behavior, Search integration and relation-safe deletion.

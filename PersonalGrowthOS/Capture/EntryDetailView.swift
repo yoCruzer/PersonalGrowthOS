@@ -11,8 +11,21 @@ struct EntryDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @State private var isEditing = false
+    @State private var isEditingTags = false
     @State private var isConfirmingDelete = false
     @State private var errorMessage: String?
+    @Query(sort: [
+        SortDescriptor(\Tag.normalizedName, order: .forward),
+        SortDescriptor(\Tag.id, order: .forward)
+    ]) private var allTags: [Tag]
+    @Query private var allLinks: [ObjectLink]
+
+    private var attachedTags: [Tag] {
+        let tagIDs = Set(allLinks.filter {
+            $0.kind == .entryUsesTag && $0.sourceID == entry.id
+        }.map(\.targetID))
+        return allTags.filter { tagIDs.contains($0.id) }
+    }
 
     var body: some View {
         List {
@@ -37,6 +50,16 @@ struct EntryDetailView: View {
             Section("Occurred") {
                 Text(entry.occurredAt.formatted(date: .long, time: .shortened))
             }
+            Section("Organization") {
+                LabeledContent("Status", value: entry.statusRawValue.capitalized)
+                if !attachedTags.isEmpty {
+                    ForEach(attachedTags) { tag in
+                        Label(tag.displayName, systemImage: "tag")
+                    }
+                }
+                Button("Manage Tags") { isEditingTags = true }
+                    .accessibilityIdentifier("entry-manage-tags")
+            }
         }
         .navigationTitle(entry.kind == .review ? "Review" : "Entry")
         .navigationBarTitleDisplayMode(.inline)
@@ -48,6 +71,11 @@ struct EntryDetailView: View {
                     if entry.status == .archived {
                         Button("Restore", systemImage: "arrow.uturn.backward") { restore() }
                     } else {
+                        if entry.status == .inbox {
+                            Button("Mark Organized", systemImage: "checkmark.circle") { organize() }
+                        } else {
+                            Button("Move to Inbox", systemImage: "tray") { moveToInbox() }
+                        }
                         Button("Archive", systemImage: "archivebox") { archive() }
                     }
                     Button("Delete Permanently", systemImage: "trash", role: .destructive) {
@@ -65,6 +93,9 @@ struct EntryDetailView: View {
                 mediaStore: mediaStore,
                 thumbnailStore: thumbnailStore
             )
+        }
+        .sheet(isPresented: $isEditingTags) {
+            EntryTagEditor(entry: entry)
         }
         .alert("Delete this entry permanently?", isPresented: $isConfirmingDelete) {
             Button("Cancel", role: .cancel) {}
@@ -97,6 +128,24 @@ struct EntryDetailView: View {
             dismiss()
         } catch {
             errorMessage = "The entry was not restored. Its archived copy is unchanged."
+        }
+    }
+
+    private func organize() {
+        do {
+            try deletionService.organize(entry)
+            dismiss()
+        } catch {
+            errorMessage = "The entry remains in Inbox."
+        }
+    }
+
+    private func moveToInbox() {
+        do {
+            try deletionService.moveToInbox(entry)
+            dismiss()
+        } catch {
+            errorMessage = "The entry's organized status is unchanged."
         }
     }
 

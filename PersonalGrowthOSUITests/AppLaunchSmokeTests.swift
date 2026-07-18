@@ -114,4 +114,65 @@ final class AppLaunchSmokeTests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["Archive and restore me"].waitForExistence(timeout: 5))
     }
+
+    func testLibraryOrganizesEntryWithoutRequiringTag() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.buttons["quick-capture-button"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("Organize without tags")
+        app.buttons["capture-save"].tap()
+        app.staticTexts["Organize without tags"].tap()
+        app.buttons["entry-actions"].tap()
+        app.buttons["Mark Organized"].tap()
+
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-inbox"].tap()
+        XCTAssertTrue(app.staticTexts["No Inbox"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons["Library"].tap()
+        app.buttons["library-all-entries"].tap()
+        XCTAssertTrue(app.staticTexts["Organize without tags"].waitForExistence(timeout: 5))
+    }
+
+    func testTagLinkAndGlobalSearchFindEntry() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.buttons["quick-capture-button"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("Searchable reflection")
+        app.buttons["capture-save"].tap()
+
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-tags"].tap()
+        let tagName = app.textFields["new-tag-name"]
+        XCTAssertTrue(tagName.waitForExistence(timeout: 5))
+        tagName.tap()
+        tagName.typeText("Learning")
+        app.buttons["add-tag"].tap()
+        app.keyboards.buttons["return"].tap()
+
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["timeline-view"].waitForExistence(timeout: 5))
+        app.staticTexts["Searchable reflection"].tap()
+        app.buttons["entry-manage-tags"].tap()
+        XCTAssertTrue(app.buttons["Learning"].waitForExistence(timeout: 5))
+        app.buttons["Learning"].tap()
+        app.buttons["Done"].tap()
+        app.buttons["global-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("learning")
+        XCTAssertTrue(app.staticTexts["Learning"].waitForExistence(timeout: 5))
+        app.buttons["Learning"].tap()
+        XCTAssertTrue(app.staticTexts["Searchable reflection"].waitForExistence(timeout: 5))
+    }
 }

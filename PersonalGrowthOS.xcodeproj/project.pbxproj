@@ -23,6 +23,10 @@
 		B00000000000000000000014 /* EntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000017 /* EntryDetailView.swift */; };
 		B00000000000000000000015 /* ThumbnailStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000018 /* ThumbnailStore.swift */; };
 		B00000000000000000000016 /* CameraCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000019 /* CameraCaptureView.swift */; };
+		B00000000000000000000017 /* OrganizationFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* OrganizationFoundation.swift */; };
+		B00000000000000000000018 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* LibraryView.swift */; };
+		B00000000000000000000019 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* SearchView.swift */; };
+		B00000000000000000000020 /* OrganizationSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* OrganizationSearchTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +66,10 @@
 		A00000000000000000000017 /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
 		A00000000000000000000018 /* ThumbnailStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000019 /* CameraCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCaptureView.swift; sourceTree = "<group>"; };
+		A00000000000000000000020 /* OrganizationFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganizationFoundation.swift; sourceTree = "<group>"; };
+		A00000000000000000000021 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		A00000000000000000000022 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		A00000000000000000000023 /* OrganizationSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganizationSearchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +117,9 @@
 				C00000000000000000000008 /* Persistence */,
 				C00000000000000000000009 /* Media */,
 				C00000000000000000000010 /* Capture */,
+				C00000000000000000000011 /* Organization */,
+				C00000000000000000000012 /* Library */,
+				C00000000000000000000013 /* Search */,
 				A00000000000000000000003 /* Assets.xcassets */,
 			);
 			path = PersonalGrowthOS;
@@ -120,6 +131,7 @@
 				A00000000000000000000004 /* AppCompositionTests.swift */,
 				A00000000000000000000012 /* EntryDomainTests.swift */,
 				A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */,
+				A00000000000000000000023 /* OrganizationSearchTests.swift */,
 			);
 			path = PersonalGrowthOSTests;
 			sourceTree = "<group>";
@@ -184,6 +196,30 @@
 				A00000000000000000000019 /* CameraCaptureView.swift */,
 			);
 			path = Capture;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000011 /* Organization */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000020 /* OrganizationFoundation.swift */,
+			);
+			path = Organization;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000012 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000021 /* LibraryView.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000013 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000022 /* SearchView.swift */,
+			);
+			path = Search;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -326,6 +362,9 @@
 				B00000000000000000000014 /* EntryDetailView.swift in Sources */,
 				B00000000000000000000015 /* ThumbnailStore.swift in Sources */,
 				B00000000000000000000016 /* CameraCaptureView.swift in Sources */,
+				B00000000000000000000017 /* OrganizationFoundation.swift in Sources */,
+				B00000000000000000000018 /* LibraryView.swift in Sources */,
+				B00000000000000000000019 /* SearchView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -336,6 +375,7 @@
 				B00000000000000000000004 /* AppCompositionTests.swift in Sources */,
 				B00000000000000000000009 /* EntryDomainTests.swift in Sources */,
 				B00000000000000000000012 /* PersistenceMediaFoundationTests.swift in Sources */,
+				B00000000000000000000020 /* OrganizationSearchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

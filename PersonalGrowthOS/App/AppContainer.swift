@@ -87,6 +87,7 @@ struct AppContainer {
             thumbnailStore: thumbnailStore,
             imageMetadata: imageMetadata
         )
+        try LinkIntegrityService.validate(context: modelContainer.mainContext)
         return AppContainer(
             configuration: configuration,
             modelContainer: modelContainer,

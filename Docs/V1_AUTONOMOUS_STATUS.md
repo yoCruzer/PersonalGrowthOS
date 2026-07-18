@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S5 ready to begin — Milestone A passed |
-| Completed Macro Stages | S1, S2, S3, S4 |
+| Current Macro Stage | S5 technically complete — S6 ready to begin |
+| Completed Macro Stages | S1, S2, S3, S4, S5 |
 
 ## Program Baseline
 
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-Milestone A (S1–S4) is complete and passed. S5 is the active Stage boundary.
+Milestone A (S1–S4) is complete and passed. S5 has passed its technical gate; S6 is the next active Stage boundary.
 
 ## Current Internal Task
 
-Implement S5 Library, Inbox, Tags and Search according to the authorized implementation plan.
+Implement S6 Habit and HabitLog according to the authorized implementation plan.
 
 ## Completed Macro Stages
 
@@ -36,18 +36,21 @@ Implement S5 Library, Inbox, Tags and Search according to the authorized impleme
 - S2 — Local Persistence and Media Foundations. Explicit V1 SwiftData schema, canonical Entry/ImageMetadata models, in-memory/on-disk containers, Entry repository, staged image copy and save-failure cleanup are implemented.
 - S3 — First Runnable Capture → Timeline Slice. Production local composition, Today/Timeline navigation, Quick Capture, one-photo selection, draft-preserving errors, Timeline preview and relaunch persistence are implemented.
 - S4 — Rich Entry Media and Editing. Ordered 0–9 image capture, camera entry point, image validation/budgets, Entry detail/edit/archive/delete, thumbnail cache, media usage, Trash rollback and launch recovery are implemented.
+- S5 — Library, Inbox, Tags and Search. Inbox/All Entries/Archived views, optional normalized Tags, typed Entry-Tag Links, organization transitions, deletion cleanup and global local Entry/Review/Tag search are implemented.
 
 ## Latest Verified Commit
 
-`90d7ff533081e81e646bde4ad3faaadfc67984e9` — final reviewed Milestone A implementation head.
+S5 Stage commit `feat: add library tags and search` (the commit containing this status update); parent `8927bc3562985b0131a70b1d73704d1d7ecb8124` records the Milestone A review pass.
 
 ## Latest Build Result
 
-Milestone A follow-up candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). The built app Info.plist contains `NSCameraUsageDescription`. UI automation exercised launch, global capture from Timeline and Settings, Capture → Timeline → relaunch → edit → relaunch, archive → restore and permanent delete.
+S5 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised the prior critical paths plus organize-without-required-Tag and Tag creation → Entry link → global search → linked Entry navigation.
 
 ## Latest Test Result
 
-Milestone A follow-up validation: 45 Unit Tests and 6 UI Tests passed with 0 failures and 0 skips. Coverage includes on-disk rich Entry reopen and image ordering, stable tie-breaking, creation/edit multi-image failure matrices, deletion/edit rollback-restore recovery, integrated idempotent startup reconciliation, exact 25 MiB and 80-megapixel boundaries, global capture, archive recovery and post-edit relaunch persistence.
+S5 full validation: 55 Unit Tests and 8 UI Tests passed with 0 failures and 0 skips. New coverage includes V1→V2 migration, Tag normalization/uniqueness, Entry-Tag uniqueness, state transitions, Entry/Tag deletion cleanup and rollback, dangling-Link detection, Chinese literal substring search, normalized Latin search, Review/Tag search and the two S5 UI acceptance paths.
+
+The representative search fixture contains 5,000 Entries and 250 Tags. Three measured local searches completed in 0.427, 0.424 and 0.455 seconds on the same simulator, all below the explicit 1.0-second threshold. Peak physical memory was 75,952.128, 76,263.424 and 76,611.584 kB; measured physical-memory deltas were 331.776, 348.160 and 282.624 kB. The result supports retaining the simple local scan without FTS or a separate index.
 
 Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMetric` for three isolated iterations on the same simulator. Each iteration copied/checksummed an exact 25 MiB valid PNG and downsampled a valid 80MP 1-bit PNG to at most 512px. Clock results were 0.210, 0.215 and 0.220 seconds; process physical peaks were 105,467.904, 105,467.904 and 105,504.768 kB; net physical-memory changes were 32.768, 0 and 36.864 kB. XCTest process-accounted logical writes were 0, 24.576 and 24.576 kB, while explicit file assertions verified a 25 MiB final Original and zero Staging bytes. The provisional 25 MiB / 80MP / 100 MiB reserve guardrails are retained: the accepted boundary completed without instability, local previews now downsample from URL, and the 100 MiB reserve remains greater than the 50 MiB staging-plus-final peak for a maximum-size original. Physical-device tuning remains Owner-deferred.
 
@@ -68,10 +71,15 @@ Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMet
 - Camera capture now stores `AVCapturePhoto.fileDataRepresentation()` bytes without UIImage recompression, and Photos Picker requests current encoding.
 - Startup reconciliation removes provably uncommitted Staging files, restores database-owned Trash files, preserves unreferenced Originals under private Recovery and reports missing Originals in Settings.
 - Selected-photo previews use ImageIO URL downsampling rather than full-resolution UIImage decoding; the editor persists one unified order across retained and newly added photos.
+- SwiftData schema V2 adds `Tag` and `ObjectLink` through an explicit lightweight V1→V2 migration while retaining the existing store configuration name for compatibility.
+- Inbox remains an optional holding status rather than a task list; organizing an Entry does not require a Tag.
+- Tag uniqueness and Latin search use compatibility, case and width normalization; Chinese search uses literal normalized substring matching.
+- Global Search scans Entry title/body, including Review Entries through the shared Entry path, plus Tags. The measured S5 fixture does not justify an FTS or separate index.
+- Entry and Tag permanent deletion clean related Links in the same save boundary; launch-time integrity validation rejects dangling Links.
 
 ## Known Limitations
 
-- Milestone A still exposes only Today and Timeline; Growth and Library arrive in Milestone B.
+- Growth arrives in S6; the current shell exposes Today, Timeline and Library, with global Search and Quick Capture.
 - Camera and real Photos Picker/permission behavior are implemented but remain Owner-deferred physical-device validation.
 - Entry mutations currently use the shared main `ModelContext`; isolating unrelated unsaved UI changes from a rollback is retained as a non-blocking architectural follow-up because changing context ownership is not a low-risk Milestone A patch.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
@@ -82,7 +90,7 @@ None.
 
 ## Next Action
 
-Begin S5 with its schema/domain slice, then proceed through repository and UI slices to the Stage gate.
+Begin S6 with its Habit/HabitLog schema and domain slice.
 
 ## Repository State
 
@@ -94,4 +102,6 @@ Begin S5 with its schema/domain slice, then proceed through repository and UI sl
 - S3: committed and verified.
 - S4: committed and verified at `92207c0b2dff58bbf2b28870cd9ff6630badaec1`.
 - Milestone A: PASS. Review Manifest recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`; final reviewed implementation head `90d7ff533081e81e646bde4ad3faaadfc67984e9`.
-- S5–S10: not started.
+- S5: committed and verified by `feat: add library tags and search`.
+- S6: ready to begin after the S5 commit.
+- S7–S10: not started.

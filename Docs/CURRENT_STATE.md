@@ -3,104 +3,73 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-07-18 |
-| Current branch | `main` |
-| Accepted governance head on `main` | `a750d00ac914cdab16fc9418a39771c9bfb27676` |
-| Pre-finalization `origin/main` | `8c05a9fc849b71ab21123db605762f6b23a91df9` |
-| S0A status | Complete on `main` in `2bf1be85c01d8d96af035a12684bd2d98c7f183e` |
-| S0B status | Complete on `main` in `8c05a9fc849b71ab21123db605762f6b23a91df9` |
-| Macro S0 status | Complete |
-| Product functionality | Not started |
-| Current executable state | Static native iOS placeholder with explicit startup composition and deterministic Unit/UI test seams |
-| Governance status | State 2 — Owner Accepted Governance Baseline — Awaiting Startup Authorization |
-| Next checkpoint | V1 Autonomous Build Awaiting Startup Authorization |
+| Last verified | 2026-07-19 |
+| Current branch | `feat/v1-autonomous-build` |
+| Program baseline on `main` | `b82d6e656592663f679440e318d00bef06f50556` |
+| Governance status | State 3 — Program Authorized / Running |
+| Completed Macro Stages | S0, S1, S2, S3, S4, S5 |
+| Current executable state | Local-first iPhone app with Capture, Timeline, Library, Inbox, Tags, archive, editing, owned media and global basic search |
+| Latest technical gate | S5 PASS — 63 tests passed, 0 failed, 0 skipped |
+| Next checkpoint | S6 Habit and HabitLog |
 
 ## Authoritative Product Baseline
 
-`Docs/INDEX.md` defines the Foundation reading order. The current Foundation set is:
+`Docs/INDEX.md` defines the Foundation reading order. The five Foundation Documents remain unchanged and authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` v0.4 defines the accepted S1–S10 product plan, and `Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md` defines the running Program authority and technical gates.
 
-1. `Docs/VISION.md` — Foundation Draft v0.2.
-2. `Docs/DESIGN_PRINCIPLES.md` — Foundation Draft v0.2.
-3. `Docs/CORE_MODEL.md` — Foundation Draft v0.2.
-4. `Docs/INFORMATION_ARCHITECTURE.md` — Foundation Draft v0.2.
-5. `Docs/V1_SCOPE.md` — Foundation Draft v0.2.
-
-`Docs/ROADMAP.md` is listed as planned but does not exist. `Docs/V1_IMPLEMENTATION_PLAN.md` v0.4 is the Owner-accepted implementation planning baseline and does not change the Foundation Documents' lifecycle status or S1–S10 product scope.
+The Owner explicitly authorized the V1 Autonomous Build Program on 2026-07-18. All product implementation is isolated on `feat/v1-autonomous-build`; `main` remains at the fixed Program baseline.
 
 ## Completed Work
 
-- The Foundation document set and reading order are established.
-- The Owner-accepted V1 implementation planning baseline, including the governance and validation-boundary revision, is recorded in `Docs/V1_IMPLEMENTATION_PLAN.md` v0.4.
-- The S0 execution planning baseline and S0A/S0B split are recorded in `Docs/S0_EXECUTION_PLAN.md` v0.3.
-- S0A — Native Xcode Project Bootstrap is present on `main` in commit `2bf1be85c01d8d96af035a12684bd2d98c7f183e`.
-- Batch 0 — Repository Foundation is present on `main` in commit `2fb65ef1d75b0f24472873e2904a0de9618f6ff1`.
-- S0B — Composition and Test Harness Foundation is present on `main` in commit `8c05a9fc849b71ab21123db605762f6b23a91df9`.
-- Macro Stage S0 is complete. No S1 or product functionality has started.
-- Owner accepted Governance Head `a750d00ac914cdab16fc9418a39771c9bfb27676`, and `main` was fast-forwarded to that head during controlled Governance Finalization.
-- Governance is now in State 2. Acceptance and entry into `main` do not grant product execution authorization.
+- S0 — native SwiftUI iPhone project, composition root and Unit/UI test harness.
+- S1 — Entry domain identity, kinds, statuses, timestamps, review period and content rules.
+- S2 — versioned SwiftData persistence, canonical Entry/ImageMetadata models and private owned-media storage.
+- S3 — restart-safe Quick Capture → Timeline vertical slice.
+- S4 — 0–9 ordered images, camera/Photos entry points, Entry editing, archive/delete, thumbnails, resource guardrails and recovery.
+- Milestone A — four independent review lenses passed with no remaining Critical/High findings; evidence is in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
+- S5 — Library Inbox/All Entries/Archived views, optional lightweight Tags, Entry-Tag Links, organization transitions, deletion cleanup and global local Entry/Review/Tag search.
 
-## Verified Executable Baseline
+## Verified Executable State
 
-The repository contains:
+The app launches into a native three-tab shell with Today, Timeline and Library. Global Quick Capture and Search remain available without adding Search as a tab. Users can capture and edit text or owned images, leave Entries in Inbox, mark them organized, archive/restore them, add optional Tags and find Entry, Review Entry and Tag content locally.
 
-- native project `PersonalGrowthOS.xcodeproj`;
-- App target `PersonalGrowthOS`;
-- Unit Test target `PersonalGrowthOSTests`;
-- UI Test target `PersonalGrowthOSUITests`;
-- shared scheme `PersonalGrowthOS`;
-- Debug and Release build configurations;
-- SwiftUI `@main` lifecycle and the unchanged static `RootPlaceholderView`;
-- `AppConfiguration`, which resolves only standard and UI-testing launch modes from one centralized `ProcessInfo` boundary;
-- `AppContainer`, which contains only the resolved startup configuration;
-- explicit one-time composition in `PersonalGrowthOSApp` and container injection into `RootPlaceholderView`;
-- stable `root-placeholder` accessibility identification for launch verification;
-- five focused configuration/composition Unit Tests;
-- one identifier-based UI launch smoke test.
+SwiftData schema V2 adds `Tag` and generic `ObjectLink` while migrating V1 Entry/ImageMetadata stores through an explicit lightweight stage. Tag names and Latin search normalize case and width; Chinese search uses literal substring matching. Entry and Tag permanent deletion remove their Links transactionally, and startup validates that no dangling Links are published.
 
-The project is configured for iPhone, iOS 17.0, automatic signing, and bundle identifier `com.yocruzer.PersonalGrowthOS`. No shared Development Team, Storyboard, entitlements, capabilities, or package dependency is present.
+Original image bytes remain in the private media tree, not SwiftData. CloudKit remains disabled. No network API, remote service, third-party dependency, entitlement or unapproved capability is present.
+
+## Latest Validation
+
+- Full shared-scheme test run on iPhone 17 Pro simulator, iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`): 55 Unit Tests and 8 UI Tests passed; 0 failures and 0 skips.
+- S5 UI acceptance covers organizing without a required Tag and creating a Tag, linking it to an Entry, searching the Tag globally and opening the linked Entry.
+- The representative search fixture contains 5,000 Entries and 250 Tags. Three measured local searches completed in 0.427, 0.424 and 0.455 seconds, all below the explicit 1.0-second simulator threshold without a separate index.
+- Migration, normalized uniqueness, status transitions, Entry/Tag deletion rollback, Link uniqueness, dangling-Link detection, Chinese literal substring and normalized Latin search all passed focused tests.
+- `git diff --check` and static scope scans pass.
 
 ## Approved Architectural Direction
 
-The existing Foundation and implementation planning baselines establish these decisions:
-
-- V1 targets iPhone on iOS 17+ using SwiftUI and Local First behavior.
-- Core workflows must work offline; iCloud multi-device synchronization is outside V1.
-- V1 uses one native App project with Unit Test and lightweight UI Test targets; no Swift Package split is planned at the start.
-- SwiftData with an explicit `VersionedSchema` is the planned persistence approach, but it is not implemented.
-- Each persisted concept has one canonical persisted model; a duplicate field-complete domain model is not planned.
-- Original image files belong in the App's private file container while persistence stores metadata and relative ownership information.
-- Export/import is a real V1 capability, planned as a standard ZIP package containing `manifest.json`, `data.json`, and `media/`.
-- The product information architecture uses Today, Timeline, Growth, and Library, with global Quick Capture and Search; none of this navigation is implemented.
+- One native iPhone app, iOS 17+, SwiftUI and Local First.
+- One canonical SwiftData model per persisted concept; no field-complete duplicate domain/persistence model.
+- Versioned schema migrations remain explicit. Schema V2 is the current app schema.
+- Original media stays in the app-private file container; persistence stores metadata and relative ownership paths.
+- Inbox is a status, not a task list, and Tags are optional.
+- Search is global, local and basic in V1; no FTS, OCR, semantic or AI search.
+- Links use typed endpoint UUIDs with a deduplication key and explicit integrity validation.
 
 ## Known Limitations
 
-- The App displays only static bootstrap text and has no product behavior.
-- No domain model, SwiftData schema, persistence, media handling, navigation, feature UI, search, or import/export exists.
-- The current tests verify only the S0 startup configuration, composition root, and placeholder launch seam; they do not test product behavior.
-- `Docs/S0_EXECUTION_PLAN.md`, `Docs/S0A_TASK.md`, and parts of `Docs/V1_IMPLEMENTATION_PLAN.md` retain historical planning-status language written before S0 completion. The commit history and current repository contents are the evidence of the implemented S0 baseline.
-- `Docs/ROADMAP.md` remains planned and absent; this does not block the next approved implementation batch.
-- The V1 Autonomous Build Program has not started. `feat/v1-autonomous-build` does not exist, and S1–S10 remain unstarted.
-- Governance is accepted, but a separate Owner startup instruction must be recorded in `Docs/CURRENT_TASK.md` before the Program can run.
+- Growth, Habit/HabitLog, Goal/Flag, Review generation and Export/Import are not implemented yet; they belong to S6–S9.
+- Camera and real Photos Picker/permission behavior remain Owner-deferred physical-device validation.
+- Entry and Tag mutations currently use the shared main `ModelContext`; rollback can also discard unrelated unsaved UI changes. This remains an accepted non-blocking follow-up until a low-risk isolation boundary is justified.
+- Search is an in-memory normalized scan. The measured V1 fixture is comfortably within threshold; no separate index is warranted at this stage.
+- Physical-device checks, Owner data, formal Dogfooding and the continuous 30-day V1 Exit Observation have not been performed.
 
 ## Repository Health
 
-- The working tree was clean when Governance Finalization began.
-- Pre-finalization local `main`, local `origin/main`, and remote `main` were verified at `8c05a9fc849b71ab21123db605762f6b23a91df9`.
-- `docs/v1-autonomous-governance` was verified at accepted head `a750d00ac914cdab16fc9418a39771c9bfb27676`, ahead 3 and behind 0 relative to pre-finalization `main`.
-- `main` was advanced to the accepted Governance Head using `git merge --ff-only`.
-- The S0B commit `8c05a9fc849b71ab21123db605762f6b23a91df9` is therefore present on `main` and `origin/main`.
-- Xcode 26.5 (build 17F42) discovers the expected project, three targets, two configurations, and shared scheme.
-- A Debug build succeeded on an iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`).
-- The full shared scheme test run passed on that simulator: 6 tests passed, 0 failed, and 0 skipped (5 Unit Tests and 1 UI Test).
-- An independent repeat of the UI smoke test passed: 1 test passed, 0 failed, and 0 skipped.
-- A standard launch without UI-testing inputs was installed, launched, and visually confirmed to show the original `Personal Growth OS` / `Project Bootstrap` placeholder.
-- Static checks confirm iOS 17.0, iPhone-only targeting, automatic signing, expected bundle identifiers, and no persisted Development Team, Storyboard, entitlement, capability, or package dependency.
-- Static checks also confirm no SwiftData, product domain model, product service, third-party dependency, or scattered `ProcessInfo` access.
-- Repository whitespace validation (`git diff --check`) passes.
-- The latest build and test evidence above is the verified S0B baseline; this documentation-only Governance Preparation does not claim a new Xcode build or test run.
+- Branch: `feat/v1-autonomous-build`, based on `b82d6e656592663f679440e318d00bef06f50556`.
+- S1–S4 and Milestone A review/follow-up commits are present and verified.
+- S5 is committed and verified by the coherent Stage commit containing this status update (`feat: add library tags and search`).
+- `main` and `origin/main` remain unchanged at the fixed Program baseline.
+- No active blocker or Mandatory Escalation condition is present.
 
 ## Next Action
 
-- Wait for an independent, explicit Owner startup instruction.
-- Do not create `feat/v1-autonomous-build`, start S1–S10, or modify product code while in State 2.
-- When startup is separately authorized, record that authorization in `Docs/CURRENT_TASK.md` and follow the Program Startup checks before entering State 3.
+Begin S6 Habit and HabitLog at its schema/domain boundary and continue through the authorized technical gate.
