@@ -23,6 +23,17 @@ struct TrashedMediaFile: Equatable {
     let trashRelativePath: String
 }
 
+struct MediaIntegrityReport: Equatable {
+    var removedStagingFileCount = 0
+    var missingOriginalPaths: [String] = []
+    var recoveryFilePaths: [String] = []
+    var removedThumbnailCount = 0
+
+    var requiresAttention: Bool {
+        !missingOriginalPaths.isEmpty || !recoveryFilePaths.isEmpty
+    }
+}
+
 enum MediaStoreError: Error, Equatable {
     case sourceMissing
     case unsupportedContentType(String)
@@ -44,14 +55,21 @@ final class MediaStore {
     let rootURL: URL
     private let fileManager: FileManager
     private let availableCapacity: () throws -> Int64
+    private let beforeStoreCopy: ((Int) throws -> Void)?
+    private let beforeTrashRestore: (() throws -> Void)?
+    private var storeCopyCount = 0
 
     init(
         rootURL: URL,
         fileManager: FileManager = .default,
-        availableCapacity: (() throws -> Int64)? = nil
+        availableCapacity: (() throws -> Int64)? = nil,
+        beforeStoreCopy: ((Int) throws -> Void)? = nil,
+        beforeTrashRestore: (() throws -> Void)? = nil
     ) {
         self.rootURL = rootURL.standardizedFileURL
         self.fileManager = fileManager
+        self.beforeStoreCopy = beforeStoreCopy
+        self.beforeTrashRestore = beforeTrashRestore
         self.availableCapacity = availableCapacity ?? {
             let values = try rootURL.deletingLastPathComponent().resourceValues(forKeys: [
                 .volumeAvailableCapacityForImportantUsageKey,
@@ -102,6 +120,8 @@ final class MediaStore {
             if fileManager.fileExists(atPath: stagingURL.path) {
                 try fileManager.removeItem(at: stagingURL)
             }
+            storeCopyCount += 1
+            try beforeStoreCopy?(storeCopyCount)
             try fileManager.copyItem(at: source.url, to: stagingURL)
             let data = try Data(contentsOf: stagingURL, options: .mappedIfSafe)
             let dimensions = try validatedDimensions(at: stagingURL, declaredContentType: source.contentType)
@@ -179,6 +199,7 @@ final class MediaStore {
         guard !fileManager.fileExists(atPath: originalURL.path) else {
             throw MediaStoreError.destinationAlreadyExists
         }
+        try beforeTrashRestore?()
         try fileManager.createDirectory(at: originalURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fileManager.moveItem(at: trashURL, to: originalURL)
     }
@@ -208,11 +229,42 @@ final class MediaStore {
                 trashRelativePath: "Trash/\(originalRelativePath)"
             )
             if referencedOriginalPaths.contains(originalRelativePath) {
-                try restoreFromTrash(record)
+                let originalURL = try fileURL(for: originalRelativePath)
+                if fileManager.fileExists(atPath: originalURL.path) {
+                    try purgeTrash(record)
+                } else {
+                    try restoreFromTrash(record)
+                }
             } else {
                 try purgeTrash(record)
             }
         }
+    }
+
+    func reconcile(referencedOriginalPaths: Set<String>) throws -> MediaIntegrityReport {
+        var report = MediaIntegrityReport()
+        let stagingRoot = rootURL.appendingPathComponent("Staging", isDirectory: true)
+        if fileManager.fileExists(atPath: stagingRoot.path) {
+            report.removedStagingFileCount = try regularFiles(at: stagingRoot).count
+            try fileManager.removeItem(at: stagingRoot)
+        }
+
+        let originalsRoot = rootURL.appendingPathComponent("Media/Originals", isDirectory: true)
+        for originalURL in try regularFiles(at: originalsRoot) {
+            let relativePath = try relativePath(for: originalURL)
+            guard !referencedOriginalPaths.contains(relativePath) else { continue }
+            let recoveryRelativePath = try moveOrphanToRecovery(originalURL, originalRelativePath: relativePath)
+            report.recoveryFilePaths.append(recoveryRelativePath)
+        }
+
+        report.missingOriginalPaths = try referencedOriginalPaths
+            .filter { !fileManager.fileExists(atPath: try fileURL(for: $0).path) }
+            .sorted()
+
+        let recoveryRoot = rootURL.appendingPathComponent("Recovery/Orphaned", isDirectory: true)
+        let existingRecoveryPaths = try regularFiles(at: recoveryRoot).map { try relativePath(for: $0) }
+        report.recoveryFilePaths = Array(Set(report.recoveryFilePaths + existingRecoveryPaths)).sorted()
+        return report
     }
 
     func originalsByteCount() throws -> Int64 {
@@ -239,6 +291,47 @@ final class MediaStore {
         default:
             throw MediaStoreError.unsupportedContentType(contentType)
         }
+    }
+
+    private func regularFiles(at directory: URL) throws -> [URL] {
+        guard fileManager.fileExists(atPath: directory.path),
+              let enumerator = fileManager.enumerator(
+                at: directory,
+                includingPropertiesForKeys: [.isRegularFileKey]
+              ) else { return [] }
+        return try (enumerator.allObjects as? [URL] ?? []).filter {
+            try $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true
+        }
+    }
+
+    private func relativePath(for url: URL) throws -> String {
+        let rootPrefix = rootURL.standardizedFileURL.path + "/"
+        let path = url.standardizedFileURL.path
+        guard path.hasPrefix(rootPrefix) else { throw MediaStoreError.invalidRelativePath }
+        return String(path.dropFirst(rootPrefix.count))
+    }
+
+    private func moveOrphanToRecovery(
+        _ originalURL: URL,
+        originalRelativePath: String
+    ) throws -> String {
+        var recoveryRelativePath = "Recovery/Orphaned/\(originalRelativePath)"
+        var recoveryURL = try fileURL(for: recoveryRelativePath)
+        if fileManager.fileExists(atPath: recoveryURL.path) {
+            let stem = recoveryURL.deletingPathExtension().lastPathComponent
+            let suffix = recoveryURL.pathExtension
+            let uniqueName = suffix.isEmpty
+                ? "\(stem)-\(UUID().uuidString.lowercased())"
+                : "\(stem)-\(UUID().uuidString.lowercased()).\(suffix)"
+            recoveryURL = recoveryURL.deletingLastPathComponent().appendingPathComponent(uniqueName)
+            recoveryRelativePath = try relativePath(for: recoveryURL)
+        }
+        try fileManager.createDirectory(
+            at: recoveryURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try fileManager.moveItem(at: originalURL, to: recoveryURL)
+        return recoveryRelativePath
     }
 
     private func validatedDimensions(

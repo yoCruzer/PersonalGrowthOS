@@ -41,7 +41,26 @@ struct AppShell: View {
             }
         }
         .sheet(isPresented: $isShowingStorage) {
-            MediaStorageView(mediaStore: container.mediaStore)
+            MediaStorageView(
+                mediaStore: container.mediaStore,
+                integrityReport: container.mediaIntegrityReport
+            )
+        }
+        .overlay(alignment: .bottomTrailing) {
+            Button {
+                isCapturing = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.title2.bold())
+                    .frame(width: 52, height: 52)
+                    .background(.tint, in: Circle())
+                    .foregroundStyle(.white)
+                    .shadow(radius: 4, y: 2)
+            }
+            .accessibilityLabel("Quick Capture")
+            .accessibilityIdentifier("global-capture-button")
+            .padding(.trailing, 20)
+            .padding(.bottom, 72)
         }
     }
 }
@@ -76,21 +95,27 @@ private struct TimelineView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
 
-    @Query(filter: #Predicate<Entry> { $0.statusRawValue != "archived" }, sort: [
+    @Query(sort: [
         SortDescriptor(\Entry.occurredAt, order: .reverse),
-        SortDescriptor(\Entry.createdAt, order: .reverse)
+        SortDescriptor(\Entry.createdAt, order: .reverse),
+        SortDescriptor(\Entry.id, order: .forward)
     ]) private var entries: [Entry]
+    @State private var showsArchived = false
+
+    private var displayedEntries: [Entry] {
+        entries.filter { showsArchived ? $0.status == .archived : $0.status != .archived }
+    }
 
     var body: some View {
         Group {
-            if entries.isEmpty {
+            if displayedEntries.isEmpty {
                 ContentUnavailableView(
-                    "No Entries Yet",
-                    systemImage: "clock",
-                    description: Text("Your captures will appear here.")
+                    showsArchived ? "No Archived Entries" : "No Entries Yet",
+                    systemImage: showsArchived ? "archivebox" : "clock",
+                    description: Text(showsArchived ? "Archived entries will appear here." : "Your captures will appear here.")
                 )
             } else {
-                List(entries) { entry in
+                List(displayedEntries) { entry in
                     NavigationLink {
                         EntryDetailView(
                             entry: entry,
@@ -104,12 +129,23 @@ private struct TimelineView: View {
             }
         }
         .navigationTitle("Timeline")
+        .toolbar {
+            Button {
+                showsArchived.toggle()
+            } label: {
+                Label(
+                    showsArchived ? "Show Active" : "Show Archived",
+                    systemImage: showsArchived ? "clock" : "archivebox"
+                )
+            }
+        }
         .accessibilityIdentifier("timeline-view")
     }
 }
 
 private struct MediaStorageView: View {
     let mediaStore: MediaStore
+    let integrityReport: MediaIntegrityReport
 
     @Environment(\.dismiss) private var dismiss
     @State private var byteCount: Int64?
@@ -129,6 +165,26 @@ private struct MediaStorageView: View {
                     Text("Media Storage")
                 } footer: {
                     Text("Original photos are stored privately on this device.")
+                }
+                if integrityReport.requiresAttention {
+                    Section {
+                        if !integrityReport.missingOriginalPaths.isEmpty {
+                            Label(
+                                "\(integrityReport.missingOriginalPaths.count) photo(s) are missing",
+                                systemImage: "exclamationmark.triangle"
+                            )
+                        }
+                        if !integrityReport.recoveryFilePaths.isEmpty {
+                            Label(
+                                "\(integrityReport.recoveryFilePaths.count) unlinked photo(s) were preserved",
+                                systemImage: "lifepreserver"
+                            )
+                        }
+                    } header: {
+                        Text("Recovery")
+                    } footer: {
+                        Text("The app preserved recoverable files instead of deleting them. Keep an app backup before troubleshooting.")
+                    }
                 }
             }
             .navigationTitle("Settings")
@@ -155,7 +211,11 @@ private struct TimelineRow: View {
                 Text(body)
             }
             if let image = entry.images.sorted(by: { $0.sortOrder < $1.sortOrder }).first {
-                DownsampledOriginalView(metadata: image, thumbnailStore: thumbnailStore)
+                DownsampledOriginalView(
+                    metadata: image,
+                    thumbnailStore: thumbnailStore,
+                    accessibilityLabel: "First photo in entry"
+                )
             }
             Text(entry.occurredAt, style: .date)
                 .font(.caption)
@@ -169,6 +229,7 @@ private struct TimelineRow: View {
 struct DownsampledOriginalView: View {
     let metadata: ImageMetadata
     let thumbnailStore: ThumbnailStore
+    var accessibilityLabel = "Entry photo"
 
     var body: some View {
         if let image = thumbnailStore.image(for: metadata) {
@@ -178,6 +239,7 @@ struct DownsampledOriginalView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 160)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+                .accessibilityLabel(accessibilityLabel)
         } else {
             Label("Image unavailable", systemImage: "photo.badge.exclamationmark")
                 .foregroundStyle(.secondary)

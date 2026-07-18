@@ -161,7 +161,8 @@ final class EntryRepository {
     func fetchAll() throws -> [Entry] {
         let descriptor = FetchDescriptor<Entry>(sortBy: [
             SortDescriptor(\Entry.occurredAt, order: .reverse),
-            SortDescriptor(\Entry.createdAt, order: .reverse)
+            SortDescriptor(\Entry.createdAt, order: .reverse),
+            SortDescriptor(\Entry.id, order: .forward)
         ])
         return try context.fetch(descriptor)
     }
@@ -224,6 +225,10 @@ struct EntryCreationDraft {
     }
 }
 
+enum EntryMediaOperationError: Error, Equatable {
+    case rollbackIncomplete
+}
+
 @MainActor
 final class EntryCreationService {
     private let persistence: any EntryPersisting
@@ -278,12 +283,20 @@ final class EntryCreationService {
             persistence.insert(entry)
             try persistence.save()
             return entry
-        } catch {
+        } catch let operationError {
             persistence.rollback()
+            var rollbackIncomplete = false
             for storedFile in storedFiles {
-                try? mediaStore.removeOriginal(at: storedFile.relativePath)
+                do {
+                    try mediaStore.removeOriginal(at: storedFile.relativePath)
+                } catch {
+                    rollbackIncomplete = true
+                }
             }
-            throw error
+            if rollbackIncomplete {
+                throw EntryMediaOperationError.rollbackIncomplete
+            }
+            throw operationError
         }
     }
 }
@@ -318,7 +331,7 @@ struct EntryEditingDraft {
     let title: String?
     let body: String?
     let occurredAt: Date
-    let retainedImageIDs: Set<UUID>
+    let retainedImageIDs: [UUID]
     let addedImages: [MediaSource]
 }
 
@@ -342,10 +355,13 @@ final class EntryEditingService {
     }
 
     func update(_ entry: Entry, with draft: EntryEditingDraft) throws {
-        let retained = entry.images
-            .filter { draft.retainedImageIDs.contains($0.id) }
-            .sorted { $0.sortOrder < $1.sortOrder }
-        let removed = entry.images.filter { !draft.retainedImageIDs.contains($0.id) }
+        let imagesByID = Dictionary(
+            entry.images.map { ($0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let retained = draft.retainedImageIDs.compactMap { imagesByID[$0] }
+        let retainedIDs = Set(draft.retainedImageIDs)
+        let removed = imagesByID.values.filter { !retainedIDs.contains($0.id) }
         let finalImageCount = retained.count + draft.addedImages.count
         try EntryRules.validateContent(body: draft.body, imageCount: finalImageCount)
 
@@ -354,6 +370,10 @@ final class EntryEditingService {
         let originalOccurredAt = entry.occurredAt
         let originalUpdatedAt = entry.updatedAt
         let originalImages = entry.images
+        let originalSortOrders = Dictionary(
+            entry.images.map { ($0.id, $0.sortOrder) },
+            uniquingKeysWith: { first, _ in first }
+        )
         var addedFiles: [StoredMediaFile] = []
         var trashedFiles: [TrashedMediaFile] = []
 
@@ -391,25 +411,44 @@ final class EntryEditingService {
             entry.updatedAt = timestamp
             entry.images = retained + addedMetadata
             try persistence.save()
-        } catch {
+        } catch let operationError {
             persistence.rollback()
+            var rollbackIncomplete = false
             for file in addedFiles {
-                try? mediaStore.removeOriginal(at: file.relativePath)
+                do {
+                    try mediaStore.removeOriginal(at: file.relativePath)
+                } catch {
+                    rollbackIncomplete = true
+                }
             }
             for file in trashedFiles.reversed() {
-                try? mediaStore.restoreFromTrash(file)
+                do {
+                    try mediaStore.restoreFromTrash(file)
+                } catch {
+                    rollbackIncomplete = true
+                }
             }
             entry.title = originalTitle
             entry.body = originalBody
             entry.occurredAt = originalOccurredAt
             entry.updatedAt = originalUpdatedAt
             entry.images = originalImages
-            originalImages.forEach { $0.entry = entry }
-            throw error
+            originalImages.forEach {
+                $0.entry = entry
+                $0.sortOrder = originalSortOrders[$0.id] ?? $0.sortOrder
+            }
+            if rollbackIncomplete {
+                throw EntryMediaOperationError.rollbackIncomplete
+            }
+            throw operationError
         }
 
         for file in trashedFiles {
-            try? mediaStore.purgeTrash(file)
+            do {
+                try mediaStore.purgeTrash(file)
+            } catch {
+                // Startup reconciliation safely retries committed trash cleanup.
+            }
         }
         removed.forEach { thumbnailCleanup($0.id) }
     }
@@ -449,6 +488,21 @@ final class EntryDeletionService {
         }
     }
 
+    func restore(_ entry: Entry) throws {
+        let originalStatus = entry.status
+        let originalUpdatedAt = entry.updatedAt
+        entry.status = .organized
+        entry.updatedAt = now()
+        do {
+            try persistence.save()
+        } catch {
+            persistence.rollback()
+            entry.status = originalStatus
+            entry.updatedAt = originalUpdatedAt
+            throw error
+        }
+    }
+
     func permanentlyDelete(_ entry: Entry) throws {
         let imageIDs = entry.images.map(\.id)
         var trashedFiles: [TrashedMediaFile] = []
@@ -458,15 +512,27 @@ final class EntryDeletionService {
             }
             persistence.delete(entry)
             try persistence.save()
-        } catch {
+        } catch let operationError {
             persistence.rollback()
+            var rollbackIncomplete = false
             for trashedFile in trashedFiles.reversed() {
-                try? mediaStore.restoreFromTrash(trashedFile)
+                do {
+                    try mediaStore.restoreFromTrash(trashedFile)
+                } catch {
+                    rollbackIncomplete = true
+                }
             }
-            throw error
+            if rollbackIncomplete {
+                throw EntryMediaOperationError.rollbackIncomplete
+            }
+            throw operationError
         }
         for trashedFile in trashedFiles {
-            try? mediaStore.purgeTrash(trashedFile)
+            do {
+                try mediaStore.purgeTrash(trashedFile)
+            } catch {
+                // Startup reconciliation safely retries committed trash cleanup.
+            }
         }
         imageIDs.forEach(thumbnailCleanup)
     }

@@ -7,7 +7,7 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S4 complete — Milestone A independent review pending |
+| Current Macro Stage | S4 complete — Milestone A review fixes validated; fixed-commit re-review pending |
 | Completed Macro Stages | S1, S2, S3, S4 |
 
 ## Program Baseline
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-S4 is technically complete. Milestone A is at the fixed-commit independent review boundary before S5.
+S4 is technically complete. Milestone A review findings have been resolved in a validated review-fix candidate; fixed-commit re-review remains before S5.
 
 ## Current Internal Task
 
-Create the coherent S4 Stage commit, run four independent read-only review lenses against that fixed commit, resolve blocking findings, record the Milestone A Review Manifest and enter S5.
+Commit the validated Milestone A fixes, run four independent read-only re-review lenses against that fixed commit, record the Milestone A Review Manifest and enter S5.
 
 ## Completed Macro Stages
 
@@ -39,15 +39,15 @@ Create the coherent S4 Stage commit, run four independent read-only review lense
 
 ## Latest Verified Commit
 
-`a00b2218f631f453f434fc3087b4b78ec8309f15` — verified S3 Stage commit. S4 validation is complete; its Stage commit contains this status update.
+`92207c0b2dff58bbf2b28870cd9ff6630badaec1` — verified S4 Stage commit. The review-fix candidate is validated and awaiting its fixed commit.
 
 ## Latest Build Result
 
-Milestone A: the complete shared scheme built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). The App launch and core Today/Capture/Timeline/detail/edit/delete paths were exercised by UI automation; Today was also visually inspected during S3.
+Milestone A review-fix candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). The built app Info.plist contains `NSCameraUsageDescription`. UI automation exercised launch, global capture, Capture → Timeline → relaunch → edit → relaunch, archive → restore and permanent delete.
 
 ## Latest Test Result
 
-Milestone A full shared-scheme result: 36 tests passed with 0 failures and 0 skips (33 Unit Tests and 3 UI Tests). Coverage includes restart persistence, text/image/multi-image storage, capacity and byte limits, atomic edit/delete rollback, interrupted Trash recovery, thumbnail regeneration, capture → Timeline → relaunch, edit and permanent delete.
+Milestone A review-fix combined shared-scheme gate: 45 tests passed with 0 failures and 0 skips (40 Unit Tests and 5 UI Tests). Coverage now includes on-disk rich Entry reopen and image ordering, stable tie-breaking, multi-image copy/capacity/database failure matrices, explicit rollback-restore failure and next-launch recovery, Staging/orphan/missing-original reconciliation, exact 25 MiB and 80-megapixel boundaries, global capture, archive recovery and post-edit relaunch persistence.
 
 ## Important Decisions
 
@@ -63,11 +63,14 @@ Milestone A full shared-scheme result: 36 tests passed with 0 failures and 0 ski
 - S3 uses system Photos Picker and generic private-copy metadata; no Photos asset identifier or temporary URL is persisted.
 - S4 keeps the 25 MiB / 80-megapixel limits and 100 MiB free-space reserve as implementation configuration, not schema or Foundation contracts.
 - Original files remain the source of truth; 512-pixel JPEG thumbnails are reproducible cache files and are removed when their images are deleted.
+- Camera capture now stores `AVCapturePhoto.fileDataRepresentation()` bytes without UIImage recompression, and Photos Picker requests current encoding.
+- Startup reconciliation removes provably uncommitted Staging files, restores database-owned Trash files, preserves unreferenced Originals under private Recovery and reports missing Originals in Settings.
 
 ## Known Limitations
 
 - Milestone A still exposes only Today and Timeline; Growth and Library arrive in Milestone B.
 - Camera and real Photos Picker/permission behavior are implemented but remain Owner-deferred physical-device validation.
+- Entry mutations currently use the shared main `ModelContext`; isolating unrelated unsaved UI changes from a rollback is retained as a non-blocking architectural follow-up because changing context ownership is not a low-risk Milestone A patch.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
 
 ## Active Blockers
@@ -76,7 +79,7 @@ None.
 
 ## Next Action
 
-Create the coherent S4 Stage commit, verify the working tree is clean, then run Milestone A independent reviews and record the manifest.
+Create the Milestone A review-fix commit, run fixed-commit independent re-reviews, then record the manifest.
 
 ## Repository State
 
@@ -86,6 +89,6 @@ Create the coherent S4 Stage commit, verify the working tree is clean, then run 
 - S1: committed and verified.
 - S2: committed and verified.
 - S3: committed and verified.
-- S4: validation complete and ready for its Stage commit.
-- Milestone A full technical gate: passed; independent review pending.
+- S4: committed and verified at `92207c0b2dff58bbf2b28870cd9ff6630badaec1`.
+- Milestone A review fixes: combined 45-test gate passed; fixed commit and re-review pending.
 - S5–S10: not started.

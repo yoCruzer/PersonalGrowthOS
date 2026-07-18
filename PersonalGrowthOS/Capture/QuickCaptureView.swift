@@ -33,11 +33,32 @@ final class CaptureDraftState: ObservableObject {
         errorMessage = nil
     }
 
+    func removeImage(at index: Int) -> MediaSource? {
+        guard imageSources.indices.contains(index) else { return nil }
+        return imageSources.remove(at: index)
+    }
+
+    func moveImage(from index: Int, by offset: Int) {
+        let destination = index + offset
+        guard imageSources.indices.contains(index), imageSources.indices.contains(destination) else { return }
+        imageSources.swapAt(index, destination)
+    }
+
     func reportSaveFailure(_ error: Error) {
-        if let mediaError = error as? MediaStoreError,
-           case .insufficientCapacity = mediaError {
-            errorMessage = "There is not enough storage to save this photo. Your draft was kept."
-        } else {
+        switch error {
+        case EntryValidationError.emptyContent:
+            errorMessage = "Add text or at least one photo before saving."
+        case MediaStoreError.insufficientCapacity:
+            errorMessage = "There is not enough storage to save these photos. Your draft was kept."
+        case MediaStoreError.unsupportedContentType:
+            errorMessage = "One photo uses an unsupported format. Your draft was kept."
+        case MediaStoreError.originalTooLarge:
+            errorMessage = "One photo is larger than 25 MB. Your draft was kept."
+        case MediaStoreError.imageTooLarge:
+            errorMessage = "One photo exceeds the 80-megapixel limit. Your draft was kept."
+        case EntryMediaOperationError.rollbackIncomplete:
+            errorMessage = "The entry was not saved and media recovery is required. Restart the app before trying again."
+        default:
             errorMessage = "The entry could not be saved. Your draft was kept."
         }
     }
@@ -77,7 +98,8 @@ struct QuickCaptureView: View {
                     PhotosPicker(
                         selection: $selectedItems,
                         maxSelectionCount: EntryRules.maximumImageCount,
-                        matching: .images
+                        matching: .images,
+                        preferredItemEncoding: .current
                     ) {
                         Label(
                             photoButtonTitle,
@@ -92,13 +114,23 @@ struct QuickCaptureView: View {
                         Label("Take Photo", systemImage: "camera")
                     }
                     .disabled(
-                        !UIImagePickerController.isSourceTypeAvailable(.camera)
+                        !CameraCaptureView.isAvailable
                             || draft.imageSources.count >= EntryRules.maximumImageCount
                     )
 
                     if !draft.imageSources.isEmpty {
-                        Label("\(draft.imageSources.count) photo(s) ready", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
+                        ForEach(Array(draft.imageSources.enumerated()), id: \.offset) { index, source in
+                            LocalImagePreviewRow(
+                                source: source,
+                                position: index + 1,
+                                total: draft.imageSources.count,
+                                canMoveUp: index > 0,
+                                canMoveDown: index < draft.imageSources.count - 1,
+                                moveUp: { draft.moveImage(from: index, by: -1) },
+                                moveDown: { draft.moveImage(from: index, by: 1) },
+                                remove: { removeImage(at: index) }
+                            )
+                        }
                     }
                     if draft.isLoadingImage {
                         ProgressView("Loading photo…")
@@ -121,7 +153,12 @@ struct QuickCaptureView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
-                        .disabled(isSaving || draft.isLoadingImage)
+                        .disabled(
+                            isSaving
+                                || draft.isLoadingImage
+                                || (draft.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                    && draft.imageSources.isEmpty)
+                        )
                         .accessibilityIdentifier("capture-save")
                 }
             }
@@ -157,7 +194,7 @@ struct QuickCaptureView: View {
             var newURLs: [URL] = []
             do {
                 var sources: [MediaSource] = []
-                for item in items {
+                for (index, item) in items.enumerated() {
                     guard let data = try await item.loadTransferable(type: Data.self) else {
                         throw CaptureImageLoadError.noData
                     }
@@ -171,7 +208,7 @@ struct QuickCaptureView: View {
                     newURLs.append(url)
                     sources.append(MediaSource(
                         url: url,
-                        originalFilename: "Selected Photo.\(fileExtension)",
+                        originalFilename: "Selected Photo \(index + 1).\(fileExtension)",
                         contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
                     ))
                 }
@@ -212,63 +249,56 @@ struct QuickCaptureView: View {
         }
         temporaryImageURLs = []
     }
+
+    private func removeImage(at index: Int) {
+        guard let source = draft.removeImage(at: index) else { return }
+        do {
+            try FileManager.default.removeItem(at: source.url)
+        } catch {
+            // Temporary files are retried during view cleanup.
+        }
+    }
 }
 
-private struct CameraCaptureView: UIViewControllerRepresentable {
-    let completion: (Result<MediaSource, Error>) -> Void
-    let cancellation: () -> Void
+struct LocalImagePreviewRow: View {
+    let source: MediaSource
+    let position: Int
+    let total: Int
+    let canMoveUp: Bool
+    let canMoveDown: Bool
+    let moveUp: () -> Void
+    let moveDown: () -> Void
+    let remove: () -> Void
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(completion: completion, cancellation: cancellation)
-    }
-
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-        let controller = UIImagePickerController()
-        controller.sourceType = .camera
-        controller.delegate = context.coordinator
-        return controller
-    }
-
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-
-    final class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        let completion: (Result<MediaSource, Error>) -> Void
-        let cancellation: () -> Void
-
-        init(
-            completion: @escaping (Result<MediaSource, Error>) -> Void,
-            cancellation: @escaping () -> Void
-        ) {
-            self.completion = completion
-            self.cancellation = cancellation
-        }
-
-        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            cancellation()
-            picker.dismiss(animated: true)
-        }
-
-        func imagePickerController(
-            _ picker: UIImagePickerController,
-            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
-        ) {
-            do {
-                guard let image = info[.originalImage] as? UIImage,
-                      let data = image.jpegData(compressionQuality: 1) else {
-                    throw CaptureImageLoadError.noData
-                }
-                let url = FileManager.default.temporaryDirectory
-                    .appendingPathComponent("PGOS-Camera-\(UUID().uuidString).jpg")
-                try data.write(to: url, options: .atomic)
-                completion(.success(MediaSource(
-                    url: url,
-                    originalFilename: "Camera Photo.jpg",
-                    contentType: "image/jpeg"
-                )))
-            } catch {
-                completion(.failure(error))
+    var body: some View {
+        HStack(spacing: 12) {
+            if let image = UIImage(contentsOfFile: source.url.path) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .accessibilityHidden(true)
             }
-            picker.dismiss(animated: true)
+            VStack(alignment: .leading) {
+                Text("Photo \(position) of \(total)")
+                Text(source.originalFilename)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Menu {
+                Button("Move Up", systemImage: "arrow.up", action: moveUp)
+                    .disabled(!canMoveUp)
+                Button("Move Down", systemImage: "arrow.down", action: moveDown)
+                    .disabled(!canMoveDown)
+                Button("Remove", systemImage: "trash", role: .destructive, action: remove)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .accessibilityLabel("Actions for photo \(position) of \(total)")
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Photo \(position) of \(total), \(source.originalFilename)")
     }
 }

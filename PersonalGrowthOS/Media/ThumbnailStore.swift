@@ -42,4 +42,23 @@ final class ThumbnailStore {
         let url = rootURL.appendingPathComponent("\(imageID.uuidString.lowercased()).jpg")
         try? fileManager.removeItem(at: url)
     }
+
+    func reconcile(liveImageIDs: Set<UUID>) throws -> Int {
+        guard fileManager.fileExists(atPath: rootURL.path),
+              let enumerator = fileManager.enumerator(
+                at: rootURL,
+                includingPropertiesForKeys: [.isRegularFileKey]
+              ) else { return 0 }
+        var removedCount = 0
+        for case let url as URL in enumerator {
+            let values = try url.resourceValues(forKeys: [.isRegularFileKey])
+            guard values.isRegularFile == true,
+                  url.pathExtension.lowercased() == "jpg",
+                  let id = UUID(uuidString: url.deletingPathExtension().lastPathComponent),
+                  !liveImageIDs.contains(id) else { continue }
+            try fileManager.removeItem(at: url)
+            removedCount += 1
+        }
+        return removedCount
+    }
 }

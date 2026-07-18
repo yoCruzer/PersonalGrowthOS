@@ -7,12 +7,14 @@ struct AppContainer {
     let modelContainer: ModelContainer
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
+    let mediaIntegrityReport: MediaIntegrityReport
 
     init(
         configuration: AppConfiguration,
         modelContainer: ModelContainer,
         mediaStore: MediaStore,
-        thumbnailStore: ThumbnailStore? = nil
+        thumbnailStore: ThumbnailStore? = nil,
+        mediaIntegrityReport: MediaIntegrityReport = MediaIntegrityReport()
     ) {
         self.configuration = configuration
         self.modelContainer = modelContainer
@@ -21,6 +23,7 @@ struct AppContainer {
             rootURL: mediaStore.rootURL.appendingPathComponent("ThumbnailCache", isDirectory: true),
             mediaStore: mediaStore
         )
+        self.mediaIntegrityReport = mediaIntegrityReport
     }
 
     static func make(
@@ -52,8 +55,9 @@ struct AppContainer {
 
         let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
         let imageMetadata = try modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>())
+        let referencedPaths = Set(imageMetadata.map(\.relativePath))
         try mediaStore.recoverInterruptedTrash(
-            referencedOriginalPaths: Set(imageMetadata.map(\.relativePath))
+            referencedOriginalPaths: referencedPaths
         )
         let caches = try fileManager.url(
             for: .cachesDirectory,
@@ -61,15 +65,21 @@ struct AppContainer {
             appropriateFor: nil,
             create: true
         )
+        let thumbnailStore = ThumbnailStore(
+            rootURL: caches.appendingPathComponent("PersonalGrowthOS/Thumbnails", isDirectory: true),
+            mediaStore: mediaStore,
+            fileManager: fileManager
+        )
+        var integrityReport = try mediaStore.reconcile(referencedOriginalPaths: referencedPaths)
+        integrityReport.removedThumbnailCount = try thumbnailStore.reconcile(
+            liveImageIDs: Set(imageMetadata.map(\.id))
+        )
         return AppContainer(
             configuration: configuration,
             modelContainer: modelContainer,
             mediaStore: mediaStore,
-            thumbnailStore: ThumbnailStore(
-                rootURL: caches.appendingPathComponent("PersonalGrowthOS/Thumbnails", isDirectory: true),
-                mediaStore: mediaStore,
-                fileManager: fileManager
-            )
+            thumbnailStore: thumbnailStore,
+            mediaIntegrityReport: integrityReport
         )
     }
 }

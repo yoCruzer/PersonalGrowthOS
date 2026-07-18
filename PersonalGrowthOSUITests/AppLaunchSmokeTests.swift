@@ -40,6 +40,12 @@ final class AppLaunchSmokeTests: XCTestCase {
         editor.typeText("An edited memory")
         app.buttons["entry-edit-save"].tap()
         XCTAssertTrue(app.staticTexts["An edited memory"].waitForExistence(timeout: 5))
+
+        app.terminate()
+        app.launchArguments = ["-PGOSUITesting"]
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["An edited memory"].waitForExistence(timeout: 5))
     }
 
     func testPermanentDeleteRemovesEntryFromTimeline() {
@@ -59,5 +65,42 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.alerts.buttons["Delete"].tap()
 
         XCTAssertTrue(app.staticTexts["No Entries Yet"].waitForExistence(timeout: 5))
+    }
+
+    func testGlobalCaptureIsAvailableFromTimeline() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.tabBars.buttons["Timeline"].tap()
+        app.buttons["global-capture-button"].tap()
+
+        XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
+    }
+
+    func testArchivedEntryCanBeRestored() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.buttons["quick-capture-button"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("Archive and restore me")
+        app.buttons["capture-save"].tap()
+        app.staticTexts["Archive and restore me"].tap()
+        app.buttons["entry-actions"].tap()
+        app.buttons["Archive"].tap()
+
+        XCTAssertTrue(app.staticTexts["No Entries Yet"].waitForExistence(timeout: 5))
+        app.buttons["Show Archived"].tap()
+        XCTAssertTrue(app.staticTexts["Archive and restore me"].waitForExistence(timeout: 5))
+        app.staticTexts["Archive and restore me"].tap()
+        app.buttons["entry-actions"].tap()
+        app.buttons["Restore"].tap()
+        app.buttons["Show Active"].tap()
+
+        XCTAssertTrue(app.staticTexts["Archive and restore me"].waitForExistence(timeout: 5))
     }
 }

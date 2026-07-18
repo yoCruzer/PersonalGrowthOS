@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — Milestone A Independent Review |
+| Current checkpoint | V1 Autonomous Build Program — Milestone A Review Fix Validation |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S4 complete — Milestone A review before S5 |
+| Current Macro Stage | S4 complete — Milestone A review fixes validated before re-review |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is to fix the S4 Stage commit, run the required independent Milestone A reviews against that commit, resolve any Critical/High findings and record the Milestone A Review Manifest before entering S5.
+The immediate objective is to commit the validated Milestone A review fixes, run the required independent re-review against that fixed commit and record the Milestone A Review Manifest before entering S5.
 
 ## Scope
 
@@ -42,6 +42,6 @@ The immediate objective is to fix the S4 Stage commit, run the required independ
 
 ## Current Boundary
 
-Program Startup and S1–S4 are technically complete. Milestone A's full shared-scheme gate passed 36 tests with no failures or skips on the iPhone 17 Pro simulator.
+Program Startup and S1–S4 are technically complete. The Milestone A review-fix candidate passed the combined shared-scheme gate: 45 tests with no failures or skips on the iPhone 17 Pro simulator. The built app Info.plist contains the required camera usage description.
 
-Complete the fixed-commit Milestone A review, then proceed with S5 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
+Create the review-fix commit and run fixed-commit independent re-review, then proceed with S5 unless a blocking finding remains.

@@ -24,10 +24,12 @@ struct EntryDetailView: View {
             }
             if !entry.images.isEmpty {
                 Section("Photos") {
-                    ForEach(entry.images.sorted(by: { $0.sortOrder < $1.sortOrder })) { image in
+                    let images = entry.images.sorted(by: { $0.sortOrder < $1.sortOrder })
+                    ForEach(Array(images.enumerated()), id: \.element.id) { index, image in
                         DownsampledOriginalView(
                             metadata: image,
-                            thumbnailStore: thumbnailStore
+                            thumbnailStore: thumbnailStore,
+                            accessibilityLabel: "Photo \(index + 1) of \(images.count)"
                         )
                     }
                 }
@@ -43,7 +45,11 @@ struct EntryDetailView: View {
                 Button("Edit") { isEditing = true }
                     .accessibilityIdentifier("entry-edit")
                 Menu {
-                    Button("Archive", systemImage: "archivebox") { archive() }
+                    if entry.status == .archived {
+                        Button("Restore", systemImage: "arrow.uturn.backward") { restore() }
+                    } else {
+                        Button("Archive", systemImage: "archivebox") { archive() }
+                    }
                     Button("Delete Permanently", systemImage: "trash", role: .destructive) {
                         isConfirmingDelete = true
                     }
@@ -85,12 +91,25 @@ struct EntryDetailView: View {
         }
     }
 
+    private func restore() {
+        do {
+            try deletionService.restore(entry)
+            dismiss()
+        } catch {
+            errorMessage = "The entry was not restored. Its archived copy is unchanged."
+        }
+    }
+
     private func permanentlyDelete() {
         do {
             try deletionService.permanentlyDelete(entry)
             dismiss()
         } catch {
-            errorMessage = "The entry was not deleted. Its data and photos were restored."
+            if error is EntryMediaOperationError {
+                errorMessage = "The entry was not deleted and media recovery is required. Restart the app before trying again."
+            } else {
+                errorMessage = "The entry was not deleted. Its data remains available."
+            }
         }
     }
 
@@ -113,7 +132,7 @@ private struct EntryEditorView: View {
     @State private var title: String
     @State private var bodyText: String
     @State private var occurredAt: Date
-    @State private var retainedImageIDs: Set<UUID>
+    @State private var retainedImageIDs: [UUID]
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var addedImages: [MediaSource] = []
     @State private var temporaryURLs: [URL] = []
@@ -128,11 +147,14 @@ private struct EntryEditorView: View {
         _title = State(initialValue: entry.title ?? "")
         _bodyText = State(initialValue: entry.body ?? "")
         _occurredAt = State(initialValue: entry.occurredAt)
-        _retainedImageIDs = State(initialValue: Set(entry.images.map(\.id)))
+        _retainedImageIDs = State(initialValue: entry.images
+            .sorted(by: { $0.sortOrder < $1.sortOrder })
+            .map(\.id))
     }
 
     var body: some View {
-        let retainedCount = entry.images.filter { retainedImageIDs.contains($0.id) }.count
+        let retainedImages = retainedImageIDs.compactMap { id in entry.images.first { $0.id == id } }
+        let retainedCount = retainedImages.count
         let remainingSlots = max(0, EntryRules.maximumImageCount - retainedCount)
 
         NavigationStack {
@@ -148,20 +170,20 @@ private struct EntryEditorView: View {
                 Section("Occurred") {
                     DatePicker("Date and time", selection: $occurredAt)
                 }
-                if !entry.images.isEmpty {
+                if !retainedImages.isEmpty {
                     Section("Existing Photos") {
-                        ForEach(entry.images.sorted(by: { $0.sortOrder < $1.sortOrder })) { image in
-                            HStack {
-                                Label(image.originalFilename, systemImage: "photo")
-                                Spacer()
-                                Button(retainedImageIDs.contains(image.id) ? "Remove" : "Keep") {
-                                    if retainedImageIDs.contains(image.id) {
-                                        retainedImageIDs.remove(image.id)
-                                    } else {
-                                        retainedImageIDs.insert(image.id)
-                                    }
-                                }
-                            }
+                        ForEach(Array(retainedImages.enumerated()), id: \.element.id) { index, image in
+                            ExistingImageEditorRow(
+                                image: image,
+                                thumbnailStore: thumbnailStore,
+                                position: index + 1,
+                                total: retainedImages.count,
+                                canMoveUp: index > 0,
+                                canMoveDown: index < retainedImages.count - 1,
+                                moveUp: { retainedImageIDs.swapAt(index, index - 1) },
+                                moveDown: { retainedImageIDs.swapAt(index, index + 1) },
+                                remove: { retainedImageIDs.remove(at: index) }
+                            )
                         }
                     }
                 }
@@ -169,13 +191,25 @@ private struct EntryEditorView: View {
                     PhotosPicker(
                         selection: $selectedItems,
                         maxSelectionCount: remainingSlots,
-                        matching: .images
+                        matching: .images,
+                        preferredItemEncoding: .current
                     ) {
                         Label("Choose up to \(remainingSlots)", systemImage: "photo.on.rectangle")
                     }
                     .disabled(remainingSlots == 0)
                     if !addedImages.isEmpty {
-                        Text("\(addedImages.count) new photo(s) ready")
+                        ForEach(Array(addedImages.enumerated()), id: \.offset) { index, source in
+                            LocalImagePreviewRow(
+                                source: source,
+                                position: retainedCount + index + 1,
+                                total: retainedCount + addedImages.count,
+                                canMoveUp: index > 0,
+                                canMoveDown: index < addedImages.count - 1,
+                                moveUp: { addedImages.swapAt(index, index - 1) },
+                                moveDown: { addedImages.swapAt(index, index + 1) },
+                                remove: { removeAddedImage(at: index) }
+                            )
+                        }
                     }
                     if isLoading { ProgressView("Loading photos…") }
                 }
@@ -191,7 +225,13 @@ private struct EntryEditorView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
-                        .disabled(isLoading || isSaving)
+                        .disabled(
+                            isLoading
+                                || isSaving
+                                || (bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                    && retainedImageIDs.isEmpty
+                                    && addedImages.isEmpty)
+                        )
                         .accessibilityIdentifier("entry-edit-save")
                 }
             }
@@ -210,7 +250,7 @@ private struct EntryEditorView: View {
             var newURLs: [URL] = []
             do {
                 var sources: [MediaSource] = []
-                for item in items {
+                for (index, item) in items.enumerated() {
                     guard let data = try await item.loadTransferable(type: Data.self) else {
                         throw CaptureImageLoadError.noData
                     }
@@ -224,7 +264,7 @@ private struct EntryEditorView: View {
                     newURLs.append(url)
                     sources.append(MediaSource(
                         url: url,
-                        originalFilename: "Selected Photo.\(fileExtension)",
+                        originalFilename: "Selected Photo \(index + 1).\(fileExtension)",
                         contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
                     ))
                 }
@@ -259,12 +299,79 @@ private struct EntryEditorView: View {
             dismiss()
         } catch {
             isSaving = false
-            errorMessage = "The entry could not be updated. Your original entry is unchanged."
+            switch error {
+            case MediaStoreError.insufficientCapacity:
+                errorMessage = "There is not enough storage to add these photos. Your edits were kept."
+            case MediaStoreError.unsupportedContentType:
+                errorMessage = "One photo uses an unsupported format. Your edits were kept."
+            case MediaStoreError.originalTooLarge:
+                errorMessage = "One photo is larger than 25 MB. Your edits were kept."
+            case MediaStoreError.imageTooLarge:
+                errorMessage = "One photo exceeds the 80-megapixel limit. Your edits were kept."
+            case EntryMediaOperationError.rollbackIncomplete:
+                errorMessage = "The entry was not updated and media recovery is required. Restart the app before trying again."
+            default:
+                errorMessage = "The entry could not be updated. Your original entry is unchanged."
+            }
         }
     }
 
     private func removeTemporaryFiles() {
         for url in temporaryURLs { try? FileManager.default.removeItem(at: url) }
         temporaryURLs = []
+    }
+
+    private func removeAddedImage(at index: Int) {
+        guard addedImages.indices.contains(index) else { return }
+        let source = addedImages.remove(at: index)
+        do {
+            try FileManager.default.removeItem(at: source.url)
+        } catch {
+            // Temporary files are retried during view cleanup.
+        }
+    }
+}
+
+private struct ExistingImageEditorRow: View {
+    let image: ImageMetadata
+    let thumbnailStore: ThumbnailStore
+    let position: Int
+    let total: Int
+    let canMoveUp: Bool
+    let canMoveDown: Bool
+    let moveUp: () -> Void
+    let moveDown: () -> Void
+    let remove: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if let thumbnail = thumbnailStore.image(for: image) {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .accessibilityHidden(true)
+            }
+            VStack(alignment: .leading) {
+                Text("Photo \(position) of \(total)")
+                Text(image.originalFilename)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Menu {
+                Button("Move Up", systemImage: "arrow.up", action: moveUp)
+                    .disabled(!canMoveUp)
+                Button("Move Down", systemImage: "arrow.down", action: moveDown)
+                    .disabled(!canMoveDown)
+                Button("Remove", systemImage: "trash", role: .destructive, action: remove)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .accessibilityLabel("Actions for photo \(position) of \(total)")
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Photo \(position) of \(total), \(image.originalFilename)")
     }
 }
