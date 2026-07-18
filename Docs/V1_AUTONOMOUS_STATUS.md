@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S2 — Local Persistence and Media Foundations |
-| Completed Macro Stages | S1 |
+| Current Macro Stage | S3 — First Runnable Capture → Timeline Slice |
+| Completed Macro Stages | S1, S2 |
 
 ## Program Baseline
 
@@ -24,27 +24,28 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-S2 — Local Persistence and Media Foundations.
+S3 — First Runnable Capture → Timeline Slice.
 
 ## Current Internal Task
 
-Define the initial VersionedSchema and canonical persisted Entry/ImageMetadata models, add focused repository and ModelContainer configuration seams, and implement staged one-image storage with checksum, relative paths and failure cleanup.
+Compose the production on-disk container and media root, replace the placeholder with Today/Timeline navigation and a Quick Capture sheet, preserve capture drafts across recoverable image-selection failures, and verify text capture plus relaunch in UI tests.
 
 ## Completed Macro Stages
 
-S1 — Entry Domain Foundation. Entry identity, kinds, statuses, timestamps, review period and content/image-count rules are implemented without a duplicate field-complete Entry entity.
+- S1 — Entry Domain Foundation. Entry identity, kinds, statuses, timestamps, review period and content/image-count rules are implemented without a duplicate field-complete Entry entity.
+- S2 — Local Persistence and Media Foundations. Explicit V1 SwiftData schema, canonical Entry/ImageMetadata models, in-memory/on-disk containers, Entry repository, staged image copy and save-failure cleanup are implemented.
 
 ## Latest Verified Commit
 
-`0481cff3675af826996eb5f138615368b975014e` — verified Program Startup commit. S1 validation is complete; its Stage commit contains this status update.
+`5b00f49f36e9022f37e4876c03f125d56707e5bb` — verified S1 Stage commit. S2 validation is complete; its Stage commit contains this status update.
 
 ## Latest Build Result
 
-S1: the shared App scheme built successfully as part of the focused Unit Test run on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`).
+S2: the shared App scheme built successfully as part of the full Unit Test run on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`).
 
 ## Latest Test Result
 
-S1: 15 Unit Tests passed with 0 failures and 0 skips, including 10 focused Entry domain tests and the 5 existing composition tests.
+S2: 22 Unit Tests passed with 0 failures and 0 skips, including 7 focused persistence/media tests. Coverage includes in-memory save/update/fetch, on-disk reopen, checksum/relative-path copy, image-backed Entry persistence, missing-source cleanup, injected database-save cleanup and UUID collision preservation.
 
 ## Important Decisions
 
@@ -54,11 +55,13 @@ S1: 15 Unit Tests passed with 0 failures and 0 skips, including 10 focused Entry
 - S1 begins only after the startup state Commit is complete and the working tree is clean.
 - Simulator and automated technical gates control autonomous continuation; physical-device and real-life validation remain Owner-deferred.
 - S1 uses small domain value types and rules only; the single canonical persisted Entry model remains owned by S2.
+- SwiftData uses `PersonalGrowthSchemaV1` and an explicit migration plan from the first persisted build; CloudKit is disabled.
+- Original image bytes live only in the private media tree. SwiftData stores metadata and relative paths; the media store rejects an existing UUID destination rather than risking deletion.
 
 ## Known Limitations
 
 - The App still displays the S0 static placeholder and has no runnable product flow.
-- SwiftData schema, persistence, media handling, product navigation, feature UI, search and import/export do not exist yet.
+- Product navigation, feature UI, multi-image editing, search and import/export do not exist yet.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
 
 ## Active Blockers
@@ -67,12 +70,13 @@ None.
 
 ## Next Action
 
-Create the coherent S1 Stage commit, verify the working tree is clean, then begin S2.
+Create the coherent S2 Stage commit, verify the working tree is clean, then begin S3.
 
 ## Repository State
 
 - Program baseline: `b82d6e656592663f679440e318d00bef06f50556`.
 - Current branch: `feat/v1-autonomous-build`.
 - Program state: State 3 — Program Authorized / Running.
-- S1: validation complete and ready for its Stage commit.
-- S2–S10: not started.
+- S1: committed and verified.
+- S2: validation complete and ready for its Stage commit.
+- S3–S10: not started.

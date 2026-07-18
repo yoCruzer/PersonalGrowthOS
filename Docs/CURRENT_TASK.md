@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — S2 Local Persistence and Media Foundations |
+| Current checkpoint | V1 Autonomous Build Program — S3 First Runnable Capture → Timeline Slice |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S2 — Local Persistence and Media Foundations |
+| Current Macro Stage | S3 — First Runnable Capture → Timeline Slice |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is S2: establish the initial versioned SwiftData schema, the canonical persisted Entry and ImageMetadata models, focused repository seams and safe one-image media storage.
+The immediate objective is S3: replace the placeholder with the first restart-safe Today → Quick Capture → Timeline slice for text-only and one-image Entries.
 
 ## Scope
 
@@ -42,6 +42,6 @@ The immediate objective is S2: establish the initial versioned SwiftData schema,
 
 ## Current Boundary
 
-Program Startup and S1 are complete. S1 introduced only Entry identity, enums, value rules, validation and business behavior plus focused Unit Tests; it did not create a field-complete Entry entity.
+Program Startup, S1 and S2 are complete. S2 introduced the single canonical SwiftData Entry model, explicit V1 schema/container, focused repository seam and safe one-image private media storage with failure cleanup.
 
-Proceed with S2 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
+Proceed with S3 and continue autonomously through S10 unless a Mandatory Escalation condition occurs.
