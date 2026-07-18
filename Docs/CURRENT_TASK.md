@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — S7 Goal, Flag and Core Relationships |
+| Current checkpoint | V1 Autonomous Build Program — S8 Lightweight Manual Review |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S6 technically complete — S7 ready to begin |
+| Current Macro Stage | S7 technically complete — S8 validation tooling blocked |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is to implement S7 Goal, Flag and Core Relationships as the next coherent Stage.
+The immediate objective is to resume S8 Lightweight Manual Review when required simulator/test tooling becomes available.
 
 ## Scope
 
@@ -42,8 +42,8 @@ The immediate objective is to implement S7 Goal, Flag and Core Relationships as 
 
 ## Current Boundary
 
-Program Startup and S1–S6 are technically complete. Milestone A passed four independent review lenses with no remaining Critical/High findings. The final Milestone A evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
+Program Startup and S1–S7 are technically complete. Milestone A passed four independent review lenses with no remaining Critical/High findings. The final Milestone A evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
 
-S6 delivers Habit lifecycle, structured HabitLog facts, simple and rich Entry-linked check-ins, Today/Growth/history UI, noise-controlled Timeline aggregation, Habit search and relation-safe deletion. The full gate passed 67 Unit Tests and 10 UI Tests with no failures or skips. The search fixture remained below threshold at 0.542, 0.475 and 0.484 seconds.
+S7 delivers Goal/GoalKind.flag lifecycle, lifecycle events, bounded Entry→Habit, Entry→Goal and Habit→Goal Links, Today context, Timeline history, Goal/Flag search and relation-safe deletion. The full 78 Unit + 12 UI shared-scheme run exited 0; all 11 focused S7 tests and both focused S7 UI paths passed.
 
-Read the S7 boundary and implement Goal lifecycle, GoalKind.flag, bounded Entry/Habit/Goal Links, Timeline lifecycle events, Search integration and relation-safe deletion.
+Further approved simulator/result-tool calls were then rejected because the external Codex usage limit was reached. This is a Mandatory Escalation at the S8 validation boundary. Do not implement S8 until the required validation tools are available; then read the S8 boundary and continue.

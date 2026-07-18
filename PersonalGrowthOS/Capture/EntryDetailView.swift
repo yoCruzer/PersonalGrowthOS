@@ -12,6 +12,7 @@ struct EntryDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var isEditing = false
     @State private var isEditingTags = false
+    @State private var isEditingRelationships = false
     @State private var isConfirmingDelete = false
     @State private var errorMessage: String?
     @Query(sort: [
@@ -59,6 +60,8 @@ struct EntryDetailView: View {
                 }
                 Button("Manage Tags") { isEditingTags = true }
                     .accessibilityIdentifier("entry-manage-tags")
+                Button("Manage Relationships") { isEditingRelationships = true }
+                    .accessibilityIdentifier("entry-manage-relationships")
             }
         }
         .navigationTitle(entry.kind == .review ? "Review" : "Entry")
@@ -96,6 +99,9 @@ struct EntryDetailView: View {
         }
         .sheet(isPresented: $isEditingTags) {
             EntryTagEditor(entry: entry)
+        }
+        .sheet(isPresented: $isEditingRelationships) {
+            EntryRelationshipsEditor(entry: entry)
         }
         .alert("Delete this entry permanently?", isPresented: $isConfirmingDelete) {
             Button("Cancel", role: .cancel) {}

@@ -6,6 +6,7 @@ struct GrowthView: View {
     let thumbnailStore: ThumbnailStore
 
     @Query private var habits: [Habit]
+    @Query private var goals: [Goal]
 
     var body: some View {
         List {
@@ -22,6 +23,19 @@ struct GrowthView: View {
                 }
             }
             .accessibilityIdentifier("growth-habits")
+            NavigationLink {
+                GoalsView(
+                    mediaStore: mediaStore,
+                    thumbnailStore: thumbnailStore
+                )
+            } label: {
+                LabeledContent {
+                    Text("\(goals.count)")
+                } label: {
+                    Label("Goals and Flags", systemImage: "target")
+                }
+            }
+            .accessibilityIdentifier("growth-goals")
         }
         .navigationTitle("Growth")
         .accessibilityIdentifier("growth-view")

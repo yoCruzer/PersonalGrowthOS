@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S6 technically complete — S7 ready to begin |
-| Completed Macro Stages | S1, S2, S3, S4, S5, S6 |
+| Current Macro Stage | S7 technically complete — S8 validation tooling blocked |
+| Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7 |
 
 ## Program Baseline
 
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-Milestone A (S1–S4) is complete and passed. S6 has passed its technical gate; S7 is the next active Stage boundary.
+Milestone A (S1–S4) is complete and passed. S7 has passed its technical gate; S8 is the next Stage boundary but required validation tooling is temporarily unavailable.
 
 ## Current Internal Task
 
-Implement S7 Goal, Flag and Core Relationships according to the authorized implementation plan.
+Resume S8 Lightweight Manual Review only after simulator/test-result tooling becomes available.
 
 ## Completed Macro Stages
 
@@ -38,20 +38,21 @@ Implement S7 Goal, Flag and Core Relationships according to the authorized imple
 - S4 — Rich Entry Media and Editing. Ordered 0–9 image capture, camera entry point, image validation/budgets, Entry detail/edit/archive/delete, thumbnail cache, media usage, Trash rollback and launch recovery are implemented.
 - S5 — Library, Inbox, Tags and Search. Inbox/All Entries/Archived views, optional normalized Tags, typed Entry-Tag Links, organization transitions, deletion cleanup and global local Entry/Review/Tag search are implemented.
 - S6 — Habit and HabitLog. Habit lifecycle, structured facts, one-tap and rich Entry-linked check-ins, Today/Growth/history UI, Timeline aggregation, Habit search and deletion invariants are implemented.
+- S7 — Goal, Flag and Core Relationships. GoalKind.flag, lifecycle/events, bounded Entry/Habit/Goal Links, Today context, Timeline history, Search and deletion invariants are implemented.
 
 ## Latest Verified Commit
 
-S6 Stage commit `feat: add habit tracking` (the commit containing this status update); parent `b77199a4afc334fb02ef01888c70748992931d3c` is the verified S5 Stage commit.
+S7 Stage commit `feat: add goals flags and relationships` (the commit containing this status update); parent `10b2369aedf40d1cf0f915723f24673639301202` is the verified S6 Stage commit.
 
 ## Latest Build Result
 
-S6 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus Growth Habit creation → Today one-tap check-in → history and rich insight Entry creation → Habit search → Habit detail navigation.
+S7 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus Flag creation → Today context → Search and Habit→Goal relation → pause → Timeline event.
 
 ## Latest Test Result
 
-S6 full validation: 67 Unit Tests and 10 UI Tests passed with 0 failures and 0 skips. New coverage includes V2→V3 migration, Habit lifecycle and rollback, non-active check-in rejection, structured HabitLog facts, atomic rich text/photo check-in, media rollback, Entry/Habit deletion preservation and cleanup, dangling relationship detection, dense-log aggregation and Habit search.
+S7 full validation: the shared scheme containing 78 Unit Tests and 12 UI Tests exited 0. New coverage includes V3→V4 migration, GoalKind.flag, bounded lifecycle events/rollback, approved Link direction/identity/deduplication, missing-endpoint rejection, Goal deletion preservation/cleanup, dangling Link/event detection, Goal/Flag search and the two S7 UI acceptance paths.
 
-The representative search fixture contains 5,000 Entries and 250 Tags and now also queries Habit. Three final measured searches completed in 0.542, 0.475 and 0.484 seconds on the same simulator, all below the explicit 1.0-second threshold. Peak physical memory was 81,276.928, 81,715.200 and 85,086.208 kB. The result supports retaining the simple local scan without FTS or a separate index.
+The representative search performance test, now also querying Goal/Flag, passed its existing 1.0-second threshold. Exact S7 metric extraction was attempted only after the successful full run and was rejected by the external Codex usage limit; no threshold or test was weakened.
 
 Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMetric` for three isolated iterations on the same simulator. Each iteration copied/checksummed an exact 25 MiB valid PNG and downsampled a valid 80MP 1-bit PNG to at most 512px. Clock results were 0.210, 0.215 and 0.220 seconds; process physical peaks were 105,467.904, 105,467.904 and 105,504.768 kB; net physical-memory changes were 32.768, 0 and 36.864 kB. XCTest process-accounted logical writes were 0, 24.576 and 24.576 kB, while explicit file assertions verified a 25 MiB final Original and zero Staging bytes. The provisional 25 MiB / 80MP / 100 MiB reserve guardrails are retained: the accepted boundary completed without instability, local previews now downsample from URL, and the 100 MiB reserve remains greater than the 50 MiB staging-plus-final peak for a maximum-size original. Physical-device tuning remains Owner-deferred.
 
@@ -82,21 +83,24 @@ Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMet
 - Entry deletion clears linked HabitLog references while retaining structured facts. Habit deletion removes its logs and Links while preserving Entries; both failure paths roll back.
 - Timeline aggregates only ordinary HabitLogs by day. Logs with a linked insight Entry are excluded so the Entry is not represented twice.
 - Shared-scheme Unit Tests are non-parallel because simulator-clone contention invalidated wall-clock search/resource measurements; UI Tests were already non-parallel.
+- SwiftData schema V4 adds canonical Goal and GoalLifecycleEvent through an explicit V3→V4 lightweight migration; Flag remains GoalKind.flag.
+- Dedicated CoreLinkService methods enforce Entry→Habit, Entry→Goal and Habit→Goal directions, endpoint existence and deduplication before save.
+- Today shows active Goals/Flags as context only. Growth owns lifecycle and relationships; Timeline owns lifecycle history.
 
 ## Known Limitations
 
-- The current shell exposes Today, Timeline, Growth and Library, with global Search and Quick Capture. Growth contains Habits; Goals/Flags arrive in S7.
+- The current shell exposes Today, Timeline, Growth and Library, with global Search and Quick Capture. Growth contains Habits and Goals/Flags.
 - Camera and real Photos Picker/permission behavior are implemented but remain Owner-deferred physical-device validation.
 - Entry, Tag and Habit mutations currently use the shared main `ModelContext`; isolating unrelated unsaved UI changes from a rollback is retained as a non-blocking architectural follow-up because changing context ownership is not yet a low-risk patch.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
 
 ## Active Blockers
 
-None.
+External Codex tool usage is exhausted. A post-test `xcresulttool` read was rejected and the service reported availability resumes on 2026-07-25 at 20:52. S7's full test command had already exited 0. S8 must not start without its required simulator/test validation.
 
 ## Next Action
 
-Begin S7 with its Goal/GoalKind/GoalLifecycleEvent schema and domain slice.
+Resume S8 with its lightweight Review schema/behavior slice only after validation tooling is available.
 
 ## Repository State
 
@@ -110,5 +114,6 @@ Begin S7 with its Goal/GoalKind/GoalLifecycleEvent schema and domain slice.
 - Milestone A: PASS. Review Manifest recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`; final reviewed implementation head `90d7ff533081e81e646bde4ad3faaadfc67984e9`.
 - S5: committed and verified by `feat: add library tags and search`.
 - S6: committed and verified by `feat: add habit tracking`.
-- S7: ready to begin after the S6 commit.
-- S8–S10: not started.
+- S7: committed and verified by `feat: add goals flags and relationships`.
+- S8: not started; blocked at validation-tool availability boundary.
+- S9–S10: not started.

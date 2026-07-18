@@ -45,11 +45,14 @@ enum LinkObjectType: String, Codable, Sendable {
     case entry
     case tag
     case habit
+    case goal
 }
 
 enum ObjectLinkKind: String, Codable, Sendable {
     case entryUsesTag
     case entryRelatesHabit
+    case entryRelatesGoal
+    case habitSupportsGoal
 }
 
 @Model
@@ -120,6 +123,7 @@ final class ObjectLink {
 enum LinkIntegrityError: Error, Equatable {
     case danglingLinks([UUID])
     case danglingHabitLogs([UUID])
+    case danglingGoalEvents([UUID])
 }
 
 @MainActor
@@ -129,6 +133,7 @@ enum LinkIntegrityService {
         let entryIDs = Set(try context.fetch(FetchDescriptor<Entry>()).map(\.id))
         let tagIDs = Set(try context.fetch(FetchDescriptor<Tag>()).map(\.id))
         let habitIDs = Set(try context.fetch(FetchDescriptor<Habit>()).map(\.id))
+        let goalIDs = Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id))
         let danglingIDs = links.compactMap { link -> UUID? in
             switch link.kind {
             case .entryUsesTag:
@@ -143,6 +148,20 @@ enum LinkIntegrityService {
                       link.targetType == .habit,
                       entryIDs.contains(link.sourceID),
                       habitIDs.contains(link.targetID) else {
+                    return link.id
+                }
+            case .entryRelatesGoal:
+                guard link.sourceType == .entry,
+                      link.targetType == .goal,
+                      entryIDs.contains(link.sourceID),
+                      goalIDs.contains(link.targetID) else {
+                    return link.id
+                }
+            case .habitSupportsGoal:
+                guard link.sourceType == .habit,
+                      link.targetType == .goal,
+                      habitIDs.contains(link.sourceID),
+                      goalIDs.contains(link.targetID) else {
                     return link.id
                 }
             }
@@ -162,6 +181,14 @@ enum LinkIntegrityService {
         guard danglingLogIDs.isEmpty else {
             throw LinkIntegrityError.danglingHabitLogs(
                 danglingLogIDs.sorted { $0.uuidString < $1.uuidString }
+            )
+        }
+
+        let danglingEventIDs = try context.fetch(FetchDescriptor<GoalLifecycleEvent>())
+            .compactMap { goalIDs.contains($0.goalID) ? nil : $0.id }
+        guard danglingEventIDs.isEmpty else {
+            throw LinkIntegrityError.danglingGoalEvents(
+                danglingEventIDs.sorted { $0.uuidString < $1.uuidString }
             )
         }
     }
@@ -279,11 +306,18 @@ struct LocalSearchResults {
     let entries: [Entry]
     let tags: [Tag]
     let habits: [Habit]
+    let goals: [Goal]
 
-    init(entries: [Entry] = [], tags: [Tag] = [], habits: [Habit] = []) {
+    init(
+        entries: [Entry] = [],
+        tags: [Tag] = [],
+        habits: [Habit] = [],
+        goals: [Goal] = []
+    ) {
         self.entries = entries
         self.tags = tags
         self.habits = habits
+        self.goals = goals
     }
 }
 
@@ -323,7 +357,14 @@ final class LocalSearchService {
             habit.normalizedName.contains(normalizedQuery)
                 || TextSearchNormalizer.normalize(habit.name).contains(normalizedQuery)
         }
-        return LocalSearchResults(entries: entries, tags: tags, habits: habits)
+        let goals = try context.fetch(FetchDescriptor<Goal>(sortBy: [
+            SortDescriptor(\Goal.normalizedTitle, order: .forward),
+            SortDescriptor(\Goal.id, order: .forward)
+        ])).filter { goal in
+            goal.normalizedTitle.contains(normalizedQuery)
+                || TextSearchNormalizer.normalize(goal.title).contains(normalizedQuery)
+        }
+        return LocalSearchResults(entries: entries, tags: tags, habits: habits, goals: goals)
     }
 }
 

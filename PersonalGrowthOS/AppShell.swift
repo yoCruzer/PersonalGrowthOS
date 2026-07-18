@@ -117,10 +117,18 @@ private struct TodayView: View {
         SortDescriptor(\Habit.normalizedName, order: .forward),
         SortDescriptor(\Habit.id, order: .forward)
     ]) private var habits: [Habit]
+    @Query(sort: [
+        SortDescriptor(\Goal.normalizedTitle, order: .forward),
+        SortDescriptor(\Goal.id, order: .forward)
+    ]) private var goals: [Goal]
     @State private var errorMessage: String?
 
     private var activeHabits: [Habit] {
         habits.filter { $0.status == .active }
+    }
+
+    private var activeGoals: [Goal] {
+        goals.filter { $0.status == .active }
     }
 
     var body: some View {
@@ -153,6 +161,20 @@ private struct TodayView: View {
                     Text("Today's Habits")
                 } footer: {
                     Text("Missing a day is not failure. Check in when the habit happens.")
+                }
+            }
+            if !activeGoals.isEmpty {
+                Section {
+                    ForEach(activeGoals) { goal in
+                        Label(
+                            goal.title,
+                            systemImage: goal.kind == .flag ? "flag" : "target"
+                        )
+                    }
+                } header: {
+                    Text("Active Goals and Flags")
+                } footer: {
+                    Text("Context for today, not a list of tasks you must update.")
                 }
             }
         }
@@ -199,6 +221,11 @@ private struct TimelineView: View {
         SortDescriptor(\HabitLog.id, order: .forward)
     ]) private var habitLogs: [HabitLog]
     @Query private var habits: [Habit]
+    @Query(sort: [
+        SortDescriptor(\GoalLifecycleEvent.occurredAt, order: .reverse),
+        SortDescriptor(\GoalLifecycleEvent.id, order: .forward)
+    ]) private var goalEvents: [GoalLifecycleEvent]
+    @Query private var goals: [Goal]
     @State private var showsArchived = false
 
     private var displayedEntries: [Entry] {
@@ -210,9 +237,17 @@ private struct TimelineView: View {
         return HabitTimelineAggregator.summarize(logs: habitLogs, habits: habits)
     }
 
+    private var displayedGoalEvents: [GoalLifecycleEvent] {
+        showsArchived ? [] : goalEvents
+    }
+
+    private var goalsByID: [UUID: Goal] {
+        Dictionary(goals.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
     var body: some View {
         Group {
-            if displayedEntries.isEmpty && habitActivity.isEmpty {
+            if displayedEntries.isEmpty && habitActivity.isEmpty && displayedGoalEvents.isEmpty {
                 ContentUnavailableView(
                     showsArchived ? "No Archived Entries" : "No Entries Yet",
                     systemImage: showsArchived ? "archivebox" : "clock",
@@ -248,6 +283,21 @@ private struct TimelineView: View {
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }
+                                }
+                            }
+                        }
+                    }
+                    if !displayedGoalEvents.isEmpty {
+                        Section("Goal Changes") {
+                            ForEach(displayedGoalEvents) { event in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(goalsByID[event.goalID]?.title ?? "Goal")
+                                    LabeledContent(
+                                        event.kindRawValue.capitalized,
+                                        value: event.occurredAt.formatted(date: .abbreviated, time: .shortened)
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                                 }
                             }
                         }

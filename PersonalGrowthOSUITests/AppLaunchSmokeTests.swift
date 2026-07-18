@@ -231,4 +231,69 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["search-habit-reflect"].tap()
         XCTAssertTrue(app.navigationBars["Reflect"].waitForExistence(timeout: 5))
     }
+
+    func testFlagAppearsAsTodayContextAndIsSearchable() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-goals"].tap()
+        let title = app.textFields["new-goal-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.tap()
+        title.typeText("Thirty Day Focus")
+        app.segmentedControls.buttons["Flag"].tap()
+        app.buttons["add-goal"].tap()
+        app.keyboards.buttons["return"].tap()
+
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.staticTexts["Thirty Day Focus"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Complete Thirty Day Focus"].exists)
+
+        app.buttons["global-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("thirty day")
+        XCTAssertTrue(app.buttons["search-goal-thirty day focus"].waitForExistence(timeout: 5))
+        app.buttons["search-goal-thirty day focus"].tap()
+        XCTAssertTrue(app.navigationBars["Thirty Day Focus"].waitForExistence(timeout: 5))
+    }
+
+    func testHabitSupportsGoalAndLifecycleAppearsInTimeline() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        let habitName = app.textFields["new-habit-name"]
+        XCTAssertTrue(habitName.waitForExistence(timeout: 5))
+        habitName.tap()
+        habitName.typeText("Read")
+        app.buttons["add-habit"].tap()
+        app.keyboards.buttons["return"].tap()
+        app.navigationBars.buttons["Growth"].tap()
+
+        app.buttons["growth-goals"].tap()
+        let goalTitle = app.textFields["new-goal-title"]
+        XCTAssertTrue(goalTitle.waitForExistence(timeout: 5))
+        goalTitle.tap()
+        goalTitle.typeText("Learn Swift")
+        app.buttons["add-goal"].tap()
+        app.keyboards.buttons["return"].tap()
+        app.buttons["goal-learn swift"].tap()
+        app.buttons["goal-manage-habits"].tap()
+        app.buttons["Read"].tap()
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.staticTexts["Read supports this Goal"].waitForExistence(timeout: 5))
+
+        app.buttons["goal-actions"].tap()
+        app.buttons["Pause"].tap()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Goal Changes"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Learn Swift"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Paused"].waitForExistence(timeout: 5))
+    }
 }

@@ -31,6 +31,10 @@
 		B00000000000000000000022 /* HabitFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000025 /* HabitFoundation.swift */; };
 		B00000000000000000000023 /* HabitViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000026 /* HabitViews.swift */; };
 		B00000000000000000000024 /* HabitFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* HabitFoundationTests.swift */; };
+		B00000000000000000000025 /* GoalDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000028 /* GoalDomain.swift */; };
+		B00000000000000000000026 /* GoalFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000029 /* GoalFoundation.swift */; };
+		B00000000000000000000027 /* GoalViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000030 /* GoalViews.swift */; };
+		B00000000000000000000028 /* GoalFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000031 /* GoalFoundationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +82,10 @@
 		A00000000000000000000025 /* HabitFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitFoundation.swift; sourceTree = "<group>"; };
 		A00000000000000000000026 /* HabitViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitViews.swift; sourceTree = "<group>"; };
 		A00000000000000000000027 /* HabitFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitFoundationTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000028 /* GoalDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Goal/GoalDomain.swift; sourceTree = "<group>"; };
+		A00000000000000000000029 /* GoalFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalFoundation.swift; sourceTree = "<group>"; };
+		A00000000000000000000030 /* GoalViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalViews.swift; sourceTree = "<group>"; };
+		A00000000000000000000031 /* GoalFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalFoundationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +138,7 @@
 				C00000000000000000000013 /* Search */,
 				C00000000000000000000014 /* Habit */,
 				C00000000000000000000015 /* Growth */,
+				C00000000000000000000016 /* Goal */,
 				A00000000000000000000003 /* Assets.xcassets */,
 			);
 			path = PersonalGrowthOS;
@@ -143,6 +152,7 @@
 				A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */,
 				A00000000000000000000023 /* OrganizationSearchTests.swift */,
 				A00000000000000000000027 /* HabitFoundationTests.swift */,
+				A00000000000000000000031 /* GoalFoundationTests.swift */,
 			);
 			path = PersonalGrowthOSTests;
 			sourceTree = "<group>";
@@ -179,6 +189,7 @@
 			children = (
 				A00000000000000000000011 /* EntryDomain.swift */,
 				A00000000000000000000024 /* HabitDomain.swift */,
+				A00000000000000000000028 /* GoalDomain.swift */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -246,8 +257,17 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000026 /* HabitViews.swift */,
+				A00000000000000000000030 /* GoalViews.swift */,
 			);
 			path = Growth;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000016 /* Goal */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000029 /* GoalFoundation.swift */,
+			);
+			path = Goal;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -396,6 +416,9 @@
 				B00000000000000000000021 /* HabitDomain.swift in Sources */,
 				B00000000000000000000022 /* HabitFoundation.swift in Sources */,
 				B00000000000000000000023 /* HabitViews.swift in Sources */,
+				B00000000000000000000025 /* GoalDomain.swift in Sources */,
+				B00000000000000000000026 /* GoalFoundation.swift in Sources */,
+				B00000000000000000000027 /* GoalViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -408,6 +431,7 @@
 				B00000000000000000000012 /* PersistenceMediaFoundationTests.swift in Sources */,
 				B00000000000000000000020 /* OrganizationSearchTests.swift in Sources */,
 				B00000000000000000000024 /* HabitFoundationTests.swift in Sources */,
+				B00000000000000000000028 /* GoalFoundationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
