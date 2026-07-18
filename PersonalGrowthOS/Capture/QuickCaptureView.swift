@@ -2,7 +2,6 @@ import PhotosUI
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
-import UIKit
 
 @MainActor
 final class CaptureDraftState: ObservableObject {
@@ -272,7 +271,10 @@ struct LocalImagePreviewRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let image = UIImage(contentsOfFile: source.url.path) {
+            if let image = ThumbnailStore.downsampledImage(
+                at: source.url,
+                maximumPixelSize: 160
+            ) {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()

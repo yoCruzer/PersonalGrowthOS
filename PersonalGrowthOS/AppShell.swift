@@ -149,6 +149,7 @@ private struct MediaStorageView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var byteCount: Int64?
+    @State private var isCapturing = false
 
     var body: some View {
         NavigationStack {
@@ -189,10 +190,26 @@ private struct MediaStorageView: View {
             }
             .navigationTitle("Settings")
             .toolbar {
-                Button("Done") { dismiss() }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        isCapturing = true
+                    } label: {
+                        Label("Quick Capture", systemImage: "plus")
+                    }
+                    .accessibilityIdentifier("settings-capture-button")
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
             }
             .task {
                 byteCount = try? mediaStore.originalsByteCount()
+            }
+            .sheet(isPresented: $isCapturing) {
+                QuickCaptureView(mediaStore: mediaStore) {
+                    isCapturing = false
+                    byteCount = try? mediaStore.originalsByteCount()
+                }
             }
         }
     }

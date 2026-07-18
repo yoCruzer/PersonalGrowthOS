@@ -327,12 +327,42 @@ extension ModelContextEntryPersistence: EntryEditingPersistence {
     }
 }
 
+enum EntryEditingImage {
+    case retained(UUID)
+    case added(MediaSource)
+}
+
 struct EntryEditingDraft {
     let title: String?
     let body: String?
     let occurredAt: Date
-    let retainedImageIDs: [UUID]
-    let addedImages: [MediaSource]
+    let orderedImages: [EntryEditingImage]
+
+    init(
+        title: String?,
+        body: String?,
+        occurredAt: Date,
+        retainedImageIDs: [UUID],
+        addedImages: [MediaSource]
+    ) {
+        self.title = title
+        self.body = body
+        self.occurredAt = occurredAt
+        orderedImages = retainedImageIDs.map(EntryEditingImage.retained)
+            + addedImages.map(EntryEditingImage.added)
+    }
+
+    init(
+        title: String?,
+        body: String?,
+        occurredAt: Date,
+        orderedImages: [EntryEditingImage]
+    ) {
+        self.title = title
+        self.body = body
+        self.occurredAt = occurredAt
+        self.orderedImages = orderedImages
+    }
 }
 
 @MainActor
@@ -359,10 +389,18 @@ final class EntryEditingService {
             entry.images.map { ($0.id, $0) },
             uniquingKeysWith: { first, _ in first }
         )
-        let retained = draft.retainedImageIDs.compactMap { imagesByID[$0] }
-        let retainedIDs = Set(draft.retainedImageIDs)
+        let retainedImageIDs = draft.orderedImages.compactMap { image -> UUID? in
+            guard case .retained(let id) = image else { return nil }
+            return id
+        }
+        let addedImages = draft.orderedImages.compactMap { image -> MediaSource? in
+            guard case .added(let source) = image else { return nil }
+            return source
+        }
+        let retained = retainedImageIDs.compactMap { imagesByID[$0] }
+        let retainedIDs = Set(retainedImageIDs)
         let removed = imagesByID.values.filter { !retainedIDs.contains($0.id) }
-        let finalImageCount = retained.count + draft.addedImages.count
+        let finalImageCount = retained.count + addedImages.count
         try EntryRules.validateContent(body: draft.body, imageCount: finalImageCount)
 
         let originalTitle = entry.title
@@ -378,8 +416,8 @@ final class EntryEditingService {
         var trashedFiles: [TrashedMediaFile] = []
 
         do {
-            try mediaStore.ensureCapacity(for: draft.addedImages)
-            for source in draft.addedImages {
+            try mediaStore.ensureCapacity(for: addedImages)
+            for source in addedImages {
                 addedFiles.append(try mediaStore.storeOriginal(source))
             }
             for image in removed {
@@ -387,7 +425,7 @@ final class EntryEditingService {
             }
 
             let timestamp = now()
-            let addedMetadata = zip(addedFiles, draft.addedImages).enumerated().map { offset, pair in
+            let addedMetadata = zip(addedFiles, addedImages).map { pair in
                 let (file, source) = pair
                 return ImageMetadata(
                     id: file.id,
@@ -398,18 +436,27 @@ final class EntryEditingService {
                     pixelWidth: file.pixelWidth,
                     pixelHeight: file.pixelHeight,
                     checksum: file.checksum,
-                    sortOrder: retained.count + offset,
                     createdAt: timestamp
                 )
             }
-            retained.enumerated().forEach { index, image in image.sortOrder = index }
+            var addedIndex = 0
+            let finalImages = draft.orderedImages.compactMap { orderedImage -> ImageMetadata? in
+                switch orderedImage {
+                case .retained(let id):
+                    return imagesByID[id]
+                case .added:
+                    defer { addedIndex += 1 }
+                    return addedMetadata[addedIndex]
+                }
+            }
+            finalImages.enumerated().forEach { index, image in image.sortOrder = index }
             addedMetadata.forEach { $0.entry = entry }
             removed.forEach { persistence.delete($0) }
             entry.title = draft.title
             entry.body = draft.body
             entry.occurredAt = draft.occurredAt
             entry.updatedAt = timestamp
-            entry.images = retained + addedMetadata
+            entry.images = finalImages
             try persistence.save()
         } catch let operationError {
             persistence.rollback()

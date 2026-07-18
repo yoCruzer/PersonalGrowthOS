@@ -714,6 +714,282 @@ final class PersistenceMediaFoundationTests: XCTestCase {
         }
     }
 
+    func testBoundaryMediaResourceMeasurements() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        let byteBoundaryURL = fixture.root.appendingPathComponent("byte-boundary.png")
+        let pixelBoundaryURL = fixture.root.appendingPathComponent("pixel-boundary.png")
+        try pngByPaddingToByteCount(
+            fixturePNG(color: .orange),
+            byteCount: Int(MediaStore.maximumOriginalByteCount)
+        ).write(to: byteBoundaryURL)
+        try solidGrayscalePNG(width: 10_000, height: 8_000).write(to: pixelBoundaryURL)
+        let measuredRoot = fixture.root.appendingPathComponent("MeasuredMedia", isDirectory: true)
+        let options = XCTMeasureOptions()
+        options.iterationCount = 3
+
+        measure(
+            metrics: [XCTClockMetric(), XCTMemoryMetric(), XCTStorageMetric()],
+            options: options
+        ) {
+            try? FileManager.default.removeItem(at: measuredRoot)
+            autoreleasepool {
+                do {
+                    let store = MediaStore(rootURL: measuredRoot, availableCapacity: { .max })
+                    let stored = try store.storeOriginal(MediaSource(
+                        url: byteBoundaryURL,
+                        originalFilename: "byte-boundary.png",
+                        contentType: "image/png"
+                    ))
+                    let preview = try XCTUnwrap(ThumbnailStore.downsampledImage(
+                        at: pixelBoundaryURL,
+                        maximumPixelSize: 512
+                    ))
+                    XCTAssertEqual(stored.byteCount, MediaStore.maximumOriginalByteCount)
+                    XCTAssertLessThanOrEqual(max(preview.cgImage?.width ?? .max, preview.cgImage?.height ?? .max), 512)
+                } catch {
+                    XCTFail("Boundary measurement failed: \(error)")
+                }
+            }
+        }
+
+        let measuredStore = MediaStore(rootURL: measuredRoot, availableCapacity: { .max })
+        XCTAssertEqual(try measuredStore.originalsByteCount(), MediaStore.maximumOriginalByteCount)
+        XCTAssertEqual(try regularFileByteCount(at: measuredRoot.appendingPathComponent("Staging")), 0)
+    }
+
+    func testStartupMediaReconciliationIsIntegratedAndIdempotent() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        let bytes = fixturePNG(color: .magenta)
+        let orphanURL = fixture.root.appendingPathComponent("orphan.png")
+        try bytes.write(to: fixture.sourceURL)
+        try fixturePNG(color: .cyan).write(to: orphanURL)
+        let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        let referenced = try mediaStore.storeOriginal(MediaSource(
+            url: fixture.sourceURL,
+            originalFilename: "referenced.png",
+            contentType: "image/png"
+        ))
+        let orphan = try mediaStore.storeOriginal(MediaSource(
+            url: orphanURL,
+            originalFilename: "orphan.png",
+            contentType: "image/png"
+        ))
+        let missingID = UUID()
+        let missingPath = "Media/Originals/00/missing.png"
+        do {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            let timestamp = Date(timeIntervalSince1970: 1_000)
+            let referencedMetadata = ImageMetadata(
+                id: referenced.id,
+                relativePath: referenced.relativePath,
+                originalFilename: "referenced.png",
+                contentType: "image/png",
+                byteCount: referenced.byteCount,
+                checksum: referenced.checksum,
+                createdAt: timestamp
+            )
+            let missingMetadata = ImageMetadata(
+                id: missingID,
+                relativePath: missingPath,
+                originalFilename: "missing.png",
+                contentType: "image/png",
+                byteCount: 1,
+                checksum: "missing",
+                sortOrder: 1,
+                createdAt: timestamp
+            )
+            try EntryRepository(context: container.mainContext).save(Entry(
+                body: "Recovery fixture",
+                createdAt: timestamp,
+                images: [referencedMetadata, missingMetadata]
+            ))
+        }
+        _ = try mediaStore.moveToTrash(referenced.relativePath)
+        let stagingURL = fixture.mediaRoot.appendingPathComponent("Staging/interrupted.png")
+        try FileManager.default.createDirectory(at: stagingURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try bytes.write(to: stagingURL)
+        let thumbnailRoot = fixture.root.appendingPathComponent("Thumbnails", isDirectory: true)
+        try FileManager.default.createDirectory(at: thumbnailRoot, withIntermediateDirectories: true)
+        try bytes.write(to: thumbnailRoot.appendingPathComponent("\(orphan.id.uuidString.lowercased()).jpg"))
+        try bytes.write(to: thumbnailRoot.appendingPathComponent("\(missingID.uuidString.lowercased()).jpg"))
+
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        let metadata = try reopened.mainContext.fetch(FetchDescriptor<ImageMetadata>())
+        let thumbnailStore = ThumbnailStore(rootURL: thumbnailRoot, mediaStore: mediaStore)
+        let firstReport = try StartupMediaReconciler.reconcile(
+            mediaStore: mediaStore,
+            thumbnailStore: thumbnailStore,
+            imageMetadata: metadata
+        )
+
+        XCTAssertEqual(try Data(contentsOf: mediaStore.fileURL(for: referenced.relativePath)), bytes)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: try mediaStore.fileURL(for: orphan.relativePath).path))
+        XCTAssertEqual(firstReport.removedStagingFileCount, 1)
+        XCTAssertEqual(firstReport.removedThumbnailCount, 1)
+        XCTAssertEqual(firstReport.missingOriginalPaths, [missingPath])
+        XCTAssertEqual(firstReport.recoveryFilePaths.count, 1)
+        let missingMetadata = try XCTUnwrap(metadata.first { $0.id == missingID })
+        XCTAssertNil(thumbnailStore.image(for: missingMetadata))
+        XCTAssertFalse(FileManager.default.fileExists(
+            atPath: thumbnailRoot.appendingPathComponent("\(missingID.uuidString.lowercased()).jpg").path
+        ))
+
+        let secondReport = try StartupMediaReconciler.reconcile(
+            mediaStore: mediaStore,
+            thumbnailStore: thumbnailStore,
+            imageMetadata: metadata
+        )
+        XCTAssertEqual(secondReport.removedStagingFileCount, 0)
+        XCTAssertEqual(secondReport.removedThumbnailCount, 0)
+        XCTAssertEqual(secondReport.missingOriginalPaths, firstReport.missingOriginalPaths)
+        XCTAssertEqual(secondReport.recoveryFilePaths, firstReport.recoveryFilePaths)
+    }
+
+    func testEditingMultiImageCopyFailurePreservesEntryAndUnrelatedOriginals() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        let secondURL = fixture.root.appendingPathComponent("second.png")
+        let thirdURL = fixture.root.appendingPathComponent("third.png")
+        try fixturePNG(color: .red).write(to: fixture.sourceURL)
+        try fixturePNG(color: .blue).write(to: secondURL)
+        try fixturePNG(color: .green).write(to: thirdURL)
+        let healthyStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        let original = try healthyStore.storeOriginal(MediaSource(
+            url: fixture.sourceURL,
+            originalFilename: "original.png",
+            contentType: "image/png"
+        ))
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let originalMetadata = ImageMetadata(
+            id: original.id,
+            relativePath: original.relativePath,
+            originalFilename: "original.png",
+            contentType: "image/png",
+            byteCount: original.byteCount,
+            checksum: original.checksum,
+            createdAt: timestamp
+        )
+        let entry = Entry(body: "Before", createdAt: timestamp, images: [originalMetadata])
+        let failingStore = MediaStore(
+            rootURL: fixture.mediaRoot,
+            availableCapacity: { .max },
+            beforeStoreCopy: { if $0 == 2 { throw InjectedMediaFailure.copy } }
+        )
+
+        XCTAssertThrowsError(try EntryEditingService(
+            persistence: FailingEditingPersistence(),
+            mediaStore: failingStore
+        ).update(entry, with: EntryEditingDraft(
+            title: nil,
+            body: "After",
+            occurredAt: timestamp,
+            orderedImages: [
+                .added(MediaSource(url: secondURL, originalFilename: "second.png", contentType: "image/png")),
+                .retained(original.id),
+                .added(MediaSource(url: thirdURL, originalFilename: "third.png", contentType: "image/png"))
+            ]
+        )))
+
+        XCTAssertEqual(entry.body, "Before")
+        XCTAssertEqual(entry.images.first?.id, original.id)
+        XCTAssertEqual(try fixture.originalFiles().count, 1)
+        XCTAssertEqual(try fixture.stagingFiles(), [])
+    }
+
+    func testEditingCanOrderNewPhotoBeforeRetainedPhoto() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        let secondURL = fixture.root.appendingPathComponent("second.png")
+        try fixturePNG(color: .red).write(to: fixture.sourceURL)
+        try fixturePNG(color: .blue).write(to: secondURL)
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let persistence = ModelContextEntryPersistence(context: container.mainContext)
+        let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        let entry = try EntryCreationService(persistence: persistence, mediaStore: mediaStore).create(
+            EntryCreationDraft(image: MediaSource(
+                url: fixture.sourceURL,
+                originalFilename: "retained.png",
+                contentType: "image/png"
+            ))
+        )
+        let retainedID = try XCTUnwrap(entry.images.first?.id)
+
+        try EntryEditingService(persistence: persistence, mediaStore: mediaStore).update(
+            entry,
+            with: EntryEditingDraft(
+                title: nil,
+                body: nil,
+                occurredAt: entry.occurredAt,
+                orderedImages: [
+                    .added(MediaSource(url: secondURL, originalFilename: "new.png", contentType: "image/png")),
+                    .retained(retainedID)
+                ]
+            )
+        )
+
+        XCTAssertEqual(
+            entry.images.sorted(by: { $0.sortOrder < $1.sortOrder }).map(\.originalFilename),
+            ["new.png", "retained.png"]
+        )
+    }
+
+    func testEditingRestoreFailureReportsRecoveryAndNextLaunchRestoresOriginal() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        let replacementURL = fixture.root.appendingPathComponent("replacement.png")
+        let originalBytes = fixturePNG(color: .red)
+        try originalBytes.write(to: fixture.sourceURL)
+        try fixturePNG(color: .blue).write(to: replacementURL)
+        let healthyStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        let original = try healthyStore.storeOriginal(MediaSource(
+            url: fixture.sourceURL,
+            originalFilename: "original.png",
+            contentType: "image/png"
+        ))
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let metadata = ImageMetadata(
+            id: original.id,
+            relativePath: original.relativePath,
+            originalFilename: "original.png",
+            contentType: "image/png",
+            byteCount: original.byteCount,
+            checksum: original.checksum,
+            createdAt: timestamp
+        )
+        let entry = Entry(body: "Before", createdAt: timestamp, images: [metadata])
+        let restoreFailingStore = MediaStore(
+            rootURL: fixture.mediaRoot,
+            availableCapacity: { .max },
+            beforeTrashRestore: { throw InjectedMediaFailure.restore }
+        )
+
+        XCTAssertThrowsError(try EntryEditingService(
+            persistence: FailingEditingPersistence(),
+            mediaStore: restoreFailingStore
+        ).update(entry, with: EntryEditingDraft(
+            title: nil,
+            body: "After",
+            occurredAt: timestamp,
+            orderedImages: [
+                .added(MediaSource(
+                    url: replacementURL,
+                    originalFilename: "replacement.png",
+                    contentType: "image/png"
+                ))
+            ]
+        ))) {
+            XCTAssertEqual($0 as? EntryMediaOperationError, .rollbackIncomplete)
+        }
+        XCTAssertEqual(entry.body, "Before")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: try healthyStore.fileURL(for: original.relativePath).path))
+        XCTAssertEqual(try fixture.originalFiles(), [])
+
+        try healthyStore.recoverInterruptedTrash(referencedOriginalPaths: [original.relativePath])
+        XCTAssertEqual(try Data(contentsOf: healthyStore.fileURL(for: original.relativePath)), originalBytes)
+    }
+
     func testRestoreMovesArchivedEntryBackToOrganized() throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         let persistence = ModelContextEntryPersistence(context: container.mainContext)
@@ -884,12 +1160,29 @@ private func writeBigEndian(_ value: UInt32, into bytes: inout [UInt8], at offse
 private func crc32(_ bytes: ArraySlice<UInt8>) -> UInt32 {
     var crc: UInt32 = 0xffff_ffff
     for byte in bytes {
-        crc ^= UInt32(byte)
-        for _ in 0..<8 {
-            crc = (crc >> 1) ^ ((crc & 1) == 1 ? 0xedb8_8320 : 0)
-        }
+        crc = crc32Table[Int((crc ^ UInt32(byte)) & 0xff)] ^ (crc >> 8)
     }
     return crc ^ 0xffff_ffff
+}
+
+private let crc32Table: [UInt32] = (0..<256).map { value in
+    var crc = UInt32(value)
+    for _ in 0..<8 {
+        crc = (crc >> 1) ^ ((crc & 1) == 1 ? 0xedb8_8320 : 0)
+    }
+    return crc
+}
+
+private func regularFileByteCount(at directory: URL) throws -> Int64 {
+    guard FileManager.default.fileExists(atPath: directory.path),
+          let enumerator = FileManager.default.enumerator(
+            at: directory,
+            includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey]
+          ) else { return 0 }
+    return try (enumerator.allObjects as? [URL] ?? []).reduce(Int64(0)) { total, url in
+        let values = try url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
+        return values.isRegularFile == true ? total + Int64(values.fileSize ?? 0) : total
+    }
 }
 
 private struct TemporaryFixture {

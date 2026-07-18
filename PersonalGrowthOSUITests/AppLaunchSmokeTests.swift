@@ -78,6 +78,17 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
     }
 
+    func testGlobalCaptureIsAvailableFromSettings() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.buttons["Settings"].tap()
+        app.buttons["settings-capture-button"].tap()
+
+        XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
+    }
+
     func testArchivedEntryCanBeRestored() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]

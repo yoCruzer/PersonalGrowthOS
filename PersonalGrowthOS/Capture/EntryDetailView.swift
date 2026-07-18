@@ -122,6 +122,18 @@ struct EntryDetailView: View {
     }
 }
 
+private enum EntryEditorImageItem: Identifiable {
+    case retained(ImageMetadata)
+    case added(UUID, MediaSource)
+
+    var id: UUID {
+        switch self {
+        case .retained(let image): image.id
+        case .added(let id, _): id
+        }
+    }
+}
+
 private struct EntryEditorView: View {
     let entry: Entry
     let mediaStore: MediaStore
@@ -132,9 +144,8 @@ private struct EntryEditorView: View {
     @State private var title: String
     @State private var bodyText: String
     @State private var occurredAt: Date
-    @State private var retainedImageIDs: [UUID]
+    @State private var imageItems: [EntryEditorImageItem]
     @State private var selectedItems: [PhotosPickerItem] = []
-    @State private var addedImages: [MediaSource] = []
     @State private var temporaryURLs: [URL] = []
     @State private var isLoading = false
     @State private var isSaving = false
@@ -147,15 +158,13 @@ private struct EntryEditorView: View {
         _title = State(initialValue: entry.title ?? "")
         _bodyText = State(initialValue: entry.body ?? "")
         _occurredAt = State(initialValue: entry.occurredAt)
-        _retainedImageIDs = State(initialValue: entry.images
+        _imageItems = State(initialValue: entry.images
             .sorted(by: { $0.sortOrder < $1.sortOrder })
-            .map(\.id))
+            .map(EntryEditorImageItem.retained))
     }
 
     var body: some View {
-        let retainedImages = retainedImageIDs.compactMap { id in entry.images.first { $0.id == id } }
-        let retainedCount = retainedImages.count
-        let remainingSlots = max(0, EntryRules.maximumImageCount - retainedCount)
+        let remainingSlots = max(0, EntryRules.maximumImageCount - imageItems.count)
 
         NavigationStack {
             Form {
@@ -170,20 +179,34 @@ private struct EntryEditorView: View {
                 Section("Occurred") {
                     DatePicker("Date and time", selection: $occurredAt)
                 }
-                if !retainedImages.isEmpty {
-                    Section("Existing Photos") {
-                        ForEach(Array(retainedImages.enumerated()), id: \.element.id) { index, image in
-                            ExistingImageEditorRow(
-                                image: image,
-                                thumbnailStore: thumbnailStore,
-                                position: index + 1,
-                                total: retainedImages.count,
-                                canMoveUp: index > 0,
-                                canMoveDown: index < retainedImages.count - 1,
-                                moveUp: { retainedImageIDs.swapAt(index, index - 1) },
-                                moveDown: { retainedImageIDs.swapAt(index, index + 1) },
-                                remove: { retainedImageIDs.remove(at: index) }
-                            )
+                if !imageItems.isEmpty {
+                    Section("Photos") {
+                        ForEach(Array(imageItems.enumerated()), id: \.element.id) { index, item in
+                            switch item {
+                            case .retained(let image):
+                                ExistingImageEditorRow(
+                                    image: image,
+                                    thumbnailStore: thumbnailStore,
+                                    position: index + 1,
+                                    total: imageItems.count,
+                                    canMoveUp: index > 0,
+                                    canMoveDown: index < imageItems.count - 1,
+                                    moveUp: { imageItems.swapAt(index, index - 1) },
+                                    moveDown: { imageItems.swapAt(index, index + 1) },
+                                    remove: { removeImageItem(at: index) }
+                                )
+                            case .added(_, let source):
+                                LocalImagePreviewRow(
+                                    source: source,
+                                    position: index + 1,
+                                    total: imageItems.count,
+                                    canMoveUp: index > 0,
+                                    canMoveDown: index < imageItems.count - 1,
+                                    moveUp: { imageItems.swapAt(index, index - 1) },
+                                    moveDown: { imageItems.swapAt(index, index + 1) },
+                                    remove: { removeImageItem(at: index) }
+                                )
+                            }
                         }
                     }
                 }
@@ -197,20 +220,6 @@ private struct EntryEditorView: View {
                         Label("Choose up to \(remainingSlots)", systemImage: "photo.on.rectangle")
                     }
                     .disabled(remainingSlots == 0)
-                    if !addedImages.isEmpty {
-                        ForEach(Array(addedImages.enumerated()), id: \.offset) { index, source in
-                            LocalImagePreviewRow(
-                                source: source,
-                                position: retainedCount + index + 1,
-                                total: retainedCount + addedImages.count,
-                                canMoveUp: index > 0,
-                                canMoveDown: index < addedImages.count - 1,
-                                moveUp: { addedImages.swapAt(index, index - 1) },
-                                moveDown: { addedImages.swapAt(index, index + 1) },
-                                remove: { removeAddedImage(at: index) }
-                            )
-                        }
-                    }
                     if isLoading { ProgressView("Loading photos…") }
                 }
                 if let errorMessage {
@@ -229,8 +238,7 @@ private struct EntryEditorView: View {
                             isLoading
                                 || isSaving
                                 || (bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                    && retainedImageIDs.isEmpty
-                                    && addedImages.isEmpty)
+                                    && imageItems.isEmpty)
                         )
                         .accessibilityIdentifier("entry-edit-save")
                 }
@@ -270,7 +278,11 @@ private struct EntryEditorView: View {
                 }
                 removeTemporaryFiles()
                 temporaryURLs = newURLs
-                addedImages = sources
+                imageItems.removeAll {
+                    if case .added = $0 { return true }
+                    return false
+                }
+                imageItems.append(contentsOf: sources.map { .added(UUID(), $0) })
                 isLoading = false
             } catch {
                 for url in newURLs { try? FileManager.default.removeItem(at: url) }
@@ -292,8 +304,12 @@ private struct EntryEditorView: View {
                 title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : title,
                 body: bodyText,
                 occurredAt: occurredAt,
-                retainedImageIDs: retainedImageIDs,
-                addedImages: addedImages
+                orderedImages: imageItems.map { item in
+                    switch item {
+                    case .retained(let image): .retained(image.id)
+                    case .added(_, let source): .added(source)
+                    }
+                }
             ))
             removeTemporaryFiles()
             dismiss()
@@ -321,13 +337,15 @@ private struct EntryEditorView: View {
         temporaryURLs = []
     }
 
-    private func removeAddedImage(at index: Int) {
-        guard addedImages.indices.contains(index) else { return }
-        let source = addedImages.remove(at: index)
-        do {
-            try FileManager.default.removeItem(at: source.url)
-        } catch {
-            // Temporary files are retried during view cleanup.
+    private func removeImageItem(at index: Int) {
+        guard imageItems.indices.contains(index) else { return }
+        let item = imageItems.remove(at: index)
+        if case .added(_, let source) = item {
+            do {
+                try FileManager.default.removeItem(at: source.url)
+            } catch {
+                // Temporary files are retried during view cleanup.
+            }
         }
     }
 }

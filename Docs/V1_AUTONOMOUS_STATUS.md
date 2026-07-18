@@ -7,7 +7,7 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S4 complete — Milestone A review fixes validated; fixed-commit re-review pending |
+| Current Macro Stage | S4 complete — Milestone A follow-up fixes validated; final fixed-commit re-review pending |
 | Completed Macro Stages | S1, S2, S3, S4 |
 
 ## Program Baseline
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-S4 is technically complete. Milestone A review findings have been resolved in a validated review-fix candidate; fixed-commit re-review remains before S5.
+S4 is technically complete. The first fixed-commit re-review found two resource-safety/evidence blockers; both and the directly related Medium findings are resolved in a validated follow-up candidate. Final fixed-commit re-review remains before S5.
 
 ## Current Internal Task
 
-Commit the validated Milestone A fixes, run four independent read-only re-review lenses against that fixed commit, record the Milestone A Review Manifest and enter S5.
+Commit the validated Milestone A follow-up, run final independent read-only re-review against that fixed commit, record the Milestone A Review Manifest and enter S5.
 
 ## Completed Macro Stages
 
@@ -39,15 +39,17 @@ Commit the validated Milestone A fixes, run four independent read-only re-review
 
 ## Latest Verified Commit
 
-`92207c0b2dff58bbf2b28870cd9ff6630badaec1` — verified S4 Stage commit. The review-fix candidate is validated and awaiting its fixed commit.
+`bc38f31a40c1e544ec2e2d9b8a6e4faaab45c097` — first Milestone A review-fix commit. The resource-safety follow-up is validated and awaiting its fixed commit.
 
 ## Latest Build Result
 
-Milestone A review-fix candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). The built app Info.plist contains `NSCameraUsageDescription`. UI automation exercised launch, global capture, Capture → Timeline → relaunch → edit → relaunch, archive → restore and permanent delete.
+Milestone A follow-up candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). The built app Info.plist contains `NSCameraUsageDescription`. UI automation exercised launch, global capture from Timeline and Settings, Capture → Timeline → relaunch → edit → relaunch, archive → restore and permanent delete.
 
 ## Latest Test Result
 
-Milestone A review-fix combined shared-scheme gate: 45 tests passed with 0 failures and 0 skips (40 Unit Tests and 5 UI Tests). Coverage now includes on-disk rich Entry reopen and image ordering, stable tie-breaking, multi-image copy/capacity/database failure matrices, explicit rollback-restore failure and next-launch recovery, Staging/orphan/missing-original reconciliation, exact 25 MiB and 80-megapixel boundaries, global capture, archive recovery and post-edit relaunch persistence.
+Milestone A follow-up validation: 45 Unit Tests and 6 UI Tests passed with 0 failures and 0 skips. Coverage includes on-disk rich Entry reopen and image ordering, stable tie-breaking, creation/edit multi-image failure matrices, deletion/edit rollback-restore recovery, integrated idempotent startup reconciliation, exact 25 MiB and 80-megapixel boundaries, global capture, archive recovery and post-edit relaunch persistence.
+
+Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMetric` for three isolated iterations on the same simulator. Each iteration copied/checksummed an exact 25 MiB valid PNG and downsampled a valid 80MP 1-bit PNG to at most 512px. Clock results were 0.210, 0.215 and 0.220 seconds; process physical peaks were 105,467.904, 105,467.904 and 105,504.768 kB; net physical-memory changes were 32.768, 0 and 36.864 kB. XCTest process-accounted logical writes were 0, 24.576 and 24.576 kB, while explicit file assertions verified a 25 MiB final Original and zero Staging bytes. The provisional 25 MiB / 80MP / 100 MiB reserve guardrails are retained: the accepted boundary completed without instability, local previews now downsample from URL, and the 100 MiB reserve remains greater than the 50 MiB staging-plus-final peak for a maximum-size original. Physical-device tuning remains Owner-deferred.
 
 ## Important Decisions
 
@@ -65,6 +67,7 @@ Milestone A review-fix combined shared-scheme gate: 45 tests passed with 0 failu
 - Original files remain the source of truth; 512-pixel JPEG thumbnails are reproducible cache files and are removed when their images are deleted.
 - Camera capture now stores `AVCapturePhoto.fileDataRepresentation()` bytes without UIImage recompression, and Photos Picker requests current encoding.
 - Startup reconciliation removes provably uncommitted Staging files, restores database-owned Trash files, preserves unreferenced Originals under private Recovery and reports missing Originals in Settings.
+- Selected-photo previews use ImageIO URL downsampling rather than full-resolution UIImage decoding; the editor persists one unified order across retained and newly added photos.
 
 ## Known Limitations
 
@@ -79,7 +82,7 @@ None.
 
 ## Next Action
 
-Create the Milestone A review-fix commit, run fixed-commit independent re-reviews, then record the manifest.
+Create the Milestone A follow-up commit, run final fixed-commit independent re-review, then record the manifest.
 
 ## Repository State
 
@@ -90,5 +93,6 @@ Create the Milestone A review-fix commit, run fixed-commit independent re-review
 - S2: committed and verified.
 - S3: committed and verified.
 - S4: committed and verified at `92207c0b2dff58bbf2b28870cd9ff6630badaec1`.
-- Milestone A review fixes: combined 45-test gate passed; fixed commit and re-review pending.
+- Milestone A first review fix: committed at `bc38f31a40c1e544ec2e2d9b8a6e4faaab45c097`.
+- Milestone A follow-up: 45 Unit Tests, 6 UI Tests and three resource-metric iterations passed; fixed commit and final re-review pending.
 - S5–S10: not started.

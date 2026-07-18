@@ -74,12 +74,15 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
         captureButton.tintColor = .white
         captureButton.contentVerticalAlignment = .fill
         captureButton.contentHorizontalAlignment = .fill
+        captureButton.accessibilityLabel = "Take Photo"
+        captureButton.accessibilityIdentifier = "camera-shutter"
         captureButton.addTarget(self, action: #selector(capturePhoto), for: .touchUpInside)
         captureButton.translatesAutoresizingMaskIntoConstraints = false
 
         let cancelButton = UIButton(type: .system)
         cancelButton.setTitle("Cancel", for: .normal)
         cancelButton.tintColor = .white
+        cancelButton.accessibilityIdentifier = "camera-cancel"
         cancelButton.addTarget(self, action: #selector(cancel), for: .touchUpInside)
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
 
@@ -105,12 +108,12 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
                     if granted {
                         self?.configureSession()
                     } else {
-                        self?.completion(.failure(CameraCaptureError.permissionDenied))
+                        self?.finish(.failure(CameraCaptureError.permissionDenied))
                     }
                 }
             }
         default:
-            completion(.failure(CameraCaptureError.permissionDenied))
+            finish(.failure(CameraCaptureError.permissionDenied))
         }
     }
 
@@ -120,7 +123,7 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
             for: .video,
             position: .back
         ), let input = try? AVCaptureDeviceInput(device: device) else {
-            completion(.failure(CameraCaptureError.unavailable))
+            finish(.failure(CameraCaptureError.unavailable))
             return
         }
 
@@ -128,7 +131,7 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
         session.sessionPreset = .photo
         guard session.canAddInput(input), session.canAddOutput(photoOutput) else {
             session.commitConfiguration()
-            completion(.failure(CameraCaptureError.configurationFailed))
+            finish(.failure(CameraCaptureError.configurationFailed))
             return
         }
         session.addInput(input)
@@ -175,13 +178,20 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
             let url = FileManager.default.temporaryDirectory
                 .appendingPathComponent("PGOS-Camera-\(UUID().uuidString).\(fileExtension)")
             try data.write(to: url, options: .atomic)
-            completion(.success(MediaSource(
+            finish(.success(MediaSource(
                 url: url,
                 originalFilename: "Camera Photo.\(fileExtension)",
                 contentType: mimeType
             )))
         } catch {
-            completion(.failure(error))
+            finish(.failure(error))
+        }
+    }
+
+    private func finish(_ result: Result<MediaSource, Error>) {
+        let completion = completion
+        DispatchQueue.main.async {
+            completion(result)
         }
     }
 }

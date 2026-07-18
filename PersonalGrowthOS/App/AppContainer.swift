@@ -1,6 +1,22 @@
 import Foundation
 import SwiftData
 
+enum StartupMediaReconciler {
+    static func reconcile(
+        mediaStore: MediaStore,
+        thumbnailStore: ThumbnailStore,
+        imageMetadata: [ImageMetadata]
+    ) throws -> MediaIntegrityReport {
+        let referencedPaths = Set(imageMetadata.map(\.relativePath))
+        try mediaStore.recoverInterruptedTrash(referencedOriginalPaths: referencedPaths)
+        var report = try mediaStore.reconcile(referencedOriginalPaths: referencedPaths)
+        report.removedThumbnailCount = try thumbnailStore.reconcile(
+            liveImageIDs: Set(imageMetadata.map(\.id))
+        )
+        return report
+    }
+}
+
 @MainActor
 struct AppContainer {
     let configuration: AppConfiguration
@@ -55,10 +71,6 @@ struct AppContainer {
 
         let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
         let imageMetadata = try modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>())
-        let referencedPaths = Set(imageMetadata.map(\.relativePath))
-        try mediaStore.recoverInterruptedTrash(
-            referencedOriginalPaths: referencedPaths
-        )
         let caches = try fileManager.url(
             for: .cachesDirectory,
             in: .userDomainMask,
@@ -70,9 +82,10 @@ struct AppContainer {
             mediaStore: mediaStore,
             fileManager: fileManager
         )
-        var integrityReport = try mediaStore.reconcile(referencedOriginalPaths: referencedPaths)
-        integrityReport.removedThumbnailCount = try thumbnailStore.reconcile(
-            liveImageIDs: Set(imageMetadata.map(\.id))
+        let integrityReport = try StartupMediaReconciler.reconcile(
+            mediaStore: mediaStore,
+            thumbnailStore: thumbnailStore,
+            imageMetadata: imageMetadata
         )
         return AppContainer(
             configuration: configuration,

@@ -14,14 +14,28 @@ final class ThumbnailStore {
     }
 
     func image(for metadata: ImageMetadata, maximumPixelSize: Int = 512) -> UIImage? {
+        guard let originalURL = try? mediaStore.fileURL(for: metadata.relativePath),
+              fileManager.fileExists(atPath: originalURL.path) else {
+            removeThumbnail(for: metadata.id)
+            return nil
+        }
         let cacheURL = rootURL.appendingPathComponent("\(metadata.id.uuidString.lowercased()).jpg")
         if let image = UIImage(contentsOfFile: cacheURL.path) {
             return image
         }
-        guard let originalURL = try? mediaStore.fileURL(for: metadata.relativePath),
-              let source = CGImageSourceCreateWithURL(originalURL as CFURL, nil) else {
-            return nil
+        guard let image = Self.downsampledImage(
+            at: originalURL,
+            maximumPixelSize: maximumPixelSize
+        ) else { return nil }
+        if let data = image.jpegData(compressionQuality: 0.8) {
+            try? fileManager.createDirectory(at: rootURL, withIntermediateDirectories: true)
+            try? data.write(to: cacheURL, options: .atomic)
         }
+        return image
+    }
+
+    static func downsampledImage(at url: URL, maximumPixelSize: Int) -> UIImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
@@ -30,12 +44,7 @@ final class ThumbnailStore {
         guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             return nil
         }
-        let image = UIImage(cgImage: cgImage)
-        if let data = image.jpegData(compressionQuality: 0.8) {
-            try? fileManager.createDirectory(at: rootURL, withIntermediateDirectories: true)
-            try? data.write(to: cacheURL, options: .atomic)
-        }
-        return image
+        return UIImage(cgImage: cgImage)
     }
 
     func removeThumbnail(for imageID: UUID) {
