@@ -16,10 +16,12 @@ struct GrowthView: View {
                     thumbnailStore: thumbnailStore
                 )
             } label: {
-                LabeledContent {
-                    Text("\(habits.count)")
-                } label: {
+                HStack {
                     Label("Habits", systemImage: "repeat")
+                        .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
+                    Spacer()
+                    Text("\(habits.count)")
                 }
             }
             .accessibilityIdentifier("growth-habits")
@@ -29,10 +31,12 @@ struct GrowthView: View {
                     thumbnailStore: thumbnailStore
                 )
             } label: {
-                LabeledContent {
-                    Text("\(goals.count)")
-                } label: {
+                HStack {
                     Label("Goals and Flags", systemImage: "target")
+                        .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
+                    Spacer()
+                    Text("\(goals.count)")
                 }
             }
             .accessibilityIdentifier("growth-goals")

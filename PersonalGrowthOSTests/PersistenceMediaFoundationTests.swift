@@ -287,6 +287,34 @@ final class PersistenceMediaFoundationTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: try mediaStore.fileURL(for: originalPath).path))
     }
 
+    func testPermanentDeleteRemovesOnlySelectedEntryAndItsOriginal() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        let secondURL = fixture.root.appendingPathComponent("second.png")
+        try fixturePNG(color: .brown).write(to: fixture.sourceURL)
+        try fixturePNG(color: .cyan).write(to: secondURL)
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let persistence = ModelContextEntryPersistence(context: container.mainContext)
+        let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        let creation = EntryCreationService(persistence: persistence, mediaStore: mediaStore)
+        let first = try creation.create(EntryCreationDraft(
+            body: "Delete me",
+            image: MediaSource(url: fixture.sourceURL, originalFilename: "first.png", contentType: "image/png")
+        ))
+        let second = try creation.create(EntryCreationDraft(
+            body: "Keep me",
+            image: MediaSource(url: secondURL, originalFilename: "second.png", contentType: "image/png")
+        ))
+        let firstPath = try XCTUnwrap(first.images.first?.relativePath)
+        let secondPath = try XCTUnwrap(second.images.first?.relativePath)
+
+        try EntryDeletionService(persistence: persistence, mediaStore: mediaStore).permanentlyDelete(first)
+
+        XCTAssertEqual(try container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id), [second.id])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: try mediaStore.fileURL(for: firstPath).path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: try mediaStore.fileURL(for: secondPath).path))
+    }
+
     func testEditingReplacesTextDateAndImagesAtomically() throws {
         let fixture = try TemporaryFixture()
         defer { fixture.remove() }

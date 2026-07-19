@@ -191,6 +191,7 @@ enum TransferValidator {
         try unique(data.goals.map(\.id), type: "goal")
         try unique(data.goalEvents.map(\.id), type: "goalEvent")
 
+        let imageCounts = Dictionary(grouping: data.images, by: \.entryID).mapValues(\.count)
         let entryIDs = Set(data.entries.map(\.id))
         let entryKinds = Dictionary(uniqueKeysWithValues: try data.entries.map { entry in
             guard let kind = EntryKind(rawValue: entry.kind),
@@ -200,7 +201,7 @@ enum TransferValidator {
             }
             try EntryRules.validateContent(
                 body: entry.body,
-                imageCount: data.images.lazy.filter { $0.entryID == entry.id }.count
+                imageCount: imageCounts[entry.id, default: 0]
             )
             let period: ReviewPeriod? = entry.periodStart == nil && entry.periodEnd == nil
                 ? nil

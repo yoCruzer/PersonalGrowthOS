@@ -46,7 +46,13 @@ struct LibraryView: View {
                         thumbnailStore: thumbnailStore
                     )
                 } label: {
-                    LabeledContent("Tags", value: "\(tags.count)")
+                    HStack {
+                        Label("Tags", systemImage: "tag")
+                            .fixedSize(horizontal: false, vertical: true)
+                            .layoutPriority(1)
+                        Spacer()
+                        Text("\(tags.count)")
+                    }
                 }
                 .accessibilityIdentifier("library-tags")
                 destination(.archived, count: entries.filter { $0.status == .archived }.count)
@@ -69,10 +75,12 @@ struct LibraryView: View {
                 thumbnailStore: thumbnailStore
             )
         } label: {
-            LabeledContent {
-                Text("\(count)")
-            } label: {
+            HStack {
                 Label(filter.rawValue, systemImage: filter.systemImage)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
+                Spacer()
+                Text("\(count)")
             }
         }
         .accessibilityIdentifier("library-\(filter.rawValue.lowercased().replacingOccurrences(of: " ", with: "-"))")
@@ -212,6 +220,7 @@ private struct ReviewComposerView: View {
         }
         .foregroundStyle(.primary)
         .accessibilityIdentifier(identifier)
+        .accessibilitySelectionState(selected)
     }
 }
 
@@ -434,6 +443,7 @@ struct EntryTagEditor: View {
                             }
                         }
                         .foregroundStyle(.primary)
+                        .accessibilitySelectionState(isAttached(tag))
                     }
                 }
             }
@@ -470,6 +480,18 @@ struct EntryTagEditor: View {
             }
         } catch {
             errorMessage = "The Entry's tags were not changed."
+        }
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func accessibilitySelectionState(_ selected: Bool) -> some View {
+        if selected {
+            accessibilityValue("Selected")
+                .accessibilityAddTraits(.isSelected)
+        } else {
+            accessibilityValue("Not selected")
         }
     }
 }

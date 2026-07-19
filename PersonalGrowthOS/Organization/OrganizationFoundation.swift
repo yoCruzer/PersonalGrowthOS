@@ -130,18 +130,35 @@ enum LinkIntegrityError: Error, Equatable {
     case danglingGoalEvents([UUID])
 }
 
-@MainActor
 enum LinkIntegrityService {
     static func validate(context: ModelContext) throws {
+        try Task.checkCancellation()
         let links = try context.fetch(FetchDescriptor<ObjectLink>())
+        try Task.checkCancellation()
         let entries = try context.fetch(FetchDescriptor<Entry>())
-        let entryIDs = Set(entries.map(\.id))
-        let entryKinds = Dictionary(entries.map { ($0.id, $0.kind) }, uniquingKeysWith: { first, _ in first })
-        let tagIDs = Set(try context.fetch(FetchDescriptor<Tag>()).map(\.id))
-        let habitIDs = Set(try context.fetch(FetchDescriptor<Habit>()).map(\.id))
-        let goalIDs = Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id))
+        let entryIDs = Set(try entries.map { entry in
+            try Task.checkCancellation()
+            return entry.id
+        })
+        let entryKinds = Dictionary(try entries.map { entry in
+            try Task.checkCancellation()
+            return (entry.id, entry.kind)
+        }, uniquingKeysWith: { first, _ in first })
+        let tagIDs = Set(try context.fetch(FetchDescriptor<Tag>()).map { tag in
+            try Task.checkCancellation()
+            return tag.id
+        })
+        let habitIDs = Set(try context.fetch(FetchDescriptor<Habit>()).map { habit in
+            try Task.checkCancellation()
+            return habit.id
+        })
+        let goalIDs = Set(try context.fetch(FetchDescriptor<Goal>()).map { goal in
+            try Task.checkCancellation()
+            return goal.id
+        })
         var canonicalCounts: [String: Int] = [:]
         for link in links {
+            try Task.checkCancellation()
             guard let sourceType = LinkObjectType(rawValue: link.sourceTypeRawValue),
                   let targetType = LinkObjectType(rawValue: link.targetTypeRawValue),
                   let kind = ObjectLinkKind(rawValue: link.kindRawValue) else {
@@ -156,7 +173,8 @@ enum LinkIntegrityService {
             )
             canonicalCounts[key, default: 0] += 1
         }
-        let danglingIDs = links.compactMap { link -> UUID? in
+        let danglingIDs = try links.compactMap { link -> UUID? in
+            try Task.checkCancellation()
             guard let sourceType = LinkObjectType(rawValue: link.sourceTypeRawValue),
                   let targetType = LinkObjectType(rawValue: link.targetTypeRawValue),
                   let kind = ObjectLinkKind(rawValue: link.kindRawValue) else {
@@ -232,6 +250,7 @@ enum LinkIntegrityService {
         }
 
         let danglingLogIDs = try context.fetch(FetchDescriptor<HabitLog>()).compactMap { log -> UUID? in
+            try Task.checkCancellation()
             guard habitIDs.contains(log.habitID),
                   log.linkedEntryID.map(entryIDs.contains) ?? true else {
                 return log.id
@@ -245,7 +264,10 @@ enum LinkIntegrityService {
         }
 
         let danglingEventIDs = try context.fetch(FetchDescriptor<GoalLifecycleEvent>())
-            .compactMap { goalIDs.contains($0.goalID) ? nil : $0.id }
+            .compactMap { event -> UUID? in
+                try Task.checkCancellation()
+                return goalIDs.contains(event.goalID) ? nil : event.id
+            }
         guard danglingEventIDs.isEmpty else {
             throw LinkIntegrityError.danglingGoalEvents(
                 danglingEventIDs.sorted { $0.uuidString < $1.uuidString }

@@ -320,6 +320,7 @@ struct EntryRelationshipsEditor: View {
             }
         }
         .foregroundStyle(.primary)
+        .accessibilitySelectionState(linked)
     }
 
     private func isLinked(to habit: Habit) -> Bool {
@@ -378,6 +379,7 @@ private struct GoalHabitEditor: View {
                     HStack { Text(value.0); Spacer(); if value.1 { Image(systemName: "checkmark") } }
                 }
                 .foregroundStyle(.primary)
+                .accessibilitySelectionState(value.1)
             }
             .navigationTitle(title)
             .toolbar { Button("Done") { dismiss() } }
@@ -414,6 +416,7 @@ private struct GoalEntryEditor: View {
                     }
                 }
                 .foregroundStyle(.primary)
+                .accessibilitySelectionState(linked)
             }
             .navigationTitle("Related Entries")
             .toolbar { Button("Done") { dismiss() } }

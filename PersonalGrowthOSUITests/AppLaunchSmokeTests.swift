@@ -1,6 +1,43 @@
 import XCTest
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testCoreShellPassesAccessibilityAudit() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        XCTAssertTrue(app.descendants(matching: .any)["app-shell"].waitForExistence(timeout: 5))
+        try performSemanticAccessibilityAudit(app)
+        for tab in ["Timeline", "Growth", "Library"] {
+            app.tabBars.buttons[tab].tap()
+            try performSemanticAccessibilityAudit(app)
+        }
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        try performSemanticAccessibilityAudit(app)
+    }
+
+    func testCoreShellRemainsOperableAtLargestAccessibilityTextSize() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge"
+        ]
+        app.launch()
+
+        XCTAssertTrue(app.buttons["quick-capture-button"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["quick-capture-button"].isHittable)
+        app.tabBars.buttons["Growth"].tap()
+        XCTAssertTrue(app.buttons["growth-goals"].isHittable)
+        app.tabBars.buttons["Library"].tap()
+        XCTAssertTrue(app.buttons["library-all-entries"].isHittable)
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.buttons["settings-import-button"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings-import-button"].isHittable)
+    }
+
     func testUITestingLaunchShowsAppShell() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting"]
@@ -191,6 +228,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["entry-manage-tags"].tap()
         XCTAssertTrue(app.buttons["Learning"].waitForExistence(timeout: 5))
         app.buttons["Learning"].tap()
+        XCTAssertEqual(app.buttons["Learning"].value as? String, "Selected")
         app.buttons["Done"].tap()
         app.buttons["global-search-button"].tap()
         let search = app.searchFields.firstMatch
@@ -200,6 +238,15 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Learning"].waitForExistence(timeout: 5))
         app.buttons["Learning"].tap()
         XCTAssertTrue(app.staticTexts["Searchable reflection"].waitForExistence(timeout: 5))
+    }
+
+    private func performSemanticAccessibilityAudit(_ app: XCUIApplication) throws {
+        try app.performAccessibilityAudit(for: [
+            .elementDetection,
+            .hitRegion,
+            .sufficientElementDescription,
+            .trait
+        ])
     }
 
     func testTodayHabitCheckInAppearsInHistory() {

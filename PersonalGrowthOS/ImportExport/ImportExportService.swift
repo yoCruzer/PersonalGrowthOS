@@ -44,6 +44,7 @@ final class ImportExportService {
     typealias Log = (String) -> Void
 
     private let context: ModelContext
+    private let container: ModelContainer
     private let mediaStore: MediaStore
     private let fileManager: FileManager
     private let workspaceRoot: URL
@@ -73,6 +74,7 @@ final class ImportExportService {
         publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil
     ) {
         self.context = context
+        self.container = context.container
         self.mediaStore = mediaStore
         self.fileManager = fileManager
         self.workspaceRoot = workspaceRoot
@@ -102,69 +104,171 @@ final class ImportExportService {
         }
     }
 
-    func exportPackage() throws -> ExportPackageLease {
+    func exportPackage() async throws -> ExportPackageLease {
         log("export.started")
-        try LinkIntegrityService.validate(context: context)
-        let transfer = try TransferSnapshot.make(context: context)
         let operationID = UUID()
-        let assembly = workspaceRoot
-            .appendingPathComponent("Assembly", isDirectory: true)
-            .appendingPathComponent(operationID.uuidString.lowercased(), isDirectory: true)
+        let exportDate = now()
+        let build = appVersion()
+        let capacity = try availableCapacity()
+        let exportContainer = container
+        let mediaRoot = mediaStore.rootURL
+        let exportWorkspaceRoot = workspaceRoot
+        let exportLimits = limits
+        do {
+            let worker = Task.detached {
+                let snapshotContext = ModelContext(exportContainer)
+                try LinkIntegrityService.validate(context: snapshotContext)
+                let transfer = try TransferSnapshot.make(context: snapshotContext)
+                let inputs = try transfer.images.map { record in
+                    ExportMediaInput(
+                        record: record,
+                        sourceURL: try Self.mediaURL(root: mediaRoot, relativePath: record.relativePath)
+                    )
+                }
+                let destination = try Self.buildExportPackage(
+                    transfer: transfer,
+                    mediaInputs: inputs,
+                    operationID: operationID,
+                    exportedAt: exportDate,
+                    build: build,
+                    workspaceRoot: exportWorkspaceRoot,
+                    availableCapacity: capacity,
+                    limits: exportLimits
+                )
+                return ExportBuildResult(
+                    destination: destination,
+                    objectCount: transfer.totalObjectCount,
+                    mediaCount: transfer.images.count
+                )
+            }
+            let result = try await withTaskCancellationHandler {
+                try await worker.value
+            } onCancel: {
+                worker.cancel()
+            }
+            do {
+                try Task.checkCancellation()
+            } catch {
+                try? fileManager.removeItem(at: result.destination)
+                throw error
+            }
+            log("export.completed objects=\(result.objectCount) media=\(result.mediaCount)")
+            return ExportPackageLease(url: result.destination, fileManager: fileManager)
+        } catch {
+            log("export.failed")
+            throw error
+        }
+    }
+
+    private struct ExportMediaInput {
+        let record: ImageTransfer
+        let sourceURL: URL
+    }
+
+    private struct ExportBuildResult {
+        let destination: URL
+        let objectCount: Int
+        let mediaCount: Int
+    }
+
+    nonisolated private static func buildExportPackage(
+        transfer: TransferData,
+        mediaInputs: [ExportMediaInput],
+        operationID: UUID,
+        exportedAt: Date,
+        build: (version: String, build: String),
+        workspaceRoot: URL,
+        availableCapacity: Int64,
+        limits: ZIPImportLimits
+    ) throws -> URL {
+        let fileManager = FileManager.default
+        let assembly = workspaceRoot.appendingPathComponent(
+            "Assembly/\(operationID.uuidString.lowercased())",
+            isDirectory: true
+        )
         let ready = workspaceRoot.appendingPathComponent("Ready", isDirectory: true)
         var archiveURL: URL?
         do {
+            try Task.checkCancellation()
             try fileManager.createDirectory(at: assembly, withIntermediateDirectories: true)
             try fileManager.createDirectory(at: ready, withIntermediateDirectories: true)
             let dataURL = assembly.appendingPathComponent("data.json")
             let manifestURL = assembly.appendingPathComponent("manifest.json")
             let encodedData = try TransferCoding.encoder.encode(transfer)
+            guard transfer.totalObjectCount <= limits.maximumObjectCount else {
+                throw TransferPackageError.objectLimitExceeded
+            }
+            guard mediaInputs.count + 2 <= limits.maximumFileCount else {
+                throw ZIPArchiveError.tooManyFiles
+            }
+            guard Int64(encodedData.count) <= limits.maximumDataBytes else {
+                throw ZIPArchiveError.expandedSizeExceeded
+            }
+            let mediaBytes = try mediaInputs.reduce(Int64(0)) { total, input in
+                let (sum, overflow) = total.addingReportingOverflow(input.record.byteCount)
+                guard !overflow else { throw ZIPArchiveError.insufficientCapacity }
+                return sum
+            }
+            let dataBytes = Int64(encodedData.count)
+            let (doubleData, dataOverflow) = dataBytes.multipliedReportingOverflow(by: 2)
+            let (payload, payloadOverflow) = mediaBytes.addingReportingOverflow(doubleData)
+            let (withOverhead, overheadOverflow) = payload.addingReportingOverflow(64 * 1_024 * 1_024)
+            let (required, reserveOverflow) = withOverhead.addingReportingOverflow(limits.capacitySafetyReserve)
+            guard !dataOverflow, !payloadOverflow, !overheadOverflow, !reserveOverflow,
+                  availableCapacity >= required else {
+                throw ZIPArchiveError.insufficientCapacity
+            }
             try encodedData.write(to: dataURL, options: .atomic)
 
             var sources = [ZIPSource(path: "data.json", fileURL: dataURL)]
             var mediaRecords: [ExportMediaFileRecord] = []
-            for image in transfer.images.sorted(by: { $0.id.uuidString < $1.id.uuidString }) {
-                let sourceURL = try mediaStore.fileURL(for: image.relativePath)
-                guard fileManager.fileExists(atPath: sourceURL.path) else {
+            for input in mediaInputs.sorted(by: { $0.record.id.uuidString < $1.record.id.uuidString }) {
+                try Task.checkCancellation()
+                guard fileManager.fileExists(atPath: input.sourceURL.path) else {
                     throw TransferPackageError.missingMedia
                 }
-                let measured = try Hasher.sha256AndSize(fileAt: sourceURL)
-                guard measured.size == image.byteCount, measured.sha256 == image.checksum else {
+                let measured = try Hasher.sha256AndSize(fileAt: input.sourceURL)
+                guard measured.size == input.record.byteCount,
+                      measured.sha256 == input.record.checksum else {
                     throw TransferPackageError.mediaMismatch
                 }
-                let packagePath = image.mediaPath
-                let destination = assembly.appendingPathComponent(packagePath)
-                try fileManager.createDirectory(
-                    at: destination.deletingLastPathComponent(),
-                    withIntermediateDirectories: true
-                )
-                try fileManager.copyItem(at: sourceURL, to: destination)
-                sources.append(ZIPSource(path: packagePath, fileURL: destination))
+                sources.append(ZIPSource(path: input.record.mediaPath, fileURL: input.sourceURL))
                 mediaRecords.append(ExportMediaFileRecord(
-                    imageID: image.id,
-                    path: packagePath,
+                    imageID: input.record.id,
+                    path: input.record.mediaPath,
                     byteCount: measured.size,
                     sha256: measured.sha256
                 ))
             }
 
-            let build = appVersion()
-            let dataHash = Hasher.sha256(encodedData)
             let manifest = ExportManifest(
                 formatIdentifier: ExportManifest.formatIdentifier,
                 packageSchemaVersion: ExportManifest.currentPackageSchemaVersion,
                 appVersion: build.version,
                 appBuild: build.build,
                 exportID: operationID,
-                exportedAt: now(),
+                exportedAt: exportedAt,
                 objectCounts: transfer.objectCounts,
                 dataFile: ExportFileRecord(
                     path: "data.json",
-                    byteCount: Int64(encodedData.count),
-                    sha256: dataHash
+                    byteCount: dataBytes,
+                    sha256: Hasher.sha256(encodedData)
                 ),
                 mediaFiles: mediaRecords
             )
-            try TransferCoding.encoder.encode(manifest).write(to: manifestURL, options: .atomic)
+            try TransferValidator.validate(manifest: manifest, data: transfer, limits: limits)
+            let encodedManifest = try TransferCoding.encoder.encode(manifest)
+            guard Int64(encodedManifest.count) <= limits.maximumManifestBytes else {
+                throw ZIPArchiveError.expandedSizeExceeded
+            }
+            let expandedBytes = try checkedTransferAdd(
+                mediaBytes,
+                try checkedTransferAdd(dataBytes, Int64(encodedManifest.count))
+            )
+            guard expandedBytes <= limits.maximumExpandedBytes else {
+                throw ZIPArchiveError.expandedSizeExceeded
+            }
+            try encodedManifest.write(to: manifestURL, options: .atomic)
             sources.insert(ZIPSource(path: "manifest.json", fileURL: manifestURL), at: 0)
 
             let formatter = DateFormatter()
@@ -172,46 +276,75 @@ final class ImportExportService {
             formatter.locale = Locale(identifier: "en_US_POSIX")
             formatter.timeZone = TimeZone(secondsFromGMT: 0)
             formatter.dateFormat = "yyyyMMdd-HHmmss"
-            let filename = "PersonalGrowthOS-export-\(formatter.string(from: manifest.exportedAt)).zip"
-            let destination = ready.appendingPathComponent(filename)
+            let destination = ready.appendingPathComponent(
+                "PersonalGrowthOS-export-\(formatter.string(from: exportedAt))-\(operationID.uuidString.prefix(8)).zip"
+            )
             archiveURL = destination
             try ZIPArchiveWriter.write(sources: sources, to: destination)
+            let archiveBytes = (try fileManager.attributesOfItem(atPath: destination.path)[.size] as? NSNumber)?
+                .int64Value ?? 0
+            guard archiveBytes <= limits.maximumArchiveBytes else {
+                throw ZIPArchiveError.archiveTooLarge
+            }
+            _ = try ZIPArchiveReader(
+                archiveURL: destination,
+                limits: limits,
+                availableCapacity: .max
+            )
             try fileManager.removeItem(at: assembly)
-            log("export.completed objects=\(transfer.totalObjectCount) media=\(transfer.images.count)")
-            return ExportPackageLease(url: destination, fileManager: fileManager)
+            return destination
         } catch {
             try? fileManager.removeItem(at: assembly)
             if let archiveURL { try? fileManager.removeItem(at: archiveURL) }
-            log("export.failed")
             throw error
         }
     }
 
-    func importPackage(from selectedURL: URL) throws -> ImportResult {
+    nonisolated private static func checkedTransferAdd(_ lhs: Int64, _ rhs: Int64) throws -> Int64 {
+        let (sum, overflow) = lhs.addingReportingOverflow(rhs)
+        guard !overflow else { throw ZIPArchiveError.expandedSizeExceeded }
+        return sum
+    }
+
+    nonisolated private static func mediaURL(root: URL, relativePath: String) throws -> URL {
+        guard !relativePath.hasPrefix("/"),
+              !relativePath.split(separator: "/").contains("..") else {
+            throw MediaStoreError.invalidRelativePath
+        }
+        let candidate = root.appendingPathComponent(relativePath).standardizedFileURL
+        guard candidate.path.hasPrefix(root.standardizedFileURL.path + "/") else {
+            throw MediaStoreError.invalidRelativePath
+        }
+        return candidate
+    }
+
+    func importPackage(from selectedURL: URL) async throws -> ImportResult {
         log("import.started")
         let operationRoot = workspaceRoot
             .appendingPathComponent("Import", isDirectory: true)
             .appendingPathComponent(UUID().uuidString.lowercased(), isDirectory: true)
         defer { try? fileManager.removeItem(at: operationRoot) }
         do {
-            try ensureTargetIsEmpty(context)
-            try fileManager.createDirectory(at: operationRoot, withIntermediateDirectories: true)
-            let stagedArchive = operationRoot.appendingPathComponent("selected.zip")
-            try fileManager.copyItem(at: selectedURL, to: stagedArchive)
-            let extracted = operationRoot.appendingPathComponent("Extracted", isDirectory: true)
-            let reader = try ZIPArchiveReader(
-                archiveURL: stagedArchive,
-                limits: limits,
-                availableCapacity: try availableCapacity()
-            )
-            try reader.extractAll(to: extracted)
-            let package = try decodeAndValidatePackage(at: extracted, archiveMembers: reader.members)
-
-            let verificationRoot = operationRoot.appendingPathComponent("Verification", isDirectory: true)
-            try verifyInIsolatedStore(package: package, rootURL: verificationRoot)
+            try Self.ensureTargetIsEmpty(context)
+            let capacity = try availableCapacity()
+            let importLimits = limits
+            let worker = Task.detached {
+                try Self.prepareAndVerifyImport(
+                    selectedURL: selectedURL,
+                    operationRoot: operationRoot,
+                    limits: importLimits,
+                    availableCapacity: capacity
+                )
+            }
+            let package = try await withTaskCancellationHandler {
+                try await worker.value
+            } onCancel: {
+                worker.cancel()
+            }
+            try Task.checkCancellation()
             try publicationCheckpoint?(.afterPreflight)
-            try ensureTargetIsEmpty(context)
-            try publish(package: package)
+            try Self.ensureTargetIsEmpty(context)
+            try await publish(package: package)
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.images.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
@@ -229,9 +362,63 @@ final class ImportExportService {
         let extractedRoot: URL
     }
 
-    private func decodeAndValidatePackage(
+    nonisolated private static func prepareAndVerifyImport(
+        selectedURL: URL,
+        operationRoot: URL,
+        limits: ZIPImportLimits,
+        availableCapacity: Int64
+    ) throws -> ValidatedPackage {
+        let fileManager = FileManager.default
+        try Task.checkCancellation()
+        let selectedSize = (try fileManager.attributesOfItem(atPath: selectedURL.path)[.size] as? NSNumber)?
+            .int64Value ?? 0
+        guard selectedSize >= 0, selectedSize <= limits.maximumArchiveBytes else {
+            throw ZIPArchiveError.archiveTooLarge
+        }
+        let remainingCapacity = availableCapacity >= selectedSize
+            ? availableCapacity - selectedSize
+            : 0
+        try fileManager.createDirectory(at: operationRoot, withIntermediateDirectories: true)
+        let stagedArchive = operationRoot.appendingPathComponent("selected.zip")
+        try fileManager.copyItem(at: selectedURL, to: stagedArchive)
+        let extracted = operationRoot.appendingPathComponent("Extracted", isDirectory: true)
+        let reader = try ZIPArchiveReader(
+            archiveURL: stagedArchive,
+            limits: limits,
+            availableCapacity: remainingCapacity
+        )
+        guard let manifestMember = reader.members.first(where: { $0.path == "manifest.json" }),
+              let dataMember = reader.members.first(where: { $0.path == "data.json" }) else {
+            throw ZIPArchiveError.missingMember("manifest.json/data.json")
+        }
+        guard manifestMember.uncompressedSize <= limits.maximumManifestBytes,
+              dataMember.uncompressedSize <= limits.maximumDataBytes else {
+            throw ZIPArchiveError.expandedSizeExceeded
+        }
+        for member in reader.members where member.path != "manifest.json" && member.path != "data.json" {
+            guard member.path.hasPrefix("media/"),
+                  member.uncompressedSize <= MediaStore.maximumOriginalByteCount else {
+                throw ZIPArchiveError.expandedSizeExceeded
+            }
+        }
+        try reader.extractAll(to: extracted)
+        let package = try decodeAndValidatePackage(
+            at: extracted,
+            archiveMembers: reader.members,
+            limits: limits,
+            fileManager: fileManager
+        )
+        let verificationRoot = operationRoot.appendingPathComponent("Verification", isDirectory: true)
+        try verifyInIsolatedStore(package: package, rootURL: verificationRoot, fileManager: fileManager)
+        try fileManager.removeItem(at: verificationRoot)
+        return package
+    }
+
+    nonisolated private static func decodeAndValidatePackage(
         at rootURL: URL,
-        archiveMembers: [ZIPMember]
+        archiveMembers: [ZIPMember],
+        limits: ZIPImportLimits,
+        fileManager: FileManager
     ) throws -> ValidatedPackage {
         let manifestURL = rootURL.appendingPathComponent("manifest.json")
         let dataURL = rootURL.appendingPathComponent("data.json")
@@ -286,64 +473,176 @@ final class ImportExportService {
         return ValidatedPackage(manifest: manifest, data: data, extractedRoot: rootURL)
     }
 
-    private func verifyInIsolatedStore(package: ValidatedPackage, rootURL: URL) throws {
+    nonisolated private static func verifyInIsolatedStore(
+        package: ValidatedPackage,
+        rootURL: URL,
+        fileManager: FileManager
+    ) throws {
         try fileManager.createDirectory(at: rootURL, withIntermediateDirectories: true)
         let storeURL = rootURL.appendingPathComponent("Store.sqlite")
         do {
             let container = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+            let verificationContext = ModelContext(container)
             let temporaryMedia = MediaStore(
                 rootURL: rootURL.appendingPathComponent("MediaRoot", isDirectory: true),
                 fileManager: fileManager,
                 availableCapacity: { .max }
             )
-            _ = try materialize(package: package, context: container.mainContext, mediaStore: temporaryMedia)
-            try container.mainContext.save()
-            try LinkIntegrityService.validate(context: container.mainContext)
-            try verifySnapshot(package.data, context: container.mainContext, mediaStore: temporaryMedia)
+            _ = try materialize(package: package, context: verificationContext, mediaStore: temporaryMedia)
+            try verificationContext.save()
+            try verifySnapshot(package.data, context: verificationContext, mediaStore: temporaryMedia)
         }
         let reopened = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+        let reopenedContext = ModelContext(reopened)
         let reopenedMedia = MediaStore(
             rootURL: rootURL.appendingPathComponent("MediaRoot", isDirectory: true),
             fileManager: fileManager,
             availableCapacity: { .max }
         )
-        try LinkIntegrityService.validate(context: reopened.mainContext)
-        try verifySnapshot(package.data, context: reopened.mainContext, mediaStore: reopenedMedia)
+        try verifySnapshot(package.data, context: reopenedContext, mediaStore: reopenedMedia)
     }
 
-    private func publish(package: ValidatedPackage) throws {
-        var restoredPaths: [String] = []
+    private func publish(package: ValidatedPackage) async throws {
+        let importContainer = container
+        let mediaRoot = mediaStore.rootURL
+        let checkpoint = publicationCheckpoint
+        let worker = Task.detached {
+            try Self.publishPreparedPackage(
+                package: package,
+                container: importContainer,
+                mediaRoot: mediaRoot,
+                publicationCheckpoint: checkpoint
+            )
+        }
+        try await withTaskCancellationHandler {
+            try await worker.value
+        } onCancel: {
+            worker.cancel()
+        }
+        context.rollback()
+    }
+
+    nonisolated private static func publishPreparedPackage(
+        package: ValidatedPackage,
+        container: ModelContainer,
+        mediaRoot: URL,
+        publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
+    ) throws {
+        let fileManager = FileManager.default
+        let publicationRoot = package.extractedRoot
+            .deletingLastPathComponent()
+            .appendingPathComponent("Publication", isDirectory: true)
+        let stagedStore = MediaStore(
+            rootURL: publicationRoot,
+            fileManager: fileManager,
+            availableCapacity: { .max }
+        )
+        let activeStore = MediaStore(rootURL: mediaRoot, fileManager: fileManager)
+        let stagedOriginals = publicationRoot.appendingPathComponent("Media/Originals", isDirectory: true)
+        let activeOriginals = mediaRoot.appendingPathComponent("Media/Originals", isDirectory: true)
+        var installedOriginals = false
         var didSave = false
+        let publicationContext = ModelContext(container)
         do {
-            restoredPaths = try materialize(package: package, context: context, mediaStore: mediaStore)
-            for index in restoredPaths.indices {
-                try publicationCheckpoint?(.afterMediaCopy(index + 1))
+            try fileManager.createDirectory(at: publicationRoot, withIntermediateDirectories: true)
+            var copiedCount = 0
+            for record in package.data.images.sorted(by: { $0.sortOrder < $1.sortOrder }) {
+                _ = try copyMedia(
+                    record,
+                    packageRoot: package.extractedRoot,
+                    mediaRoot: stagedStore.rootURL
+                )
+                copiedCount += 1
+                try publicationCheckpoint?(.afterMediaCopy(copiedCount))
             }
+            try Task.checkCancellation()
+            if !fileManager.fileExists(atPath: stagedOriginals.path) {
+                try fileManager.createDirectory(at: stagedOriginals, withIntermediateDirectories: true)
+            }
+            guard try directoryIsEmptyOrAbsent(activeOriginals, fileManager: fileManager) else {
+                throw TransferPackageError.targetNotEmpty
+            }
+            try fileManager.createDirectory(
+                at: activeOriginals.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            if fileManager.fileExists(atPath: activeOriginals.path) {
+                try fileManager.removeItem(at: activeOriginals)
+            }
+            try fileManager.moveItem(at: stagedOriginals, to: activeOriginals)
+            installedOriginals = true
+
+            try ensureTargetIsEmpty(publicationContext)
+            _ = try materialize(
+                package: package,
+                context: publicationContext,
+                mediaStore: activeStore,
+                copyOriginals: false
+            )
+            try Task.checkCancellation()
             try publicationCheckpoint?(.beforeSave)
-            try LinkIntegrityService.validate(context: context)
-            try context.save()
+            try LinkIntegrityService.validate(context: publicationContext)
+            try Task.checkCancellation()
+            try publicationContext.save()
             didSave = true
-            try LinkIntegrityService.validate(context: context)
-            try verifySnapshot(package.data, context: context, mediaStore: mediaStore)
         } catch {
-            if didSave {
-                try? deleteAllData(context)
-                try? context.save()
-            } else {
-                context.rollback()
+            publicationContext.rollback()
+            if installedOriginals && !didSave {
+                try? fileManager.removeItem(at: activeOriginals)
             }
-            for path in restoredPaths { try? mediaStore.removeOriginal(at: path) }
             throw error
         }
     }
 
-    private func materialize(
+    nonisolated private static func directoryIsEmptyOrAbsent(
+        _ directory: URL,
+        fileManager: FileManager
+    ) throws -> Bool {
+        guard fileManager.fileExists(atPath: directory.path) else { return true }
+        guard let enumerator = fileManager.enumerator(
+            at: directory,
+            includingPropertiesForKeys: [.isDirectoryKey]
+        ) else { return true }
+        for case let item as URL in enumerator {
+            if try item.resourceValues(forKeys: [.isDirectoryKey]).isDirectory != true {
+                return false
+            }
+        }
+        return true
+    }
+
+    nonisolated private static func copyMedia(
+        _ record: ImageTransfer,
+        packageRoot: URL,
+        mediaRoot: URL
+    ) throws -> String {
+        try Task.checkCancellation()
+        let store = MediaStore(rootURL: mediaRoot, fileManager: .default)
+        let stored = try store.storeOriginal(MediaSource(
+            url: packageRoot.appendingPathComponent(record.mediaPath),
+            originalFilename: record.originalFilename,
+            contentType: record.contentType
+        ), id: record.id)
+        guard stored.relativePath == record.relativePath,
+              stored.byteCount == record.byteCount,
+              stored.checksum == record.checksum,
+              stored.pixelWidth == record.pixelWidth,
+              stored.pixelHeight == record.pixelHeight else {
+            try? store.removeOriginal(at: stored.relativePath)
+            throw TransferPackageError.mediaMismatch
+        }
+        return stored.relativePath
+    }
+
+    nonisolated private static func materialize(
         package: ValidatedPackage,
         context: ModelContext,
-        mediaStore: MediaStore
+        mediaStore: MediaStore,
+        copyOriginals: Bool = true
     ) throws -> [String] {
         var entries: [UUID: Entry] = [:]
         for record in package.data.entries {
+            try Task.checkCancellation()
             guard let kind = EntryKind(rawValue: record.kind),
                   let status = EntryStatus(rawValue: record.status) else {
                 throw TransferPackageError.invalidObject("entry")
@@ -367,20 +666,14 @@ final class ImportExportService {
         var restoredPaths: [String] = []
         do {
             for record in package.data.images.sorted(by: { $0.sortOrder < $1.sortOrder }) {
+                try Task.checkCancellation()
                 guard let entry = entries[record.entryID] else { throw TransferPackageError.missingEndpoint }
-                let packageURL = package.extractedRoot.appendingPathComponent(record.mediaPath)
-                let stored = try mediaStore.storeOriginal(MediaSource(
-                    url: packageURL,
-                    originalFilename: record.originalFilename,
-                    contentType: record.contentType
-                ), id: record.id)
-                restoredPaths.append(stored.relativePath)
-                guard stored.relativePath == record.relativePath,
-                      stored.byteCount == record.byteCount,
-                      stored.checksum == record.checksum,
-                      stored.pixelWidth == record.pixelWidth,
-                      stored.pixelHeight == record.pixelHeight else {
-                    throw TransferPackageError.mediaMismatch
+                if copyOriginals {
+                    restoredPaths.append(try copyMedia(
+                        record,
+                        packageRoot: package.extractedRoot,
+                        mediaRoot: mediaStore.rootURL
+                    ))
                 }
                 let metadata = ImageMetadata(
                     id: record.id,
@@ -400,6 +693,7 @@ final class ImportExportService {
                 context.insert(metadata)
             }
             for record in package.data.tags {
+                try Task.checkCancellation()
                 context.insert(Tag(
                     id: record.id,
                     displayName: record.displayName,
@@ -409,6 +703,7 @@ final class ImportExportService {
                 ))
             }
             for record in package.data.habits {
+                try Task.checkCancellation()
                 guard let status = HabitStatus(rawValue: record.status) else {
                     throw TransferPackageError.invalidObject("habit")
                 }
@@ -422,6 +717,7 @@ final class ImportExportService {
                 ))
             }
             for record in package.data.goals {
+                try Task.checkCancellation()
                 guard let kind = GoalKind(rawValue: record.kind),
                       let status = GoalStatus(rawValue: record.status) else {
                     throw TransferPackageError.invalidObject("goal")
@@ -438,6 +734,7 @@ final class ImportExportService {
                 ))
             }
             for record in package.data.habitLogs {
+                try Task.checkCancellation()
                 context.insert(HabitLog(
                     id: record.id,
                     habitID: record.habitID,
@@ -451,6 +748,7 @@ final class ImportExportService {
                 ))
             }
             for record in package.data.goalEvents {
+                try Task.checkCancellation()
                 guard let kind = GoalLifecycleEventKind(rawValue: record.kind) else {
                     throw TransferPackageError.invalidObject("goalEvent")
                 }
@@ -463,6 +761,7 @@ final class ImportExportService {
                 ))
             }
             for record in package.data.links {
+                try Task.checkCancellation()
                 guard let sourceType = LinkObjectType(rawValue: record.sourceType),
                       let targetType = LinkObjectType(rawValue: record.targetType),
                       let kind = ObjectLinkKind(rawValue: record.kind) else {
@@ -485,7 +784,7 @@ final class ImportExportService {
         }
     }
 
-    private func verifySnapshot(
+    nonisolated private static func verifySnapshot(
         _ expected: TransferData,
         context: ModelContext,
         mediaStore: MediaStore
@@ -500,7 +799,7 @@ final class ImportExportService {
         }
     }
 
-    private func ensureTargetIsEmpty(_ context: ModelContext) throws {
+    nonisolated private static func ensureTargetIsEmpty(_ context: ModelContext) throws {
         let count = try context.fetchCount(FetchDescriptor<Entry>())
             + context.fetchCount(FetchDescriptor<ImageMetadata>())
             + context.fetchCount(FetchDescriptor<Tag>())
@@ -512,16 +811,6 @@ final class ImportExportService {
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
 
-    private func deleteAllData(_ context: ModelContext) throws {
-        try context.fetch(FetchDescriptor<ObjectLink>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<HabitLog>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<ImageMetadata>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<Entry>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<Tag>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<Habit>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<Goal>()).forEach(context.delete)
-    }
 }
 
 private enum TransferCoding {
@@ -550,6 +839,7 @@ private enum Hasher {
         var hasher = SHA256()
         var size: Int64 = 0
         while let chunk = try input.read(upToCount: 1_048_576), !chunk.isEmpty {
+            try Task.checkCancellation()
             hasher.update(data: chunk)
             size += Int64(chunk.count)
         }
@@ -557,20 +847,27 @@ private enum Hasher {
     }
 }
 
-@MainActor
 private enum TransferSnapshot {
     static func make(context: ModelContext) throws -> TransferData {
+        try Task.checkCancellation()
         let entries = try context.fetch(FetchDescriptor<Entry>())
+        try Task.checkCancellation()
         let images = try context.fetch(FetchDescriptor<ImageMetadata>())
+        try Task.checkCancellation()
         let tags = try context.fetch(FetchDescriptor<Tag>())
+        try Task.checkCancellation()
         let links = try context.fetch(FetchDescriptor<ObjectLink>())
+        try Task.checkCancellation()
         let habits = try context.fetch(FetchDescriptor<Habit>())
+        try Task.checkCancellation()
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        try Task.checkCancellation()
         let goals = try context.fetch(FetchDescriptor<Goal>())
+        try Task.checkCancellation()
         let events = try context.fetch(FetchDescriptor<GoalLifecycleEvent>())
         let sortUUID: (UUID, UUID) -> Bool = { $0.uuidString < $1.uuidString }
         return TransferData(
-            entries: entries.map {
+            entries: try cancellableMap(entries) {
                 EntryTransfer(
                     id: $0.id,
                     kind: $0.kindRawValue,
@@ -584,7 +881,7 @@ private enum TransferSnapshot {
                     periodEnd: $0.periodEnd
                 )
             }.sorted { sortUUID($0.id, $1.id) },
-            images: try images.map { image in
+            images: try cancellableMap(images) { image in
                 guard let entryID = image.entry?.id else {
                     throw TransferPackageError.missingEndpoint
                 }
@@ -606,7 +903,7 @@ private enum TransferSnapshot {
                     updatedAt: image.updatedAt
                 )
             }.sorted { sortUUID($0.id, $1.id) },
-            tags: tags.map {
+            tags: try cancellableMap(tags) {
                 TagTransfer(
                     id: $0.id,
                     displayName: $0.displayName,
@@ -615,7 +912,7 @@ private enum TransferSnapshot {
                     updatedAt: $0.updatedAt
                 )
             }.sorted { sortUUID($0.id, $1.id) },
-            links: links.map {
+            links: try cancellableMap(links) {
                 LinkTransfer(
                     id: $0.id,
                     sourceType: $0.sourceTypeRawValue,
@@ -627,7 +924,7 @@ private enum TransferSnapshot {
                     createdAt: $0.createdAt
                 )
             }.sorted { sortUUID($0.id, $1.id) },
-            habits: habits.map {
+            habits: try cancellableMap(habits) {
                 HabitTransfer(
                     id: $0.id,
                     name: $0.name,
@@ -637,7 +934,7 @@ private enum TransferSnapshot {
                     updatedAt: $0.updatedAt
                 )
             }.sorted { sortUUID($0.id, $1.id) },
-            habitLogs: logs.map {
+            habitLogs: try cancellableMap(logs) {
                 HabitLogTransfer(
                     id: $0.id,
                     habitID: $0.habitID,
@@ -650,7 +947,7 @@ private enum TransferSnapshot {
                     createdAt: $0.createdAt
                 )
             }.sorted { sortUUID($0.id, $1.id) },
-            goals: goals.map {
+            goals: try cancellableMap(goals) {
                 GoalTransfer(
                     id: $0.id,
                     kind: $0.kindRawValue,
@@ -662,7 +959,7 @@ private enum TransferSnapshot {
                     completedAt: $0.completedAt
                 )
             }.sorted { sortUUID($0.id, $1.id) },
-            goalEvents: events.map {
+            goalEvents: try cancellableMap(events) {
                 GoalEventTransfer(
                     id: $0.id,
                     goalID: $0.goalID,
@@ -672,5 +969,15 @@ private enum TransferSnapshot {
                 )
             }.sorted { sortUUID($0.id, $1.id) }
         )
+    }
+
+    private static func cancellableMap<Input, Output>(
+        _ values: [Input],
+        transform: (Input) throws -> Output
+    ) throws -> [Output] {
+        try values.map { value in
+            try Task.checkCancellation()
+            return try transform(value)
+        }
     }
 }

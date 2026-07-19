@@ -7,16 +7,16 @@ import XCTest
 
 @MainActor
 final class ImportExportRecoveryTests: XCTestCase {
-    func testFullRoundTripPreservesEveryObjectIdentityRelationshipAndOriginal() throws {
+    func testFullRoundTripPreservesEveryObjectIdentityRelationshipAndOriginal() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let logs = LogRecorder()
         let source = try fixture.makePopulatedStore(log: { logs.values.append($0) })
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         defer { lease.cleanup() }
 
         let target = try fixture.makeEmptyStore(named: "Target", log: { logs.values.append($0) })
-        let result = try target.service.importPackage(from: lease.url)
+        let result = try await target.service.importPackage(from: lease.url)
 
         XCTAssertEqual(result.objectCounts, source.expectedCounts)
         XCTAssertEqual(result.restoredMediaCount, 1)
@@ -33,11 +33,11 @@ final class ImportExportRecoveryTests: XCTestCase {
         XCTAssertFalse(joinedLogs.contains(fixture.imageData.base64EncodedString()))
     }
 
-    func testDeleteIsolatedDatasetThenRestoreSameOnDiskStore() throws {
+    func testDeleteIsolatedDatasetThenRestoreSameOnDiskStore() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore(onDisk: true)
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         defer { lease.cleanup() }
         let originalIDs = source.expectedIDs
         let originalPaths = try source.container.mainContext
@@ -49,22 +49,22 @@ final class ImportExportRecoveryTests: XCTestCase {
         for path in originalPaths { try source.mediaStore.removeOriginal(at: path) }
         XCTAssertEqual(try totalObjectCount(in: source.container.mainContext), 0)
 
-        _ = try source.service.importPackage(from: lease.url)
+        _ = try await source.service.importPackage(from: lease.url)
 
         XCTAssertEqual(try ids(in: source.container.mainContext), originalIDs)
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: source.container.mainContext))
         XCTAssertEqual(try originalFiles(at: source.mediaStore.rootURL).count, 1)
     }
 
-    func testImportedOnDiskStoreReopensWithoutDanglingLinksAndCanReExportEquivalentData() throws {
+    func testImportedOnDiskStoreReopensWithoutDanglingLinksAndCanReExportEquivalentData() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
-        let firstLease = try source.service.exportPackage()
+        let firstLease = try await source.service.exportPackage()
         defer { firstLease.cleanup() }
         let target = try fixture.makeEmptyStore(named: "PersistentTarget", onDisk: true)
 
-        _ = try target.service.importPackage(from: firstLease.url)
+        _ = try await target.service.importPackage(from: firstLease.url)
         let reopened = try PersistenceContainerFactory.makeOnDisk(at: target.storeURL)
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: reopened.mainContext))
         XCTAssertEqual(try ids(in: reopened.mainContext), source.expectedIDs)
@@ -77,7 +77,7 @@ final class ImportExportRecoveryTests: XCTestCase {
             now: { Date(timeIntervalSince1970: 9_000) },
             appVersion: { ("1.0", "1") }
         )
-        let secondLease = try reexportService.exportPackage()
+        let secondLease = try await reexportService.exportPackage()
         defer { secondLease.cleanup() }
         XCTAssertEqual(
             try extractedDataJSON(from: firstLease.url, under: fixture.root.appendingPathComponent("ExtractOne")),
@@ -85,29 +85,29 @@ final class ImportExportRecoveryTests: XCTestCase {
         )
     }
 
-    func testNonEmptyTargetRejectsImportWithoutMutation() throws {
+    func testNonEmptyTargetRejectsImportWithoutMutation() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         defer { lease.cleanup() }
         let target = try fixture.makeEmptyStore(named: "NonEmpty")
         let existing = Entry(body: "Keep me", createdAt: Date(timeIntervalSince1970: 50))
         target.container.mainContext.insert(existing)
         try target.container.mainContext.save()
 
-        XCTAssertThrowsError(try target.service.importPackage(from: lease.url)) {
+        await assertThrows({ try await target.service.importPackage(from: lease.url) }) {
             XCTAssertEqual($0 as? TransferPackageError, .targetNotEmpty)
         }
         XCTAssertEqual(try target.container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id), [existing.id])
         XCTAssertEqual(try regularFiles(at: target.mediaStore.rootURL), [])
     }
 
-    func testInterruptedPublicationLeavesEmptyTargetAndNoOriginals() throws {
+    func testInterruptedPublicationLeavesEmptyTargetAndNoOriginals() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         defer { lease.cleanup() }
         let target = try fixture.makeEmptyStore(
             named: "Interrupted",
@@ -116,19 +116,31 @@ final class ImportExportRecoveryTests: XCTestCase {
             }
         )
 
-        XCTAssertThrowsError(try target.service.importPackage(from: lease.url)) {
+        await assertThrows({ try await target.service.importPackage(from: lease.url) }) {
             XCTAssertEqual($0 as? TransferPackageError, .interrupted)
         }
         XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
         XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: target.container.mainContext))
+
+        let beforeSaveTarget = try fixture.makeEmptyStore(
+            named: "InterruptedBeforeSave",
+            publicationCheckpoint: { checkpoint in
+                if checkpoint == .beforeSave { throw TransferPackageError.interrupted }
+            }
+        )
+        await assertThrows({ try await beforeSaveTarget.service.importPackage(from: lease.url) }) {
+            XCTAssertEqual($0 as? TransferPackageError, .interrupted)
+        }
+        XCTAssertEqual(try totalObjectCount(in: beforeSaveTarget.container.mainContext), 0)
+        XCTAssertEqual(try originalFiles(at: beforeSaveTarget.mediaStore.rootURL), [])
     }
 
-    func testMissingMediaAndCorruptDataAreRejectedBeforePublication() throws {
+    func testMissingMediaAndCorruptDataAreRejectedBeforePublication() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         defer { lease.cleanup() }
 
         let missingMedia = try mutatePackage(
@@ -156,17 +168,17 @@ final class ImportExportRecoveryTests: XCTestCase {
 
         for package in [missingMedia, corruptManifest, corruptData] {
             let target = try fixture.makeEmptyStore(named: UUID().uuidString)
-            XCTAssertThrowsError(try target.service.importPackage(from: package))
+            await assertThrows({ try await target.service.importPackage(from: package) })
             XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
             XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
         }
     }
 
-    func testDuplicateObjectIDAndUnsupportedSchemaAreRejected() throws {
+    func testDuplicateObjectIDAndUnsupportedSchemaAreRejected() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         defer { lease.cleanup() }
 
         let duplicate = try mutatePackage(
@@ -206,20 +218,20 @@ final class ImportExportRecoveryTests: XCTestCase {
         )
 
         let duplicateTarget = try fixture.makeEmptyStore(named: "DuplicateTarget")
-        XCTAssertThrowsError(try duplicateTarget.service.importPackage(from: duplicate)) {
+        await assertThrows({ try await duplicateTarget.service.importPackage(from: duplicate) }) {
             XCTAssertEqual($0 as? TransferPackageError, .duplicateID("entry"))
         }
         let schemaTarget = try fixture.makeEmptyStore(named: "SchemaTarget")
-        XCTAssertThrowsError(try schemaTarget.service.importPackage(from: unsupported)) {
+        await assertThrows({ try await schemaTarget.service.importPackage(from: unsupported) }) {
             XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(99))
         }
     }
 
-    func testArchiveAndExpandedFileAndObjectLimitsAreEnforced() throws {
+    func testArchiveAndExpandedFileAndObjectLimitsAreEnforced() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         defer { lease.cleanup() }
         let archiveSize = try fileSize(lease.url)
 
@@ -235,12 +247,19 @@ final class ImportExportRecoveryTests: XCTestCase {
                             maximumCompressionRatio: 100),
             ZIPImportLimits(maximumArchiveBytes: .max, maximumExpandedBytes: .max,
                             capacitySafetyReserve: 0, maximumFileCount: 100, maximumObjectCount: 1,
-                            maximumCompressionRatio: 100)
+                            maximumCompressionRatio: 100),
+            ZIPImportLimits(maximumArchiveBytes: .max, maximumExpandedBytes: .max,
+                            capacitySafetyReserve: 0, maximumFileCount: 100, maximumObjectCount: 100,
+                            maximumCompressionRatio: 100, maximumManifestBytes: 1),
+            ZIPImportLimits(maximumArchiveBytes: .max, maximumExpandedBytes: .max,
+                            capacitySafetyReserve: 0, maximumFileCount: 100, maximumObjectCount: 100,
+                            maximumCompressionRatio: 100, maximumDataBytes: 1)
         ]
         for (index, limits) in cases.enumerated() {
             let target = try fixture.makeEmptyStore(named: "Limit-\(index)", limits: limits)
-            XCTAssertThrowsError(try target.service.importPackage(from: lease.url))
+            await assertThrows({ try await target.service.importPackage(from: lease.url) })
             XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+            XCTAssertEqual(try regularFiles(at: fixture.root.appendingPathComponent("Workspace-Limit-\(index)")), [])
         }
 
         XCTAssertThrowsError(try ZIPArchiveReader(
@@ -250,6 +269,68 @@ final class ImportExportRecoveryTests: XCTestCase {
         )) {
             XCTAssertEqual($0 as? ZIPArchiveError, .insufficientCapacity)
         }
+    }
+
+    func testExportEnforcesItsOwnImportCompatibilityLimits() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lowObjectLimits = ZIPImportLimits(
+            maximumArchiveBytes: .max,
+            maximumExpandedBytes: .max,
+            capacitySafetyReserve: 0,
+            maximumFileCount: 100,
+            maximumObjectCount: 1,
+            maximumCompressionRatio: 100
+        )
+        let lowDataLimits = ZIPImportLimits(
+            maximumArchiveBytes: .max,
+            maximumExpandedBytes: .max,
+            capacitySafetyReserve: 0,
+            maximumFileCount: 100,
+            maximumObjectCount: 100,
+            maximumCompressionRatio: 100,
+            maximumDataBytes: 1
+        )
+
+        for (name, limits) in [("Object", lowObjectLimits), ("Data", lowDataLimits)] {
+            let workspace = fixture.root.appendingPathComponent("ExportLimit-\(name)")
+            let service = ImportExportService(
+                context: source.container.mainContext,
+                mediaStore: source.mediaStore,
+                workspaceRoot: workspace,
+                limits: limits,
+                availableCapacity: { .max }
+            )
+            await assertThrows({ try await service.exportPackage() })
+            XCTAssertEqual(try regularFiles(at: workspace), [])
+        }
+    }
+
+    func testOversizedMediaMemberIsRejectedBeforeJSONDecodeAndExtraction() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let files = fixture.root.appendingPathComponent("OversizedMemberFiles", isDirectory: true)
+        try FileManager.default.createDirectory(at: files, withIntermediateDirectories: true)
+        let manifest = files.appendingPathComponent("manifest.json")
+        let data = files.appendingPathComponent("data.json")
+        let media = files.appendingPathComponent("oversized.png")
+        try Data("{}".utf8).write(to: manifest)
+        try Data("{}".utf8).write(to: data)
+        try Data(repeating: 0, count: Int(MediaStore.maximumOriginalByteCount + 1)).write(to: media)
+        let archive = fixture.root.appendingPathComponent("oversized-member.zip")
+        try ZIPArchiveWriter.write(sources: [
+            ZIPSource(path: "manifest.json", fileURL: manifest),
+            ZIPSource(path: "data.json", fileURL: data),
+            ZIPSource(path: "media/oversized.png", fileURL: media)
+        ], to: archive)
+        let target = try fixture.makeEmptyStore(named: "OversizedMember")
+
+        await assertThrows({ try await target.service.importPackage(from: archive) }) {
+            XCTAssertEqual($0 as? ZIPArchiveError, .expandedSizeExceeded)
+        }
+        XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
     }
 
     func testCompressionRatioUnsafePathSymlinkAndCaseCollisionFixturesAreRejected() throws {
@@ -298,11 +379,42 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
     }
 
-    func testExportLeaseAndLaunchRecoveryCleanupTemporaryArtifacts() throws {
+    func testZIP64ExactAndAboveEntryCountSentinelsRoundTrip() throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let empty = fixture.root.appendingPathComponent("empty")
+        try Data().write(to: empty)
+        let sources = (0...Int(UInt16.max)).map {
+            ZIPSource(path: "f/\($0)", fileURL: empty)
+        }
+        let limits = ZIPImportLimits(
+            maximumArchiveBytes: 32 * 1_024 * 1_024,
+            maximumExpandedBytes: 1,
+            capacitySafetyReserve: 0,
+            maximumFileCount: 70_000,
+            maximumObjectCount: 1,
+            maximumCompressionRatio: 100
+        )
+
+        for count in [Int(UInt16.max), Int(UInt16.max) + 1] {
+            let archive = fixture.root.appendingPathComponent("zip64-count-\(count).zip")
+            try ZIPArchiveWriter.write(sources: Array(sources.prefix(count)), to: archive)
+            let reader = try ZIPArchiveReader(
+                archiveURL: archive,
+                limits: limits,
+                availableCapacity: .max
+            )
+            XCTAssertEqual(reader.members.count, count)
+            XCTAssertEqual(reader.members.first?.path, "f/0")
+            XCTAssertEqual(reader.members.last?.path, "f/\(count - 1)")
+        }
+    }
+
+    func testExportLeaseAndLaunchRecoveryCleanupTemporaryArtifacts() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
-        let lease = try source.service.exportPackage()
+        let lease = try await source.service.exportPackage()
         let archiveURL = lease.url
         XCTAssertTrue(FileManager.default.fileExists(atPath: archiveURL.path))
         lease.cleanup()
@@ -321,7 +433,54 @@ final class ImportExportRecoveryTests: XCTestCase {
         ))
     }
 
-    func testExportFailureCleansAssemblyAndLogsAreRedacted() throws {
+    func testCancelledExportAndImportLeaveNoTemporaryOrPublishedData() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+
+        let cancelledExport = Task { try await source.service.exportPackage() }
+        cancelledExport.cancel()
+        await assertThrows({ try await cancelledExport.value }) {
+            XCTAssertTrue($0 is CancellationError)
+        }
+        XCTAssertEqual(try regularFiles(at: fixture.root.appendingPathComponent("Workspace-Source")), [])
+
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "CancelledImport")
+        let cancelledImport = Task { try await target.service.importPackage(from: lease.url) }
+        cancelledImport.cancel()
+        await assertThrows({ try await cancelledImport.value }) {
+            XCTAssertTrue($0 is CancellationError)
+        }
+        XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
+        XCTAssertEqual(try regularFiles(at: fixture.root.appendingPathComponent("Workspace-CancelledImport")), [])
+    }
+
+    func testStartupReconciliationQuarantinesCrashWindowImportOriginals() throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let target = try fixture.makeEmptyStore(named: "CrashWindow")
+        let id = UUID()
+        let idString = id.uuidString.lowercased()
+        let relativePath = "Media/Originals/\(idString.prefix(2))/\(idString).png"
+        let installedURL = try target.mediaStore.fileURL(for: relativePath)
+        try FileManager.default.createDirectory(
+            at: installedURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try fixture.imageData.write(to: installedURL)
+
+        let report = try target.mediaStore.reconcile(referencedOriginalPaths: [])
+
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
+        XCTAssertEqual(report.recoveryFilePaths.count, 1)
+        XCTAssertEqual(try regularFiles(at: target.mediaStore.rootURL.appendingPathComponent("Recovery")).count, 1)
+        XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+    }
+
+    func testExportFailureCleansAssemblyAndLogsAreRedacted() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
         let logs = LogRecorder()
@@ -329,7 +488,7 @@ final class ImportExportRecoveryTests: XCTestCase {
         let image = try XCTUnwrap(store.container.mainContext.fetch(FetchDescriptor<ImageMetadata>()).first)
         try store.mediaStore.removeOriginal(at: image.relativePath)
 
-        XCTAssertThrowsError(try store.service.exportPackage())
+        await assertThrows({ try await store.service.exportPackage() })
         let workspace = fixture.root.appendingPathComponent("Workspace-Source")
         XCTAssertEqual(try regularFiles(at: workspace), [])
         let joined = logs.values.joined(separator: "|")
@@ -342,6 +501,21 @@ final class ImportExportRecoveryTests: XCTestCase {
 @MainActor
 private final class LogRecorder {
     var values: [String] = []
+}
+
+@MainActor
+private func assertThrows<T>(
+    _ operation: () async throws -> T,
+    file: StaticString = #filePath,
+    line: UInt = #line,
+    verify: (Error) -> Void = { _ in }
+) async {
+    do {
+        _ = try await operation()
+        XCTFail("Expected operation to throw", file: file, line: line)
+    } catch {
+        verify(error)
+    }
 }
 
 @MainActor

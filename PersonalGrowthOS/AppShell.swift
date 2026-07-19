@@ -140,6 +140,7 @@ private struct TodayView: View {
                 Button(action: openCapture) {
                     Label("Quick Capture", systemImage: "square.and.pencil")
                         .font(.headline)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .accessibilityIdentifier("quick-capture-button")
             } footer: {
@@ -377,6 +378,8 @@ private struct MediaStorageView: View {
     @State private var isSharing = false
     @State private var exportLease: ExportPackageLease?
     @State private var transferMessage: String?
+    @State private var transferTask: Task<Void, Never>?
+    @State private var isTransferring = false
 
     var body: some View {
         NavigationStack {
@@ -419,15 +422,30 @@ private struct MediaStorageView: View {
                         isConfirmingExport = true
                     } label: {
                         Label("Export Full Backup", systemImage: "square.and.arrow.up")
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .accessibilityIdentifier("settings-export-button")
+                    .disabled(isTransferring)
 
                     Button {
                         isImporting = true
                     } label: {
                         Label("Import Full Backup", systemImage: "square.and.arrow.down")
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .accessibilityIdentifier("settings-import-button")
+                    .disabled(isTransferring)
+
+                    if isTransferring {
+                        HStack {
+                            ProgressView()
+                            Text("Preparing and verifying backup…")
+                        }
+                        Button("Cancel Transfer", role: .cancel) {
+                            transferTask?.cancel()
+                        }
+                        .accessibilityIdentifier("settings-cancel-transfer")
+                    }
                 } header: {
                     Text("Data Transfer")
                 } footer: {
@@ -440,14 +458,18 @@ private struct MediaStorageView: View {
                     Button {
                         isCapturing = true
                     } label: {
-                        Label("Quick Capture", systemImage: "plus")
+                        Image(systemName: "plus")
                     }
+                    .accessibilityLabel("Quick Capture")
                     .accessibilityIdentifier("settings-capture-button")
+                    .disabled(isTransferring)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                        .disabled(isTransferring)
                 }
             }
+            .interactiveDismissDisabled(isTransferring)
             .task {
                 byteCount = try? mediaStore.originalsByteCount()
             }
@@ -463,13 +485,7 @@ private struct MediaStorageView: View {
                 titleVisibility: .visible
             ) {
                 Button("Export and Share") {
-                    do {
-                        exportLease?.cleanup()
-                        exportLease = try importExportService.exportPackage()
-                        isSharing = true
-                    } catch {
-                        transferMessage = transferErrorMessage(error)
-                    }
+                    startExport()
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
@@ -489,11 +505,7 @@ private struct MediaStorageView: View {
             ) { result in
                 do {
                     guard let selectedURL = try result.get().first else { return }
-                    let accessed = selectedURL.startAccessingSecurityScopedResource()
-                    defer { if accessed { selectedURL.stopAccessingSecurityScopedResource() } }
-                    let restored = try importExportService.importPackage(from: selectedURL)
-                    byteCount = try? mediaStore.originalsByteCount()
-                    transferMessage = "Restore completed: \(restored.objectCounts.values.reduce(0, +)) objects and \(restored.restoredMediaCount) original photo(s)."
+                    startImport(selectedURL)
                 } catch {
                     transferMessage = transferErrorMessage(error)
                 }
@@ -506,7 +518,54 @@ private struct MediaStorageView: View {
             } message: {
                 Text(transferMessage ?? "")
             }
-            .onDisappear(perform: cleanupExport)
+            .onDisappear {
+                transferTask?.cancel()
+                cleanupExport()
+            }
+        }
+    }
+
+    private func startExport() {
+        transferTask?.cancel()
+        isTransferring = true
+        transferTask = Task {
+            defer {
+                isTransferring = false
+                transferTask = nil
+            }
+            do {
+                exportLease?.cleanup()
+                exportLease = try await importExportService.exportPackage()
+                try Task.checkCancellation()
+                isSharing = true
+            } catch is CancellationError {
+                cleanupExport()
+                transferMessage = "Export cancelled. Temporary files were removed."
+            } catch {
+                transferMessage = transferErrorMessage(error)
+            }
+        }
+    }
+
+    private func startImport(_ selectedURL: URL) {
+        transferTask?.cancel()
+        isTransferring = true
+        transferTask = Task {
+            let accessed = selectedURL.startAccessingSecurityScopedResource()
+            defer {
+                if accessed { selectedURL.stopAccessingSecurityScopedResource() }
+                isTransferring = false
+                transferTask = nil
+            }
+            do {
+                let restored = try await importExportService.importPackage(from: selectedURL)
+                byteCount = try? mediaStore.originalsByteCount()
+                transferMessage = "Restore completed: \(restored.objectCounts.values.reduce(0, +)) objects and \(restored.restoredMediaCount) original photo(s)."
+            } catch is CancellationError {
+                transferMessage = "Import cancelled. Existing data was left unchanged."
+            } catch {
+                transferMessage = transferErrorMessage(error)
+            }
         }
     }
 
@@ -527,6 +586,9 @@ private struct MediaStorageView: View {
              ZIPArchiveError.compressionRatioExceeded,
              TransferPackageError.objectLimitExceeded:
             "This backup exceeds the safe import limits. Existing data was left unchanged."
+        case ZIPArchiveError.insufficientCapacity,
+             MediaStoreError.insufficientCapacity:
+            "There is not enough free device storage to complete this transfer safely. Free space and try again; existing data was left unchanged."
         case TransferPackageError.missingMedia,
              TransferPackageError.mediaMismatch,
              TransferPackageError.corruptManifest,
