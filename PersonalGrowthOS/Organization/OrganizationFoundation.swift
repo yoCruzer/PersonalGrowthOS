@@ -16,6 +16,7 @@ enum TextSearchNormalizer {
 enum TagValidationError: Error, Equatable {
     case emptyName
     case duplicateName
+    case missingEndpoint
 }
 
 @Model
@@ -139,54 +140,86 @@ enum LinkIntegrityService {
         let tagIDs = Set(try context.fetch(FetchDescriptor<Tag>()).map(\.id))
         let habitIDs = Set(try context.fetch(FetchDescriptor<Habit>()).map(\.id))
         let goalIDs = Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id))
+        var canonicalCounts: [String: Int] = [:]
+        for link in links {
+            guard let sourceType = LinkObjectType(rawValue: link.sourceTypeRawValue),
+                  let targetType = LinkObjectType(rawValue: link.targetTypeRawValue),
+                  let kind = ObjectLinkKind(rawValue: link.kindRawValue) else {
+                continue
+            }
+            let key = ObjectLink.makeDeduplicationKey(
+                sourceType: sourceType,
+                sourceID: link.sourceID,
+                targetType: targetType,
+                targetID: link.targetID,
+                kind: kind
+            )
+            canonicalCounts[key, default: 0] += 1
+        }
         let danglingIDs = links.compactMap { link -> UUID? in
-            switch link.kind {
+            guard let sourceType = LinkObjectType(rawValue: link.sourceTypeRawValue),
+                  let targetType = LinkObjectType(rawValue: link.targetTypeRawValue),
+                  let kind = ObjectLinkKind(rawValue: link.kindRawValue) else {
+                return link.id
+            }
+            let canonicalKey = ObjectLink.makeDeduplicationKey(
+                sourceType: sourceType,
+                sourceID: link.sourceID,
+                targetType: targetType,
+                targetID: link.targetID,
+                kind: kind
+            )
+            guard link.deduplicationKey == canonicalKey,
+                  canonicalCounts[canonicalKey] == 1 else {
+                return link.id
+            }
+            switch kind {
             case .entryUsesTag:
-                guard link.sourceType == .entry,
-                      link.targetType == .tag,
+                guard sourceType == .entry,
+                      targetType == .tag,
                       entryIDs.contains(link.sourceID),
                       tagIDs.contains(link.targetID) else {
                     return link.id
                 }
             case .entryRelatesHabit:
-                guard link.sourceType == .entry,
-                      link.targetType == .habit,
+                guard sourceType == .entry,
+                      targetType == .habit,
                       entryIDs.contains(link.sourceID),
                       habitIDs.contains(link.targetID) else {
                     return link.id
                 }
             case .entryRelatesGoal:
-                guard link.sourceType == .entry,
-                      link.targetType == .goal,
+                guard sourceType == .entry,
+                      targetType == .goal,
                       entryIDs.contains(link.sourceID),
                       goalIDs.contains(link.targetID) else {
                     return link.id
                 }
             case .habitSupportsGoal:
-                guard link.sourceType == .habit,
-                      link.targetType == .goal,
+                guard sourceType == .habit,
+                      targetType == .goal,
                       habitIDs.contains(link.sourceID),
                       goalIDs.contains(link.targetID) else {
                     return link.id
                 }
             case .reviewsEntry:
-                guard link.sourceType == .entry,
-                      link.targetType == .entry,
+                guard sourceType == .entry,
+                      targetType == .entry,
                       link.sourceID != link.targetID,
                       entryKinds[link.sourceID] == .review,
                       entryIDs.contains(link.targetID) else {
                     return link.id
                 }
             case .reviewsHabit:
-                guard link.sourceType == .entry,
-                      link.targetType == .habit,
+                guard sourceType == .entry,
+                      targetType == .habit,
                       entryKinds[link.sourceID] == .review,
                       habitIDs.contains(link.targetID) else {
                     return link.id
                 }
             case .reviewsGoal:
-                guard link.sourceType == .entry,
-                      link.targetType == .goal,
+                guard sourceType == .entry,
+                      targetType == .goal,
                       entryKinds[link.sourceID] == .review,
                       goalIDs.contains(link.targetID) else {
                     return link.id
@@ -265,6 +298,9 @@ final class TagLinkService {
     }
 
     func attach(tag: Tag, to entry: Entry) throws {
+        guard try entryExists(entry.id), try tagExists(tag.id) else {
+            throw TagValidationError.missingEndpoint
+        }
         let key = ObjectLink.makeDeduplicationKey(
             sourceType: .entry,
             sourceID: entry.id,
@@ -315,8 +351,11 @@ final class TagLinkService {
 
     func deleteTag(_ tag: Tag) throws {
         let tagID = tag.id
+        let tagType = LinkObjectType.tag.rawValue
         let descriptor = FetchDescriptor<ObjectLink>(
-            predicate: #Predicate { $0.targetID == tagID }
+            predicate: #Predicate {
+                $0.targetTypeRawValue == tagType && $0.targetID == tagID
+            }
         )
         try context.fetch(descriptor).forEach(context.delete)
         context.delete(tag)
@@ -326,6 +365,18 @@ final class TagLinkService {
             context.rollback()
             throw error
         }
+    }
+
+    private func entryExists(_ id: UUID) throws -> Bool {
+        var descriptor = FetchDescriptor<Entry>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try !context.fetch(descriptor).isEmpty
+    }
+
+    private func tagExists(_ id: UUID) throws -> Bool {
+        var descriptor = FetchDescriptor<Tag>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try !context.fetch(descriptor).isEmpty
     }
 }
 

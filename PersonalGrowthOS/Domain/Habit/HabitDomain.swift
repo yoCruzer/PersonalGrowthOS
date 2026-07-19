@@ -13,6 +13,7 @@ enum HabitValidationError: Error, Equatable {
 
 enum HabitCheckInError: Error, Equatable {
     case inactiveHabit
+    case missingHabit
 }
 
 enum HabitRules {

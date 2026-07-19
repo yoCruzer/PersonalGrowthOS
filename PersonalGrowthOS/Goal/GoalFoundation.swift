@@ -112,6 +112,7 @@ final class GoalService {
     }
 
     func transition(_ goal: Goal, to status: GoalStatus) throws {
+        guard try goalExists(goal.id) else { throw GoalValidationError.missingGoal }
         guard goal.status != status else { return }
         let originalStatus = goal.status
         let originalUpdatedAt = goal.updatedAt
@@ -139,12 +140,14 @@ final class GoalService {
 
     func permanentlyDelete(_ goal: Goal) throws {
         let goalID = goal.id
+        let goalType = LinkObjectType.goal.rawValue
         let events = try context.fetch(FetchDescriptor<GoalLifecycleEvent>(
             predicate: #Predicate { $0.goalID == goalID }
         ))
         let links = try context.fetch(FetchDescriptor<ObjectLink>(
             predicate: #Predicate {
-                $0.sourceID == goalID || $0.targetID == goalID
+                ($0.sourceTypeRawValue == goalType && $0.sourceID == goalID)
+                    || ($0.targetTypeRawValue == goalType && $0.targetID == goalID)
             }
         ))
         events.forEach(context.delete)
@@ -166,6 +169,12 @@ final class GoalService {
         case .abandoned: .abandoned
         case .archived: .archived
         }
+    }
+
+    private func goalExists(_ id: UUID) throws -> Bool {
+        var descriptor = FetchDescriptor<Goal>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try !context.fetch(descriptor).isEmpty
     }
 }
 

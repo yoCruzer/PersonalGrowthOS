@@ -513,9 +513,11 @@ extension EntryDeletingPersistence {
 
 extension ModelContextEntryPersistence: EntryDeletingPersistence {
     func deleteLinks(involving objectID: UUID) throws {
+        let entryType = LinkObjectType.entry.rawValue
         let descriptor = FetchDescriptor<ObjectLink>(
             predicate: #Predicate {
-                $0.sourceID == objectID || $0.targetID == objectID
+                ($0.sourceTypeRawValue == entryType && $0.sourceID == objectID)
+                    || ($0.targetTypeRawValue == entryType && $0.targetID == objectID)
             }
         )
         try context.fetch(descriptor).forEach(context.delete)

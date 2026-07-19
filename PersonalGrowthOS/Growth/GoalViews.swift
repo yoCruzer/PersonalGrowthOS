@@ -126,7 +126,15 @@ struct GoalDetailView: View {
             }
             Section("Relationships") {
                 ForEach(supportingHabits) { habit in
-                    Label("\(habit.name) supports this Goal", systemImage: "repeat")
+                    NavigationLink {
+                        HabitDetailView(
+                            habit: habit,
+                            mediaStore: mediaStore,
+                            thumbnailStore: thumbnailStore
+                        )
+                    } label: {
+                        Label("\(habit.name) supports this Goal", systemImage: "repeat")
+                    }
                 }
                 ForEach(relatedEntries) { entry in
                     NavigationLink {

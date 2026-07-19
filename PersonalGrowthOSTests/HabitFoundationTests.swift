@@ -41,13 +41,19 @@ final class HabitFoundationTests: XCTestCase {
             try legacy.mainContext.save()
         }
 
-        let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        do {
+            let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            XCTAssertNotNil(try EntryRepository(context: migrated.mainContext).fetch(id: entryID))
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Tag>()).count, 1)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<ObjectLink>()).count, 1)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).count, 0)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitLog>()).count, 0)
+            XCTAssertNoThrow(try LinkIntegrityService.validate(context: migrated.mainContext))
+        }
 
-        XCTAssertNotNil(try EntryRepository(context: migrated.mainContext).fetch(id: entryID))
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Tag>()).count, 1)
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<ObjectLink>()).count, 1)
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).count, 0)
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitLog>()).count, 0)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        XCTAssertNotNil(try EntryRepository(context: reopened.mainContext).fetch(id: entryID))
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: reopened.mainContext))
     }
 
     func testSimpleCheckInStoresOnlyStructuredFact() throws {
@@ -274,6 +280,38 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(summaries.count, 1)
         XCTAssertEqual(summaries.first?.logCount, 500)
         XCTAssertEqual(summaries.first?.habitNames, ["Read"])
+    }
+
+    func testTimelineMergesEntriesHabitActivityAndGoalEventsChronologically() {
+        let entry = Entry(
+            body: "Old Entry",
+            createdAt: Date(timeIntervalSince1970: 1_000),
+            occurredAt: Date(timeIntervalSince1970: 1_000)
+        )
+        let habit = HabitDaySummary(
+            day: Date(timeIntervalSince1970: 0),
+            latestOccurredAt: Date(timeIntervalSince1970: 3_000),
+            logCount: 1,
+            habitNames: ["Read"]
+        )
+        let event = GoalLifecycleEvent(
+            goalID: UUID(),
+            kind: .paused,
+            occurredAt: Date(timeIntervalSince1970: 2_000),
+            createdAt: Date(timeIntervalSince1970: 2_000)
+        )
+
+        let items = TimelineItem.chronologically(
+            entries: [entry],
+            habitActivity: [habit],
+            goalEvents: [event]
+        )
+
+        XCTAssertEqual(items.map(\.occurredAt), [
+            Date(timeIntervalSince1970: 3_000),
+            Date(timeIntervalSince1970: 2_000),
+            Date(timeIntervalSince1970: 1_000)
+        ])
     }
 
     func testHabitLifecycleRollbackAndGlobalSearch() throws {

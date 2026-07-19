@@ -119,12 +119,14 @@ final class HabitService {
 
     func permanentlyDelete(_ habit: Habit) throws {
         let habitID = habit.id
+        let habitType = LinkObjectType.habit.rawValue
         let logs = try context.fetch(FetchDescriptor<HabitLog>(
             predicate: #Predicate { $0.habitID == habitID }
         ))
         let links = try context.fetch(FetchDescriptor<ObjectLink>(
             predicate: #Predicate {
-                $0.sourceID == habitID || $0.targetID == habitID
+                ($0.sourceTypeRawValue == habitType && $0.sourceID == habitID)
+                    || ($0.targetTypeRawValue == habitType && $0.targetID == habitID)
             }
         ))
         logs.forEach(context.delete)
@@ -159,6 +161,7 @@ final class HabitCheckInService {
     }
 
     func checkIn(_ habit: Habit, draft: HabitLogDraft = HabitLogDraft()) throws -> HabitLog {
+        guard try habitExists(habit.id) else { throw HabitCheckInError.missingHabit }
         guard habit.status == .active else { throw HabitCheckInError.inactiveHabit }
         let log = makeLog(habit: habit, draft: draft, linkedEntryID: nil)
         context.insert(log)
@@ -176,6 +179,7 @@ final class HabitCheckInService {
         logDraft: HabitLogDraft = HabitLogDraft(),
         entryDraft: EntryCreationDraft
     ) throws -> (log: HabitLog, entry: Entry) {
+        guard try habitExists(habit.id) else { throw HabitCheckInError.missingHabit }
         guard habit.status == .active else { throw HabitCheckInError.inactiveHabit }
         try EntryRules.validateContent(body: entryDraft.body, imageCount: entryDraft.images.count)
         var storedFiles: [StoredMediaFile] = []
@@ -253,10 +257,17 @@ final class HabitCheckInService {
             createdAt: now()
         )
     }
+
+    private func habitExists(_ id: UUID) throws -> Bool {
+        var descriptor = FetchDescriptor<Habit>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try !context.fetch(descriptor).isEmpty
+    }
 }
 
 struct HabitDaySummary: Identifiable, Equatable {
     let day: Date
+    let latestOccurredAt: Date
     let logCount: Int
     let habitNames: [String]
 
@@ -278,6 +289,7 @@ enum HabitTimelineAggregator {
             .map { day, logs in
                 HabitDaySummary(
                     day: day,
+                    latestOccurredAt: logs.map(\.occurredAt).max() ?? day,
                     logCount: logs.count,
                     habitNames: Array(Set(logs.compactMap { namesByID[$0.habitID] })).sorted()
                 )

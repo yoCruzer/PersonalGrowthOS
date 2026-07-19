@@ -89,6 +89,18 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
     }
 
+    func testGlobalCaptureIsAvailableFromSearch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.buttons["global-search-button"].tap()
+        XCTAssertTrue(app.buttons["search-capture-button"].waitForExistence(timeout: 5))
+        app.buttons["search-capture-button"].tap()
+
+        XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
+    }
+
     func testArchivedEntryCanBeRestored() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
@@ -292,7 +304,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["goal-actions"].tap()
         app.buttons["Pause"].tap()
         app.tabBars.buttons["Timeline"].tap()
-        XCTAssertTrue(app.staticTexts["Goal Changes"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Goal Change"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Learn Swift"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Paused"].waitForExistence(timeout: 5))
     }

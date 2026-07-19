@@ -26,11 +26,17 @@ final class OrganizationSearchTests: XCTestCase {
             try legacy.mainContext.save()
         }
 
-        let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        do {
+            let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            XCTAssertEqual(try EntryRepository(context: migrated.mainContext).fetch(id: entryID)?.body, "Before S5")
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Tag>()).count, 0)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+            XCTAssertNoThrow(try LinkIntegrityService.validate(context: migrated.mainContext))
+        }
 
-        XCTAssertEqual(try EntryRepository(context: migrated.mainContext).fetch(id: entryID)?.body, "Before S5")
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Tag>()).count, 0)
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        XCTAssertEqual(try EntryRepository(context: reopened.mainContext).fetch(id: entryID)?.body, "Before S5")
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: reopened.mainContext))
     }
 
     func testTagNormalizationPreventsWidthAndCaseDuplicates() throws {
@@ -341,33 +347,221 @@ final class OrganizationSearchTests: XCTestCase {
         let context = container.mainContext
         let target = Entry(body: "Keep target", createdAt: Date())
         context.insert(target)
+        let habit = try HabitService(context: context).create(name: "Keep Habit")
+        let goal = try GoalService(context: context).create(title: "Keep Goal", kind: .standard)
         try context.save()
         let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        let image = try fixture.makeImageSource()
 
         XCTAssertThrowsError(try ReviewCreationService(
             context: context,
             mediaStore: mediaStore,
             save: { throw InjectedOrganizationFailure.save }
         ).create(ReviewCreationDraft(
-            entryDraft: EntryCreationDraft(body: "Failed Review"),
-            reviewedEntryIDs: [target.id]
+            entryDraft: EntryCreationDraft(body: "Failed Review", images: [image]),
+            reviewedEntryIDs: [target.id],
+            reviewedHabitIDs: [habit.id],
+            reviewedGoalIDs: [goal.id]
         )))
-        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [target.id])
+        XCTAssertEqual(Set(try context.fetch(FetchDescriptor<Entry>()).map(\.id)), [target.id])
         XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+        XCTAssertEqual(try mediaStore.originalsByteCount(), 0)
 
         let review = try ReviewCreationService(context: context, mediaStore: mediaStore).create(
             ReviewCreationDraft(
-                entryDraft: EntryCreationDraft(body: "Keep Review"),
-                reviewedEntryIDs: [target.id]
+                entryDraft: EntryCreationDraft(body: "Keep Review", images: [image]),
+                reviewedEntryIDs: [target.id],
+                reviewedHabitIDs: [habit.id],
+                reviewedGoalIDs: [goal.id]
             )
         )
+        let metadata = try XCTUnwrap(review.images.first)
+        let originalBytes = try Data(contentsOf: mediaStore.fileURL(for: metadata.relativePath))
         XCTAssertThrowsError(try EntryDeletionService(
             persistence: FailingLinkAwareDeletionPersistence(context: context),
             mediaStore: mediaStore
         ).permanentlyDelete(review))
         XCTAssertNotNil(try EntryRepository(context: context).fetch(id: review.id))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 3)
+        XCTAssertEqual(
+            try Data(contentsOf: mediaStore.fileURL(for: metadata.relativePath)),
+            originalBytes
+        )
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
+    func testDependentWritersRejectDetachedEndpointsAndOnDiskStoreReopensHealthy() throws {
+        let fixture = try OrganizationFixture()
+        defer { fixture.remove() }
+
+        do {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            let context = container.mainContext
+            let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+            let detachedEntry = Entry(body: "Detached", createdAt: Date())
+            let detachedTag = Tag(displayName: "Detached", normalizedName: "detached", createdAt: Date())
+            let detachedHabit = Habit(
+                name: "Detached",
+                normalizedName: "detached",
+                createdAt: Date()
+            )
+            let detachedGoal = Goal(
+                title: "Detached",
+                normalizedTitle: "detached",
+                createdAt: Date()
+            )
+
+            XCTAssertThrowsError(try TagLinkService(context: context).attach(
+                tag: detachedTag,
+                to: detachedEntry
+            )) {
+                XCTAssertEqual($0 as? TagValidationError, .missingEndpoint)
+            }
+            XCTAssertThrowsError(try HabitCheckInService(
+                context: context,
+                mediaStore: mediaStore
+            ).checkIn(detachedHabit)) {
+                XCTAssertEqual($0 as? HabitCheckInError, .missingHabit)
+            }
+            XCTAssertThrowsError(try HabitCheckInService(
+                context: context,
+                mediaStore: mediaStore
+            ).checkInWithInsight(
+                detachedHabit,
+                entryDraft: EntryCreationDraft(body: "Do not publish")
+            )) {
+                XCTAssertEqual($0 as? HabitCheckInError, .missingHabit)
+            }
+            XCTAssertThrowsError(try GoalService(context: context).transition(
+                detachedGoal,
+                to: .completed
+            )) {
+                XCTAssertEqual($0 as? GoalValidationError, .missingGoal)
+            }
+
+            XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+            XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
+            XCTAssertEqual(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).count, 0)
+            XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+        }
+
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: reopened.mainContext))
+    }
+
+    func testTypedDeletionDoesNotRemoveLinksForSameUUIDDifferentObjectTypes() throws {
+        let fixture = try OrganizationFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let sharedID = UUID()
+        let ordinary = Entry(id: sharedID, body: "Entry", createdAt: Date())
+        let review = Entry(kind: .review, body: "Review", createdAt: Date())
+        let tag = Tag(
+            id: sharedID,
+            displayName: "Tag",
+            normalizedName: "tag",
+            createdAt: Date()
+        )
+        let habit = Habit(
+            id: sharedID,
+            name: "Habit",
+            normalizedName: "habit",
+            createdAt: Date()
+        )
+        let goal = Goal(
+            id: sharedID,
+            title: "Goal",
+            normalizedTitle: "goal",
+            createdAt: Date()
+        )
+        [ordinary, review].forEach(context.insert)
+        context.insert(tag)
+        context.insert(habit)
+        context.insert(goal)
+        let timestamp = Date()
+        [
+            ObjectLink(sourceType: .entry, sourceID: sharedID, targetType: .tag, targetID: sharedID, kind: .entryUsesTag, createdAt: timestamp),
+            ObjectLink(sourceType: .entry, sourceID: sharedID, targetType: .habit, targetID: sharedID, kind: .entryRelatesHabit, createdAt: timestamp),
+            ObjectLink(sourceType: .entry, sourceID: sharedID, targetType: .goal, targetID: sharedID, kind: .entryRelatesGoal, createdAt: timestamp),
+            ObjectLink(sourceType: .habit, sourceID: sharedID, targetType: .goal, targetID: sharedID, kind: .habitSupportsGoal, createdAt: timestamp),
+            ObjectLink(sourceType: .entry, sourceID: review.id, targetType: .entry, targetID: sharedID, kind: .reviewsEntry, createdAt: timestamp),
+            ObjectLink(sourceType: .entry, sourceID: review.id, targetType: .habit, targetID: sharedID, kind: .reviewsHabit, createdAt: timestamp),
+            ObjectLink(sourceType: .entry, sourceID: review.id, targetType: .goal, targetID: sharedID, kind: .reviewsGoal, createdAt: timestamp)
+        ].forEach(context.insert)
+        try context.save()
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+
+        try TagLinkService(context: context).deleteTag(tag)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 6)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+
+        try EntryDeletionService(
+            persistence: ModelContextEntryPersistence(context: context),
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        ).permanentlyDelete(ordinary)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 3)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+
+        try HabitService(context: context).permanentlyDelete(habit)
         XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 1)
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+
+        try GoalService(context: context).permanentlyDelete(goal)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+        XCTAssertNotNil(try EntryRepository(context: context).fetch(id: review.id))
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
+    func testIntegrityRejectsCorruptAndDuplicateCanonicalLinkIdentity() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let entry = Entry(body: "Entry", createdAt: Date())
+        let tag = Tag(displayName: "Tag", normalizedName: "tag", createdAt: Date())
+        context.insert(entry)
+        context.insert(tag)
+        let corrupt = ObjectLink(
+            sourceType: .entry,
+            sourceID: entry.id,
+            targetType: .tag,
+            targetID: tag.id,
+            kind: .entryUsesTag,
+            createdAt: Date()
+        )
+        corrupt.kindRawValue = "unknown"
+        context.insert(corrupt)
+        try context.save()
+        XCTAssertThrowsError(try LinkIntegrityService.validate(context: context))
+
+        context.delete(corrupt)
+        try context.save()
+        let first = ObjectLink(
+            sourceType: .entry,
+            sourceID: entry.id,
+            targetType: .tag,
+            targetID: tag.id,
+            kind: .entryUsesTag,
+            createdAt: Date()
+        )
+        let duplicate = ObjectLink(
+            sourceType: .entry,
+            sourceID: entry.id,
+            targetType: .tag,
+            targetID: tag.id,
+            kind: .entryUsesTag,
+            createdAt: Date()
+        )
+        duplicate.deduplicationKey += "|corrupt"
+        context.insert(first)
+        context.insert(duplicate)
+        try context.save()
+
+        XCTAssertThrowsError(try LinkIntegrityService.validate(context: context)) {
+            guard case LinkIntegrityError.danglingLinks(let ids) = $0 else {
+                return XCTFail("Expected invalid Link identity, got \($0)")
+            }
+            XCTAssertEqual(Set(ids), Set([first.id, duplicate.id]))
+        }
     }
 
     func testRepresentativeSearchFixtureMeetsSimulatorThreshold() throws {
@@ -376,6 +570,7 @@ final class OrganizationSearchTests: XCTestCase {
         let baseDate = Date(timeIntervalSince1970: 1_000)
         for index in 0..<5_000 {
             context.insert(Entry(
+                kind: index.isMultiple(of: 20) ? .review : .quickNote,
                 title: "Memory \(index)",
                 body: index == 4_999 ? "唯一 needle 结果" : "ordinary personal note \(index)",
                 createdAt: baseDate.addingTimeInterval(Double(index))
@@ -385,6 +580,19 @@ final class OrganizationSearchTests: XCTestCase {
             context.insert(Tag(
                 displayName: "Tag \(index)",
                 normalizedName: "tag \(index)",
+                createdAt: baseDate
+            ))
+        }
+        for index in 0..<100 {
+            context.insert(Habit(
+                name: "Habit \(index)",
+                normalizedName: "habit \(index)",
+                createdAt: baseDate
+            ))
+            context.insert(Goal(
+                kind: index.isMultiple(of: 10) ? .flag : .standard,
+                title: "Goal \(index)",
+                normalizedTitle: "goal \(index)",
                 createdAt: baseDate
             ))
         }
@@ -406,7 +614,11 @@ final class OrganizationSearchTests: XCTestCase {
         let results = try search.search("needle")
         let elapsed = CFAbsoluteTimeGetCurrent() - start
         XCTAssertEqual(results.entries.count, 1)
-        XCTAssertLessThan(elapsed, 1.0, "5,000 Entries and 250 Tags should search without visible blocking")
+        XCTAssertLessThan(
+            elapsed,
+            1.0,
+            "5,000 Entries (including Reviews), 250 Tags, 100 Habits and 100 Goals should search without visible blocking"
+        )
     }
 }
 
@@ -423,9 +635,11 @@ private final class FailingLinkAwareDeletionPersistence: EntryDeletingPersistenc
     }
 
     func deleteLinks(involving objectID: UUID) throws {
+        let entryType = LinkObjectType.entry.rawValue
         let descriptor = FetchDescriptor<ObjectLink>(
             predicate: #Predicate {
-                $0.sourceID == objectID || $0.targetID == objectID
+                ($0.sourceTypeRawValue == entryType && $0.sourceID == objectID)
+                    || ($0.targetTypeRawValue == entryType && $0.targetID == objectID)
             }
         )
         try context.fetch(descriptor).forEach(context.delete)
@@ -455,6 +669,15 @@ private struct OrganizationFixture {
         storeURL = root.appendingPathComponent("store.sqlite")
         mediaRoot = root.appendingPathComponent("MediaRoot", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    }
+
+    func makeImageSource() throws -> MediaSource {
+        let url = root.appendingPathComponent("source-\(UUID().uuidString).png")
+        let data = Data(base64Encoded:
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+        )!
+        try data.write(to: url)
+        return MediaSource(url: url, originalFilename: "review.png", contentType: "image/png")
     }
 
     func remove() {

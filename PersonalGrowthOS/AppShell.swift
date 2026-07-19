@@ -207,6 +207,42 @@ private struct TodayView: View {
     }
 }
 
+enum TimelineItem: Identifiable {
+    case entry(Entry)
+    case habit(HabitDaySummary)
+    case goalEvent(GoalLifecycleEvent)
+
+    var id: String {
+        switch self {
+        case .entry(let entry): "entry-\(entry.id.uuidString)"
+        case .habit(let summary): "habit-\(summary.day.timeIntervalSinceReferenceDate)"
+        case .goalEvent(let event): "goal-event-\(event.id.uuidString)"
+        }
+    }
+
+    var occurredAt: Date {
+        switch self {
+        case .entry(let entry): entry.occurredAt
+        case .habit(let summary): summary.latestOccurredAt
+        case .goalEvent(let event): event.occurredAt
+        }
+    }
+
+    static func chronologically(
+        entries: [Entry],
+        habitActivity: [HabitDaySummary],
+        goalEvents: [GoalLifecycleEvent]
+    ) -> [TimelineItem] {
+        var items = entries.map(TimelineItem.entry)
+        items.append(contentsOf: habitActivity.map(TimelineItem.habit))
+        items.append(contentsOf: goalEvents.map(TimelineItem.goalEvent))
+        return items.sorted {
+            if $0.occurredAt != $1.occurredAt { return $0.occurredAt > $1.occurredAt }
+            return $0.id < $1.id
+        }
+    }
+}
+
 private struct TimelineView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
@@ -245,9 +281,17 @@ private struct TimelineView: View {
         Dictionary(goals.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
+    private var timelineItems: [TimelineItem] {
+        TimelineItem.chronologically(
+            entries: displayedEntries,
+            habitActivity: habitActivity,
+            goalEvents: displayedGoalEvents
+        )
+    }
+
     var body: some View {
         Group {
-            if displayedEntries.isEmpty && habitActivity.isEmpty && displayedGoalEvents.isEmpty {
+            if timelineItems.isEmpty {
                 ContentUnavailableView(
                     showsArchived ? "No Archived Entries" : "No Entries Yet",
                     systemImage: showsArchived ? "archivebox" : "clock",
@@ -255,9 +299,10 @@ private struct TimelineView: View {
                 )
             } else {
                 List {
-                    if !displayedEntries.isEmpty {
-                        Section("Entries") {
-                            ForEach(displayedEntries) { entry in
+                    Section("History") {
+                        ForEach(timelineItems) { item in
+                            switch item {
+                            case .entry(let entry):
                                 NavigationLink {
                                     EntryDetailView(
                                         entry: entry,
@@ -267,13 +312,11 @@ private struct TimelineView: View {
                                 } label: {
                                     TimelineRow(entry: entry, thumbnailStore: thumbnailStore)
                                 }
-                            }
-                        }
-                    }
-                    if !habitActivity.isEmpty {
-                        Section("Habit Activity") {
-                            ForEach(habitActivity) { summary in
+                            case .habit(let summary):
                                 VStack(alignment: .leading, spacing: 4) {
+                                    Label("Habit Activity", systemImage: "repeat")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                     LabeledContent(
                                         summary.day.formatted(date: .abbreviated, time: .omitted),
                                         value: "\(summary.logCount) check-in\(summary.logCount == 1 ? "" : "s")"
@@ -284,13 +327,11 @@ private struct TimelineView: View {
                                             .foregroundStyle(.secondary)
                                     }
                                 }
-                            }
-                        }
-                    }
-                    if !displayedGoalEvents.isEmpty {
-                        Section("Goal Changes") {
-                            ForEach(displayedGoalEvents) { event in
+                            case .goalEvent(let event):
                                 VStack(alignment: .leading, spacing: 4) {
+                                    Label("Goal Change", systemImage: "target")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                     Text(goalsByID[event.goalID]?.title ?? "Goal")
                                     LabeledContent(
                                         event.kindRawValue.capitalized,
@@ -398,6 +439,11 @@ struct TimelineRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            if entry.kind == .review {
+                Label("Review", systemImage: "text.book.closed")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             if let title = entry.title, !title.isEmpty {
                 Text(title).font(.headline)
             }

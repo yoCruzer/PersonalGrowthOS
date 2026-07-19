@@ -25,6 +25,7 @@ enum GoalLifecycleEventKind: String, Codable, CaseIterable, Sendable {
 
 enum GoalValidationError: Error, Equatable {
     case emptyTitle
+    case missingGoal
 }
 
 enum CoreLinkValidationError: Error, Equatable {

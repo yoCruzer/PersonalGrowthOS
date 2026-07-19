@@ -52,6 +52,20 @@ struct EntryDetailView: View {
         return allGoals.filter { ids.contains($0.id) }
     }
 
+    private var relatedHabits: [Habit] {
+        let ids = Set(allLinks.filter {
+            $0.kind == .entryRelatesHabit && $0.sourceID == entry.id
+        }.map(\.targetID))
+        return allHabits.filter { ids.contains($0.id) }
+    }
+
+    private var relatedGoals: [Goal] {
+        let ids = Set(allLinks.filter {
+            $0.kind == .entryRelatesGoal && $0.sourceID == entry.id
+        }.map(\.targetID))
+        return allGoals.filter { ids.contains($0.id) }
+    }
+
     var body: some View {
         List {
             if let title = entry.title, !title.isEmpty {
@@ -90,17 +104,66 @@ struct EntryDetailView: View {
                 }
                 Section("Reviewed Objects") {
                     ForEach(reviewedEntries) { reviewed in
-                        Label(reviewed.title ?? reviewed.body ?? "Entry", systemImage: "doc.text")
+                        NavigationLink {
+                            EntryDetailView(
+                                entry: reviewed,
+                                mediaStore: mediaStore,
+                                thumbnailStore: thumbnailStore
+                            )
+                        } label: {
+                            Label(reviewed.title ?? reviewed.body ?? "Entry", systemImage: "doc.text")
+                        }
                     }
                     ForEach(reviewedHabits) { habit in
-                        Label(habit.name, systemImage: "repeat")
+                        NavigationLink {
+                            HabitDetailView(
+                                habit: habit,
+                                mediaStore: mediaStore,
+                                thumbnailStore: thumbnailStore
+                            )
+                        } label: {
+                            Label(habit.name, systemImage: "repeat")
+                        }
                     }
                     ForEach(reviewedGoals) { goal in
-                        Label(goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
+                        NavigationLink {
+                            GoalDetailView(
+                                goal: goal,
+                                mediaStore: mediaStore,
+                                thumbnailStore: thumbnailStore
+                            )
+                        } label: {
+                            Label(goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
+                        }
                     }
                     if reviewedEntries.isEmpty && reviewedHabits.isEmpty && reviewedGoals.isEmpty {
                         Text("No related Entry, Habit, or Goal")
                             .foregroundStyle(.secondary)
+                    }
+                }
+            } else if !relatedHabits.isEmpty || !relatedGoals.isEmpty {
+                Section("Relationships") {
+                    ForEach(relatedHabits) { habit in
+                        NavigationLink {
+                            HabitDetailView(
+                                habit: habit,
+                                mediaStore: mediaStore,
+                                thumbnailStore: thumbnailStore
+                            )
+                        } label: {
+                            Label(habit.name, systemImage: "repeat")
+                        }
+                    }
+                    ForEach(relatedGoals) { goal in
+                        NavigationLink {
+                            GoalDetailView(
+                                goal: goal,
+                                mediaStore: mediaStore,
+                                thumbnailStore: thumbnailStore
+                            )
+                        } label: {
+                            Label(goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
+                        }
                     }
                 }
             }

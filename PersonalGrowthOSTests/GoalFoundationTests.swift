@@ -17,6 +17,8 @@ final class GoalFoundationTests: XCTestCase {
         let fixture = try GoalFixture()
         defer { fixture.remove() }
         let habitID = UUID()
+        let entryID = UUID()
+        let logID = UUID()
         do {
             let schema = Schema(versionedSchema: PersonalGrowthSchemaV3.self)
             let configuration = ModelConfiguration(
@@ -26,20 +28,48 @@ final class GoalFoundationTests: XCTestCase {
                 cloudKitDatabase: .none
             )
             let legacy = try ModelContainer(for: schema, configurations: [configuration])
-            legacy.mainContext.insert(Habit(
+            let entry = Entry(id: entryID, body: "Before S7", createdAt: Date())
+            let habit = Habit(
                 id: habitID,
                 name: "Before S7",
                 normalizedName: "before s7",
+                createdAt: Date()
+            )
+            legacy.mainContext.insert(entry)
+            legacy.mainContext.insert(habit)
+            legacy.mainContext.insert(HabitLog(
+                id: logID,
+                habitID: habitID,
+                occurredAt: Date(),
+                isCompleted: true,
+                linkedEntryID: entryID,
+                createdAt: Date()
+            ))
+            legacy.mainContext.insert(ObjectLink(
+                sourceType: .entry,
+                sourceID: entryID,
+                targetType: .habit,
+                targetID: habitID,
+                kind: .entryRelatesHabit,
                 createdAt: Date()
             ))
             try legacy.mainContext.save()
         }
 
-        let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        do {
+            let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).first?.id, habitID)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitLog>()).first?.id, logID)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<ObjectLink>()).count, 1)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Goal>()).count, 0)
+            XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<GoalLifecycleEvent>()).count, 0)
+            XCTAssertNoThrow(try LinkIntegrityService.validate(context: migrated.mainContext))
+        }
 
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).first?.id, habitID)
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Goal>()).count, 0)
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<GoalLifecycleEvent>()).count, 0)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        XCTAssertEqual(try reopened.mainContext.fetch(FetchDescriptor<Habit>()).first?.id, habitID)
+        XCTAssertEqual(try reopened.mainContext.fetch(FetchDescriptor<HabitLog>()).first?.linkedEntryID, entryID)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: reopened.mainContext))
     }
 
     func testCreateGoalAndFlagEachPublishOneCreatedEvent() throws {
