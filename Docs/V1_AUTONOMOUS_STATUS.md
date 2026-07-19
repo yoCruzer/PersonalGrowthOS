@@ -2,13 +2,13 @@
 
 | Item | Verified value |
 | --- | --- |
-| Program status | Program Authorized / Running |
-| Governance state | State 3 — Program Authorized / Running |
+| Program status | V1 Candidate Technical Completion |
+| Governance state | Stopped at Owner Review boundary |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S10 — V1 Integration and Daily Driver Readiness |
-| Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7, S8, S9 |
+| Current Macro Stage | None — autonomous stages complete |
+| Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7, S8, S9, S10 |
 
 ## Program Baseline
 
@@ -20,15 +20,15 @@ Clean `main` at `b82d6e656592663f679440e318d00bef06f50556` (`docs: finalize v1 a
 
 ## Program Status
 
-Program Authorized / Running. The Owner has granted explicit startup authorization covering Macro Stages S1–S10.
+The authorized S1–S10 engineering program reached V1 Candidate Technical Completion. Work is stopped at Owner Review as required.
 
 ## Current Macro Stage
 
-Milestones A (S1–S4) and B (S5–S8) are complete and passed. S9 Export / Import Recovery is technically complete; S10 integration and Daily Driver Readiness is the current Stage boundary.
+Milestones A (S1–S4), B (S5–S8) and C (S9–S10) are complete and passed. No autonomous Macro Stage remains.
 
 ## Current Internal Task
 
-Execute the accepted S10 integration, final technical gate and Milestone C review boundary without claiming Owner-deferred evidence.
+Await Owner review and Owner-deferred validation. Do not merge, publish, begin formal Dogfooding or start the 30-day observation without an explicit Owner decision.
 
 ## Completed Macro Stages
 
@@ -41,20 +41,21 @@ Execute the accepted S10 integration, final technical gate and Milestone C revie
 - S7 — Goal, Flag and Core Relationships. GoalKind.flag, lifecycle/events, bounded Entry/Habit/Goal Links, Today context, Timeline history, Search and deletion invariants are implemented.
 - S8 — Lightweight Manual Review. Manual Review Entries, optional periods, bounded Review→Entry/Habit/Goal Links, shared Timeline/Library/Search paths and coordinated deletion are implemented without a separate Review entity or lifecycle.
 - S9 — Export / Import Recovery. Standard unencrypted ZIP export, versioned manifest/data transfer DTOs, original-media SHA-256 integrity, resource-bounded empty-store import, isolated save/reopen verification, rollback, interrupted-work cleanup and Settings transfer UI are implemented without merge or erase-and-restore.
+- S10 — V1 Integration and Daily Driver Readiness. Final regression, global-shell accessibility, background/cancellable transfers, ZIP64 boundary support, export/import limit symmetry, crash-consistent publication, deletion isolation and Owner manual validation handoff are complete.
 
 ## Latest Verified Commit
 
-Milestone B gate commit `46f8a28bfc185cfd656d26eb0636e939c220b884`; the following coherent Stage commit records the S9 implementation, validation and S10 handoff.
+S10 reviewed implementation head is `9eb4fdeb1000f333870517c4ac95cb02c8c5b02f`; the following documentation commit records Milestone C and the Owner Review handoff.
 
 ## Latest Build Result
 
-S9 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus the Settings backup/restore surface and unencrypted-export warning.
+Final Candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised the complete V1 critical paths, Settings transfer/privacy surface, semantic accessibility and largest-text operation.
 
 ## Latest Test Result
 
-S9 final validation: the shared Scheme containing 100 Unit Tests and 16 UI Tests passed 116/116 with 0 failures and 0 skips. S9 coverage includes complete and equivalent re-export round trips, all object/media/link identities, same-store delete-and-restore, disk reopen, missing/corrupt/incompatible/duplicate fixtures, interrupted publication, resource and path limits, temporary cleanup, log redaction and no dangling Links.
+S10 final validation: the shared Scheme containing 106 Unit Tests and 18 UI Tests passed 124/124 with 0 failures and 0 skips. Coverage includes the complete S1–S9 set plus background/cancellable transfer work, self-compatible export limits, pre-extraction member bounds, exact ZIP64 sentinels, terminal commit semantics, atomic-directory publication, crash quarantine, direct deletion isolation and accessibility.
 
-The final result is `/tmp/PersonalGrowthOS-S9-Full-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_10-03-14-+0800.xcresult`. A host-side macOS system `unzip -t` probe also accepted the dependency-free writer's standard ZIP output.
+The final result is `/tmp/PersonalGrowthOS-S10-Final-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_11-25-15-+0800.xcresult`. A host-side macOS system `unzip -t` probe accepted the dependency-free writer's standard ZIP output; simulator tests also prove exact 65,535/65,536 ZIP64 boundaries.
 
 The representative normalized Search fixture containing 5,000 Entries including 250 Reviews, 250 Tags, 100 Habits and 100 Goals/Flags passed its existing 1.0-second threshold at 0.588, 0.507 and 0.500 seconds. No threshold or test was weakened.
 
@@ -109,13 +110,13 @@ None.
 
 ## Next Action
 
-Execute S10 integration, final autonomous technical validation, Milestone C independent review and Owner Review candidate preparation.
+Owner reviews the Candidate report and performs the applicable unchecked physical-device/manual items. Formal Dogfooding and the 30-day observation begin only after explicit Owner decisions.
 
 ## Repository State
 
 - Program baseline: `b82d6e656592663f679440e318d00bef06f50556`.
 - Current branch: `feat/v1-autonomous-build`.
-- Program state: State 3 — Program Authorized / Running.
+- Program state: V1 Candidate Technical Completion — Owner Review.
 - S1: committed and verified.
 - S2: committed and verified.
 - S3: committed and verified.
@@ -127,4 +128,5 @@ Execute S10 integration, final autonomous technical validation, Milestone C inde
 - S8: technically complete, fully validated and included in `feat: add lightweight manual reviews`.
 - Milestone B: PASS at reviewed implementation head `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; evidence in `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
 - S9: technically complete and verified by `feat: add full backup and restore`.
-- S10: current Stage.
+- S10: technically complete and verified at `9eb4fdeb1000f333870517c4ac95cb02c8c5b02f`.
+- Milestone C: PASS; evidence in `Docs/MILESTONE_C_REVIEW_MANIFEST.md`.

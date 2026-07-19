@@ -6,11 +6,11 @@
 | Last verified | 2026-07-19 |
 | Current branch | `feat/v1-autonomous-build` |
 | Program baseline on `main` | `b82d6e656592663f679440e318d00bef06f50556` |
-| Governance status | State 3 — Program Authorized / Running |
-| Completed Macro Stages | S0, S1, S2, S3, S4, S5, S6, S7, S8, S9 |
-| Current executable state | Local-first iPhone app with Capture, Timeline, Growth/Habits/Goals/Flags, manual Review, Library, owned media, global basic search and manual full backup/restore |
-| Latest technical gate | S9 PASS — 116/116 full shared-scheme tests passed |
-| Next checkpoint | S10 V1 Integration and Daily Driver Readiness |
+| Governance status | V1 Candidate Technical Completion — Owner Review |
+| Completed Macro Stages | S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10 |
+| Current executable state | Owner-reviewable local-first V1 Candidate with complete S1–S10 user paths and recovery boundary |
+| Latest technical gate | Milestone C / S10 PASS — 124/124 full shared-scheme tests passed |
+| Next checkpoint | Owner Manual Validation and acceptance decision |
 
 ## Authoritative Product Baseline
 
@@ -32,6 +32,8 @@ The Owner explicitly authorized the V1 Autonomous Build Program on 2026-07-18. A
 - S8 — manual Review Entry creation with optional period, Entry/Habit/Goal review Links, shared Timeline/Library/Search participation and relation-safe deletion.
 - Milestone B — three independent review lenses passed after integrity, unified-history and canonical-endpoint fixes; evidence is in `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
 - S9 — unencrypted standard ZIP full export, versioned manifest/data DTOs, original-media SHA-256 integrity, bounded empty-store import, isolated save/reopen preflight, rollback, startup cleanup and Settings transfer UI.
+- S10 — final shell/integration regression, background and cancellable transfer work, self-import-compatible ZIP64 limits, crash-consistent media publication, accessibility semantics/large-text operability and actionable transfer failures.
+- Milestone C — three independent review lenses passed with no remaining Critical/High/Medium findings; evidence is in `Docs/MILESTONE_C_REVIEW_MANIFEST.md`.
 
 ## Verified Executable State
 
@@ -49,7 +51,9 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 
 ## Latest Validation
 
-- Full shared-scheme test run on iPhone 17 Pro simulator, iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`): 100 Unit Tests and 16 UI Tests, 116/116 passed, 0 failed and 0 skipped. Result: `/tmp/PersonalGrowthOS-S9-Full-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_10-03-14-+0800.xcresult`.
+- Final full shared-scheme run on iPhone 17 Pro simulator, iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`): 106 Unit Tests and 18 UI Tests, 124/124 passed, 0 failed and 0 skipped. Result: `/tmp/PersonalGrowthOS-S10-Final-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_11-25-15-+0800.xcresult`.
+- Milestone C data/architecture, product/Foundation and tests/evidence re-reviews all passed with no remaining Critical, High or Medium findings.
+- S10 coverage adds exact 65,535/65,536 ZIP64 boundaries, export/import limit symmetry, pre-extraction media bounds, cancellation cleanup, terminal import commit semantics, background publication, before-save rollback, crash-window quarantine, direct two-Entry media deletion isolation, semantic accessibility audits and largest-text operability.
 - S9 coverage validates complete logical round trip, original bytes, all object/link IDs, HabitLog/GoalEvent endpoints, same-store delete-and-restore, disk reopen, equivalent re-export, corrupt manifest/data, missing media, duplicate IDs, newer schema, interrupted publication, compressed/expanded/file/object/capacity limits, compression ratio, unsafe paths, symlinks, normalized-path collisions, temporary cleanup and log redaction.
 - The dependency-free ZIP writer's output passed the macOS system `unzip -t` portability probe. Import intentionally accepts the stored ZIP method emitted by this V1 app and rejects unsupported compression methods before extraction.
 - S8 UI acceptance covers manual period Review → Timeline → Library → shared Search and Habit/Goal selection → saved Review detail → relationship editor.
@@ -76,7 +80,7 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 ## Known Limitations
 
 - V1 Import is full restore into an empty database only. Merge import and erase-and-restore are intentionally unavailable because retained-old-data rollback is not implemented.
-- V1 backup ZIPs are unencrypted and must be handled as sensitive data. The importer accepts the standard stored ZIP subset emitted by this app; third-party compressed ZIP variants are not an interchange target.
+- V1 backup ZIPs are unencrypted and must be handled as sensitive data. The importer accepts the standard stored ZIP/ZIP64 subset emitted by this app; third-party compressed ZIP variants are not an interchange target.
 - Camera and real Photos Picker/permission behavior remain Owner-deferred physical-device validation.
 - Entry, Tag and Habit mutations currently use the shared main `ModelContext`; rollback can also discard unrelated unsaved UI changes. This remains an accepted non-blocking follow-up until a low-risk isolation boundary is justified.
 - Search is an in-memory normalized scan. The measured V1 fixture is comfortably within threshold; no separate index is warranted at this stage.
@@ -92,8 +96,10 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 - S8 is technically complete and verified by the coherent Stage commit containing this status update (`feat: add lightweight manual reviews`).
 - Milestone B reviewed implementation head is `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; its manifest and current-context update are included in the following gate commit.
 - S9 is technically complete and verified by the coherent Stage commit containing this status update (`feat: add full backup and restore`).
+- S10 implementation and its Owner checklist are committed and independently reviewed at `9eb4fdeb1000f333870517c4ac95cb02c8c5b02f`.
+- Milestone C is PASS; the Candidate report and review manifest are present in the final documentation commit.
 - `main` and `origin/main` remain unchanged at the fixed Program baseline.
 
 ## Next Action
 
-Execute S10 V1 Integration and Daily Driver Readiness: run final cross-feature integrity, launch/reopen/recovery, critical-path, performance and static gates, then prepare Milestone C and the Owner Review candidate without claiming Owner-deferred evidence.
+Stop at Owner Review. The Owner should review `Docs/V1_CANDIDATE_REPORT.md`, complete the applicable unchecked items in `Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md` on a real iPhone, and decide whether to accept, request changes or begin formal Dogfooding. Codex has not started or claimed the 30-day observation.
