@@ -135,6 +135,38 @@ final class GoalFoundationTests: XCTestCase {
         XCTAssertEqual(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).count, 1)
     }
 
+    func testTransitionMutatesPersistedGoalForSameIDDetachedInstance() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let sharedID = UUID()
+        let persisted = Goal(
+            id: sharedID,
+            title: "Persisted",
+            normalizedTitle: "persisted",
+            status: .paused,
+            createdAt: Date()
+        )
+        context.insert(persisted)
+        try context.save()
+        let detached = Goal(
+            id: sharedID,
+            title: "Stale",
+            normalizedTitle: "stale",
+            status: .active,
+            createdAt: Date()
+        )
+
+        try GoalService(context: context).transition(detached, to: .completed)
+
+        XCTAssertEqual(persisted.status, .completed)
+        XCTAssertNotNil(persisted.completedAt)
+        XCTAssertEqual(detached.status, .active)
+        let event = try XCTUnwrap(context.fetch(FetchDescriptor<GoalLifecycleEvent>()).first)
+        XCTAssertEqual(event.goalID, sharedID)
+        XCTAssertEqual(event.kind, .completed)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
     func testCoreLinksUseApprovedDirectionsAndPreventDuplicates() throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         let context = container.mainContext

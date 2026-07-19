@@ -161,9 +161,11 @@ final class HabitCheckInService {
     }
 
     func checkIn(_ habit: Habit, draft: HabitLogDraft = HabitLogDraft()) throws -> HabitLog {
-        guard try habitExists(habit.id) else { throw HabitCheckInError.missingHabit }
-        guard habit.status == .active else { throw HabitCheckInError.inactiveHabit }
-        let log = makeLog(habit: habit, draft: draft, linkedEntryID: nil)
+        guard let persistedHabit = try fetchHabit(habit.id) else {
+            throw HabitCheckInError.missingHabit
+        }
+        guard persistedHabit.status == .active else { throw HabitCheckInError.inactiveHabit }
+        let log = makeLog(habit: persistedHabit, draft: draft, linkedEntryID: nil)
         context.insert(log)
         do {
             try save()
@@ -179,8 +181,10 @@ final class HabitCheckInService {
         logDraft: HabitLogDraft = HabitLogDraft(),
         entryDraft: EntryCreationDraft
     ) throws -> (log: HabitLog, entry: Entry) {
-        guard try habitExists(habit.id) else { throw HabitCheckInError.missingHabit }
-        guard habit.status == .active else { throw HabitCheckInError.inactiveHabit }
+        guard let persistedHabit = try fetchHabit(habit.id) else {
+            throw HabitCheckInError.missingHabit
+        }
+        guard persistedHabit.status == .active else { throw HabitCheckInError.inactiveHabit }
         try EntryRules.validateContent(body: entryDraft.body, imageCount: entryDraft.images.count)
         var storedFiles: [StoredMediaFile] = []
         do {
@@ -214,12 +218,12 @@ final class HabitCheckInService {
                 images: metadata
             )
             metadata.forEach { $0.entry = entry }
-            let log = makeLog(habit: habit, draft: logDraft, linkedEntryID: entry.id)
+            let log = makeLog(habit: persistedHabit, draft: logDraft, linkedEntryID: entry.id)
             let link = ObjectLink(
                 sourceType: .entry,
                 sourceID: entry.id,
                 targetType: .habit,
-                targetID: habit.id,
+                targetID: persistedHabit.id,
                 kind: .entryRelatesHabit,
                 createdAt: timestamp
             )
@@ -258,10 +262,10 @@ final class HabitCheckInService {
         )
     }
 
-    private func habitExists(_ id: UUID) throws -> Bool {
+    private func fetchHabit(_ id: UUID) throws -> Habit? {
         var descriptor = FetchDescriptor<Habit>(predicate: #Predicate { $0.id == id })
         descriptor.fetchLimit = 1
-        return try !context.fetch(descriptor).isEmpty
+        return try context.fetch(descriptor).first
     }
 }
 

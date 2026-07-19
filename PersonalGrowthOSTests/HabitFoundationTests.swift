@@ -94,6 +94,47 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 1)
     }
 
+    func testCheckInUsesPersistedHabitStateForSameIDDetachedInstance() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let sharedID = UUID()
+        let persisted = Habit(
+            id: sharedID,
+            name: "Persisted",
+            normalizedName: "persisted",
+            status: .paused,
+            createdAt: Date()
+        )
+        context.insert(persisted)
+        try context.save()
+        let detached = Habit(
+            id: sharedID,
+            name: "Stale",
+            normalizedName: "stale",
+            status: .active,
+            createdAt: Date()
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        )
+
+        XCTAssertThrowsError(try service.checkIn(detached)) {
+            XCTAssertEqual($0 as? HabitCheckInError, .inactiveHabit)
+        }
+        XCTAssertThrowsError(try service.checkInWithInsight(
+            detached,
+            entryDraft: EntryCreationDraft(body: "Do not publish")
+        )) {
+            XCTAssertEqual($0 as? HabitCheckInError, .inactiveHabit)
+        }
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).count, 0)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
     func testRichCheckInStoresEntryLogAndTypedLinkAtomically() throws {
         let fixture = try HabitFixture()
         defer { fixture.remove() }

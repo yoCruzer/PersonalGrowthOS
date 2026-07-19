@@ -112,17 +112,19 @@ final class GoalService {
     }
 
     func transition(_ goal: Goal, to status: GoalStatus) throws {
-        guard try goalExists(goal.id) else { throw GoalValidationError.missingGoal }
-        guard goal.status != status else { return }
-        let originalStatus = goal.status
-        let originalUpdatedAt = goal.updatedAt
-        let originalCompletedAt = goal.completedAt
+        guard let persistedGoal = try fetchGoal(goal.id) else {
+            throw GoalValidationError.missingGoal
+        }
+        guard persistedGoal.status != status else { return }
+        let originalStatus = persistedGoal.status
+        let originalUpdatedAt = persistedGoal.updatedAt
+        let originalCompletedAt = persistedGoal.completedAt
         let timestamp = now()
-        goal.status = status
-        goal.updatedAt = timestamp
-        goal.completedAt = status == .completed ? timestamp : nil
+        persistedGoal.status = status
+        persistedGoal.updatedAt = timestamp
+        persistedGoal.completedAt = status == .completed ? timestamp : nil
         context.insert(GoalLifecycleEvent(
-            goalID: goal.id,
+            goalID: persistedGoal.id,
             kind: eventKind(from: originalStatus, to: status),
             occurredAt: timestamp,
             createdAt: timestamp
@@ -131,9 +133,9 @@ final class GoalService {
             try save()
         } catch {
             context.rollback()
-            goal.status = originalStatus
-            goal.updatedAt = originalUpdatedAt
-            goal.completedAt = originalCompletedAt
+            persistedGoal.status = originalStatus
+            persistedGoal.updatedAt = originalUpdatedAt
+            persistedGoal.completedAt = originalCompletedAt
             throw error
         }
     }
@@ -171,10 +173,10 @@ final class GoalService {
         }
     }
 
-    private func goalExists(_ id: UUID) throws -> Bool {
+    private func fetchGoal(_ id: UUID) throws -> Goal? {
         var descriptor = FetchDescriptor<Goal>(predicate: #Predicate { $0.id == id })
         descriptor.fetchLimit = 1
-        return try !context.fetch(descriptor).isEmpty
+        return try context.fetch(descriptor).first
     }
 }
 
