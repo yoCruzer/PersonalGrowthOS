@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — S8 Lightweight Manual Review |
+| Current checkpoint | V1 Autonomous Build Program — Milestone B Review |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S7 technically complete — S8 validation tooling blocked |
+| Current Macro Stage | S8 technically complete — Milestone B review pending |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is to resume S8 Lightweight Manual Review when required simulator/test tooling becomes available.
+The immediate objective is to complete the independent Milestone B technical, product and test reviews, resolve any blocking findings and record the gate before S9.
 
 ## Scope
 
@@ -42,8 +42,8 @@ The immediate objective is to resume S8 Lightweight Manual Review when required 
 
 ## Current Boundary
 
-Program Startup and S1–S7 are technically complete. Milestone A passed four independent review lenses with no remaining Critical/High findings. The final Milestone A evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
+Program Startup and S1–S8 are technically complete. Milestone A passed four independent review lenses with no remaining Critical/High findings. The final Milestone A evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
 
-S7 delivers Goal/GoalKind.flag lifecycle, lifecycle events, bounded Entry→Habit, Entry→Goal and Habit→Goal Links, Today context, Timeline history, Goal/Flag search and relation-safe deletion. The full 78 Unit + 12 UI shared-scheme run exited 0; all 11 focused S7 tests and both focused S7 UI paths passed.
+S8 delivers manual `EntryKind.review` creation, optional periods, bounded Review→Entry/Habit/Goal Links, shared Timeline/Library/Search participation, editable relationships and relation-safe deletion without a separate Review entity, index, lifecycle, automation or analytics surface.
 
-Further approved simulator/result-tool calls were then rejected because the external Codex usage limit was reached. This is a Mandatory Escalation at the S8 validation boundary. Do not implement S8 until the required validation tools are available; then read the S8 boundary and continue.
+The full shared Scheme passed 97/97 tests: 83 Unit and 14 UI, with 0 failures and 0 skips. Both focused S8 UI paths passed, and the 5,000 Entry representative Search fixture measured 0.460–0.468 seconds against the existing 1.0-second threshold. Validation tooling is available; no active blocker remains.

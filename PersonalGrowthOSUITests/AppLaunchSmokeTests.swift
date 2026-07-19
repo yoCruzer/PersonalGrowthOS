@@ -296,4 +296,81 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Learn Swift"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Paused"].waitForExistence(timeout: 5))
     }
+
+    func testManualReviewWithPeriodAppearsInTimelineLibraryAndSearch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-new-review"].tap()
+        XCTAssertTrue(app.switches["review-include-period"].waitForExistence(timeout: 5))
+        app.switches["review-include-period"].tap()
+        app.buttons["review-write"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("Weekly review reflection")
+        app.buttons["capture-save"].tap()
+
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Weekly review reflection"].waitForExistence(timeout: 5))
+        app.staticTexts["Weekly review reflection"].tap()
+        XCTAssertTrue(app.navigationBars["Review"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Review Period"].exists)
+
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-all-entries"].tap()
+        XCTAssertTrue(app.staticTexts["Weekly review reflection"].waitForExistence(timeout: 5))
+
+        app.buttons["global-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("weekly review")
+        XCTAssertTrue(app.staticTexts["Weekly review reflection"].waitForExistence(timeout: 5))
+    }
+
+    func testManualReviewCanRelateHabitAndGoal() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        let habitName = app.textFields["new-habit-name"]
+        XCTAssertTrue(habitName.waitForExistence(timeout: 5))
+        habitName.tap()
+        habitName.typeText("Meditate")
+        app.buttons["add-habit"].tap()
+        app.keyboards.buttons["return"].tap()
+        app.navigationBars.buttons["Growth"].tap()
+        app.buttons["growth-goals"].tap()
+        let goalTitle = app.textFields["new-goal-title"]
+        XCTAssertTrue(goalTitle.waitForExistence(timeout: 5))
+        goalTitle.tap()
+        goalTitle.typeText("Stay Present")
+        app.buttons["add-goal"].tap()
+        app.keyboards.buttons["return"].tap()
+
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-new-review"].tap()
+        XCTAssertTrue(app.buttons["review-habit-meditate"].waitForExistence(timeout: 5))
+        app.buttons["review-habit-meditate"].tap()
+        app.buttons["review-goal-stay present"].tap()
+        app.buttons["review-write"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("Habit and Goal review")
+        app.buttons["capture-save"].tap()
+
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Habit and Goal review"].waitForExistence(timeout: 5))
+        app.staticTexts["Habit and Goal review"].tap()
+        XCTAssertTrue(app.staticTexts["Meditate"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Stay Present"].waitForExistence(timeout: 5))
+        app.buttons["entry-manage-relationships"].tap()
+        XCTAssertTrue(app.navigationBars["Reviewed Objects"].waitForExistence(timeout: 5))
+    }
 }

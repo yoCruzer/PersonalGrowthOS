@@ -53,6 +53,9 @@ enum ObjectLinkKind: String, Codable, Sendable {
     case entryRelatesHabit
     case entryRelatesGoal
     case habitSupportsGoal
+    case reviewsEntry
+    case reviewsHabit
+    case reviewsGoal
 }
 
 @Model
@@ -130,7 +133,9 @@ enum LinkIntegrityError: Error, Equatable {
 enum LinkIntegrityService {
     static func validate(context: ModelContext) throws {
         let links = try context.fetch(FetchDescriptor<ObjectLink>())
-        let entryIDs = Set(try context.fetch(FetchDescriptor<Entry>()).map(\.id))
+        let entries = try context.fetch(FetchDescriptor<Entry>())
+        let entryIDs = Set(entries.map(\.id))
+        let entryKinds = Dictionary(entries.map { ($0.id, $0.kind) }, uniquingKeysWith: { first, _ in first })
         let tagIDs = Set(try context.fetch(FetchDescriptor<Tag>()).map(\.id))
         let habitIDs = Set(try context.fetch(FetchDescriptor<Habit>()).map(\.id))
         let goalIDs = Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id))
@@ -161,6 +166,28 @@ enum LinkIntegrityService {
                 guard link.sourceType == .habit,
                       link.targetType == .goal,
                       habitIDs.contains(link.sourceID),
+                      goalIDs.contains(link.targetID) else {
+                    return link.id
+                }
+            case .reviewsEntry:
+                guard link.sourceType == .entry,
+                      link.targetType == .entry,
+                      link.sourceID != link.targetID,
+                      entryKinds[link.sourceID] == .review,
+                      entryIDs.contains(link.targetID) else {
+                    return link.id
+                }
+            case .reviewsHabit:
+                guard link.sourceType == .entry,
+                      link.targetType == .habit,
+                      entryKinds[link.sourceID] == .review,
+                      habitIDs.contains(link.targetID) else {
+                    return link.id
+                }
+            case .reviewsGoal:
+                guard link.sourceType == .entry,
+                      link.targetType == .goal,
+                      entryKinds[link.sourceID] == .review,
                       goalIDs.contains(link.targetID) else {
                     return link.id
                 }

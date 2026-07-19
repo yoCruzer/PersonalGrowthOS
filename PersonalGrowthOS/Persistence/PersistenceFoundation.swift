@@ -343,6 +343,160 @@ final class EntryCreationService {
     }
 }
 
+struct ReviewCreationDraft {
+    var entryDraft: EntryCreationDraft
+    var period: ReviewPeriod?
+    var reviewedEntryIDs: Set<UUID>
+    var reviewedHabitIDs: Set<UUID>
+    var reviewedGoalIDs: Set<UUID>
+
+    init(
+        entryDraft: EntryCreationDraft,
+        period: ReviewPeriod? = nil,
+        reviewedEntryIDs: Set<UUID> = [],
+        reviewedHabitIDs: Set<UUID> = [],
+        reviewedGoalIDs: Set<UUID> = []
+    ) {
+        self.entryDraft = entryDraft
+        self.period = period
+        self.reviewedEntryIDs = reviewedEntryIDs
+        self.reviewedHabitIDs = reviewedHabitIDs
+        self.reviewedGoalIDs = reviewedGoalIDs
+    }
+}
+
+@MainActor
+final class ReviewCreationService {
+    private let context: ModelContext
+    private let mediaStore: MediaStore
+    private let now: () -> Date
+    private let save: () throws -> Void
+
+    init(
+        context: ModelContext,
+        mediaStore: MediaStore,
+        now: @escaping () -> Date = Date.init,
+        save: (() throws -> Void)? = nil
+    ) {
+        self.context = context
+        self.mediaStore = mediaStore
+        self.now = now
+        self.save = save ?? { try context.save() }
+    }
+
+    func create(_ draft: ReviewCreationDraft) throws -> Entry {
+        try EntryRules.validateContent(
+            body: draft.entryDraft.body,
+            imageCount: draft.entryDraft.images.count
+        )
+        try EntryRules.validatePeriod(draft.period, for: .review)
+        try validateEndpoints(draft)
+
+        var storedFiles: [StoredMediaFile] = []
+        do {
+            try mediaStore.ensureCapacity(for: draft.entryDraft.images)
+            for image in draft.entryDraft.images {
+                storedFiles.append(try mediaStore.storeOriginal(image))
+            }
+
+            let timestamp = now()
+            let metadata = zip(storedFiles, draft.entryDraft.images).enumerated().map { index, pair in
+                let (storedFile, source) = pair
+                return ImageMetadata(
+                    id: storedFile.id,
+                    relativePath: storedFile.relativePath,
+                    originalFilename: source.originalFilename,
+                    contentType: source.contentType,
+                    byteCount: storedFile.byteCount,
+                    pixelWidth: storedFile.pixelWidth,
+                    pixelHeight: storedFile.pixelHeight,
+                    checksum: storedFile.checksum,
+                    sortOrder: index,
+                    createdAt: timestamp
+                )
+            }
+            let entry = Entry(
+                kind: .review,
+                title: draft.entryDraft.title,
+                body: draft.entryDraft.body,
+                createdAt: timestamp,
+                occurredAt: draft.entryDraft.occurredAt,
+                periodStart: draft.period?.start,
+                periodEnd: draft.period?.end,
+                images: metadata
+            )
+            metadata.forEach { $0.entry = entry }
+            context.insert(entry)
+            reviewLinks(for: entry.id, draft: draft, createdAt: timestamp).forEach(context.insert)
+            try save()
+            return entry
+        } catch let operationError {
+            context.rollback()
+            var rollbackIncomplete = false
+            for storedFile in storedFiles {
+                do {
+                    try mediaStore.removeOriginal(at: storedFile.relativePath)
+                } catch {
+                    rollbackIncomplete = true
+                }
+            }
+            if rollbackIncomplete {
+                throw EntryMediaOperationError.rollbackIncomplete
+            }
+            throw operationError
+        }
+    }
+
+    private func validateEndpoints(_ draft: ReviewCreationDraft) throws {
+        let entryIDs = Set(try context.fetch(FetchDescriptor<Entry>()).map(\.id))
+        let habitIDs = Set(try context.fetch(FetchDescriptor<Habit>()).map(\.id))
+        let goalIDs = Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id))
+        guard draft.reviewedEntryIDs.isSubset(of: entryIDs),
+              draft.reviewedHabitIDs.isSubset(of: habitIDs),
+              draft.reviewedGoalIDs.isSubset(of: goalIDs) else {
+            throw CoreLinkValidationError.missingEndpoint
+        }
+    }
+
+    private func reviewLinks(
+        for reviewID: UUID,
+        draft: ReviewCreationDraft,
+        createdAt: Date
+    ) -> [ObjectLink] {
+        let entryLinks = draft.reviewedEntryIDs.map {
+            ObjectLink(
+                sourceType: .entry,
+                sourceID: reviewID,
+                targetType: .entry,
+                targetID: $0,
+                kind: .reviewsEntry,
+                createdAt: createdAt
+            )
+        }
+        let habitLinks = draft.reviewedHabitIDs.map {
+            ObjectLink(
+                sourceType: .entry,
+                sourceID: reviewID,
+                targetType: .habit,
+                targetID: $0,
+                kind: .reviewsHabit,
+                createdAt: createdAt
+            )
+        }
+        let goalLinks = draft.reviewedGoalIDs.map {
+            ObjectLink(
+                sourceType: .entry,
+                sourceID: reviewID,
+                targetType: .goal,
+                targetID: $0,
+                kind: .reviewsGoal,
+                createdAt: createdAt
+            )
+        }
+        return entryLinks + habitLinks + goalLinks
+    }
+}
+
 @MainActor
 protocol EntryDeletingPersistence: AnyObject {
     func deleteLinks(involving objectID: UUID) throws

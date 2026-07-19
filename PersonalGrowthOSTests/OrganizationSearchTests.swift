@@ -202,6 +202,174 @@ final class OrganizationSearchTests: XCTestCase {
         XCTAssertEqual(try search.search("健康").tags.map(\.displayName), ["健康"])
     }
 
+    func testManualDailyAndWeeklyReviewsReuseEntryPeriodStorage() throws {
+        let fixture = try OrganizationFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let service = ReviewCreationService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { Date(timeIntervalSince1970: 10_000) }
+        )
+        let dayStart = Date(timeIntervalSince1970: 1_000)
+        let dayEnd = dayStart.addingTimeInterval(86_399)
+        let weekEnd = dayStart.addingTimeInterval(7 * 86_400)
+
+        let daily = try service.create(ReviewCreationDraft(
+            entryDraft: EntryCreationDraft(body: "Daily review"),
+            period: try ReviewPeriod(start: dayStart, end: dayEnd)
+        ))
+        let weekly = try service.create(ReviewCreationDraft(
+            entryDraft: EntryCreationDraft(body: "Weekly review"),
+            period: try ReviewPeriod(start: dayStart, end: weekEnd)
+        ))
+
+        XCTAssertEqual(daily.kind, .review)
+        XCTAssertEqual(daily.periodStart, dayStart)
+        XCTAssertEqual(daily.periodEnd, dayEnd)
+        XCTAssertEqual(weekly.kind, .review)
+        XCTAssertEqual(weekly.periodEnd, weekEnd)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).count, 2)
+    }
+
+    func testReviewCreationPublishesAllApprovedLinksAndUsesEntrySearch() throws {
+        let fixture = try OrganizationFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let reviewedEntry = Entry(body: "Reviewed memory", createdAt: Date())
+        context.insert(reviewedEntry)
+        let habit = try HabitService(context: context).create(name: "Read")
+        let goal = try GoalService(context: context).create(title: "Learn", kind: .standard)
+        try context.save()
+
+        let review = try ReviewCreationService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        ).create(ReviewCreationDraft(
+            entryDraft: EntryCreationDraft(body: "Reflection needle"),
+            reviewedEntryIDs: [reviewedEntry.id],
+            reviewedHabitIDs: [habit.id],
+            reviewedGoalIDs: [goal.id]
+        ))
+
+        let links = try context.fetch(FetchDescriptor<ObjectLink>()).filter { $0.sourceID == review.id }
+        XCTAssertEqual(Set(links.map(\.kind)), Set([.reviewsEntry, .reviewsHabit, .reviewsGoal]))
+        XCTAssertTrue(links.allSatisfy { $0.sourceType == .entry })
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+        XCTAssertEqual(try LocalSearchService(context: context).search("needle").entries.map(\.id), [review.id])
+    }
+
+    func testReviewLinksRejectMissingTargetsInvalidSourcesAndSelfLinks() throws {
+        let fixture = try OrganizationFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+
+        XCTAssertThrowsError(try ReviewCreationService(
+            context: context,
+            mediaStore: mediaStore
+        ).create(ReviewCreationDraft(
+            entryDraft: EntryCreationDraft(body: "Do not publish"),
+            reviewedGoalIDs: [UUID()]
+        ))) {
+            XCTAssertEqual($0 as? CoreLinkValidationError, .missingEndpoint)
+        }
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).count, 0)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+
+        let ordinary = Entry(body: "Ordinary", createdAt: Date())
+        let target = Entry(body: "Target", createdAt: Date())
+        context.insert(ordinary)
+        context.insert(target)
+        try context.save()
+        XCTAssertThrowsError(try CoreLinkService(context: context).setReview(
+            ordinary, reviews: target, linked: true
+        )) {
+            XCTAssertEqual($0 as? CoreLinkValidationError, .invalidReviewSource)
+        }
+
+        let review = Entry(kind: .review, body: "Review", createdAt: Date())
+        context.insert(review)
+        try context.save()
+        XCTAssertThrowsError(try CoreLinkService(context: context).setReview(
+            review, reviews: review, linked: true
+        )) {
+            XCTAssertEqual($0 as? CoreLinkValidationError, .reviewTargetsItself)
+        }
+    }
+
+    func testReviewPermanentDeleteCleansReviewLinksAndPreservesTargets() throws {
+        let fixture = try OrganizationFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let reviewedEntry = Entry(body: "Keep Entry", createdAt: Date())
+        context.insert(reviewedEntry)
+        let habit = try HabitService(context: context).create(name: "Keep Habit")
+        let goal = try GoalService(context: context).create(title: "Keep Goal", kind: .flag)
+        try context.save()
+        let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        let review = try ReviewCreationService(context: context, mediaStore: mediaStore).create(
+            ReviewCreationDraft(
+                entryDraft: EntryCreationDraft(body: "Delete Review"),
+                reviewedEntryIDs: [reviewedEntry.id],
+                reviewedHabitIDs: [habit.id],
+                reviewedGoalIDs: [goal.id]
+            )
+        )
+
+        try EntryDeletionService(
+            persistence: ModelContextEntryPersistence(context: context),
+            mediaStore: mediaStore
+        ).permanentlyDelete(review)
+
+        XCTAssertNil(try EntryRepository(context: context).fetch(id: review.id))
+        XCTAssertNotNil(try EntryRepository(context: context).fetch(id: reviewedEntry.id))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Habit>()).first?.id, habit.id)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Goal>()).first?.id, goal.id)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
+    func testFailedReviewCreateAndDeleteRollBackEntryAndLinks() throws {
+        let fixture = try OrganizationFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let target = Entry(body: "Keep target", createdAt: Date())
+        context.insert(target)
+        try context.save()
+        let mediaStore = MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+
+        XCTAssertThrowsError(try ReviewCreationService(
+            context: context,
+            mediaStore: mediaStore,
+            save: { throw InjectedOrganizationFailure.save }
+        ).create(ReviewCreationDraft(
+            entryDraft: EntryCreationDraft(body: "Failed Review"),
+            reviewedEntryIDs: [target.id]
+        )))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [target.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 0)
+
+        let review = try ReviewCreationService(context: context, mediaStore: mediaStore).create(
+            ReviewCreationDraft(
+                entryDraft: EntryCreationDraft(body: "Keep Review"),
+                reviewedEntryIDs: [target.id]
+            )
+        )
+        XCTAssertThrowsError(try EntryDeletionService(
+            persistence: FailingLinkAwareDeletionPersistence(context: context),
+            mediaStore: mediaStore
+        ).permanentlyDelete(review))
+        XCTAssertNotNil(try EntryRepository(context: context).fetch(id: review.id))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 1)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
     func testRepresentativeSearchFixtureMeetsSimulatorThreshold() throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         let context = container.mainContext

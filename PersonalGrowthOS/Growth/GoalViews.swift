@@ -234,32 +234,63 @@ struct EntryRelationshipsEditor: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\Habit.normalizedName)]) private var habits: [Habit]
     @Query(sort: [SortDescriptor(\Goal.normalizedTitle)]) private var goals: [Goal]
+    @Query(sort: [SortDescriptor(\Entry.occurredAt, order: .reverse)]) private var entries: [Entry]
     @Query private var links: [ObjectLink]
     @State private var errorMessage: String?
 
     var body: some View {
         NavigationStack {
             List {
-                Section("Habits") {
-                    ForEach(habits) { habit in
-                        relationButton(habit.name, linked: isLinked(to: habit)) {
-                            try CoreLinkService(context: modelContext).setEntry(
-                                entry, relatesTo: habit, linked: !isLinked(to: habit)
-                            )
+                if entry.kind == .review {
+                    Section("Entries") {
+                        ForEach(entries.filter { $0.id != entry.id }) { reviewed in
+                            relationButton(reviewed.title ?? reviewed.body ?? "Entry", linked: isReviewed(reviewed)) {
+                                try CoreLinkService(context: modelContext).setReview(
+                                    entry, reviews: reviewed, linked: !isReviewed(reviewed)
+                                )
+                            }
                         }
                     }
-                }
-                Section("Goals and Flags") {
-                    ForEach(goals) { goal in
-                        relationButton(goal.title, linked: isLinked(to: goal)) {
-                            try CoreLinkService(context: modelContext).setEntry(
-                                entry, relatesTo: goal, linked: !isLinked(to: goal)
-                            )
+                    Section("Habits") {
+                        ForEach(habits) { habit in
+                            relationButton(habit.name, linked: isReviewed(habit)) {
+                                try CoreLinkService(context: modelContext).setReview(
+                                    entry, reviews: habit, linked: !isReviewed(habit)
+                                )
+                            }
+                        }
+                    }
+                    Section("Goals and Flags") {
+                        ForEach(goals) { goal in
+                            relationButton(goal.title, linked: isReviewed(goal)) {
+                                try CoreLinkService(context: modelContext).setReview(
+                                    entry, reviews: goal, linked: !isReviewed(goal)
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Section("Habits") {
+                        ForEach(habits) { habit in
+                            relationButton(habit.name, linked: isLinked(to: habit)) {
+                                try CoreLinkService(context: modelContext).setEntry(
+                                    entry, relatesTo: habit, linked: !isLinked(to: habit)
+                                )
+                            }
+                        }
+                    }
+                    Section("Goals and Flags") {
+                        ForEach(goals) { goal in
+                            relationButton(goal.title, linked: isLinked(to: goal)) {
+                                try CoreLinkService(context: modelContext).setEntry(
+                                    entry, relatesTo: goal, linked: !isLinked(to: goal)
+                                )
+                            }
                         }
                     }
                 }
             }
-            .navigationTitle("Entry Relationships")
+            .navigationTitle(entry.kind == .review ? "Reviewed Objects" : "Entry Relationships")
             .toolbar { Button("Done") { dismiss() } }
             .alert("Could Not Update Relationships", isPresented: Binding(
                 get: { errorMessage != nil },
@@ -289,6 +320,18 @@ struct EntryRelationshipsEditor: View {
 
     private func isLinked(to goal: Goal) -> Bool {
         links.contains { $0.kind == .entryRelatesGoal && $0.sourceID == entry.id && $0.targetID == goal.id }
+    }
+
+    private func isReviewed(_ reviewed: Entry) -> Bool {
+        links.contains { $0.kind == .reviewsEntry && $0.sourceID == entry.id && $0.targetID == reviewed.id }
+    }
+
+    private func isReviewed(_ habit: Habit) -> Bool {
+        links.contains { $0.kind == .reviewsHabit && $0.sourceID == entry.id && $0.targetID == habit.id }
+    }
+
+    private func isReviewed(_ goal: Goal) -> Bool {
+        links.contains { $0.kind == .reviewsGoal && $0.sourceID == entry.id && $0.targetID == goal.id }
     }
 }
 

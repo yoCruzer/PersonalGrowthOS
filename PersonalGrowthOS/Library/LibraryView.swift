@@ -21,9 +21,22 @@ struct LibraryView: View {
 
     @Query private var entries: [Entry]
     @Query private var tags: [Tag]
+    @State private var isCreatingReview = false
 
     var body: some View {
         List {
+            Section {
+                Button {
+                    isCreatingReview = true
+                } label: {
+                    Label("New Review", systemImage: "text.book.closed")
+                }
+                .accessibilityIdentifier("library-new-review")
+            } header: {
+                Text("Reflect")
+            } footer: {
+                Text("Create a manual reflection for a day, week, or another period you choose.")
+            }
             Section {
                 destination(.inbox, count: entries.filter { $0.status == .inbox }.count)
                 destination(.all, count: entries.count)
@@ -43,6 +56,9 @@ struct LibraryView: View {
         }
         .navigationTitle("Library")
         .accessibilityIdentifier("library-view")
+        .sheet(isPresented: $isCreatingReview) {
+            ReviewComposerView(mediaStore: mediaStore)
+        }
     }
 
     private func destination(_ filter: LibraryEntryFilter, count: Int) -> some View {
@@ -60,6 +76,152 @@ struct LibraryView: View {
             }
         }
         .accessibilityIdentifier("library-\(filter.rawValue.lowercased().replacingOccurrences(of: " ", with: "-"))")
+    }
+}
+
+private struct ReviewComposerView: View {
+    let mediaStore: MediaStore
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: [
+        SortDescriptor(\Entry.occurredAt, order: .reverse),
+        SortDescriptor(\Entry.id, order: .forward)
+    ]) private var entries: [Entry]
+    @Query(sort: [SortDescriptor(\Habit.normalizedName)]) private var habits: [Habit]
+    @Query(sort: [SortDescriptor(\Goal.normalizedTitle)]) private var goals: [Goal]
+    @State private var includesPeriod = false
+    @State private var periodStart = Calendar.current.startOfDay(for: Date())
+    @State private var periodEnd = Date()
+    @State private var selectedEntryIDs: Set<UUID> = []
+    @State private var selectedHabitIDs: Set<UUID> = []
+    @State private var selectedGoalIDs: Set<UUID> = []
+    @State private var isWriting = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Period") {
+                    Toggle("Include Review Period", isOn: $includesPeriod)
+                        .accessibilityIdentifier("review-include-period")
+                    if includesPeriod {
+                        DatePicker("Start", selection: $periodStart)
+                            .accessibilityIdentifier("review-period-start")
+                        DatePicker("End", selection: $periodEnd)
+                            .accessibilityIdentifier("review-period-end")
+                        if periodEnd < periodStart {
+                            Text("The end must be on or after the start.")
+                                .foregroundStyle(.red)
+                        }
+                    }
+                }
+                if !entries.isEmpty {
+                    Section("Entries") {
+                        ForEach(entries) { entry in
+                            selectionButton(
+                                entry.title ?? entry.body ?? "Entry",
+                                selected: selectedEntryIDs.contains(entry.id),
+                                identifier: "review-entry-\(entry.id.uuidString)"
+                            ) {
+                                selectedEntryIDs.toggle(entry.id)
+                            }
+                        }
+                    }
+                }
+                if !habits.isEmpty {
+                    Section("Habits") {
+                        ForEach(habits) { habit in
+                            selectionButton(
+                                habit.name,
+                                selected: selectedHabitIDs.contains(habit.id),
+                                identifier: "review-habit-\(habit.normalizedName)"
+                            ) {
+                                selectedHabitIDs.toggle(habit.id)
+                            }
+                        }
+                    }
+                }
+                if !goals.isEmpty {
+                    Section("Goals and Flags") {
+                        ForEach(goals) { goal in
+                            selectionButton(
+                                goal.title,
+                                selected: selectedGoalIDs.contains(goal.id),
+                                identifier: "review-goal-\(goal.normalizedTitle)"
+                            ) {
+                                selectedGoalIDs.toggle(goal.id)
+                            }
+                        }
+                    }
+                }
+                Section {
+                    Button("Write Review") { isWriting = true }
+                        .disabled(includesPeriod && periodEnd < periodStart)
+                        .accessibilityIdentifier("review-write")
+                } footer: {
+                    Text("Review is a regular Entry in Timeline, Library, and Search. It is never generated automatically.")
+                }
+            }
+            .navigationTitle("New Review")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+            .sheet(isPresented: $isWriting) {
+                QuickCaptureView(
+                    mediaStore: mediaStore,
+                    navigationTitle: "Write Review",
+                    saveDraft: { entryDraft in
+                        let period = includesPeriod
+                            ? try ReviewPeriod(start: periodStart, end: periodEnd)
+                            : nil
+                        return try ReviewCreationService(
+                            context: modelContext,
+                            mediaStore: mediaStore
+                        ).create(ReviewCreationDraft(
+                            entryDraft: entryDraft,
+                            period: period,
+                            reviewedEntryIDs: selectedEntryIDs,
+                            reviewedHabitIDs: selectedHabitIDs,
+                            reviewedGoalIDs: selectedGoalIDs
+                        ))
+                    },
+                    didSave: { _ in
+                        isWriting = false
+                        dismiss()
+                    }
+                )
+            }
+        }
+    }
+
+    private func selectionButton(
+        _ title: String,
+        selected: Bool,
+        identifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title).lineLimit(2)
+                Spacer()
+                if selected { Image(systemName: "checkmark") }
+            }
+        }
+        .foregroundStyle(.primary)
+        .accessibilityIdentifier(identifier)
+    }
+}
+
+private extension Set where Element == UUID {
+    mutating func toggle(_ id: UUID) {
+        if contains(id) {
+            remove(id)
+        } else {
+            insert(id)
+        }
     }
 }
 

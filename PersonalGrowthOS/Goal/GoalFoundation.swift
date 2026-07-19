@@ -227,6 +227,51 @@ final class CoreLinkService {
         )
     }
 
+    func setReview(_ review: Entry, reviews entry: Entry, linked: Bool) throws {
+        guard try reviewExists(review.id), try entryExists(entry.id) else {
+            throw CoreLinkValidationError.missingEndpoint
+        }
+        guard review.id != entry.id else {
+            throw CoreLinkValidationError.reviewTargetsItself
+        }
+        try set(
+            sourceType: .entry,
+            sourceID: review.id,
+            targetType: .entry,
+            targetID: entry.id,
+            kind: .reviewsEntry,
+            linked: linked
+        )
+    }
+
+    func setReview(_ review: Entry, reviews habit: Habit, linked: Bool) throws {
+        guard try reviewExists(review.id), try habitExists(habit.id) else {
+            throw CoreLinkValidationError.missingEndpoint
+        }
+        try set(
+            sourceType: .entry,
+            sourceID: review.id,
+            targetType: .habit,
+            targetID: habit.id,
+            kind: .reviewsHabit,
+            linked: linked
+        )
+    }
+
+    func setReview(_ review: Entry, reviews goal: Goal, linked: Bool) throws {
+        guard try reviewExists(review.id), try goalExists(goal.id) else {
+            throw CoreLinkValidationError.missingEndpoint
+        }
+        try set(
+            sourceType: .entry,
+            sourceID: review.id,
+            targetType: .goal,
+            targetID: goal.id,
+            kind: .reviewsGoal,
+            linked: linked
+        )
+    }
+
     private func set(
         sourceType: LinkObjectType,
         sourceID: UUID,
@@ -272,6 +317,16 @@ final class CoreLinkService {
         var descriptor = FetchDescriptor<Entry>(predicate: #Predicate { $0.id == id })
         descriptor.fetchLimit = 1
         return try !context.fetch(descriptor).isEmpty
+    }
+
+    private func reviewExists(_ id: UUID) throws -> Bool {
+        var descriptor = FetchDescriptor<Entry>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        guard let entry = try context.fetch(descriptor).first else { return false }
+        guard entry.kind == .review else {
+            throw CoreLinkValidationError.invalidReviewSource
+        }
+        return true
     }
 
     private func habitExists(_ id: UUID) throws -> Bool {

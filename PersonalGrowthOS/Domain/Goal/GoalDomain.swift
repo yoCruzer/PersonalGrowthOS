@@ -29,6 +29,8 @@ enum GoalValidationError: Error, Equatable {
 
 enum CoreLinkValidationError: Error, Equatable {
     case missingEndpoint
+    case invalidReviewSource
+    case reviewTargetsItself
 }
 
 enum GoalRules {

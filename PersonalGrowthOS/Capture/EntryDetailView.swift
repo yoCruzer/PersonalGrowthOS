@@ -20,12 +20,36 @@ struct EntryDetailView: View {
         SortDescriptor(\Tag.id, order: .forward)
     ]) private var allTags: [Tag]
     @Query private var allLinks: [ObjectLink]
+    @Query private var allEntries: [Entry]
+    @Query private var allHabits: [Habit]
+    @Query private var allGoals: [Goal]
 
     private var attachedTags: [Tag] {
         let tagIDs = Set(allLinks.filter {
             $0.kind == .entryUsesTag && $0.sourceID == entry.id
         }.map(\.targetID))
         return allTags.filter { tagIDs.contains($0.id) }
+    }
+
+    private var reviewedEntries: [Entry] {
+        let ids = Set(allLinks.filter {
+            $0.kind == .reviewsEntry && $0.sourceID == entry.id
+        }.map(\.targetID))
+        return allEntries.filter { ids.contains($0.id) }
+    }
+
+    private var reviewedHabits: [Habit] {
+        let ids = Set(allLinks.filter {
+            $0.kind == .reviewsHabit && $0.sourceID == entry.id
+        }.map(\.targetID))
+        return allHabits.filter { ids.contains($0.id) }
+    }
+
+    private var reviewedGoals: [Goal] {
+        let ids = Set(allLinks.filter {
+            $0.kind == .reviewsGoal && $0.sourceID == entry.id
+        }.map(\.targetID))
+        return allGoals.filter { ids.contains($0.id) }
     }
 
     var body: some View {
@@ -51,6 +75,35 @@ struct EntryDetailView: View {
             Section("Occurred") {
                 Text(entry.occurredAt.formatted(date: .long, time: .shortened))
             }
+            if entry.kind == .review {
+                Section("Review Period") {
+                    if let start = entry.periodStart {
+                        LabeledContent("Start", value: start.formatted(date: .long, time: .shortened))
+                    }
+                    if let end = entry.periodEnd {
+                        LabeledContent("End", value: end.formatted(date: .long, time: .shortened))
+                    }
+                    if entry.periodStart == nil && entry.periodEnd == nil {
+                        Text("No period selected")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Section("Reviewed Objects") {
+                    ForEach(reviewedEntries) { reviewed in
+                        Label(reviewed.title ?? reviewed.body ?? "Entry", systemImage: "doc.text")
+                    }
+                    ForEach(reviewedHabits) { habit in
+                        Label(habit.name, systemImage: "repeat")
+                    }
+                    ForEach(reviewedGoals) { goal in
+                        Label(goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
+                    }
+                    if reviewedEntries.isEmpty && reviewedHabits.isEmpty && reviewedGoals.isEmpty {
+                        Text("No related Entry, Habit, or Goal")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
             Section("Organization") {
                 LabeledContent("Status", value: entry.statusRawValue.capitalized)
                 if !attachedTags.isEmpty {
@@ -60,7 +113,9 @@ struct EntryDetailView: View {
                 }
                 Button("Manage Tags") { isEditingTags = true }
                     .accessibilityIdentifier("entry-manage-tags")
-                Button("Manage Relationships") { isEditingRelationships = true }
+                Button(entry.kind == .review ? "Manage Reviewed Objects" : "Manage Relationships") {
+                    isEditingRelationships = true
+                }
                     .accessibilityIdentifier("entry-manage-relationships")
             }
         }

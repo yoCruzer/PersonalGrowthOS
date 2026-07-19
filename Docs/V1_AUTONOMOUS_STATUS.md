@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S7 technically complete — S8 validation tooling blocked |
-| Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7 |
+| Current Macro Stage | S8 technically complete — Milestone B review pending |
+| Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7, S8 |
 
 ## Program Baseline
 
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-Milestone A (S1–S4) is complete and passed. S7 has passed its technical gate; S8 is the next Stage boundary but required validation tooling is temporarily unavailable.
+Milestone A (S1–S4) is complete and passed. S8 has passed its technical gate; the independent Milestone B review is the current boundary.
 
 ## Current Internal Task
 
-Resume S8 Lightweight Manual Review only after simulator/test-result tooling becomes available.
+Complete the independent Milestone B review lenses and resolve any blocking findings before S9.
 
 ## Completed Macro Stages
 
@@ -39,20 +39,21 @@ Resume S8 Lightweight Manual Review only after simulator/test-result tooling bec
 - S5 — Library, Inbox, Tags and Search. Inbox/All Entries/Archived views, optional normalized Tags, typed Entry-Tag Links, organization transitions, deletion cleanup and global local Entry/Review/Tag search are implemented.
 - S6 — Habit and HabitLog. Habit lifecycle, structured facts, one-tap and rich Entry-linked check-ins, Today/Growth/history UI, Timeline aggregation, Habit search and deletion invariants are implemented.
 - S7 — Goal, Flag and Core Relationships. GoalKind.flag, lifecycle/events, bounded Entry/Habit/Goal Links, Today context, Timeline history, Search and deletion invariants are implemented.
+- S8 — Lightweight Manual Review. Manual Review Entries, optional periods, bounded Review→Entry/Habit/Goal Links, shared Timeline/Library/Search paths and coordinated deletion are implemented without a separate Review entity or lifecycle.
 
 ## Latest Verified Commit
 
-S7 Stage commit `feat: add goals flags and relationships` (the commit containing this status update); parent `10b2369aedf40d1cf0f915723f24673639301202` is the verified S6 Stage commit.
+S8 Stage commit `feat: add lightweight manual reviews` (the commit containing this status update); parent `60bcebeacf00ea6a1bb09b11fb745e6faffb1fc3` is the verified S7 Stage commit.
 
 ## Latest Build Result
 
-S7 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus Flag creation → Today context → Search and Habit→Goal relation → pause → Timeline event.
+S8 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus manual period Review → Timeline → Library → shared Search and Habit/Goal selection → Review detail → relationship editor.
 
 ## Latest Test Result
 
-S7 full validation: the shared scheme containing 78 Unit Tests and 12 UI Tests exited 0. New coverage includes V3→V4 migration, GoalKind.flag, bounded lifecycle events/rollback, approved Link direction/identity/deduplication, missing-endpoint rejection, Goal deletion preservation/cleanup, dangling Link/event detection, Goal/Flag search and the two S7 UI acceptance paths.
+S8 full validation: the shared Scheme containing 83 Unit Tests and 14 UI Tests passed 97/97 with 0 failures and 0 skips. New coverage includes daily/weekly Review periods, all three Review Link kinds, endpoint/source/self-link rejection, atomic creation rollback, permanent-delete cleanup/rollback, shared Entry Search and the two S8 UI acceptance paths.
 
-The representative search performance test, now also querying Goal/Flag, passed its existing 1.0-second threshold. Exact S7 metric extraction was attempted only after the successful full run and was rejected by the external Codex usage limit; no threshold or test was weakened.
+The representative normalized Search fixture containing 5,000 Entries and 250 Tags passed its existing 1.0-second threshold at 0.460, 0.465 and 0.468 seconds. No threshold or test was weakened.
 
 Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMetric` for three isolated iterations on the same simulator. Each iteration copied/checksummed an exact 25 MiB valid PNG and downsampled a valid 80MP 1-bit PNG to at most 512px. Clock results were 0.210, 0.215 and 0.220 seconds; process physical peaks were 105,467.904, 105,467.904 and 105,504.768 kB; net physical-memory changes were 32.768, 0 and 36.864 kB. XCTest process-accounted logical writes were 0, 24.576 and 24.576 kB, while explicit file assertions verified a 25 MiB final Original and zero Staging bytes. The provisional 25 MiB / 80MP / 100 MiB reserve guardrails are retained: the accepted boundary completed without instability, local previews now downsample from URL, and the 100 MiB reserve remains greater than the 50 MiB staging-plus-final peak for a maximum-size original. Physical-device tuning remains Owner-deferred.
 
@@ -86,6 +87,7 @@ Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMet
 - SwiftData schema V4 adds canonical Goal and GoalLifecycleEvent through an explicit V3→V4 lightweight migration; Flag remains GoalKind.flag.
 - Dedicated CoreLinkService methods enforce Entry→Habit, Entry→Goal and Habit→Goal directions, endpoint existence and deduplication before save.
 - Today shows active Goals/Flags as context only. Growth owns lifecycle and relationships; Timeline owns lifecycle history.
+- Review remains EntryKind.review with the existing Entry lifecycle and shared Search path. Review content, media metadata and typed Review Links publish atomically; no separate Review schema model or index exists.
 
 ## Known Limitations
 
@@ -96,11 +98,11 @@ Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMet
 
 ## Active Blockers
 
-External Codex tool usage is exhausted. A post-test `xcresulttool` read was rejected and the service reported availability resumes on 2026-07-25 at 20:52. S7's full test command had already exited 0. S8 must not start without its required simulator/test validation.
+None.
 
 ## Next Action
 
-Resume S8 with its lightweight Review schema/behavior slice only after validation tooling is available.
+Run independent Milestone B review lenses, resolve Critical/High findings, record the gate, then continue to S9 Export / Import Recovery.
 
 ## Repository State
 
@@ -115,5 +117,5 @@ Resume S8 with its lightweight Review schema/behavior slice only after validatio
 - S5: committed and verified by `feat: add library tags and search`.
 - S6: committed and verified by `feat: add habit tracking`.
 - S7: committed and verified by `feat: add goals flags and relationships`.
-- S8: not started; blocked at validation-tool availability boundary.
+- S8: technically complete, fully validated and included in `feat: add lightweight manual reviews`.
 - S9–S10: not started.
