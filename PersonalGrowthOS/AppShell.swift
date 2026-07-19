@@ -1,5 +1,7 @@
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
+import UIKit
 
 enum AppTab: Hashable {
     case today
@@ -65,6 +67,7 @@ struct AppShell: View {
         .sheet(isPresented: $isShowingStorage) {
             MediaStorageView(
                 mediaStore: container.mediaStore,
+                importExportService: container.importExportService,
                 integrityReport: container.mediaIntegrityReport
             )
         }
@@ -363,11 +366,17 @@ private struct TimelineView: View {
 
 private struct MediaStorageView: View {
     let mediaStore: MediaStore
+    let importExportService: ImportExportService
     let integrityReport: MediaIntegrityReport
 
     @Environment(\.dismiss) private var dismiss
     @State private var byteCount: Int64?
     @State private var isCapturing = false
+    @State private var isConfirmingExport = false
+    @State private var isImporting = false
+    @State private var isSharing = false
+    @State private var exportLease: ExportPackageLease?
+    @State private var transferMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -405,6 +414,25 @@ private struct MediaStorageView: View {
                         Text("The app preserved recoverable files instead of deleting them. Keep an app backup before troubleshooting.")
                     }
                 }
+                Section {
+                    Button {
+                        isConfirmingExport = true
+                    } label: {
+                        Label("Export Full Backup", systemImage: "square.and.arrow.up")
+                    }
+                    .accessibilityIdentifier("settings-export-button")
+
+                    Button {
+                        isImporting = true
+                    } label: {
+                        Label("Import Full Backup", systemImage: "square.and.arrow.down")
+                    }
+                    .accessibilityIdentifier("settings-import-button")
+                } header: {
+                    Text("Data Transfer")
+                } footer: {
+                    Text("Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
+                }
             }
             .navigationTitle("Settings")
             .toolbar {
@@ -429,8 +457,101 @@ private struct MediaStorageView: View {
                     byteCount = try? mediaStore.originalsByteCount()
                 }
             }
+            .confirmationDialog(
+                "Export an unencrypted backup?",
+                isPresented: $isConfirmingExport,
+                titleVisibility: .visible
+            ) {
+                Button("Export and Share") {
+                    do {
+                        exportLease?.cleanup()
+                        exportLease = try importExportService.exportPackage()
+                        isSharing = true
+                    } catch {
+                        transferMessage = transferErrorMessage(error)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("The ZIP may contain private entry text and original photos. Handle it as sensitive data.")
+            }
+            .sheet(isPresented: $isSharing, onDismiss: cleanupExport) {
+                if let exportLease {
+                    ActivityShareSheet(items: [exportLease.url]) {
+                        isSharing = false
+                    }
+                }
+            }
+            .fileImporter(
+                isPresented: $isImporting,
+                allowedContentTypes: [.zip],
+                allowsMultipleSelection: false
+            ) { result in
+                do {
+                    guard let selectedURL = try result.get().first else { return }
+                    let accessed = selectedURL.startAccessingSecurityScopedResource()
+                    defer { if accessed { selectedURL.stopAccessingSecurityScopedResource() } }
+                    let restored = try importExportService.importPackage(from: selectedURL)
+                    byteCount = try? mediaStore.originalsByteCount()
+                    transferMessage = "Restore completed: \(restored.objectCounts.values.reduce(0, +)) objects and \(restored.restoredMediaCount) original photo(s)."
+                } catch {
+                    transferMessage = transferErrorMessage(error)
+                }
+            }
+            .alert("Data Transfer", isPresented: Binding(
+                get: { transferMessage != nil },
+                set: { if !$0 { transferMessage = nil } }
+            )) {
+                Button("OK") { transferMessage = nil }
+            } message: {
+                Text(transferMessage ?? "")
+            }
+            .onDisappear(perform: cleanupExport)
         }
     }
+
+    private func cleanupExport() {
+        exportLease?.cleanup()
+        exportLease = nil
+    }
+
+    private func transferErrorMessage(_ error: Error) -> String {
+        switch error {
+        case TransferPackageError.targetNotEmpty:
+            "Import requires an empty database. Existing data was left unchanged."
+        case TransferPackageError.unsupportedSchema:
+            "This backup uses an unsupported newer format. Existing data was left unchanged."
+        case ZIPArchiveError.archiveTooLarge,
+             ZIPArchiveError.expandedSizeExceeded,
+             ZIPArchiveError.tooManyFiles,
+             ZIPArchiveError.compressionRatioExceeded,
+             TransferPackageError.objectLimitExceeded:
+            "This backup exceeds the safe import limits. Existing data was left unchanged."
+        case TransferPackageError.missingMedia,
+             TransferPackageError.mediaMismatch,
+             TransferPackageError.corruptManifest,
+             TransferPackageError.corruptData,
+             ZIPArchiveError.checksumMismatch:
+            "The backup is incomplete or corrupt. Existing data was left unchanged."
+        default:
+            "The data transfer could not be completed. Existing data was left unchanged."
+        }
+    }
+}
+
+private struct ActivityShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    let completion: () -> Void
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, _, _, _ in
+            DispatchQueue.main.async { completion() }
+        }
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 struct TimelineRow: View {

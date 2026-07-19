@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — S9 Export / Import Recovery |
+| Current checkpoint | V1 Autonomous Build Program — S10 V1 Integration and Daily Driver Readiness |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S9 — Export / Import Recovery |
+| Current Macro Stage | S10 — V1 Integration and Daily Driver Readiness |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is to implement and validate S9 manual full Export / Import Recovery with an isolated, versioned and integrity-checked package and no partial publication on failure.
+The immediate objective is to execute the S10 integration gate, resolve any cross-feature defects, complete Milestone C review evidence and prepare a clean Owner-reviewable V1 Candidate.
 
 ## Scope
 
@@ -42,8 +42,10 @@ The immediate objective is to implement and validate S9 manual full Export / Imp
 
 ## Current Boundary
 
-Program Startup and S1–S8 are technically complete. Milestones A and B passed their independent review gates. The final evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md` and `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
+Program Startup and S1–S9 are technically complete. Milestones A and B passed their independent review gates. The final evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md` and `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
 
 S8 delivers manual `EntryKind.review` creation, optional periods, bounded Review→Entry/Habit/Goal Links, shared Timeline/Library/Search participation, editable relationships and relation-safe deletion without a separate Review entity, index, lifecycle, automation or analytics surface.
 
-The final Milestone B shared Scheme passed 104/104 tests: 89 Unit and 15 UI, with 0 failures and 0 skips. Three independent lenses confirmed no remaining Critical/High/Medium finding at reviewed implementation head `6b1a4eae1c62372064d10f861a2114b505c5d7e4`. Validation tooling is available; no active blocker remains.
+S9 provides unencrypted standard ZIP full export, versioned manifest/data transfer DTOs, original-media checksums, bounded empty-database import, isolated store/media save-and-reopen preflight, no-partial publication rollback, interrupted-work cleanup and manual Settings UI. Merge and erase-and-restore remain intentionally unavailable.
+
+The S9 shared Scheme passed 116/116 tests: 100 Unit and 16 UI, with 0 failures and 0 skips. The isolated recovery rehearsal exported a complete on-disk data set, removed its objects and originals, restored the same store, preserved all IDs/relationships/original bytes and passed dangling-Link validation. Validation tooling is available; no active blocker remains.

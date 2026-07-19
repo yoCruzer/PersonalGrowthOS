@@ -89,6 +89,20 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
     }
 
+    func testSettingsExposeSafeManualBackupAndRestore() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launch()
+
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.buttons["settings-export-button"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings-import-button"].exists)
+        app.buttons["settings-export-button"].tap()
+
+        XCTAssertTrue(app.buttons["Export and Share"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["The ZIP may contain private entry text and original photos. Handle it as sensitive data."].exists)
+    }
+
     func testGlobalCaptureIsAvailableFromSearch() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]

@@ -7,10 +7,10 @@
 | Current branch | `feat/v1-autonomous-build` |
 | Program baseline on `main` | `b82d6e656592663f679440e318d00bef06f50556` |
 | Governance status | State 3 — Program Authorized / Running |
-| Completed Macro Stages | S0, S1, S2, S3, S4, S5, S6, S7, S8 |
-| Current executable state | Local-first iPhone app with Capture, Timeline, Growth/Habits/Goals/Flags, manual Review, Library, owned media and global basic search |
-| Latest technical gate | Milestone B PASS — 104/104 full shared-scheme tests passed |
-| Next checkpoint | S9 Export / Import Recovery |
+| Completed Macro Stages | S0, S1, S2, S3, S4, S5, S6, S7, S8, S9 |
+| Current executable state | Local-first iPhone app with Capture, Timeline, Growth/Habits/Goals/Flags, manual Review, Library, owned media, global basic search and manual full backup/restore |
+| Latest technical gate | S9 PASS — 116/116 full shared-scheme tests passed |
+| Next checkpoint | S10 V1 Integration and Daily Driver Readiness |
 
 ## Authoritative Product Baseline
 
@@ -31,6 +31,7 @@ The Owner explicitly authorized the V1 Autonomous Build Program on 2026-07-18. A
 - S7 — Goal/Flag lifecycle, lifecycle events, bounded Entry/Habit/Goal relationships, Today context, Timeline history and Goal/Flag search.
 - S8 — manual Review Entry creation with optional period, Entry/Habit/Goal review Links, shared Timeline/Library/Search participation and relation-safe deletion.
 - Milestone B — three independent review lenses passed after integrity, unified-history and canonical-endpoint fixes; evidence is in `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
+- S9 — unencrypted standard ZIP full export, versioned manifest/data DTOs, original-media SHA-256 integrity, bounded empty-store import, isolated save/reopen preflight, rollback, startup cleanup and Settings transfer UI.
 
 ## Verified Executable State
 
@@ -42,11 +43,15 @@ Typed Link methods permit only Entry→Habit, Entry→Goal and Habit→Goal dire
 
 Review remains `EntryKind.review` in the existing Entry schema and lifecycle. The manual composer supports an optional ordered period plus selected Entry, Habit and Goal targets. Creation saves Review content, owned media metadata and the three approved Review Link kinds atomically. Review Links require a Review source, reject self-links and missing endpoints, and are removed by coordinated endpoint deletion. Review continues to use the shared Entry paths in Timeline, Library and Search; no separate Review model, index, lifecycle, report, automation or analytics capability was added.
 
+Settings now provides manual full Export and Import. Export emits a portable, unencrypted standard ZIP containing `manifest.json`, `data.json` and original files under `media/`, with package/schema/app identity, object counts, explicit UUIDs and SHA-256 file metadata. Import copies and validates the package under an App-owned staging root, enforces the accepted archive/object/path limits, materializes and reopens an isolated SwiftData/media set, then publishes only into an empty active database. Non-empty targets, unsupported schemas, unsafe or corrupt archives, missing media and interrupted publication are rejected without merge or erase behavior.
+
 Original image bytes remain in the private media tree, not SwiftData. CloudKit remains disabled. No network API, remote service, third-party dependency, entitlement or unapproved capability is present.
 
 ## Latest Validation
 
-- Full shared-scheme test run on iPhone 17 Pro simulator, iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`): 89 Unit Tests and 15 UI Tests, 104/104 passed, 0 failed and 0 skipped.
+- Full shared-scheme test run on iPhone 17 Pro simulator, iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`): 100 Unit Tests and 16 UI Tests, 116/116 passed, 0 failed and 0 skipped. Result: `/tmp/PersonalGrowthOS-S9-Full-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_10-03-14-+0800.xcresult`.
+- S9 coverage validates complete logical round trip, original bytes, all object/link IDs, HabitLog/GoalEvent endpoints, same-store delete-and-restore, disk reopen, equivalent re-export, corrupt manifest/data, missing media, duplicate IDs, newer schema, interrupted publication, compressed/expanded/file/object/capacity limits, compression ratio, unsafe paths, symlinks, normalized-path collisions, temporary cleanup and log redaction.
+- The dependency-free ZIP writer's output passed the macOS system `unzip -t` portability probe. Import intentionally accepts the stored ZIP method emitted by this V1 app and rejects unsupported compression methods before extraction.
 - S8 UI acceptance covers manual period Review → Timeline → Library → shared Search and Habit/Goal selection → saved Review detail → relationship editor.
 - Review coverage validates daily/weekly periods, all three Link kinds, endpoint/source/self-link rejection, atomic create rollback, permanent-delete cleanup/rollback, shared Search and integrity validation.
 - The representative normalized Search fixture containing 5,000 Entries including 250 Reviews, 250 Tags, 100 Habits and 100 Goals/Flags remained below its existing 1.0-second threshold at 0.588, 0.507 and 0.500 seconds.
@@ -70,7 +75,8 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 
 ## Known Limitations
 
-- Export/Import recovery is not implemented yet; it belongs to S9.
+- V1 Import is full restore into an empty database only. Merge import and erase-and-restore are intentionally unavailable because retained-old-data rollback is not implemented.
+- V1 backup ZIPs are unencrypted and must be handled as sensitive data. The importer accepts the standard stored ZIP subset emitted by this app; third-party compressed ZIP variants are not an interchange target.
 - Camera and real Photos Picker/permission behavior remain Owner-deferred physical-device validation.
 - Entry, Tag and Habit mutations currently use the shared main `ModelContext`; rollback can also discard unrelated unsaved UI changes. This remains an accepted non-blocking follow-up until a low-risk isolation boundary is justified.
 - Search is an in-memory normalized scan. The measured V1 fixture is comfortably within threshold; no separate index is warranted at this stage.
@@ -85,8 +91,9 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 - S7 is committed and verified by the coherent Stage commit containing this status update (`feat: add goals flags and relationships`).
 - S8 is technically complete and verified by the coherent Stage commit containing this status update (`feat: add lightweight manual reviews`).
 - Milestone B reviewed implementation head is `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; its manifest and current-context update are included in the following gate commit.
+- S9 is technically complete and verified by the coherent Stage commit containing this status update (`feat: add full backup and restore`).
 - `main` and `origin/main` remain unchanged at the fixed Program baseline.
 
 ## Next Action
 
-Implement S9 Export / Import Recovery from the accepted plan, beginning with package format, resource limits and isolated preflight/rollback boundaries.
+Execute S10 V1 Integration and Daily Driver Readiness: run final cross-feature integrity, launch/reopen/recovery, critical-path, performance and static gates, then prepare Milestone C and the Owner Review candidate without claiming Owner-deferred evidence.

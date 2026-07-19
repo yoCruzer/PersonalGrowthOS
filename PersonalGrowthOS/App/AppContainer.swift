@@ -23,6 +23,7 @@ struct AppContainer {
     let modelContainer: ModelContainer
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
+    let importExportService: ImportExportService
     let mediaIntegrityReport: MediaIntegrityReport
 
     init(
@@ -30,6 +31,7 @@ struct AppContainer {
         modelContainer: ModelContainer,
         mediaStore: MediaStore,
         thumbnailStore: ThumbnailStore? = nil,
+        importExportService: ImportExportService? = nil,
         mediaIntegrityReport: MediaIntegrityReport = MediaIntegrityReport()
     ) {
         self.configuration = configuration
@@ -37,6 +39,10 @@ struct AppContainer {
         self.mediaStore = mediaStore
         self.thumbnailStore = thumbnailStore ?? ThumbnailStore(
             rootURL: mediaStore.rootURL.appendingPathComponent("ThumbnailCache", isDirectory: true),
+            mediaStore: mediaStore
+        )
+        self.importExportService = importExportService ?? ImportExportService(
+            context: modelContainer.mainContext,
             mediaStore: mediaStore
         )
         self.mediaIntegrityReport = mediaIntegrityReport
@@ -70,6 +76,10 @@ struct AppContainer {
         )
 
         let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
+        try? ImportExportService.cleanupInterruptedTransfers(
+            mediaRootURL: rootURL,
+            fileManager: fileManager
+        )
         let imageMetadata = try modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>())
         let caches = try fileManager.url(
             for: .cachesDirectory,

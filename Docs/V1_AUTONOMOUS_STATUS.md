@@ -7,8 +7,8 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S9 — Export / Import Recovery |
-| Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7, S8 |
+| Current Macro Stage | S10 — V1 Integration and Daily Driver Readiness |
+| Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7, S8, S9 |
 
 ## Program Baseline
 
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-Milestones A (S1–S4) and B (S5–S8) are complete and passed. S9 Export / Import Recovery is the current Stage boundary.
+Milestones A (S1–S4) and B (S5–S8) are complete and passed. S9 Export / Import Recovery is technically complete; S10 integration and Daily Driver Readiness is the current Stage boundary.
 
 ## Current Internal Task
 
-Implement the accepted S9 Export / Import Recovery slice and its isolated destructive recovery rehearsal.
+Execute the accepted S10 integration, final technical gate and Milestone C review boundary without claiming Owner-deferred evidence.
 
 ## Completed Macro Stages
 
@@ -40,18 +40,21 @@ Implement the accepted S9 Export / Import Recovery slice and its isolated destru
 - S6 — Habit and HabitLog. Habit lifecycle, structured facts, one-tap and rich Entry-linked check-ins, Today/Growth/history UI, Timeline aggregation, Habit search and deletion invariants are implemented.
 - S7 — Goal, Flag and Core Relationships. GoalKind.flag, lifecycle/events, bounded Entry/Habit/Goal Links, Today context, Timeline history, Search and deletion invariants are implemented.
 - S8 — Lightweight Manual Review. Manual Review Entries, optional periods, bounded Review→Entry/Habit/Goal Links, shared Timeline/Library/Search paths and coordinated deletion are implemented without a separate Review entity or lifecycle.
+- S9 — Export / Import Recovery. Standard unencrypted ZIP export, versioned manifest/data transfer DTOs, original-media SHA-256 integrity, resource-bounded empty-store import, isolated save/reopen verification, rollback, interrupted-work cleanup and Settings transfer UI are implemented without merge or erase-and-restore.
 
 ## Latest Verified Commit
 
-Milestone B reviewed implementation head `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; the following gate commit records this manifest and S9 handoff.
+Milestone B gate commit `46f8a28bfc185cfd656d26eb0636e939c220b884`; the following coherent Stage commit records the S9 implementation, validation and S10 handoff.
 
 ## Latest Build Result
 
-Milestone B candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus Search → Quick Capture, unified chronological history and both manual Review acceptance paths.
+S9 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus the Settings backup/restore surface and unencrypted-export warning.
 
 ## Latest Test Result
 
-Milestone B final validation: the shared Scheme containing 89 Unit Tests and 15 UI Tests passed 104/104 with 0 failures and 0 skips. Coverage includes S5–S8 behavior, typed/canonical endpoint publication, same-UUID cross-type deletion, strict Link identity, second-reopen migration integrity, media-plus-Link Review rollback, unified Timeline ordering and all applicable UI paths.
+S9 final validation: the shared Scheme containing 100 Unit Tests and 16 UI Tests passed 116/116 with 0 failures and 0 skips. S9 coverage includes complete and equivalent re-export round trips, all object/media/link identities, same-store delete-and-restore, disk reopen, missing/corrupt/incompatible/duplicate fixtures, interrupted publication, resource and path limits, temporary cleanup, log redaction and no dangling Links.
+
+The final result is `/tmp/PersonalGrowthOS-S9-Full-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_10-03-14-+0800.xcresult`. A host-side macOS system `unzip -t` probe also accepted the dependency-free writer's standard ZIP output.
 
 The representative normalized Search fixture containing 5,000 Entries including 250 Reviews, 250 Tags, 100 Habits and 100 Goals/Flags passed its existing 1.0-second threshold at 0.588, 0.507 and 0.500 seconds. No threshold or test was weakened.
 
@@ -88,11 +91,15 @@ Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMet
 - Dedicated CoreLinkService methods enforce Entry→Habit, Entry→Goal and Habit→Goal directions, endpoint existence and deduplication before save.
 - Today shows active Goals/Flags as context only. Growth owns lifecycle and relationships; Timeline owns lifecycle history.
 - Review remains EntryKind.review with the existing Entry lifecycle and shared Search path. Review content, media metadata and typed Review Links publish atomically; no separate Review schema model or index exists.
+- Export transfer identity is independent of SwiftData internals. Packages preserve explicit UUIDs and relative media references in versioned JSON with SHA-256 manifest records.
+- V1 Import publishes only to an empty active database after a complete isolated SwiftData/media save, re-open and integrity pass. Merge and erase-and-restore are rejected rather than partially implemented.
+- ZIP handling uses a dependency-free standard stored-method implementation with CRC32, central/local-header consistency, normalized safe paths and pre-extraction resource checks. Unsupported compression is rejected.
 
 ## Known Limitations
 
 - The current shell exposes Today, Timeline, Growth and Library, with global Search and Quick Capture. Growth contains Habits and Goals/Flags.
 - Camera and real Photos Picker/permission behavior are implemented but remain Owner-deferred physical-device validation.
+- Backup packages are not encrypted. V1 accepts the standard stored ZIP subset it emits and does not import arbitrary third-party compressed ZIP variants.
 - Entry, Tag and Habit mutations currently use the shared main `ModelContext`; isolating unrelated unsaved UI changes from a rollback is retained as a non-blocking architectural follow-up because changing context ownership is not yet a low-risk patch.
 - Physical-device checks, real Photos Picker behavior, Owner data, Dogfooding and the formal 30-day observation have not been performed.
 
@@ -102,7 +109,7 @@ None.
 
 ## Next Action
 
-Implement S9 Export / Import Recovery with versioned package integrity, resource limits, isolated preflight, rollback and no merge-import behavior.
+Execute S10 integration, final autonomous technical validation, Milestone C independent review and Owner Review candidate preparation.
 
 ## Repository State
 
@@ -119,4 +126,5 @@ Implement S9 Export / Import Recovery with versioned package integrity, resource
 - S7: committed and verified by `feat: add goals flags and relationships`.
 - S8: technically complete, fully validated and included in `feat: add lightweight manual reviews`.
 - Milestone B: PASS at reviewed implementation head `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; evidence in `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
-- S9–S10: not started.
+- S9: technically complete and verified by `feat: add full backup and restore`.
+- S10: current Stage.
