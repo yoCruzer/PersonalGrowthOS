@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Autonomous Build Program — Milestone B Review |
+| Current checkpoint | V1 Autonomous Build Program — S9 Export / Import Recovery |
 | Status | State 3 — Program Authorized / Running |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Execution branch | `feat/v1-autonomous-build` |
 | Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | S8 technically complete — Milestone B review pending |
+| Current Macro Stage | S9 — Export / Import Recovery |
 
 ## Objective
 
 Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
 
-The immediate objective is to complete the independent Milestone B technical, product and test reviews, resolve any blocking findings and record the gate before S9.
+The immediate objective is to implement and validate S9 manual full Export / Import Recovery with an isolated, versioned and integrity-checked package and no partial publication on failure.
 
 ## Scope
 
@@ -42,8 +42,8 @@ The immediate objective is to complete the independent Milestone B technical, pr
 
 ## Current Boundary
 
-Program Startup and S1–S8 are technically complete. Milestone A passed four independent review lenses with no remaining Critical/High findings. The final Milestone A evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
+Program Startup and S1–S8 are technically complete. Milestones A and B passed their independent review gates. The final evidence is recorded in `Docs/MILESTONE_A_REVIEW_MANIFEST.md` and `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
 
 S8 delivers manual `EntryKind.review` creation, optional periods, bounded Review→Entry/Habit/Goal Links, shared Timeline/Library/Search participation, editable relationships and relation-safe deletion without a separate Review entity, index, lifecycle, automation or analytics surface.
 
-The full shared Scheme passed 97/97 tests: 83 Unit and 14 UI, with 0 failures and 0 skips. Both focused S8 UI paths passed, and the 5,000 Entry representative Search fixture measured 0.460–0.468 seconds against the existing 1.0-second threshold. Validation tooling is available; no active blocker remains.
+The final Milestone B shared Scheme passed 104/104 tests: 89 Unit and 15 UI, with 0 failures and 0 skips. Three independent lenses confirmed no remaining Critical/High/Medium finding at reviewed implementation head `6b1a4eae1c62372064d10f861a2114b505c5d7e4`. Validation tooling is available; no active blocker remains.

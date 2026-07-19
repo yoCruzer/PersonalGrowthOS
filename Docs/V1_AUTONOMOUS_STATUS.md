@@ -7,7 +7,7 @@
 | Owner startup authorization | Granted on 2026-07-18 by the explicit startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
 | Current branch | `feat/v1-autonomous-build` |
-| Current Macro Stage | S8 technically complete — Milestone B review pending |
+| Current Macro Stage | S9 — Export / Import Recovery |
 | Completed Macro Stages | S1, S2, S3, S4, S5, S6, S7, S8 |
 
 ## Program Baseline
@@ -24,11 +24,11 @@ Program Authorized / Running. The Owner has granted explicit startup authorizati
 
 ## Current Macro Stage
 
-Milestone A (S1–S4) is complete and passed. S8 has passed its technical gate; the independent Milestone B review is the current boundary.
+Milestones A (S1–S4) and B (S5–S8) are complete and passed. S9 Export / Import Recovery is the current Stage boundary.
 
 ## Current Internal Task
 
-Complete the independent Milestone B review lenses and resolve any blocking findings before S9.
+Implement the accepted S9 Export / Import Recovery slice and its isolated destructive recovery rehearsal.
 
 ## Completed Macro Stages
 
@@ -43,17 +43,17 @@ Complete the independent Milestone B review lenses and resolve any blocking find
 
 ## Latest Verified Commit
 
-S8 Stage commit `feat: add lightweight manual reviews` (the commit containing this status update); parent `60bcebeacf00ea6a1bb09b11fb745e6faffb1fc3` is the verified S7 Stage commit.
+Milestone B reviewed implementation head `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; the following gate commit records this manifest and S9 handoff.
 
 ## Latest Build Result
 
-S8 candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus manual period Review → Timeline → Library → shared Search and Habit/Goal selection → Review detail → relationship editor.
+Milestone B candidate: the app and test targets built successfully on the iPhone 17 Pro simulator running iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`). UI automation exercised all prior critical paths plus Search → Quick Capture, unified chronological history and both manual Review acceptance paths.
 
 ## Latest Test Result
 
-S8 full validation: the shared Scheme containing 83 Unit Tests and 14 UI Tests passed 97/97 with 0 failures and 0 skips. New coverage includes daily/weekly Review periods, all three Review Link kinds, endpoint/source/self-link rejection, atomic creation rollback, permanent-delete cleanup/rollback, shared Entry Search and the two S8 UI acceptance paths.
+Milestone B final validation: the shared Scheme containing 89 Unit Tests and 15 UI Tests passed 104/104 with 0 failures and 0 skips. Coverage includes S5–S8 behavior, typed/canonical endpoint publication, same-UUID cross-type deletion, strict Link identity, second-reopen migration integrity, media-plus-Link Review rollback, unified Timeline ordering and all applicable UI paths.
 
-The representative normalized Search fixture containing 5,000 Entries and 250 Tags passed its existing 1.0-second threshold at 0.460, 0.465 and 0.468 seconds. No threshold or test was weakened.
+The representative normalized Search fixture containing 5,000 Entries including 250 Reviews, 250 Tags, 100 Habits and 100 Goals/Flags passed its existing 1.0-second threshold at 0.588, 0.507 and 0.500 seconds. No threshold or test was weakened.
 
 Resource measurement used `XCTClockMetric`, `XCTMemoryMetric` and `XCTStorageMetric` for three isolated iterations on the same simulator. Each iteration copied/checksummed an exact 25 MiB valid PNG and downsampled a valid 80MP 1-bit PNG to at most 512px. Clock results were 0.210, 0.215 and 0.220 seconds; process physical peaks were 105,467.904, 105,467.904 and 105,504.768 kB; net physical-memory changes were 32.768, 0 and 36.864 kB. XCTest process-accounted logical writes were 0, 24.576 and 24.576 kB, while explicit file assertions verified a 25 MiB final Original and zero Staging bytes. The provisional 25 MiB / 80MP / 100 MiB reserve guardrails are retained: the accepted boundary completed without instability, local previews now downsample from URL, and the 100 MiB reserve remains greater than the 50 MiB staging-plus-final peak for a maximum-size original. Physical-device tuning remains Owner-deferred.
 
@@ -102,7 +102,7 @@ None.
 
 ## Next Action
 
-Run independent Milestone B review lenses, resolve Critical/High findings, record the gate, then continue to S9 Export / Import Recovery.
+Implement S9 Export / Import Recovery with versioned package integrity, resource limits, isolated preflight, rollback and no merge-import behavior.
 
 ## Repository State
 
@@ -118,4 +118,5 @@ Run independent Milestone B review lenses, resolve Critical/High findings, recor
 - S6: committed and verified by `feat: add habit tracking`.
 - S7: committed and verified by `feat: add goals flags and relationships`.
 - S8: technically complete, fully validated and included in `feat: add lightweight manual reviews`.
+- Milestone B: PASS at reviewed implementation head `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; evidence in `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
 - S9–S10: not started.
