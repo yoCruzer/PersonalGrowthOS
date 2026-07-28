@@ -3,20 +3,20 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-07-19 |
-| Current branch | `feat/v1-autonomous-build` |
+| Last verified | 2026-07-28 |
+| Current branch | `fix/v1-device-smoke-round1` |
 | Program baseline on `main` | `b82d6e656592663f679440e318d00bef06f50556` |
-| Governance status | V1 Candidate Technical Completion — Owner Review |
+| Governance status | V1 Device Smoke Repair Round 1 — automated validation passed; physical install blocked |
 | Completed Macro Stages | S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10 |
-| Current executable state | Owner-reviewable local-first V1 Candidate with complete S1–S10 user paths and recovery boundary |
-| Latest technical gate | Milestone C / S10 PASS — 124/124 full shared-scheme tests passed |
-| Next checkpoint | Owner Manual Validation and acceptance decision |
+| Current executable state | Smoke-repair Candidate with bilingual UI, flexible Habit Check-ins/editing, editable Goal/Flag cards and content-preserving Timeline thumbnails |
+| Latest technical gate | Round 1 PASS — 137/137 tests and simulator/generic signed builds passed |
+| Next checkpoint | Install Xcode device support compatible with iOS 26.6, then overlay-install and Owner-retest Round 1 |
 
 ## Authoritative Product Baseline
 
 `Docs/INDEX.md` defines the Foundation reading order. The five Foundation Documents remain unchanged and authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` v0.4 defines the accepted S1–S10 product plan, and `Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md` defines the running Program authority and technical gates.
 
-The Owner explicitly authorized the V1 Autonomous Build Program on 2026-07-18. All product implementation is isolated on `feat/v1-autonomous-build`; `main` remains at the fixed Program baseline.
+The Owner explicitly authorized the V1 Autonomous Build Program on 2026-07-18. The S1–S10 implementation remains on `feat/v1-autonomous-build`; the authorized first-device repair is isolated on `fix/v1-device-smoke-round1`. `main` remains at the fixed Program baseline.
 
 ## Completed Work
 
@@ -34,14 +34,15 @@ The Owner explicitly authorized the V1 Autonomous Build Program on 2026-07-18. A
 - S9 — unencrypted standard ZIP full export, versioned manifest/data DTOs, original-media SHA-256 integrity, bounded empty-store import, isolated save/reopen preflight, rollback, startup cleanup and Settings transfer UI.
 - S10 — final shell/integration regression, background and cancellable transfer work, self-import-compatible ZIP64 limits, crash-consistent media publication, accessibility semantics/large-text operability and actionable transfer failures.
 - Milestone C — three independent review lenses passed with no remaining Critical/High/Medium findings; evidence is in `Docs/MILESTONE_C_REVIEW_MANIFEST.md`.
+- Device Smoke Repair Round 1 — English/Simplified Chinese localization, two-mode Habit Check-ins with debounce/undo/editing, Goal/Flag navigation/editing, aspect-fit Timeline media and focused empty-state guidance.
 
 ## Verified Executable State
 
 The app launches into the Foundation four-tab shell with Today, Timeline, Growth and Library. Global Quick Capture and Search remain available without adding Search as a tab. Users can manage Habit lifecycle, check in with one tap from Today, record structured details, add text/photo insight through an Entry, inspect Habit history and search Habits locally.
 
-SwiftData schema V4 adds canonical `Goal` and `GoalLifecycleEvent` models through an explicit V3→V4 lightweight migration. Flag is only `GoalKind.flag`. Goal lifecycle changes publish bounded events; Goal deletion removes its events and Links while preserving Entry/Habit endpoints.
+SwiftData schema V5 adds separate `HabitConfiguration` records through an explicit V4→V5 lightweight migration without changing existing Habit identity or history. A missing configuration reads deterministically as multiple-per-day with no target. Schema V4 previously added canonical `Goal` and `GoalLifecycleEvent` models; Flag remains only `GoalKind.flag`.
 
-Typed Link methods permit only Entry→Habit, Entry→Goal and Habit→Goal directions, reject missing endpoints before save and prevent duplicates. Timeline shows Goal lifecycle changes. Today shows active Goal/Flag context without task/check-off controls. Search now covers Entry/Review Entry, Tag, Habit and Goal/Flag.
+Typed Link methods permit only Entry→Habit, Entry→Goal and Habit→Goal directions, reject missing endpoints before save and prevent duplicates. Timeline shows Goal lifecycle changes. Today shows active Goal/Flag context with navigation to the existing detail/editor while retaining Growth ownership of lifecycle actions. Search covers Entry/Review Entry, Tag, Habit and Goal/Flag.
 
 Review remains `EntryKind.review` in the existing Entry schema and lifecycle. The manual composer supports an optional ordered period plus selected Entry, Habit and Goal targets. Creation saves Review content, owned media metadata and the three approved Review Link kinds atomically. Review Links require a Review source, reject self-links and missing endpoints, and are removed by coordinated endpoint deletion. Review continues to use the shared Entry paths in Timeline, Library and Search; no separate Review model, index, lifecycle, report, automation or analytics capability was added.
 
@@ -51,6 +52,10 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 
 ## Latest Validation
 
+- Round 1 full automated run on iPhone 17 Pro simulator, iOS 26.5: 116 Unit Tests and 21 UI Tests, 137/137 passed, 0 failed and 0 skipped. The 13-test increase from the 124-test baseline covers the smoke fixes; no test was deleted or skipped.
+- Round 1 simulator Debug build, 263-key English/Simplified Chinese String Catalog compilation and Asset Catalog compilation passed.
+- Round 1 generic iOS Debug build signed successfully for Team `83SKX2PM7B`; the Xcode-managed profile includes device UDID `00008140-00096D1E21D0801C`.
+- The physical-device destination build is blocked before compilation because the iPhone is now on iOS 26.6 while Xcode 26.6 supports physical devices through iOS 26.5; DDI mounting returns `kAMDMobileImageMounterNetworkUnauthorizedError`. No Round 1 App was installed or launched.
 - Final full shared-scheme run on iPhone 17 Pro simulator, iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`): 106 Unit Tests and 18 UI Tests, 124/124 passed, 0 failed and 0 skipped. Result: `/tmp/PersonalGrowthOS-S10-Final-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_11-25-15-+0800.xcresult`.
 - Milestone C data/architecture, product/Foundation and tests/evidence re-reviews all passed with no remaining Critical, High or Medium findings.
 - S10 coverage adds exact 65,535/65,536 ZIP64 boundaries, export/import limit symmetry, pre-extraction media bounds, cancellation cleanup, terminal import commit semantics, background publication, before-save rollback, crash-window quarantine, direct two-Entry media deletion isolation, semantic accessibility audits and largest-text operability.
@@ -67,28 +72,30 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 
 - One native iPhone app, iOS 17+, SwiftUI and Local First.
 - One canonical SwiftData model per persisted concept; no field-complete duplicate domain/persistence model.
-- Versioned schema migrations remain explicit. Schema V4 is the current app schema.
+- Versioned schema migrations remain explicit. Schema V5 is the current app schema.
 - Original media stays in the app-private file container; persistence stores metadata and relative ownership paths.
 - Inbox is a status, not a task list, and Tags are optional.
 - Search is global, local and basic in V1; no FTS, OCR, semantic or AI search.
 - Links use typed endpoint UUIDs with a deduplication key and explicit integrity validation.
 - HabitLog owns structured facts only. Rich content and all media belong to a linked Entry.
-- Only active Habits accept check-ins; pause, completion, archive and restart remain reversible lifecycle actions.
+- Only active Habits accept check-ins. Once-per-day mode permits one effective local-natural-day Check-in; multiple-per-day mode preserves every valid timestamp with an optional positive target. Pause, completion, archive and restart remain reversible lifecycle actions.
 - Flag is a Goal kind, never a separate persisted core entity.
-- Today renders active Goals/Flags as passive context; lifecycle and relationships remain Growth responsibilities.
+- Today renders active Goals/Flags as actionable context linking to their minimal detail/editor; lifecycle and relationships remain Growth responsibilities.
 
 ## Known Limitations
 
 - V1 Import is full restore into an empty database only. Merge import and erase-and-restore are intentionally unavailable because retained-old-data rollback is not implemented.
 - V1 backup ZIPs are unencrypted and must be handled as sensitive data. The importer accepts the standard stored ZIP/ZIP64 subset emitted by this app; third-party compressed ZIP variants are not an interchange target.
-- Camera and real Photos Picker/permission behavior remain Owner-deferred physical-device validation.
+- Camera and Photos Picker worked in the first iPhone Smoke Test; their Round 1 regression remains Owner-deferred until the repaired build can be installed.
 - Entry, Tag and Habit mutations currently use the shared main `ModelContext`; rollback can also discard unrelated unsaved UI changes. This remains an accepted non-blocking follow-up until a low-risk isolation boundary is justified.
 - Search is an in-memory normalized scan. The measured V1 fixture is comfortably within threshold; no separate index is warranted at this stage.
-- Physical-device checks, Owner data, formal Dogfooding and the continuous 30-day V1 Exit Observation have not been performed.
+- The first iPhone Smoke Test covered launch, four-tab navigation, text capture persistence, Photos Picker and Camera. Round 1 physical retest, formal Dogfooding and the continuous 30-day V1 Exit Observation have not been performed.
 
 ## Repository Health
 
-- Branch: `feat/v1-autonomous-build`, based on `b82d6e656592663f679440e318d00bef06f50556`.
+- Active repair branch: `fix/v1-device-smoke-round1`, started at `a3e64cb1624e2d83cdd4081aa3d30a5ecb1cd4e0`.
+- Round 1 repair implementation and automated validation are committed at `1ba25cf6cdb217696cb7bea1883ec5767b3748b4`.
+- Original implementation branch: `feat/v1-autonomous-build`, based on `b82d6e656592663f679440e318d00bef06f50556`.
 - S1–S4 and Milestone A review/follow-up commits are present and verified.
 - S5 is committed and verified at `b77199a4afc334fb02ef01888c70748992931d3c`.
 - S6 is committed and verified at `10b2369aedf40d1cf0f915723f24673639301202`.
@@ -102,4 +109,4 @@ Original image bytes remain in the private media tree, not SwiftData. CloudKit r
 
 ## Next Action
 
-Stop at Owner Review. The Owner should review `Docs/V1_CANDIDATE_REPORT.md`, complete the applicable unchecked items in `Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md` on a real iPhone, and decide whether to accept, request changes or begin formal Dogfooding. Codex has not started or claimed the 30-day observation.
+Install or select an Xcode version whose Device Support includes iOS 26.6, reconnect and unlock the same iPhone, then rerun the recorded physical-device build, overlay install and launch without uninstalling or clearing data. After successful launch, the Owner should complete the Round 1 checklist in `Docs/V1_DEVICE_VALIDATION_REPORT.md`. Codex has not claimed the repaired build is installed or manually verified and has not started the 30-day observation.

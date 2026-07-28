@@ -2,31 +2,30 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Candidate Technical Completion — Owner Review |
-| Status | Program technically complete; stopped at Owner Review boundary |
+| Current checkpoint | V1 Device Smoke Repair Round 1 |
+| Status | Implementation and automated validation complete; physical installation blocked by Xcode/iOS device-support mismatch |
 | Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
 | Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
-| Execution branch | `feat/v1-autonomous-build` |
-| Authorized coverage | Macro Stages S1–S10 |
-| Current Macro Stage | None — S1–S10 technically complete |
+| Execution branch | `fix/v1-device-smoke-round1` |
+| Authorized coverage | First iPhone Smoke Test issues only |
+| Current Macro Stage | Post-Candidate physical validation repair |
 
 ## Objective
 
-Autonomously implement, validate and commit Macro Stages S1–S10 on the isolated execution branch, producing an Owner-reviewable V1 Candidate.
+Repair the first iPhone Smoke Test findings, validate them automatically, overlay-install the repaired build without deleting existing App data, and record only the physical-device results actually observed.
 
-The autonomous engineering objective is complete. The current task is Owner review and Owner-deferred physical-device/manual validation; Codex must not merge, publish, accept the Candidate or start Dogfooding/30-day observation without a new Owner decision.
+The repair implementation and automated objective is complete at `1ba25cf6cdb217696cb7bea1883ec5767b3748b4`. Physical build/install/launch is blocked because the iPhone is now on iOS 26.6 and current Xcode 26.6 supports physical devices through iOS 26.5, so its Developer Disk Image cannot be mounted.
 
 ## Scope
 
-- Execute S1–S10 according to `Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md` and `Docs/V1_IMPLEMENTATION_PLAN.md`.
-- Keep every Macro Stage as an engineering, validation, status and Commit boundary.
-- Maintain `Docs/V1_AUTONOMOUS_STATUS.md` throughout execution.
-- Use the Autonomous Candidate Technical Gate for Stage continuation.
-- Stop only at successful Candidate completion or a Mandatory Escalation condition.
+- English and Simplified Chinese V1 interface localization.
+- Flexible Habit Check-in semantics, feedback, undo and editing with legacy compatibility.
+- Goal/Flag navigation and editing, Timeline media fitting and bounded empty-state guidance.
+- Unit/UI tests, simulator build, signed device build, overlay install, launch observation and validation report.
 
 ## Constraints
 
-- All product implementation must remain on `feat/v1-autonomous-build`.
+- All repair implementation must remain on `fix/v1-device-smoke-round1`.
 - Preserve the Foundation Documents and `DEVELOPMENT_CONTRACT.md`.
 - Do not add V2 capabilities, third-party dependencies, external services, unapproved Capabilities or Entitlements.
 - Do not merge into or modify remote `main`, force push, publish, release or tag.
@@ -37,15 +36,13 @@ The autonomous engineering objective is complete. The current task is Owner revi
 
 - S1–S10 meet their technical Exit Criteria with coherent Stage commits.
 - Milestone A, B and C gates and independent internal reviews are complete.
-- Final build, automated tests, simulator critical paths and isolated Export / Import recovery pass.
-- Final current-context documents accurately describe a clean V1 Candidate at the Owner Review boundary.
+- 137 automated tests, simulator build, localization and Asset Catalog compilation pass without failure or skip.
+- Generic iOS signing succeeds for Team `83SKX2PM7B`.
+- Physical overlay installation and launch are completed only after compatible Xcode device support is available.
+- Current-context and device-validation documents accurately distinguish automated evidence, first-Smoke Owner evidence and Round 1 unverified items.
 
 ## Current Boundary
 
-Program Startup and S1–S10 are technically complete. Milestones A, B and C passed their independent review gates. Final evidence is recorded in the three Milestone manifests and `Docs/V1_CANDIDATE_REPORT.md`.
+Round 1 implementation is committed and passes 116 Unit Tests plus 21 UI Tests, with 0 failures and 0 skips. Simulator and generic signed iOS builds pass; Bundle ID, Automatic Signing, Team and the registered device profile are correct.
 
-S8 delivers manual `EntryKind.review` creation, optional periods, bounded Review→Entry/Habit/Goal Links, shared Timeline/Library/Search participation, editable relationships and relation-safe deletion without a separate Review entity, index, lifecycle, automation or analytics surface.
-
-S9 provides unencrypted standard ZIP full export, versioned manifest/data transfer DTOs, original-media checksums, bounded empty-database import, isolated store/media save-and-reopen preflight, no-partial publication rollback, interrupted-work cleanup and manual Settings UI. Merge and erase-and-restore remain intentionally unavailable.
-
-The final shared Scheme passed 124/124 tests: 106 Unit and 18 UI, with 0 failures and 0 skips. The isolated recovery rehearsal, hostile archive bounds, cancellation/rollback/crash recovery, exact ZIP64 boundaries, deletion isolation, accessibility semantics and largest-text paths all pass. No active technical blocker remains.
+The fixed physical destination is paired, Developer Mode is enabled and its tunnel can connect, but DDI services cannot be enabled. The device changed from iOS 26.5.2 during the first Smoke Test to iOS 26.6 (`23G71`); current Xcode 26.6 (`17F113`) lists Device Support only through iOS 26.5. The next safe action is to install/select compatible Xcode device support, then retry build/install/launch on the same UDID without uninstalling the existing App.
