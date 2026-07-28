@@ -7,13 +7,22 @@ enum HabitStatus: String, Codable, CaseIterable, Sendable {
     case archived
 }
 
+enum HabitRecordingMode: String, Codable, CaseIterable, Sendable {
+    case oncePerDay
+    case multiplePerDay
+}
+
 enum HabitValidationError: Error, Equatable {
     case emptyName
+    case invalidDailyTarget
 }
 
 enum HabitCheckInError: Error, Equatable {
     case inactiveHabit
     case missingHabit
+    case alreadyCheckedInToday
+    case recentlyCheckedIn
+    case checkInIsNotLatest
 }
 
 enum HabitRules {
@@ -22,6 +31,21 @@ enum HabitRules {
         guard !trimmed.isEmpty else { throw HabitValidationError.emptyName }
         return trimmed
     }
+
+    static func validatedDailyTarget(
+        _ value: Int?,
+        mode: HabitRecordingMode
+    ) throws -> Int? {
+        guard mode == .multiplePerDay else { return nil }
+        guard let value else { return nil }
+        guard value > 0 else { throw HabitValidationError.invalidDailyTarget }
+        return value
+    }
+}
+
+enum HabitCheckInPolicy {
+    static let duplicatePreventionInterval: TimeInterval = 2.5
+    static let undoPresentationInterval: TimeInterval = 6
 }
 
 struct HabitLogDraft {

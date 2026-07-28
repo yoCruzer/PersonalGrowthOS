@@ -39,7 +39,7 @@ struct GlobalSearchView: View {
         .alert("Search Unavailable", isPresented: searchErrorIsPresented) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "Please try again.")
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
@@ -69,7 +69,7 @@ struct GlobalSearchView: View {
             errorMessage = nil
         } catch {
             results = LocalSearchResults(entries: [], tags: [])
-            errorMessage = "Your local data could not be searched."
+            errorMessage = String(localized: "Your local data could not be searched.")
         }
     }
 

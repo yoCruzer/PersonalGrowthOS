@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UIKit
 
 struct GrowthView: View {
     let mediaStore: MediaStore
@@ -50,24 +51,24 @@ struct HabitsView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
 
-    @Environment(\.modelContext) private var modelContext
     @Query(sort: [
         SortDescriptor(\Habit.normalizedName, order: .forward),
         SortDescriptor(\Habit.id, order: .forward)
     ]) private var habits: [Habit]
-    @State private var newHabitName = ""
-    @State private var errorMessage: String?
+    @State private var isCreatingHabit = false
 
     var body: some View {
         List {
-            Section("New Habit") {
-                HStack {
-                    TextField("Habit name", text: $newHabitName)
-                        .accessibilityIdentifier("new-habit-name")
-                    Button("Add") { createHabit() }
-                        .disabled(newHabitName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        .accessibilityIdentifier("add-habit")
+            Section {
+                Button {
+                    isCreatingHabit = true
+                } label: {
+                    Label("Add Habit", systemImage: "plus")
                 }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("add-habit")
+            } footer: {
+                Text("Use a specific, actionable name. You can change it later without losing check-ins.")
             }
             Section("Habits") {
                 if habits.isEmpty {
@@ -82,7 +83,10 @@ struct HabitsView: View {
                                 thumbnailStore: thumbnailStore
                             )
                         } label: {
-                            LabeledContent(habit.name, value: habit.statusRawValue.capitalized)
+                            LabeledContent(
+                                habit.name,
+                                value: habit.status.localizedName
+                            )
                         }
                         .accessibilityIdentifier("habit-\(habit.normalizedName)")
                     }
@@ -90,22 +94,12 @@ struct HabitsView: View {
             }
         }
         .navigationTitle("Habits")
-        .alert("Could Not Update Habits", isPresented: Binding(
-            get: { errorMessage != nil },
-            set: { if !$0 { errorMessage = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "Please try again.")
-        }
-    }
-
-    private func createHabit() {
-        do {
-            _ = try HabitService(context: modelContext).create(name: newHabitName)
-            newHabitName = ""
-        } catch {
-            errorMessage = "The Habit was not created."
+        .sheet(isPresented: $isCreatingHabit) {
+            HabitEditorView(
+                habit: nil,
+                settings: HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil),
+                didSave: { isCreatingHabit = false }
+            )
         }
     }
 }
@@ -122,10 +116,15 @@ struct HabitDetailView: View {
         SortDescriptor(\HabitLog.createdAt, order: .reverse),
         SortDescriptor(\HabitLog.id, order: .forward)
     ]) private var allLogs: [HabitLog]
+    @Query private var configurations: [HabitConfiguration]
     @Query private var entries: [Entry]
     @State private var isAddingInsight = false
     @State private var isLoggingDetails = false
+    @State private var isEditing = false
     @State private var isConfirmingDelete = false
+    @State private var isCoolingDown = false
+    @State private var recentCheckIn: RecentHabitCheckIn?
+    @State private var transientMessage: String?
     @State private var errorMessage: String?
 
     private var logs: [HabitLog] {
@@ -136,18 +135,38 @@ struct HabitDetailView: View {
         Dictionary(entries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
+    private var settings: HabitSettings {
+        HabitSettingsResolver.settings(for: habit.id, configurations: configurations)
+    }
+
+    private var checkedInToday: Bool {
+        logs.contains { Calendar.current.isDateInToday($0.occurredAt) }
+    }
+
     var body: some View {
         List {
             Section("Status") {
-                LabeledContent("Habit", value: habit.statusRawValue.capitalized)
+                LabeledContent("Status", value: habit.status.localizedName)
+                LabeledContent("Recording Mode", value: settings.recordingMode.localizedName)
+                if let target = settings.dailyTargetCount {
+                    LabeledContent("Daily Target", value: "\(target)")
+                }
             }
             if habit.status == .active {
                 Section {
                     Button {
                         simpleCheckIn()
                     } label: {
-                        Label("Check In", systemImage: "checkmark.circle")
+                        Label(
+                            settings.recordingMode == .oncePerDay && checkedInToday
+                                ? "Completed Today"
+                                : "Check In",
+                            systemImage: settings.recordingMode == .oncePerDay && checkedInToday
+                                ? "checkmark.circle.fill"
+                                : "checkmark.circle"
+                        )
                     }
+                    .disabled(isCoolingDown || (settings.recordingMode == .oncePerDay && checkedInToday))
                     .accessibilityIdentifier("habit-check-in")
 
                     Button {
@@ -155,6 +174,7 @@ struct HabitDetailView: View {
                     } label: {
                         Label("Log Details", systemImage: "list.bullet.clipboard")
                     }
+                    .disabled(isCoolingDown || (settings.recordingMode == .oncePerDay && checkedInToday))
                     .accessibilityIdentifier("habit-log-details")
 
                     Button {
@@ -162,6 +182,7 @@ struct HabitDetailView: View {
                     } label: {
                         Label("Check In with Insight", systemImage: "square.and.pencil")
                     }
+                    .disabled(isCoolingDown || (settings.recordingMode == .oncePerDay && checkedInToday))
                     .accessibilityIdentifier("habit-check-in-insight")
                 } header: {
                     Text("Check In")
@@ -195,6 +216,10 @@ struct HabitDetailView: View {
         }
         .navigationTitle(habit.name)
         .toolbar {
+            Button("Edit") {
+                isEditing = true
+            }
+            .accessibilityIdentifier("habit-edit")
             Menu {
                 lifecycleActions
                 Divider()
@@ -208,24 +233,46 @@ struct HabitDetailView: View {
         }
         .sheet(isPresented: $isLoggingDetails) {
             DetailedHabitCheckInView { draft in
-                _ = try HabitCheckInService(
+                let log = try HabitCheckInService(
                     context: modelContext,
                     mediaStore: mediaStore
                 ).checkIn(habit, draft: draft)
+                registerSuccessfulCheckIn(log)
             }
         }
         .sheet(isPresented: $isAddingInsight) {
             QuickCaptureView(
                 mediaStore: mediaStore,
-                navigationTitle: "Habit Insight",
+                navigationTitle: String(localized: "Habit Insight"),
                 saveDraft: { draft in
-                    try HabitCheckInService(
+                    let result = try HabitCheckInService(
                         context: modelContext,
                         mediaStore: mediaStore
-                    ).checkInWithInsight(habit, entryDraft: draft).entry
+                    ).checkInWithInsight(habit, entryDraft: draft)
+                    registerSuccessfulCheckIn(result.log)
+                    return result.entry
                 },
                 didSave: { _ in isAddingInsight = false }
             )
+        }
+        .sheet(isPresented: $isEditing) {
+            HabitEditorView(
+                habit: habit,
+                settings: settings,
+                didSave: { isEditing = false }
+            )
+        }
+        .safeAreaInset(edge: .bottom) {
+            if let recentCheckIn {
+                HabitCheckInUndoBar {
+                    undo(recentCheckIn)
+                }
+            } else if let transientMessage {
+                Text(transientMessage)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.regularMaterial)
+            }
         }
         .alert("Delete this Habit permanently?", isPresented: $isConfirmingDelete) {
             Button("Cancel", role: .cancel) {}
@@ -239,7 +286,7 @@ struct HabitDetailView: View {
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "Please try again.")
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
@@ -264,12 +311,59 @@ struct HabitDetailView: View {
 
     private func simpleCheckIn() {
         do {
-            _ = try HabitCheckInService(
+            let log = try HabitCheckInService(
                 context: modelContext,
                 mediaStore: mediaStore
             ).checkIn(habit)
+            registerSuccessfulCheckIn(log)
+        } catch HabitCheckInError.alreadyCheckedInToday {
+            showTransientMessage(String(localized: "This Habit is already completed today."))
+        } catch HabitCheckInError.recentlyCheckedIn {
+            showTransientMessage(String(localized: "Just checked in. Try again in a moment."))
         } catch {
-            errorMessage = "The check-in was not saved."
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func registerSuccessfulCheckIn(_ log: HabitLog) {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        transientMessage = nil
+        recentCheckIn = RecentHabitCheckIn(habitID: habit.id, logID: log.id)
+        isCoolingDown = true
+        let logID = log.id
+        Task {
+            try? await Task.sleep(for: .seconds(HabitCheckInPolicy.duplicatePreventionInterval))
+            isCoolingDown = false
+            try? await Task.sleep(for: .seconds(
+                HabitCheckInPolicy.undoPresentationInterval
+                    - HabitCheckInPolicy.duplicatePreventionInterval
+            ))
+            if recentCheckIn?.logID == logID {
+                recentCheckIn = nil
+            }
+        }
+    }
+
+    private func undo(_ checkIn: RecentHabitCheckIn) {
+        do {
+            try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).undoLatestCheckIn(habitID: checkIn.habitID, logID: checkIn.logID)
+            recentCheckIn = nil
+            isCoolingDown = false
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
+        }
+    }
+
+    private func showTransientMessage(_ message: String) {
+        transientMessage = message
+        Task {
+            try? await Task.sleep(for: .seconds(HabitCheckInPolicy.duplicatePreventionInterval))
+            if transientMessage == message {
+                transientMessage = nil
+            }
         }
     }
 
@@ -277,7 +371,7 @@ struct HabitDetailView: View {
         do {
             try HabitService(context: modelContext).transition(habit, to: status)
         } catch {
-            errorMessage = "The Habit status was not changed."
+            errorMessage = String(localized: "The Habit status was not changed.")
         }
     }
 
@@ -286,7 +380,181 @@ struct HabitDetailView: View {
             try HabitService(context: modelContext).permanentlyDelete(habit)
             dismiss()
         } catch {
-            errorMessage = "The Habit was not deleted. Its check-ins and links are unchanged."
+            errorMessage = String(localized: "The Habit was not deleted. Its check-ins and links are unchanged.")
+        }
+    }
+}
+
+private struct HabitEditorView: View {
+    let habit: Habit?
+    let didSave: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @State private var name: String
+    @State private var recordingMode: HabitRecordingMode
+    @State private var dailyTarget = ""
+    @State private var errorMessage: String?
+
+    init(
+        habit: Habit?,
+        settings: HabitSettings,
+        didSave: @escaping () -> Void
+    ) {
+        self.habit = habit
+        self.didSave = didSave
+        _name = State(initialValue: habit?.name ?? "")
+        _recordingMode = State(initialValue: settings.recordingMode)
+        _dailyTarget = State(initialValue: settings.dailyTargetCount.map(String.init) ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Habit name", text: $name)
+                        .accessibilityIdentifier("habit-editor-name")
+                } header: {
+                    Text("Habit Name")
+                } footer: {
+                    Text("Use a specific, actionable name, such as Drink 200 ml of water, Read for 20 minutes, or Sleep before 11 PM. You can change the name later without losing check-ins.")
+                }
+
+                Section {
+                    Picker("Recording Mode", selection: $recordingMode) {
+                        ForEach(HabitRecordingMode.allCases, id: \.self) { mode in
+                            Text(mode.localizedName).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("habit-recording-mode")
+
+                    if recordingMode == .multiplePerDay {
+                        TextField("Daily target (optional)", text: $dailyTarget)
+                            .keyboardType(.numberPad)
+                            .accessibilityIdentifier("habit-daily-target")
+                    }
+                } header: {
+                    Text("Check-In Frequency")
+                } footer: {
+                    Text(recordingMode == .oncePerDay
+                        ? String(localized: "Choose this when completing the Habit once is enough for the day.")
+                        : String(localized: "Choose this for Habits you may record several times each day. The target is optional."))
+                }
+
+                if habit != nil {
+                    Section {
+                        Text("Changing the name does not affect history. If the Habit itself has changed, consider archiving it and creating a new one.")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle(
+                habit == nil
+                    ? String(localized: "New Habit")
+                    : String(localized: "Edit Habit")
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { save() }
+                        .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .accessibilityIdentifier("habit-editor-save")
+                }
+            }
+        }
+    }
+
+    private func save() {
+        let target: Int?
+        let trimmedTarget = dailyTarget.trimmingCharacters(in: .whitespacesAndNewlines)
+        if recordingMode == .multiplePerDay, !trimmedTarget.isEmpty {
+            guard let value = Int(trimmedTarget), value > 0 else {
+                errorMessage = String(localized: "Daily target must be a positive whole number.")
+                return
+            }
+            target = value
+        } else {
+            target = nil
+        }
+
+        do {
+            let service = HabitService(context: modelContext)
+            if let habit {
+                try service.update(
+                    habit,
+                    name: name,
+                    recordingMode: recordingMode,
+                    dailyTargetCount: target
+                )
+            } else {
+                _ = try service.create(
+                    name: name,
+                    recordingMode: recordingMode,
+                    dailyTargetCount: target
+                )
+            }
+            didSave()
+            dismiss()
+        } catch HabitValidationError.emptyName {
+            errorMessage = String(localized: "Habit name cannot be empty.")
+        } catch HabitValidationError.invalidDailyTarget {
+            errorMessage = String(localized: "Daily target must be a positive whole number.")
+        } catch {
+            errorMessage = String(localized: "The Habit was not saved.")
+        }
+    }
+}
+
+struct RecentHabitCheckIn: Equatable {
+    let habitID: UUID
+    let logID: UUID
+}
+
+struct HabitCheckInUndoBar: View {
+    let undo: () -> Void
+
+    var body: some View {
+        HStack {
+            Label("Checked in", systemImage: "checkmark.circle.fill")
+            Spacer()
+            Button("Undo", action: undo)
+                .accessibilityIdentifier("habit-check-in-undo")
+        }
+        .padding()
+        .background(.regularMaterial)
+        .accessibilityElement(children: .contain)
+    }
+}
+
+extension HabitRecordingMode {
+    var localizedName: String {
+        switch self {
+        case .oncePerDay:
+            String(localized: "Once per day")
+        case .multiplePerDay:
+            String(localized: "Multiple times per day")
+        }
+    }
+}
+
+extension HabitStatus {
+    var localizedName: String {
+        switch self {
+        case .active: String(localized: "Active")
+        case .paused: String(localized: "Paused")
+        case .completed: String(localized: "Completed")
+        case .archived: String(localized: "Archived")
         }
     }
 }
@@ -299,7 +567,9 @@ private struct HabitLogRow: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Label(
-                    log.isCompleted ? "Completed" : "Not Completed",
+                    log.isCompleted
+                        ? String(localized: "Completed")
+                        : String(localized: "Not Completed"),
                     systemImage: log.isCompleted ? "checkmark.circle.fill" : "circle"
                 )
                 Spacer()
@@ -376,7 +646,7 @@ private struct DetailedHabitCheckInView: View {
         } else if let value = Double(trimmedQuantity) {
             parsedQuantity = value
         } else {
-            errorMessage = "Quantity must be a number."
+            errorMessage = String(localized: "Quantity must be a number.")
             return
         }
 
@@ -390,7 +660,7 @@ private struct DetailedHabitCheckInView: View {
             ))
             dismiss()
         } catch {
-            errorMessage = "The check-in was not saved."
+            errorMessage = String(localized: "The check-in was not saved.")
         }
     }
 }

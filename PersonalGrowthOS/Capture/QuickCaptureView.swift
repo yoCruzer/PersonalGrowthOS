@@ -22,7 +22,7 @@ final class CaptureDraftState: ObservableObject {
             imageSources = sources
             errorMessage = nil
         case .failure:
-            errorMessage = "The photo could not be loaded. Your text is still here."
+            errorMessage = String(localized: "The photo could not be loaded. Your text is still here.")
         }
     }
 
@@ -46,19 +46,19 @@ final class CaptureDraftState: ObservableObject {
     func reportSaveFailure(_ error: Error) {
         switch error {
         case EntryValidationError.emptyContent:
-            errorMessage = "Add text or at least one photo before saving."
+            errorMessage = String(localized: "Add text or at least one photo before saving.")
         case MediaStoreError.insufficientCapacity:
-            errorMessage = "There is not enough storage to save these photos. Your draft was kept."
+            errorMessage = String(localized: "There is not enough storage to save these photos. Your draft was kept.")
         case MediaStoreError.unsupportedContentType:
-            errorMessage = "One photo uses an unsupported format. Your draft was kept."
+            errorMessage = String(localized: "One photo uses an unsupported format. Your draft was kept.")
         case MediaStoreError.originalTooLarge:
-            errorMessage = "One photo is larger than 25 MB. Your draft was kept."
+            errorMessage = String(localized: "One photo is larger than 25 MB. Your draft was kept.")
         case MediaStoreError.imageTooLarge:
-            errorMessage = "One photo exceeds the 80-megapixel limit. Your draft was kept."
+            errorMessage = String(localized: "One photo exceeds the 80-megapixel limit. Your draft was kept.")
         case EntryMediaOperationError.rollbackIncomplete:
-            errorMessage = "The entry was not saved and media recovery is required. Restart the app before trying again."
+            errorMessage = String(localized: "The entry was not saved and media recovery is required. Restart the app before trying again.")
         default:
-            errorMessage = "The entry could not be saved. Your draft was kept."
+            errorMessage = String(localized: "The entry could not be saved. Your draft was kept.")
         }
     }
 }
@@ -84,7 +84,7 @@ struct QuickCaptureView: View {
 
     init(mediaStore: MediaStore, didSave: @escaping () -> Void) {
         self.mediaStore = mediaStore
-        navigationTitle = "Quick Capture"
+        navigationTitle = String(localized: "Quick Capture")
         saveDraft = nil
         self.didSave = { _ in didSave() }
     }
@@ -103,8 +103,8 @@ struct QuickCaptureView: View {
 
     var body: some View {
         let photoButtonTitle = draft.imageSources.isEmpty
-            ? "Choose Photos"
-            : "Replace \(draft.imageSources.count) Photos"
+            ? String(localized: "Choose Photos")
+            : String(localized: "Replace \(draft.imageSources.count) Photos")
 
         NavigationStack {
             Form {

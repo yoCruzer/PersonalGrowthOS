@@ -24,7 +24,9 @@ struct AppShell: View {
                 TodayView(
                     openCapture: { isCapturing = true },
                     openStorage: { isShowingStorage = true },
-                    mediaStore: container.mediaStore
+                    openGrowth: { selectedTab = .growth },
+                    mediaStore: container.mediaStore,
+                    thumbnailStore: container.thumbnailStore
                 )
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
@@ -113,7 +115,9 @@ struct AppShell: View {
 private struct TodayView: View {
     let openCapture: () -> Void
     let openStorage: () -> Void
+    let openGrowth: () -> Void
     let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [
@@ -124,6 +128,11 @@ private struct TodayView: View {
         SortDescriptor(\Goal.normalizedTitle, order: .forward),
         SortDescriptor(\Goal.id, order: .forward)
     ]) private var goals: [Goal]
+    @Query private var habitLogs: [HabitLog]
+    @Query private var habitConfigurations: [HabitConfiguration]
+    @State private var coolingDownHabitIDs: Set<UUID> = []
+    @State private var recentCheckIn: RecentHabitCheckIn?
+    @State private var transientMessage: String?
     @State private var errorMessage: String?
 
     private var activeHabits: [Habit] {
@@ -146,20 +155,54 @@ private struct TodayView: View {
             } footer: {
                 Text("Save a thought or photo now. Organize it later if you want.")
             }
+            if activeHabits.isEmpty && activeGoals.isEmpty {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Record Today", systemImage: "sun.max")
+                            .font(.headline)
+                        Text("Today keeps your active Habits, Goals, and Flags close at hand. Start by creating one in Growth or use Quick Capture above.")
+                            .foregroundStyle(.secondary)
+                        Button(action: openGrowth) {
+                            Label("Create a Habit, Goal, or Flag", systemImage: "leaf")
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("today-open-growth")
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
             if !activeHabits.isEmpty {
                 Section {
                     ForEach(activeHabits) { habit in
+                        let progress = HabitTodayProgress(
+                            habitID: habit.id,
+                            logs: habitLogs,
+                            settings: HabitSettingsResolver.settings(
+                                for: habit.id,
+                                configurations: habitConfigurations
+                            )
+                        )
                         Button {
                             checkIn(habit)
                         } label: {
                             HStack {
                                 Text(habit.name)
                                 Spacer()
-                                Label("Check In", systemImage: "checkmark.circle")
-                                    .labelStyle(.titleAndIcon)
+                                Label(
+                                    progress.actionTitle,
+                                    systemImage: progress.isCompletedForOncePerDay
+                                        ? "checkmark.circle.fill"
+                                        : "checkmark.circle"
+                                )
+                                .labelStyle(.titleAndIcon)
                             }
                         }
+                        .disabled(
+                            coolingDownHabitIDs.contains(habit.id)
+                                || progress.isCompletedForOncePerDay
+                        )
                         .accessibilityLabel("Check in \(habit.name)")
+                        .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
                     }
                 } header: {
                     Text("Today's Habits")
@@ -170,10 +213,20 @@ private struct TodayView: View {
             if !activeGoals.isEmpty {
                 Section {
                     ForEach(activeGoals) { goal in
-                        Label(
-                            goal.title,
-                            systemImage: goal.kind == .flag ? "flag" : "target"
-                        )
+                        NavigationLink {
+                            GoalDetailView(
+                                goal: goal,
+                                mediaStore: mediaStore,
+                                thumbnailStore: thumbnailStore
+                            )
+                        } label: {
+                            Label(
+                                goal.title,
+                                systemImage: goal.kind == .flag ? "flag" : "target"
+                            )
+                        }
+                        .accessibilityLabel("\(goal.kind.localizedName): \(goal.title)")
+                        .accessibilityIdentifier("today-goal-\(goal.normalizedTitle)")
                     }
                 } header: {
                     Text("Active Goals and Flags")
@@ -188,6 +241,20 @@ private struct TodayView: View {
                 Image(systemName: "gear")
             }
             .accessibilityLabel("Settings")
+            .accessibilityIdentifier("settings-button")
+        }
+        .safeAreaInset(edge: .bottom) {
+            if let recentCheckIn {
+                HabitCheckInUndoBar {
+                    undo(recentCheckIn)
+                }
+            } else if let transientMessage {
+                Text(transientMessage)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.regularMaterial)
+                    .accessibilityIdentifier("habit-check-in-message")
+            }
         }
         .alert("Could Not Check In", isPresented: Binding(
             get: { errorMessage != nil },
@@ -195,19 +262,101 @@ private struct TodayView: View {
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "Please try again.")
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
     private func checkIn(_ habit: Habit) {
         do {
-            _ = try HabitCheckInService(
+            let log = try HabitCheckInService(
                 context: modelContext,
                 mediaStore: mediaStore
             ).checkIn(habit)
+            registerSuccessfulCheckIn(log, habitID: habit.id)
+        } catch HabitCheckInError.alreadyCheckedInToday {
+            showTransientMessage(String(localized: "This Habit is already completed today."))
+        } catch HabitCheckInError.recentlyCheckedIn {
+            showTransientMessage(String(localized: "Just checked in. Try again in a moment."))
         } catch {
-            errorMessage = "The check-in was not saved."
+            errorMessage = String(localized: "The check-in was not saved.")
         }
+    }
+
+    private func registerSuccessfulCheckIn(_ log: HabitLog, habitID: UUID) {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        transientMessage = nil
+        recentCheckIn = RecentHabitCheckIn(habitID: habitID, logID: log.id)
+        coolingDownHabitIDs.insert(habitID)
+        Task {
+            try? await Task.sleep(for: .seconds(HabitCheckInPolicy.duplicatePreventionInterval))
+            coolingDownHabitIDs.remove(habitID)
+            try? await Task.sleep(for: .seconds(
+                HabitCheckInPolicy.undoPresentationInterval
+                    - HabitCheckInPolicy.duplicatePreventionInterval
+            ))
+            if recentCheckIn?.logID == log.id {
+                recentCheckIn = nil
+            }
+        }
+    }
+
+    private func undo(_ checkIn: RecentHabitCheckIn) {
+        do {
+            try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).undoLatestCheckIn(habitID: checkIn.habitID, logID: checkIn.logID)
+            coolingDownHabitIDs.remove(checkIn.habitID)
+            recentCheckIn = nil
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
+        }
+    }
+
+    private func showTransientMessage(_ message: String) {
+        transientMessage = message
+        Task {
+            try? await Task.sleep(for: .seconds(HabitCheckInPolicy.duplicatePreventionInterval))
+            if transientMessage == message {
+                transientMessage = nil
+            }
+        }
+    }
+}
+
+struct HabitTodayProgress: Equatable {
+    let count: Int
+    let settings: HabitSettings
+
+    init(
+        habitID: UUID,
+        logs: [HabitLog],
+        settings: HabitSettings,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) {
+        count = logs.filter {
+            $0.habitID == habitID
+                && calendar.isDate($0.occurredAt, inSameDayAs: now)
+        }.count
+        self.settings = settings
+    }
+
+    var isCompletedForOncePerDay: Bool {
+        settings.recordingMode == .oncePerDay && count > 0
+    }
+
+    var actionTitle: String {
+        if isCompletedForOncePerDay {
+            return String(localized: "Completed Today")
+        }
+        guard settings.recordingMode == .multiplePerDay else {
+            return String(localized: "Check In")
+        }
+        if let target = settings.dailyTargetCount {
+            return String(localized: "Today \(count) / \(target) times")
+        }
+        return String(localized: "Today \(count) times")
     }
 }
 
@@ -297,9 +446,15 @@ private struct TimelineView: View {
         Group {
             if timelineItems.isEmpty {
                 ContentUnavailableView(
-                    showsArchived ? "No Archived Entries" : "No Entries Yet",
+                    showsArchived
+                        ? String(localized: "No Archived Entries")
+                        : String(localized: "No Entries Yet"),
                     systemImage: showsArchived ? "archivebox" : "clock",
-                    description: Text(showsArchived ? "Archived entries will appear here." : "Your captures will appear here.")
+                    description: Text(
+                        showsArchived
+                            ? String(localized: "Archived entries will appear here.")
+                            : String(localized: "Your captures will appear here.")
+                    )
                 )
             } else {
                 List {
@@ -323,7 +478,9 @@ private struct TimelineView: View {
                                         .foregroundStyle(.secondary)
                                     LabeledContent(
                                         summary.day.formatted(date: .abbreviated, time: .omitted),
-                                        value: "\(summary.logCount) check-in\(summary.logCount == 1 ? "" : "s")"
+                                        value: summary.logCount == 1
+                                            ? String(localized: "1 check-in")
+                                            : String(localized: "\(summary.logCount) check-ins")
                                     )
                                     if !summary.habitNames.isEmpty {
                                         Text(summary.habitNames.joined(separator: ", "))
@@ -338,7 +495,7 @@ private struct TimelineView: View {
                                         .foregroundStyle(.secondary)
                                     Text(goalsByID[event.goalID]?.title ?? "Goal")
                                     LabeledContent(
-                                        event.kindRawValue.capitalized,
+                                        event.kind.localizedName,
                                         value: event.occurredAt.formatted(date: .abbreviated, time: .shortened)
                                     )
                                     .font(.caption)
@@ -540,7 +697,7 @@ private struct MediaStorageView: View {
                 isSharing = true
             } catch is CancellationError {
                 cleanupExport()
-                transferMessage = "Export cancelled. Temporary files were removed."
+                transferMessage = String(localized: "Export cancelled. Temporary files were removed.")
             } catch {
                 transferMessage = transferErrorMessage(error)
             }
@@ -560,9 +717,11 @@ private struct MediaStorageView: View {
             do {
                 let restored = try await importExportService.importPackage(from: selectedURL)
                 byteCount = try? mediaStore.originalsByteCount()
-                transferMessage = "Restore completed: \(restored.objectCounts.values.reduce(0, +)) objects and \(restored.restoredMediaCount) original photo(s)."
+                transferMessage = String(
+                    localized: "Restore completed: \(restored.objectCounts.values.reduce(0, +)) objects and \(restored.restoredMediaCount) original photo(s)."
+                )
             } catch is CancellationError {
-                transferMessage = "Import cancelled. Existing data was left unchanged."
+                transferMessage = String(localized: "Import cancelled. Existing data was left unchanged.")
             } catch {
                 transferMessage = transferErrorMessage(error)
             }
@@ -577,26 +736,26 @@ private struct MediaStorageView: View {
     private func transferErrorMessage(_ error: Error) -> String {
         switch error {
         case TransferPackageError.targetNotEmpty:
-            "Import requires an empty database. Existing data was left unchanged."
+            String(localized: "Import requires an empty database. Existing data was left unchanged.")
         case TransferPackageError.unsupportedSchema:
-            "This backup uses an unsupported newer format. Existing data was left unchanged."
+            String(localized: "This backup uses an unsupported newer format. Existing data was left unchanged.")
         case ZIPArchiveError.archiveTooLarge,
              ZIPArchiveError.expandedSizeExceeded,
              ZIPArchiveError.tooManyFiles,
              ZIPArchiveError.compressionRatioExceeded,
              TransferPackageError.objectLimitExceeded:
-            "This backup exceeds the safe import limits. Existing data was left unchanged."
+            String(localized: "This backup exceeds the safe import limits. Existing data was left unchanged.")
         case ZIPArchiveError.insufficientCapacity,
              MediaStoreError.insufficientCapacity:
-            "There is not enough free device storage to complete this transfer safely. Free space and try again; existing data was left unchanged."
+            String(localized: "There is not enough free device storage to complete this transfer safely. Free space and try again; existing data was left unchanged.")
         case TransferPackageError.missingMedia,
              TransferPackageError.mediaMismatch,
              TransferPackageError.corruptManifest,
              TransferPackageError.corruptData,
              ZIPArchiveError.checksumMismatch:
-            "The backup is incomplete or corrupt. Existing data was left unchanged."
+            String(localized: "The backup is incomplete or corrupt. Existing data was left unchanged.")
         default:
-            "The data transfer could not be completed. Existing data was left unchanged."
+            String(localized: "The data transfer could not be completed. Existing data was left unchanged.")
         }
     }
 }
@@ -637,7 +796,7 @@ struct TimelineRow: View {
                 DownsampledOriginalView(
                     metadata: image,
                     thumbnailStore: thumbnailStore,
-                    accessibilityLabel: "First photo in entry"
+                    accessibilityLabel: String(localized: "First photo in entry")
                 )
             }
             Text(entry.occurredAt, style: .date)
@@ -652,15 +811,19 @@ struct TimelineRow: View {
 struct DownsampledOriginalView: View {
     let metadata: ImageMetadata
     let thumbnailStore: ThumbnailStore
-    var accessibilityLabel = "Entry photo"
+    var accessibilityLabel = String(localized: "Entry photo")
 
     var body: some View {
         if let image = thumbnailStore.image(for: metadata) {
             Image(uiImage: image)
                 .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity)
-                .frame(height: 160)
+                .aspectRatio(contentMode: TimelineImagePresentation.contentMode)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: TimelineImagePresentation.minimumHeight,
+                    maxHeight: TimelineImagePresentation.maximumHeight
+                )
+                .background(.quaternary)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .accessibilityLabel(accessibilityLabel)
         } else {
@@ -669,6 +832,41 @@ struct DownsampledOriginalView: View {
         }
     }
 
+}
+
+enum TimelineImagePresentation {
+    static let contentMode: ContentMode = .fit
+    static let minimumHeight: CGFloat = 80
+    static let maximumHeight: CGFloat = 240
+
+    static func fittedSize(
+        pixelWidth: Int,
+        pixelHeight: Int,
+        containerWidth: CGFloat
+    ) -> CGSize {
+        guard pixelWidth > 0, pixelHeight > 0, containerWidth > 0 else {
+            return CGSize(width: max(containerWidth, 0), height: minimumHeight)
+        }
+        let naturalHeight = containerWidth * CGFloat(pixelHeight) / CGFloat(pixelWidth)
+        return CGSize(
+            width: containerWidth,
+            height: min(max(naturalHeight, minimumHeight), maximumHeight)
+        )
+    }
+}
+
+extension GoalLifecycleEventKind {
+    var localizedName: String {
+        switch self {
+        case .created: String(localized: "Created")
+        case .paused: String(localized: "Paused")
+        case .resumed: String(localized: "Resumed")
+        case .completed: String(localized: "Completed")
+        case .abandoned: String(localized: "Abandoned")
+        case .archived: String(localized: "Archived")
+        case .reactivated: String(localized: "Reactivated")
+        }
+    }
 }
 
 extension Entry: Identifiable {}

@@ -168,7 +168,7 @@ struct EntryDetailView: View {
                 }
             }
             Section("Organization") {
-                LabeledContent("Status", value: entry.statusRawValue.capitalized)
+                LabeledContent("Status", value: entry.status.localizedName)
                 if !attachedTags.isEmpty {
                     ForEach(attachedTags) { tag in
                         Label(tag.displayName, systemImage: "tag")
@@ -176,13 +176,21 @@ struct EntryDetailView: View {
                 }
                 Button("Manage Tags") { isEditingTags = true }
                     .accessibilityIdentifier("entry-manage-tags")
-                Button(entry.kind == .review ? "Manage Reviewed Objects" : "Manage Relationships") {
+                Button(
+                    entry.kind == .review
+                        ? String(localized: "Manage Reviewed Objects")
+                        : String(localized: "Manage Relationships")
+                ) {
                     isEditingRelationships = true
                 }
                     .accessibilityIdentifier("entry-manage-relationships")
             }
         }
-        .navigationTitle(entry.kind == .review ? "Review" : "Entry")
+        .navigationTitle(
+            entry.kind == .review
+                ? String(localized: "Review")
+                : String(localized: "Entry")
+        )
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
@@ -233,7 +241,7 @@ struct EntryDetailView: View {
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "Please try again.")
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
@@ -242,7 +250,7 @@ struct EntryDetailView: View {
             try deletionService.archive(entry)
             dismiss()
         } catch {
-            errorMessage = "The entry was not archived. No photos were removed."
+            errorMessage = String(localized: "The entry was not archived. No photos were removed.")
         }
     }
 
@@ -251,7 +259,7 @@ struct EntryDetailView: View {
             try deletionService.restore(entry)
             dismiss()
         } catch {
-            errorMessage = "The entry was not restored. Its archived copy is unchanged."
+            errorMessage = String(localized: "The entry was not restored. Its archived copy is unchanged.")
         }
     }
 
@@ -260,7 +268,7 @@ struct EntryDetailView: View {
             try deletionService.organize(entry)
             dismiss()
         } catch {
-            errorMessage = "The entry remains in Inbox."
+            errorMessage = String(localized: "The entry remains in Inbox.")
         }
     }
 
@@ -269,7 +277,7 @@ struct EntryDetailView: View {
             try deletionService.moveToInbox(entry)
             dismiss()
         } catch {
-            errorMessage = "The entry's organized status is unchanged."
+            errorMessage = String(localized: "The entry's organized status is unchanged.")
         }
     }
 
@@ -279,9 +287,9 @@ struct EntryDetailView: View {
             dismiss()
         } catch {
             if error is EntryMediaOperationError {
-                errorMessage = "The entry was not deleted and media recovery is required. Restart the app before trying again."
+                errorMessage = String(localized: "The entry was not deleted and media recovery is required. Restart the app before trying again.")
             } else {
-                errorMessage = "The entry was not deleted. Its data remains available."
+                errorMessage = String(localized: "The entry was not deleted. Its data remains available.")
             }
         }
     }
@@ -292,6 +300,16 @@ struct EntryDetailView: View {
             mediaStore: mediaStore,
             thumbnailCleanup: thumbnailStore.removeThumbnail
         )
+    }
+}
+
+extension EntryStatus {
+    var localizedName: String {
+        switch self {
+        case .inbox: String(localized: "Inbox")
+        case .organized: String(localized: "Organized")
+        case .archived: String(localized: "Archived")
+        }
     }
 }
 
@@ -460,7 +478,7 @@ private struct EntryEditorView: View {
             } catch {
                 for url in newURLs { try? FileManager.default.removeItem(at: url) }
                 isLoading = false
-                errorMessage = "The new photos could not be loaded. Your edits are still here."
+                errorMessage = String(localized: "The new photos could not be loaded. Your edits are still here.")
             }
         }
     }
@@ -490,17 +508,17 @@ private struct EntryEditorView: View {
             isSaving = false
             switch error {
             case MediaStoreError.insufficientCapacity:
-                errorMessage = "There is not enough storage to add these photos. Your edits were kept."
+                errorMessage = String(localized: "There is not enough storage to add these photos. Your edits were kept.")
             case MediaStoreError.unsupportedContentType:
-                errorMessage = "One photo uses an unsupported format. Your edits were kept."
+                errorMessage = String(localized: "One photo uses an unsupported format. Your edits were kept.")
             case MediaStoreError.originalTooLarge:
-                errorMessage = "One photo is larger than 25 MB. Your edits were kept."
+                errorMessage = String(localized: "One photo is larger than 25 MB. Your edits were kept.")
             case MediaStoreError.imageTooLarge:
-                errorMessage = "One photo exceeds the 80-megapixel limit. Your edits were kept."
+                errorMessage = String(localized: "One photo exceeds the 80-megapixel limit. Your edits were kept.")
             case EntryMediaOperationError.rollbackIncomplete:
-                errorMessage = "The entry was not updated and media recovery is required. Restart the app before trying again."
+                errorMessage = String(localized: "The entry was not updated and media recovery is required. Restart the app before trying again.")
             default:
-                errorMessage = "The entry could not be updated. Your original entry is unchanged."
+                errorMessage = String(localized: "The entry could not be updated. Your original entry is unchanged.")
             }
         }
     }

@@ -74,13 +74,13 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
         captureButton.tintColor = .white
         captureButton.contentVerticalAlignment = .fill
         captureButton.contentHorizontalAlignment = .fill
-        captureButton.accessibilityLabel = "Take Photo"
+        captureButton.accessibilityLabel = String(localized: "Take Photo")
         captureButton.accessibilityIdentifier = "camera-shutter"
         captureButton.addTarget(self, action: #selector(capturePhoto), for: .touchUpInside)
         captureButton.translatesAutoresizingMaskIntoConstraints = false
 
         let cancelButton = UIButton(type: .system)
-        cancelButton.setTitle("Cancel", for: .normal)
+        cancelButton.setTitle(String(localized: "Cancel"), for: .normal)
         cancelButton.tintColor = .white
         cancelButton.accessibilityIdentifier = "camera-cancel"
         cancelButton.addTarget(self, action: #selector(cancel), for: .touchUpInside)

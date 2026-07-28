@@ -715,6 +715,21 @@ final class ImportExportService {
                     createdAt: record.createdAt,
                     updatedAt: record.updatedAt
                 ))
+                if let rawMode = record.recordingMode {
+                    guard let mode = HabitRecordingMode(rawValue: rawMode) else {
+                        throw TransferPackageError.invalidObject("habit")
+                    }
+                    let target = try HabitRules.validatedDailyTarget(
+                        record.dailyTargetCount,
+                        mode: mode
+                    )
+                    context.insert(HabitConfiguration(
+                        habitID: record.id,
+                        recordingMode: mode,
+                        dailyTargetCount: target,
+                        updatedAt: record.updatedAt
+                    ))
+                }
             }
             for record in package.data.goals {
                 try Task.checkCancellation()
@@ -860,6 +875,8 @@ private enum TransferSnapshot {
         try Task.checkCancellation()
         let habits = try context.fetch(FetchDescriptor<Habit>())
         try Task.checkCancellation()
+        let habitConfigurations = try context.fetch(FetchDescriptor<HabitConfiguration>())
+        try Task.checkCancellation()
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
         try Task.checkCancellation()
         let goals = try context.fetch(FetchDescriptor<Goal>())
@@ -925,11 +942,17 @@ private enum TransferSnapshot {
                 )
             }.sorted { sortUUID($0.id, $1.id) },
             habits: try cancellableMap(habits) {
-                HabitTransfer(
+                let settings = HabitSettingsResolver.settings(
+                    for: $0.id,
+                    configurations: habitConfigurations
+                )
+                return HabitTransfer(
                     id: $0.id,
                     name: $0.name,
                     normalizedName: $0.normalizedName,
                     status: $0.statusRawValue,
+                    recordingMode: settings.recordingMode.rawValue,
+                    dailyTargetCount: settings.dailyTargetCount,
                     createdAt: $0.createdAt,
                     updatedAt: $0.updatedAt
                 )

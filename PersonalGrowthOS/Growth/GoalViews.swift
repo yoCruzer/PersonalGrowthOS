@@ -25,7 +25,17 @@ struct GoalsView: View {
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("new-goal-kind")
-                Button("Add") { create() }
+                Button {
+                    create()
+                } label: {
+                    Label(
+                        kind == .flag
+                            ? String(localized: "Add Flag")
+                            : String(localized: "Add Goal"),
+                        systemImage: "plus"
+                    )
+                }
+                    .buttonStyle(.borderedProminent)
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .accessibilityIdentifier("add-goal")
             }
@@ -43,7 +53,7 @@ struct GoalsView: View {
                             )
                         } label: {
                             LabeledContent {
-                                Text(goal.statusRawValue.capitalized)
+                                Text(goal.status.localizedName)
                             } label: {
                                 Label(
                                     goal.title,
@@ -63,7 +73,7 @@ struct GoalsView: View {
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "Please try again.")
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
@@ -73,7 +83,7 @@ struct GoalsView: View {
             title = ""
             kind = .standard
         } catch {
-            errorMessage = "The Goal or Flag was not created."
+            errorMessage = String(localized: "The Goal or Flag was not created.")
         }
     }
 }
@@ -94,6 +104,7 @@ struct GoalDetailView: View {
     ]) private var allEvents: [GoalLifecycleEvent]
     @State private var isManagingHabits = false
     @State private var isManagingEntries = false
+    @State private var isEditing = false
     @State private var isConfirmingDelete = false
     @State private var errorMessage: String?
 
@@ -118,8 +129,8 @@ struct GoalDetailView: View {
     var body: some View {
         List {
             Section("Goal") {
-                LabeledContent("Kind", value: goal.kind == .flag ? "Flag" : "Goal")
-                LabeledContent("Status", value: goal.statusRawValue.capitalized)
+                LabeledContent("Kind", value: goal.kind.localizedName)
+                LabeledContent("Status", value: goal.status.localizedName)
                 if let completedAt = goal.completedAt {
                     LabeledContent("Completed", value: completedAt.formatted(date: .abbreviated, time: .shortened))
                 }
@@ -155,7 +166,7 @@ struct GoalDetailView: View {
             Section("Lifecycle History") {
                 ForEach(events) { event in
                     LabeledContent(
-                        event.kindRawValue.capitalized,
+                        event.kind.localizedName,
                         value: event.occurredAt.formatted(date: .abbreviated, time: .shortened)
                     )
                 }
@@ -163,6 +174,10 @@ struct GoalDetailView: View {
         }
         .navigationTitle(goal.title)
         .toolbar {
+            Button("Edit") {
+                isEditing = true
+            }
+            .accessibilityIdentifier("goal-edit")
             Menu {
                 lifecycleActions
                 Divider()
@@ -180,6 +195,11 @@ struct GoalDetailView: View {
         .sheet(isPresented: $isManagingEntries) {
             GoalEntryEditor(goal: goal)
         }
+        .sheet(isPresented: $isEditing) {
+            GoalEditorView(goal: goal) {
+                isEditing = false
+            }
+        }
         .alert("Delete this Goal permanently?", isPresented: $isConfirmingDelete) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) { permanentlyDelete() }
@@ -192,7 +212,7 @@ struct GoalDetailView: View {
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "Please try again.")
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
@@ -221,7 +241,7 @@ struct GoalDetailView: View {
         do {
             try GoalService(context: modelContext).transition(goal, to: status)
         } catch {
-            errorMessage = "The Goal status was not changed."
+            errorMessage = String(localized: "The Goal status was not changed.")
         }
     }
 
@@ -230,7 +250,93 @@ struct GoalDetailView: View {
             try GoalService(context: modelContext).permanentlyDelete(goal)
             dismiss()
         } catch {
-            errorMessage = "The Goal was not deleted. Its history and relationships are unchanged."
+            errorMessage = String(localized: "The Goal was not deleted. Its history and relationships are unchanged.")
+        }
+    }
+}
+
+private struct GoalEditorView: View {
+    let goal: Goal
+    let didSave: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @State private var title: String
+    @State private var kind: GoalKind
+    @State private var errorMessage: String?
+
+    init(goal: Goal, didSave: @escaping () -> Void) {
+        self.goal = goal
+        self.didSave = didSave
+        _title = State(initialValue: goal.title)
+        _kind = State(initialValue: goal.kind)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("Title", text: $title)
+                    .accessibilityIdentifier("goal-editor-title")
+                Picker("Kind", selection: $kind) {
+                    Text("Goal").tag(GoalKind.standard)
+                    Text("Flag").tag(GoalKind.flag)
+                }
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("goal-editor-kind")
+                if let errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(.red)
+                }
+            }
+            .navigationTitle(
+                goal.kind == .flag
+                    ? String(localized: "Edit Flag")
+                    : String(localized: "Edit Goal")
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { save() }
+                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .accessibilityIdentifier("goal-editor-save")
+                }
+            }
+        }
+    }
+
+    private func save() {
+        do {
+            try GoalService(context: modelContext).update(goal, title: title, kind: kind)
+            didSave()
+            dismiss()
+        } catch GoalValidationError.emptyTitle {
+            errorMessage = String(localized: "Title cannot be empty.")
+        } catch {
+            errorMessage = String(localized: "The Goal or Flag was not saved.")
+        }
+    }
+}
+
+extension GoalKind {
+    var localizedName: String {
+        switch self {
+        case .standard: String(localized: "Goal")
+        case .flag: String(localized: "Flag")
+        }
+    }
+}
+
+extension GoalStatus {
+    var localizedName: String {
+        switch self {
+        case .active: String(localized: "Active")
+        case .paused: String(localized: "Paused")
+        case .completed: String(localized: "Completed")
+        case .abandoned: String(localized: "Abandoned")
+        case .archived: String(localized: "Archived")
         }
     }
 }
@@ -298,20 +404,28 @@ struct EntryRelationshipsEditor: View {
                     }
                 }
             }
-            .navigationTitle(entry.kind == .review ? "Reviewed Objects" : "Entry Relationships")
+            .navigationTitle(
+                entry.kind == .review
+                    ? String(localized: "Reviewed Objects")
+                    : String(localized: "Entry Relationships")
+            )
             .toolbar { Button("Done") { dismiss() } }
             .alert("Could Not Update Relationships", isPresented: Binding(
                 get: { errorMessage != nil },
                 set: { if !$0 { errorMessage = nil } }
             )) { Button("OK", role: .cancel) {} } message: {
-                Text(errorMessage ?? "Please try again.")
+                Text(errorMessage ?? String(localized: "Please try again."))
             }
         }
     }
 
     private func relationButton(_ title: String, linked: Bool, action: @escaping () throws -> Void) -> some View {
         Button {
-            do { try action() } catch { errorMessage = "The relationship was not changed." }
+            do {
+                try action()
+            } catch {
+                errorMessage = String(localized: "The relationship was not changed.")
+            }
         } label: {
             HStack {
                 Text(title)
@@ -353,7 +467,7 @@ private struct GoalHabitEditor: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        relationList(title: "Supporting Habits", items: habits) { habit in
+        relationList(title: String(localized: "Supporting Habits"), items: habits) { habit in
             let linked = isLinked(habit)
             return (habit.name, linked, {
                 try CoreLinkService(context: modelContext).setHabit(habit, supports: goal, linked: !linked)
@@ -374,7 +488,11 @@ private struct GoalHabitEditor: View {
             List(items) { item in
                 let value = row(item)
                 Button {
-                    do { try value.2() } catch { errorMessage = "The relationship was not changed." }
+                    do {
+                        try value.2()
+                    } catch {
+                        errorMessage = String(localized: "The relationship was not changed.")
+                    }
                 } label: {
                     HStack { Text(value.0); Spacer(); if value.1 { Image(systemName: "checkmark") } }
                 }
@@ -385,7 +503,9 @@ private struct GoalHabitEditor: View {
             .toolbar { Button("Done") { dismiss() } }
             .alert("Could Not Update Relationships", isPresented: Binding(
                 get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } }
-            )) { Button("OK", role: .cancel) {} } message: { Text(errorMessage ?? "Please try again.") }
+            )) { Button("OK", role: .cancel) {} } message: {
+                Text(errorMessage ?? String(localized: "Please try again."))
+            }
         }
     }
 }
@@ -407,7 +527,9 @@ private struct GoalEntryEditor: View {
                 Button {
                     do {
                         try CoreLinkService(context: modelContext).setEntry(entry, relatesTo: goal, linked: !linked)
-                    } catch { errorMessage = "The relationship was not changed." }
+                    } catch {
+                        errorMessage = String(localized: "The relationship was not changed.")
+                    }
                 } label: {
                     HStack {
                         Text(entry.title ?? entry.body ?? "Entry")
@@ -422,7 +544,9 @@ private struct GoalEntryEditor: View {
             .toolbar { Button("Done") { dismiss() } }
             .alert("Could Not Update Relationships", isPresented: Binding(
                 get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } }
-            )) { Button("OK", role: .cancel) {} } message: { Text(errorMessage ?? "Please try again.") }
+            )) { Button("OK", role: .cancel) {} } message: {
+                Text(errorMessage ?? String(localized: "Please try again."))
+            }
         }
     }
 }

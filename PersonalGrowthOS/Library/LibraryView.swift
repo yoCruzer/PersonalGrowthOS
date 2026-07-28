@@ -13,6 +13,14 @@ enum LibraryEntryFilter: String {
         case .archived: "archivebox"
         }
     }
+
+    var localizedName: String {
+        switch self {
+        case .inbox: String(localized: "Inbox")
+        case .all: String(localized: "All Entries")
+        case .archived: String(localized: "Archived")
+        }
+    }
 }
 
 struct LibraryView: View {
@@ -76,7 +84,7 @@ struct LibraryView: View {
             )
         } label: {
             HStack {
-                Label(filter.rawValue, systemImage: filter.systemImage)
+                Label(filter.localizedName, systemImage: filter.systemImage)
                     .fixedSize(horizontal: false, vertical: true)
                     .layoutPriority(1)
                 Spacer()
@@ -180,7 +188,7 @@ private struct ReviewComposerView: View {
             .sheet(isPresented: $isWriting) {
                 QuickCaptureView(
                     mediaStore: mediaStore,
-                    navigationTitle: "Write Review",
+                    navigationTitle: String(localized: "Write Review"),
                     saveDraft: { entryDraft in
                         let period = includesPeriod
                             ? try ReviewPeriod(start: periodStart, end: periodEnd)
@@ -257,7 +265,7 @@ struct LibraryEntriesView: View {
         Group {
             if displayedEntries.isEmpty {
                 ContentUnavailableView(
-                    "No \(filter.rawValue)",
+                    String(localized: "No \(filter.localizedName)"),
                     systemImage: filter.systemImage,
                     description: Text(emptyDescription)
                 )
@@ -275,14 +283,14 @@ struct LibraryEntriesView: View {
                 }
             }
         }
-        .navigationTitle(filter.rawValue)
+        .navigationTitle(filter.localizedName)
     }
 
     private var emptyDescription: String {
         switch filter {
-        case .inbox: "New captures can stay here for as long as you like."
-        case .all: "Your entries will appear here."
-        case .archived: "Archived entries will appear here."
+        case .inbox: String(localized: "New captures can stay here for as long as you like.")
+        case .all: String(localized: "Your entries will appear here.")
+        case .archived: String(localized: "Archived entries will appear here.")
         }
     }
 }
@@ -298,12 +306,14 @@ struct TagsView: View {
     ]) private var tags: [Tag]
     @State private var newTagName = ""
     @State private var errorMessage: String?
+    @FocusState private var isTagNameFocused: Bool
 
     var body: some View {
         List {
             Section("New Tag") {
                 HStack {
                     TextField("Tag name", text: $newTagName)
+                        .focused($isTagNameFocused)
                         .accessibilityIdentifier("new-tag-name")
                     Button("Add") { createTag() }
                         .disabled(TextSearchNormalizer.normalize(newTagName).isEmpty)
@@ -312,8 +322,18 @@ struct TagsView: View {
             }
             Section("Tags") {
                 if tags.isEmpty {
-                    Text("Tags are optional. Add one only when it helps you find something again.")
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Create Your First Tag", systemImage: "tag")
+                            .font(.headline)
+                        Text("Tags are optional. Create one here first, then you can attach it to Entries when it helps you find something again.")
+                            .foregroundStyle(.secondary)
+                        Button("Create First Tag") {
+                            isTagNameFocused = true
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("create-first-tag")
+                    }
+                    .padding(.vertical, 4)
                 } else {
                     ForEach(tags) { tag in
                         NavigationLink {
@@ -339,7 +359,7 @@ struct TagsView: View {
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(errorMessage ?? "Please try again.")
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
@@ -348,9 +368,9 @@ struct TagsView: View {
             _ = try TagLinkService(context: modelContext).createTag(displayName: newTagName)
             newTagName = ""
         } catch TagValidationError.duplicateName {
-            errorMessage = "A tag with that name already exists."
+            errorMessage = String(localized: "A tag with that name already exists.")
         } catch {
-            errorMessage = "The tag was not created."
+            errorMessage = String(localized: "The tag was not created.")
         }
     }
 
@@ -358,7 +378,7 @@ struct TagsView: View {
         do {
             try TagLinkService(context: modelContext).deleteTag(tag)
         } catch {
-            errorMessage = "The tag was not deleted. Its entry links are unchanged."
+            errorMessage = String(localized: "The tag was not deleted. Its entry links are unchanged.")
         }
     }
 }
@@ -427,7 +447,7 @@ struct EntryTagEditor: View {
                     ContentUnavailableView(
                         "No Tags Yet",
                         systemImage: "tag",
-                        description: Text("Create lightweight tags from Library when they help you find something again.")
+                        description: Text("No Tags have been created yet. Create your first Tag in Library, then return here to attach it.")
                     )
                 } else {
                     ForEach(tags) { tag in
@@ -457,7 +477,7 @@ struct EntryTagEditor: View {
             )) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text(errorMessage ?? "Please try again.")
+                Text(errorMessage ?? String(localized: "Please try again."))
             }
         }
     }
@@ -479,7 +499,7 @@ struct EntryTagEditor: View {
                 try service.attach(tag: tag, to: entry)
             }
         } catch {
-            errorMessage = "The Entry's tags were not changed."
+            errorMessage = String(localized: "The Entry's tags were not changed.")
         }
     }
 }

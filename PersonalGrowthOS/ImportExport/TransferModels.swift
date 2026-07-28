@@ -109,6 +109,8 @@ struct HabitTransfer: Codable, Equatable {
     let name: String
     let normalizedName: String
     let status: String
+    let recordingMode: String?
+    let dailyTargetCount: Int?
     let createdAt: Date
     let updatedAt: Date
 }

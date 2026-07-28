@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftUI
 import XCTest
 @testable import PersonalGrowthOS
 
@@ -11,6 +12,260 @@ final class HabitFoundationTests: XCTestCase {
         }
         XCTAssertEqual(try HabitRules.validatedName("  Read  "), "Read")
         XCTAssertEqual(Set(HabitStatus.allCases), Set([.active, .paused, .completed, .archived]))
+        XCTAssertEqual(Set(HabitRecordingMode.allCases), Set([.oncePerDay, .multiplePerDay]))
+        XCTAssertThrowsError(try HabitRules.validatedDailyTarget(0, mode: .multiplePerDay)) {
+            XCTAssertEqual($0 as? HabitValidationError, .invalidDailyTarget)
+        }
+        XCTAssertEqual(try HabitRules.validatedDailyTarget(8, mode: .multiplePerDay), 8)
+        XCTAssertNil(try HabitRules.validatedDailyTarget(8, mode: .oncePerDay))
+    }
+
+    func testLegacyHabitDefaultsToMultiplePerDayWithoutChangingIdentityOrHistory() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let habitID = UUID()
+        let logID = UUID()
+        context.insert(Habit(
+            id: habitID,
+            name: "Legacy Water",
+            normalizedName: "legacy water",
+            createdAt: Date()
+        ))
+        context.insert(HabitLog(
+            id: logID,
+            habitID: habitID,
+            occurredAt: Date(),
+            isCompleted: true,
+            createdAt: Date()
+        ))
+        try context.save()
+
+        let settings = try HabitSettingsResolver.settings(for: habitID, context: context)
+
+        XCTAssertEqual(settings, .legacyDefault)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Habit>()).first?.id, habitID)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).first?.id, logID)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitConfiguration>()).count, 0)
+    }
+
+    func testV4StoreMigratesToV5AndLegacyHabitRemainsMultiplePerDay() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let habitID = UUID()
+        let logID = UUID()
+        do {
+            let schema = Schema(versionedSchema: PersonalGrowthSchemaV4.self)
+            let configuration = ModelConfiguration(
+                "PersonalGrowthOSV1",
+                schema: schema,
+                url: fixture.storeURL,
+                cloudKitDatabase: .none
+            )
+            let legacy = try ModelContainer(for: schema, configurations: [configuration])
+            legacy.mainContext.insert(Habit(
+                id: habitID,
+                name: "Legacy Read",
+                normalizedName: "legacy read",
+                createdAt: Date()
+            ))
+            legacy.mainContext.insert(HabitLog(
+                id: logID,
+                habitID: habitID,
+                occurredAt: Date(),
+                isCompleted: true,
+                createdAt: Date()
+            ))
+            try legacy.mainContext.save()
+        }
+
+        let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).first?.id, habitID)
+        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitLog>()).first?.id, logID)
+        XCTAssertEqual(
+            try HabitSettingsResolver.settings(for: habitID, context: migrated.mainContext),
+            .legacyDefault
+        )
+    }
+
+    func testOncePerDayCheckInRejectsSameLocalDayAndAllowsNextDay() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let calendar = Calendar(identifier: .gregorian)
+        let dayOne = Date(timeIntervalSince1970: 1_700_035_200)
+        var clock = dayOne
+        let habit = try HabitService(context: context, now: { clock }).create(
+            name: "Vitamin",
+            recordingMode: .oncePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { clock },
+            calendar: calendar
+        )
+
+        _ = try service.checkIn(habit, draft: HabitLogDraft(occurredAt: dayOne))
+        clock = dayOne.addingTimeInterval(60)
+        XCTAssertThrowsError(try service.checkIn(
+            habit,
+            draft: HabitLogDraft(occurredAt: dayOne.addingTimeInterval(60))
+        )) {
+            XCTAssertEqual($0 as? HabitCheckInError, .alreadyCheckedInToday)
+        }
+        clock = dayOne.addingTimeInterval(86_400)
+        XCTAssertNoThrow(try service.checkIn(
+            habit,
+            draft: HabitLogDraft(occurredAt: clock)
+        ))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 2)
+    }
+
+    func testMultiplePerDayAllowsRepeatedCheckInsAfterDebounceWindow() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let base = Date(timeIntervalSince1970: 1_700_035_200)
+        var clock = base
+        let habit = try HabitService(context: context, now: { clock }).create(
+            name: "Water",
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 8
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { clock }
+        )
+
+        _ = try service.checkIn(habit, draft: HabitLogDraft(occurredAt: base))
+        clock = base.addingTimeInterval(1)
+        XCTAssertThrowsError(try service.checkIn(
+            habit,
+            draft: HabitLogDraft(occurredAt: clock)
+        )) {
+            XCTAssertEqual($0 as? HabitCheckInError, .recentlyCheckedIn)
+        }
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 1)
+
+        clock = base.addingTimeInterval(HabitCheckInPolicy.duplicatePreventionInterval + 0.1)
+        XCTAssertNoThrow(try service.checkIn(
+            habit,
+            draft: HabitLogDraft(occurredAt: clock)
+        ))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 2)
+        XCTAssertEqual(
+            try HabitSettingsResolver.settings(for: habit.id, context: context).dailyTargetCount,
+            8
+        )
+    }
+
+    func testUndoRemovesOnlyLatestCheckIn() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let base = Date(timeIntervalSince1970: 1_700_035_200)
+        var clock = base
+        let habit = try HabitService(context: context, now: { clock }).create(name: "Stand")
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { clock }
+        )
+        let first = try service.checkIn(habit, draft: HabitLogDraft(occurredAt: clock))
+        clock = base.addingTimeInterval(10)
+        let second = try service.checkIn(habit, draft: HabitLogDraft(occurredAt: clock))
+
+        XCTAssertThrowsError(try service.undoLatestCheckIn(habitID: habit.id, logID: first.id)) {
+            XCTAssertEqual($0 as? HabitCheckInError, .checkInIsNotLatest)
+        }
+        try service.undoLatestCheckIn(habitID: habit.id, logID: second.id)
+
+        let remaining = try context.fetch(FetchDescriptor<HabitLog>())
+        XCTAssertEqual(remaining.map(\.id), [first.id])
+    }
+
+    func testHabitEditKeepsIDHistoryAndModeChangesDoNotRewriteLogs() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let base = Date(timeIntervalSince1970: 1_700_035_200)
+        var clock = base
+        let service = HabitService(context: context, now: { clock })
+        let habit = try service.create(name: "  Water  ", recordingMode: .multiplePerDay)
+        let checkInService = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { clock }
+        )
+        let log = try checkInService.checkIn(habit, draft: HabitLogDraft(occurredAt: clock))
+        clock = base.addingTimeInterval(20)
+
+        try service.update(
+            habit,
+            name: "  Morning Water  ",
+            recordingMode: .oncePerDay,
+            dailyTargetCount: 9
+        )
+
+        XCTAssertEqual(habit.name, "Morning Water")
+        XCTAssertEqual(habit.id, log.habitID)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [log.id])
+        XCTAssertEqual(
+            try HabitSettingsResolver.settings(for: habit.id, context: context),
+            HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil)
+        )
+        XCTAssertThrowsError(try service.update(
+            habit,
+            name: " ",
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 1
+        )) {
+            XCTAssertEqual($0 as? HabitValidationError, .emptyName)
+        }
+        XCTAssertEqual(habit.id, log.habitID)
+    }
+
+    func testTodayProgressRestoresModeCountAndCompletionAfterStoreReopens() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let base = Date(timeIntervalSince1970: 1_700_035_200)
+        let habitID: UUID
+        do {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            let context = container.mainContext
+            let habit = try HabitService(context: context, now: { base }).create(
+                name: "Read",
+                recordingMode: .oncePerDay
+            )
+            habitID = habit.id
+            _ = try HabitCheckInService(
+                context: context,
+                mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+                now: { base }
+            ).checkIn(habit, draft: HabitLogDraft(occurredAt: base))
+        }
+
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        let logs = try reopened.mainContext.fetch(FetchDescriptor<HabitLog>())
+        let configurations = try reopened.mainContext.fetch(FetchDescriptor<HabitConfiguration>())
+        let progress = HabitTodayProgress(
+            habitID: habitID,
+            logs: logs,
+            settings: HabitSettingsResolver.settings(
+                for: habitID,
+                configurations: configurations
+            ),
+            now: base,
+            calendar: Calendar(identifier: .gregorian)
+        )
+
+        XCTAssertEqual(progress.count, 1)
+        XCTAssertTrue(progress.isCompletedForOncePerDay)
     }
 
     func testV2StoreMigratesToV3AndPreservesRelationships() throws {
@@ -353,6 +608,42 @@ final class HabitFoundationTests: XCTestCase {
             Date(timeIntervalSince1970: 2_000),
             Date(timeIntervalSince1970: 1_000)
         ])
+    }
+
+    func testTimelineImagePresentationFitsLandscapePortraitSquareAndLongImagesWithoutCropping() {
+        XCTAssertEqual(TimelineImagePresentation.contentMode, .fit)
+        XCTAssertEqual(
+            TimelineImagePresentation.fittedSize(
+                pixelWidth: 1_600,
+                pixelHeight: 900,
+                containerWidth: 320
+            ),
+            CGSize(width: 320, height: 180)
+        )
+        XCTAssertEqual(
+            TimelineImagePresentation.fittedSize(
+                pixelWidth: 1_000,
+                pixelHeight: 1_000,
+                containerWidth: 200
+            ),
+            CGSize(width: 200, height: 200)
+        )
+        XCTAssertEqual(
+            TimelineImagePresentation.fittedSize(
+                pixelWidth: 900,
+                pixelHeight: 1_600,
+                containerWidth: 320
+            ).height,
+            TimelineImagePresentation.maximumHeight
+        )
+        XCTAssertEqual(
+            TimelineImagePresentation.fittedSize(
+                pixelWidth: 400,
+                pixelHeight: 8_000,
+                containerWidth: 320
+            ).height,
+            TimelineImagePresentation.maximumHeight
+        )
     }
 
     func testHabitLifecycleRollbackAndGlobalSearch() throws {

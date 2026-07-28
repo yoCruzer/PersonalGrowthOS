@@ -93,4 +93,39 @@ final class AppCompositionTests: XCTestCase {
         XCTAssertEqual(draft.imageSources.first?.url, source.url)
         XCTAssertNotNil(draft.errorMessage)
     }
+
+    func testCriticalEnglishAndSimplifiedChineseLocalizationsAreAvailable() throws {
+        let englishPath = try XCTUnwrap(
+            Bundle.main.path(forResource: "en", ofType: "lproj")
+        )
+        let chinesePath = try XCTUnwrap(
+            Bundle.main.path(forResource: "zh-Hans", ofType: "lproj")
+        )
+        let english = try XCTUnwrap(Bundle(path: englishPath))
+        let chinese = try XCTUnwrap(Bundle(path: chinesePath))
+        let expected: [(String, String, String)] = [
+            ("Today", "Today", "今天"),
+            ("Timeline", "Timeline", "时间线"),
+            ("Growth", "Growth", "成长"),
+            ("Library", "Library", "资料库"),
+            ("Quick Capture", "Quick Capture", "快速记录"),
+            ("Settings", "Settings", "设置"),
+            ("Once per day", "Once per day", "每天一次"),
+            ("Multiple times per day", "Multiple times per day", "每天多次"),
+            ("Goal", "Goal", "目标"),
+            ("Flag", "Flag", "标记"),
+            ("Create Your First Tag", "Create Your First Tag", "创建你的第一个标签")
+        ]
+
+        for (key, englishValue, chineseValue) in expected {
+            XCTAssertEqual(
+                english.localizedString(forKey: key, value: nil, table: nil),
+                englishValue
+            )
+            XCTAssertEqual(
+                chinese.localizedString(forKey: key, value: nil, table: nil),
+                chineseValue
+            )
+        }
+    }
 }

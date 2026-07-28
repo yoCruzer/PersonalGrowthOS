@@ -3,7 +3,7 @@ import XCTest
 final class AppLaunchSmokeTests: XCTestCase {
     func testCoreShellPassesAccessibilityAudit() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         XCTAssertTrue(app.descendants(matching: .any)["app-shell"].waitForExistence(timeout: 5))
@@ -13,7 +13,7 @@ final class AppLaunchSmokeTests: XCTestCase {
             try performSemanticAccessibilityAudit(app)
         }
         app.tabBars.buttons["Today"].tap()
-        app.buttons["Settings"].tap()
+        app.buttons["settings-button"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
         try performSemanticAccessibilityAudit(app)
     }
@@ -22,6 +22,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
             "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge"
         ]
         app.launch()
@@ -40,7 +42,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testUITestingLaunchShowsAppShell() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting"]
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
 
         app.launch()
 
@@ -49,7 +51,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testTextCaptureAppearsInTimelineAndSurvivesRelaunch() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["quick-capture-button"].tap()
@@ -62,7 +64,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["A restart-safe memory"].waitForExistence(timeout: 5))
 
         app.terminate()
-        app.launchArguments = ["-PGOSUITesting"]
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.tabBars.buttons["Timeline"].tap()
 
@@ -73,21 +75,22 @@ final class AppLaunchSmokeTests: XCTestCase {
         let editor = app.textViews["entry-edit-body"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
         editor.tap()
-        app.typeKey("a", modifierFlags: .command)
-        editor.typeText("An edited memory")
+        editor.typeText(" edited")
         app.buttons["entry-edit-save"].tap()
-        XCTAssertTrue(app.staticTexts["An edited memory"].waitForExistence(timeout: 5))
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["A restart-safe memory edited"].waitForExistence(timeout: 10))
 
         app.terminate()
-        app.launchArguments = ["-PGOSUITesting"]
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
+        XCTAssertTrue(app.descendants(matching: .any)["app-shell"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Timeline"].tap()
-        XCTAssertTrue(app.staticTexts["An edited memory"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["A restart-safe memory edited"].waitForExistence(timeout: 10))
     }
 
     func testPermanentDeleteRemovesEntryFromTimeline() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["quick-capture-button"].tap()
@@ -106,7 +109,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testGlobalCaptureIsAvailableFromTimeline() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.tabBars.buttons["Timeline"].tap()
@@ -117,7 +120,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testGlobalCaptureIsAvailableFromSettings() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["Settings"].tap()
@@ -128,7 +131,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testSettingsExposeSafeManualBackupAndRestore() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["Settings"].tap()
@@ -142,7 +145,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testGlobalCaptureIsAvailableFromSearch() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["global-search-button"].tap()
@@ -154,7 +157,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testArchivedEntryCanBeRestored() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["quick-capture-button"].tap()
@@ -180,7 +183,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testLibraryOrganizesEntryWithoutRequiringTag() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["quick-capture-button"].tap()
@@ -203,7 +206,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testTagLinkAndGlobalSearchFindEntry() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.buttons["quick-capture-button"].tap()
@@ -251,17 +254,17 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testTodayHabitCheckInAppearsInHistory() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.tabBars.buttons["Growth"].tap()
         app.buttons["growth-habits"].tap()
-        let name = app.textFields["new-habit-name"]
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         name.tap()
         name.typeText("Read")
-        app.buttons["add-habit"].tap()
-        app.keyboards.buttons["return"].tap()
+        app.buttons["habit-editor-save"].tap()
 
         app.tabBars.buttons["Today"].tap()
         XCTAssertTrue(app.buttons["Check in Read"].waitForExistence(timeout: 5))
@@ -274,17 +277,17 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testHabitInsightCreatesLinkedEntryAndHabitIsSearchable() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.tabBars.buttons["Growth"].tap()
         app.buttons["growth-habits"].tap()
-        let name = app.textFields["new-habit-name"]
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         name.tap()
         name.typeText("Reflect")
-        app.buttons["add-habit"].tap()
-        app.keyboards.buttons["return"].tap()
+        app.buttons["habit-editor-save"].tap()
         app.buttons["habit-reflect"].tap()
         app.buttons["habit-check-in-insight"].tap()
 
@@ -307,7 +310,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testFlagAppearsAsTodayContextAndIsSearchable() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.tabBars.buttons["Growth"].tap()
@@ -336,17 +339,17 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testHabitSupportsGoalAndLifecycleAppearsInTimeline() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.tabBars.buttons["Growth"].tap()
         app.buttons["growth-habits"].tap()
-        let habitName = app.textFields["new-habit-name"]
+        app.buttons["add-habit"].tap()
+        let habitName = app.textFields["habit-editor-name"]
         XCTAssertTrue(habitName.waitForExistence(timeout: 5))
         habitName.tap()
         habitName.typeText("Read")
-        app.buttons["add-habit"].tap()
-        app.keyboards.buttons["return"].tap()
+        app.buttons["habit-editor-save"].tap()
         app.navigationBars.buttons["Growth"].tap()
 
         app.buttons["growth-goals"].tap()
@@ -372,7 +375,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testManualReviewWithPeriodAppearsInTimelineLibraryAndSearch() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.tabBars.buttons["Library"].tap()
@@ -406,17 +409,17 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testManualReviewCanRelateHabitAndGoal() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         app.tabBars.buttons["Growth"].tap()
         app.buttons["growth-habits"].tap()
-        let habitName = app.textFields["new-habit-name"]
+        app.buttons["add-habit"].tap()
+        let habitName = app.textFields["habit-editor-name"]
         XCTAssertTrue(habitName.waitForExistence(timeout: 5))
         habitName.tap()
         habitName.typeText("Meditate")
-        app.buttons["add-habit"].tap()
-        app.keyboards.buttons["return"].tap()
+        app.buttons["habit-editor-save"].tap()
         app.navigationBars.buttons["Growth"].tap()
         app.buttons["growth-goals"].tap()
         let goalTitle = app.textFields["new-goal-title"]
@@ -445,5 +448,101 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Stay Present"].waitForExistence(timeout: 5))
         app.buttons["entry-manage-relationships"].tap()
         XCTAssertTrue(app.navigationBars["Reviewed Objects"].waitForExistence(timeout: 5))
+    }
+
+    func testSystemLanguageSelectsSimplifiedChineseAndEnglishResources() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(zh-Hans)",
+            "-AppleLocale", "zh_Hans_CN"
+        ]
+        app.launch()
+
+        for tab in ["今天", "时间线", "成长", "资料库"] {
+            XCTAssertTrue(app.tabBars.buttons[tab].waitForExistence(timeout: 5))
+        }
+        XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("快速记录"))
+        app.buttons["settings-button"].tap()
+        XCTAssertTrue(app.navigationBars["设置"].waitForExistence(timeout: 5))
+
+        app.terminate()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US"
+        ]
+        app.launch()
+
+        for tab in ["Today", "Timeline", "Growth", "Library"] {
+            XCTAssertTrue(app.tabBars.buttons[tab].waitForExistence(timeout: 5))
+        }
+        XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("Quick Capture"))
+    }
+
+    func testTodayAndTagEmptyStatesOfferClearStartingActions() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Record Today"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["today-open-growth"].isHittable)
+
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-tags"].tap()
+        XCTAssertTrue(app.staticTexts["Create Your First Tag"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["create-first-tag"].isHittable)
+        app.buttons["create-first-tag"].tap()
+        XCTAssertTrue(app.textFields["new-tag-name"].exists)
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+    }
+
+    func testGoalAndFlagOpenEditAndPersistAcrossRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-goals"].tap()
+        let title = app.textFields["new-goal-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.tap()
+        title.typeText("Device Goal")
+        app.buttons["add-goal"].tap()
+        title.tap()
+        title.typeText("Device Flag")
+        app.segmentedControls.buttons["Flag"].tap()
+        app.buttons["add-goal"].tap()
+        app.keyboards.buttons["return"].tap()
+
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["today-goal-device goal"].tap()
+        XCTAssertTrue(app.navigationBars["Device Goal"].waitForExistence(timeout: 5))
+        app.buttons["goal-edit"].tap()
+        let goalEditor = app.textFields["goal-editor-title"]
+        XCTAssertTrue(goalEditor.waitForExistence(timeout: 5))
+        goalEditor.tap()
+        goalEditor.typeText(" Edited")
+        app.buttons["goal-editor-save"].tap()
+        XCTAssertTrue(goalEditor.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Device Goal Edited"].waitForExistence(timeout: 10))
+
+        app.navigationBars.buttons["Today"].tap()
+        app.buttons["today-goal-device flag"].tap()
+        XCTAssertTrue(app.navigationBars["Device Flag"].waitForExistence(timeout: 5))
+        app.buttons["goal-edit"].tap()
+        let flagEditor = app.textFields["goal-editor-title"]
+        flagEditor.tap()
+        flagEditor.typeText(" Edited")
+        app.buttons["goal-editor-save"].tap()
+        XCTAssertTrue(flagEditor.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Device Flag Edited"].waitForExistence(timeout: 10))
+
+        app.terminate()
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.descendants(matching: .any)["app-shell"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["today-goal-device goal edited"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["today-goal-device flag edited"].waitForExistence(timeout: 10))
     }
 }

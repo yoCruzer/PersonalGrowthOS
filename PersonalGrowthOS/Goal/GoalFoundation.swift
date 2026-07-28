@@ -111,6 +111,31 @@ final class GoalService {
         }
     }
 
+    func update(_ goal: Goal, title: String, kind: GoalKind) throws {
+        let validatedTitle = try GoalRules.validatedTitle(title)
+        guard let persistedGoal = try fetchGoal(goal.id) else {
+            throw GoalValidationError.missingGoal
+        }
+        let originalTitle = persistedGoal.title
+        let originalNormalizedTitle = persistedGoal.normalizedTitle
+        let originalKind = persistedGoal.kind
+        let originalUpdatedAt = persistedGoal.updatedAt
+        persistedGoal.title = validatedTitle
+        persistedGoal.normalizedTitle = TextSearchNormalizer.normalize(validatedTitle)
+        persistedGoal.kind = kind
+        persistedGoal.updatedAt = now()
+        do {
+            try save()
+        } catch {
+            context.rollback()
+            persistedGoal.title = originalTitle
+            persistedGoal.normalizedTitle = originalNormalizedTitle
+            persistedGoal.kind = originalKind
+            persistedGoal.updatedAt = originalUpdatedAt
+            throw error
+        }
+    }
+
     func transition(_ goal: Goal, to status: GoalStatus) throws {
         guard let persistedGoal = try fetchGoal(goal.id) else {
             throw GoalValidationError.missingGoal

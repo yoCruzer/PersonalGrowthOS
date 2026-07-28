@@ -13,6 +13,36 @@ final class GoalFoundationTests: XCTestCase {
         }
     }
 
+    func testGoalAndFlagEditPreservesIdentityHistoryAndPersists() throws {
+        let fixture = try GoalFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        let context = container.mainContext
+        let base = Date(timeIntervalSince1970: 1_700_035_200)
+        var clock = base
+        let service = GoalService(context: context, now: { clock })
+        let goal = try service.create(title: "  Initial Goal  ", kind: .standard)
+        let goalID = goal.id
+        let eventIDs = try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).map(\.id)
+        clock = base.addingTimeInterval(30)
+
+        try service.update(goal, title: "  Edited Focus  ", kind: .flag)
+
+        XCTAssertEqual(goal.id, goalID)
+        XCTAssertEqual(goal.title, "Edited Focus")
+        XCTAssertEqual(goal.kind, .flag)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).map(\.id), eventIDs)
+        XCTAssertThrowsError(try service.update(goal, title: " ", kind: .standard)) {
+            XCTAssertEqual($0 as? GoalValidationError, .emptyTitle)
+        }
+
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        let persisted = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<Goal>()).first)
+        XCTAssertEqual(persisted.id, goalID)
+        XCTAssertEqual(persisted.title, "Edited Focus")
+        XCTAssertEqual(persisted.kind, .flag)
+    }
+
     func testV3StoreMigratesToV4WithoutChangingHabitIdentity() throws {
         let fixture = try GoalFixture()
         defer { fixture.remove() }
