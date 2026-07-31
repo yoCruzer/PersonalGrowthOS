@@ -74,14 +74,14 @@ Status values:
 | Checkpoint | Scope | Status | Focused validation | Commit |
 | --- | --- | --- | --- | --- |
 | C0 | Safe baseline, scope audit, Tracker and UX debt | VERIFIED | Git ancestry, clean state and documentation review | This checkpoint commit |
-| C1 | Additive Weight model, V5→V6 migration and CRUD/persistence tests | NOT_STARTED | Weight validation, CRUD, disk reopen and legacy migration | Pending |
+| C1 | Additive Weight model, V5→V6 migration and CRUD/persistence tests | VERIFIED | 4/4 focused tests passed: validation, CRUD/trend, disk reopen and V5 migration | This checkpoint commit |
 | C2 | Today/Growth weight UI, latest value, simple trend and UI smoke | NOT_STARTED | View behavior plus minimal UI CRUD/entry accessibility | Pending |
 | C3 | Weight-aware export/import and compatibility | NOT_STARTED | Old backup compatibility, round trip, reopen and empty-target checks | Pending |
 | C4 | Full build/unit/UI regression and final governance handoff | NOT_STARTED | Build, complete Unit/UI suites, `git diff --check`, clean branch | Pending |
 
 ## Migration Safety
 
-- The approved implementation direction is a new `WeightRecord` model in schema V6 and a lightweight V5→V6 migration.
+- A new `WeightRecord` model is implemented in schema V6 with a lightweight V5→V6 migration.
 - Existing Entry, ImageMetadata, Tag, Link, Habit, HabitLog, HabitConfiguration, Goal and GoalLifecycleEvent types and fields will not be renamed, removed or made stricter.
 - Migration fixtures must prove a V5 store reopens with existing Life Log data intact and an empty Weight collection.
 - A physical TestFlight overlay on a device containing the verified V5 Life Log data remains mandatory Owner validation; automated fixtures cannot prove the exact on-device store.
@@ -94,7 +94,7 @@ Status values:
 | Safe `main` baseline | VERIFIED | `main...fix/v1-device-smoke-round1` was `0 25`; merge-base was prior `main`; `git merge --ff-only` succeeded |
 | Remote baseline | VERIFIED | `origin/main` pushed to `dd09975`; execution branch created and tracking remote |
 | Baseline automated suite | VERIFIED (pre-existing) | 116 Unit + 21 UI, 137/137 pass recorded at the supplied stable version |
-| Completion Push focused tests | NOT_STARTED | Pending |
+| Completion Push focused tests | VERIFIED (C1) | `WeightFoundationTests`: 4/4 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C1/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-11-31-+0800.xcresult` |
 | Completion Push full Unit tests | NOT_STARTED | Pending |
 | Completion Push full UI tests | NOT_STARTED | Pending |
 | Completion Push build | NOT_STARTED | Pending |
