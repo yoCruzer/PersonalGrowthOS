@@ -8,6 +8,7 @@ struct GrowthView: View {
 
     @Query private var habits: [Habit]
     @Query private var goals: [Goal]
+    @Query private var weightRecords: [WeightRecord]
 
     var body: some View {
         List {
@@ -41,6 +42,18 @@ struct GrowthView: View {
                 }
             }
             .accessibilityIdentifier("growth-goals")
+            NavigationLink {
+                WeightHistoryView()
+            } label: {
+                HStack {
+                    Label("Weight", systemImage: "scalemass")
+                        .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
+                    Spacer()
+                    Text("\(weightRecords.count)")
+                }
+            }
+            .accessibilityIdentifier("growth-weight")
         }
         .navigationTitle("Growth")
         .accessibilityIdentifier("growth-view")

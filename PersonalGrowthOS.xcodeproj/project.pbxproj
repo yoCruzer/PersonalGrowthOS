@@ -42,6 +42,7 @@
 		B00000000000000000000033 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000036 /* Localizable.xcstrings */; };
 		B00000000000000000000034 /* WeightFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000037 /* WeightFoundation.swift */; };
 		B00000000000000000000035 /* WeightFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000038 /* WeightFoundationTests.swift */; };
+		B00000000000000000000036 /* WeightViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* WeightViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +101,7 @@
 		A00000000000000000000036 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A00000000000000000000037 /* WeightFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightFoundation.swift; sourceTree = "<group>"; };
 		A00000000000000000000038 /* WeightFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightFoundationTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000039 /* WeightViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -303,6 +305,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000037 /* WeightFoundation.swift */,
+				A00000000000000000000039 /* WeightViews.swift */,
 			);
 			path = Weight;
 			sourceTree = "<group>";
@@ -462,6 +465,7 @@
 				B00000000000000000000030 /* TransferModels.swift in Sources */,
 				B00000000000000000000031 /* ImportExportService.swift in Sources */,
 				B00000000000000000000034 /* WeightFoundation.swift in Sources */,
+				B00000000000000000000036 /* WeightViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

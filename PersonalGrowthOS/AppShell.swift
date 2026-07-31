@@ -130,6 +130,10 @@ private struct TodayView: View {
     ]) private var goals: [Goal]
     @Query private var habitLogs: [HabitLog]
     @Query private var habitConfigurations: [HabitConfiguration]
+    @Query(sort: [
+        SortDescriptor(\WeightRecord.recordedAt, order: .reverse),
+        SortDescriptor(\WeightRecord.createdAt, order: .reverse)
+    ]) private var weightRecords: [WeightRecord]
     @State private var coolingDownHabitIDs: Set<UUID> = []
     @State private var recentCheckIn: RecentHabitCheckIn?
     @State private var transientMessage: String?
@@ -233,6 +237,23 @@ private struct TodayView: View {
                 } footer: {
                     Text("Context for today, not a list of tasks you must update.")
                 }
+            }
+            Section("Weight") {
+                NavigationLink {
+                    WeightHistoryView()
+                } label: {
+                    if let latest = weightRecords.first {
+                        LabeledContent {
+                            Text(verbatim: WeightFormatting.kilograms(latest.weightKilograms))
+                                .accessibilityIdentifier("today-latest-weight")
+                        } label: {
+                            Label("Latest Weight", systemImage: "scalemass")
+                        }
+                    } else {
+                        Label("Record Weight", systemImage: "scalemass")
+                    }
+                }
+                .accessibilityIdentifier("today-weight")
             }
         }
         .navigationTitle("Today")

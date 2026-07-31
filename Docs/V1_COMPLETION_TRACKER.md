@@ -75,7 +75,7 @@ Status values:
 | --- | --- | --- | --- | --- |
 | C0 | Safe baseline, scope audit, Tracker and UX debt | VERIFIED | Git ancestry, clean state and documentation review | This checkpoint commit |
 | C1 | Additive Weight model, V5→V6 migration and CRUD/persistence tests | VERIFIED | 4/4 focused tests passed: validation, CRUD/trend, disk reopen and V5 migration | This checkpoint commit |
-| C2 | Today/Growth weight UI, latest value, simple trend and UI smoke | NOT_STARTED | View behavior plus minimal UI CRUD/entry accessibility | Pending |
+| C2 | Today/Growth weight UI, latest value, simple trend and UI smoke | VERIFIED | 1/1 focused UI test passed: Today entry, empty state, add, latest value and relaunch persistence | This checkpoint commit |
 | C3 | Weight-aware export/import and compatibility | NOT_STARTED | Old backup compatibility, round trip, reopen and empty-target checks | Pending |
 | C4 | Full build/unit/UI regression and final governance handoff | NOT_STARTED | Build, complete Unit/UI suites, `git diff --check`, clean branch | Pending |
 
@@ -95,6 +95,7 @@ Status values:
 | Remote baseline | VERIFIED | `origin/main` pushed to `dd09975`; execution branch created and tracking remote |
 | Baseline automated suite | VERIFIED (pre-existing) | 116 Unit + 21 UI, 137/137 pass recorded at the supplied stable version |
 | Completion Push focused tests | VERIFIED (C1) | `WeightFoundationTests`: 4/4 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C1/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-11-31-+0800.xcresult` |
+| Completion Push focused UI test | VERIFIED (C2) | Weight entry/relaunch flow: 1/1 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C2/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-15-05-+0800.xcresult` |
 | Completion Push full Unit tests | NOT_STARTED | Pending |
 | Completion Push full UI tests | NOT_STARTED | Pending |
 | Completion Push build | NOT_STARTED | Pending |
