@@ -44,6 +44,46 @@ final class WeightFoundationTests: XCTestCase {
         XCTAssertNil(remainingTrend.changeKilograms)
     }
 
+    func testServiceAndTrendUseStableUUIDOrderingWhenTimestampsMatch() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_000_000)
+        let firstID = try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000001"))
+        let secondID = try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000002"))
+        let thirdID = try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000003"))
+        let first = WeightRecord(
+            id: firstID,
+            weightKilograms: 70,
+            recordedAt: timestamp,
+            createdAt: timestamp
+        )
+        let second = WeightRecord(
+            id: secondID,
+            weightKilograms: 71,
+            recordedAt: timestamp,
+            createdAt: timestamp
+        )
+        let third = WeightRecord(
+            id: thirdID,
+            weightKilograms: 73,
+            recordedAt: timestamp,
+            createdAt: timestamp
+        )
+        [third, first, second].forEach(context.insert)
+        try context.save()
+
+        let serviceOrder = try WeightRecordService(context: context).fetchAll()
+        XCTAssertEqual(serviceOrder.map(\.id), [firstID, secondID, thirdID])
+        XCTAssertEqual(
+            WeightRecordOrdering.oldestFirst([third, first, second]).map(\.id),
+            [thirdID, secondID, firstID]
+        )
+
+        let trend = try XCTUnwrap(WeightTrend.make(from: [third, first, second]))
+        XCTAssertEqual(trend.latestKilograms, 70, accuracy: 0.001)
+        XCTAssertEqual(try XCTUnwrap(trend.changeKilograms), -1, accuracy: 0.001)
+    }
+
     func testWeightRecordPersistsAcrossStoreReopen() throws {
         let fixture = try WeightFixture()
         defer { fixture.remove() }
@@ -99,9 +139,21 @@ final class WeightFoundationTests: XCTestCase {
         }
 
         let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id), [entryID])
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).map(\.id), [habitID])
-        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Goal>()).map(\.id), [goalID])
+        let migratedEntry = try XCTUnwrap(
+            migrated.mainContext.fetch(FetchDescriptor<Entry>()).first
+        )
+        let migratedHabit = try XCTUnwrap(
+            migrated.mainContext.fetch(FetchDescriptor<Habit>()).first
+        )
+        let migratedGoal = try XCTUnwrap(
+            migrated.mainContext.fetch(FetchDescriptor<Goal>()).first
+        )
+        XCTAssertEqual(migratedEntry.id, entryID)
+        XCTAssertEqual(migratedEntry.body, "Existing Life Log")
+        XCTAssertEqual(migratedHabit.id, habitID)
+        XCTAssertEqual(migratedHabit.name, "Existing Habit")
+        XCTAssertEqual(migratedGoal.id, goalID)
+        XCTAssertEqual(migratedGoal.title, "Existing Goal")
         XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<WeightRecord>()).count, 0)
     }
 }

@@ -10,15 +10,16 @@ enum WeightFormatting {
 
 struct WeightHistoryView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: [
-        SortDescriptor(\WeightRecord.recordedAt, order: .reverse),
-        SortDescriptor(\WeightRecord.createdAt, order: .reverse),
-        SortDescriptor(\WeightRecord.id, order: .forward)
-    ]) private var records: [WeightRecord]
+    @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
+    private var queriedRecords: [WeightRecord]
     @State private var isAddingRecord = false
     @State private var editingRecord: WeightRecord?
     @State private var pendingDeletion: WeightRecord?
     @State private var errorMessage: String?
+
+    private var records: [WeightRecord] {
+        WeightRecordOrdering.newestFirst(queriedRecords)
+    }
 
     private var trend: WeightTrend? {
         WeightTrend.make(from: records)
@@ -75,7 +76,7 @@ struct WeightHistoryView: View {
 
                 Section("Trend") {
                     if records.count >= 2 {
-                        Chart(records.reversed()) { record in
+                        Chart(WeightRecordOrdering.oldestFirst(records)) { record in
                             LineMark(
                                 x: .value("Date", record.recordedAt),
                                 y: .value("Weight (kg)", record.weightKilograms)

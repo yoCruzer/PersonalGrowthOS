@@ -40,17 +40,36 @@ enum WeightRules {
     }
 }
 
+enum WeightRecordOrdering {
+    static let newestFirstSortDescriptors = [
+        SortDescriptor(\WeightRecord.recordedAt, order: .reverse),
+        SortDescriptor(\WeightRecord.createdAt, order: .reverse),
+        SortDescriptor(\WeightRecord.id, order: .forward)
+    ]
+
+    static func newestFirst(_ records: [WeightRecord]) -> [WeightRecord] {
+        records.sorted {
+            if $0.recordedAt != $1.recordedAt {
+                return $0.recordedAt > $1.recordedAt
+            }
+            if $0.createdAt != $1.createdAt {
+                return $0.createdAt > $1.createdAt
+            }
+            return $0.id.uuidString < $1.id.uuidString
+        }
+    }
+
+    static func oldestFirst(_ records: [WeightRecord]) -> [WeightRecord] {
+        Array(newestFirst(records).reversed())
+    }
+}
+
 struct WeightTrend: Equatable {
     let latestKilograms: Double
     let changeKilograms: Double?
 
     static func make(from records: [WeightRecord]) -> WeightTrend? {
-        let ordered = records.sorted {
-            if $0.recordedAt != $1.recordedAt {
-                return $0.recordedAt > $1.recordedAt
-            }
-            return $0.createdAt > $1.createdAt
-        }
+        let ordered = WeightRecordOrdering.newestFirst(records)
         guard let latest = ordered.first else { return nil }
         return WeightTrend(
             latestKilograms: latest.weightKilograms,
@@ -135,11 +154,10 @@ final class WeightRecordService {
     }
 
     func fetchAll() throws -> [WeightRecord] {
-        try context.fetch(FetchDescriptor<WeightRecord>(sortBy: [
-            SortDescriptor(\WeightRecord.recordedAt, order: .reverse),
-            SortDescriptor(\WeightRecord.createdAt, order: .reverse),
-            SortDescriptor(\WeightRecord.id, order: .forward)
-        ]))
+        let records = try context.fetch(FetchDescriptor<WeightRecord>(
+            sortBy: WeightRecordOrdering.newestFirstSortDescriptors
+        ))
+        return WeightRecordOrdering.newestFirst(records)
     }
 
     private func fetch(id: UUID) throws -> WeightRecord? {

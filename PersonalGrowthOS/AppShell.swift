@@ -130,10 +130,8 @@ private struct TodayView: View {
     ]) private var goals: [Goal]
     @Query private var habitLogs: [HabitLog]
     @Query private var habitConfigurations: [HabitConfiguration]
-    @Query(sort: [
-        SortDescriptor(\WeightRecord.recordedAt, order: .reverse),
-        SortDescriptor(\WeightRecord.createdAt, order: .reverse)
-    ]) private var weightRecords: [WeightRecord]
+    @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
+    private var queriedWeightRecords: [WeightRecord]
     @State private var coolingDownHabitIDs: Set<UUID> = []
     @State private var recentCheckIn: RecentHabitCheckIn?
     @State private var transientMessage: String?
@@ -145,6 +143,10 @@ private struct TodayView: View {
 
     private var activeGoals: [Goal] {
         goals.filter { $0.status == .active }
+    }
+
+    private var weightRecords: [WeightRecord] {
+        WeightRecordOrdering.newestFirst(queriedWeightRecords)
     }
 
     var body: some View {

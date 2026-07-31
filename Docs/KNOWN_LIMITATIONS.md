@@ -16,7 +16,7 @@
 
 ## Persistence and Device Validation
 
-- Automated V5→V6 fixtures preserve existing Entry, Habit and Goal data, but the exact Owner TestFlight store still requires an overlay migration test.
+- Automated V5→V6 fixtures preserve representative Entry, Habit and Goal identities plus Entry body, Habit name and Goal title, but the exact Owner TestFlight store still requires an overlay migration test.
 - Weight persistence, backup and relaunch are simulator-verified only in this push.
 - No new physical-device, TestFlight-build or actual iCloud multi-device validation was performed.
 

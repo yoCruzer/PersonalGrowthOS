@@ -2,19 +2,19 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Completion Push handoff |
-| Status | COMPLETE — V1 Feature-Complete Candidate ready for Owner audit |
+| Current checkpoint | PR #1 review follow-up handoff |
+| Status | COMPLETE — two Review P2 findings addressed; independent re-review pending |
 | Execution branch | `feature/v1-completion-push` |
 | Baseline | `main` at `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Latest implementation commit | `77d98a5` |
-| Automated gate | PASS — Build, 122 Unit and 22 UI |
+| Latest implementation head | Review-fix commit containing this handoff |
+| Automated gate | PASS — 5 Weight tests, 6 Transfer tests and Simulator Debug Build |
 | Physical gate | Pending concentrated TestFlight validation |
 
 ## Completed Objective
 
 Complete the approved V1 functional scope from the first TestFlight-smoke-passed baseline and add a bounded, persistent lightweight Weight capability without weakening existing Life Log data safety.
 
-The implementation objective and automated gate are complete. The execution branch is pushed and remains unmerged to `main`.
+The original implementation objective and automated gate are complete. The review follow-up stabilizes Weight ordering and enforces backup schema payload semantics without changing the approved feature set.
 
 ## Completed Scope
 
@@ -27,6 +27,8 @@ The implementation objective and automated gate are complete. The execution bran
 - Added migration, persistence, CRUD, transfer and UI regression coverage.
 - Recorded P2 image debts without expanding the media subsystem.
 - Passed the final Build and all 144 automated tests.
+- Addressed the two PR #1 P2 findings with deterministic Weight ordering and schema-v1 non-empty Weight rejection.
+- Added focused regression coverage and representative migration field assertions.
 
 ## Constraints Preserved
 
@@ -39,6 +41,6 @@ The implementation objective and automated gate are complete. The execution bran
 
 ## Owner Acceptance Boundary
 
-Automated completion does not equal physical acceptance. The next task is a concentrated TestFlight overlay on the existing V5 device store, followed by the checklist in `Docs/CURRENT_STATE.md` and the detailed limitations in `Docs/KNOWN_LIMITATIONS.md`.
+The next task is independent re-review of the incremental PR #1 diff. This follow-up ran 11 focused tests and one Simulator Debug Build; it did not rerun the full Unit or UI suites.
 
-Do not start feature expansion or merge this branch until the Owner completes the requested audit.
+Do not start feature expansion, mark the PR ready, or merge this branch until the requested re-review is complete.

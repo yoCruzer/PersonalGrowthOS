@@ -6,11 +6,11 @@
 | Last verified | 2026-07-31 |
 | Current branch | `feature/v1-completion-push` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Latest implementation commit | `77d98a5` |
-| Governance status | V1 Feature-Complete Candidate — automated gate passed; concentrated TestFlight validation pending |
-| Completed Macro Stages | S0–S10 plus V1 Completion Push C0–C4 |
-| Latest automated gate | PASS — Simulator Build, 122 Unit Tests and 22 UI Tests |
-| Next checkpoint | Owner audit, then concentrated TestFlight overlay and physical-device validation |
+| Latest implementation head | Review-fix commit containing this handoff |
+| Governance status | V1 Feature-Complete Candidate — PR review P2 findings addressed; independent re-review pending |
+| Completed Macro Stages | S0–S10 plus V1 Completion Push C0–C5 |
+| Latest automated gate | PASS — 5 Weight tests, 6 Transfer tests and Simulator Debug Build |
+| Next checkpoint | Independent re-review of the PR #1 incremental diff |
 
 ## Authoritative Product Baseline
 
@@ -36,14 +36,15 @@ The Completion Push adds a lightweight Weight capability:
 - A separate `WeightRecord` SwiftData model stores UUID identity, kilograms, record date and audit timestamps.
 - Users can add, browse, edit and delete dated records from Today or Growth.
 - The Weight history shows the latest value, change from the preceding record and a simple time-series chart when at least two records exist.
+- Weight uses one canonical deterministic order: recorded date descending, creation date descending and UUID ascending. The chart reverses that total order for oldest-to-newest display.
 - Empty state, validation, restart persistence and localized strings are present.
-- Weight records participate in full backup/restore package schema v2. The importer remains compatible with schema v1 backups that contain no Weight data.
+- Weight records participate in full backup/restore package schema v2. The importer accepts schema v1 with a missing or empty Weight payload and rejects schema v1 with non-empty Weight data.
 
 ## Persistence and Migration Safety
 
 SwiftData schema V6 adds only `WeightRecord`. The explicit V5→V6 migration is lightweight. No existing Entry, ImageMetadata, Tag, ObjectLink, Habit, HabitLog, HabitConfiguration, Goal or GoalLifecycleEvent field was renamed, removed or made stricter.
 
-Automated migration coverage creates an on-disk V5 store containing existing Entry/Habit/Goal data, reopens it through V6 and verifies the old identities and values remain intact while Weight starts empty. Separate on-disk coverage verifies Weight data survives container reopen. Full transfer tests verify Weight identity round trip and service-level schema-v1 import compatibility.
+Automated migration coverage creates an on-disk V5 store containing representative Entry, Habit and Goal data, reopens it through V6 and verifies their identities plus Entry body, Habit name and Goal title are preserved while Weight starts empty. Separate on-disk coverage verifies Weight data survives container reopen. Transfer coverage verifies Weight UUID, kilograms and timestamps round trip and enforces the schema-v1 payload boundary.
 
 The exact TestFlight overlay against the Owner’s existing device store has not been performed in this Completion Push. That physical V5→V6 overlay remains the primary next validation.
 
@@ -51,7 +52,7 @@ Original image bytes remain in the private media tree rather than SwiftData. Clo
 
 ## Automated Validation
 
-All final checks used the iPhone 17 Pro simulator on iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`):
+The pre-review candidate at `6df0119` was validated on the iPhone 17 Pro simulator on iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`):
 
 - Generic iOS Simulator Debug Build: PASS.
 - Full Unit Tests: 122/122 passed, 0 failed, 0 skipped.
@@ -63,11 +64,21 @@ All final checks used the iPhone 17 Pro simulator on iOS 26.5 (`4C8C76D9-41F0-4E
 - String Catalog JSON validation and English/Simplified Chinese dry-run compilation: PASS.
 - `git diff --check`: PASS.
 
+The PR review follow-up did not rerun either full suite. It executed only the required focused checks against the incremental fix:
+
+- `WeightFoundationTests`: 5/5 passed, 0 failed, 0 skipped.
+- Selected transfer-schema tests: 6/6 passed, 0 failed, 0 skipped.
+- Ordinary iOS Simulator Debug Build: PASS.
+- Full Unit Tests: not executed for this follow-up.
+- Full UI Tests: not executed for this follow-up.
+
 Result bundles:
 
 - Unit: `/tmp/PersonalGrowthOS-V1Completion-Final-Unit/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-36-55-+0800.xcresult`
 - UI: `/tmp/PersonalGrowthOS-V1Completion-Final-UI/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-39-42-+0800.xcresult`
 - Transfer: `/tmp/PersonalGrowthOS-V1Completion-C3/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-33-19-+0800.xcresult`
+- Review follow-up Weight: `/tmp/PersonalGrowthOS-V1Review-Weight/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-46-47-+0800.xcresult`
+- Review follow-up Transfer: `/tmp/PersonalGrowthOS-V1Review-Transfer-Final/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-51-33-+0800.xcresult`
 
 Xcode emitted environment/toolchain warnings while injecting signed XCTest frameworks and resolving the debugger version during UI launches. They did not produce build or test failures. No physical-device, new TestFlight-build or iCloud multi-device validation was executed in this push.
 
@@ -81,4 +92,4 @@ Xcode emitted environment/toolchain warnings while injecting signed XCTest frame
 
 ## Next Action
 
-The Owner should audit `feature/v1-completion-push`, then prepare one concentrated TestFlight build without merging the branch first. Overlay it on the device holding the verified V5 Life Log data, confirm launch/migration and existing Entry data, then exercise Weight CRUD, trend, relaunch, background recovery and full backup coverage. Record only physical behavior actually observed.
+The independent Reviewer should re-review the incremental PR #1 diff. After approval, the Owner can prepare one concentrated TestFlight build without merging the branch first. Overlay it on the device holding the verified V5 Life Log data, confirm launch/migration and existing Entry data, then exercise Weight CRUD, trend, relaunch, background recovery and full backup coverage. Record only physical behavior actually observed.

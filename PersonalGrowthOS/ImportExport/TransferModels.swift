@@ -246,6 +246,9 @@ enum TransferValidator {
         ) else {
             throw TransferPackageError.unsupportedSchema(manifest.packageSchemaVersion)
         }
+        guard manifest.packageSchemaVersion != 1 || data.weightRecords.isEmpty else {
+            throw TransferPackageError.invalidObject("weightRecord")
+        }
         guard data.totalObjectCount <= limits.maximumObjectCount else {
             throw TransferPackageError.objectLimitExceeded
         }

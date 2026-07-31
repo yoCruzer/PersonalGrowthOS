@@ -82,12 +82,13 @@ Status values:
 | C2 | Today/Growth weight UI, latest value, simple trend and UI smoke | VERIFIED | 1/1 focused UI test passed: Today entry, empty state, add, latest value and relaunch persistence | `17d3607` |
 | C3 | Weight-aware export/import and compatibility | VERIFIED | 18/18 transfer tests passed, including validator/service-level v1 compatibility and weight identity round trip | `77d98a5` |
 | C4 | Full build/unit/UI regression and final governance handoff | VERIFIED | Build PASS; Unit 122/122; UI 22/22; strings and `git diff --check` PASS | Final handoff commit |
+| C5 | PR review follow-up: Weight ordering and transfer schema semantics | VERIFIED | Weight 5/5; selected Transfer 6/6; Simulator Debug Build PASS | Review-fix commit |
 
 ## Migration Safety
 
 - A new `WeightRecord` model is implemented in schema V6 with a lightweight V5→V6 migration.
 - Existing Entry, ImageMetadata, Tag, Link, Habit, HabitLog, HabitConfiguration, Goal and GoalLifecycleEvent types and fields will not be renamed, removed or made stricter.
-- Migration fixtures prove a V5 store reopens with existing Life Log data intact and an empty Weight collection.
+- Migration fixtures prove a V5 store reopens with representative Entry, Habit and Goal identities plus Entry body, Habit name and Goal title preserved, and with an empty Weight collection.
 - A physical TestFlight overlay on a device containing the verified V5 Life Log data remains mandatory Owner validation; automated fixtures cannot prove the exact on-device store.
 
 ## Validation Ledger
@@ -106,4 +107,8 @@ Status values:
 | Completion Push build | VERIFIED (C4) | Generic iOS Simulator Debug build exited successfully |
 | String Catalog | VERIFIED (C4) | JSON validation and English/Simplified Chinese dry-run compilation passed |
 | Final patch hygiene | VERIFIED (C4) | `git diff --check` passed |
+| Review follow-up Weight tests | VERIFIED (C5) | 5/5 passed, 0 failed, 0 skipped; fixed UUID tie-breaker, trend, CRUD, disk reopen and migration; xcresult `/tmp/PersonalGrowthOS-V1Review-Weight/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-46-47-+0800.xcresult` |
+| Review follow-up Transfer tests | VERIFIED (C5) | Selected 6/6 passed, 0 failed, 0 skipped; v1 missing/empty/non-empty, v2 valid/invalid/duplicate/round-trip and v3 unsupported; xcresult `/tmp/PersonalGrowthOS-V1Review-Transfer-Final/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-51-33-+0800.xcresult` |
+| Review follow-up build | VERIFIED (C5) | Ordinary iOS Simulator Debug build exited successfully |
+| Review follow-up full Unit/UI | NOT_STARTED (C5) | Not required and not executed; retained for Build 3 final candidate |
 | Completion Push physical device | DEFERRED | Owner concentrated TestFlight after this branch |
