@@ -7,7 +7,7 @@
 | Baseline branch | `main` |
 | Baseline commit | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Execution branch | `feature/v1-completion-push` |
-| Overall status | VERIFIED |
+| Overall status | BLOCKED — implementation/validation/Archive complete; external Apple account action required for upload |
 | Last updated | 2026-07-31 |
 
 ## Purpose
@@ -35,7 +35,7 @@ Status values:
 | Lightweight manual Review | `CORE_MODEL.md`; `V1_SCOPE.md`; S8 | Implemented | VERIFIED | Review paths in Capture, Entry, Library, Search and Links | Review period/link/delete/search/UI coverage | No automatic reports, analytics or templates by design | Requires only regression in next concentrated TestFlight | No |
 | Library: Inbox, All Entries, Tags, Archived | `INFORMATION_ARCHITECTURE.md`; `V1_SCOPE.md`; S5 | Implemented | VERIFIED | `Library/`, `Organization/` | Organization, link integrity, search and UI coverage | Inbox intentionally does not require clearing | Existing first TestFlight smoke passed for Life Log CRUD | No |
 | Global local Search: Entry/Review/Tag/Habit/Goal | `INFORMATION_ARCHITECTURE.md`; `V1_SCOPE.md`; S5–S10 | Implemented | VERIFIED | `Search/SearchView.swift`, organization search service | Search correctness and measured 5,000-entry fixture | In-memory normalized scan; no OCR/FTS/semantic search | Requires only regression in next concentrated TestFlight | No |
-| Offline local persistence and migration | `DESIGN_PRINCIPLES.md`; `V1_SCOPE.md`; S2/S10 | Implemented through schema V5 | VERIFIED | Versioned SwiftData schema and private media storage | In-memory/on-disk reopen and V1→V5 migration fixtures | CloudKit intentionally disabled | Existing TestFlight Life Log persistence passed; V6 migration will need overlay verification | No |
+| Offline local persistence and migration | `DESIGN_PRINCIPLES.md`; `V1_SCOPE.md`; S2/S10 | Implemented through schema V5 | VERIFIED | Versioned SwiftData schema V6 and private media storage | In-memory/on-disk reopen, existing migration fixtures and V5→V6 migration fixture | CloudKit intentionally disabled | Existing TestFlight Life Log persistence passed; V6 migration needs overlay verification | No |
 | Full export and empty-store import | `V1_SCOPE.md`; S9/S10 | Implemented | VERIFIED | `ImportExport/`, Settings | Round trip, reopen, integrity, rollback, limits and UI coverage | Unencrypted ZIP; import does not merge or erase a non-empty store | Concentrated TestFlight should recheck after weight inclusion | No |
 | Foundation four-area shell and global capabilities | `INFORMATION_ARCHITECTURE.md`; S10 | Implemented | VERIFIED | `AppShell.swift` | App composition and 21 UI tests in baseline | None blocking | Existing first TestFlight navigation passed | No |
 | Lightweight weight records: CRUD, dates, kg, latest, trend, empty state | Owner-approved 2026-07-31 V1 addition | Not implemented | VERIFIED | `Weight/`, Today/Growth entry points, schema V6 and transfer package v2 | Weight validation/CRUD/reopen/V5 migration, transfer round trip/v1 compatibility and minimal UI relaunch flow | No HealthKit, diagnosis, BMI, advice, goals or reminders | V5→V6 TestFlight overlay, CRUD, trend and relaunch remain required | No |
@@ -83,6 +83,7 @@ Status values:
 | C3 | Weight-aware export/import and compatibility | VERIFIED | 18/18 transfer tests passed, including validator/service-level v1 compatibility and weight identity round trip | `77d98a5` |
 | C4 | Full build/unit/UI regression and final governance handoff | VERIFIED | Build PASS; Unit 122/122; UI 22/22; strings and `git diff --check` PASS | Final handoff commit |
 | C5 | PR review follow-up: Weight ordering and transfer schema semantics | VERIFIED | Weight 5/5; selected Transfer 6/6; Simulator Debug Build PASS | Review-fix commit |
+| C6 | V1 Final Candidate validation, Build 3 metadata and Archive | BLOCKED | Debug Build PASS; Unit 125/125; UI 22/22; bilingual/string/static checks PASS; Archive PASS; export blocked by missing Xcode account/distribution certificate | `423438e` plus final handoff commit |
 
 ## Migration Safety
 
@@ -110,5 +111,11 @@ Status values:
 | Review follow-up Weight tests | VERIFIED (C5) | 5/5 passed, 0 failed, 0 skipped; fixed UUID tie-breaker, trend, CRUD, disk reopen and migration; xcresult `/tmp/PersonalGrowthOS-V1Review-Weight/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-46-47-+0800.xcresult` |
 | Review follow-up Transfer tests | VERIFIED (C5) | Selected 6/6 passed, 0 failed, 0 skipped; v1 missing/empty/non-empty, v2 valid/invalid/duplicate/round-trip and v3 unsupported; xcresult `/tmp/PersonalGrowthOS-V1Review-Transfer-Final/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-51-33-+0800.xcresult` |
 | Review follow-up build | VERIFIED (C5) | Ordinary iOS Simulator Debug build exited successfully |
-| Review follow-up full Unit/UI | NOT_STARTED (C5) | Not required and not executed; retained for Build 3 final candidate |
+| Build 3 full Unit tests | VERIFIED (C6) | 125/125 passed, 0 failed, 0 skipped; `/tmp/PersonalGrowthOS-V1Final-Build3-Unit.xcresult` |
+| Build 3 full UI tests | VERIFIED (C6) | 22/22 passed, 0 failed, 0 skipped; `/tmp/PersonalGrowthOS-V1Final-Build3-UI.xcresult` |
+| Build 3 Simulator Debug Build | VERIFIED (C6) | iPhone 16 / iOS 26.5; `/tmp/PersonalGrowthOS-V1Final-Build3-Debug.xcresult` |
+| Build 3 strings/localizations | VERIFIED (C6) | 285 bilingual keys; JSON, English and Simplified Chinese compilation passed |
+| Build 3 static/project checks | VERIFIED (C6) | `git diff --check`, conflict-marker scan, pbxproj parse, target/scheme and Release settings passed |
+| Build 3 Archive | VERIFIED (C6) | Version 1.0 (3); `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` |
+| Build 3 App Store export/upload | BLOCKED (C6) | Xcode `No Accounts`; no `iOS Distribution` certificate; server validation/upload not executed |
 | Completion Push physical device | DEFERRED | Owner concentrated TestFlight after this branch |

@@ -18,7 +18,14 @@
 
 - Automated V5→V6 fixtures preserve representative Entry, Habit and Goal identities plus Entry body, Habit name and Goal title, but the exact Owner TestFlight store still requires an overlay migration test.
 - Weight persistence, backup and relaunch are simulator-verified only in this push.
-- No new physical-device, TestFlight-build or actual iCloud multi-device validation was performed.
+- Build 3 has not been installed on a physical device. The V5→V6 overlay, Weight behavior and backup flow remain Owner physical validation.
+- Actual iCloud multi-device validation was not performed because CloudKit is intentionally disabled in V1.
+
+## Distribution Blocker
+
+- The Version 1.0 (Build 3) Archive exists at `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive`.
+- App Store Connect export, server validation and upload are blocked because Xcode has no signed-in Apple account and the keychain has no iOS Distribution certificate.
+- This blocks Build 3 TestFlight availability, but does not block local implementation, automated validation or Archive completeness.
 
 ## Existing Technical Debt
 

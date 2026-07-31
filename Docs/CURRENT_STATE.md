@@ -6,90 +6,99 @@
 | Last verified | 2026-07-31 |
 | Current branch | `feature/v1-completion-push` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Latest implementation head | Review-fix commit containing this handoff |
-| Governance status | V1 Feature-Complete Candidate — PR review P2 findings addressed; independent re-review pending |
-| Completed Macro Stages | S0–S10 plus V1 Completion Push C0–C5 |
-| Latest automated gate | PASS — 5 Weight tests, 6 Transfer tests and Simulator Debug Build |
-| Next checkpoint | Independent re-review of the PR #1 incremental diff |
+| Final implementation head | `423438e` (`chore: prepare build 3 testflight candidate`) |
+| Governance status | V1 Final Candidate — implementation and automated validation complete; Archive ready; upload externally blocked |
+| Completed delivery | S0–S10, Completion Push C0–C5 and Final Candidate C6 |
+| Final automated gate | PASS — 125 Unit + 22 UI = 147/147 tests |
+| Release gate | Archive PASS; App Store Connect export blocked because Xcode has no signed-in account or iOS Distribution certificate |
+| Next checkpoint | Owner signs in to Xcode with the App Store Connect account, then uploads the existing Build 3 Archive |
 
 ## Authoritative Product Baseline
 
-The Foundation Documents in `Docs/INDEX.md` remain authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` defines the completed S1–S10 delivery. The Owner-approved 2026-07-31 Completion Push adds only lightweight manual weight records to V1; it does not change the product position or introduce a separate health product.
+The Foundation Documents in `Docs/INDEX.md` remain authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` defines the completed S1–S10 delivery. The Owner-approved 2026-07-31 Completion Push adds only lightweight manual Weight records to V1; it does not introduce a separate health product.
 
-The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first iPhone smoke test supplied by the Owner. It was safely fast-forwarded to `main` and pushed before this execution branch was created. Completion work remains isolated on `feature/v1-completion-push`; this branch has not been merged back to `main`.
+The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first Owner-supplied iPhone smoke test. It was safely fast-forwarded to `main` before the isolated `feature/v1-completion-push` branch was created. `main` remains unchanged and this branch remains unmerged.
 
-## V1 Feature-Complete Candidate
+## V1 Final Candidate
 
-The original V1 scope remains available:
+The candidate provides:
 
-- Rich local Entry capture with text, 0–9 original images, dates, editing, archive and delete.
-- Foundation Today, Timeline, Growth and Library shell with global Quick Capture and Search.
+- Rich local Entry capture with text, 0–9 original images, dates, editing, archive, restore and permanent delete.
+- Today, Timeline, Growth and Library with global Quick Capture and Search.
 - Inbox, All Entries, Tags and Archived organization.
 - Structured Habit lifecycle and HabitLog check-ins.
 - Goal and Flag lifecycle with bounded relationships.
 - Lightweight manual Review Entries using the shared Entry lifecycle.
 - Complete unencrypted ZIP export and safe empty-store import.
 - English and Simplified Chinese interface.
+- Lightweight Weight CRUD, dates, kilograms, latest value, previous-record change, simple chart, history, Today/Growth entry points and restart persistence.
 
-The Completion Push adds a lightweight Weight capability:
-
-- A separate `WeightRecord` SwiftData model stores UUID identity, kilograms, record date and audit timestamps.
-- Users can add, browse, edit and delete dated records from Today or Growth.
-- The Weight history shows the latest value, change from the preceding record and a simple time-series chart when at least two records exist.
-- Weight uses one canonical deterministic order: recorded date descending, creation date descending and UUID ascending. The chart reverses that total order for oldest-to-newest display.
-- Empty state, validation, restart persistence and localized strings are present.
-- Weight records participate in full backup/restore package schema v2. The importer accepts schema v1 with a missing or empty Weight payload and rejects schema v1 with non-empty Weight data.
+No approved V1 capability remains unimplemented. UX-01 and UX-02 remain documented non-blocking P2 debt and were not expanded into a media-browser redesign.
 
 ## Persistence and Migration Safety
 
-SwiftData schema V6 adds only `WeightRecord`. The explicit V5→V6 migration is lightweight. No existing Entry, ImageMetadata, Tag, ObjectLink, Habit, HabitLog, HabitConfiguration, Goal or GoalLifecycleEvent field was renamed, removed or made stricter.
+SwiftData schema V6 adds only `WeightRecord`. The explicit V5→V6 lightweight migration does not rename, remove or tighten fields on Entry, ImageMetadata, Tag, ObjectLink, Habit, HabitLog, HabitConfiguration, Goal or GoalLifecycleEvent.
 
-Automated migration coverage creates an on-disk V5 store containing representative Entry, Habit and Goal data, reopens it through V6 and verifies their identities plus Entry body, Habit name and Goal title are preserved while Weight starts empty. Separate on-disk coverage verifies Weight data survives container reopen. Transfer coverage verifies Weight UUID, kilograms and timestamps round trip and enforces the schema-v1 payload boundary.
+Automated migration coverage creates an on-disk V5 store with representative Entry, Habit and Goal data, opens it through V6 and verifies identities and representative fields while Weight starts empty. Separate on-disk coverage verifies Weight survives container reopen. Existing migration and recovery tests cover earlier schemas, relationship integrity and media boundaries.
 
-The exact TestFlight overlay against the Owner’s existing device store has not been performed in this Completion Push. That physical V5→V6 overlay remains the primary next validation.
+Full backup package schema v2 includes Weight. The importer accepts valid schema-v1 packages with missing or empty Weight data, rejects schema v1 with non-empty Weight data, validates schema-v2 Weight identity and values, and preserves Weight through round trip. Original image bytes remain in the private media tree rather than SwiftData. There is no destructive store-rebuild or empty-store fallback after migration failure.
 
-Original image bytes remain in the private media tree rather than SwiftData. CloudKit remains disabled. No account, server, third-party backend, external API, HealthKit entitlement or unapproved capability was added.
+The exact V5→V6 overlay against the Owner’s existing iPhone store has not been executed. It remains the first physical-device validation.
 
-## Automated Validation
+## Final Automated Validation
 
-The pre-review candidate at `6df0119` was validated on the iPhone 17 Pro simulator on iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`):
+Executed on iPhone 16 Simulator, iOS 26.5 (`5F04DE28-8329-4774-9488-076D6DDC5230`):
 
-- Generic iOS Simulator Debug Build: PASS.
-- Full Unit Tests: 122/122 passed, 0 failed, 0 skipped.
+- Simulator Debug Build: PASS.
+- Full Unit Tests: 125/125 passed, 0 failed, 0 skipped.
 - Full UI Tests: 22/22 passed, 0 failed, 0 skipped.
-- Combined automated total: 144/144 passed.
-- Weight focused Unit Tests: 4/4 passed, covering validation, CRUD/trend, on-disk reopen and V5→V6 migration.
-- Import/export recovery tests: 18/18 passed, including current package round trip, original media, rollback, schema-v1 compatibility and Weight identity.
-- Weight focused UI test: 1/1 passed, covering discoverable Today entry, empty state, create, latest value and relaunch persistence.
-- String Catalog JSON validation and English/Simplified Chinese dry-run compilation: PASS.
-- `git diff --check`: PASS.
-
-The PR review follow-up did not rerun either full suite. It executed only the required focused checks against the incremental fix:
-
-- `WeightFoundationTests`: 5/5 passed, 0 failed, 0 skipped.
-- Selected transfer-schema tests: 6/6 passed, 0 failed, 0 skipped.
-- Ordinary iOS Simulator Debug Build: PASS.
-- Full Unit Tests: not executed for this follow-up.
-- Full UI Tests: not executed for this follow-up.
+- Combined automated total: 147/147 passed.
+- Import/export, recovery, media, migration and Weight tests are included in the full Unit suite.
+- English build-for-testing: PASS.
+- Simplified Chinese build-for-testing: PASS.
+- String Catalog JSON and bilingual-value validation: PASS (285 keys).
+- Xcode project parsing, target/scheme references and Release build settings: PASS.
+- `git diff --check` and merge-conflict-marker scan: PASS.
 
 Result bundles:
 
-- Unit: `/tmp/PersonalGrowthOS-V1Completion-Final-Unit/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-36-55-+0800.xcresult`
-- UI: `/tmp/PersonalGrowthOS-V1Completion-Final-UI/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-39-42-+0800.xcresult`
-- Transfer: `/tmp/PersonalGrowthOS-V1Completion-C3/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-33-19-+0800.xcresult`
-- Review follow-up Weight: `/tmp/PersonalGrowthOS-V1Review-Weight/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-46-47-+0800.xcresult`
-- Review follow-up Transfer: `/tmp/PersonalGrowthOS-V1Review-Transfer-Final/Logs/Test/Test-PersonalGrowthOS-2026.07.31_17-51-33-+0800.xcresult`
+- Debug Build: `/tmp/PersonalGrowthOS-V1Final-Build3-Debug.xcresult`
+- Unit: `/tmp/PersonalGrowthOS-V1Final-Build3-Unit.xcresult`
+- UI: `/tmp/PersonalGrowthOS-V1Final-Build3-UI.xcresult`
+- English: `/tmp/PersonalGrowthOS-V1Final-Build3-English.xcresult`
+- Simplified Chinese: `/tmp/PersonalGrowthOS-V1Final-Build3-ZhHans.xcresult`
 
-Xcode emitted environment/toolchain warnings while injecting signed XCTest frameworks and resolving the debugger version during UI launches. They did not produce build or test failures. No physical-device, new TestFlight-build or iCloud multi-device validation was executed in this push.
+Xcode emitted environment-only warnings while copying signed XCTest support binaries and resolving the LLDB debugger version for UI launches. They produced no build or test failure.
+
+## Build 3 and Distribution
+
+| Item | Result |
+| --- | --- |
+| Marketing Version | `1.0` |
+| CFBundleVersion | `3` |
+| Bundle Identifier | `com.yocruzer.PersonalGrowthOS` |
+| Team | `83SKX2PM7B` |
+| Signing style | Automatic |
+| Export compliance | `ITSAppUsesNonExemptEncryption = NO` |
+| Archive | PASS |
+| Archive path | `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` |
+| Local archive metadata inspection | PASS |
+| App Store Connect export | BLOCKED — `No Accounts`; no `iOS Distribution` certificate |
+| Server-side validation | NOT EXECUTED |
+| Upload | NOT EXECUTED |
+| App Store Connect processing | NOT STARTED |
+| Internal Testing | NOT AVAILABLE FOR BUILD 3 |
+
+The Archive is a normal Automatic Signing development-signed intermediate. Xcode must be signed in to the correct Apple account so the existing Archive can be exported with App Store distribution signing and uploaded. The in-app App Store Connect browser session was also unauthenticated.
 
 ## Quality State
 
 - Known P0: none.
 - Known P1: none.
-- P2 image presentation debts UX-01 and UX-02 remain open in `Docs/UX_DEBT.md`.
-- Bounded product and technical limitations are recorded in `Docs/KNOWN_LIMITATIONS.md`.
-- The durable feature and evidence ledger is `Docs/V1_COMPLETION_TRACKER.md`.
+- Known new product P2: none.
+- Open non-blocking P2: UX-01 and UX-02 in `Docs/UX_DEBT.md`.
+- No physical-device, Owner-data overlay, iCloud multi-device or Build 3 TestFlight validation is claimed.
 
 ## Next Action
 
-The independent Reviewer should re-review the incremental PR #1 diff. After approval, the Owner can prepare one concentrated TestFlight build without merging the branch first. Overlay it on the device holding the verified V5 Life Log data, confirm launch/migration and existing Entry data, then exercise Weight CRUD, trend, relaunch, background recovery and full backup coverage. Record only physical behavior actually observed.
+Owner signs in under Xcode **Settings → Accounts** with an Apple ID that has access to the `com.yocruzer.PersonalGrowthOS` App Store Connect record and Team `83SKX2PM7B`. Then export/upload `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` using App Store Connect distribution. If the temporary Archive is no longer present, regenerate it from implementation commit `423438e` without changing Version `1.0` or Build `3`.

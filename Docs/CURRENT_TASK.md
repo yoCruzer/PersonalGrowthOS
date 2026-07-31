@@ -2,45 +2,49 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | PR #1 review follow-up handoff |
-| Status | COMPLETE — two Review P2 findings addressed; independent re-review pending |
+| Current checkpoint | Build 3 distribution handoff |
+| Status | IMPLEMENTATION COMPLETE — VALIDATION COMPLETE — ARCHIVE COMPLETE — UPLOAD BLOCKED |
 | Execution branch | `feature/v1-completion-push` |
 | Baseline | `main` at `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Latest implementation head | Review-fix commit containing this handoff |
-| Automated gate | PASS — 5 Weight tests, 6 Transfer tests and Simulator Debug Build |
-| Physical gate | Pending concentrated TestFlight validation |
+| Implementation head | `423438e` |
+| Candidate | Version `1.0`, Build `3` |
+| Automated gate | PASS — 147/147 |
+| Archive | `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` |
+| External blocker | Xcode reports `No Accounts` and no `iOS Distribution` certificate |
 
-## Completed Objective
+## Objective
 
-Complete the approved V1 functional scope from the first TestFlight-smoke-passed baseline and add a bounded, persistent lightweight Weight capability without weakening existing Life Log data safety.
+Owner completes the minimum Apple account action, uploads the existing Build 3 V1 Final Candidate Archive, waits for App Store Connect processing, then installs it through Internal Testing and performs concentrated physical-device validation.
 
-The original implementation objective and automated gate are complete. The review follow-up stabilizes Weight ordering and enforces backup schema payload semantics without changing the approved feature set.
+## Minimum Owner Action
 
-## Completed Scope
+1. Open Xcode **Settings → Accounts**.
+2. Sign in with an Apple ID that can access Team `83SKX2PM7B` and the App Store Connect app for Bundle ID `com.yocruzer.PersonalGrowthOS`.
+3. Confirm Agreements, Tax, and Banking or App Store Connect role requirements are not blocking uploads.
+4. In Organizer, select `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive`.
+5. Choose **Distribute App → App Store Connect → Upload** with automatic signing.
+6. Keep the build for Internal Testing only; do not submit external Beta Review or App Store release.
+7. After processing, install Build 3 over the existing app without deleting it and follow `Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md`.
 
-- Audited Foundation scope, implementation plan, repository ancestry and current code.
-- Safely fast-forwarded the approved smoke branch to `main`, then created the isolated execution branch.
-- Created and maintained `Docs/V1_COMPLETION_TRACKER.md`.
-- Added additive SwiftData schema V6 and persistent Weight CRUD.
-- Added Today/Growth entry points, latest value, prior-record delta, history, chart and empty state.
-- Added Weight to current full backup package schema v2 while preserving schema-v1 import compatibility.
-- Added migration, persistence, CRUD, transfer and UI regression coverage.
-- Recorded P2 image debts without expanding the media subsystem.
-- Passed the final Build and all 144 automated tests.
-- Addressed the two PR #1 P2 findings with deterministic Weight ordering and schema-v1 non-empty Weight rejection.
-- Added focused regression coverage and representative migration field assertions.
+If `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` has been removed by temporary-file cleanup, regenerate it from commit `423438e` using Version `1.0` and Build `3`.
 
-## Constraints Preserved
+## Completed Boundary
 
-- Foundation Documents remain unchanged.
-- No account, server, third-party backend, external API, AI/OCR/voice capability, HealthKit or cloud health system was introduced.
-- Existing Life Log persisted fields were not renamed or removed.
-- Import still refuses a non-empty target and never merges or erases existing data.
-- The feature branch has not been merged to `main`; no force push or history rewrite occurred.
-- No physical-device or new TestFlight result is claimed.
+- All approved V1 product capabilities are implemented.
+- Reviewer P0/P1/P2/P3 findings are closed at the supplied review boundary.
+- Final Debug Build, full Unit/UI, transfer/recovery/migration/media/Weight coverage, bilingual compilation and static checks pass.
+- Build 3 release metadata is committed and pushed.
+- Release Archive is complete and locally inspected.
+- Draft PR #1 remains open, targets `main`, and is not merged.
 
-## Owner Acceptance Boundary
+## Not Yet Complete
 
-The next task is independent re-review of the incremental PR #1 diff. This follow-up ran 11 focused tests and one Simulator Debug Build; it did not rerun the full Unit or UI suites.
+- App Store distribution export and server-side validation.
+- TestFlight upload and processing.
+- Internal Testing availability.
+- Build 3 installation on a physical iPhone.
+- V5→V6 overlay against the Owner’s actual store.
+- Owner concentrated acceptance and real backup handling.
+- Formal 30-day Daily Driver observation.
 
-Do not start feature expansion, mark the PR ready, or merge this branch until the requested re-review is complete.
+Do not mark PR #1 ready or merge it until Owner physical-device validation is complete.

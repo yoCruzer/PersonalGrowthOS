@@ -1,6 +1,8 @@
-# Owner Manual Validation Checklist
+# Owner Build 3 TestFlight Validation Checklist
 
-This checklist begins only after V1 Candidate Technical Completion. Every item below is intentionally **unchecked**: Codex has not installed the app on a physical iPhone, used Owner data, validated the real Photos Picker or permissions, started Dogfooding, or started the formal 30-day observation.
+Candidate: PersonalGrowthOS Version 1.0 (Build 3).
+
+This checklist begins after Build 3 is uploaded, processed and available for Internal Testing. Every item below is intentionally **unchecked**: Codex has not installed Build 3 on a physical iPhone, overlaid the Owner store, used Owner data, or started the formal 30-day observation.
 
 ## Safety Before Testing
 
@@ -10,11 +12,15 @@ This checklist begins only after V1 Candidate Technical Completion. Every item b
 - [ ] Keep exported ZIP files in an Owner-controlled location outside the app container.
 - [ ] Treat every export as sensitive: the ZIP is not encrypted and contains entry text plus original photos.
 - [ ] Keep the current app installation until an external backup has been confirmed present and shareable.
+- [ ] Do not delete the current App before the Build 3 overlay and migration check.
+- [ ] Record current Entry, image, Habit, Goal and other important counts or screenshots.
 
-## Install, Launch and Offline Boundary
+## Overlay Install, Migration and Offline Boundary
 
-- [ ] Build and install the Candidate on a real iPhone.
+- [ ] Install Build 3 from TestFlight over the existing App; do not uninstall first.
 - [ ] Launch it successfully and confirm Today, Timeline, Growth and Library are reachable.
+- [ ] Confirm the App does not crash and did not open an unexpected empty store.
+- [ ] Confirm existing Entries, original images, Tags, Habits/HabitLogs, Goals/Flags, Reviews and relationships remain visible.
 - [ ] Turn on Airplane Mode and confirm launch, capture, search, organization and Growth flows still work.
 - [ ] Confirm no account, network, CloudKit or sign-in prompt is required.
 - [ ] Force-quit and reopen the app; confirm previously created content remains available.
@@ -43,13 +49,24 @@ This checklist begins only after V1 Candidate Technical Completion. Every item b
 - [ ] Create a lightweight Review with a period and link an Entry, Habit and Goal.
 - [ ] Find an ordinary Entry, Review Entry, Tag, Habit, Goal and Flag through Search.
 
+## Weight
+
+- [ ] Open Weight from Today and confirm Growth opens the same history.
+- [ ] Add the first dated Weight record and confirm the latest value.
+- [ ] Add a second record and confirm the change from the preceding record and the chart.
+- [ ] Edit a Weight value/date and confirm history ordering and latest/change update.
+- [ ] Delete a disposable Weight record after confirming the destructive prompt.
+- [ ] Force-quit and reopen; confirm remaining Weight records persist.
+- [ ] Confirm Today and Growth still show the same data after relaunch and background recovery.
+
 ## Export, Privacy Warning and Disposable Restore Rehearsal
 
 - [ ] Open Settings and start Export; confirm the unencrypted-backup privacy warning appears before sharing.
 - [ ] Export a disposable complete data set to an Owner-controlled Files location.
+- [ ] Confirm the exported backup includes the expected Weight record count after Build 3.
 - [ ] Confirm the ZIP exists outside the app container and can be copied before altering the app installation.
 - [ ] Confirm Import refuses a non-empty database and does not erase or merge its content.
-- [ ] For the destructive rehearsal, use only the disposable data set and retain the external ZIP.
+- [ ] Do not restore over the only copy of real data. For a destructive rehearsal, use only disposable content and retain at least one external ZIP copy.
 - [ ] Remove the disposable active app data by deleting/reinstalling the app, then launch the empty database.
 - [ ] Import the retained ZIP and verify text, timestamps, image order/originals, Tags, Habits, HabitLogs, Goals/Flags, Reviews and relationships.
 - [ ] Force-quit and reopen after restore; confirm restored content and media remain intact.
@@ -79,6 +96,7 @@ This checklist begins only after V1 Candidate Technical Completion. Every item b
 | --- | --- |
 | Physical device / iOS version |  |
 | Candidate commit |  |
+| TestFlight processing state |  |
 | Signing configuration |  |
 | Validation date |  |
 | Blocking defects |  |
@@ -86,3 +104,17 @@ This checklist begins only after V1 Candidate Technical Completion. Every item b
 | Candidate decision |  |
 | Dogfooding start decision/date |  |
 | 30-day observation start decision/date |  |
+
+## Feedback Format
+
+For each finding, record:
+
+```text
+Page:
+Steps:
+Expected:
+Actual:
+Reproduces consistently:
+Screenshot or recording:
+Severity:
+```
