@@ -2,47 +2,49 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Device Smoke Repair Round 1 |
-| Status | Implementation and automated validation complete; physical installation blocked by Xcode/iOS device-support mismatch |
-| Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
-| Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
-| Execution branch | `fix/v1-device-smoke-round1` |
-| Authorized coverage | First iPhone Smoke Test issues only |
-| Current Macro Stage | Post-Candidate physical validation repair |
+| Current checkpoint | Build 3 distribution handoff |
+| Status | IMPLEMENTATION COMPLETE — VALIDATION COMPLETE — ARCHIVE COMPLETE — UPLOAD BLOCKED |
+| Execution branch | `feature/v1-completion-push` |
+| Baseline | `main` at `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
+| Implementation head | `423438e` |
+| Candidate | Version `1.0`, Build `3` |
+| Automated gate | PASS — 147/147 |
+| Archive | `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` |
+| External blocker | Xcode reports `No Accounts` and no `iOS Distribution` certificate |
 
 ## Objective
 
-Repair the first iPhone Smoke Test findings, validate them automatically, overlay-install the repaired build without deleting existing App data, and record only the physical-device results actually observed.
+Owner completes the minimum Apple account action, uploads the existing Build 3 V1 Final Candidate Archive, waits for App Store Connect processing, then installs it through Internal Testing and performs concentrated physical-device validation.
 
-The repair implementation and automated objective is complete at `1ba25cf6cdb217696cb7bea1883ec5767b3748b4`. Physical build/install/launch is blocked because the iPhone is now on iOS 26.6 and current Xcode 26.6 supports physical devices through iOS 26.5, so its Developer Disk Image cannot be mounted.
+## Minimum Owner Action
 
-## Scope
+1. Open Xcode **Settings → Accounts**.
+2. Sign in with an Apple ID that can access Team `83SKX2PM7B` and the App Store Connect app for Bundle ID `com.yocruzer.PersonalGrowthOS`.
+3. Confirm Agreements, Tax, and Banking or App Store Connect role requirements are not blocking uploads.
+4. In Organizer, select `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive`.
+5. Choose **Distribute App → App Store Connect → Upload** with automatic signing.
+6. Keep the build for Internal Testing only; do not submit external Beta Review or App Store release.
+7. After processing, install Build 3 over the existing app without deleting it and follow `Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md`.
 
-- English and Simplified Chinese V1 interface localization.
-- Flexible Habit Check-in semantics, feedback, undo and editing with legacy compatibility.
-- Goal/Flag navigation and editing, Timeline media fitting and bounded empty-state guidance.
-- Unit/UI tests, simulator build, signed device build, overlay install, launch observation and validation report.
+If `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` has been removed by temporary-file cleanup, regenerate it from commit `423438e` using Version `1.0` and Build `3`.
 
-## Constraints
+## Completed Boundary
 
-- All repair implementation must remain on `fix/v1-device-smoke-round1`.
-- Preserve the Foundation Documents and `DEVELOPMENT_CONTRACT.md`.
-- Do not add V2 capabilities, third-party dependencies, external services, unapproved Capabilities or Entitlements.
-- Do not merge into or modify remote `main`, force push, publish, release or tag.
-- Do not use Owner data for destructive testing.
-- Do not claim Owner-deferred physical-device validation or the formal 30-day observation is complete.
+- All approved V1 product capabilities are implemented.
+- Reviewer P0/P1/P2/P3 findings are closed at the supplied review boundary.
+- Final Debug Build, full Unit/UI, transfer/recovery/migration/media/Weight coverage, bilingual compilation and static checks pass.
+- Build 3 release metadata is committed and pushed.
+- Release Archive is complete and locally inspected.
+- Draft PR #1 remains open, targets `main`, and is not merged.
 
-## Success Criteria
+## Not Yet Complete
 
-- S1–S10 meet their technical Exit Criteria with coherent Stage commits.
-- Milestone A, B and C gates and independent internal reviews are complete.
-- 137 automated tests, simulator build, localization and Asset Catalog compilation pass without failure or skip.
-- Generic iOS signing succeeds for Team `83SKX2PM7B`.
-- Physical overlay installation and launch are completed only after compatible Xcode device support is available.
-- Current-context and device-validation documents accurately distinguish automated evidence, first-Smoke Owner evidence and Round 1 unverified items.
+- App Store distribution export and server-side validation.
+- TestFlight upload and processing.
+- Internal Testing availability.
+- Build 3 installation on a physical iPhone.
+- V5→V6 overlay against the Owner’s actual store.
+- Owner concentrated acceptance and real backup handling.
+- Formal 30-day Daily Driver observation.
 
-## Current Boundary
-
-Round 1 implementation is committed and passes 116 Unit Tests plus 21 UI Tests, with 0 failures and 0 skips. Simulator and generic signed iOS builds pass; Bundle ID, Automatic Signing, Team and the registered device profile are correct.
-
-The fixed physical destination is paired, Developer Mode is enabled and its tunnel can connect, but DDI services cannot be enabled. The device changed from iOS 26.5.2 during the first Smoke Test to iOS 26.6 (`23G71`); current Xcode 26.6 (`17F113`) lists Device Support only through iOS 26.5. The next safe action is to install/select compatible Xcode device support, then retry build/install/launch on the same UDID without uninstalling the existing App.
+Do not mark PR #1 ready or merge it until Owner physical-device validation is complete.

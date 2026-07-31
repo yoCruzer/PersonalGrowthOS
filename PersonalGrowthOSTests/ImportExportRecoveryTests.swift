@@ -7,6 +7,168 @@ import XCTest
 
 @MainActor
 final class ImportExportRecoveryTests: XCTestCase {
+    func testLegacyV1TransferDataDecodesWithoutWeightRecordsAndValidates() throws {
+        let data = Data("""
+        {
+          "entries": [],
+          "images": [],
+          "tags": [],
+          "links": [],
+          "habits": [],
+          "habitLogs": [],
+          "goals": [],
+          "goalEvents": []
+        }
+        """.utf8)
+        let legacy = try JSONDecoder().decode(TransferData.self, from: data)
+        XCTAssertEqual(legacy.weightRecords, [])
+        let manifest = ExportManifest(
+            formatIdentifier: ExportManifest.formatIdentifier,
+            packageSchemaVersion: 1,
+            appVersion: "1.0",
+            appBuild: "1",
+            exportID: UUID(),
+            exportedAt: Date(),
+            objectCounts: legacy.objectCounts(forPackageSchemaVersion: 1),
+            dataFile: ExportFileRecord(path: "data.json", byteCount: 0, sha256: ""),
+            mediaFiles: []
+        )
+
+        XCTAssertNoThrow(try TransferValidator.validate(
+            manifest: manifest,
+            data: legacy,
+            limits: .production
+        ))
+    }
+
+    func testLegacyV1PackageImportsWithExplicitEmptyWeightRecords() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let legacyPackage = try mutatePackage(
+            lease.url,
+            under: fixture.root.appendingPathComponent("LegacyV1"),
+            rewriteJSON: { manifest, data in
+                let legacyData = TransferData(
+                    entries: data.entries,
+                    images: data.images,
+                    tags: data.tags,
+                    links: data.links,
+                    habits: data.habits,
+                    habitLogs: data.habitLogs,
+                    goals: data.goals,
+                    goalEvents: data.goalEvents
+                )
+                return (ExportManifest(
+                    formatIdentifier: manifest.formatIdentifier,
+                    packageSchemaVersion: 1,
+                    appVersion: manifest.appVersion,
+                    appBuild: manifest.appBuild,
+                    exportID: manifest.exportID,
+                    exportedAt: manifest.exportedAt,
+                    objectCounts: legacyData.objectCounts(forPackageSchemaVersion: 1),
+                    dataFile: manifest.dataFile,
+                    mediaFiles: manifest.mediaFiles
+                ), legacyData)
+            }
+        )
+        let target = try fixture.makeEmptyStore(named: "LegacyV1Target")
+
+        let result = try await target.service.importPackage(from: legacyPackage)
+
+        var expectedCounts = source.expectedCounts
+        expectedCounts["weightRecords"] = 0
+        var expectedIDs = source.expectedIDs
+        expectedIDs["weightRecords"] = []
+        XCTAssertEqual(result.objectCounts, expectedCounts)
+        XCTAssertEqual(try ids(in: target.container.mainContext), expectedIDs)
+        XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<WeightRecord>()), 0)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: target.container.mainContext))
+    }
+
+    func testSchemaV1RejectsNonEmptyWeightRecords() throws {
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let data = makeTransferData(weightRecords: [
+            WeightRecordTransfer(
+                id: UUID(),
+                weightKilograms: 72.4,
+                recordedAt: timestamp,
+                createdAt: timestamp,
+                updatedAt: timestamp
+            )
+        ])
+
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 1, data: data),
+            data: data,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("weightRecord"))
+        }
+    }
+
+    func testSchemaV2ValidatesWeightPayloads() throws {
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let valid = WeightRecordTransfer(
+            id: UUID(),
+            weightKilograms: 72.4,
+            recordedAt: Date(timeIntervalSince1970: 900),
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        let validData = makeTransferData(weightRecords: [valid])
+        XCTAssertNoThrow(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 2, data: validData),
+            data: validData,
+            limits: .production
+        ))
+
+        let duplicateData = makeTransferData(weightRecords: [valid, valid])
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 2, data: duplicateData),
+            data: duplicateData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .duplicateID("weightRecord"))
+        }
+
+        let invalidWeightData = makeTransferData(weightRecords: [
+            WeightRecordTransfer(
+                id: UUID(),
+                weightKilograms: 0,
+                recordedAt: timestamp,
+                createdAt: timestamp,
+                updatedAt: timestamp
+            )
+        ])
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 2, data: invalidWeightData),
+            data: invalidWeightData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("weightRecord"))
+        }
+
+        let invalidTimestampData = makeTransferData(weightRecords: [
+            WeightRecordTransfer(
+                id: UUID(),
+                weightKilograms: 72.4,
+                recordedAt: timestamp,
+                createdAt: timestamp,
+                updatedAt: timestamp.addingTimeInterval(-1)
+            )
+        ])
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 2, data: invalidTimestampData),
+            data: invalidTimestampData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("weightRecord"))
+        }
+    }
+
     func testFullRoundTripPreservesEveryObjectIdentityRelationshipAndOriginal() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -27,6 +189,17 @@ final class ImportExportRecoveryTests: XCTestCase {
             try Data(contentsOf: target.mediaStore.fileURL(for: restoredImage.relativePath)),
             fixture.imageData
         )
+        let restoredWeight = try XCTUnwrap(
+            target.container.mainContext.fetch(FetchDescriptor<WeightRecord>()).first
+        )
+        let sourceWeight = try XCTUnwrap(
+            source.container.mainContext.fetch(FetchDescriptor<WeightRecord>()).first
+        )
+        XCTAssertEqual(restoredWeight.id, sourceWeight.id)
+        XCTAssertEqual(restoredWeight.weightKilograms, sourceWeight.weightKilograms)
+        XCTAssertEqual(restoredWeight.recordedAt, sourceWeight.recordedAt)
+        XCTAssertEqual(restoredWeight.createdAt, sourceWeight.createdAt)
+        XCTAssertEqual(restoredWeight.updatedAt, sourceWeight.updatedAt)
         let joinedLogs = logs.values.joined(separator: "|")
         XCTAssertFalse(joinedLogs.contains(TransferTestFixture.secretBody))
         XCTAssertFalse(joinedLogs.contains(fixture.root.path))
@@ -204,7 +377,7 @@ final class ImportExportRecoveryTests: XCTestCase {
             rewriteJSON: { manifest, data in
                 (ExportManifest(
                     formatIdentifier: manifest.formatIdentifier,
-                    packageSchemaVersion: 99,
+                    packageSchemaVersion: 3,
                     appVersion: manifest.appVersion,
                     appBuild: manifest.appBuild,
                     exportID: manifest.exportID,
@@ -223,7 +396,7 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
         let schemaTarget = try fixture.makeEmptyStore(named: "SchemaTarget")
         await assertThrows({ try await schemaTarget.service.importPackage(from: unsupported) }) {
-            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(99))
+            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(3))
         }
     }
 
@@ -528,6 +701,39 @@ private struct TransferStore {
     let expectedIDs: [String: Set<UUID>]
 }
 
+private func makeTransferData(
+    weightRecords: [WeightRecordTransfer]
+) -> TransferData {
+    TransferData(
+        entries: [],
+        images: [],
+        tags: [],
+        links: [],
+        habits: [],
+        habitLogs: [],
+        goals: [],
+        goalEvents: [],
+        weightRecords: weightRecords
+    )
+}
+
+private func makeManifest(
+    schemaVersion: Int,
+    data: TransferData
+) -> ExportManifest {
+    ExportManifest(
+        formatIdentifier: ExportManifest.formatIdentifier,
+        packageSchemaVersion: schemaVersion,
+        appVersion: "1.0",
+        appBuild: "1",
+        exportID: UUID(),
+        exportedAt: Date(timeIntervalSince1970: 2_000),
+        objectCounts: data.objectCounts(forPackageSchemaVersion: schemaVersion),
+        dataFile: ExportFileRecord(path: "data.json", byteCount: 0, sha256: ""),
+        mediaFiles: []
+    )
+}
+
 @MainActor
 private final class TransferTestFixture {
     static let secretBody = "SECRET-BODY-749ac"
@@ -607,6 +813,11 @@ private final class TransferTestFixture {
             occurredAt: base,
             createdAt: base
         )
+        let weightRecord = WeightRecord(
+            weightKilograms: 72.4,
+            recordedAt: Date(timeIntervalSince1970: 1_200),
+            createdAt: base
+        )
         let links = [
             ObjectLink(sourceType: .entry, sourceID: entry.id, targetType: .tag, targetID: tag.id,
                        kind: .entryUsesTag, createdAt: base),
@@ -625,6 +836,7 @@ private final class TransferTestFixture {
         context.insert(goal)
         context.insert(log)
         context.insert(event)
+        context.insert(weightRecord)
         links.forEach(context.insert)
         try context.save()
         try LinkIntegrityService.validate(context: context)
@@ -635,7 +847,8 @@ private final class TransferTestFixture {
             storeURL: store.storeURL,
             expectedCounts: [
                 "entries": 2, "images": 1, "tags": 1, "links": 5,
-                "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1
+                "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
+                "weightRecords": 1
             ],
             expectedIDs: try ids(in: context)
         )
@@ -690,7 +903,8 @@ private func ids(in context: ModelContext) throws -> [String: Set<UUID>] {
         "habits": Set(try context.fetch(FetchDescriptor<Habit>()).map(\.id)),
         "habitLogs": Set(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id)),
         "goals": Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id)),
-        "goalEvents": Set(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).map(\.id))
+        "goalEvents": Set(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).map(\.id)),
+        "weightRecords": Set(try context.fetch(FetchDescriptor<WeightRecord>()).map(\.id))
     ]
 }
 
@@ -709,6 +923,7 @@ private func deleteAllFixtureData(_ context: ModelContext) throws {
     try context.fetch(FetchDescriptor<Tag>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<Habit>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<Goal>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<WeightRecord>()).forEach(context.delete)
 }
 
 private func originalFiles(at mediaRoot: URL) throws -> [URL] {
@@ -764,7 +979,9 @@ private func mutatePackage(
                 appBuild: manifest.appBuild,
                 exportID: manifest.exportID,
                 exportedAt: manifest.exportedAt,
-                objectCounts: data.objectCounts,
+                objectCounts: data.objectCounts(
+                    forPackageSchemaVersion: manifest.packageSchemaVersion
+                ),
                 dataFile: ExportFileRecord(
                     path: "data.json",
                     byteCount: Int64(encodedData.count),

@@ -140,7 +140,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["settings-export-button"].tap()
 
         XCTAssertTrue(app.buttons["Export and Share"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["The ZIP may contain private entry text and original photos. Handle it as sensitive data."].exists)
+        XCTAssertTrue(app.staticTexts["The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data."].exists)
     }
 
     func testGlobalCaptureIsAvailableFromSearch() {
@@ -544,5 +544,29 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["app-shell"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["today-goal-device goal edited"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["today-goal-device flag edited"].waitForExistence(timeout: 10))
+    }
+
+    func testWeightEntryIsAccessiblePersistsAndShowsLatestValue() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        XCTAssertTrue(app.buttons["today-weight"].waitForExistence(timeout: 5))
+        app.buttons["today-weight"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["weight-empty-state"].waitForExistence(timeout: 5))
+        app.buttons["add-weight"].tap()
+        let value = app.textFields["weight-editor-value"]
+        XCTAssertTrue(value.waitForExistence(timeout: 5))
+        value.tap()
+        value.typeText("72.5")
+        app.buttons["weight-editor-save"].tap()
+        XCTAssertTrue(app.staticTexts["weight-latest-value"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["weight-latest-value"].label, "72.5 kg")
+
+        app.terminate()
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["today-latest-weight"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts["today-latest-weight"].label, "72.5 kg")
     }
 }

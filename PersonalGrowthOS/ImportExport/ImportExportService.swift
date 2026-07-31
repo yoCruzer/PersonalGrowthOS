@@ -438,7 +438,9 @@ final class ImportExportService {
         guard manifest.formatIdentifier == ExportManifest.formatIdentifier else {
             throw TransferPackageError.invalidFormat
         }
-        guard manifest.packageSchemaVersion == ExportManifest.currentPackageSchemaVersion else {
+        guard ExportManifest.supportedPackageSchemaVersions.contains(
+            manifest.packageSchemaVersion
+        ) else {
             throw TransferPackageError.unsupportedSchema(manifest.packageSchemaVersion)
         }
         let measuredData = try Hasher.sha256AndSize(fileAt: dataURL)
@@ -775,6 +777,16 @@ final class ImportExportService {
                     createdAt: record.createdAt
                 ))
             }
+            for record in package.data.weightRecords {
+                try Task.checkCancellation()
+                context.insert(WeightRecord(
+                    id: record.id,
+                    weightKilograms: record.weightKilograms,
+                    recordedAt: record.recordedAt,
+                    createdAt: record.createdAt,
+                    updatedAt: record.updatedAt
+                ))
+            }
             for record in package.data.links {
                 try Task.checkCancellation()
                 guard let sourceType = LinkObjectType(rawValue: record.sourceType),
@@ -823,6 +835,7 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<HabitLog>())
             + context.fetchCount(FetchDescriptor<Goal>())
             + context.fetchCount(FetchDescriptor<GoalLifecycleEvent>())
+            + context.fetchCount(FetchDescriptor<WeightRecord>())
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
 
@@ -882,6 +895,8 @@ private enum TransferSnapshot {
         let goals = try context.fetch(FetchDescriptor<Goal>())
         try Task.checkCancellation()
         let events = try context.fetch(FetchDescriptor<GoalLifecycleEvent>())
+        try Task.checkCancellation()
+        let weightRecords = try context.fetch(FetchDescriptor<WeightRecord>())
         let sortUUID: (UUID, UUID) -> Bool = { $0.uuidString < $1.uuidString }
         return TransferData(
             entries: try cancellableMap(entries) {
@@ -989,6 +1004,15 @@ private enum TransferSnapshot {
                     kind: $0.kindRawValue,
                     occurredAt: $0.occurredAt,
                     createdAt: $0.createdAt
+                )
+            }.sorted { sortUUID($0.id, $1.id) },
+            weightRecords: try cancellableMap(weightRecords) {
+                WeightRecordTransfer(
+                    id: $0.id,
+                    weightKilograms: $0.weightKilograms,
+                    recordedAt: $0.recordedAt,
+                    createdAt: $0.createdAt,
+                    updatedAt: $0.updatedAt
                 )
             }.sorted { sortUUID($0.id, $1.id) }
         )

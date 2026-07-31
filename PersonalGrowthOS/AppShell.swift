@@ -130,6 +130,8 @@ private struct TodayView: View {
     ]) private var goals: [Goal]
     @Query private var habitLogs: [HabitLog]
     @Query private var habitConfigurations: [HabitConfiguration]
+    @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
+    private var queriedWeightRecords: [WeightRecord]
     @State private var coolingDownHabitIDs: Set<UUID> = []
     @State private var recentCheckIn: RecentHabitCheckIn?
     @State private var transientMessage: String?
@@ -141,6 +143,10 @@ private struct TodayView: View {
 
     private var activeGoals: [Goal] {
         goals.filter { $0.status == .active }
+    }
+
+    private var weightRecords: [WeightRecord] {
+        WeightRecordOrdering.newestFirst(queriedWeightRecords)
     }
 
     var body: some View {
@@ -233,6 +239,23 @@ private struct TodayView: View {
                 } footer: {
                     Text("Context for today, not a list of tasks you must update.")
                 }
+            }
+            Section("Weight") {
+                NavigationLink {
+                    WeightHistoryView()
+                } label: {
+                    if let latest = weightRecords.first {
+                        LabeledContent {
+                            Text(verbatim: WeightFormatting.kilograms(latest.weightKilograms))
+                                .accessibilityIdentifier("today-latest-weight")
+                        } label: {
+                            Label("Latest Weight", systemImage: "scalemass")
+                        }
+                    } else {
+                        Label("Record Weight", systemImage: "scalemass")
+                    }
+                }
+                .accessibilityIdentifier("today-weight")
             }
         }
         .navigationTitle("Today")
@@ -606,7 +629,7 @@ private struct MediaStorageView: View {
                 } header: {
                     Text("Data Transfer")
                 } footer: {
-                    Text("Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
+                    Text("Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
                 }
             }
             .navigationTitle("Settings")
@@ -646,7 +669,7 @@ private struct MediaStorageView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("The ZIP may contain private entry text and original photos. Handle it as sensitive data.")
+                Text("The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data.")
             }
             .sheet(isPresented: $isSharing, onDismiss: cleanupExport) {
                 if let exportLease {
