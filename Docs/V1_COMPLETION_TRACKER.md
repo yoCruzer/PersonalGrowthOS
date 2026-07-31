@@ -7,7 +7,7 @@
 | Baseline branch | `main` |
 | Baseline commit | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Execution branch | `feature/v1-completion-push` |
-| Overall status | IN_PROGRESS |
+| Overall status | VERIFIED |
 | Last updated | 2026-07-31 |
 
 ## Purpose
@@ -48,14 +48,18 @@ Status values:
 - Every S1–S10 technical delivery in `V1_IMPLEMENTATION_PLAN.md`.
 - First TestFlight internal upload and the Owner-reported iPhone smoke path for Life Log creation, reopen, edit, delete, images, repeated launch and background recovery.
 
-### Partially implemented
+### Partially implemented at baseline
 
 - None in the original V1 capability list.
-- Weight backup compatibility is not applicable until the new Weight model exists; it is included in the current checkpoint rather than deferred.
+- Weight did not exist at baseline. It is now complete, including backup compatibility.
 
-### Not implemented
+### Not implemented at baseline
 
-- Lightweight weight recording approved for this Completion Push.
+- Lightweight weight recording approved for this Completion Push. It is now VERIFIED.
+
+### Still not implemented
+
+- None in the approved V1 feature-complete scope.
 
 ### Explicitly deferred
 
@@ -65,7 +69,7 @@ Status values:
 
 ### Document conflicts
 
-- `CURRENT_STATE.md` and `CURRENT_TASK.md` still describe the pre-TestFlight physical-install blocker. The Owner supplied newer verified evidence that build configuration, TestFlight installation and the first physical smoke test passed at `dd09975`; these current-context documents will be corrected at final handoff.
+- `CURRENT_STATE.md` and `CURRENT_TASK.md` described the pre-TestFlight physical-install blocker at the start of the push. The Owner supplied newer verified evidence that build configuration, TestFlight installation and the first physical smoke test passed at `dd09975`; both current-context documents are corrected in C4.
 - Weight is not listed in Foundation `V1_SCOPE.md`, but it is explicitly approved by the Owner for this push. It is treated as a bounded V1 addition without changing the product position or adding excluded health-product behavior.
 - No decisive Foundation conflict blocks implementation.
 
@@ -73,17 +77,17 @@ Status values:
 
 | Checkpoint | Scope | Status | Focused validation | Commit |
 | --- | --- | --- | --- | --- |
-| C0 | Safe baseline, scope audit, Tracker and UX debt | VERIFIED | Git ancestry, clean state and documentation review | This checkpoint commit |
-| C1 | Additive Weight model, V5→V6 migration and CRUD/persistence tests | VERIFIED | 4/4 focused tests passed: validation, CRUD/trend, disk reopen and V5 migration | This checkpoint commit |
-| C2 | Today/Growth weight UI, latest value, simple trend and UI smoke | VERIFIED | 1/1 focused UI test passed: Today entry, empty state, add, latest value and relaunch persistence | This checkpoint commit |
-| C3 | Weight-aware export/import and compatibility | VERIFIED | 18/18 transfer tests passed, including validator/service-level v1 compatibility and weight identity round trip | This checkpoint commit |
-| C4 | Full build/unit/UI regression and final governance handoff | NOT_STARTED | Build, complete Unit/UI suites, `git diff --check`, clean branch | Pending |
+| C0 | Safe baseline, scope audit, Tracker and UX debt | VERIFIED | Git ancestry, clean state and documentation review | `f913495` |
+| C1 | Additive Weight model, V5→V6 migration and CRUD/persistence tests | VERIFIED | 4/4 focused tests passed: validation, CRUD/trend, disk reopen and V5 migration | `6c5ec6c` |
+| C2 | Today/Growth weight UI, latest value, simple trend and UI smoke | VERIFIED | 1/1 focused UI test passed: Today entry, empty state, add, latest value and relaunch persistence | `17d3607` |
+| C3 | Weight-aware export/import and compatibility | VERIFIED | 18/18 transfer tests passed, including validator/service-level v1 compatibility and weight identity round trip | `77d98a5` |
+| C4 | Full build/unit/UI regression and final governance handoff | VERIFIED | Build PASS; Unit 122/122; UI 22/22; strings and `git diff --check` PASS | Final handoff commit |
 
 ## Migration Safety
 
 - A new `WeightRecord` model is implemented in schema V6 with a lightweight V5→V6 migration.
 - Existing Entry, ImageMetadata, Tag, Link, Habit, HabitLog, HabitConfiguration, Goal and GoalLifecycleEvent types and fields will not be renamed, removed or made stricter.
-- Migration fixtures must prove a V5 store reopens with existing Life Log data intact and an empty Weight collection.
+- Migration fixtures prove a V5 store reopens with existing Life Log data intact and an empty Weight collection.
 - A physical TestFlight overlay on a device containing the verified V5 Life Log data remains mandatory Owner validation; automated fixtures cannot prove the exact on-device store.
 
 ## Validation Ledger
@@ -97,7 +101,9 @@ Status values:
 | Completion Push focused tests | VERIFIED (C1) | `WeightFoundationTests`: 4/4 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C1/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-11-31-+0800.xcresult` |
 | Completion Push focused UI test | VERIFIED (C2) | Weight entry/relaunch flow: 1/1 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C2/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-15-05-+0800.xcresult` |
 | Completion Push transfer tests | VERIFIED (C3) | `ImportExportRecoveryTests`: 18/18 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C3/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-33-19-+0800.xcresult` |
-| Completion Push full Unit tests | NOT_STARTED | Pending |
-| Completion Push full UI tests | NOT_STARTED | Pending |
-| Completion Push build | NOT_STARTED | Pending |
+| Completion Push full Unit tests | VERIFIED (C4) | 122/122 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-Final-Unit/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-36-55-+0800.xcresult` |
+| Completion Push full UI tests | VERIFIED (C4) | 22/22 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-Final-UI/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-39-42-+0800.xcresult` |
+| Completion Push build | VERIFIED (C4) | Generic iOS Simulator Debug build exited successfully |
+| String Catalog | VERIFIED (C4) | JSON validation and English/Simplified Chinese dry-run compilation passed |
+| Final patch hygiene | VERIFIED (C4) | `git diff --check` passed |
 | Completion Push physical device | DEFERRED | Owner concentrated TestFlight after this branch |
