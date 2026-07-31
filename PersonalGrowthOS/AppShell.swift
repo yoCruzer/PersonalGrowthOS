@@ -627,7 +627,7 @@ private struct MediaStorageView: View {
                 } header: {
                     Text("Data Transfer")
                 } footer: {
-                    Text("Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
+                    Text("Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
                 }
             }
             .navigationTitle("Settings")
@@ -667,7 +667,7 @@ private struct MediaStorageView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("The ZIP may contain private entry text and original photos. Handle it as sensitive data.")
+                Text("The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data.")
             }
             .sheet(isPresented: $isSharing, onDismiss: cleanupExport) {
                 if let exportLease {

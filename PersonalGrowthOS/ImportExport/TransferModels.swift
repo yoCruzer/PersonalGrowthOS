@@ -2,7 +2,8 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 1
+    static let currentPackageSchemaVersion = 2
+    static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
     let packageSchemaVersion: Int
@@ -37,6 +38,57 @@ struct TransferData: Codable, Equatable {
     let habitLogs: [HabitLogTransfer]
     let goals: [GoalTransfer]
     let goalEvents: [GoalEventTransfer]
+    let weightRecords: [WeightRecordTransfer]
+
+    init(
+        entries: [EntryTransfer],
+        images: [ImageTransfer],
+        tags: [TagTransfer],
+        links: [LinkTransfer],
+        habits: [HabitTransfer],
+        habitLogs: [HabitLogTransfer],
+        goals: [GoalTransfer],
+        goalEvents: [GoalEventTransfer],
+        weightRecords: [WeightRecordTransfer] = []
+    ) {
+        self.entries = entries
+        self.images = images
+        self.tags = tags
+        self.links = links
+        self.habits = habits
+        self.habitLogs = habitLogs
+        self.goals = goals
+        self.goalEvents = goalEvents
+        self.weightRecords = weightRecords
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case entries
+        case images
+        case tags
+        case links
+        case habits
+        case habitLogs
+        case goals
+        case goalEvents
+        case weightRecords
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        entries = try container.decode([EntryTransfer].self, forKey: .entries)
+        images = try container.decode([ImageTransfer].self, forKey: .images)
+        tags = try container.decode([TagTransfer].self, forKey: .tags)
+        links = try container.decode([LinkTransfer].self, forKey: .links)
+        habits = try container.decode([HabitTransfer].self, forKey: .habits)
+        habitLogs = try container.decode([HabitLogTransfer].self, forKey: .habitLogs)
+        goals = try container.decode([GoalTransfer].self, forKey: .goals)
+        goalEvents = try container.decode([GoalEventTransfer].self, forKey: .goalEvents)
+        weightRecords = try container.decodeIfPresent(
+            [WeightRecordTransfer].self,
+            forKey: .weightRecords
+        ) ?? []
+    }
 
     var objectCounts: [String: Int] {
         [
@@ -47,8 +99,16 @@ struct TransferData: Codable, Equatable {
             "habits": habits.count,
             "habitLogs": habitLogs.count,
             "goals": goals.count,
-            "goalEvents": goalEvents.count
+            "goalEvents": goalEvents.count,
+            "weightRecords": weightRecords.count
         ]
+    }
+
+    func objectCounts(forPackageSchemaVersion version: Int) -> [String: Int] {
+        if version == 1 {
+            return objectCounts.filter { $0.key != "weightRecords" }
+        }
+        return objectCounts
     }
 
     var totalObjectCount: Int {
@@ -146,6 +206,14 @@ struct GoalEventTransfer: Codable, Equatable {
     let createdAt: Date
 }
 
+struct WeightRecordTransfer: Codable, Equatable {
+    let id: UUID
+    let weightKilograms: Double
+    let recordedAt: Date
+    let createdAt: Date
+    let updatedAt: Date
+}
+
 enum TransferPackageError: Error, Equatable {
     case invalidFormat
     case unsupportedSchema(Int)
@@ -173,13 +241,17 @@ enum TransferValidator {
         guard manifest.formatIdentifier == ExportManifest.formatIdentifier else {
             throw TransferPackageError.invalidFormat
         }
-        guard manifest.packageSchemaVersion == ExportManifest.currentPackageSchemaVersion else {
+        guard ExportManifest.supportedPackageSchemaVersions.contains(
+            manifest.packageSchemaVersion
+        ) else {
             throw TransferPackageError.unsupportedSchema(manifest.packageSchemaVersion)
         }
         guard data.totalObjectCount <= limits.maximumObjectCount else {
             throw TransferPackageError.objectLimitExceeded
         }
-        guard manifest.objectCounts == data.objectCounts,
+        guard manifest.objectCounts == data.objectCounts(
+            forPackageSchemaVersion: manifest.packageSchemaVersion
+        ),
               manifest.dataFile.path == "data.json" else {
             throw TransferPackageError.countMismatch
         }
@@ -192,6 +264,7 @@ enum TransferValidator {
         try unique(data.habitLogs.map(\.id), type: "habitLog")
         try unique(data.goals.map(\.id), type: "goal")
         try unique(data.goalEvents.map(\.id), type: "goalEvent")
+        try unique(data.weightRecords.map(\.id), type: "weightRecord")
 
         let imageCounts = Dictionary(grouping: data.images, by: \.entryID).mapValues(\.count)
         let entryIDs = Set(data.entries.map(\.id))
@@ -268,6 +341,12 @@ enum TransferValidator {
                   goal.normalizedTitle == TextSearchNormalizer.normalize(goal.title),
                   goal.updatedAt >= goal.createdAt else {
                 throw TransferPackageError.invalidObject("goal")
+            }
+        }
+        for record in data.weightRecords {
+            guard (try? WeightRules.validatedKilograms(record.weightKilograms)) != nil,
+                  record.updatedAt >= record.createdAt else {
+                throw TransferPackageError.invalidObject("weightRecord")
             }
         }
         for log in data.habitLogs {

@@ -417,12 +417,12 @@
         }
       }
     },
-    "Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.": {
+    "Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data."
+            "value": "Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data."
           }
         },
         "zh-Hans": {
@@ -3457,18 +3457,18 @@
         }
       }
     },
-    "The ZIP may contain private entry text and original photos. Handle it as sensitive data.": {
+    "The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The ZIP may contain private entry text and original photos. Handle it as sensitive data."
+            "value": "The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "ZIP 可能包含私密记录文字和原始照片，请按敏感数据妥善处理。"
+            "value": "ZIP 可能包含私密个人记录、记录文字和原始照片，请按敏感数据妥善处理。"
           }
         }
       }

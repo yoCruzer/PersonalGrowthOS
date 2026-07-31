@@ -38,7 +38,7 @@ Status values:
 | Offline local persistence and migration | `DESIGN_PRINCIPLES.md`; `V1_SCOPE.md`; S2/S10 | Implemented through schema V5 | VERIFIED | Versioned SwiftData schema and private media storage | In-memory/on-disk reopen and V1→V5 migration fixtures | CloudKit intentionally disabled | Existing TestFlight Life Log persistence passed; V6 migration will need overlay verification | No |
 | Full export and empty-store import | `V1_SCOPE.md`; S9/S10 | Implemented | VERIFIED | `ImportExport/`, Settings | Round trip, reopen, integrity, rollback, limits and UI coverage | Unencrypted ZIP; import does not merge or erase a non-empty store | Concentrated TestFlight should recheck after weight inclusion | No |
 | Foundation four-area shell and global capabilities | `INFORMATION_ARCHITECTURE.md`; S10 | Implemented | VERIFIED | `AppShell.swift` | App composition and 21 UI tests in baseline | None blocking | Existing first TestFlight navigation passed | No |
-| Lightweight weight records: CRUD, dates, kg, latest, trend, empty state | Owner-approved 2026-07-31 V1 addition | Not implemented | IN_PROGRESS | Planned: additive model, Growth/Today UI and backup integration | Planned: model/migration/CRUD/reopen/transfer plus minimal UI flow | No HealthKit, diagnosis, BMI, advice, goals or reminders | Required after implementation, especially V5→V6 overlay and relaunch | No |
+| Lightweight weight records: CRUD, dates, kg, latest, trend, empty state | Owner-approved 2026-07-31 V1 addition | Not implemented | VERIFIED | `Weight/`, Today/Growth entry points, schema V6 and transfer package v2 | Weight validation/CRUD/reopen/V5 migration, transfer round trip/v1 compatibility and minimal UI relaunch flow | No HealthKit, diagnosis, BMI, advice, goals or reminders | V5→V6 TestFlight overlay, CRUD, trend and relaunch remain required | No |
 
 ## Gap Analysis
 
@@ -76,7 +76,7 @@ Status values:
 | C0 | Safe baseline, scope audit, Tracker and UX debt | VERIFIED | Git ancestry, clean state and documentation review | This checkpoint commit |
 | C1 | Additive Weight model, V5→V6 migration and CRUD/persistence tests | VERIFIED | 4/4 focused tests passed: validation, CRUD/trend, disk reopen and V5 migration | This checkpoint commit |
 | C2 | Today/Growth weight UI, latest value, simple trend and UI smoke | VERIFIED | 1/1 focused UI test passed: Today entry, empty state, add, latest value and relaunch persistence | This checkpoint commit |
-| C3 | Weight-aware export/import and compatibility | NOT_STARTED | Old backup compatibility, round trip, reopen and empty-target checks | Pending |
+| C3 | Weight-aware export/import and compatibility | VERIFIED | 18/18 transfer tests passed, including validator/service-level v1 compatibility and weight identity round trip | This checkpoint commit |
 | C4 | Full build/unit/UI regression and final governance handoff | NOT_STARTED | Build, complete Unit/UI suites, `git diff --check`, clean branch | Pending |
 
 ## Migration Safety
@@ -96,6 +96,7 @@ Status values:
 | Baseline automated suite | VERIFIED (pre-existing) | 116 Unit + 21 UI, 137/137 pass recorded at the supplied stable version |
 | Completion Push focused tests | VERIFIED (C1) | `WeightFoundationTests`: 4/4 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C1/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-11-31-+0800.xcresult` |
 | Completion Push focused UI test | VERIFIED (C2) | Weight entry/relaunch flow: 1/1 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C2/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-15-05-+0800.xcresult` |
+| Completion Push transfer tests | VERIFIED (C3) | `ImportExportRecoveryTests`: 18/18 passed, 0 failed, 0 skipped; xcresult `/tmp/PersonalGrowthOS-V1Completion-C3/Logs/Test/Test-PersonalGrowthOS-2026.07.31_16-33-19-+0800.xcresult` |
 | Completion Push full Unit tests | NOT_STARTED | Pending |
 | Completion Push full UI tests | NOT_STARTED | Pending |
 | Completion Push build | NOT_STARTED | Pending |

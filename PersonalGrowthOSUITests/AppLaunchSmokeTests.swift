@@ -140,7 +140,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["settings-export-button"].tap()
 
         XCTAssertTrue(app.buttons["Export and Share"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["The ZIP may contain private entry text and original photos. Handle it as sensitive data."].exists)
+        XCTAssertTrue(app.staticTexts["The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data."].exists)
     }
 
     func testGlobalCaptureIsAvailableFromSearch() {
