@@ -3,15 +3,15 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-07-31 |
+| Last verified | 2026-08-02 |
 | Current branch | `feature/v1-completion-push` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Final implementation head | `423438e` (`chore: prepare build 3 testflight candidate`) |
-| Governance status | V1 Final Candidate — implementation and automated validation complete; Archive ready; upload externally blocked |
+| Governance status | V1 Final Candidate — implementation and automated validation complete; formal App icon refresh validated; Archive regeneration required before upload |
 | Completed delivery | S0–S10, Completion Push C0–C5 and Final Candidate C6 |
 | Final automated gate | PASS — 125 Unit + 22 UI = 147/147 tests |
-| Release gate | Archive PASS; App Store Connect export blocked because Xcode has no signed-in account or iOS Distribution certificate |
-| Next checkpoint | Owner signs in to Xcode with the App Store Connect account, then uploads the existing Build 3 Archive |
+| Release gate | Prior Archive PASS but predates the formal App icon; regenerate Build 3 Archive before upload; App Store Connect export remains externally blocked |
+| Next checkpoint | Owner reviews the formal App icon, then regenerates Build 3 Archive before App Store Connect upload |
 
 ## Authoritative Product Baseline
 
@@ -70,6 +70,12 @@ Result bundles:
 
 Xcode emitted environment-only warnings while copying signed XCTest support binaries and resolving the LLDB debugger version for UI launches. They produced no build or test failure.
 
+## Formal App Icon Refresh
+
+The App icon for the existing desktop display name `随心log` now uses a warm ivory Möbius band with two restrained terracotta record nodes on a low-saturation deep teal background. The existing universal iOS 1024×1024 `AppIcon` slot remains in use; the source PNG is RGB with no alpha channel, and no Bundle Identifier, signing, version, build number or display-name setting changed.
+
+The refreshed asset passed Asset Catalog compilation and a Debug build on the iPhone 16 Simulator running iOS 26.5. Simulator inspection covered the Home Screen in light and dark appearance, App Library and Spotlight; the icon remained legible and showed no white edge, transparent edge, double rounding, stretching, clipping or visible blur. The existing focused app-shell UI launch smoke test also passed.
+
 ## Build 3 and Distribution
 
 | Item | Result |
@@ -80,7 +86,7 @@ Xcode emitted environment-only warnings while copying signed XCTest support bina
 | Team | `83SKX2PM7B` |
 | Signing style | Automatic |
 | Export compliance | `ITSAppUsesNonExemptEncryption = NO` |
-| Archive | PASS |
+| Archive | PASS for the pre-icon candidate; regeneration required to include the formal icon |
 | Archive path | `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` |
 | Local archive metadata inspection | PASS |
 | App Store Connect export | BLOCKED — `No Accounts`; no `iOS Distribution` certificate |
@@ -89,7 +95,7 @@ Xcode emitted environment-only warnings while copying signed XCTest support bina
 | App Store Connect processing | NOT STARTED |
 | Internal Testing | NOT AVAILABLE FOR BUILD 3 |
 
-The Archive is a normal Automatic Signing development-signed intermediate. Xcode must be signed in to the correct Apple account so the existing Archive can be exported with App Store distribution signing and uploaded. The in-app App Store Connect browser session was also unauthenticated.
+The existing Archive is a normal Automatic Signing development-signed intermediate, but it predates the formal App icon refresh and must not be uploaded as the refreshed candidate. Regenerate Build 3 from the current branch tip, then use Xcode signed in to the correct Apple account to export it with App Store distribution signing and upload it. The in-app App Store Connect browser session was also unauthenticated.
 
 ## Quality State
 
@@ -101,4 +107,4 @@ The Archive is a normal Automatic Signing development-signed intermediate. Xcode
 
 ## Next Action
 
-Owner signs in under Xcode **Settings → Accounts** with an Apple ID that has access to the `com.yocruzer.PersonalGrowthOS` App Store Connect record and Team `83SKX2PM7B`. Then export/upload `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` using App Store Connect distribution. If the temporary Archive is no longer present, regenerate it from implementation commit `423438e` without changing Version `1.0` or Build `3`.
+Owner first reviews the formal icon, then regenerates the Build 3 Archive from the current branch tip without changing Version `1.0` or Build `3`. After signing in under Xcode **Settings → Accounts** with an Apple ID that has access to the `com.yocruzer.PersonalGrowthOS` App Store Connect record and Team `83SKX2PM7B`, export and upload the regenerated Archive using App Store Connect distribution.

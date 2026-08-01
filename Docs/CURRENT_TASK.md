@@ -2,31 +2,29 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | Build 3 distribution handoff |
-| Status | IMPLEMENTATION COMPLETE — VALIDATION COMPLETE — ARCHIVE COMPLETE — UPLOAD BLOCKED |
+| Current checkpoint | Formal App icon complete; Build 3 archive regeneration and distribution handoff |
+| Status | ICON COMPLETE — VALIDATION COMPLETE — ARCHIVE REGENERATION REQUIRED — UPLOAD BLOCKED |
 | Execution branch | `feature/v1-completion-push` |
 | Baseline | `main` at `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Implementation head | `423438e` |
 | Candidate | Version `1.0`, Build `3` |
 | Automated gate | PASS — 147/147 |
-| Archive | `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` |
+| Archive | Existing `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` predates the formal App icon and must be regenerated |
 | External blocker | Xcode reports `No Accounts` and no `iOS Distribution` certificate |
 
 ## Objective
 
-Owner completes the minimum Apple account action, uploads the existing Build 3 V1 Final Candidate Archive, waits for App Store Connect processing, then installs it through Internal Testing and performs concentrated physical-device validation.
+Owner reviews the formal App icon, regenerates the Build 3 V1 Final Candidate Archive from the current branch tip, completes the minimum Apple account action, uploads the regenerated Archive, waits for App Store Connect processing, then installs it through Internal Testing and performs concentrated physical-device validation.
 
 ## Minimum Owner Action
 
 1. Open Xcode **Settings → Accounts**.
 2. Sign in with an Apple ID that can access Team `83SKX2PM7B` and the App Store Connect app for Bundle ID `com.yocruzer.PersonalGrowthOS`.
 3. Confirm Agreements, Tax, and Banking or App Store Connect role requirements are not blocking uploads.
-4. In Organizer, select `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive`.
-5. Choose **Distribute App → App Store Connect → Upload** with automatic signing.
+4. Regenerate the Archive from the current branch tip without changing Version `1.0` or Build `3`; do not upload the older `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` because it predates the formal App icon.
+5. In Organizer, select the regenerated Archive and choose **Distribute App → App Store Connect → Upload** with automatic signing.
 6. Keep the build for Internal Testing only; do not submit external Beta Review or App Store release.
 7. After processing, install Build 3 over the existing app without deleting it and follow `Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md`.
-
-If `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` has been removed by temporary-file cleanup, regenerate it from commit `423438e` using Version `1.0` and Build `3`.
 
 ## Completed Boundary
 
@@ -34,12 +32,14 @@ If `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` has been removed by temporar
 - Reviewer P0/P1/P2/P3 findings are closed at the supplied review boundary.
 - Final Debug Build, full Unit/UI, transfer/recovery/migration/media/Weight coverage, bilingual compilation and static checks pass.
 - Build 3 release metadata is committed and pushed.
-- Release Archive is complete and locally inspected.
+- The pre-icon Release Archive is complete and locally inspected; it is retained only as prior validation evidence.
+- The formal `随心log` App icon is applied to the existing `AppIcon` set and validated on the Home Screen, App Library and Spotlight in the simulator.
 - Draft PR #1 remains open, targets `main`, and is not merged.
 
 ## Not Yet Complete
 
 - App Store distribution export and server-side validation.
+- Regenerated Build 3 Archive containing the formal App icon.
 - TestFlight upload and processing.
 - Internal Testing availability.
 - Build 3 installation on a physical iPhone.
