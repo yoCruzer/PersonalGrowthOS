@@ -162,6 +162,122 @@ final class HabitFoundationTests: XCTestCase {
         )
     }
 
+    func testRepeatableCounterRecordsEveryRapidIncrement() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Water",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+
+        _ = try service.incrementCount(habit, occurredAt: timestamp)
+        _ = try service.incrementCount(habit, occurredAt: timestamp)
+        _ = try service.incrementCount(habit, occurredAt: timestamp)
+
+        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        XCTAssertEqual(logs.count, 3)
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            settings: HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: nil),
+            now: timestamp,
+            calendar: Calendar(identifier: .gregorian)
+        ).count, 3)
+    }
+
+    func testRepeatableCounterRemovesLatestCheckInOnlyForSelectedDay() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let calendar = Calendar(identifier: .gregorian)
+        let dayOne = Date(timeIntervalSince1970: 1_700_035_200)
+        let dayTwo = dayOne.addingTimeInterval(86_400)
+        var clock = dayOne
+        let habit = try HabitService(context: context, now: { clock }).create(
+            name: "Water",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { clock },
+            calendar: calendar
+        )
+        let dayOneLog = try service.incrementCount(habit, occurredAt: dayOne)
+        clock = dayTwo
+        let earlierDayTwoLog = try service.incrementCount(habit, occurredAt: dayTwo)
+        let latestDayTwoLog = try service.incrementCount(
+            habit,
+            occurredAt: dayTwo.addingTimeInterval(60)
+        )
+
+        let removed = try service.removeLatestCheckIn(habitID: habit.id, on: dayTwo)
+        XCTAssertEqual(removed?.id, latestDayTwoLog.id)
+        XCTAssertEqual(
+            Set(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id)),
+            Set([dayOneLog.id, earlierDayTwoLog.id])
+        )
+        XCTAssertEqual(try service.removeLatestCheckIn(habitID: habit.id, on: dayTwo)?.id, earlierDayTwoLog.id)
+        XCTAssertNil(try service.removeLatestCheckIn(habitID: habit.id, on: dayTwo))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [dayOneLog.id])
+    }
+
+    func testRepeatableProgressUsesCurrentLocalDayAndSurvivesReopen() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let calendar = Calendar(identifier: .gregorian)
+        let dayOne = Date(timeIntervalSince1970: 1_700_035_200)
+        let dayTwo = dayOne.addingTimeInterval(86_400)
+        let habitID: UUID
+        do {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            let habit = try HabitService(context: container.mainContext, now: { dayOne }).create(
+                name: "Water",
+                recordingMode: .multiplePerDay
+            )
+            habitID = habit.id
+            let service = HabitCheckInService(
+                context: container.mainContext,
+                mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+                now: { dayOne },
+                calendar: calendar
+            )
+            _ = try service.incrementCount(habit, occurredAt: dayOne)
+            _ = try service.incrementCount(habit, occurredAt: dayOne.addingTimeInterval(60))
+        }
+
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        let logs = try reopened.mainContext.fetch(FetchDescriptor<HabitLog>())
+        let configurations = try reopened.mainContext.fetch(FetchDescriptor<HabitConfiguration>())
+        let settings = HabitSettingsResolver.settings(
+            for: habitID,
+            configurations: configurations
+        )
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habitID,
+            logs: logs,
+            settings: settings,
+            now: dayOne,
+            calendar: calendar
+        ).count, 2)
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habitID,
+            logs: logs,
+            settings: settings,
+            now: dayTwo,
+            calendar: calendar
+        ).count, 0)
+    }
+
     func testUndoRemovesOnlyLatestCheckIn() throws {
         let fixture = try HabitFixture()
         defer { fixture.remove() }

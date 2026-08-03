@@ -323,6 +323,59 @@ final class HabitCheckInService {
     }
 
     func checkIn(_ habit: Habit, draft: HabitLogDraft = HabitLogDraft()) throws -> HabitLog {
+        try saveCheckIn(habit, draft: draft, preventsImmediateRepeat: true)
+    }
+
+    func incrementCount(
+        _ habit: Habit,
+        occurredAt: Date = Date()
+    ) throws -> HabitLog {
+        let settings = try HabitSettingsResolver.settings(for: habit.id, context: context)
+        return try saveCheckIn(
+            habit,
+            draft: HabitLogDraft(occurredAt: occurredAt),
+            preventsImmediateRepeat: settings.recordingMode != .multiplePerDay
+        )
+    }
+
+    @discardableResult
+    func removeLatestCheckIn(
+        habitID: UUID,
+        on day: Date = Date()
+    ) throws -> HabitLog? {
+        let dayStart = calendar.startOfDay(for: day)
+        guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else {
+            return nil
+        }
+        var descriptor = FetchDescriptor<HabitLog>(
+            predicate: #Predicate {
+                $0.habitID == habitID
+                    && $0.occurredAt >= dayStart
+                    && $0.occurredAt < dayEnd
+            },
+            sortBy: [
+                SortDescriptor(\HabitLog.occurredAt, order: .reverse),
+                SortDescriptor(\HabitLog.createdAt, order: .reverse),
+                SortDescriptor(\HabitLog.id, order: .reverse)
+            ]
+        )
+        descriptor.fetchLimit = 1
+        guard let latest = try context.fetch(descriptor).first else { return nil }
+        context.delete(latest)
+        do {
+            try save()
+            return latest
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    private func saveCheckIn(
+        _ habit: Habit,
+        draft: HabitLogDraft,
+        preventsImmediateRepeat: Bool
+    ) throws -> HabitLog {
         guard let persistedHabit = try fetchHabit(habit.id) else {
             throw HabitCheckInError.missingHabit
         }
@@ -331,7 +384,8 @@ final class HabitCheckInService {
         try validateCheckIn(
             habitID: persistedHabit.id,
             occurredAt: draft.occurredAt,
-            createdAt: timestamp
+            createdAt: timestamp,
+            preventsImmediateRepeat: preventsImmediateRepeat
         )
         let log = makeLog(
             habit: persistedHabit,
@@ -457,7 +511,8 @@ final class HabitCheckInService {
     private func validateCheckIn(
         habitID: UUID,
         occurredAt: Date,
-        createdAt: Date
+        createdAt: Date,
+        preventsImmediateRepeat: Bool = true
     ) throws {
         let settings = try HabitSettingsResolver.settings(for: habitID, context: context)
         let logs = try context.fetch(FetchDescriptor<HabitLog>(
@@ -471,9 +526,11 @@ final class HabitCheckInService {
                 throw HabitCheckInError.alreadyCheckedInToday
             }
         }
-        let threshold = createdAt.addingTimeInterval(-duplicatePreventionInterval)
-        guard !logs.contains(where: { $0.createdAt >= threshold }) else {
-            throw HabitCheckInError.recentlyCheckedIn
+        if preventsImmediateRepeat {
+            let threshold = createdAt.addingTimeInterval(-duplicatePreventionInterval)
+            guard !logs.contains(where: { $0.createdAt >= threshold }) else {
+                throw HabitCheckInError.recentlyCheckedIn
+            }
         }
     }
 

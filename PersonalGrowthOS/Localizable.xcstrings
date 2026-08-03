@@ -881,6 +881,22 @@
         }
       }
     },
+    "Current count: %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current count: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前次数：%lld"
+          }
+        }
+      }
+    },
     "Daily Target": {
       "localizations": {
         "en": {
@@ -957,6 +973,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "日期与时间"
+          }
+        }
+      }
+    },
+    "Decrease %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrease %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "减少“%@”一次"
           }
         }
       }
@@ -1677,6 +1709,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "包含回顾时间段"
+          }
+        }
+      }
+    },
+    "Increase %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Increase %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "增加“%@”一次"
           }
         }
       }

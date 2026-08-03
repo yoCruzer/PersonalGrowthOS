@@ -275,6 +275,56 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
     }
 
+    func testRepeatableHabitCounterIncrementsDecrementsAndPersists() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+            "-AppleInterfaceStyle", "Dark",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraLarge"
+        ]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Water")
+        app.segmentedControls.buttons["Multiple times per day"].tap()
+        app.buttons["habit-editor-save"].tap()
+
+        app.tabBars.buttons["Today"].tap()
+        let decrease = app.buttons["today-habit-water-decrease"]
+        let increase = app.buttons["today-habit-water-increase"]
+        let count = app.staticTexts["today-habit-water-count"]
+        XCTAssertTrue(increase.waitForExistence(timeout: 5))
+        XCTAssertTrue(decrease.exists)
+        XCTAssertFalse(decrease.isEnabled)
+
+        increase.tap()
+        increase.tap()
+        increase.tap()
+        XCTAssertEqual(count.label, "Today 3 times")
+        decrease.tap()
+        XCTAssertEqual(count.label, "Today 2 times")
+        try performSemanticAccessibilityAudit(app)
+
+        app.terminate()
+        app.launchArguments = [
+            "-PGOSUITesting",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+            "-AppleInterfaceStyle", "Dark",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraLarge"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["today-habit-water-count"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts["today-habit-water-count"].label, "Today 2 times")
+    }
+
     func testHabitInsightCreatesLinkedEntryAndHabitIsSearchable() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

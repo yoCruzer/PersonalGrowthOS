@@ -188,27 +188,37 @@ private struct TodayView: View {
                                 configurations: habitConfigurations
                             )
                         )
-                        Button {
-                            checkIn(habit)
-                        } label: {
-                            HStack {
-                                Text(habit.name)
-                                Spacer()
-                                Label(
-                                    progress.actionTitle,
-                                    systemImage: progress.isCompletedForOncePerDay
-                                        ? "checkmark.circle.fill"
-                                        : "checkmark.circle"
-                                )
-                                .labelStyle(.titleAndIcon)
+                        if progress.settings.recordingMode == .multiplePerDay {
+                            RepeatableHabitCounter(
+                                habitName: habit.name,
+                                progress: progress,
+                                accessibilityIdentifierPrefix: "today-habit-\(habit.normalizedName)",
+                                decrease: { decrementRepeatable(habit) },
+                                increase: { incrementRepeatable(habit) }
+                            )
+                        } else {
+                            Button {
+                                checkIn(habit)
+                            } label: {
+                                HStack {
+                                    Text(habit.name)
+                                    Spacer()
+                                    Label(
+                                        progress.actionTitle,
+                                        systemImage: progress.isCompletedForOncePerDay
+                                            ? "checkmark.circle.fill"
+                                            : "checkmark.circle"
+                                    )
+                                    .labelStyle(.titleAndIcon)
+                                }
                             }
+                            .disabled(
+                                coolingDownHabitIDs.contains(habit.id)
+                                    || progress.isCompletedForOncePerDay
+                            )
+                            .accessibilityLabel("Check in \(habit.name)")
+                            .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
                         }
-                        .disabled(
-                            coolingDownHabitIDs.contains(habit.id)
-                                || progress.isCompletedForOncePerDay
-                        )
-                        .accessibilityLabel("Check in \(habit.name)")
-                        .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
                     }
                 } header: {
                     Text("Today's Habits")
@@ -258,6 +268,7 @@ private struct TodayView: View {
                 .accessibilityIdentifier("today-weight")
             }
         }
+        .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle("Today")
         .toolbar {
             Button(action: openStorage) {
@@ -320,6 +331,31 @@ private struct TodayView: View {
             if recentCheckIn?.logID == log.id {
                 recentCheckIn = nil
             }
+        }
+    }
+
+    private func incrementRepeatable(_ habit: Habit) {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).incrementCount(habit)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func decrementRepeatable(_ habit: Habit) {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).removeLatestCheckIn(habitID: habit.id)
+            recentCheckIn = nil
+            coolingDownHabitIDs.remove(habit.id)
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
         }
     }
 

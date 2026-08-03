@@ -77,6 +77,74 @@ struct GrowthEmptyStateAddButton: View {
     }
 }
 
+struct RepeatableHabitCounter: View {
+    let habitName: String
+    let progress: HabitTodayProgress
+    let accessibilityIdentifierPrefix: String
+    let decrease: () -> Void
+    let increase: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(habitName)
+                .font(.headline)
+                .fixedSize(horizontal: false, vertical: true)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    progressText
+                    Spacer(minLength: 8)
+                    controls
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    progressText
+                    controls
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var progressText: some View {
+        Text(progress.actionTitle)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-count")
+    }
+
+    private var controls: some View {
+        HStack(spacing: 4) {
+            Button(action: decrease) {
+                Image(systemName: "minus")
+                    .frame(width: 44, height: 44)
+                    .background(.quaternary, in: Circle())
+            }
+            .buttonStyle(.borderless)
+            .disabled(progress.count == 0)
+            .accessibilityLabel("Decrease \(habitName)")
+            .accessibilityValue("Current count: \(progress.count)")
+            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-decrease")
+
+            Text("\(progress.count)")
+                .font(.headline.monospacedDigit())
+                .frame(minWidth: 32)
+                .accessibilityHidden(true)
+
+            Button(action: increase) {
+                Image(systemName: "plus")
+                    .frame(width: 44, height: 44)
+                    .background(.tint, in: Circle())
+                    .foregroundStyle(.white)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Increase \(habitName)")
+            .accessibilityValue("Current count: \(progress.count)")
+            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
+        }
+    }
+}
+
 struct HabitsView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
@@ -187,6 +255,14 @@ struct HabitDetailView: View {
         logs.contains { Calendar.current.isDateInToday($0.occurredAt) }
     }
 
+    private var todayProgress: HabitTodayProgress {
+        HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            settings: settings
+        )
+    }
+
     var body: some View {
         List {
             Section("Status") {
@@ -198,20 +274,28 @@ struct HabitDetailView: View {
             }
             if habit.status == .active {
                 Section {
-                    Button {
-                        simpleCheckIn()
-                    } label: {
-                        Label(
-                            settings.recordingMode == .oncePerDay && checkedInToday
-                                ? "Completed Today"
-                                : "Check In",
-                            systemImage: settings.recordingMode == .oncePerDay && checkedInToday
-                                ? "checkmark.circle.fill"
-                                : "checkmark.circle"
+                    if settings.recordingMode == .multiplePerDay {
+                        RepeatableHabitCounter(
+                            habitName: habit.name,
+                            progress: todayProgress,
+                            accessibilityIdentifierPrefix: "habit-detail-counter",
+                            decrease: decrementRepeatable,
+                            increase: incrementRepeatable
                         )
+                    } else {
+                        Button {
+                            simpleCheckIn()
+                        } label: {
+                            Label(
+                                checkedInToday ? "Completed Today" : "Check In",
+                                systemImage: checkedInToday
+                                    ? "checkmark.circle.fill"
+                                    : "checkmark.circle"
+                            )
+                        }
+                        .disabled(isCoolingDown || checkedInToday)
+                        .accessibilityIdentifier("habit-check-in")
                     }
-                    .disabled(isCoolingDown || (settings.recordingMode == .oncePerDay && checkedInToday))
-                    .accessibilityIdentifier("habit-check-in")
 
                     Button {
                         isLoggingDetails = true
@@ -258,6 +342,7 @@ struct HabitDetailView: View {
                 }
             }
         }
+        .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle(habit.name)
         .toolbar {
             Button("Edit") {
@@ -366,6 +451,31 @@ struct HabitDetailView: View {
             showTransientMessage(String(localized: "Just checked in. Try again in a moment."))
         } catch {
             errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func incrementRepeatable() {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).incrementCount(habit)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func decrementRepeatable() {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).removeLatestCheckIn(habitID: habit.id)
+            recentCheckIn = nil
+            isCoolingDown = false
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
         }
     }
 
