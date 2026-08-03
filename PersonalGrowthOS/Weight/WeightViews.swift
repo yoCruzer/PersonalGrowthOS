@@ -27,26 +27,24 @@ struct WeightHistoryView: View {
 
     var body: some View {
         List {
-            Section {
-                Button {
-                    isAddingRecord = true
-                } label: {
-                    Label("Add Weight", systemImage: "plus")
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("add-weight")
-            } footer: {
-                Text("Weight uses kilograms (kg). This is a personal record, not health advice.")
-            }
-
             if records.isEmpty {
                 Section {
-                    ContentUnavailableView {
-                        Label("No Weight Records", systemImage: "scalemass")
-                    } description: {
-                        Text("Add your first weight record to see your latest value and a simple trend.")
+                    VStack(spacing: 16) {
+                        ContentUnavailableView {
+                            Label("No Weight Records", systemImage: "scalemass")
+                        } description: {
+                            Text("Add your first weight record to see your latest value and a simple trend.")
+                        }
+                        .accessibilityIdentifier("weight-empty-state")
+                        GrowthEmptyStateAddButton(
+                            title: "Add Weight",
+                            systemImage: "plus",
+                            action: { isAddingRecord = true }
+                        )
+                        .accessibilityIdentifier("add-weight")
                     }
-                    .accessibilityIdentifier("weight-empty-state")
+                } footer: {
+                    Text("Weight uses kilograms (kg). This is a personal record, not health advice.")
                 }
             } else {
                 Section("Latest Weight") {
@@ -124,6 +122,16 @@ struct WeightHistoryView: View {
         }
         .navigationTitle("Weight")
         .accessibilityIdentifier("weight-history-view")
+        .toolbar {
+            if !records.isEmpty {
+                Button {
+                    isAddingRecord = true
+                } label: {
+                    Label("Add Weight", systemImage: "plus")
+                }
+                .accessibilityIdentifier("add-weight")
+            }
+        }
         .sheet(isPresented: $isAddingRecord) {
             WeightEditorView(record: nil) {
                 isAddingRecord = false

@@ -2193,6 +2193,22 @@
         }
       }
     },
+    "No Habits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Habits"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无习惯"
+          }
+        }
+      }
+    },
     "No Tags Yet": {
       "localizations": {
         "en": {

@@ -60,6 +60,23 @@ struct GrowthView: View {
     }
 }
 
+struct GrowthEmptyStateAddButton: View {
+    let title: LocalizedStringKey
+    let systemImage: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+    }
+}
+
 struct HabitsView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
@@ -72,22 +89,26 @@ struct HabitsView: View {
 
     var body: some View {
         List {
-            Section {
-                Button {
-                    isCreatingHabit = true
-                } label: {
-                    Label("Add Habit", systemImage: "plus")
+            if habits.isEmpty {
+                Section {
+                    VStack(spacing: 16) {
+                        ContentUnavailableView {
+                            Label("No Habits", systemImage: "repeat")
+                        } description: {
+                            Text("Add a habit you want to practice. Pauses and restarts are part of growth.")
+                        }
+                        GrowthEmptyStateAddButton(
+                            title: "Add Habit",
+                            systemImage: "plus",
+                            action: { isCreatingHabit = true }
+                        )
+                        .accessibilityIdentifier("add-habit")
+                    }
+                } footer: {
+                    Text("Use a specific, actionable name. You can change it later without losing check-ins.")
                 }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("add-habit")
-            } footer: {
-                Text("Use a specific, actionable name. You can change it later without losing check-ins.")
-            }
-            Section("Habits") {
-                if habits.isEmpty {
-                    Text("Add a habit you want to practice. Pauses and restarts are part of growth.")
-                        .foregroundStyle(.secondary)
-                } else {
+            } else {
+                Section("Habits") {
                     ForEach(habits) { habit in
                         NavigationLink {
                             HabitDetailView(
@@ -107,6 +128,16 @@ struct HabitsView: View {
             }
         }
         .navigationTitle("Habits")
+        .toolbar {
+            if !habits.isEmpty {
+                Button {
+                    isCreatingHabit = true
+                } label: {
+                    Label("Add Habit", systemImage: "plus")
+                }
+                .accessibilityIdentifier("add-habit")
+            }
+        }
         .sheet(isPresented: $isCreatingHabit) {
             HabitEditorView(
                 habit: nil,

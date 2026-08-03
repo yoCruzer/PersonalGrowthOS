@@ -569,4 +569,42 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["today-latest-weight"].waitForExistence(timeout: 10))
         XCTAssertEqual(app.staticTexts["today-latest-weight"].label, "72.5 kg")
     }
+
+    func testGrowthAddActionsRemainHittableWithDarkAppearanceAndLargeText() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+            "-AppleInterfaceStyle", "Dark",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraLarge"
+        ]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-habit"].isHittable)
+        app.buttons["add-habit"].tap()
+        let habitName = app.textFields["habit-editor-name"]
+        XCTAssertTrue(habitName.waitForExistence(timeout: 5))
+        habitName.tap()
+        habitName.typeText("Stretch")
+        app.buttons["habit-editor-save"].tap()
+        XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-habit"].isHittable)
+
+        app.navigationBars.buttons["Growth"].tap()
+        app.buttons["growth-weight"].tap()
+        XCTAssertTrue(app.buttons["add-weight"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-weight"].isHittable)
+        app.buttons["add-weight"].tap()
+        let weight = app.textFields["weight-editor-value"]
+        XCTAssertTrue(weight.waitForExistence(timeout: 5))
+        weight.tap()
+        weight.typeText("70")
+        app.buttons["weight-editor-save"].tap()
+        XCTAssertTrue(app.buttons["add-weight"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-weight"].isHittable)
+    }
 }
