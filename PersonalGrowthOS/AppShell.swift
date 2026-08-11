@@ -262,7 +262,11 @@ private struct TodayView: View {
             .accessibilityIdentifier("settings-button")
         }
         .safeAreaInset(edge: .bottom) {
-            if let recentCheckIn {
+            if let recentCheckIn,
+               HabitSettingsResolver.settings(
+                for: recentCheckIn.habitID,
+                configurations: habitConfigurations
+               ).recordingMode == .oncePerDay {
                 HabitCheckInUndoBar {
                     undo(recentCheckIn)
                 }
@@ -357,6 +361,8 @@ private struct TodayView: View {
                 context: modelContext,
                 mediaStore: mediaStore
             ).incrementCount(habit)
+            recentCheckIn = nil
+            coolingDownHabitIDs.remove(habit.id)
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         } catch {
             errorMessage = String(localized: "The check-in was not saved.")
@@ -368,7 +374,7 @@ private struct TodayView: View {
             _ = try HabitCheckInService(
                 context: modelContext,
                 mediaStore: mediaStore
-            ).removeLatestCheckIn(habitID: habit.id)
+            ).removeLatestStructuredCheckIn(habitID: habit.id)
             recentCheckIn = nil
             coolingDownHabitIDs.remove(habit.id)
         } catch {

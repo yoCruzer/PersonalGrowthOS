@@ -3,11 +3,11 @@
 | Item | Value |
 | --- | --- |
 | Current checkpoint | Post-V1 Usability S2 — weekly reflection and action loop candidate |
-| Status | IMPLEMENTED — VALIDATED — DRAFT PR #2 OPEN |
+| Status | REVIEW-FIX VALIDATED — DRAFT PR #2 OPEN |
 | Execution branch | `feature/usability-s2-review-loop` |
 | Base | `c45c666` (`design: refresh app icon for Suixin Log`) |
 | Prior committed UX work | `53f2326` add-action consistency; `06cc913` reversible repeatable Habit check-ins |
-| Automated gate | PASS — 136 Unit tests and 1 targeted UI test on iPhone 16 Simulator, iOS 26.5 |
+| Automated gate | PASS — 141 Unit tests and 1 focused UI smoke on iPhone 16 Simulator, iOS 26.5 |
 | External V1 release status | Separate Owner-only Build 3 archive/export/upload work remains on `feature/v1-completion-push` |
 
 ## Objective
@@ -19,13 +19,15 @@ The user starts a weekly review explicitly from Today. The screen shows only loc
 ## Completed Boundary
 
 - Schema V7 adds `WeeklyReview` with one stable natural-week identifier; V6 stores migrate without changing existing Entry, Habit or Weight data.
+- Weekly Review identity uses centralized ISO-style Gregorian Monday-week rules with local time-zone semantics, independent of Locale, Region and non-Gregorian system calendar selection.
 - The local summary has empty-state semantics and excludes Review Entries from Entry activity totals.
 - Weekly Review is available from Today and remains voluntary; opening the screen creates no record.
 - A record is created only from the explicit Start action; optional text is trimmed and restart persistence is covered.
 - Full backups use package schema v3 and preserve WeeklyReview identity and fields. Import remains compatible with schema v1/v2 packages that contain no WeeklyReview data.
+- Once-per-day Habit Undo remains unchanged. Multiple-per-day detail and Insight check-ins rely solely on immediate +/- counter reversal; decrement retains linked Entry content and its Habit relation.
 - English and Simplified Chinese strings are supplied for the new flow.
-- Targeted validation passed: `WeeklyReviewFoundationTests` 7/7 and the UI start/save/relaunch smoke 1/1.
-- Full Unit validation passed: 136/136.
+- Targeted validation passed: Habit + Weekly Review Unit 37/37, schema-v3/Weekly Review import-export 3/3 and focused mixed-path UI smoke 1/1.
+- Full Unit validation passed: 141/141.
 
 ## Explicit Non-Goals
 

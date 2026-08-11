@@ -220,15 +220,122 @@ final class HabitFoundationTests: XCTestCase {
             occurredAt: dayTwo.addingTimeInterval(60)
         )
 
-        let removed = try service.removeLatestCheckIn(habitID: habit.id, on: dayTwo)
+        let removed = try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo)
         XCTAssertEqual(removed?.id, latestDayTwoLog.id)
         XCTAssertEqual(
             Set(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id)),
             Set([dayOneLog.id, earlierDayTwoLog.id])
         )
-        XCTAssertEqual(try service.removeLatestCheckIn(habitID: habit.id, on: dayTwo)?.id, earlierDayTwoLog.id)
-        XCTAssertNil(try service.removeLatestCheckIn(habitID: habit.id, on: dayTwo))
+        XCTAssertEqual(try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo)?.id, earlierDayTwoLog.id)
+        XCTAssertNil(try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo))
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [dayOneLog.id])
+    }
+
+    func testRepeatableCounterKeepsDetailedCheckInWhenCounterAddsAndRemoves() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Run",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+
+        let detailed = try service.checkIn(habit, draft: HabitLogDraft(
+            occurredAt: timestamp,
+            quantity: 5,
+            unit: "km",
+            result: "Easy"
+        ))
+        let counterLog = try service.incrementCount(
+            habit,
+            occurredAt: timestamp.addingTimeInterval(60)
+        )
+
+        XCTAssertEqual(
+            try service.removeLatestStructuredCheckIn(habitID: habit.id, on: timestamp)?.id,
+            counterLog.id
+        )
+        let remaining = try XCTUnwrap(context.fetch(FetchDescriptor<HabitLog>()).first)
+        XCTAssertEqual(remaining.id, detailed.id)
+        XCTAssertEqual(remaining.quantity, 5)
+        XCTAssertEqual(remaining.unit, "km")
+        XCTAssertEqual(remaining.result, "Easy")
+    }
+
+    func testRepeatableCounterKeepsInsightCheckInWhenCounterAddsAndRemoves() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Reflect",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+
+        let insight = try service.checkInWithInsight(
+            habit,
+            logDraft: HabitLogDraft(occurredAt: timestamp),
+            entryDraft: EntryCreationDraft(body: "A useful insight")
+        )
+        let counterLog = try service.incrementCount(
+            habit,
+            occurredAt: timestamp.addingTimeInterval(60)
+        )
+
+        XCTAssertEqual(
+            try service.removeLatestStructuredCheckIn(habitID: habit.id, on: timestamp)?.id,
+            counterLog.id
+        )
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [insight.log.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [insight.entry.id])
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
+    func testRepeatableCounterDecrementPreservesLinkedEntryAndHabitRelation() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Journal",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+        let insight = try service.checkInWithInsight(
+            habit,
+            logDraft: HabitLogDraft(occurredAt: timestamp),
+            entryDraft: EntryCreationDraft(body: "Keep this note")
+        )
+
+        XCTAssertEqual(
+            try service.removeLatestStructuredCheckIn(habitID: habit.id, on: timestamp)?.id,
+            insight.log.id
+        )
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [insight.entry.id])
+        let relation = try XCTUnwrap(context.fetch(FetchDescriptor<ObjectLink>()).first)
+        XCTAssertEqual(relation.kind, .entryRelatesHabit)
+        XCTAssertEqual(relation.sourceID, insight.entry.id)
+        XCTAssertEqual(relation.targetID, habit.id)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
     }
 
     func testRepeatableProgressUsesCurrentLocalDayAndSurvivesReopen() throws {
@@ -302,6 +409,28 @@ final class HabitFoundationTests: XCTestCase {
 
         let remaining = try context.fetch(FetchDescriptor<HabitLog>())
         XCTAssertEqual(remaining.map(\.id), [first.id])
+    }
+
+    func testOncePerDayCheckInStillUsesLatestUndoSemantics() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Vitamin",
+            recordingMode: .oncePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+        let log = try service.checkIn(habit, draft: HabitLogDraft(occurredAt: timestamp))
+
+        try service.undoLatestCheckIn(habitID: habit.id, logID: log.id)
+
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
     }
 
     func testHabitEditKeepsIDHistoryAndModeChangesDoNotRewriteLogs() throws {

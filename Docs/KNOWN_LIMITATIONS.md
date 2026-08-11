@@ -11,14 +11,14 @@
 
 - Backup ZIP files are unencrypted and contain sensitive personal records, Entry text and original photos.
 - Import is full restore into an empty database only. Merge import and erase-and-restore are intentionally unavailable.
-- Current exports use package schema v2 to include Weight. The current app imports v1 and v2; older app builds are expected to reject v2 rather than silently discard Weight.
+- Current exports use package schema v3 to include Weight and Weekly Review records. The current app imports v1, v2 and v3; older app builds are expected to reject newer schemas rather than silently discard data they do not understand.
 - The importer targets the stored ZIP/ZIP64 subset emitted by this app, not arbitrary third-party compression variants.
 
 ## Persistence and Device Validation
 
-- Automated V5→V6 fixtures preserve representative Entry, Habit and Goal identities plus Entry body, Habit name and Goal title, but the exact Owner TestFlight store still requires an overlay migration test.
-- Weight persistence, backup and relaunch are simulator-verified only in this push.
-- Build 3 has not been installed on a physical device. The V5→V6 overlay, Weight behavior and backup flow remain Owner physical validation.
+- Automated V5→V6 and V6→V7 fixtures preserve representative existing identities and fields; the V6→V7 migration adds Weekly Review without changing existing Entry, Habit or Weight data. The exact Owner TestFlight store still requires an overlay migration test.
+- Weight and Weekly Review persistence, backup and relaunch are simulator-verified only on this branch.
+- Build 3 has not been installed on a physical device. The V5→V6/V6→V7 overlay, Weight behavior, Weekly Review behavior and backup flow remain Owner physical validation.
 - Actual iCloud multi-device validation was not performed because CloudKit is intentionally disabled in V1.
 
 ## Distribution Blocker
@@ -29,5 +29,5 @@
 
 ## Existing Technical Debt
 
-- Entry, Tag and Habit mutations use the shared main `ModelContext`; rollback can discard unrelated unsaved UI changes. This is accepted non-blocking debt.
+- Entry, Tag, Habit, Goal, Weight and Weekly Review mutation services use the shared main `ModelContext`; rollback can discard unrelated unsaved UI changes. Import publication and persistence recovery also use that context-level rollback pattern. This is accepted non-blocking debt.
 - Image presentation debts UX-01 and UX-02 are tracked in `Docs/UX_DEBT.md`.

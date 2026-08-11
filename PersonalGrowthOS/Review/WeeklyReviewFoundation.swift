@@ -6,13 +6,25 @@ enum WeeklyReviewError: Error, Equatable {
     case missingReview
 }
 
+enum WeeklyReviewCalendarPolicy {
+    static func calendar(timeZone: TimeZone = .current) -> Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = Locale(identifier: "en_US_POSIX")
+        calendar.timeZone = timeZone
+        calendar.firstWeekday = 2
+        calendar.minimumDaysInFirstWeek = 4
+        return calendar
+    }
+}
+
 struct WeeklyReviewPeriod: Equatable, Sendable {
     let identifier: String
     let start: Date
     let end: Date
     let endExclusive: Date
 
-    init(containing date: Date, calendar: Calendar = .current) throws {
+    init(containing date: Date, timeZone: TimeZone = .current) throws {
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
         guard let interval = calendar.dateInterval(of: .weekOfYear, for: date),
               let end = calendar.date(byAdding: .day, value: -1, to: interval.end) else {
             throw WeeklyReviewError.unavailableWeek
@@ -95,24 +107,24 @@ enum WeeklyReviewRules {
 @MainActor
 final class WeeklyReviewService {
     private let context: ModelContext
-    private let calendar: Calendar
+    private let timeZone: TimeZone
     private let now: () -> Date
     private let save: () throws -> Void
 
     init(
         context: ModelContext,
-        calendar: Calendar = .current,
+        timeZone: TimeZone = .current,
         now: @escaping () -> Date = Date.init,
         save: (() throws -> Void)? = nil
     ) {
         self.context = context
-        self.calendar = calendar
+        self.timeZone = timeZone
         self.now = now
         self.save = save ?? { try context.save() }
     }
 
     func review(containing date: Date, createIfNeeded: Bool = true) throws -> WeeklyReview? {
-        let period = try WeeklyReviewPeriod(containing: date, calendar: calendar)
+        let period = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
         if let existing = try fetchReview(identifier: period.identifier) {
             return existing
         }
@@ -221,8 +233,9 @@ enum WeeklySummaryService {
         weightRecords: [WeightRecord],
         tags: [Tag] = [],
         links: [ObjectLink] = [],
-        calendar: Calendar = .current
+        timeZone: TimeZone = .current
     ) -> WeeklySummary {
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
         let weeklyEntries = entries.filter {
             $0.kind == .quickNote && period.contains($0.occurredAt)
         }

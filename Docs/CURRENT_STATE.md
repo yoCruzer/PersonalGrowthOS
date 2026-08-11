@@ -7,9 +7,9 @@
 | Current branch | `feature/usability-s2-review-loop` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `c45c666` (`design: refresh app icon for Suixin Log`) |
-| Governance status | Post-V1 Usability S2 candidate — weekly reflection and action loop complete; Draft PR #2 open |
+| Governance status | Post-V1 Usability S2 review fixes validated; Draft PR #2 open |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, formal App icon refresh, UX fixes and Usability S2 implementation |
-| Final automated gate | S2: PASS — 136 Unit + 1 targeted UI; V1 Build 3 historical gate: 147/147 |
+| Final automated gate | S2 review-fix: PASS — 141 Unit + 1 focused UI; V1 Build 3 historical gate: 147/147 |
 | Release gate | Build 3 distribution remains an Owner-only external action; this separate S2 branch must be reviewed before any release decision |
 | Next checkpoint | Review Draft PR #2; retain the V1 Build 3 upload handoff separately |
 
@@ -23,7 +23,9 @@ The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Int
 
 The active branch starts from the formal App icon refresh at `c45c666`. It retains two committed but previously unpushed UX fixes: `53f2326` unifies the empty-state and toolbar add actions for Weight and Habits, and `06cc913` makes multiple-per-day Habit counters directly reversible. The current S2 candidate adds a manual weekly review/action loop; its scope and evidence are recorded in `Docs/USABILITY_S2_REVIEW_LOOP.md`.
 
-S2 adds a V7 SwiftData schema containing one manually created `WeeklyReview` per natural calendar week. It does not alter `EntryKind.review`, generate reports, create tasks, add health advice, or widen the V1 product model. A user can explicitly begin a weekly review from Today, see a local summary of that week’s Entries, HabitLogs, Weight and Tags, write optional reflection/next-step/focus text, save it locally and reopen it after relaunch. Full backup schema v3 preserves these records while v1/v2 packages remain importable when they contain no weekly-review data.
+S2 adds a V7 SwiftData schema containing one manually created `WeeklyReview` per natural calendar week. The week policy is Gregorian, Monday-first and four-day-first-week, while retaining the local device time zone for local-day semantics; Locale, Region and a non-Gregorian system calendar do not alter review identity. It does not alter `EntryKind.review`, generate reports, create tasks, add health advice, or widen the V1 product model. A user can explicitly begin a weekly review from Today, see a local summary of that week’s Entries, HabitLogs, Weight and Tags, write optional reflection/next-step/focus text, save it locally and reopen it after relaunch. Full backup schema v3 preserves these records while v1/v2 packages remain importable when they contain no weekly-review data.
+
+The focused PR review fix keeps once-per-day Habit Undo unchanged. Multiple-per-day Habits instead use only the immediate +/- counter: minus removes today's latest structured `HabitLog` and never deletes a linked Entry or its explicit Entry-to-Habit relation. Detail and Insight check-ins in that mode no longer show the competing Undo bar.
 
 ## V1 Final Candidate
 
@@ -43,11 +45,11 @@ No approved V1 capability remains unimplemented. UX-01 and UX-02 remain document
 
 ## Persistence and Migration Safety
 
-SwiftData schema V6 adds only `WeightRecord`. The explicit V5→V6 lightweight migration does not rename, remove or tighten fields on Entry, ImageMetadata, Tag, ObjectLink, Habit, HabitLog, HabitConfiguration, Goal or GoalLifecycleEvent.
+SwiftData schema V6 adds `WeightRecord`; schema V7 adds `WeeklyReview`. The explicit V5→V6 and V6→V7 lightweight migrations do not rename, remove or tighten fields on existing Entry, ImageMetadata, Tag, ObjectLink, Habit, HabitLog, HabitConfiguration, Goal, GoalLifecycleEvent or WeightRecord data.
 
-Automated migration coverage creates an on-disk V5 store with representative Entry, Habit and Goal data, opens it through V6 and verifies identities and representative fields while Weight starts empty. Separate on-disk coverage verifies Weight survives container reopen. Existing migration and recovery tests cover earlier schemas, relationship integrity and media boundaries.
+Automated migration coverage creates an on-disk V5 store with representative Entry, Habit and Goal data, opens it through V6 and verifies identities and representative fields while Weight starts empty. Separate V6→V7 coverage verifies existing Entry, Habit and Weight records remain unchanged while WeeklyReview starts empty. Existing migration and recovery tests cover earlier schemas, relationship integrity and media boundaries.
 
-Full backup package schema v2 includes Weight. The importer accepts valid schema-v1 packages with missing or empty Weight data, rejects schema v1 with non-empty Weight data, validates schema-v2 Weight identity and values, and preserves Weight through round trip. Original image bytes remain in the private media tree rather than SwiftData. There is no destructive store-rebuild or empty-store fallback after migration failure.
+Full backup package schema v3 includes Weight and WeeklyReview. The importer accepts valid schema-v1, v2 and v3 packages, rejects Weight in v1 and WeeklyReview in v1/v2, validates v3 weekly-review identity, timestamps and period ordering, and preserves all supported records through round trip. Original image bytes remain in the private media tree rather than SwiftData. There is no destructive store-rebuild or empty-store fallback after migration failure.
 
 The exact V5→V6 overlay against the Owner’s existing iPhone store has not been executed. It remains the first physical-device validation.
 

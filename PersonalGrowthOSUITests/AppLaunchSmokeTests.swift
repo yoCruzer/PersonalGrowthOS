@@ -337,6 +337,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         name.tap()
         name.typeText("Reflect")
+        app.segmentedControls.buttons["Multiple times per day"].tap()
         app.buttons["habit-editor-save"].tap()
         app.buttons["habit-reflect"].tap()
         app.buttons["habit-check-in-insight"].tap()
@@ -347,6 +348,15 @@ final class AppLaunchSmokeTests: XCTestCase {
         body.typeText("Habit insight entry")
         app.buttons["capture-save"].tap()
         XCTAssertTrue(app.staticTexts["Linked Entry"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["habit-check-in-undo"].exists)
+
+        let increase = app.buttons["habit-detail-counter-increase"]
+        let decrease = app.buttons["habit-detail-counter-decrease"]
+        XCTAssertTrue(increase.exists)
+        increase.tap()
+        XCTAssertTrue(decrease.isEnabled)
+        decrease.tap()
+        XCTAssertTrue(app.staticTexts["Linked Entry"].exists)
 
         app.buttons["global-search-button"].tap()
         let search = app.searchFields.firstMatch

@@ -6,7 +6,8 @@ import XCTest
 @MainActor
 final class WeeklyReviewFoundationTests: XCTestCase {
     func testWeekPeriodUsesOneStableNaturalWeekAcrossYearBoundary() throws {
-        let calendar = mondayCalendar(timeZoneID: "Asia/Shanghai")
+        let timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .gmt
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
         let date = try XCTUnwrap(calendar.date(from: DateComponents(
             year: 2027,
             month: 1,
@@ -14,7 +15,7 @@ final class WeeklyReviewFoundationTests: XCTestCase {
             hour: 12
         )))
 
-        let period = try WeeklyReviewPeriod(containing: date, calendar: calendar)
+        let period = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
 
         XCTAssertEqual(period.identifier, "2026-W53")
         XCTAssertEqual(
@@ -30,7 +31,8 @@ final class WeeklyReviewFoundationTests: XCTestCase {
     }
 
     func testWeekPeriodUsesCalendarDaysAcrossDaylightSavingTime() throws {
-        let calendar = mondayCalendar(timeZoneID: "America/Los_Angeles")
+        let timeZone = TimeZone(identifier: "America/Los_Angeles") ?? .gmt
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
         let date = try XCTUnwrap(calendar.date(from: DateComponents(
             year: 2026,
             month: 3,
@@ -38,7 +40,7 @@ final class WeeklyReviewFoundationTests: XCTestCase {
             hour: 12
         )))
 
-        let period = try WeeklyReviewPeriod(containing: date, calendar: calendar)
+        let period = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
 
         XCTAssertEqual(
             calendar.dateComponents([.day], from: period.start, to: period.endExclusive).day,
@@ -50,7 +52,8 @@ final class WeeklyReviewFoundationTests: XCTestCase {
     func testWeeklyReviewDeduplicatesWeekAndPersistsDraftAcrossReopen() throws {
         let fixture = try WeeklyReviewFixture()
         defer { fixture.remove() }
-        let calendar = mondayCalendar(timeZoneID: "Asia/Shanghai")
+        let timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .gmt
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
         let date = try XCTUnwrap(calendar.date(from: DateComponents(
             year: 2026,
             month: 8,
@@ -63,7 +66,7 @@ final class WeeklyReviewFoundationTests: XCTestCase {
             var clock = date
             let service = WeeklyReviewService(
                 context: container.mainContext,
-                calendar: calendar,
+                timeZone: timeZone,
                 now: { clock }
             )
             let first = try XCTUnwrap(service.review(containing: date))
@@ -143,8 +146,8 @@ final class WeeklyReviewFoundationTests: XCTestCase {
     }
 
     func testEmptyWeeklySummaryHidesUnavailableFacts() throws {
-        let calendar = mondayCalendar(timeZoneID: "Asia/Shanghai")
-        let period = try WeeklyReviewPeriod(containing: Date(), calendar: calendar)
+        let timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .gmt
+        let period = try WeeklyReviewPeriod(containing: Date(), timeZone: timeZone)
 
         let summary = WeeklySummaryService.make(
             period: period,
@@ -152,7 +155,7 @@ final class WeeklyReviewFoundationTests: XCTestCase {
             habits: [],
             habitLogs: [],
             weightRecords: [],
-            calendar: calendar
+            timeZone: timeZone
         )
 
         XCTAssertFalse(summary.hasActivity)
@@ -167,14 +170,15 @@ final class WeeklyReviewFoundationTests: XCTestCase {
     }
 
     func testEntrySummaryCountsDaysImagesTagsAndRecentEntries() throws {
-        let calendar = mondayCalendar(timeZoneID: "Asia/Shanghai")
+        let timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .gmt
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
         let date = try XCTUnwrap(calendar.date(from: DateComponents(
             year: 2026,
             month: 8,
             day: 3,
             hour: 10
         )))
-        let period = try WeeklyReviewPeriod(containing: date, calendar: calendar)
+        let period = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
         let first = Entry(body: "First", createdAt: date, occurredAt: date)
         let secondDate = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: date))
         let image = ImageMetadata(
@@ -231,7 +235,7 @@ final class WeeklyReviewFoundationTests: XCTestCase {
             weightRecords: [],
             tags: [tag],
             links: links,
-            calendar: calendar
+            timeZone: timeZone
         )
 
         XCTAssertEqual(summary.entryCount, 2)
@@ -242,14 +246,15 @@ final class WeeklyReviewFoundationTests: XCTestCase {
     }
 
     func testHabitAndWeightSummaryUsesOnlyCurrentWeekData() throws {
-        let calendar = mondayCalendar(timeZoneID: "Asia/Shanghai")
+        let timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .gmt
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
         let date = try XCTUnwrap(calendar.date(from: DateComponents(
             year: 2026,
             month: 8,
             day: 3,
             hour: 10
         )))
-        let period = try WeeklyReviewPeriod(containing: date, calendar: calendar)
+        let period = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
         let habit = Habit(
             name: "Water",
             normalizedName: "water",
@@ -279,7 +284,7 @@ final class WeeklyReviewFoundationTests: XCTestCase {
             habits: [habit],
             habitLogs: logs,
             weightRecords: [firstWeight],
-            calendar: calendar
+            timeZone: timeZone
         )
         XCTAssertEqual(oneWeight.habitCheckInCount, 3)
         XCTAssertEqual(oneWeight.habitHighlight?.checkInCount, 3)
@@ -298,20 +303,42 @@ final class WeeklyReviewFoundationTests: XCTestCase {
             habits: [habit],
             habitLogs: logs,
             weightRecords: [secondWeight, firstWeight],
-            calendar: calendar
+            timeZone: timeZone
         )
         XCTAssertEqual(twoWeights.weight?.firstKilograms, 70)
         XCTAssertEqual(twoWeights.weight?.latestKilograms, 69.5)
         XCTAssertEqual(try XCTUnwrap(twoWeights.weight?.changeKilograms), -0.5, accuracy: 0.001)
     }
 
-    private func mondayCalendar(timeZoneID: String) -> Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.locale = Locale(identifier: "en_GB")
-        calendar.timeZone = TimeZone(identifier: timeZoneID) ?? .gmt
-        calendar.firstWeekday = 2
-        calendar.minimumDaysInFirstWeek = 4
-        return calendar
+    func testCalendarPolicyIgnoresLocaleRegionAndNonGregorianCalendar() throws {
+        let timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .gmt
+        let policyCalendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        let date = try XCTUnwrap(policyCalendar.date(from: DateComponents(
+            year: 2026,
+            month: 8,
+            day: 9,
+            hour: 12
+        )))
+        var chineseCalendar = Calendar(identifier: .gregorian)
+        chineseCalendar.locale = Locale(identifier: "zh_CN")
+        chineseCalendar.timeZone = timeZone
+        var buddhistCalendar = Calendar(identifier: .buddhist)
+        buddhistCalendar.locale = Locale(identifier: "th_TH")
+        buddhistCalendar.timeZone = timeZone
+
+        let policyPeriod = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
+        let localizedPeriod = try WeeklyReviewPeriod(
+            containing: date,
+            timeZone: chineseCalendar.timeZone
+        )
+        let nonGregorianPeriod = try WeeklyReviewPeriod(
+            containing: date,
+            timeZone: buddhistCalendar.timeZone
+        )
+
+        XCTAssertEqual(policyPeriod.identifier, "2026-W32")
+        XCTAssertEqual(localizedPeriod, policyPeriod)
+        XCTAssertEqual(nonGregorianPeriod, policyPeriod)
     }
 }
 

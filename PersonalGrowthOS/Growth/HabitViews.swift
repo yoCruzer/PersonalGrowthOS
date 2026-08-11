@@ -392,7 +392,7 @@ struct HabitDetailView: View {
             )
         }
         .safeAreaInset(edge: .bottom) {
-            if let recentCheckIn {
+            if settings.recordingMode == .oncePerDay, let recentCheckIn {
                 HabitCheckInUndoBar {
                     undo(recentCheckIn)
                 }
@@ -460,6 +460,8 @@ struct HabitDetailView: View {
                 context: modelContext,
                 mediaStore: mediaStore
             ).incrementCount(habit)
+            recentCheckIn = nil
+            isCoolingDown = false
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         } catch {
             errorMessage = String(localized: "The check-in was not saved.")
@@ -471,7 +473,7 @@ struct HabitDetailView: View {
             _ = try HabitCheckInService(
                 context: modelContext,
                 mediaStore: mediaStore
-            ).removeLatestCheckIn(habitID: habit.id)
+            ).removeLatestStructuredCheckIn(habitID: habit.id)
             recentCheckIn = nil
             isCoolingDown = false
         } catch {
@@ -482,6 +484,11 @@ struct HabitDetailView: View {
     private func registerSuccessfulCheckIn(_ log: HabitLog) {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         transientMessage = nil
+        guard settings.recordingMode == .oncePerDay else {
+            recentCheckIn = nil
+            isCoolingDown = false
+            return
+        }
         recentCheckIn = RecentHabitCheckIn(habitID: habit.id, logID: log.id)
         isCoolingDown = true
         let logID = log.id

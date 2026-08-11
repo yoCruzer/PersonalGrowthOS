@@ -338,8 +338,9 @@ final class HabitCheckInService {
         )
     }
 
+    /// Removes today's latest structured HabitLog only. Linked Entries and their Habit links remain intact.
     @discardableResult
-    func removeLatestCheckIn(
+    func removeLatestStructuredCheckIn(
         habitID: UUID,
         on day: Date = Date()
     ) throws -> HabitLog? {
