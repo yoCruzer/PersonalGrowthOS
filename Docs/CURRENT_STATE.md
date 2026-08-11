@@ -7,11 +7,11 @@
 | Current branch | `feature/usability-s2-review-loop` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `c45c666` (`design: refresh app icon for Suixin Log`) |
-| Governance status | Post-V1 Usability S2 candidate — weekly reflection and action loop complete; pending commit, push and Draft PR |
+| Governance status | Post-V1 Usability S2 candidate — weekly reflection and action loop complete; Draft PR #2 open |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, formal App icon refresh, UX fixes and Usability S2 implementation |
 | Final automated gate | S2: PASS — 136 Unit + 1 targeted UI; V1 Build 3 historical gate: 147/147 |
 | Release gate | Build 3 distribution remains an Owner-only external action; this separate S2 branch must be reviewed before any release decision |
-| Next checkpoint | Commit and push the S2 candidate, then review its Draft PR; retain the V1 Build 3 upload handoff separately |
+| Next checkpoint | Review Draft PR #2; retain the V1 Build 3 upload handoff separately |
 
 ## Authoritative Product Baseline
 
@@ -113,4 +113,4 @@ The existing Archive is a normal Automatic Signing development-signed intermedia
 
 ## Next Action
 
-Review and merge the separate S2 Draft PR only after its changes are accepted. The V1 Build 3 distribution handoff remains Owner-only: use the `feature/v1-completion-push` branch (not the S2 branch) to regenerate and export the App-icon-inclusive Archive after signing in under Xcode **Settings → Accounts** with access to Team `83SKX2PM7B` and the `com.yocruzer.PersonalGrowthOS` App Store Connect record.
+Review [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) and merge it only after its changes are accepted. The V1 Build 3 distribution handoff remains Owner-only: use the `feature/v1-completion-push` branch (not the S2 branch) to regenerate and export the App-icon-inclusive Archive after signing in under Xcode **Settings → Accounts** with access to Team `83SKX2PM7B` and the `com.yocruzer.PersonalGrowthOS` App Store Connect record.

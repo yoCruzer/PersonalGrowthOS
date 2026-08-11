@@ -3,7 +3,7 @@
 | Item | Value |
 | --- | --- |
 | Current checkpoint | Post-V1 Usability S2 — weekly reflection and action loop candidate |
-| Status | IMPLEMENTED — VALIDATED — PENDING COMMIT / PUSH / DRAFT PR |
+| Status | IMPLEMENTED — VALIDATED — DRAFT PR #2 OPEN |
 | Execution branch | `feature/usability-s2-review-loop` |
 | Base | `c45c666` (`design: refresh app icon for Suixin Log`) |
 | Prior committed UX work | `53f2326` add-action consistency; `06cc913` reversible repeatable Habit check-ins |
@@ -37,4 +37,4 @@ The user starts a weekly review explicitly from Today. The screen shows only loc
 
 ## Next Action
 
-Create one coherent S2 commit, push this branch to `origin`, open a Draft PR targeting `main`, and leave both this branch and the separate Build 3 distribution handoff unmerged.
+Review [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2), keep it in Draft state, and leave both this branch and the separate Build 3 distribution handoff unmerged.

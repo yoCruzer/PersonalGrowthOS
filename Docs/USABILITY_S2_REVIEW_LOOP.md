@@ -2,7 +2,7 @@
 
 | Item | Value |
 | --- | --- |
-| Status | Candidate validated; pending GitHub review |
+| Status | Candidate validated; [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) open |
 | Branch | `feature/usability-s2-review-loop` |
 | Base | `c45c666` |
 | Scope | Manual weekly reflection from Today with a bounded local summary and one next step/focus |
