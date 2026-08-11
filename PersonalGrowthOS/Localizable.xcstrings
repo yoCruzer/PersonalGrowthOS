@@ -4609,6 +4609,162 @@
         }
       }
     },
+    "Activity": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Activity" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周动态" } }
+      }
+    },
+    "Active Days": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Active Days" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "活跃天数" } }
+      }
+    },
+    "Check-ins": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Check-ins" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打卡次数" } }
+      }
+    },
+    "Could Not Save Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Could Not Save Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法保存回顾" } }
+      }
+    },
+    "Days with Entries": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Days with Entries" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "有记录的天数" } }
+      }
+    },
+    "Habit Check-ins": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Habit Check-ins" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "习惯打卡" } }
+      }
+    },
+    "Look back on this week and choose one next step when you are ready.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Look back on this week and choose one next step when you are ready." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "准备好时，回顾这一周并选定一个下一步。" } }
+      }
+    },
+    "Mark this review complete": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Mark this review complete" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "标记此回顾为完成" } }
+      }
+    },
+    "Most Active Habit": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Most Active Habit" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "最常完成的习惯" } }
+      }
+    },
+    "No activity recorded this week yet.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No activity recorded this week yet." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周还没有记录任何动态。" } }
+      }
+    },
+    "One focus for next week": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "One focus for next week" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下周的一个重点" } }
+      }
+    },
+    "Photo Entries": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Photo Entries" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "含照片的记录" } }
+      }
+    },
+    "Recent Entries": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Recent Entries" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "最近记录" } }
+      }
+    },
+    "Reflect on this week": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Reflect on this week" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "回顾这一周" } }
+      }
+    },
+    "Save Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Save Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存回顾" } }
+      }
+    },
+    "Start Weekly Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Start Weekly Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开始每周回顾" } }
+      }
+    },
+    "Start only when you are ready. Nothing is generated automatically.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Start only when you are ready. Nothing is generated automatically." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "准备好时再开始；不会自动生成任何内容。" } }
+      }
+    },
+    "The weekly review was not saved.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "The weekly review was not saved." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾未能保存。" } }
+      }
+    },
+    "This Week": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "This Week" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周" } }
+      }
+    },
+    "Top Tags": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Top Tags" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "常用标签" } }
+      }
+    },
+    "Weekly Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾" } }
+      }
+    },
+    "Weekly Review Unavailable": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review Unavailable" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂时无法使用每周回顾" } }
+      }
+    },
+    "Weight Change": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weight Change" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "体重变化" } }
+      }
+    },
+    "What could be better?": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "What could be better?" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "哪些地方可以做得更好？" } }
+      }
+    },
+    "What is your next step?": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "What is your next step?" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的下一步是什么？" } }
+      }
+    },
+    "Your review is saved only on this device.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your review is saved only on this device." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的回顾只保存在这台设备上。" } }
+      }
+    },
     "Weight uses kilograms (kg). This is a personal record, not health advice.": {
       "localizations": {
         "en": {

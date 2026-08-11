@@ -2,49 +2,39 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | Formal App icon complete; Build 3 archive regeneration and distribution handoff |
-| Status | ICON COMPLETE — VALIDATION COMPLETE — ARCHIVE REGENERATION REQUIRED — UPLOAD BLOCKED |
-| Execution branch | `feature/v1-completion-push` |
-| Baseline | `main` at `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Implementation head | `423438e` |
-| Candidate | Version `1.0`, Build `3` |
-| Automated gate | PASS — 147/147 |
-| Archive | Existing `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` predates the formal App icon and must be regenerated |
-| External blocker | Xcode reports `No Accounts` and no `iOS Distribution` certificate |
+| Current checkpoint | Post-V1 Usability S2 — weekly reflection and action loop candidate |
+| Status | IMPLEMENTED — VALIDATED — PENDING COMMIT / PUSH / DRAFT PR |
+| Execution branch | `feature/usability-s2-review-loop` |
+| Base | `c45c666` (`design: refresh app icon for Suixin Log`) |
+| Prior committed UX work | `53f2326` add-action consistency; `06cc913` reversible repeatable Habit check-ins |
+| Automated gate | PASS — 136 Unit tests and 1 targeted UI test on iPhone 16 Simulator, iOS 26.5 |
+| External V1 release status | Separate Owner-only Build 3 archive/export/upload work remains on `feature/v1-completion-push` |
 
 ## Objective
 
-Owner reviews the formal App icon, regenerates the Build 3 V1 Final Candidate Archive from the current branch tip, completes the minimum Apple account action, uploads the regenerated Archive, waits for App Store Connect processing, then installs it through Internal Testing and performs concentrated physical-device validation.
+Deliver the small, manual S2 review/action loop without widening V1 into automatic reporting, a task manager, advanced analytics or a health product.
 
-## Minimum Owner Action
-
-1. Open Xcode **Settings → Accounts**.
-2. Sign in with an Apple ID that can access Team `83SKX2PM7B` and the App Store Connect app for Bundle ID `com.yocruzer.PersonalGrowthOS`.
-3. Confirm Agreements, Tax, and Banking or App Store Connect role requirements are not blocking uploads.
-4. Regenerate the Archive from the current branch tip without changing Version `1.0` or Build `3`; do not upload the older `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` because it predates the formal App icon.
-5. In Organizer, select the regenerated Archive and choose **Distribute App → App Store Connect → Upload** with automatic signing.
-6. Keep the build for Internal Testing only; do not submit external Beta Review or App Store release.
-7. After processing, install Build 3 over the existing app without deleting it and follow `Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md`.
+The user starts a weekly review explicitly from Today. The screen shows only local facts from the natural current week (Entries, entry days/photos, completed HabitLogs, a representative Habit, Weight change, Tags and recent Entries). The user may write what to remember, what to improve, a next step and one focus, then save and later reopen the same week’s review. Nothing is generated automatically.
 
 ## Completed Boundary
 
-- All approved V1 product capabilities are implemented.
-- Reviewer P0/P1/P2/P3 findings are closed at the supplied review boundary.
-- Final Debug Build, full Unit/UI, transfer/recovery/migration/media/Weight coverage, bilingual compilation and static checks pass.
-- Build 3 release metadata is committed and pushed.
-- The pre-icon Release Archive is complete and locally inspected; it is retained only as prior validation evidence.
-- The formal `随心log` App icon is applied to the existing `AppIcon` set and validated on the Home Screen, App Library and Spotlight in the simulator.
-- Draft PR #1 remains open, targets `main`, and is not merged.
+- Schema V7 adds `WeeklyReview` with one stable natural-week identifier; V6 stores migrate without changing existing Entry, Habit or Weight data.
+- The local summary has empty-state semantics and excludes Review Entries from Entry activity totals.
+- Weekly Review is available from Today and remains voluntary; opening the screen creates no record.
+- A record is created only from the explicit Start action; optional text is trimmed and restart persistence is covered.
+- Full backups use package schema v3 and preserve WeeklyReview identity and fields. Import remains compatible with schema v1/v2 packages that contain no WeeklyReview data.
+- English and Simplified Chinese strings are supplied for the new flow.
+- Targeted validation passed: `WeeklyReviewFoundationTests` 7/7 and the UI start/save/relaunch smoke 1/1.
+- Full Unit validation passed: 136/136.
 
-## Not Yet Complete
+## Explicit Non-Goals
 
-- App Store distribution export and server-side validation.
-- Regenerated Build 3 Archive containing the formal App icon.
-- TestFlight upload and processing.
-- Internal Testing availability.
-- Build 3 installation on a physical iPhone.
-- V5→V6 overlay against the Owner’s actual store.
-- Owner concentrated acceptance and real backup handling.
-- Formal 30-day Daily Driver observation.
+- No automatic weekly/monthly/yearly report or prompt.
+- No AI summary, mood analysis, advanced statistics, templates, reminders or generated conclusions.
+- No new task, Goal, HealthKit, diet, medical or health-advice behavior.
+- No change to the existing lightweight manual `EntryKind.review` model.
+- No Build 3 Archive regeneration, App Store export, upload, merge to `main`, or physical-device claim in this batch.
 
-Do not mark PR #1 ready or merge it until Owner physical-device validation is complete.
+## Next Action
+
+Create one coherent S2 commit, push this branch to `origin`, open a Draft PR targeting `main`, and leave both this branch and the separate Build 3 distribution handoff unmerged.

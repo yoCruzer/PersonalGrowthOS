@@ -22,6 +22,7 @@ final class ImportExportRecoveryTests: XCTestCase {
         """.utf8)
         let legacy = try JSONDecoder().decode(TransferData.self, from: data)
         XCTAssertEqual(legacy.weightRecords, [])
+        XCTAssertEqual(legacy.weeklyReviews, [])
         let manifest = ExportManifest(
             formatIdentifier: ExportManifest.formatIdentifier,
             packageSchemaVersion: 1,
@@ -80,8 +81,10 @@ final class ImportExportRecoveryTests: XCTestCase {
 
         var expectedCounts = source.expectedCounts
         expectedCounts["weightRecords"] = 0
+        expectedCounts["weeklyReviews"] = 0
         var expectedIDs = source.expectedIDs
         expectedIDs["weightRecords"] = []
+        expectedIDs["weeklyReviews"] = []
         XCTAssertEqual(result.objectCounts, expectedCounts)
         XCTAssertEqual(try ids(in: target.container.mainContext), expectedIDs)
         XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<WeightRecord>()), 0)
@@ -169,6 +172,45 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
     }
 
+    func testSchemaV3ValidatesWeeklyReviewPayloadsAndOlderSchemasRejectThem() throws {
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let review = WeeklyReviewTransfer(
+            id: UUID(),
+            weekIdentifier: "2026-W31",
+            periodStart: Date(timeIntervalSince1970: 900),
+            periodEnd: Date(timeIntervalSince1970: 1_500),
+            rememberedText: "A meaningful moment",
+            improvementText: nil,
+            nextStepText: "Continue",
+            focusText: "One thing",
+            isCompleted: true,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        let validData = makeTransferData(weeklyReviews: [review])
+        XCTAssertNoThrow(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 3, data: validData),
+            data: validData,
+            limits: .production
+        ))
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 2, data: validData),
+            data: validData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("weeklyReview"))
+        }
+
+        let duplicateData = makeTransferData(weeklyReviews: [review, review])
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 3, data: duplicateData),
+            data: duplicateData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .duplicateID("weeklyReview"))
+        }
+    }
+
     func testFullRoundTripPreservesEveryObjectIdentityRelationshipAndOriginal() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -200,6 +242,17 @@ final class ImportExportRecoveryTests: XCTestCase {
         XCTAssertEqual(restoredWeight.recordedAt, sourceWeight.recordedAt)
         XCTAssertEqual(restoredWeight.createdAt, sourceWeight.createdAt)
         XCTAssertEqual(restoredWeight.updatedAt, sourceWeight.updatedAt)
+        let restoredWeeklyReview = try XCTUnwrap(
+            target.container.mainContext.fetch(FetchDescriptor<WeeklyReview>()).first
+        )
+        let sourceWeeklyReview = try XCTUnwrap(
+            source.container.mainContext.fetch(FetchDescriptor<WeeklyReview>()).first
+        )
+        XCTAssertEqual(restoredWeeklyReview.id, sourceWeeklyReview.id)
+        XCTAssertEqual(restoredWeeklyReview.weekIdentifier, sourceWeeklyReview.weekIdentifier)
+        XCTAssertEqual(restoredWeeklyReview.rememberedText, sourceWeeklyReview.rememberedText)
+        XCTAssertEqual(restoredWeeklyReview.focusText, sourceWeeklyReview.focusText)
+        XCTAssertEqual(restoredWeeklyReview.isCompleted, sourceWeeklyReview.isCompleted)
         let joinedLogs = logs.values.joined(separator: "|")
         XCTAssertFalse(joinedLogs.contains(TransferTestFixture.secretBody))
         XCTAssertFalse(joinedLogs.contains(fixture.root.path))
@@ -366,7 +419,9 @@ final class ImportExportRecoveryTests: XCTestCase {
                     habits: data.habits,
                     habitLogs: data.habitLogs,
                     goals: data.goals,
-                    goalEvents: data.goalEvents
+                    goalEvents: data.goalEvents,
+                    weightRecords: data.weightRecords,
+                    weeklyReviews: data.weeklyReviews
                 )
                 return (manifest, duplicateData)
             }
@@ -377,7 +432,7 @@ final class ImportExportRecoveryTests: XCTestCase {
             rewriteJSON: { manifest, data in
                 (ExportManifest(
                     formatIdentifier: manifest.formatIdentifier,
-                    packageSchemaVersion: 3,
+                    packageSchemaVersion: 4,
                     appVersion: manifest.appVersion,
                     appBuild: manifest.appBuild,
                     exportID: manifest.exportID,
@@ -396,7 +451,7 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
         let schemaTarget = try fixture.makeEmptyStore(named: "SchemaTarget")
         await assertThrows({ try await schemaTarget.service.importPackage(from: unsupported) }) {
-            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(3))
+            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(4))
         }
     }
 
@@ -702,7 +757,8 @@ private struct TransferStore {
 }
 
 private func makeTransferData(
-    weightRecords: [WeightRecordTransfer]
+    weightRecords: [WeightRecordTransfer] = [],
+    weeklyReviews: [WeeklyReviewTransfer] = []
 ) -> TransferData {
     TransferData(
         entries: [],
@@ -713,7 +769,8 @@ private func makeTransferData(
         habitLogs: [],
         goals: [],
         goalEvents: [],
-        weightRecords: weightRecords
+        weightRecords: weightRecords,
+        weeklyReviews: weeklyReviews
     )
 }
 
@@ -818,6 +875,16 @@ private final class TransferTestFixture {
             recordedAt: Date(timeIntervalSince1970: 1_200),
             createdAt: base
         )
+        let weeklyReview = WeeklyReview(
+            weekIdentifier: "1970-W01",
+            periodStart: Date(timeIntervalSince1970: 0),
+            periodEnd: Date(timeIntervalSince1970: 6 * 86_400),
+            rememberedText: "A meaningful moment",
+            nextStepText: "Continue",
+            focusText: "One thing",
+            isCompleted: true,
+            createdAt: base
+        )
         let links = [
             ObjectLink(sourceType: .entry, sourceID: entry.id, targetType: .tag, targetID: tag.id,
                        kind: .entryUsesTag, createdAt: base),
@@ -837,6 +904,7 @@ private final class TransferTestFixture {
         context.insert(log)
         context.insert(event)
         context.insert(weightRecord)
+        context.insert(weeklyReview)
         links.forEach(context.insert)
         try context.save()
         try LinkIntegrityService.validate(context: context)
@@ -848,7 +916,7 @@ private final class TransferTestFixture {
             expectedCounts: [
                 "entries": 2, "images": 1, "tags": 1, "links": 5,
                 "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
-                "weightRecords": 1
+                "weightRecords": 1, "weeklyReviews": 1
             ],
             expectedIDs: try ids(in: context)
         )
@@ -904,7 +972,8 @@ private func ids(in context: ModelContext) throws -> [String: Set<UUID>] {
         "habitLogs": Set(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id)),
         "goals": Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id)),
         "goalEvents": Set(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).map(\.id)),
-        "weightRecords": Set(try context.fetch(FetchDescriptor<WeightRecord>()).map(\.id))
+        "weightRecords": Set(try context.fetch(FetchDescriptor<WeightRecord>()).map(\.id)),
+        "weeklyReviews": Set(try context.fetch(FetchDescriptor<WeeklyReview>()).map(\.id))
     ]
 }
 
@@ -924,6 +993,7 @@ private func deleteAllFixtureData(_ context: ModelContext) throws {
     try context.fetch(FetchDescriptor<Habit>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<Goal>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<WeightRecord>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<WeeklyReview>()).forEach(context.delete)
 }
 
 private func originalFiles(at mediaRoot: URL) throws -> [URL] {

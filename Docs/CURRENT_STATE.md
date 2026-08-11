@@ -3,21 +3,27 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-08-02 |
-| Current branch | `feature/v1-completion-push` |
+| Last verified | 2026-08-11 |
+| Current branch | `feature/usability-s2-review-loop` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Final implementation head | `423438e` (`chore: prepare build 3 testflight candidate`) |
-| Governance status | V1 Final Candidate — implementation and automated validation complete; formal App icon refresh validated; Archive regeneration required before upload |
-| Completed delivery | S0–S10, Completion Push C0–C5 and Final Candidate C6 |
-| Final automated gate | PASS — 125 Unit + 22 UI = 147/147 tests |
-| Release gate | Prior Archive PASS but predates the formal App icon; regenerate Build 3 Archive before upload; App Store Connect export remains externally blocked |
-| Next checkpoint | Owner reviews the formal App icon, then regenerates Build 3 Archive before App Store Connect upload |
+| Current base | `c45c666` (`design: refresh app icon for Suixin Log`) |
+| Governance status | Post-V1 Usability S2 candidate — weekly reflection and action loop complete; pending commit, push and Draft PR |
+| Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, formal App icon refresh, UX fixes and Usability S2 implementation |
+| Final automated gate | S2: PASS — 136 Unit + 1 targeted UI; V1 Build 3 historical gate: 147/147 |
+| Release gate | Build 3 distribution remains an Owner-only external action; this separate S2 branch must be reviewed before any release decision |
+| Next checkpoint | Commit and push the S2 candidate, then review its Draft PR; retain the V1 Build 3 upload handoff separately |
 
 ## Authoritative Product Baseline
 
 The Foundation Documents in `Docs/INDEX.md` remain authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` defines the completed S1–S10 delivery. The Owner-approved 2026-07-31 Completion Push adds only lightweight manual Weight records to V1; it does not introduce a separate health product.
 
-The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first Owner-supplied iPhone smoke test. It was safely fast-forwarded to `main` before the isolated `feature/v1-completion-push` branch was created. `main` remains unchanged and this branch remains unmerged.
+The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first Owner-supplied iPhone smoke test. It was safely fast-forwarded to `main` before the isolated `feature/v1-completion-push` branch was created. `main` remains unchanged; the V1 distribution branch and the newer S2 branch remain unmerged.
+
+## Post-V1 Usability S2
+
+The active branch starts from the formal App icon refresh at `c45c666`. It retains two committed but previously unpushed UX fixes: `53f2326` unifies the empty-state and toolbar add actions for Weight and Habits, and `06cc913` makes multiple-per-day Habit counters directly reversible. The current S2 candidate adds a manual weekly review/action loop; its scope and evidence are recorded in `Docs/USABILITY_S2_REVIEW_LOOP.md`.
+
+S2 adds a V7 SwiftData schema containing one manually created `WeeklyReview` per natural calendar week. It does not alter `EntryKind.review`, generate reports, create tasks, add health advice, or widen the V1 product model. A user can explicitly begin a weekly review from Today, see a local summary of that week’s Entries, HabitLogs, Weight and Tags, write optional reflection/next-step/focus text, save it locally and reopen it after relaunch. Full backup schema v3 preserves these records while v1/v2 packages remain importable when they contain no weekly-review data.
 
 ## V1 Final Candidate
 
@@ -107,4 +113,4 @@ The existing Archive is a normal Automatic Signing development-signed intermedia
 
 ## Next Action
 
-Owner first reviews the formal icon, then regenerates the Build 3 Archive from the current branch tip without changing Version `1.0` or Build `3`. After signing in under Xcode **Settings → Accounts** with an Apple ID that has access to the `com.yocruzer.PersonalGrowthOS` App Store Connect record and Team `83SKX2PM7B`, export and upload the regenerated Archive using App Store Connect distribution.
+Review and merge the separate S2 Draft PR only after its changes are accepted. The V1 Build 3 distribution handoff remains Owner-only: use the `feature/v1-completion-push` branch (not the S2 branch) to regenerate and export the App-icon-inclusive Archive after signing in under Xcode **Settings → Accounts** with access to Team `83SKX2PM7B` and the `com.yocruzer.PersonalGrowthOS` App Store Connect record.

@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 2
+    static let currentPackageSchemaVersion = 3
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -39,6 +39,7 @@ struct TransferData: Codable, Equatable {
     let goals: [GoalTransfer]
     let goalEvents: [GoalEventTransfer]
     let weightRecords: [WeightRecordTransfer]
+    let weeklyReviews: [WeeklyReviewTransfer]
 
     init(
         entries: [EntryTransfer],
@@ -49,7 +50,8 @@ struct TransferData: Codable, Equatable {
         habitLogs: [HabitLogTransfer],
         goals: [GoalTransfer],
         goalEvents: [GoalEventTransfer],
-        weightRecords: [WeightRecordTransfer] = []
+        weightRecords: [WeightRecordTransfer] = [],
+        weeklyReviews: [WeeklyReviewTransfer] = []
     ) {
         self.entries = entries
         self.images = images
@@ -60,6 +62,7 @@ struct TransferData: Codable, Equatable {
         self.goals = goals
         self.goalEvents = goalEvents
         self.weightRecords = weightRecords
+        self.weeklyReviews = weeklyReviews
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -72,6 +75,7 @@ struct TransferData: Codable, Equatable {
         case goals
         case goalEvents
         case weightRecords
+        case weeklyReviews
     }
 
     init(from decoder: Decoder) throws {
@@ -88,6 +92,10 @@ struct TransferData: Codable, Equatable {
             [WeightRecordTransfer].self,
             forKey: .weightRecords
         ) ?? []
+        weeklyReviews = try container.decodeIfPresent(
+            [WeeklyReviewTransfer].self,
+            forKey: .weeklyReviews
+        ) ?? []
     }
 
     var objectCounts: [String: Int] {
@@ -100,15 +108,16 @@ struct TransferData: Codable, Equatable {
             "habitLogs": habitLogs.count,
             "goals": goals.count,
             "goalEvents": goalEvents.count,
-            "weightRecords": weightRecords.count
+            "weightRecords": weightRecords.count,
+            "weeklyReviews": weeklyReviews.count
         ]
     }
 
     func objectCounts(forPackageSchemaVersion version: Int) -> [String: Int] {
-        if version == 1 {
-            return objectCounts.filter { $0.key != "weightRecords" }
+        objectCounts.filter { key, _ in
+            (version != 1 || key != "weightRecords")
+                && (version >= 3 || key != "weeklyReviews")
         }
-        return objectCounts
     }
 
     var totalObjectCount: Int {
@@ -214,6 +223,20 @@ struct WeightRecordTransfer: Codable, Equatable {
     let updatedAt: Date
 }
 
+struct WeeklyReviewTransfer: Codable, Equatable {
+    let id: UUID
+    let weekIdentifier: String
+    let periodStart: Date
+    let periodEnd: Date
+    let rememberedText: String?
+    let improvementText: String?
+    let nextStepText: String?
+    let focusText: String?
+    let isCompleted: Bool
+    let createdAt: Date
+    let updatedAt: Date
+}
+
 enum TransferPackageError: Error, Equatable {
     case invalidFormat
     case unsupportedSchema(Int)
@@ -249,6 +272,9 @@ enum TransferValidator {
         guard manifest.packageSchemaVersion != 1 || data.weightRecords.isEmpty else {
             throw TransferPackageError.invalidObject("weightRecord")
         }
+        guard manifest.packageSchemaVersion >= 3 || data.weeklyReviews.isEmpty else {
+            throw TransferPackageError.invalidObject("weeklyReview")
+        }
         guard data.totalObjectCount <= limits.maximumObjectCount else {
             throw TransferPackageError.objectLimitExceeded
         }
@@ -268,6 +294,10 @@ enum TransferValidator {
         try unique(data.goals.map(\.id), type: "goal")
         try unique(data.goalEvents.map(\.id), type: "goalEvent")
         try unique(data.weightRecords.map(\.id), type: "weightRecord")
+        try unique(data.weeklyReviews.map(\.id), type: "weeklyReview")
+        guard Set(data.weeklyReviews.map(\.weekIdentifier)).count == data.weeklyReviews.count else {
+            throw TransferPackageError.duplicateID("weeklyReviewIdentifier")
+        }
 
         let imageCounts = Dictionary(grouping: data.images, by: \.entryID).mapValues(\.count)
         let entryIDs = Set(data.entries.map(\.id))
@@ -350,6 +380,22 @@ enum TransferValidator {
             guard (try? WeightRules.validatedKilograms(record.weightKilograms)) != nil,
                   record.updatedAt >= record.createdAt else {
                 throw TransferPackageError.invalidObject("weightRecord")
+            }
+        }
+        for review in data.weeklyReviews {
+            let texts = [
+                review.rememberedText,
+                review.improvementText,
+                review.nextStepText,
+                review.focusText
+            ].compactMap { $0 }
+            guard !review.weekIdentifier.isEmpty,
+                  review.periodEnd >= review.periodStart,
+                  review.updatedAt >= review.createdAt,
+                  texts.allSatisfy({
+                      !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                  }) else {
+                throw TransferPackageError.invalidObject("weeklyReview")
             }
         }
         for log in data.habitLogs {

@@ -250,23 +250,7 @@ private struct TodayView: View {
                     Text("Context for today, not a list of tasks you must update.")
                 }
             }
-            Section("Weight") {
-                NavigationLink {
-                    WeightHistoryView()
-                } label: {
-                    if let latest = weightRecords.first {
-                        LabeledContent {
-                            Text(verbatim: WeightFormatting.kilograms(latest.weightKilograms))
-                                .accessibilityIdentifier("today-latest-weight")
-                        } label: {
-                            Label("Latest Weight", systemImage: "scalemass")
-                        }
-                    } else {
-                        Label("Record Weight", systemImage: "scalemass")
-                    }
-                }
-                .accessibilityIdentifier("today-weight")
-            }
+            weightAndReviewSections
         }
         .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle("Today")
@@ -297,6 +281,39 @@ private struct TodayView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? String(localized: "Please try again."))
+        }
+    }
+
+    @ViewBuilder
+    private var weightAndReviewSections: some View {
+        Section("Weight") {
+            NavigationLink {
+                WeightHistoryView()
+            } label: {
+                if let latest = weightRecords.first {
+                    LabeledContent {
+                        Text(verbatim: WeightFormatting.kilograms(latest.weightKilograms))
+                            .accessibilityIdentifier("today-latest-weight")
+                    } label: {
+                        Label("Latest Weight", systemImage: "scalemass")
+                    }
+                } else {
+                    Label("Record Weight", systemImage: "scalemass")
+                }
+            }
+            .accessibilityIdentifier("today-weight")
+        }
+        Section {
+            NavigationLink {
+                WeeklyReviewView()
+            } label: {
+                Label("Weekly Review", systemImage: "text.book.closed")
+            }
+            .accessibilityIdentifier("today-weekly-review")
+        } header: {
+            Text("Reflect")
+        } footer: {
+            Text("Look back on this week and choose one next step when you are ready.")
         }
     }
 

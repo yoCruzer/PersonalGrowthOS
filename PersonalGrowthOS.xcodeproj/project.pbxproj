@@ -43,6 +43,9 @@
 		B00000000000000000000034 /* WeightFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000037 /* WeightFoundation.swift */; };
 		B00000000000000000000035 /* WeightFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000038 /* WeightFoundationTests.swift */; };
 		B00000000000000000000036 /* WeightViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* WeightViews.swift */; };
+		B00000000000000000000037 /* WeeklyReviewFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* WeeklyReviewFoundation.swift */; };
+		B00000000000000000000038 /* WeeklyReviewFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */; };
+		B00000000000000000000039 /* WeeklyReviewViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000042 /* WeeklyReviewViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -102,6 +105,9 @@
 		A00000000000000000000037 /* WeightFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightFoundation.swift; sourceTree = "<group>"; };
 		A00000000000000000000038 /* WeightFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightFoundationTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000039 /* WeightViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightViews.swift; sourceTree = "<group>"; };
+		A00000000000000000000040 /* WeeklyReviewFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewFoundation.swift; sourceTree = "<group>"; };
+		A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewFoundationTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000042 /* WeeklyReviewViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +163,7 @@
 				C00000000000000000000016 /* Goal */,
 				C00000000000000000000017 /* ImportExport */,
 				C00000000000000000000018 /* Weight */,
+				C00000000000000000000019 /* Review */,
 				A00000000000000000000003 /* Assets.xcassets */,
 				A00000000000000000000036 /* Localizable.xcstrings */,
 			);
@@ -174,6 +181,7 @@
 				A00000000000000000000031 /* GoalFoundationTests.swift */,
 				A00000000000000000000035 /* ImportExportRecoveryTests.swift */,
 				A00000000000000000000038 /* WeightFoundationTests.swift */,
+				A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */,
 			);
 			path = PersonalGrowthOSTests;
 			sourceTree = "<group>";
@@ -308,6 +316,15 @@
 				A00000000000000000000039 /* WeightViews.swift */,
 			);
 			path = Weight;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000019 /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000040 /* WeeklyReviewFoundation.swift */,
+				A00000000000000000000042 /* WeeklyReviewViews.swift */,
+			);
+			path = Review;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -466,6 +483,8 @@
 				B00000000000000000000031 /* ImportExportService.swift in Sources */,
 				B00000000000000000000034 /* WeightFoundation.swift in Sources */,
 				B00000000000000000000036 /* WeightViews.swift in Sources */,
+				B00000000000000000000037 /* WeeklyReviewFoundation.swift in Sources */,
+				B00000000000000000000039 /* WeeklyReviewViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -481,6 +500,7 @@
 				B00000000000000000000028 /* GoalFoundationTests.swift in Sources */,
 				B00000000000000000000032 /* ImportExportRecoveryTests.swift in Sources */,
 				B00000000000000000000035 /* WeightFoundationTests.swift in Sources */,
+				B00000000000000000000038 /* WeeklyReviewFoundationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

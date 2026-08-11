@@ -620,6 +620,32 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertEqual(app.staticTexts["today-latest-weight"].label, "72.5 kg")
     }
 
+    func testWeeklyReviewStartsExplicitlyAndPersistsNextStepAcrossRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        app.buttons["today-weekly-review"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["weekly-review-view"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["start-weekly-review"].waitForExistence(timeout: 5))
+        app.buttons["start-weekly-review"].tap()
+
+        let nextStep = app.descendants(matching: .any)["weekly-review-next-step"]
+        XCTAssertTrue(nextStep.waitForExistence(timeout: 5))
+        nextStep.tap()
+        nextStep.typeText("Take one focused walk")
+        app.buttons["save-weekly-review"].tap()
+
+        app.terminate()
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["today-weekly-review"].tap()
+
+        let restoredNextStep = app.descendants(matching: .any)["weekly-review-next-step"]
+        XCTAssertTrue(restoredNextStep.waitForExistence(timeout: 5))
+        XCTAssertEqual(restoredNextStep.value as? String, "Take one focused walk")
+    }
+
     func testGrowthAddActionsRemainHittableWithDarkAppearanceAndLargeText() {
         let app = XCUIApplication()
         app.launchArguments = [
