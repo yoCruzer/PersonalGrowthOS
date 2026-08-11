@@ -7,11 +7,11 @@
 | Current branch | `feature/usability-s2-review-loop` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `c45c666` (`design: refresh app icon for Suixin Log`) |
-| Governance status | Post-V1 Usability S2 review fixes validated; Draft PR #2 open |
+| Governance status | Post-V1 Usability S2 review fixes validated; Build 4 device-validation Archive prepared; Draft PR #2 open |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, formal App icon refresh, UX fixes and Usability S2 implementation |
 | Final automated gate | S2 review-fix: PASS — 141 Unit + 1 focused UI; V1 Build 3 historical gate: 147/147 |
-| Release gate | Build 3 distribution remains an Owner-only external action; this separate S2 branch must be reviewed before any release decision |
-| Next checkpoint | Review Draft PR #2; retain the V1 Build 3 upload handoff separately |
+| Release gate | Owner TestFlight export/upload and physical-device validation remain external actions; this separate S2 branch remains unmerged |
+| Next checkpoint | Owner validates Build 4 from Xcode Organizer; retain the V1 Build 3 upload handoff separately |
 
 ## Authoritative Product Baseline
 
@@ -26,6 +26,8 @@ The active branch starts from the formal App icon refresh at `c45c666`. It retai
 S2 adds a V7 SwiftData schema containing one manually created `WeeklyReview` per natural calendar week. The week policy is Gregorian, Monday-first and four-day-first-week, while retaining the local device time zone for local-day semantics; Locale, Region and a non-Gregorian system calendar do not alter review identity. It does not alter `EntryKind.review`, generate reports, create tasks, add health advice, or widen the V1 product model. A user can explicitly begin a weekly review from Today, see a local summary of that week’s Entries, HabitLogs, Weight and Tags, write optional reflection/next-step/focus text, save it locally and reopen it after relaunch. Full backup schema v3 preserves these records while v1/v2 packages remain importable when they contain no weekly-review data.
 
 The focused PR review fix keeps once-per-day Habit Undo unchanged. Multiple-per-day Habits instead use only the immediate +/- counter: minus removes today's latest structured `HabitLog` and never deletes a linked Entry or its explicit Entry-to-Habit relation. Detail and Insight check-ins in that mode no longer show the competing Undo bar.
+
+Draft PR #2 has passed independent code review. The S2 device-validation candidate is Version 1.0 (Build 4), prepared from `bacb504afb30c582c869ae68f8558831c5067437` at `/tmp/PersonalGrowthOS-S2-Build4.xcarchive`. Local Archive inspection confirms the Release arm64 app, bundle identifier `com.yocruzer.PersonalGrowthOS`, display name `随心log`, AppIcon, `ITSAppUsesNonExemptEncryption = NO`, and Team `83SKX2PM7B`. It has not been exported to or uploaded to App Store Connect, no physical iPhone validation has been performed, and PR #2 remains Draft.
 
 ## V1 Final Candidate
 
