@@ -17,6 +17,10 @@ struct AppShell: View {
     @State private var isCapturing = false
     @State private var isShowingStorage = false
     @State private var isSearching = false
+    @AppStorage("floatingControlsHorizontalFraction") private var floatingControlsHorizontalFraction = 1.0
+    @AppStorage("floatingControlsVerticalFraction") private var floatingControlsVerticalFraction = 1.0
+    @State private var floatingControlsDragOrigin: CGPoint?
+    @State private var isKeyboardVisible = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -79,36 +83,154 @@ struct AppShell: View {
                 thumbnailStore: container.thumbnailStore
             )
         }
-        .overlay(alignment: .bottomTrailing) {
-            VStack(spacing: 12) {
-                Button {
-                    isSearching = true
-                } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.headline.bold())
-                        .frame(width: 44, height: 44)
-                        .background(.regularMaterial, in: Circle())
-                        .shadow(radius: 3, y: 1)
+        .overlay {
+            GeometryReader { proxy in
+                let layout = FloatingControlsLayout(
+                    containerSize: proxy.size,
+                    safeAreaInsets: proxy.safeAreaInsets
+                )
+                if !isKeyboardVisible && !isCapturing && !isSearching {
+                    FloatingControlsCluster(
+                        openSearch: { isSearching = true },
+                        openCapture: { isCapturing = true },
+                        dragBegan: {
+                            floatingControlsDragOrigin = layout.point(
+                                horizontalFraction: floatingControlsHorizontalFraction,
+                                verticalFraction: floatingControlsVerticalFraction
+                            )
+                        },
+                        dragChanged: { translation in
+                            guard let origin = floatingControlsDragOrigin else { return }
+                            let point = layout.clampedPoint(
+                                CGPoint(
+                                    x: origin.x + translation.width,
+                                    y: origin.y + translation.height
+                                )
+                            )
+                            let fraction = layout.fraction(for: point)
+                            floatingControlsHorizontalFraction = fraction.horizontal
+                            floatingControlsVerticalFraction = fraction.vertical
+                        },
+                        dragEnded: {
+                            floatingControlsDragOrigin = nil
+                        }
+                    )
+                    .position(layout.point(
+                        horizontalFraction: floatingControlsHorizontalFraction,
+                        verticalFraction: floatingControlsVerticalFraction
+                    ))
+                    .transition(.opacity)
                 }
-                .accessibilityLabel("Search")
-                .accessibilityIdentifier("global-search-button")
-
-                Button {
-                    isCapturing = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.title2.bold())
-                        .frame(width: 52, height: 52)
-                        .background(.tint, in: Circle())
-                        .foregroundStyle(.white)
-                        .shadow(radius: 4, y: 2)
-                }
-                .accessibilityLabel("Quick Capture")
-                .accessibilityIdentifier("global-capture-button")
             }
-            .padding(.trailing, 20)
-            .padding(.bottom, 72)
         }
+        .animation(.easeOut(duration: 0.18), value: isKeyboardVisible)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            isKeyboardVisible = false
+        }
+    }
+}
+
+struct FloatingControlsLayout: Equatable {
+    static let clusterSize = CGSize(width: 52, height: 108)
+    private static let edgePadding: CGFloat = 16
+    private static let topReservedHeight: CGFloat = 64
+    private static let bottomReservedHeight: CGFloat = 92
+
+    let containerSize: CGSize
+    let safeAreaInsets: EdgeInsets
+
+    var allowedRect: CGRect {
+        let halfWidth = Self.clusterSize.width / 2
+        let halfHeight = Self.clusterSize.height / 2
+        let minimumX = safeAreaInsets.leading + Self.edgePadding + halfWidth
+        let maximumX = max(minimumX, containerSize.width - safeAreaInsets.trailing - Self.edgePadding - halfWidth)
+        let minimumY = safeAreaInsets.top + Self.topReservedHeight + halfHeight
+        let maximumY = max(minimumY, containerSize.height - safeAreaInsets.bottom - Self.bottomReservedHeight - halfHeight)
+        return CGRect(
+            x: minimumX,
+            y: minimumY,
+            width: maximumX - minimumX,
+            height: maximumY - minimumY
+        )
+    }
+
+    func point(horizontalFraction: Double, verticalFraction: Double) -> CGPoint {
+        let horizontal = min(max(horizontalFraction, 0), 1)
+        let vertical = min(max(verticalFraction, 0), 1)
+        return CGPoint(
+            x: allowedRect.minX + allowedRect.width * horizontal,
+            y: allowedRect.minY + allowedRect.height * vertical
+        )
+    }
+
+    func clampedPoint(_ point: CGPoint) -> CGPoint {
+        CGPoint(
+            x: min(max(point.x, allowedRect.minX), allowedRect.maxX),
+            y: min(max(point.y, allowedRect.minY), allowedRect.maxY)
+        )
+    }
+
+    func fraction(for point: CGPoint) -> (horizontal: Double, vertical: Double) {
+        let clamped = clampedPoint(point)
+        return (
+            horizontal: allowedRect.width == 0 ? 0 : Double((clamped.x - allowedRect.minX) / allowedRect.width),
+            vertical: allowedRect.height == 0 ? 0 : Double((clamped.y - allowedRect.minY) / allowedRect.height)
+        )
+    }
+}
+
+private struct FloatingControlsCluster: View {
+    let openSearch: () -> Void
+    let openCapture: () -> Void
+    let dragBegan: () -> Void
+    let dragChanged: (CGSize) -> Void
+    let dragEnded: () -> Void
+
+    @State private var isDragging = false
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Button(action: openSearch) {
+                Image(systemName: "magnifyingglass")
+                    .font(.headline.bold())
+                    .frame(width: 44, height: 44)
+                    .background(.regularMaterial, in: Circle())
+                    .shadow(radius: 3, y: 1)
+            }
+            .accessibilityLabel("Search")
+            .accessibilityIdentifier("global-search-button")
+
+            Button(action: openCapture) {
+                Image(systemName: "plus")
+                    .font(.title2.bold())
+                    .frame(width: 52, height: 52)
+                    .background(.tint, in: Circle())
+                    .foregroundStyle(.white)
+                    .shadow(radius: 4, y: 2)
+            }
+            .accessibilityLabel("Quick Capture")
+            .accessibilityIdentifier("global-capture-button")
+        }
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.35)
+                .sequenced(before: DragGesture(minimumDistance: 0))
+                .onChanged { value in
+                    guard case .second(true, let drag?) = value else { return }
+                    if !isDragging {
+                        isDragging = true
+                        dragBegan()
+                    }
+                    dragChanged(drag.translation)
+                }
+                .onEnded { _ in
+                    guard isDragging else { return }
+                    isDragging = false
+                    dragEnded()
+                }
+        )
     }
 }
 
@@ -893,27 +1015,79 @@ struct TimelineRow: View {
 struct DownsampledOriginalView: View {
     let metadata: ImageMetadata
     let thumbnailStore: ThumbnailStore
+    var mediaStore: MediaStore?
     var accessibilityLabel = String(localized: "Entry photo")
+
+    @State private var isShowingPreview = false
 
     var body: some View {
         if let image = thumbnailStore.image(for: metadata) {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: TimelineImagePresentation.contentMode)
-                .frame(
-                    maxWidth: .infinity,
-                    minHeight: TimelineImagePresentation.minimumHeight,
-                    maxHeight: TimelineImagePresentation.maximumHeight
-                )
-                .background(.quaternary)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+            if let mediaStore {
+                Button { isShowingPreview = true } label: {
+                    imagePresentation(image)
+                }
+                .buttonStyle(.plain)
                 .accessibilityLabel(accessibilityLabel)
+                .accessibilityHint("Open larger photo")
+                .accessibilityIdentifier("entry-photo-\(metadata.id.uuidString)")
+                .fullScreenCover(isPresented: $isShowingPreview) {
+                    EntryImagePreview(
+                        metadata: metadata,
+                        fallbackImage: image,
+                        mediaStore: mediaStore
+                    )
+                }
+            } else {
+                imagePresentation(image)
+                    .accessibilityLabel(accessibilityLabel)
+            }
         } else {
             Label("Image unavailable", systemImage: "photo.badge.exclamationmark")
                 .foregroundStyle(.secondary)
         }
     }
 
+    private func imagePresentation(_ image: UIImage) -> some View {
+        Image(uiImage: image)
+            .resizable()
+            .aspectRatio(
+                CGFloat(max(metadata.pixelWidth, 1)) / CGFloat(max(metadata.pixelHeight, 1)),
+                contentMode: .fit
+            )
+            .frame(maxHeight: TimelineImagePresentation.maximumHeight)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct EntryImagePreview: View {
+    let metadata: ImageMetadata
+    let fallbackImage: UIImage
+    let mediaStore: MediaStore
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var image: UIImage?
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Color.black.ignoresSafeArea()
+            Image(uiImage: image ?? fallbackImage)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .padding()
+                .accessibilityLabel("Large photo")
+            Button("Close", systemImage: "xmark.circle.fill") { dismiss() }
+                .font(.title2)
+                .foregroundStyle(.white)
+                .padding()
+                .accessibilityIdentifier("entry-photo-preview-close")
+        }
+        .accessibilityIdentifier("entry-photo-preview")
+        .task {
+            guard let url = try? mediaStore.fileURL(for: metadata.relativePath) else { return }
+            image = ThumbnailStore.downsampledImage(at: url, maximumPixelSize: 2_048)
+        }
+    }
 }
 
 enum TimelineImagePresentation {

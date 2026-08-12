@@ -1089,6 +1089,22 @@
         }
       }
     },
+    "Large photo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Large photo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大图"
+          }
+        }
+      }
+    },
     "Edit": {
       "localizations": {
         "en": {
@@ -4633,6 +4649,12 @@
         "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法保存回顾" } }
       }
     },
+    "Close": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Close" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "关闭" } }
+      }
+    },
     "Days with Entries": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Days with Entries" } },
@@ -4675,6 +4697,12 @@
         "zh-Hans": { "stringUnit": { "state": "translated", "value": "下周的一个重点" } }
       }
     },
+    "Open larger photo": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Open larger photo" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打开大图" } }
+      }
+    },
     "Photo Entries": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Photo Entries" } },
@@ -4697,6 +4725,12 @@
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Save Review" } },
         "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存回顾" } }
+      }
+    },
+    "Saved": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Saved" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已保存" } }
       }
     },
     "Start Weekly Review": {

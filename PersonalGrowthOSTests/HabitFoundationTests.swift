@@ -891,6 +891,38 @@ final class HabitFoundationTests: XCTestCase {
         )
     }
 
+    func testFloatingControlsLayoutClampsAndRestoresNormalizedPositionInsideSafeArea() {
+        let layout = FloatingControlsLayout(
+            containerSize: CGSize(width: 390, height: 844),
+            safeAreaInsets: EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
+        )
+
+        XCTAssertEqual(
+            layout.point(horizontalFraction: 1, verticalFraction: 1),
+            CGPoint(x: layout.allowedRect.maxX, y: layout.allowedRect.maxY)
+        )
+        XCTAssertEqual(
+            layout.clampedPoint(CGPoint(x: -100, y: 2_000)),
+            CGPoint(x: layout.allowedRect.minX, y: layout.allowedRect.maxY)
+        )
+        let restored = layout.fraction(for: CGPoint(
+            x: layout.allowedRect.minX + layout.allowedRect.width * 0.25,
+            y: layout.allowedRect.minY + layout.allowedRect.height * 0.75
+        ))
+        XCTAssertEqual(restored.horizontal, 0.25, accuracy: 0.001)
+        XCTAssertEqual(restored.vertical, 0.75, accuracy: 0.001)
+
+        let resizedLayout = FloatingControlsLayout(
+            containerSize: CGSize(width: 844, height: 390),
+            safeAreaInsets: EdgeInsets(top: 0, leading: 59, bottom: 21, trailing: 59)
+        )
+        let resizedPoint = resizedLayout.point(
+            horizontalFraction: restored.horizontal,
+            verticalFraction: restored.vertical
+        )
+        XCTAssertTrue(resizedLayout.allowedRect.contains(resizedPoint))
+    }
+
     func testHabitLifecycleRollbackAndGlobalSearch() throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         let context = container.mainContext

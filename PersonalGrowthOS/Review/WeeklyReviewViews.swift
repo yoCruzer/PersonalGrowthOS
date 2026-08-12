@@ -2,6 +2,13 @@ import SwiftData
 import SwiftUI
 
 struct WeeklyReviewView: View {
+    private enum Field: Hashable {
+        case remembered
+        case improvement
+        case nextStep
+        case focus
+    }
+
     @Environment(\.modelContext) private var modelContext
     @Query private var entries: [Entry]
     @Query private var habits: [Habit]
@@ -16,7 +23,10 @@ struct WeeklyReviewView: View {
     @State private var nextStepText = ""
     @State private var focusText = ""
     @State private var isCompleted = false
+    @State private var isSaving = false
+    @State private var saveMessage: String?
     @State private var errorMessage: String?
+    @FocusState private var focusedField: Field?
 
     private var period: WeeklyReviewPeriod? {
         try? WeeklyReviewPeriod(containing: Date())
@@ -77,10 +87,22 @@ struct WeeklyReviewView: View {
                 )
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Weekly Review")
         .accessibilityIdentifier("weekly-review-view")
         .onAppear { loadDraft() }
         .onChange(of: currentReview?.id) { _, _ in loadDraft() }
+        .onChange(of: rememberedText) { _, _ in saveMessage = nil }
+        .onChange(of: improvementText) { _, _ in saveMessage = nil }
+        .onChange(of: nextStepText) { _, _ in saveMessage = nil }
+        .onChange(of: focusText) { _, _ in saveMessage = nil }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { focusedField = nil }
+                    .accessibilityIdentifier("weekly-review-keyboard-done")
+            }
+        }
         .alert("Could Not Save Review", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }
@@ -142,15 +164,19 @@ struct WeeklyReviewView: View {
             Section("Reflect") {
                 TextField("What do you want to remember?", text: $rememberedText, axis: .vertical)
                     .lineLimit(3...6)
+                    .focused($focusedField, equals: .remembered)
                     .accessibilityIdentifier("weekly-review-remembered")
                 TextField("What could be better?", text: $improvementText, axis: .vertical)
                     .lineLimit(3...6)
+                    .focused($focusedField, equals: .improvement)
                     .accessibilityIdentifier("weekly-review-improvement")
                 TextField("What is your next step?", text: $nextStepText, axis: .vertical)
                     .lineLimit(2...4)
+                    .focused($focusedField, equals: .nextStep)
                     .accessibilityIdentifier("weekly-review-next-step")
                 TextField("One focus for next week", text: $focusText, axis: .vertical)
                     .lineLimit(2...4)
+                    .focused($focusedField, equals: .focus)
                     .accessibilityIdentifier("weekly-review-focus")
             }
             Section {
@@ -158,7 +184,13 @@ struct WeeklyReviewView: View {
                 Button("Save Review", action: saveReview)
                     .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity, alignment: .center)
+                    .disabled(isSaving)
                     .accessibilityIdentifier("save-weekly-review")
+                if let saveMessage {
+                    Label(saveMessage, systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                        .accessibilityIdentifier("weekly-review-save-confirmation")
+                }
             } footer: {
                 Text("Your review is saved only on this device.")
             }
@@ -176,8 +208,28 @@ struct WeeklyReviewView: View {
     }
 
     private func saveReview() {
-        guard let review = currentReview else { return }
+        focusedField = nil
+        isSaving = true
+        Task { @MainActor in
+            await Task.yield()
+            performSave()
+        }
+    }
+
+    private func performSave() {
+        defer { isSaving = false }
+        guard let period else {
+            errorMessage = String(localized: "The weekly review was not saved.")
+            return
+        }
         do {
+            guard let review = try WeeklyReviewService(context: modelContext).review(
+                containing: period.start,
+                createIfNeeded: false
+            ) else {
+                errorMessage = String(localized: "The weekly review was not saved.")
+                return
+            }
             try WeeklyReviewService(context: modelContext).update(
                 review,
                 draft: WeeklyReviewDraft(
@@ -188,6 +240,7 @@ struct WeeklyReviewView: View {
                     isCompleted: isCompleted
                 )
             )
+            saveMessage = String(localized: "Saved")
         } catch {
             errorMessage = String(localized: "The weekly review was not saved.")
         }

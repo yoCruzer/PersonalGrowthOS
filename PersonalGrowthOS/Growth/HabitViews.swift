@@ -85,24 +85,29 @@ struct RepeatableHabitCounter: View {
     let increase: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(habitName)
-                .font(.headline)
-                .fixedSize(horizontal: false, vertical: true)
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 8) {
-                    progressText
-                    Spacer(minLength: 8)
-                    controls
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    progressText
-                    controls
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 8) {
+                habitSummary
+                Spacer(minLength: 8)
+                controls
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                habitSummary
+                controls
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private var habitSummary: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(habitName)
+                .font(.headline)
+                .lineLimit(2)
+                .layoutPriority(1)
+            progressText
+        }
     }
 
     private var progressText: some View {
@@ -117,9 +122,11 @@ struct RepeatableHabitCounter: View {
         HStack(spacing: 4) {
             Button(action: decrease) {
                 Image(systemName: "minus")
-                    .frame(width: 44, height: 44)
+                    .font(.subheadline.weight(.semibold))
+                    .frame(width: 28, height: 28)
                     .background(.quaternary, in: Circle())
             }
+            .frame(width: 44, height: 44)
             .buttonStyle(.borderless)
             .disabled(progress.count == 0)
             .accessibilityLabel("Decrease \(habitName)")
@@ -133,10 +140,12 @@ struct RepeatableHabitCounter: View {
 
             Button(action: increase) {
                 Image(systemName: "plus")
-                    .frame(width: 44, height: 44)
+                    .font(.subheadline.weight(.semibold))
+                    .frame(width: 28, height: 28)
                     .background(.tint, in: Circle())
                     .foregroundStyle(.white)
             }
+            .frame(width: 44, height: 44)
             .buttonStyle(.borderless)
             .accessibilityLabel("Increase \(habitName)")
             .accessibilityValue("Current count: \(progress.count)")

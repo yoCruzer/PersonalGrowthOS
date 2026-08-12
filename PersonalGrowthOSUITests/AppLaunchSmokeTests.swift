@@ -630,7 +630,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertEqual(app.staticTexts["today-latest-weight"].label, "72.5 kg")
     }
 
-    func testWeeklyReviewStartsExplicitlyAndPersistsNextStepAcrossRelaunch() {
+    func testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
@@ -640,11 +640,20 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["start-weekly-review"].waitForExistence(timeout: 5))
         app.buttons["start-weekly-review"].tap()
 
+        let remembered = app.descendants(matching: .any)["weekly-review-remembered"]
+        XCTAssertTrue(remembered.waitForExistence(timeout: 5))
+        remembered.tap()
+        remembered.typeText("A useful moment")
+
         let nextStep = app.descendants(matching: .any)["weekly-review-next-step"]
         XCTAssertTrue(nextStep.waitForExistence(timeout: 5))
         nextStep.tap()
         nextStep.typeText("Take one focused walk")
+        let keyboardDone = app.buttons["weekly-review-keyboard-done"]
+        XCTAssertTrue(keyboardDone.waitForExistence(timeout: 5))
+        keyboardDone.tap()
         app.buttons["save-weekly-review"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["weekly-review-save-confirmation"].waitForExistence(timeout: 5))
 
         app.terminate()
         app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -654,6 +663,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         let restoredNextStep = app.descendants(matching: .any)["weekly-review-next-step"]
         XCTAssertTrue(restoredNextStep.waitForExistence(timeout: 5))
         XCTAssertEqual(restoredNextStep.value as? String, "Take one focused walk")
+        XCTAssertEqual(
+            app.descendants(matching: .any)["weekly-review-remembered"].value as? String,
+            "A useful moment"
+        )
     }
 
     func testGrowthAddActionsRemainHittableWithDarkAppearanceAndLargeText() {

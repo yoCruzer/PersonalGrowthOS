@@ -81,6 +81,7 @@ struct EntryDetailView: View {
                         DownsampledOriginalView(
                             metadata: image,
                             thumbnailStore: thumbnailStore,
+                            mediaStore: mediaStore,
                             accessibilityLabel: "Photo \(index + 1) of \(images.count)"
                         )
                     }
