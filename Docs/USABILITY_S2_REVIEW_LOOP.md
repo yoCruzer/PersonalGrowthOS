@@ -2,7 +2,7 @@
 
 | Item | Value |
 | --- | --- |
-| Status | Review fixes validated; [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) open |
+| Status | Build 5 candidate ready for independent review; [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) remains Draft |
 | Branch | `feature/usability-s2-review-loop` |
 | Base | `c45c666` |
 | Scope | Manual weekly reflection from Today with a bounded local summary and one next step/focus |
@@ -35,10 +35,18 @@ Executed on iPhone 16 Simulator, iOS 26.5 (`5F04DE28-8329-4774-9488-076D6DDC5230
 - Focused multiple-per-day Insight/counter UI smoke: 1/1 passed — `/tmp/PersonalGrowthOS-S2-reviewfix-Habit-UI-4.xcresult`.
 - Simulator Debug build: passed.
 - Full Unit suite: 141/141 passed — `/tmp/PersonalGrowthOS-S2-reviewfix-Full-Unit.xcresult`.
-- `git diff --check` passed. No String Catalog changed in this review-fix.
+- `git diff --check` passed. The Build 5 candidate adds bilingual success, preview and accessibility strings; String Catalog JSON and bilingual-value validation passed.
+
+## Build 4 Owner Feedback and Build 5 Candidate
+
+Build 4's real-iPhone overlay validation passed V5→V6→V7 migration, existing Entry/image/Habit/Goal/Review retention and restart recovery, Weight persistence, repeatable-Habit `+++--`, Insight→`+`→`-` linked-Entry retention, explicit-only Weekly Review creation, and V7 export. The resulting evidence supersedes the earlier simulator-only wording for those flows.
+
+It also found a merge-blocking Weekly Review closure failure: after Chinese text input, keyboard dismissal was unreliable and Save showed no observable completion or restart-persistence proof. The current candidate gives each field an explicit `FocusState`, supplies a keyboard Done action, yields after ending focus before saving, refetches the stable current-week review by period, and reports either a visible Saved state or the existing error alert. The current simulator evidence includes 40 focused Unit tests, three focused UI smokes (Weekly Review save/relaunch, Insight/counter and Quick Capture), Simulator Debug build, a 142-test full Unit gate and a 25-test full UI gate. Chinese IME composition itself requires Build 5 Owner revalidation.
+
+The same candidate keeps the existing Habit semantics but compacts the repeatable-Habit card with 28pt visual controls inside 44×44pt button hit areas and a `ViewThatFits` fallback. The global Search/Capture cluster hides for keyboard and presentation input states, moves only after long press, stores normalized `@AppStorage` coordinates, and clamps them to the current safe operating area. Entry media now fits its actual aspect ratio with a maximum height instead of a forced gray container; Entry-detail thumbnails open a single-image, aspect-fit full-screen preview with a close control and safe thumbnail fallback. No media-browser, data-model or export behavior was added.
 
 ## Follow-up Boundary
 
 Backup validation intentionally does not recompute a review's identifier from its stored period: package v3 does not retain the exporting device's time zone, so receiver-side recomputation could reject an otherwise valid local-week review. The existing non-empty identifier, unique identifier and ordered-period checks remain in place; timezone-aware package metadata would be a separate non-blocking follow-up.
 
-The next work is review of the S2 Draft PR and, if accepted, focused physical-device interaction validation. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate.
+The next work is independent incremental review of the S2 Draft PR. If accepted, prepare a new Build 5 Archive and perform focused Owner physical-device validation of Chinese Weekly Review input/save/relaunch plus the bounded new interaction work. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate.

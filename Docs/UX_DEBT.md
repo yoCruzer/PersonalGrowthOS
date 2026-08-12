@@ -2,8 +2,8 @@
 
 | ID | Priority | Area | Observation | Status | V1 treatment |
 | --- | --- | --- | --- | --- | --- |
-| UX-01 | P2 | Entry media | Landscape and portrait images share a portrait-biased container, leaving conspicuous gray side space for landscape images. | OPEN | Does not block V1 Completion Push. Fix only if the shared media component is already touched and the change remains low risk. |
-| UX-02 | P2 | Entry media | Images cannot be opened in a larger or full-screen preview. | OPEN | Does not block V1 Completion Push. Do not expand into a full media browser/editor refactor. |
+| UX-01 | P2 | Entry media | Landscape and portrait images shared a portrait-biased container, leaving conspicuous gray side space for landscape images. | RESOLVED — Build 5 candidate | The shared presentation now preserves each image's aspect ratio, removes the forced gray container, and caps only maximum height. Targeted aspect-ratio/media validation and Debug build passed. |
+| UX-02 | P2 | Entry media | Images could not be opened in a larger or full-screen preview. | RESOLVED — Build 5 candidate | Entry-detail images now open a lightweight full-screen, aspect-fit preview with a clear close control and thumbnail fallback; no media-browser or editor scope was added. Targeted media validation and Debug build passed. |
 
 ## Recording Rule
 

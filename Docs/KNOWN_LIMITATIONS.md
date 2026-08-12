@@ -16,9 +16,9 @@
 
 ## Persistence and Device Validation
 
-- Automated V5→V6 and V6→V7 fixtures preserve representative existing identities and fields; the V6→V7 migration adds Weekly Review without changing existing Entry, Habit or Weight data. The exact Owner TestFlight store still requires an overlay migration test.
-- Weight and Weekly Review persistence, backup and relaunch are simulator-verified only on this branch.
-- Build 3 has not been installed on a physical device. The V5→V6/V6→V7 overlay, Weight behavior, Weekly Review behavior and backup flow remain Owner physical validation.
+- Automated V5→V6 and V6→V7 fixtures preserve representative existing identities and fields; the V6→V7 migration adds Weekly Review without changing existing Entry, Habit or Weight data. Build 4 Owner iPhone validation also passed the V5→V6→V7 overlay and restart recovery of the existing store.
+- Build 4 Owner validation passed Weight persistence and V7 export. Weekly Review's explicit-only creation passed, but its Chinese keyboard/save/relaunch closure failed; the current Build 5 candidate fixes that flow and still requires Owner physical revalidation before merge/release.
+- Build 3 remains a separate historical distribution handoff and has not been installed on a physical device in this S2 validation stream.
 - Actual iCloud multi-device validation was not performed because CloudKit is intentionally disabled in V1.
 
 ## Distribution Blocker
@@ -30,4 +30,4 @@
 ## Existing Technical Debt
 
 - Entry, Tag, Habit, Goal, Weight and Weekly Review mutation services use the shared main `ModelContext`; rollback can discard unrelated unsaved UI changes. Import publication and persistence recovery also use that context-level rollback pattern. This is accepted non-blocking debt.
-- Image presentation debts UX-01 and UX-02 are tracked in `Docs/UX_DEBT.md`.
+- No open image-presentation debt remains from UX-01/UX-02; their bounded Build 5 candidate resolutions are recorded in `Docs/UX_DEBT.md` and need normal Owner interaction verification.
