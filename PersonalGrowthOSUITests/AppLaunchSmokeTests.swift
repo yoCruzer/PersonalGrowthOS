@@ -632,11 +632,17 @@ final class AppLaunchSmokeTests: XCTestCase {
 
     func testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch() {
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-floatingControlsHorizontalFraction", "0.0",
+            "-floatingControlsVerticalFraction", "0.0",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
         app.launch()
 
         app.buttons["today-weekly-review"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["weekly-review-view"].waitForExistence(timeout: 5))
+        let weeklyReview = app.descendants(matching: .any)["weekly-review-view"]
+        XCTAssertTrue(weeklyReview.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["start-weekly-review"].waitForExistence(timeout: 5))
         app.buttons["start-weekly-review"].tap()
 
@@ -653,7 +659,21 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(keyboardDone.waitForExistence(timeout: 5))
         keyboardDone.tap()
         app.buttons["save-weekly-review"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["weekly-review-save-confirmation"].waitForExistence(timeout: 5))
+        let saveConfirmation = app.descendants(matching: .any)["weekly-review-save-confirmation"]
+        XCTAssertTrue(saveConfirmation.waitForExistence(timeout: 5))
+
+        let completed = app.switches["weekly-review-completed"]
+        XCTAssertTrue(completed.waitForExistence(timeout: 5))
+        XCTAssertTrue(completed.isHittable)
+        completed.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        let completedExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "1"),
+            object: completed
+        )
+        XCTAssertEqual(XCTWaiter().wait(for: [completedExpectation], timeout: 5), .completed)
+        XCTAssertTrue(saveConfirmation.waitForNonExistence(timeout: 5))
+        app.buttons["save-weekly-review"].tap()
+        XCTAssertTrue(saveConfirmation.waitForExistence(timeout: 5))
 
         app.terminate()
         app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -667,6 +687,7 @@ final class AppLaunchSmokeTests: XCTestCase {
             app.descendants(matching: .any)["weekly-review-remembered"].value as? String,
             "A useful moment"
         )
+        XCTAssertEqual(app.switches["weekly-review-completed"].value as? String, "1")
     }
 
     func testGrowthAddActionsRemainHittableWithDarkAppearanceAndLargeText() {

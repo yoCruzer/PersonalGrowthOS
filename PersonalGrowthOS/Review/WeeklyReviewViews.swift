@@ -96,6 +96,7 @@ struct WeeklyReviewView: View {
         .onChange(of: improvementText) { _, _ in saveMessage = nil }
         .onChange(of: nextStepText) { _, _ in saveMessage = nil }
         .onChange(of: focusText) { _, _ in saveMessage = nil }
+        .onChange(of: isCompleted) { _, _ in saveMessage = nil }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -181,6 +182,7 @@ struct WeeklyReviewView: View {
             }
             Section {
                 Toggle("Mark this review complete", isOn: $isCompleted)
+                    .accessibilityIdentifier("weekly-review-completed")
                 Button("Save Review", action: saveReview)
                     .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -209,6 +211,7 @@ struct WeeklyReviewView: View {
 
     private func saveReview() {
         focusedField = nil
+        saveMessage = nil
         isSaving = true
         Task { @MainActor in
             await Task.yield()

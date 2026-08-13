@@ -3,11 +3,11 @@
 | Item | Value |
 | --- | --- |
 | Current checkpoint | Post-V1 Usability S2 — Build 5 candidate ready for independent review |
-| Status | BUILD 4 OWNER FEEDBACK FIXED LOCALLY — DRAFT PR #2 OPEN |
+| Status | BUILD 4 TESTFLIGHT + OWNER FEEDBACK FIXED LOCALLY — DRAFT PR #2 OPEN |
 | Execution branch | `feature/usability-s2-review-loop` |
 | Base | `c45c666` (`design: refresh app icon for Suixin Log`) |
 | Prior committed UX work | `53f2326` add-action consistency; `06cc913` reversible repeatable Habit check-ins |
-| Automated gate | PASS — 142 Unit tests, 3 focused UI smokes, 25 full UI tests and Simulator Debug build |
+| Automated gate | PASS — 142 Unit tests, 4 focused UI smokes, 25 full UI tests and Simulator Debug build |
 | External V1 release status | Separate Owner-only Build 3 archive/export/upload work remains on `feature/v1-completion-push` |
 
 ## Objective
@@ -28,10 +28,11 @@ The user starts a weekly review explicitly from Today. The screen shows only loc
 - English and Simplified Chinese strings are supplied for the new flow.
 - Targeted validation passed: Habit + Weekly Review Unit 37/37, schema-v3/Weekly Review import-export 3/3 and focused mixed-path UI smoke 1/1.
 - Full Unit validation passed: 141/141.
-- Version 1.0 (Build 4) Release Archive was prepared from `bacb504afb30c582c869ae68f8558831c5067437` at `/tmp/PersonalGrowthOS-S2-Build4.xcarchive`; local Archive metadata and formal AppIcon inspection passed.
+- Version 1.0 (Build 4) Release Archive was prepared from `bacb504afb30c582c869ae68f8558831c5067437` at `/tmp/PersonalGrowthOS-S2-Build4.xcarchive`; local Archive metadata and formal AppIcon inspection passed, then the Owner distributed it through TestFlight and performed physical iPhone validation.
 - Build 4 Owner iPhone validation passed V5→V6→V7 overlay migration, retention/relaunch of existing data, Weight persistence, repeatable-Habit `+++--`, Insight→`+`→`-` linked-Entry retention, explicit-only Weekly Review creation, and V7 export.
 - Build 4 failed the Weekly Review save/Chinese keyboard closure; the current candidate adds explicit focus/keyboard dismissal, visible save success/failure feedback, and a stable save refetch. Build 5 Owner revalidation remains required.
-- The Archive has not been exported or uploaded to App Store Connect, and Draft PR #2 remains open.
+- A final independent-review closure clears stale Saved feedback when the completion Toggle changes or a new save starts; focused UI coverage verifies save → Toggle change → feedback clears → save → relaunch completion persistence.
+- The post-`2084207` feedback-fix candidate is not a Build 5 Archive, has not been uploaded or physically validated, and Build 5 remains unconsumed. Draft PR #2 remains open.
 
 ## Explicit Non-Goals
 
