@@ -17,6 +17,10 @@ struct AppShell: View {
     @State private var isCapturing = false
     @State private var isShowingStorage = false
     @State private var isSearching = false
+    @AppStorage("floatingControlsHorizontalFraction") private var floatingControlsHorizontalFraction = 1.0
+    @AppStorage("floatingControlsVerticalFraction") private var floatingControlsVerticalFraction = 1.0
+    @State private var floatingControlsDragOrigin: CGPoint?
+    @State private var isKeyboardVisible = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -79,36 +83,154 @@ struct AppShell: View {
                 thumbnailStore: container.thumbnailStore
             )
         }
-        .overlay(alignment: .bottomTrailing) {
-            VStack(spacing: 12) {
-                Button {
-                    isSearching = true
-                } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.headline.bold())
-                        .frame(width: 44, height: 44)
-                        .background(.regularMaterial, in: Circle())
-                        .shadow(radius: 3, y: 1)
+        .overlay {
+            GeometryReader { proxy in
+                let layout = FloatingControlsLayout(
+                    containerSize: proxy.size,
+                    safeAreaInsets: proxy.safeAreaInsets
+                )
+                if !isKeyboardVisible && !isCapturing && !isSearching {
+                    FloatingControlsCluster(
+                        openSearch: { isSearching = true },
+                        openCapture: { isCapturing = true },
+                        dragBegan: {
+                            floatingControlsDragOrigin = layout.point(
+                                horizontalFraction: floatingControlsHorizontalFraction,
+                                verticalFraction: floatingControlsVerticalFraction
+                            )
+                        },
+                        dragChanged: { translation in
+                            guard let origin = floatingControlsDragOrigin else { return }
+                            let point = layout.clampedPoint(
+                                CGPoint(
+                                    x: origin.x + translation.width,
+                                    y: origin.y + translation.height
+                                )
+                            )
+                            let fraction = layout.fraction(for: point)
+                            floatingControlsHorizontalFraction = fraction.horizontal
+                            floatingControlsVerticalFraction = fraction.vertical
+                        },
+                        dragEnded: {
+                            floatingControlsDragOrigin = nil
+                        }
+                    )
+                    .position(layout.point(
+                        horizontalFraction: floatingControlsHorizontalFraction,
+                        verticalFraction: floatingControlsVerticalFraction
+                    ))
+                    .transition(.opacity)
                 }
-                .accessibilityLabel("Search")
-                .accessibilityIdentifier("global-search-button")
-
-                Button {
-                    isCapturing = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.title2.bold())
-                        .frame(width: 52, height: 52)
-                        .background(.tint, in: Circle())
-                        .foregroundStyle(.white)
-                        .shadow(radius: 4, y: 2)
-                }
-                .accessibilityLabel("Quick Capture")
-                .accessibilityIdentifier("global-capture-button")
             }
-            .padding(.trailing, 20)
-            .padding(.bottom, 72)
         }
+        .animation(.easeOut(duration: 0.18), value: isKeyboardVisible)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            isKeyboardVisible = false
+        }
+    }
+}
+
+struct FloatingControlsLayout: Equatable {
+    static let clusterSize = CGSize(width: 52, height: 108)
+    private static let edgePadding: CGFloat = 16
+    private static let topReservedHeight: CGFloat = 64
+    private static let bottomReservedHeight: CGFloat = 92
+
+    let containerSize: CGSize
+    let safeAreaInsets: EdgeInsets
+
+    var allowedRect: CGRect {
+        let halfWidth = Self.clusterSize.width / 2
+        let halfHeight = Self.clusterSize.height / 2
+        let minimumX = safeAreaInsets.leading + Self.edgePadding + halfWidth
+        let maximumX = max(minimumX, containerSize.width - safeAreaInsets.trailing - Self.edgePadding - halfWidth)
+        let minimumY = safeAreaInsets.top + Self.topReservedHeight + halfHeight
+        let maximumY = max(minimumY, containerSize.height - safeAreaInsets.bottom - Self.bottomReservedHeight - halfHeight)
+        return CGRect(
+            x: minimumX,
+            y: minimumY,
+            width: maximumX - minimumX,
+            height: maximumY - minimumY
+        )
+    }
+
+    func point(horizontalFraction: Double, verticalFraction: Double) -> CGPoint {
+        let horizontal = min(max(horizontalFraction, 0), 1)
+        let vertical = min(max(verticalFraction, 0), 1)
+        return CGPoint(
+            x: allowedRect.minX + allowedRect.width * horizontal,
+            y: allowedRect.minY + allowedRect.height * vertical
+        )
+    }
+
+    func clampedPoint(_ point: CGPoint) -> CGPoint {
+        CGPoint(
+            x: min(max(point.x, allowedRect.minX), allowedRect.maxX),
+            y: min(max(point.y, allowedRect.minY), allowedRect.maxY)
+        )
+    }
+
+    func fraction(for point: CGPoint) -> (horizontal: Double, vertical: Double) {
+        let clamped = clampedPoint(point)
+        return (
+            horizontal: allowedRect.width == 0 ? 0 : Double((clamped.x - allowedRect.minX) / allowedRect.width),
+            vertical: allowedRect.height == 0 ? 0 : Double((clamped.y - allowedRect.minY) / allowedRect.height)
+        )
+    }
+}
+
+private struct FloatingControlsCluster: View {
+    let openSearch: () -> Void
+    let openCapture: () -> Void
+    let dragBegan: () -> Void
+    let dragChanged: (CGSize) -> Void
+    let dragEnded: () -> Void
+
+    @State private var isDragging = false
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Button(action: openSearch) {
+                Image(systemName: "magnifyingglass")
+                    .font(.headline.bold())
+                    .frame(width: 44, height: 44)
+                    .background(.regularMaterial, in: Circle())
+                    .shadow(radius: 3, y: 1)
+            }
+            .accessibilityLabel("Search")
+            .accessibilityIdentifier("global-search-button")
+
+            Button(action: openCapture) {
+                Image(systemName: "plus")
+                    .font(.title2.bold())
+                    .frame(width: 52, height: 52)
+                    .background(.tint, in: Circle())
+                    .foregroundStyle(.white)
+                    .shadow(radius: 4, y: 2)
+            }
+            .accessibilityLabel("Quick Capture")
+            .accessibilityIdentifier("global-capture-button")
+        }
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.35)
+                .sequenced(before: DragGesture(minimumDistance: 0))
+                .onChanged { value in
+                    guard case .second(true, let drag?) = value else { return }
+                    if !isDragging {
+                        isDragging = true
+                        dragBegan()
+                    }
+                    dragChanged(drag.translation)
+                }
+                .onEnded { _ in
+                    guard isDragging else { return }
+                    isDragging = false
+                    dragEnded()
+                }
+        )
     }
 }
 
@@ -130,6 +252,8 @@ private struct TodayView: View {
     ]) private var goals: [Goal]
     @Query private var habitLogs: [HabitLog]
     @Query private var habitConfigurations: [HabitConfiguration]
+    @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
+    private var queriedWeightRecords: [WeightRecord]
     @State private var coolingDownHabitIDs: Set<UUID> = []
     @State private var recentCheckIn: RecentHabitCheckIn?
     @State private var transientMessage: String?
@@ -141,6 +265,10 @@ private struct TodayView: View {
 
     private var activeGoals: [Goal] {
         goals.filter { $0.status == .active }
+    }
+
+    private var weightRecords: [WeightRecord] {
+        WeightRecordOrdering.newestFirst(queriedWeightRecords)
     }
 
     var body: some View {
@@ -182,27 +310,37 @@ private struct TodayView: View {
                                 configurations: habitConfigurations
                             )
                         )
-                        Button {
-                            checkIn(habit)
-                        } label: {
-                            HStack {
-                                Text(habit.name)
-                                Spacer()
-                                Label(
-                                    progress.actionTitle,
-                                    systemImage: progress.isCompletedForOncePerDay
-                                        ? "checkmark.circle.fill"
-                                        : "checkmark.circle"
-                                )
-                                .labelStyle(.titleAndIcon)
+                        if progress.settings.recordingMode == .multiplePerDay {
+                            RepeatableHabitCounter(
+                                habitName: habit.name,
+                                progress: progress,
+                                accessibilityIdentifierPrefix: "today-habit-\(habit.normalizedName)",
+                                decrease: { decrementRepeatable(habit) },
+                                increase: { incrementRepeatable(habit) }
+                            )
+                        } else {
+                            Button {
+                                checkIn(habit)
+                            } label: {
+                                HStack {
+                                    Text(habit.name)
+                                    Spacer()
+                                    Label(
+                                        progress.actionTitle,
+                                        systemImage: progress.isCompletedForOncePerDay
+                                            ? "checkmark.circle.fill"
+                                            : "checkmark.circle"
+                                    )
+                                    .labelStyle(.titleAndIcon)
+                                }
                             }
+                            .disabled(
+                                coolingDownHabitIDs.contains(habit.id)
+                                    || progress.isCompletedForOncePerDay
+                            )
+                            .accessibilityLabel("Check in \(habit.name)")
+                            .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
                         }
-                        .disabled(
-                            coolingDownHabitIDs.contains(habit.id)
-                                || progress.isCompletedForOncePerDay
-                        )
-                        .accessibilityLabel("Check in \(habit.name)")
-                        .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
                     }
                 } header: {
                     Text("Today's Habits")
@@ -234,7 +372,9 @@ private struct TodayView: View {
                     Text("Context for today, not a list of tasks you must update.")
                 }
             }
+            weightAndReviewSections
         }
+        .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle("Today")
         .toolbar {
             Button(action: openStorage) {
@@ -244,7 +384,11 @@ private struct TodayView: View {
             .accessibilityIdentifier("settings-button")
         }
         .safeAreaInset(edge: .bottom) {
-            if let recentCheckIn {
+            if let recentCheckIn,
+               HabitSettingsResolver.settings(
+                for: recentCheckIn.habitID,
+                configurations: habitConfigurations
+               ).recordingMode == .oncePerDay {
                 HabitCheckInUndoBar {
                     undo(recentCheckIn)
                 }
@@ -263,6 +407,39 @@ private struct TodayView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? String(localized: "Please try again."))
+        }
+    }
+
+    @ViewBuilder
+    private var weightAndReviewSections: some View {
+        Section("Weight") {
+            NavigationLink {
+                WeightHistoryView()
+            } label: {
+                if let latest = weightRecords.first {
+                    LabeledContent {
+                        Text(verbatim: WeightFormatting.kilograms(latest.weightKilograms))
+                            .accessibilityIdentifier("today-latest-weight")
+                    } label: {
+                        Label("Latest Weight", systemImage: "scalemass")
+                    }
+                } else {
+                    Label("Record Weight", systemImage: "scalemass")
+                }
+            }
+            .accessibilityIdentifier("today-weight")
+        }
+        Section {
+            NavigationLink {
+                WeeklyReviewView()
+            } label: {
+                Label("Weekly Review", systemImage: "text.book.closed")
+            }
+            .accessibilityIdentifier("today-weekly-review")
+        } header: {
+            Text("Reflect")
+        } footer: {
+            Text("Look back on this week and choose one next step when you are ready.")
         }
     }
 
@@ -297,6 +474,33 @@ private struct TodayView: View {
             if recentCheckIn?.logID == log.id {
                 recentCheckIn = nil
             }
+        }
+    }
+
+    private func incrementRepeatable(_ habit: Habit) {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).incrementCount(habit)
+            recentCheckIn = nil
+            coolingDownHabitIDs.remove(habit.id)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func decrementRepeatable(_ habit: Habit) {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).removeLatestStructuredCheckIn(habitID: habit.id)
+            recentCheckIn = nil
+            coolingDownHabitIDs.remove(habit.id)
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
         }
     }
 
@@ -606,7 +810,7 @@ private struct MediaStorageView: View {
                 } header: {
                     Text("Data Transfer")
                 } footer: {
-                    Text("Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
+                    Text("Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
                 }
             }
             .navigationTitle("Settings")
@@ -646,7 +850,7 @@ private struct MediaStorageView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("The ZIP may contain private entry text and original photos. Handle it as sensitive data.")
+                Text("The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data.")
             }
             .sheet(isPresented: $isSharing, onDismiss: cleanupExport) {
                 if let exportLease {
@@ -811,27 +1015,79 @@ struct TimelineRow: View {
 struct DownsampledOriginalView: View {
     let metadata: ImageMetadata
     let thumbnailStore: ThumbnailStore
+    var mediaStore: MediaStore?
     var accessibilityLabel = String(localized: "Entry photo")
+
+    @State private var isShowingPreview = false
 
     var body: some View {
         if let image = thumbnailStore.image(for: metadata) {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: TimelineImagePresentation.contentMode)
-                .frame(
-                    maxWidth: .infinity,
-                    minHeight: TimelineImagePresentation.minimumHeight,
-                    maxHeight: TimelineImagePresentation.maximumHeight
-                )
-                .background(.quaternary)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+            if let mediaStore {
+                Button { isShowingPreview = true } label: {
+                    imagePresentation(image)
+                }
+                .buttonStyle(.plain)
                 .accessibilityLabel(accessibilityLabel)
+                .accessibilityHint("Open larger photo")
+                .accessibilityIdentifier("entry-photo-\(metadata.id.uuidString)")
+                .fullScreenCover(isPresented: $isShowingPreview) {
+                    EntryImagePreview(
+                        metadata: metadata,
+                        fallbackImage: image,
+                        mediaStore: mediaStore
+                    )
+                }
+            } else {
+                imagePresentation(image)
+                    .accessibilityLabel(accessibilityLabel)
+            }
         } else {
             Label("Image unavailable", systemImage: "photo.badge.exclamationmark")
                 .foregroundStyle(.secondary)
         }
     }
 
+    private func imagePresentation(_ image: UIImage) -> some View {
+        Image(uiImage: image)
+            .resizable()
+            .aspectRatio(
+                CGFloat(max(metadata.pixelWidth, 1)) / CGFloat(max(metadata.pixelHeight, 1)),
+                contentMode: .fit
+            )
+            .frame(maxHeight: TimelineImagePresentation.maximumHeight)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct EntryImagePreview: View {
+    let metadata: ImageMetadata
+    let fallbackImage: UIImage
+    let mediaStore: MediaStore
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var image: UIImage?
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Color.black.ignoresSafeArea()
+            Image(uiImage: image ?? fallbackImage)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .padding()
+                .accessibilityLabel("Large photo")
+            Button("Close", systemImage: "xmark.circle.fill") { dismiss() }
+                .font(.title2)
+                .foregroundStyle(.white)
+                .padding()
+                .accessibilityIdentifier("entry-photo-preview-close")
+        }
+        .accessibilityIdentifier("entry-photo-preview")
+        .task {
+            guard let url = try? mediaStore.fileURL(for: metadata.relativePath) else { return }
+            image = ThumbnailStore.downsampledImage(at: url, maximumPixelSize: 2_048)
+        }
+    }
 }
 
 enum TimelineImagePresentation {

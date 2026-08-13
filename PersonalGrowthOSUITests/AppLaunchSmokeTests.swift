@@ -140,7 +140,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["settings-export-button"].tap()
 
         XCTAssertTrue(app.buttons["Export and Share"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["The ZIP may contain private entry text and original photos. Handle it as sensitive data."].exists)
+        XCTAssertTrue(app.staticTexts["The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data."].exists)
     }
 
     func testGlobalCaptureIsAvailableFromSearch() {
@@ -275,6 +275,56 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
     }
 
+    func testRepeatableHabitCounterIncrementsDecrementsAndPersists() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+            "-AppleInterfaceStyle", "Dark",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraLarge"
+        ]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Water")
+        app.segmentedControls.buttons["Multiple times per day"].tap()
+        app.buttons["habit-editor-save"].tap()
+
+        app.tabBars.buttons["Today"].tap()
+        let decrease = app.buttons["today-habit-water-decrease"]
+        let increase = app.buttons["today-habit-water-increase"]
+        let count = app.staticTexts["today-habit-water-count"]
+        XCTAssertTrue(increase.waitForExistence(timeout: 5))
+        XCTAssertTrue(decrease.exists)
+        XCTAssertFalse(decrease.isEnabled)
+
+        increase.tap()
+        increase.tap()
+        increase.tap()
+        XCTAssertEqual(count.label, "Today 3 times")
+        decrease.tap()
+        XCTAssertEqual(count.label, "Today 2 times")
+        try performSemanticAccessibilityAudit(app)
+
+        app.terminate()
+        app.launchArguments = [
+            "-PGOSUITesting",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+            "-AppleInterfaceStyle", "Dark",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraLarge"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["today-habit-water-count"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts["today-habit-water-count"].label, "Today 2 times")
+    }
+
     func testHabitInsightCreatesLinkedEntryAndHabitIsSearchable() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -287,6 +337,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         name.tap()
         name.typeText("Reflect")
+        app.segmentedControls.buttons["Multiple times per day"].tap()
         app.buttons["habit-editor-save"].tap()
         app.buttons["habit-reflect"].tap()
         app.buttons["habit-check-in-insight"].tap()
@@ -297,6 +348,15 @@ final class AppLaunchSmokeTests: XCTestCase {
         body.typeText("Habit insight entry")
         app.buttons["capture-save"].tap()
         XCTAssertTrue(app.staticTexts["Linked Entry"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["habit-check-in-undo"].exists)
+
+        let increase = app.buttons["habit-detail-counter-increase"]
+        let decrease = app.buttons["habit-detail-counter-decrease"]
+        XCTAssertTrue(increase.exists)
+        increase.tap()
+        XCTAssertTrue(decrease.isEnabled)
+        decrease.tap()
+        XCTAssertTrue(app.staticTexts["Linked Entry"].exists)
 
         app.buttons["global-search-button"].tap()
         let search = app.searchFields.firstMatch
@@ -544,5 +604,127 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["app-shell"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["today-goal-device goal edited"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["today-goal-device flag edited"].waitForExistence(timeout: 10))
+    }
+
+    func testWeightEntryIsAccessiblePersistsAndShowsLatestValue() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        XCTAssertTrue(app.buttons["today-weight"].waitForExistence(timeout: 5))
+        app.buttons["today-weight"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["weight-empty-state"].waitForExistence(timeout: 5))
+        app.buttons["add-weight"].tap()
+        let value = app.textFields["weight-editor-value"]
+        XCTAssertTrue(value.waitForExistence(timeout: 5))
+        value.tap()
+        value.typeText("72.5")
+        app.buttons["weight-editor-save"].tap()
+        XCTAssertTrue(app.staticTexts["weight-latest-value"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["weight-latest-value"].label, "72.5 kg")
+
+        app.terminate()
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["today-latest-weight"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts["today-latest-weight"].label, "72.5 kg")
+    }
+
+    func testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-floatingControlsHorizontalFraction", "0.0",
+            "-floatingControlsVerticalFraction", "0.0",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+
+        app.buttons["today-weekly-review"].tap()
+        let weeklyReview = app.descendants(matching: .any)["weekly-review-view"]
+        XCTAssertTrue(weeklyReview.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["start-weekly-review"].waitForExistence(timeout: 5))
+        app.buttons["start-weekly-review"].tap()
+
+        let remembered = app.descendants(matching: .any)["weekly-review-remembered"]
+        XCTAssertTrue(remembered.waitForExistence(timeout: 5))
+        remembered.tap()
+        remembered.typeText("A useful moment")
+
+        let nextStep = app.descendants(matching: .any)["weekly-review-next-step"]
+        XCTAssertTrue(nextStep.waitForExistence(timeout: 5))
+        nextStep.tap()
+        nextStep.typeText("Take one focused walk")
+        let keyboardDone = app.buttons["weekly-review-keyboard-done"]
+        XCTAssertTrue(keyboardDone.waitForExistence(timeout: 5))
+        keyboardDone.tap()
+        app.buttons["save-weekly-review"].tap()
+        let saveConfirmation = app.descendants(matching: .any)["weekly-review-save-confirmation"]
+        XCTAssertTrue(saveConfirmation.waitForExistence(timeout: 5))
+
+        let completed = app.switches["weekly-review-completed"]
+        XCTAssertTrue(completed.waitForExistence(timeout: 5))
+        XCTAssertTrue(completed.isHittable)
+        completed.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        let completedExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "1"),
+            object: completed
+        )
+        XCTAssertEqual(XCTWaiter().wait(for: [completedExpectation], timeout: 5), .completed)
+        XCTAssertTrue(saveConfirmation.waitForNonExistence(timeout: 5))
+        app.buttons["save-weekly-review"].tap()
+        XCTAssertTrue(saveConfirmation.waitForExistence(timeout: 5))
+
+        app.terminate()
+        app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["today-weekly-review"].tap()
+
+        let restoredNextStep = app.descendants(matching: .any)["weekly-review-next-step"]
+        XCTAssertTrue(restoredNextStep.waitForExistence(timeout: 5))
+        XCTAssertEqual(restoredNextStep.value as? String, "Take one focused walk")
+        XCTAssertEqual(
+            app.descendants(matching: .any)["weekly-review-remembered"].value as? String,
+            "A useful moment"
+        )
+        XCTAssertEqual(app.switches["weekly-review-completed"].value as? String, "1")
+    }
+
+    func testGrowthAddActionsRemainHittableWithDarkAppearanceAndLargeText() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+            "-AppleInterfaceStyle", "Dark",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraLarge"
+        ]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-habit"].isHittable)
+        app.buttons["add-habit"].tap()
+        let habitName = app.textFields["habit-editor-name"]
+        XCTAssertTrue(habitName.waitForExistence(timeout: 5))
+        habitName.tap()
+        habitName.typeText("Stretch")
+        app.buttons["habit-editor-save"].tap()
+        XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-habit"].isHittable)
+
+        app.navigationBars.buttons["Growth"].tap()
+        app.buttons["growth-weight"].tap()
+        XCTAssertTrue(app.buttons["add-weight"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-weight"].isHittable)
+        app.buttons["add-weight"].tap()
+        let weight = app.textFields["weight-editor-value"]
+        XCTAssertTrue(weight.waitForExistence(timeout: 5))
+        weight.tap()
+        weight.typeText("70")
+        app.buttons["weight-editor-save"].tap()
+        XCTAssertTrue(app.buttons["add-weight"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-weight"].isHittable)
     }
 }

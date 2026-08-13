@@ -8,6 +8,7 @@ struct GrowthView: View {
 
     @Query private var habits: [Habit]
     @Query private var goals: [Goal]
+    @Query private var weightRecords: [WeightRecord]
 
     var body: some View {
         List {
@@ -41,9 +42,115 @@ struct GrowthView: View {
                 }
             }
             .accessibilityIdentifier("growth-goals")
+            NavigationLink {
+                WeightHistoryView()
+            } label: {
+                HStack {
+                    Label("Weight", systemImage: "scalemass")
+                        .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
+                    Spacer()
+                    Text("\(weightRecords.count)")
+                }
+            }
+            .accessibilityIdentifier("growth-weight")
         }
         .navigationTitle("Growth")
         .accessibilityIdentifier("growth-view")
+    }
+}
+
+struct GrowthEmptyStateAddButton: View {
+    let title: LocalizedStringKey
+    let systemImage: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+    }
+}
+
+struct RepeatableHabitCounter: View {
+    let habitName: String
+    let progress: HabitTodayProgress
+    let accessibilityIdentifierPrefix: String
+    let decrease: () -> Void
+    let increase: () -> Void
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 8) {
+                habitSummary
+                Spacer(minLength: 8)
+                controls
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                habitSummary
+                controls
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var habitSummary: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(habitName)
+                .font(.headline)
+                .lineLimit(2)
+                .layoutPriority(1)
+            progressText
+        }
+    }
+
+    private var progressText: some View {
+        Text(progress.actionTitle)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-count")
+    }
+
+    private var controls: some View {
+        HStack(spacing: 4) {
+            Button(action: decrease) {
+                Image(systemName: "minus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(width: 28, height: 28)
+                    .background(.quaternary, in: Circle())
+            }
+            .frame(width: 44, height: 44)
+            .buttonStyle(.borderless)
+            .disabled(progress.count == 0)
+            .accessibilityLabel("Decrease \(habitName)")
+            .accessibilityValue("Current count: \(progress.count)")
+            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-decrease")
+
+            Text("\(progress.count)")
+                .font(.headline.monospacedDigit())
+                .frame(minWidth: 32)
+                .accessibilityHidden(true)
+
+            Button(action: increase) {
+                Image(systemName: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(width: 28, height: 28)
+                    .background(.tint, in: Circle())
+                    .foregroundStyle(.white)
+            }
+            .frame(width: 44, height: 44)
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Increase \(habitName)")
+            .accessibilityValue("Current count: \(progress.count)")
+            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
+        }
     }
 }
 
@@ -59,22 +166,26 @@ struct HabitsView: View {
 
     var body: some View {
         List {
-            Section {
-                Button {
-                    isCreatingHabit = true
-                } label: {
-                    Label("Add Habit", systemImage: "plus")
+            if habits.isEmpty {
+                Section {
+                    VStack(spacing: 16) {
+                        ContentUnavailableView {
+                            Label("No Habits", systemImage: "repeat")
+                        } description: {
+                            Text("Add a habit you want to practice. Pauses and restarts are part of growth.")
+                        }
+                        GrowthEmptyStateAddButton(
+                            title: "Add Habit",
+                            systemImage: "plus",
+                            action: { isCreatingHabit = true }
+                        )
+                        .accessibilityIdentifier("add-habit")
+                    }
+                } footer: {
+                    Text("Use a specific, actionable name. You can change it later without losing check-ins.")
                 }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("add-habit")
-            } footer: {
-                Text("Use a specific, actionable name. You can change it later without losing check-ins.")
-            }
-            Section("Habits") {
-                if habits.isEmpty {
-                    Text("Add a habit you want to practice. Pauses and restarts are part of growth.")
-                        .foregroundStyle(.secondary)
-                } else {
+            } else {
+                Section("Habits") {
                     ForEach(habits) { habit in
                         NavigationLink {
                             HabitDetailView(
@@ -94,6 +205,16 @@ struct HabitsView: View {
             }
         }
         .navigationTitle("Habits")
+        .toolbar {
+            if !habits.isEmpty {
+                Button {
+                    isCreatingHabit = true
+                } label: {
+                    Label("Add Habit", systemImage: "plus")
+                }
+                .accessibilityIdentifier("add-habit")
+            }
+        }
         .sheet(isPresented: $isCreatingHabit) {
             HabitEditorView(
                 habit: nil,
@@ -143,6 +264,14 @@ struct HabitDetailView: View {
         logs.contains { Calendar.current.isDateInToday($0.occurredAt) }
     }
 
+    private var todayProgress: HabitTodayProgress {
+        HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            settings: settings
+        )
+    }
+
     var body: some View {
         List {
             Section("Status") {
@@ -154,20 +283,28 @@ struct HabitDetailView: View {
             }
             if habit.status == .active {
                 Section {
-                    Button {
-                        simpleCheckIn()
-                    } label: {
-                        Label(
-                            settings.recordingMode == .oncePerDay && checkedInToday
-                                ? "Completed Today"
-                                : "Check In",
-                            systemImage: settings.recordingMode == .oncePerDay && checkedInToday
-                                ? "checkmark.circle.fill"
-                                : "checkmark.circle"
+                    if settings.recordingMode == .multiplePerDay {
+                        RepeatableHabitCounter(
+                            habitName: habit.name,
+                            progress: todayProgress,
+                            accessibilityIdentifierPrefix: "habit-detail-counter",
+                            decrease: decrementRepeatable,
+                            increase: incrementRepeatable
                         )
+                    } else {
+                        Button {
+                            simpleCheckIn()
+                        } label: {
+                            Label(
+                                checkedInToday ? "Completed Today" : "Check In",
+                                systemImage: checkedInToday
+                                    ? "checkmark.circle.fill"
+                                    : "checkmark.circle"
+                            )
+                        }
+                        .disabled(isCoolingDown || checkedInToday)
+                        .accessibilityIdentifier("habit-check-in")
                     }
-                    .disabled(isCoolingDown || (settings.recordingMode == .oncePerDay && checkedInToday))
-                    .accessibilityIdentifier("habit-check-in")
 
                     Button {
                         isLoggingDetails = true
@@ -214,6 +351,7 @@ struct HabitDetailView: View {
                 }
             }
         }
+        .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle(habit.name)
         .toolbar {
             Button("Edit") {
@@ -263,7 +401,7 @@ struct HabitDetailView: View {
             )
         }
         .safeAreaInset(edge: .bottom) {
-            if let recentCheckIn {
+            if settings.recordingMode == .oncePerDay, let recentCheckIn {
                 HabitCheckInUndoBar {
                     undo(recentCheckIn)
                 }
@@ -325,9 +463,41 @@ struct HabitDetailView: View {
         }
     }
 
+    private func incrementRepeatable() {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).incrementCount(habit)
+            recentCheckIn = nil
+            isCoolingDown = false
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func decrementRepeatable() {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).removeLatestStructuredCheckIn(habitID: habit.id)
+            recentCheckIn = nil
+            isCoolingDown = false
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
+        }
+    }
+
     private func registerSuccessfulCheckIn(_ log: HabitLog) {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         transientMessage = nil
+        guard settings.recordingMode == .oncePerDay else {
+            recentCheckIn = nil
+            isCoolingDown = false
+            return
+        }
         recentCheckIn = RecentHabitCheckIn(habitID: habit.id, logID: log.id)
         isCoolingDown = true
         let logID = log.id

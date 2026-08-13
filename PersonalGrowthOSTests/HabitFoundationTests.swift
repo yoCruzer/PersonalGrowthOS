@@ -162,6 +162,229 @@ final class HabitFoundationTests: XCTestCase {
         )
     }
 
+    func testRepeatableCounterRecordsEveryRapidIncrement() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Water",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+
+        _ = try service.incrementCount(habit, occurredAt: timestamp)
+        _ = try service.incrementCount(habit, occurredAt: timestamp)
+        _ = try service.incrementCount(habit, occurredAt: timestamp)
+
+        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        XCTAssertEqual(logs.count, 3)
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            settings: HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: nil),
+            now: timestamp,
+            calendar: Calendar(identifier: .gregorian)
+        ).count, 3)
+    }
+
+    func testRepeatableCounterRemovesLatestCheckInOnlyForSelectedDay() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let calendar = Calendar(identifier: .gregorian)
+        let dayOne = Date(timeIntervalSince1970: 1_700_035_200)
+        let dayTwo = dayOne.addingTimeInterval(86_400)
+        var clock = dayOne
+        let habit = try HabitService(context: context, now: { clock }).create(
+            name: "Water",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { clock },
+            calendar: calendar
+        )
+        let dayOneLog = try service.incrementCount(habit, occurredAt: dayOne)
+        clock = dayTwo
+        let earlierDayTwoLog = try service.incrementCount(habit, occurredAt: dayTwo)
+        let latestDayTwoLog = try service.incrementCount(
+            habit,
+            occurredAt: dayTwo.addingTimeInterval(60)
+        )
+
+        let removed = try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo)
+        XCTAssertEqual(removed?.id, latestDayTwoLog.id)
+        XCTAssertEqual(
+            Set(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id)),
+            Set([dayOneLog.id, earlierDayTwoLog.id])
+        )
+        XCTAssertEqual(try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo)?.id, earlierDayTwoLog.id)
+        XCTAssertNil(try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [dayOneLog.id])
+    }
+
+    func testRepeatableCounterKeepsDetailedCheckInWhenCounterAddsAndRemoves() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Run",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+
+        let detailed = try service.checkIn(habit, draft: HabitLogDraft(
+            occurredAt: timestamp,
+            quantity: 5,
+            unit: "km",
+            result: "Easy"
+        ))
+        let counterLog = try service.incrementCount(
+            habit,
+            occurredAt: timestamp.addingTimeInterval(60)
+        )
+
+        XCTAssertEqual(
+            try service.removeLatestStructuredCheckIn(habitID: habit.id, on: timestamp)?.id,
+            counterLog.id
+        )
+        let remaining = try XCTUnwrap(context.fetch(FetchDescriptor<HabitLog>()).first)
+        XCTAssertEqual(remaining.id, detailed.id)
+        XCTAssertEqual(remaining.quantity, 5)
+        XCTAssertEqual(remaining.unit, "km")
+        XCTAssertEqual(remaining.result, "Easy")
+    }
+
+    func testRepeatableCounterKeepsInsightCheckInWhenCounterAddsAndRemoves() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Reflect",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+
+        let insight = try service.checkInWithInsight(
+            habit,
+            logDraft: HabitLogDraft(occurredAt: timestamp),
+            entryDraft: EntryCreationDraft(body: "A useful insight")
+        )
+        let counterLog = try service.incrementCount(
+            habit,
+            occurredAt: timestamp.addingTimeInterval(60)
+        )
+
+        XCTAssertEqual(
+            try service.removeLatestStructuredCheckIn(habitID: habit.id, on: timestamp)?.id,
+            counterLog.id
+        )
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [insight.log.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [insight.entry.id])
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
+    func testRepeatableCounterDecrementPreservesLinkedEntryAndHabitRelation() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Journal",
+            recordingMode: .multiplePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+        let insight = try service.checkInWithInsight(
+            habit,
+            logDraft: HabitLogDraft(occurredAt: timestamp),
+            entryDraft: EntryCreationDraft(body: "Keep this note")
+        )
+
+        XCTAssertEqual(
+            try service.removeLatestStructuredCheckIn(habitID: habit.id, on: timestamp)?.id,
+            insight.log.id
+        )
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [insight.entry.id])
+        let relation = try XCTUnwrap(context.fetch(FetchDescriptor<ObjectLink>()).first)
+        XCTAssertEqual(relation.kind, .entryRelatesHabit)
+        XCTAssertEqual(relation.sourceID, insight.entry.id)
+        XCTAssertEqual(relation.targetID, habit.id)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+    }
+
+    func testRepeatableProgressUsesCurrentLocalDayAndSurvivesReopen() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let calendar = Calendar(identifier: .gregorian)
+        let dayOne = Date(timeIntervalSince1970: 1_700_035_200)
+        let dayTwo = dayOne.addingTimeInterval(86_400)
+        let habitID: UUID
+        do {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+            let habit = try HabitService(context: container.mainContext, now: { dayOne }).create(
+                name: "Water",
+                recordingMode: .multiplePerDay
+            )
+            habitID = habit.id
+            let service = HabitCheckInService(
+                context: container.mainContext,
+                mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+                now: { dayOne },
+                calendar: calendar
+            )
+            _ = try service.incrementCount(habit, occurredAt: dayOne)
+            _ = try service.incrementCount(habit, occurredAt: dayOne.addingTimeInterval(60))
+        }
+
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        let logs = try reopened.mainContext.fetch(FetchDescriptor<HabitLog>())
+        let configurations = try reopened.mainContext.fetch(FetchDescriptor<HabitConfiguration>())
+        let settings = HabitSettingsResolver.settings(
+            for: habitID,
+            configurations: configurations
+        )
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habitID,
+            logs: logs,
+            settings: settings,
+            now: dayOne,
+            calendar: calendar
+        ).count, 2)
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habitID,
+            logs: logs,
+            settings: settings,
+            now: dayTwo,
+            calendar: calendar
+        ).count, 0)
+    }
+
     func testUndoRemovesOnlyLatestCheckIn() throws {
         let fixture = try HabitFixture()
         defer { fixture.remove() }
@@ -186,6 +409,28 @@ final class HabitFoundationTests: XCTestCase {
 
         let remaining = try context.fetch(FetchDescriptor<HabitLog>())
         XCTAssertEqual(remaining.map(\.id), [first.id])
+    }
+
+    func testOncePerDayCheckInStillUsesLatestUndoSemantics() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Vitamin",
+            recordingMode: .oncePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp }
+        )
+        let log = try service.checkIn(habit, draft: HabitLogDraft(occurredAt: timestamp))
+
+        try service.undoLatestCheckIn(habitID: habit.id, logID: log.id)
+
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
     }
 
     func testHabitEditKeepsIDHistoryAndModeChangesDoNotRewriteLogs() throws {
@@ -644,6 +889,38 @@ final class HabitFoundationTests: XCTestCase {
             ).height,
             TimelineImagePresentation.maximumHeight
         )
+    }
+
+    func testFloatingControlsLayoutClampsAndRestoresNormalizedPositionInsideSafeArea() {
+        let layout = FloatingControlsLayout(
+            containerSize: CGSize(width: 390, height: 844),
+            safeAreaInsets: EdgeInsets(top: 59, leading: 0, bottom: 34, trailing: 0)
+        )
+
+        XCTAssertEqual(
+            layout.point(horizontalFraction: 1, verticalFraction: 1),
+            CGPoint(x: layout.allowedRect.maxX, y: layout.allowedRect.maxY)
+        )
+        XCTAssertEqual(
+            layout.clampedPoint(CGPoint(x: -100, y: 2_000)),
+            CGPoint(x: layout.allowedRect.minX, y: layout.allowedRect.maxY)
+        )
+        let restored = layout.fraction(for: CGPoint(
+            x: layout.allowedRect.minX + layout.allowedRect.width * 0.25,
+            y: layout.allowedRect.minY + layout.allowedRect.height * 0.75
+        ))
+        XCTAssertEqual(restored.horizontal, 0.25, accuracy: 0.001)
+        XCTAssertEqual(restored.vertical, 0.75, accuracy: 0.001)
+
+        let resizedLayout = FloatingControlsLayout(
+            containerSize: CGSize(width: 844, height: 390),
+            safeAreaInsets: EdgeInsets(top: 0, leading: 59, bottom: 21, trailing: 59)
+        )
+        let resizedPoint = resizedLayout.point(
+            horizontalFraction: restored.horizontal,
+            verticalFraction: restored.vertical
+        )
+        XCTAssertTrue(resizedLayout.allowedRect.contains(resizedPoint))
     }
 
     func testHabitLifecycleRollbackAndGlobalSearch() throws {

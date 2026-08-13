@@ -3,110 +3,122 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-07-28 |
-| Current branch | `fix/v1-device-smoke-round1` |
-| Program baseline on `main` | `b82d6e656592663f679440e318d00bef06f50556` |
-| Governance status | V1 Device Smoke Repair Round 1 — automated validation passed; physical install blocked |
-| Completed Macro Stages | S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10 |
-| Current executable state | Smoke-repair Candidate with bilingual UI, flexible Habit Check-ins/editing, editable Goal/Flag cards and content-preserving Timeline thumbnails |
-| Latest technical gate | Round 1 PASS — 137/137 tests and simulator/generic signed builds passed |
-| Next checkpoint | Install Xcode device support compatible with iOS 26.6, then overlay-install and Owner-retest Round 1 |
+| Last verified | 2026-08-13 |
+| Current branch | `feature/usability-s2-review-loop` |
+| Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
+| Current base | `c45c666` (`design: refresh app icon for Suixin Log`) |
+| Governance status | Build 5 Release Archive prepared for Owner validation; Draft PR #2 open |
+| Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, formal App icon refresh, UX fixes and Usability S2 implementation |
+| Final automated gate | Build 5 candidate: PASS — 142 Unit + 4 focused UI + 25 full UI; V1 Build 3 historical gate: 147/147 |
+| Release gate | Owner TestFlight upload and Build 5 physical-device revalidation remain external actions; this separate S2 branch remains unmerged |
+| Next checkpoint | Owner validates the Build 5 Archive in Xcode Organizer; do not upload or merge automatically |
 
 ## Authoritative Product Baseline
 
-`Docs/INDEX.md` defines the Foundation reading order. The five Foundation Documents remain unchanged and authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` v0.4 defines the accepted S1–S10 product plan, and `Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md` defines the running Program authority and technical gates.
+The Foundation Documents in `Docs/INDEX.md` remain authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` defines the completed S1–S10 delivery. The Owner-approved 2026-07-31 Completion Push adds only lightweight manual Weight records to V1; it does not introduce a separate health product.
 
-The Owner explicitly authorized the V1 Autonomous Build Program on 2026-07-18. The S1–S10 implementation remains on `feat/v1-autonomous-build`; the authorized first-device repair is isolated on `fix/v1-device-smoke-round1`. `main` remains at the fixed Program baseline.
+The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first Owner-supplied iPhone smoke test. It was safely fast-forwarded to `main` before the isolated `feature/v1-completion-push` branch was created. `main` remains unchanged; the V1 distribution branch and the newer S2 branch remain unmerged.
 
-## Completed Work
+## Post-V1 Usability S2
 
-- S0 — native SwiftUI iPhone project, composition root and Unit/UI test harness.
-- S1 — Entry domain identity, kinds, statuses, timestamps, review period and content rules.
-- S2 — versioned SwiftData persistence, canonical Entry/ImageMetadata models and private owned-media storage.
-- S3 — restart-safe Quick Capture → Timeline vertical slice.
-- S4 — 0–9 ordered images, camera/Photos entry points, Entry editing, archive/delete, thumbnails, resource guardrails and recovery.
-- Milestone A — four independent review lenses passed with no remaining Critical/High findings; evidence is in `Docs/MILESTONE_A_REVIEW_MANIFEST.md`.
-- S5 — Library Inbox/All Entries/Archived views, optional lightweight Tags, Entry-Tag Links, organization transitions, deletion cleanup and global local Entry/Review/Tag search.
-- S6 — Habit lifecycle, structured HabitLog facts, one-tap and rich Entry-linked check-ins, Today/Growth/history UI, Timeline aggregation and Habit search.
-- S7 — Goal/Flag lifecycle, lifecycle events, bounded Entry/Habit/Goal relationships, Today context, Timeline history and Goal/Flag search.
-- S8 — manual Review Entry creation with optional period, Entry/Habit/Goal review Links, shared Timeline/Library/Search participation and relation-safe deletion.
-- Milestone B — three independent review lenses passed after integrity, unified-history and canonical-endpoint fixes; evidence is in `Docs/MILESTONE_B_REVIEW_MANIFEST.md`.
-- S9 — unencrypted standard ZIP full export, versioned manifest/data DTOs, original-media SHA-256 integrity, bounded empty-store import, isolated save/reopen preflight, rollback, startup cleanup and Settings transfer UI.
-- S10 — final shell/integration regression, background and cancellable transfer work, self-import-compatible ZIP64 limits, crash-consistent media publication, accessibility semantics/large-text operability and actionable transfer failures.
-- Milestone C — three independent review lenses passed with no remaining Critical/High/Medium findings; evidence is in `Docs/MILESTONE_C_REVIEW_MANIFEST.md`.
-- Device Smoke Repair Round 1 — English/Simplified Chinese localization, two-mode Habit Check-ins with debounce/undo/editing, Goal/Flag navigation/editing, aspect-fit Timeline media and focused empty-state guidance.
+The active branch starts from the formal App icon refresh at `c45c666`. It retains two committed but previously unpushed UX fixes: `53f2326` unifies the empty-state and toolbar add actions for Weight and Habits, and `06cc913` makes multiple-per-day Habit counters directly reversible. The current S2 candidate adds a manual weekly review/action loop; its scope and evidence are recorded in `Docs/USABILITY_S2_REVIEW_LOOP.md`.
 
-## Verified Executable State
+S2 adds a V7 SwiftData schema containing one manually created `WeeklyReview` per natural calendar week. The week policy is Gregorian, Monday-first and four-day-first-week, while retaining the local device time zone for local-day semantics; Locale, Region and a non-Gregorian system calendar do not alter review identity. It does not alter `EntryKind.review`, generate reports, create tasks, add health advice, or widen the V1 product model. A user can explicitly begin a weekly review from Today, see a local summary of that week’s Entries, HabitLogs, Weight and Tags, write optional reflection/next-step/focus text, save it locally and reopen it after relaunch. Full backup schema v3 preserves these records while v1/v2 packages remain importable when they contain no weekly-review data.
 
-The app launches into the Foundation four-tab shell with Today, Timeline, Growth and Library. Global Quick Capture and Search remain available without adding Search as a tab. Users can manage Habit lifecycle, check in with one tap from Today, record structured details, add text/photo insight through an Entry, inspect Habit history and search Habits locally.
+The focused PR review fix keeps once-per-day Habit Undo unchanged. Multiple-per-day Habits instead use only the immediate +/- counter: minus removes today's latest structured `HabitLog` and never deletes a linked Entry or its explicit Entry-to-Habit relation. Detail and Insight check-ins in that mode no longer show the competing Undo bar.
 
-SwiftData schema V5 adds separate `HabitConfiguration` records through an explicit V4→V5 lightweight migration without changing existing Habit identity or history. A missing configuration reads deterministically as multiple-per-day with no target. Schema V4 previously added canonical `Goal` and `GoalLifecycleEvent` models; Flag remains only `GoalKind.flag`.
+Draft PR #2 has passed its first independent code review. The S2 device-validation candidate was Version 1.0 (Build 4), prepared from `bacb504afb30c582c869ae68f8558831c5067437` at `/tmp/PersonalGrowthOS-S2-Build4.xcarchive`. Local Archive inspection confirmed the Release arm64 app, bundle identifier `com.yocruzer.PersonalGrowthOS`, display name `随心log`, AppIcon, `ITSAppUsesNonExemptEncryption = NO`, and Team `83SKX2PM7B`. Build 4 was subsequently distributed through TestFlight and physically validated by the Owner.
 
-Typed Link methods permit only Entry→Habit, Entry→Goal and Habit→Goal directions, reject missing endpoints before save and prevent duplicates. Timeline shows Goal lifecycle changes. Today shows active Goal/Flag context with navigation to the existing detail/editor while retaining Growth ownership of lifecycle actions. Search covers Entry/Review Entry, Tag, Habit and Goal/Flag.
+Build 4 Owner iPhone overlay validation passed V5→V6→V7 migration; preservation/relaunch of original Entry, image, Habit, Goal and Review data; Weight persistence; repeatable-Habit `+++--`; Insight→`+`→`-` linked-Entry retention; explicit-only Weekly Review creation; and V7 export. It found a P0 Weekly Review closure failure: Chinese keyboard dismissal was unreliable and Save gave no visible confirmation or persistence proof. The post-`2084207` candidate now gives Review fields explicit focus and a keyboard Done action, yields before saving, refetches the stable current-week review rather than relying on a potentially stale query snapshot, and makes success/failure visible. It also clears stale success feedback when any editable field, including completion, changes or when a new save begins; a focused UI test covers completion-state save/relaunch persistence. It compacts the repeatable-Habit counter, makes the floating Search/Capture cluster keyboard-aware, draggable and locally persisted, and closes the two bounded Entry-media UX debts.
 
-Review remains `EntryKind.review` in the existing Entry schema and lifecycle. The manual composer supports an optional ordered period plus selected Entry, Habit and Goal targets. Creation saves Review content, owned media metadata and the three approved Review Link kinds atomically. Review Links require a Review source, reject self-links and missing endpoints, and are removed by coordinated endpoint deletion. Review continues to use the shared Entry paths in Timeline, Library and Search; no separate Review model, index, lifecycle, report, automation or analytics capability was added.
+Version 1.0 (Build 5) was archived from source commit `6027d758c5d18183a3aacae75ef8e1b3f8dc6d0b` at `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`. Inspection confirmed the Release arm64 app, bundle identifier `com.yocruzer.PersonalGrowthOS`, display name `随心log`, formal AppIcon resources, `ITSAppUsesNonExemptEncryption = NO`, Team `83SKX2PM7B`, and successful `codesign --verify --deep --strict`. The Archive is recognized as scheme `PersonalGrowthOS` by Organizer metadata. It has not been uploaded to App Store Connect/TestFlight, and Build 5 Owner device validation has not been executed; PR #2 remains Draft.
 
-Settings now provides manual full Export and Import. Export emits a portable, unencrypted standard ZIP containing `manifest.json`, `data.json` and original files under `media/`, with package/schema/app identity, object counts, explicit UUIDs and SHA-256 file metadata. Import copies and validates the package under an App-owned staging root, enforces the accepted archive/object/path limits, materializes and reopens an isolated SwiftData/media set, then publishes only into an empty active database. Non-empty targets, unsupported schemas, unsafe or corrupt archives, missing media and interrupted publication are rejected without merge or erase behavior.
+## V1 Final Candidate
 
-Original image bytes remain in the private media tree, not SwiftData. CloudKit remains disabled. No network API, remote service, third-party dependency, entitlement or unapproved capability is present.
+The candidate provides:
 
-## Latest Validation
+- Rich local Entry capture with text, 0–9 original images, dates, editing, archive, restore and permanent delete.
+- Today, Timeline, Growth and Library with global Quick Capture and Search.
+- Inbox, All Entries, Tags and Archived organization.
+- Structured Habit lifecycle and HabitLog check-ins.
+- Goal and Flag lifecycle with bounded relationships.
+- Lightweight manual Review Entries using the shared Entry lifecycle.
+- Complete unencrypted ZIP export and safe empty-store import.
+- English and Simplified Chinese interface.
+- Lightweight Weight CRUD, dates, kilograms, latest value, previous-record change, simple chart, history, Today/Growth entry points and restart persistence.
 
-- Round 1 full automated run on iPhone 17 Pro simulator, iOS 26.5: 116 Unit Tests and 21 UI Tests, 137/137 passed, 0 failed and 0 skipped. The 13-test increase from the 124-test baseline covers the smoke fixes; no test was deleted or skipped.
-- Round 1 simulator Debug build, 263-key English/Simplified Chinese String Catalog compilation and Asset Catalog compilation passed.
-- Round 1 generic iOS Debug build signed successfully for Team `83SKX2PM7B`; the Xcode-managed profile includes device UDID `00008140-00096D1E21D0801C`.
-- The physical-device destination build is blocked before compilation because the iPhone is now on iOS 26.6 while Xcode 26.6 supports physical devices through iOS 26.5; DDI mounting returns `kAMDMobileImageMounterNetworkUnauthorizedError`. No Round 1 App was installed or launched.
-- Final full shared-scheme run on iPhone 17 Pro simulator, iOS 26.5 (`4C8C76D9-41F0-4EB1-9881-836515666D9F`): 106 Unit Tests and 18 UI Tests, 124/124 passed, 0 failed and 0 skipped. Result: `/tmp/PersonalGrowthOS-S10-Final-DerivedData/Logs/Test/Test-PersonalGrowthOS-2026.07.19_11-25-15-+0800.xcresult`.
-- Milestone C data/architecture, product/Foundation and tests/evidence re-reviews all passed with no remaining Critical, High or Medium findings.
-- S10 coverage adds exact 65,535/65,536 ZIP64 boundaries, export/import limit symmetry, pre-extraction media bounds, cancellation cleanup, terminal import commit semantics, background publication, before-save rollback, crash-window quarantine, direct two-Entry media deletion isolation, semantic accessibility audits and largest-text operability.
-- S9 coverage validates complete logical round trip, original bytes, all object/link IDs, HabitLog/GoalEvent endpoints, same-store delete-and-restore, disk reopen, equivalent re-export, corrupt manifest/data, missing media, duplicate IDs, newer schema, interrupted publication, compressed/expanded/file/object/capacity limits, compression ratio, unsafe paths, symlinks, normalized-path collisions, temporary cleanup and log redaction.
-- The dependency-free ZIP writer's output passed the macOS system `unzip -t` portability probe. Import intentionally accepts the stored ZIP method emitted by this V1 app and rejects unsupported compression methods before extraction.
-- S8 UI acceptance covers manual period Review → Timeline → Library → shared Search and Habit/Goal selection → saved Review detail → relationship editor.
-- Review coverage validates daily/weekly periods, all three Link kinds, endpoint/source/self-link rejection, atomic create rollback, permanent-delete cleanup/rollback, shared Search and integrity validation.
-- The representative normalized Search fixture containing 5,000 Entries including 250 Reviews, 250 Tags, 100 Habits and 100 Goals/Flags remained below its existing 1.0-second threshold at 0.588, 0.507 and 0.500 seconds.
-- V3→V4 migration, GoalKind.flag, lifecycle events/rollback, approved Link directions, duplicate/missing-endpoint rejection, deletion preservation/cleanup, dangling Link/event detection and normalized Goal/Flag search all passed 11 focused tests.
-- Unit tests run non-parallel in the shared scheme so performance and boundary-media measurements do not contend with UI simulator clones.
-- `git diff --check` and static scope scans pass.
+No approved V1 capability remains unimplemented. UX-01 and UX-02 are resolved in the Build 5 candidate without expanding into a media-browser redesign.
 
-## Approved Architectural Direction
+## Persistence and Migration Safety
 
-- One native iPhone app, iOS 17+, SwiftUI and Local First.
-- One canonical SwiftData model per persisted concept; no field-complete duplicate domain/persistence model.
-- Versioned schema migrations remain explicit. Schema V5 is the current app schema.
-- Original media stays in the app-private file container; persistence stores metadata and relative ownership paths.
-- Inbox is a status, not a task list, and Tags are optional.
-- Search is global, local and basic in V1; no FTS, OCR, semantic or AI search.
-- Links use typed endpoint UUIDs with a deduplication key and explicit integrity validation.
-- HabitLog owns structured facts only. Rich content and all media belong to a linked Entry.
-- Only active Habits accept check-ins. Once-per-day mode permits one effective local-natural-day Check-in; multiple-per-day mode preserves every valid timestamp with an optional positive target. Pause, completion, archive and restart remain reversible lifecycle actions.
-- Flag is a Goal kind, never a separate persisted core entity.
-- Today renders active Goals/Flags as actionable context linking to their minimal detail/editor; lifecycle and relationships remain Growth responsibilities.
+SwiftData schema V6 adds `WeightRecord`; schema V7 adds `WeeklyReview`. The explicit V5→V6 and V6→V7 lightweight migrations do not rename, remove or tighten fields on existing Entry, ImageMetadata, Tag, ObjectLink, Habit, HabitLog, HabitConfiguration, Goal, GoalLifecycleEvent or WeightRecord data.
 
-## Known Limitations
+Automated migration coverage creates an on-disk V5 store with representative Entry, Habit and Goal data, opens it through V6 and verifies identities and representative fields while Weight starts empty. Separate V6→V7 coverage verifies existing Entry, Habit and Weight records remain unchanged while WeeklyReview starts empty. Existing migration and recovery tests cover earlier schemas, relationship integrity and media boundaries.
 
-- V1 Import is full restore into an empty database only. Merge import and erase-and-restore are intentionally unavailable because retained-old-data rollback is not implemented.
-- V1 backup ZIPs are unencrypted and must be handled as sensitive data. The importer accepts the standard stored ZIP/ZIP64 subset emitted by this app; third-party compressed ZIP variants are not an interchange target.
-- Camera and Photos Picker worked in the first iPhone Smoke Test; their Round 1 regression remains Owner-deferred until the repaired build can be installed.
-- Entry, Tag and Habit mutations currently use the shared main `ModelContext`; rollback can also discard unrelated unsaved UI changes. This remains an accepted non-blocking follow-up until a low-risk isolation boundary is justified.
-- Search is an in-memory normalized scan. The measured V1 fixture is comfortably within threshold; no separate index is warranted at this stage.
-- The first iPhone Smoke Test covered launch, four-tab navigation, text capture persistence, Photos Picker and Camera. Round 1 physical retest, formal Dogfooding and the continuous 30-day V1 Exit Observation have not been performed.
+Full backup package schema v3 includes Weight and WeeklyReview. The importer accepts valid schema-v1, v2 and v3 packages, rejects Weight in v1 and WeeklyReview in v1/v2, validates v3 weekly-review identity, timestamps and period ordering, and preserves all supported records through round trip. Original image bytes remain in the private media tree rather than SwiftData. There is no destructive store-rebuild or empty-store fallback after migration failure.
 
-## Repository Health
+The Owner executed the V5→V6→V7 overlay against the existing iPhone store on Build 4 and confirmed preservation and restart recovery. The remaining physical-device gate is Build 5 revalidation of the Weekly Review Chinese input/save/relaunch closure and the new bounded interaction polish.
 
-- Active repair branch: `fix/v1-device-smoke-round1`, started at `a3e64cb1624e2d83cdd4081aa3d30a5ecb1cd4e0`.
-- Round 1 repair implementation and automated validation are committed at `1ba25cf6cdb217696cb7bea1883ec5767b3748b4`.
-- Original implementation branch: `feat/v1-autonomous-build`, based on `b82d6e656592663f679440e318d00bef06f50556`.
-- S1–S4 and Milestone A review/follow-up commits are present and verified.
-- S5 is committed and verified at `b77199a4afc334fb02ef01888c70748992931d3c`.
-- S6 is committed and verified at `10b2369aedf40d1cf0f915723f24673639301202`.
-- S7 is committed and verified by the coherent Stage commit containing this status update (`feat: add goals flags and relationships`).
-- S8 is technically complete and verified by the coherent Stage commit containing this status update (`feat: add lightweight manual reviews`).
-- Milestone B reviewed implementation head is `6b1a4eae1c62372064d10f861a2114b505c5d7e4`; its manifest and current-context update are included in the following gate commit.
-- S9 is technically complete and verified by the coherent Stage commit containing this status update (`feat: add full backup and restore`).
-- S10 implementation and its Owner checklist are committed and independently reviewed at `9eb4fdeb1000f333870517c4ac95cb02c8c5b02f`.
-- Milestone C is PASS; the Candidate report and review manifest are present in the final documentation commit.
-- `main` and `origin/main` remain unchanged at the fixed Program baseline.
+## Final Automated Validation
+
+Executed on iPhone 16 Simulator, iOS 26.5 (`5F04DE28-8329-4774-9488-076D6DDC5230`):
+
+- Simulator Debug Build: PASS.
+- Full Unit Tests: 125/125 passed, 0 failed, 0 skipped.
+- Full UI Tests: 22/22 passed, 0 failed, 0 skipped.
+- Combined automated total: 147/147 passed.
+- Import/export, recovery, media, migration and Weight tests are included in the full Unit suite.
+- English build-for-testing: PASS.
+- Simplified Chinese build-for-testing: PASS.
+- String Catalog JSON and bilingual-value validation: PASS (285 keys).
+- Xcode project parsing, target/scheme references and Release build settings: PASS.
+- `git diff --check` and merge-conflict-marker scan: PASS.
+
+Result bundles:
+
+- Debug Build: `/tmp/PersonalGrowthOS-V1Final-Build3-Debug.xcresult`
+- Unit: `/tmp/PersonalGrowthOS-V1Final-Build3-Unit.xcresult`
+- UI: `/tmp/PersonalGrowthOS-V1Final-Build3-UI.xcresult`
+- English: `/tmp/PersonalGrowthOS-V1Final-Build3-English.xcresult`
+- Simplified Chinese: `/tmp/PersonalGrowthOS-V1Final-Build3-ZhHans.xcresult`
+
+Xcode emitted environment-only warnings while copying signed XCTest support binaries and resolving the LLDB debugger version for UI launches. They produced no build or test failure.
+
+## Formal App Icon Refresh
+
+The App icon for the existing desktop display name `随心log` now uses a warm ivory Möbius band with two restrained terracotta record nodes on a low-saturation deep teal background. The existing universal iOS 1024×1024 `AppIcon` slot remains in use; the source PNG is RGB with no alpha channel, and no Bundle Identifier, signing, version, build number or display-name setting changed.
+
+The refreshed asset passed Asset Catalog compilation and a Debug build on the iPhone 16 Simulator running iOS 26.5. Simulator inspection covered the Home Screen in light and dark appearance, App Library and Spotlight; the icon remained legible and showed no white edge, transparent edge, double rounding, stretching, clipping or visible blur. The existing focused app-shell UI launch smoke test also passed.
+
+## Build 3 and Distribution
+
+| Item | Result |
+| --- | --- |
+| Marketing Version | `1.0` |
+| CFBundleVersion | `3` |
+| Bundle Identifier | `com.yocruzer.PersonalGrowthOS` |
+| Team | `83SKX2PM7B` |
+| Signing style | Automatic |
+| Export compliance | `ITSAppUsesNonExemptEncryption = NO` |
+| Archive | PASS for the pre-icon candidate; regeneration required to include the formal icon |
+| Archive path | `/tmp/PersonalGrowthOS-V1Final-Build3.xcarchive` |
+| Local archive metadata inspection | PASS |
+| App Store Connect export | BLOCKED — `No Accounts`; no `iOS Distribution` certificate |
+| Server-side validation | NOT EXECUTED |
+| Upload | NOT EXECUTED |
+| App Store Connect processing | NOT STARTED |
+| Internal Testing | NOT AVAILABLE FOR BUILD 3 |
+
+The existing Archive is a normal Automatic Signing development-signed intermediate, but it predates the formal App icon refresh and must not be uploaded as the refreshed candidate. Regenerate Build 3 from the current branch tip, then use Xcode signed in to the correct Apple account to export it with App Store distribution signing and upload it. The in-app App Store Connect browser session was also unauthenticated.
+
+## Quality State
+
+- Known P0: the Build 4 Weekly Review device failure is included in the Build 5 Archive but remains an Owner revalidation gate.
+- Known P1: none.
+- Known new product P2: none.
+- Open non-blocking P2: none from this feedback batch; UX-01 and UX-02 are resolved in `Docs/UX_DEBT.md`.
+- Build 4 Owner-data overlay is claimed as passed; Build 5 physical-device revalidation and App Store Connect/TestFlight upload, iCloud multi-device validation and Build 3 TestFlight distribution remain unclaimed.
 
 ## Next Action
 
-Install or select an Xcode version whose Device Support includes iOS 26.6, reconnect and unlock the same iPhone, then rerun the recorded physical-device build, overlay install and launch without uninstalling or clearing data. After successful launch, the Owner should complete the Round 1 checklist in `Docs/V1_DEVICE_VALIDATION_REPORT.md`. Codex has not claimed the repaired build is installed or manually verified and has not started the 30-day observation.
+In Xcode Organizer, select `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`, validate it and let the Owner decide whether to upload it through the correct App Store Connect account for TestFlight. After installation, repeat Weekly Review Chinese input/save/relaunch and the bounded new interaction checks on iPhone. Keep [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) and this branch unmerged. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.

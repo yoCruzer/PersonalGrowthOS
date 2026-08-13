@@ -2,47 +2,47 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | V1 Device Smoke Repair Round 1 |
-| Status | Implementation and automated validation complete; physical installation blocked by Xcode/iOS device-support mismatch |
-| Owner startup authorization | Granted on 2026-07-18 by the explicit V1 Autonomous Build Program startup instruction |
-| Program baseline | `b82d6e656592663f679440e318d00bef06f50556` |
-| Execution branch | `fix/v1-device-smoke-round1` |
-| Authorized coverage | First iPhone Smoke Test issues only |
-| Current Macro Stage | Post-Candidate physical validation repair |
+| Current checkpoint | Post-V1 Usability S2 — Build 5 Owner device-validation Archive ready |
+| Status | BUILD 5 ARCHIVE READY — DRAFT PR #2 OPEN |
+| Execution branch | `feature/usability-s2-review-loop` |
+| Base | `c45c666` (`design: refresh app icon for Suixin Log`) |
+| Prior committed UX work | `53f2326` add-action consistency; `06cc913` reversible repeatable Habit check-ins |
+| Automated gate | PASS — 142 Unit tests, 4 focused UI smokes, 25 full UI tests and Simulator Debug build |
+| External V1 release status | Separate Owner-only Build 3 archive/export/upload work remains on `feature/v1-completion-push` |
 
 ## Objective
 
-Repair the first iPhone Smoke Test findings, validate them automatically, overlay-install the repaired build without deleting existing App data, and record only the physical-device results actually observed.
+Prepare the independently reviewed Build 5 candidate as a local Release Archive for Owner TestFlight and physical-device validation, without uploading, publishing, merging or widening product scope.
 
-The repair implementation and automated objective is complete at `1ba25cf6cdb217696cb7bea1883ec5767b3748b4`. Physical build/install/launch is blocked because the iPhone is now on iOS 26.6 and current Xcode 26.6 supports physical devices through iOS 26.5, so its Developer Disk Image cannot be mounted.
+The user starts a weekly review explicitly from Today. The screen shows only local facts from the natural current week (Entries, entry days/photos, completed HabitLogs, a representative Habit, Weight change, Tags and recent Entries). The user may write what to remember, what to improve, a next step and one focus, then save and later reopen the same week’s review. Nothing is generated automatically.
 
-## Scope
+## Completed Boundary
 
-- English and Simplified Chinese V1 interface localization.
-- Flexible Habit Check-in semantics, feedback, undo and editing with legacy compatibility.
-- Goal/Flag navigation and editing, Timeline media fitting and bounded empty-state guidance.
-- Unit/UI tests, simulator build, signed device build, overlay install, launch observation and validation report.
+- Schema V7 adds `WeeklyReview` with one stable natural-week identifier; V6 stores migrate without changing existing Entry, Habit or Weight data.
+- Weekly Review identity uses centralized ISO-style Gregorian Monday-week rules with local time-zone semantics, independent of Locale, Region and non-Gregorian system calendar selection.
+- The local summary has empty-state semantics and excludes Review Entries from Entry activity totals.
+- Weekly Review is available from Today and remains voluntary; opening the screen creates no record.
+- A record is created only from the explicit Start action; optional text is trimmed and restart persistence is covered.
+- Full backups use package schema v3 and preserve WeeklyReview identity and fields. Import remains compatible with schema v1/v2 packages that contain no WeeklyReview data.
+- Once-per-day Habit Undo remains unchanged. Multiple-per-day detail and Insight check-ins rely solely on immediate +/- counter reversal; decrement retains linked Entry content and its Habit relation.
+- English and Simplified Chinese strings are supplied for the new flow.
+- Targeted validation passed: Habit + Weekly Review Unit 37/37, schema-v3/Weekly Review import-export 3/3 and focused mixed-path UI smoke 1/1.
+- Full Unit validation passed: 141/141.
+- Version 1.0 (Build 4) Release Archive was prepared from `bacb504afb30c582c869ae68f8558831c5067437` at `/tmp/PersonalGrowthOS-S2-Build4.xcarchive`; local Archive metadata and formal AppIcon inspection passed, then the Owner distributed it through TestFlight and performed physical iPhone validation.
+- Build 4 Owner iPhone validation passed V5→V6→V7 overlay migration, retention/relaunch of existing data, Weight persistence, repeatable-Habit `+++--`, Insight→`+`→`-` linked-Entry retention, explicit-only Weekly Review creation, and V7 export.
+- Build 4 failed the Weekly Review save/Chinese keyboard closure; the current candidate adds explicit focus/keyboard dismissal, visible save success/failure feedback, and a stable save refetch. Build 5 Owner revalidation remains required.
+- A final independent-review closure clears stale Saved feedback when the completion Toggle changes or a new save starts; focused UI coverage verifies save → Toggle change → feedback clears → save → relaunch completion persistence.
+- Version 1.0 (Build 5) Release Archive was created from `6027d758c5d18183a3aacae75ef8e1b3f8dc6d0b` at `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`. Inspection passed for the Release arm64 app, `com.yocruzer.PersonalGrowthOS`, display name `随心log`, Team `83SKX2PM7B`, AppIcon, encryption declaration and deep strict codesign verification.
+- The Archive has not been uploaded to App Store Connect/TestFlight; Build 5 Owner physical-device revalidation has not occurred, and Draft PR #2 remains open.
 
-## Constraints
+## Explicit Non-Goals
 
-- All repair implementation must remain on `fix/v1-device-smoke-round1`.
-- Preserve the Foundation Documents and `DEVELOPMENT_CONTRACT.md`.
-- Do not add V2 capabilities, third-party dependencies, external services, unapproved Capabilities or Entitlements.
-- Do not merge into or modify remote `main`, force push, publish, release or tag.
-- Do not use Owner data for destructive testing.
-- Do not claim Owner-deferred physical-device validation or the formal 30-day observation is complete.
+- No automatic weekly/monthly/yearly report or prompt.
+- No AI summary, mood analysis, advanced statistics, templates, reminders or generated conclusions.
+- No new task, Goal, HealthKit, diet, medical or health-advice behavior.
+- No change to the existing lightweight manual `EntryKind.review` model.
+- No App Store export/upload, merge to `main`, signing/account configuration change, or Build 5 physical-device claim in this batch.
 
-## Success Criteria
+## Next Action
 
-- S1–S10 meet their technical Exit Criteria with coherent Stage commits.
-- Milestone A, B and C gates and independent internal reviews are complete.
-- 137 automated tests, simulator build, localization and Asset Catalog compilation pass without failure or skip.
-- Generic iOS signing succeeds for Team `83SKX2PM7B`.
-- Physical overlay installation and launch are completed only after compatible Xcode device support is available.
-- Current-context and device-validation documents accurately distinguish automated evidence, first-Smoke Owner evidence and Round 1 unverified items.
-
-## Current Boundary
-
-Round 1 implementation is committed and passes 116 Unit Tests plus 21 UI Tests, with 0 failures and 0 skips. Simulator and generic signed iOS builds pass; Bundle ID, Automatic Signing, Team and the registered device profile are correct.
-
-The fixed physical destination is paired, Developer Mode is enabled and its tunnel can connect, but DDI services cannot be enabled. The device changed from iOS 26.5.2 during the first Smoke Test to iOS 26.6 (`23G71`); current Xcode 26.6 (`17F113`) lists Device Support only through iOS 26.5. The next safe action is to install/select compatible Xcode device support, then retry build/install/launch on the same UDID without uninstalling the existing App.
+In Xcode Organizer, select `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`, validate it and let the Owner decide whether to distribute it through the correct App Store Connect account for TestFlight. After installation, revalidate Weekly Review Chinese input/save/relaunch, floating-control interaction, Habit compact layout and Entry media preview. Keep [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2), this branch and the separate Build 3 distribution handoff unmerged.

@@ -417,12 +417,12 @@
         }
       }
     },
-    "Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.": {
+    "Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Backups contain all entry text and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data."
+            "value": "Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data."
           }
         },
         "zh-Hans": {
@@ -881,6 +881,22 @@
         }
       }
     },
+    "Current count: %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current count: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前次数：%lld"
+          }
+        }
+      }
+    },
     "Daily Target": {
       "localizations": {
         "en": {
@@ -957,6 +973,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "日期与时间"
+          }
+        }
+      }
+    },
+    "Decrease %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decrease %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "减少“%@”一次"
           }
         }
       }
@@ -1053,6 +1085,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "完成"
+          }
+        }
+      }
+    },
+    "Large photo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Large photo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大图"
           }
         }
       }
@@ -1681,6 +1729,22 @@
         }
       }
     },
+    "Increase %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Increase %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "增加“%@”一次"
+          }
+        }
+      }
+    },
     "Its lifecycle history and relationships will be deleted. Entries and Habits will remain.": {
       "localizations": {
         "en": {
@@ -2189,6 +2253,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "暂无记录"
+          }
+        }
+      }
+    },
+    "No Habits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Habits"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无习惯"
           }
         }
       }
@@ -3457,18 +3537,18 @@
         }
       }
     },
-    "The ZIP may contain private entry text and original photos. Handle it as sensitive data.": {
+    "The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The ZIP may contain private entry text and original photos. Handle it as sensitive data."
+            "value": "The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "ZIP 可能包含私密记录文字和原始照片，请按敏感数据妥善处理。"
+            "value": "ZIP 可能包含私密个人记录、记录文字和原始照片，请按敏感数据妥善处理。"
           }
         }
       }
@@ -4205,6 +4285,532 @@
           "stringUnit": {
             "state": "translated",
             "value": "无法搜索本地数据。"
+          }
+        }
+      }
+    },
+    "Add Weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Weight"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加体重"
+          }
+        }
+      }
+    },
+    "Add at least two records to see a trend.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add at least two records to see a trend."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "至少添加两条记录后即可查看趋势。"
+          }
+        }
+      }
+    },
+    "Add your first weight record to see your latest value and a simple trend.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your first weight record to see your latest value and a simple trend."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加第一条体重记录后，即可查看最近体重和简单趋势。"
+          }
+        }
+      }
+    },
+    "Could Not Delete Weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could Not Delete Weight"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法删除体重"
+          }
+        }
+      }
+    },
+    "Could Not Save Weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could Not Save Weight"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存体重"
+          }
+        }
+      }
+    },
+    "Date": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期"
+          }
+        }
+      }
+    },
+    "Delete Weight Record": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Weight Record"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除体重记录"
+          }
+        }
+      }
+    },
+    "Delete this weight record?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this weight record?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除这条体重记录？"
+          }
+        }
+      }
+    },
+    "Edit Weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Weight"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑体重"
+          }
+        }
+      }
+    },
+    "Enter a valid weight in kilograms.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a valid weight in kilograms."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入有效的公斤体重。"
+          }
+        }
+      }
+    },
+    "Enter a weight greater than 0 and no more than 1,000 kg.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a weight greater than 0 and no more than 1,000 kg."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入大于 0 且不超过 1,000 公斤的体重。"
+          }
+        }
+      }
+    },
+    "Latest Weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latest Weight"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最近体重"
+          }
+        }
+      }
+    },
+    "No Weight Records": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Weight Records"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无体重记录"
+          }
+        }
+      }
+    },
+    "Record Weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record Weight"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录体重"
+          }
+        }
+      }
+    },
+    "Since previous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Since previous"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "较上次"
+          }
+        }
+      }
+    },
+    "The weight record was not deleted.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The weight record was not deleted."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体重记录未能删除。"
+          }
+        }
+      }
+    },
+    "The weight record was not saved.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The weight record was not saved."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体重记录未能保存。"
+          }
+        }
+      }
+    },
+    "Trend": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trend"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "趋势"
+          }
+        }
+      }
+    },
+    "Weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体重"
+          }
+        }
+      }
+    },
+    "Weight (kg)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight (kg)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体重（kg）"
+          }
+        }
+      }
+    },
+    "Weight trend": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight trend"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体重趋势"
+          }
+        }
+      }
+    },
+    "Activity": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Activity" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周动态" } }
+      }
+    },
+    "Active Days": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Active Days" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "活跃天数" } }
+      }
+    },
+    "Check-ins": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Check-ins" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打卡次数" } }
+      }
+    },
+    "Could Not Save Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Could Not Save Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法保存回顾" } }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Close" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "关闭" } }
+      }
+    },
+    "Days with Entries": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Days with Entries" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "有记录的天数" } }
+      }
+    },
+    "Habit Check-ins": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Habit Check-ins" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "习惯打卡" } }
+      }
+    },
+    "Look back on this week and choose one next step when you are ready.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Look back on this week and choose one next step when you are ready." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "准备好时，回顾这一周并选定一个下一步。" } }
+      }
+    },
+    "Mark this review complete": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Mark this review complete" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "标记此回顾为完成" } }
+      }
+    },
+    "Most Active Habit": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Most Active Habit" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "最常完成的习惯" } }
+      }
+    },
+    "No activity recorded this week yet.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No activity recorded this week yet." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周还没有记录任何动态。" } }
+      }
+    },
+    "One focus for next week": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "One focus for next week" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下周的一个重点" } }
+      }
+    },
+    "Open larger photo": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Open larger photo" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打开大图" } }
+      }
+    },
+    "Photo Entries": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Photo Entries" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "含照片的记录" } }
+      }
+    },
+    "Recent Entries": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Recent Entries" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "最近记录" } }
+      }
+    },
+    "Reflect on this week": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Reflect on this week" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "回顾这一周" } }
+      }
+    },
+    "Save Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Save Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存回顾" } }
+      }
+    },
+    "Saved": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Saved" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已保存" } }
+      }
+    },
+    "Start Weekly Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Start Weekly Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开始每周回顾" } }
+      }
+    },
+    "Start only when you are ready. Nothing is generated automatically.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Start only when you are ready. Nothing is generated automatically." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "准备好时再开始；不会自动生成任何内容。" } }
+      }
+    },
+    "The weekly review was not saved.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "The weekly review was not saved." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾未能保存。" } }
+      }
+    },
+    "This Week": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "This Week" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周" } }
+      }
+    },
+    "Top Tags": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Top Tags" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "常用标签" } }
+      }
+    },
+    "Weekly Review": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾" } }
+      }
+    },
+    "Weekly Review Unavailable": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review Unavailable" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂时无法使用每周回顾" } }
+      }
+    },
+    "Weight Change": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weight Change" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "体重变化" } }
+      }
+    },
+    "What could be better?": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "What could be better?" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "哪些地方可以做得更好？" } }
+      }
+    },
+    "What is your next step?": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "What is your next step?" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的下一步是什么？" } }
+      }
+    },
+    "Your review is saved only on this device.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your review is saved only on this device." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的回顾只保存在这台设备上。" } }
+      }
+    },
+    "Weight uses kilograms (kg). This is a personal record, not health advice.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight uses kilograms (kg). This is a personal record, not health advice."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体重统一使用公斤（kg）。这只是个人记录，不提供健康建议。"
           }
         }
       }

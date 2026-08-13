@@ -2,7 +2,8 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 1
+    static let currentPackageSchemaVersion = 3
+    static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
     let packageSchemaVersion: Int
@@ -37,6 +38,65 @@ struct TransferData: Codable, Equatable {
     let habitLogs: [HabitLogTransfer]
     let goals: [GoalTransfer]
     let goalEvents: [GoalEventTransfer]
+    let weightRecords: [WeightRecordTransfer]
+    let weeklyReviews: [WeeklyReviewTransfer]
+
+    init(
+        entries: [EntryTransfer],
+        images: [ImageTransfer],
+        tags: [TagTransfer],
+        links: [LinkTransfer],
+        habits: [HabitTransfer],
+        habitLogs: [HabitLogTransfer],
+        goals: [GoalTransfer],
+        goalEvents: [GoalEventTransfer],
+        weightRecords: [WeightRecordTransfer] = [],
+        weeklyReviews: [WeeklyReviewTransfer] = []
+    ) {
+        self.entries = entries
+        self.images = images
+        self.tags = tags
+        self.links = links
+        self.habits = habits
+        self.habitLogs = habitLogs
+        self.goals = goals
+        self.goalEvents = goalEvents
+        self.weightRecords = weightRecords
+        self.weeklyReviews = weeklyReviews
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case entries
+        case images
+        case tags
+        case links
+        case habits
+        case habitLogs
+        case goals
+        case goalEvents
+        case weightRecords
+        case weeklyReviews
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        entries = try container.decode([EntryTransfer].self, forKey: .entries)
+        images = try container.decode([ImageTransfer].self, forKey: .images)
+        tags = try container.decode([TagTransfer].self, forKey: .tags)
+        links = try container.decode([LinkTransfer].self, forKey: .links)
+        habits = try container.decode([HabitTransfer].self, forKey: .habits)
+        habitLogs = try container.decode([HabitLogTransfer].self, forKey: .habitLogs)
+        goals = try container.decode([GoalTransfer].self, forKey: .goals)
+        goalEvents = try container.decode([GoalEventTransfer].self, forKey: .goalEvents)
+        weightRecords = try container.decodeIfPresent(
+            [WeightRecordTransfer].self,
+            forKey: .weightRecords
+        ) ?? []
+        weeklyReviews = try container.decodeIfPresent(
+            [WeeklyReviewTransfer].self,
+            forKey: .weeklyReviews
+        ) ?? []
+    }
 
     var objectCounts: [String: Int] {
         [
@@ -47,8 +107,17 @@ struct TransferData: Codable, Equatable {
             "habits": habits.count,
             "habitLogs": habitLogs.count,
             "goals": goals.count,
-            "goalEvents": goalEvents.count
+            "goalEvents": goalEvents.count,
+            "weightRecords": weightRecords.count,
+            "weeklyReviews": weeklyReviews.count
         ]
+    }
+
+    func objectCounts(forPackageSchemaVersion version: Int) -> [String: Int] {
+        objectCounts.filter { key, _ in
+            (version != 1 || key != "weightRecords")
+                && (version >= 3 || key != "weeklyReviews")
+        }
     }
 
     var totalObjectCount: Int {
@@ -146,6 +215,28 @@ struct GoalEventTransfer: Codable, Equatable {
     let createdAt: Date
 }
 
+struct WeightRecordTransfer: Codable, Equatable {
+    let id: UUID
+    let weightKilograms: Double
+    let recordedAt: Date
+    let createdAt: Date
+    let updatedAt: Date
+}
+
+struct WeeklyReviewTransfer: Codable, Equatable {
+    let id: UUID
+    let weekIdentifier: String
+    let periodStart: Date
+    let periodEnd: Date
+    let rememberedText: String?
+    let improvementText: String?
+    let nextStepText: String?
+    let focusText: String?
+    let isCompleted: Bool
+    let createdAt: Date
+    let updatedAt: Date
+}
+
 enum TransferPackageError: Error, Equatable {
     case invalidFormat
     case unsupportedSchema(Int)
@@ -173,13 +264,23 @@ enum TransferValidator {
         guard manifest.formatIdentifier == ExportManifest.formatIdentifier else {
             throw TransferPackageError.invalidFormat
         }
-        guard manifest.packageSchemaVersion == ExportManifest.currentPackageSchemaVersion else {
+        guard ExportManifest.supportedPackageSchemaVersions.contains(
+            manifest.packageSchemaVersion
+        ) else {
             throw TransferPackageError.unsupportedSchema(manifest.packageSchemaVersion)
+        }
+        guard manifest.packageSchemaVersion != 1 || data.weightRecords.isEmpty else {
+            throw TransferPackageError.invalidObject("weightRecord")
+        }
+        guard manifest.packageSchemaVersion >= 3 || data.weeklyReviews.isEmpty else {
+            throw TransferPackageError.invalidObject("weeklyReview")
         }
         guard data.totalObjectCount <= limits.maximumObjectCount else {
             throw TransferPackageError.objectLimitExceeded
         }
-        guard manifest.objectCounts == data.objectCounts,
+        guard manifest.objectCounts == data.objectCounts(
+            forPackageSchemaVersion: manifest.packageSchemaVersion
+        ),
               manifest.dataFile.path == "data.json" else {
             throw TransferPackageError.countMismatch
         }
@@ -192,6 +293,11 @@ enum TransferValidator {
         try unique(data.habitLogs.map(\.id), type: "habitLog")
         try unique(data.goals.map(\.id), type: "goal")
         try unique(data.goalEvents.map(\.id), type: "goalEvent")
+        try unique(data.weightRecords.map(\.id), type: "weightRecord")
+        try unique(data.weeklyReviews.map(\.id), type: "weeklyReview")
+        guard Set(data.weeklyReviews.map(\.weekIdentifier)).count == data.weeklyReviews.count else {
+            throw TransferPackageError.duplicateID("weeklyReviewIdentifier")
+        }
 
         let imageCounts = Dictionary(grouping: data.images, by: \.entryID).mapValues(\.count)
         let entryIDs = Set(data.entries.map(\.id))
@@ -268,6 +374,28 @@ enum TransferValidator {
                   goal.normalizedTitle == TextSearchNormalizer.normalize(goal.title),
                   goal.updatedAt >= goal.createdAt else {
                 throw TransferPackageError.invalidObject("goal")
+            }
+        }
+        for record in data.weightRecords {
+            guard (try? WeightRules.validatedKilograms(record.weightKilograms)) != nil,
+                  record.updatedAt >= record.createdAt else {
+                throw TransferPackageError.invalidObject("weightRecord")
+            }
+        }
+        for review in data.weeklyReviews {
+            let texts = [
+                review.rememberedText,
+                review.improvementText,
+                review.nextStepText,
+                review.focusText
+            ].compactMap { $0 }
+            guard !review.weekIdentifier.isEmpty,
+                  review.periodEnd >= review.periodStart,
+                  review.updatedAt >= review.createdAt,
+                  texts.allSatisfy({
+                      !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                  }) else {
+                throw TransferPackageError.invalidObject("weeklyReview")
             }
         }
         for log in data.habitLogs {
