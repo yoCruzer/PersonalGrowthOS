@@ -2,7 +2,7 @@
 
 | Item | Value |
 | --- | --- |
-| Status | Build 5 candidate ready for independent review; [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) remains Draft |
+| Status | Build 5 Owner device-validation Archive ready; [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) remains Draft |
 | Branch | `feature/usability-s2-review-loop` |
 | Base | `c45c666` |
 | Scope | Manual weekly reflection from Today with a bounded local summary and one next step/focus |
@@ -45,8 +45,10 @@ It also found a merge-blocking Weekly Review closure failure: after Chinese text
 
 The same candidate keeps the existing Habit semantics but compacts the repeatable-Habit card with 28pt visual controls inside 44×44pt button hit areas and a `ViewThatFits` fallback. The global Search/Capture cluster hides for keyboard and presentation input states, moves only after long press, stores normalized `@AppStorage` coordinates, and clamps them to the current safe operating area. Entry media now fits its actual aspect ratio with a maximum height instead of a forced gray container; Entry-detail thumbnails open a single-image, aspect-fit full-screen preview with a close control and safe thumbnail fallback. No media-browser, data-model or export behavior was added.
 
+Version 1.0 (Build 5) was archived from source commit `6027d758c5d18183a3aacae75ef8e1b3f8dc6d0b` at `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`. Archive inspection passed: Organizer metadata identifies scheme `PersonalGrowthOS`; the Release app is arm64, has bundle identifier `com.yocruzer.PersonalGrowthOS`, display name `随心log`, Team `83SKX2PM7B`, formal AppIcon resources, `ITSAppUsesNonExemptEncryption = NO`, and successful deep strict codesign verification. This Archive has not been uploaded to App Store Connect/TestFlight and is not Build 5 Owner-device evidence.
+
 ## Follow-up Boundary
 
 Backup validation intentionally does not recompute a review's identifier from its stored period: package v3 does not retain the exporting device's time zone, so receiver-side recomputation could reject an otherwise valid local-week review. The existing non-empty identifier, unique identifier and ordered-period checks remain in place; timezone-aware package metadata would be a separate non-blocking follow-up.
 
-The next work is independent incremental review of the S2 Draft PR. The post-`2084207` candidate has not consumed Build 5, become a Build 5 Archive, or received Owner device validation. If accepted, prepare a new Build 5 Archive and perform focused Owner physical-device validation of Chinese Weekly Review input/save/relaunch plus the bounded new interaction work. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate.
+The next work is Owner-controlled Organizer validation and, if chosen, App Store Connect/TestFlight upload of the prepared Build 5 Archive. After installation, perform focused physical-device validation of Chinese Weekly Review input/save/relaunch plus the bounded new interaction work. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate.

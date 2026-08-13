@@ -7,11 +7,11 @@
 | Current branch | `feature/usability-s2-review-loop` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `c45c666` (`design: refresh app icon for Suixin Log`) |
-| Governance status | Build 4 Owner feedback fixed locally; Build 5 candidate ready for independent review; Draft PR #2 open |
+| Governance status | Build 5 Release Archive prepared for Owner validation; Draft PR #2 open |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, formal App icon refresh, UX fixes and Usability S2 implementation |
 | Final automated gate | Build 5 candidate: PASS — 142 Unit + 4 focused UI + 25 full UI; V1 Build 3 historical gate: 147/147 |
-| Release gate | Incremental code review, then Build 5 Archive and Owner physical-device revalidation remain external actions; this separate S2 branch remains unmerged |
-| Next checkpoint | Independent review of the Build 4 feedback fix; do not consume Build 5 before approval |
+| Release gate | Owner TestFlight upload and Build 5 physical-device revalidation remain external actions; this separate S2 branch remains unmerged |
+| Next checkpoint | Owner validates the Build 5 Archive in Xcode Organizer; do not upload or merge automatically |
 
 ## Authoritative Product Baseline
 
@@ -29,7 +29,9 @@ The focused PR review fix keeps once-per-day Habit Undo unchanged. Multiple-per-
 
 Draft PR #2 has passed its first independent code review. The S2 device-validation candidate was Version 1.0 (Build 4), prepared from `bacb504afb30c582c869ae68f8558831c5067437` at `/tmp/PersonalGrowthOS-S2-Build4.xcarchive`. Local Archive inspection confirmed the Release arm64 app, bundle identifier `com.yocruzer.PersonalGrowthOS`, display name `随心log`, AppIcon, `ITSAppUsesNonExemptEncryption = NO`, and Team `83SKX2PM7B`. Build 4 was subsequently distributed through TestFlight and physically validated by the Owner.
 
-Build 4 Owner iPhone overlay validation passed V5→V6→V7 migration; preservation/relaunch of original Entry, image, Habit, Goal and Review data; Weight persistence; repeatable-Habit `+++--`; Insight→`+`→`-` linked-Entry retention; explicit-only Weekly Review creation; and V7 export. It found a P0 Weekly Review closure failure: Chinese keyboard dismissal was unreliable and Save gave no visible confirmation or persistence proof. The post-`2084207` candidate now gives Review fields explicit focus and a keyboard Done action, yields before saving, refetches the stable current-week review rather than relying on a potentially stale query snapshot, and makes success/failure visible. It also clears stale success feedback when any editable field, including completion, changes or when a new save begins; a focused UI test covers completion-state save/relaunch persistence. It compacts the repeatable-Habit counter, makes the floating Search/Capture cluster keyboard-aware, draggable and locally persisted, and closes the two bounded Entry-media UX debts. This is not yet a Build 5 Archive and has not received Owner device validation; Build 5 remains unconsumed, and PR #2 remains Draft.
+Build 4 Owner iPhone overlay validation passed V5→V6→V7 migration; preservation/relaunch of original Entry, image, Habit, Goal and Review data; Weight persistence; repeatable-Habit `+++--`; Insight→`+`→`-` linked-Entry retention; explicit-only Weekly Review creation; and V7 export. It found a P0 Weekly Review closure failure: Chinese keyboard dismissal was unreliable and Save gave no visible confirmation or persistence proof. The post-`2084207` candidate now gives Review fields explicit focus and a keyboard Done action, yields before saving, refetches the stable current-week review rather than relying on a potentially stale query snapshot, and makes success/failure visible. It also clears stale success feedback when any editable field, including completion, changes or when a new save begins; a focused UI test covers completion-state save/relaunch persistence. It compacts the repeatable-Habit counter, makes the floating Search/Capture cluster keyboard-aware, draggable and locally persisted, and closes the two bounded Entry-media UX debts.
+
+Version 1.0 (Build 5) was archived from source commit `6027d758c5d18183a3aacae75ef8e1b3f8dc6d0b` at `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`. Inspection confirmed the Release arm64 app, bundle identifier `com.yocruzer.PersonalGrowthOS`, display name `随心log`, formal AppIcon resources, `ITSAppUsesNonExemptEncryption = NO`, Team `83SKX2PM7B`, and successful `codesign --verify --deep --strict`. The Archive is recognized as scheme `PersonalGrowthOS` by Organizer metadata. It has not been uploaded to App Store Connect/TestFlight, and Build 5 Owner device validation has not been executed; PR #2 remains Draft.
 
 ## V1 Final Candidate
 
@@ -111,12 +113,12 @@ The existing Archive is a normal Automatic Signing development-signed intermedia
 
 ## Quality State
 
-- Known P0: the Build 4 Weekly Review device failure is fixed locally but remains a Build 5 Owner revalidation gate.
+- Known P0: the Build 4 Weekly Review device failure is included in the Build 5 Archive but remains an Owner revalidation gate.
 - Known P1: none.
 - Known new product P2: none.
 - Open non-blocking P2: none from this feedback batch; UX-01 and UX-02 are resolved in `Docs/UX_DEBT.md`.
-- Build 4 Owner-data overlay is claimed as passed; Build 5 physical-device revalidation, iCloud multi-device validation and Build 3 TestFlight distribution remain unclaimed.
+- Build 4 Owner-data overlay is claimed as passed; Build 5 physical-device revalidation and App Store Connect/TestFlight upload, iCloud multi-device validation and Build 3 TestFlight distribution remain unclaimed.
 
 ## Next Action
 
-Independently review the Build 4 feedback delta in [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2). If accepted, prepare Version 1.0 (Build 5) only then and ask the Owner to repeat Weekly Review Chinese input/save/relaunch and the bounded new interaction checks on iPhone. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.
+In Xcode Organizer, select `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`, validate it and let the Owner decide whether to upload it through the correct App Store Connect account for TestFlight. After installation, repeat Weekly Review Chinese input/save/relaunch and the bounded new interaction checks on iPhone. Keep [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) and this branch unmerged. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.

@@ -2,8 +2,8 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | Post-V1 Usability S2 — Build 5 candidate ready for independent review |
-| Status | BUILD 4 TESTFLIGHT + OWNER FEEDBACK FIXED LOCALLY — DRAFT PR #2 OPEN |
+| Current checkpoint | Post-V1 Usability S2 — Build 5 Owner device-validation Archive ready |
+| Status | BUILD 5 ARCHIVE READY — DRAFT PR #2 OPEN |
 | Execution branch | `feature/usability-s2-review-loop` |
 | Base | `c45c666` (`design: refresh app icon for Suixin Log`) |
 | Prior committed UX work | `53f2326` add-action consistency; `06cc913` reversible repeatable Habit check-ins |
@@ -12,7 +12,7 @@
 
 ## Objective
 
-Resolve the Build 4 Owner feedback without widening S2: restore the Weekly Review save/keyboard closure, compact the repeatable-Habit card, make the global floating controls input-aware and draggable, and close the two bounded Entry-media UX debts. The resulting code is a Build 5 candidate for independent review only; do not consume Build 5, archive, upload, publish or merge it in this batch.
+Prepare the independently reviewed Build 5 candidate as a local Release Archive for Owner TestFlight and physical-device validation, without uploading, publishing, merging or widening product scope.
 
 The user starts a weekly review explicitly from Today. The screen shows only local facts from the natural current week (Entries, entry days/photos, completed HabitLogs, a representative Habit, Weight change, Tags and recent Entries). The user may write what to remember, what to improve, a next step and one focus, then save and later reopen the same week’s review. Nothing is generated automatically.
 
@@ -32,7 +32,8 @@ The user starts a weekly review explicitly from Today. The screen shows only loc
 - Build 4 Owner iPhone validation passed V5→V6→V7 overlay migration, retention/relaunch of existing data, Weight persistence, repeatable-Habit `+++--`, Insight→`+`→`-` linked-Entry retention, explicit-only Weekly Review creation, and V7 export.
 - Build 4 failed the Weekly Review save/Chinese keyboard closure; the current candidate adds explicit focus/keyboard dismissal, visible save success/failure feedback, and a stable save refetch. Build 5 Owner revalidation remains required.
 - A final independent-review closure clears stale Saved feedback when the completion Toggle changes or a new save starts; focused UI coverage verifies save → Toggle change → feedback clears → save → relaunch completion persistence.
-- The post-`2084207` feedback-fix candidate is not a Build 5 Archive, has not been uploaded or physically validated, and Build 5 remains unconsumed. Draft PR #2 remains open.
+- Version 1.0 (Build 5) Release Archive was created from `6027d758c5d18183a3aacae75ef8e1b3f8dc6d0b` at `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`. Inspection passed for the Release arm64 app, `com.yocruzer.PersonalGrowthOS`, display name `随心log`, Team `83SKX2PM7B`, AppIcon, encryption declaration and deep strict codesign verification.
+- The Archive has not been uploaded to App Store Connect/TestFlight; Build 5 Owner physical-device revalidation has not occurred, and Draft PR #2 remains open.
 
 ## Explicit Non-Goals
 
@@ -40,8 +41,8 @@ The user starts a weekly review explicitly from Today. The screen shows only loc
 - No AI summary, mood analysis, advanced statistics, templates, reminders or generated conclusions.
 - No new task, Goal, HealthKit, diet, medical or health-advice behavior.
 - No change to the existing lightweight manual `EntryKind.review` model.
-- No App Store export, upload, Archive, build-number bump, merge to `main`, signing/account configuration change, or Build 5 physical-device claim in this batch.
+- No App Store export/upload, merge to `main`, signing/account configuration change, or Build 5 physical-device claim in this batch.
 
 ## Next Action
 
-Have the incremental Build 4 feedback diff independently reviewed. If accepted, then raise the build number and prepare a new Build 5 Archive for Owner iPhone revalidation of Weekly Review Chinese input/save/relaunch, floating-control interaction, Habit compact layout and Entry media preview. Keep [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2), this branch and the separate Build 3 distribution handoff unmerged.
+In Xcode Organizer, select `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`, validate it and let the Owner decide whether to distribute it through the correct App Store Connect account for TestFlight. After installation, revalidate Weekly Review Chinese input/save/relaunch, floating-control interaction, Habit compact layout and Entry media preview. Keep [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2), this branch and the separate Build 3 distribution handoff unmerged.
