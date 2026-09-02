@@ -49,6 +49,47 @@ final class WeeklyReviewFoundationTests: XCTestCase {
         XCTAssertTrue(period.contains(date))
     }
 
+    func testCanonicalIdentifierReopensExactReviewAcrossTimeZones() throws {
+        let shanghai = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let losAngeles = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let shanghaiPeriod = try WeeklyReviewPeriod(
+            identifier: "2026-W35",
+            timeZone: shanghai
+        )
+        let losAngelesPeriod = try WeeklyReviewPeriod(
+            identifier: "2026-W35",
+            timeZone: losAngeles
+        )
+
+        XCTAssertEqual(shanghaiPeriod.identifier, "2026-W35")
+        XCTAssertEqual(losAngelesPeriod.identifier, "2026-W35")
+
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let review = WeeklyReview(
+            weekIdentifier: shanghaiPeriod.identifier,
+            periodStart: shanghaiPeriod.start,
+            periodEnd: shanghaiPeriod.end,
+            createdAt: shanghaiPeriod.start
+        )
+        container.mainContext.insert(review)
+        try container.mainContext.save()
+
+        let reopened = try XCTUnwrap(
+            WeeklyReviewService(
+                context: container.mainContext,
+                timeZone: losAngeles
+            ).review(identifier: losAngelesPeriod.identifier)
+        )
+        XCTAssertEqual(reopened.id, review.id)
+    }
+
+    func testCanonicalIdentifierParsingRejectsNonCanonicalOrInvalidWeeks() {
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-W5"))
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-W00"))
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-W54"))
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-X35"))
+    }
+
     func testWeeklyReviewDeduplicatesWeekAndPersistsDraftAcrossReopen() throws {
         let fixture = try WeeklyReviewFixture()
         defer { fixture.remove() }

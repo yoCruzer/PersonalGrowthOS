@@ -43,6 +43,32 @@ struct WeeklyReviewPeriod: Equatable, Sendable {
         endExclusive = interval.end
     }
 
+    init(identifier: String, timeZone: TimeZone = .current) throws {
+        let bytes = Array(identifier.utf8)
+        guard bytes.count == 8,
+              bytes[4] == 45,
+              bytes[5] == 87,
+              bytes[0...3].allSatisfy({ $0 >= 48 && $0 <= 57 }),
+              bytes[6...7].allSatisfy({ $0 >= 48 && $0 <= 57 }),
+              let year = Int(String(decoding: bytes[0...3], as: UTF8.self)),
+              let week = Int(String(decoding: bytes[6...7], as: UTF8.self)) else {
+            throw WeeklyReviewError.unavailableWeek
+        }
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        var components = DateComponents()
+        components.yearForWeekOfYear = year
+        components.weekOfYear = week
+        components.weekday = calendar.firstWeekday
+        guard let date = calendar.date(from: components) else {
+            throw WeeklyReviewError.unavailableWeek
+        }
+        let period = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
+        guard period.identifier == identifier else {
+            throw WeeklyReviewError.unavailableWeek
+        }
+        self = period
+    }
+
     func contains(_ date: Date) -> Bool {
         date >= start && date < endExclusive
     }
@@ -190,6 +216,10 @@ final class WeeklyReviewService {
             context.rollback()
             throw error
         }
+    }
+
+    func review(identifier: String) throws -> WeeklyReview? {
+        try fetchReview(identifier: identifier)
     }
 
     func update(_ review: WeeklyReview, draft: WeeklyReviewDraft) throws {

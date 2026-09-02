@@ -3,6 +3,7 @@ import SwiftUI
 
 struct WeeklyReviewView: View {
     let referenceDate: Date
+    let weekIdentifier: String?
 
     private enum Field: Hashable {
         case remembered
@@ -34,10 +35,19 @@ struct WeeklyReviewView: View {
 
     init(referenceDate: Date = Date()) {
         self.referenceDate = referenceDate
+        weekIdentifier = nil
+    }
+
+    init(weekIdentifier: String) {
+        referenceDate = Date()
+        self.weekIdentifier = weekIdentifier
     }
 
     private var period: WeeklyReviewPeriod? {
-        try? WeeklyReviewPeriod(containing: referenceDate)
+        if let weekIdentifier {
+            return try? WeeklyReviewPeriod(identifier: weekIdentifier)
+        }
+        return try? WeeklyReviewPeriod(containing: referenceDate)
     }
 
     private var currentReview: WeeklyReview? {
@@ -287,8 +297,7 @@ struct WeeklyReviewView: View {
         }
         do {
             guard let review = try WeeklyReviewService(context: modelContext).review(
-                containing: period.start,
-                createIfNeeded: false
+                identifier: period.identifier
             ) else {
                 errorMessage = String(localized: "The weekly review was not saved.")
                 return
@@ -348,7 +357,7 @@ struct WeeklyReviewHistoryView: View {
             } else {
                 List(reviews) { review in
                     NavigationLink {
-                        WeeklyReviewView(referenceDate: review.periodStart)
+                        WeeklyReviewView(weekIdentifier: review.weekIdentifier)
                     } label: {
                         WeeklyReviewRow(review: review)
                     }

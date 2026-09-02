@@ -94,7 +94,7 @@ private struct SearchResultsList: View {
                 Section("Weekly Reviews") {
                     ForEach(results.weeklyReviews) { review in
                         NavigationLink {
-                            WeeklyReviewView(referenceDate: review.periodStart)
+                            WeeklyReviewView(weekIdentifier: review.weekIdentifier)
                         } label: {
                             WeeklyReviewRow(review: review)
                         }

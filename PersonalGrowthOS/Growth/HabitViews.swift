@@ -344,7 +344,6 @@ struct HabitDetailView: View {
                 }
             }
         }
-        .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle(habit.name)
         .toolbar {
             Button("Edit") {
