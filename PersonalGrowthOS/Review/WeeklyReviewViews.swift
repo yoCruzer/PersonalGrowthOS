@@ -161,37 +161,39 @@ struct WeeklyReviewView: View {
                 Text("No activity recorded this week yet.")
                     .foregroundStyle(.secondary)
             }
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 96), alignment: .leading)],
-                alignment: .leading,
-                spacing: 12
-            ) {
-                if let entryCount = summary.entryCount {
-                    WeeklySummaryFact(label: "Entries", value: "\(entryCount)")
-                }
-                if let dayCount = summary.entryDayCount {
-                    WeeklySummaryFact(label: "Days with Entries", value: "\(dayCount)")
-                }
-                if let imageEntryCount = summary.imageEntryCount {
-                    WeeklySummaryFact(label: "Photo Entries", value: "\(imageEntryCount)")
-                }
-                if let habitCheckInCount = summary.habitCheckInCount {
-                    WeeklySummaryFact(label: "Habit Check-ins", value: "\(habitCheckInCount)")
-                }
-                if let habit = summary.habitHighlight {
-                    WeeklySummaryFact(label: "Most Active Habit", value: habit.habitName)
-                    WeeklySummaryFact(label: "Active Days", value: "\(habit.activeDayCount)")
-                }
-                if let weight = summary.weight {
-                    WeeklySummaryFact(
-                        label: "Latest Weight",
-                        value: WeightFormatting.kilograms(weight.latestKilograms)
-                    )
-                    if let change = weight.changeKilograms {
+            if summary.hasActivity {
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 96), alignment: .leading)],
+                    alignment: .leading,
+                    spacing: 12
+                ) {
+                    if let entryCount = summary.entryCount {
+                        WeeklySummaryFact(label: "Entries", value: "\(entryCount)")
+                    }
+                    if let dayCount = summary.entryDayCount {
+                        WeeklySummaryFact(label: "Days with Entries", value: "\(dayCount)")
+                    }
+                    if let imageEntryCount = summary.imageEntryCount {
+                        WeeklySummaryFact(label: "Photo Entries", value: "\(imageEntryCount)")
+                    }
+                    if let habitCheckInCount = summary.habitCheckInCount {
+                        WeeklySummaryFact(label: "Habit Check-ins", value: "\(habitCheckInCount)")
+                    }
+                    if let habit = summary.habitHighlight {
+                        WeeklySummaryFact(label: "Most Active Habit", value: habit.habitName)
+                        WeeklySummaryFact(label: "Active Days", value: "\(habit.activeDayCount)")
+                    }
+                    if let weight = summary.weight {
                         WeeklySummaryFact(
-                            label: "Weight Change",
-                            value: WeightFormatting.kilograms(change)
+                            label: "Latest Weight",
+                            value: WeightFormatting.kilograms(weight.latestKilograms)
                         )
+                        if let change = weight.changeKilograms {
+                            WeeklySummaryFact(
+                                label: "Weight Change",
+                                value: WeightFormatting.kilograms(change)
+                            )
+                        }
                     }
                 }
             }

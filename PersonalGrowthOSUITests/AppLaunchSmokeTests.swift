@@ -702,7 +702,9 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launch()
 
         app.buttons["today-weekly-review"].tap()
-        app.buttons["start-weekly-review"].tap()
+        let startReview = app.buttons["start-weekly-review"]
+        XCTAssertTrue(startReview.waitForExistence(timeout: 5))
+        startReview.tap()
         let remembered = app.descendants(matching: .any)["weekly-review-remembered"]
         XCTAssertTrue(remembered.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["save-weekly-review"].isEnabled)
