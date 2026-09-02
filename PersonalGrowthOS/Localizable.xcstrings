@@ -4814,6 +4814,156 @@
           }
         }
       }
+    },
+    "A moment to record today": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "A moment to record today" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "花一点时间记录今天" } }
+      }
+    },
+    "Current count": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Current count" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "当前次数" } }
+      }
+    },
+    "Daily Recording Reminder": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Daily Recording Reminder" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每日记录提醒" } }
+      }
+    },
+    "Entries, weekly reviews, habits, goals and tags": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Entries, weekly reviews, habits, goals and tags" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "记录、每周回顾、习惯、目标和标签" } }
+      }
+    },
+    "Incomplete": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Incomplete" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未完成" } }
+      }
+    },
+    "Last Week’s Focus": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Last Week’s Focus" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "上周的焦点" } }
+      }
+    },
+    "Look back on your week and choose one focus for the next.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Look back on your week and choose one focus for the next." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "回顾这一周，并为下一周选择一个焦点。" } }
+      }
+    },
+    "Next Week’s Focus": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Next Week’s Focus" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下周焦点" } }
+      }
+    },
+    "No Weekly Reviews": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No Weekly Reviews" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂无每周回顾" } }
+      }
+    },
+    "Notifications are disabled in iOS Settings.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Notifications are disabled in iOS Settings." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "通知已在 iOS 设置中关闭。" } }
+      }
+    },
+    "Notifications are disabled. You can enable them in iOS Settings.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Notifications are disabled. You can enable them in iOS Settings." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "通知已关闭。你可以前往 iOS 设置开启通知。" } }
+      }
+    },
+    "Open iOS Settings": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Open iOS Settings" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打开 iOS 设置" } }
+      }
+    },
+    "Reminders": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Reminders" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提醒" } }
+      }
+    },
+    "Reminders stay on this device and are scheduled only after you turn them on.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Reminders stay on this device and are scheduled only after you turn them on." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提醒仅保存在这台设备上，并只会在你主动开启后安排。" } }
+      }
+    },
+    "Save a thought or photo while it is still fresh.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Save a thought or photo while it is still fresh." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "趁想法或画面还清晰时记录下来。" } }
+      }
+    },
+    "The reminder could not be updated. Please try again.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "The reminder could not be updated. Please try again." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法更新提醒，请再试一次。" } }
+      }
+    },
+    "This Week’s Focus": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "This Week’s Focus" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周焦点" } }
+      }
+    },
+    "Time": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Time" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "时间" } }
+      }
+    },
+    "Turn the reminder on again to allow notifications.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Turn the reminder on again to allow notifications." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "请再次开启提醒以允许通知。" } }
+      }
+    },
+    "Unsaved changes": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Unsaved changes" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "有未保存的更改" } }
+      }
+    },
+    "Weekday": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekday" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "星期" } }
+      }
+    },
+    "Weekly Review Reminder": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review Reminder" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾提醒" } }
+      }
+    },
+    "Weekly Reviews": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Reviews" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾" } }
+      }
+    },
+    "Weekly Reviews you start from Today will appear here.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Reviews you start from Today will appear here." } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你从“今天”开始的每周回顾会显示在这里。" } }
+      }
+    },
+    "Your Week": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your Week" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的一周" } }
+      }
     }
   },
   "version": "1.0"

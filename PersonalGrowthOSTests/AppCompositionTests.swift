@@ -128,4 +128,48 @@ final class AppCompositionTests: XCTestCase {
             )
         }
     }
+
+    func testDailyReminderUsesOnlyClampedLocalHourAndMinute() {
+        XCTAssertEqual(
+            ReminderScheduleCalculator.dailyComponents(minutesAfterMidnight: 8 * 60 + 35),
+            DateComponents(hour: 8, minute: 35)
+        )
+        XCTAssertEqual(
+            ReminderScheduleCalculator.dailyComponents(minutesAfterMidnight: -1),
+            DateComponents(hour: 0, minute: 0)
+        )
+        XCTAssertEqual(
+            ReminderScheduleCalculator.dailyComponents(minutesAfterMidnight: 2_000),
+            DateComponents(hour: 23, minute: 59)
+        )
+    }
+
+    func testWeeklyReminderUsesStableWeekdayHourAndMinute() {
+        XCTAssertEqual(
+            ReminderScheduleCalculator.weeklyComponents(
+                weekday: 2,
+                minutesAfterMidnight: 19 * 60 + 15
+            ),
+            DateComponents(hour: 19, minute: 15, weekday: 2)
+        )
+        XCTAssertEqual(
+            ReminderScheduleCalculator.weeklyComponents(
+                weekday: 9,
+                minutesAfterMidnight: 60
+            ).weekday,
+            7
+        )
+        XCTAssertEqual(
+            LocalReminderScheduler.dailyIdentifier,
+            "com.yocruzer.PersonalGrowthOS.reminder.daily-recording"
+        )
+        XCTAssertEqual(
+            LocalReminderScheduler.weeklyIdentifier,
+            "com.yocruzer.PersonalGrowthOS.reminder.weekly-review"
+        )
+        XCTAssertNotEqual(
+            LocalReminderScheduler.dailyIdentifier,
+            LocalReminderScheduler.weeklyIdentifier
+        )
+    }
 }

@@ -113,6 +113,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launch()
 
         app.tabBars.buttons["Timeline"].tap()
+        XCTAssertFalse(app.tabBars.buttons["Quick Capture"].exists)
         app.buttons["global-capture-button"].tap()
 
         XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
@@ -143,16 +144,15 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data."].exists)
     }
 
-    func testGlobalCaptureIsAvailableFromSearch() {
+    func testSearchIsAvailableFromLibraryWithoutDuplicateCapture() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        app.buttons["global-search-button"].tap()
-        XCTAssertTrue(app.buttons["search-capture-button"].waitForExistence(timeout: 5))
-        app.buttons["search-capture-button"].tap()
-
-        XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["search-capture-button"].exists)
     }
 
     func testArchivedEntryCanBeRestored() {
@@ -233,7 +233,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["Learning"].tap()
         XCTAssertEqual(app.buttons["Learning"].value as? String, "Selected")
         app.buttons["Done"].tap()
-        app.buttons["global-search-button"].tap()
+        app.navigationBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
@@ -307,9 +308,9 @@ final class AppLaunchSmokeTests: XCTestCase {
         increase.tap()
         increase.tap()
         increase.tap()
-        XCTAssertEqual(count.label, "Today 3 times")
+        XCTAssertEqual(count.value as? String, "3")
         decrease.tap()
-        XCTAssertEqual(count.label, "Today 2 times")
+        XCTAssertEqual(count.value as? String, "2")
         try performSemanticAccessibilityAudit(app)
 
         app.terminate()
@@ -322,7 +323,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         ]
         app.launch()
         XCTAssertTrue(app.staticTexts["today-habit-water-count"].waitForExistence(timeout: 10))
-        XCTAssertEqual(app.staticTexts["today-habit-water-count"].label, "Today 2 times")
+        XCTAssertEqual(app.staticTexts["today-habit-water-count"].value as? String, "2")
     }
 
     func testHabitInsightCreatesLinkedEntryAndHabitIsSearchable() {
@@ -358,7 +359,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         decrease.tap()
         XCTAssertTrue(app.staticTexts["Linked Entry"].exists)
 
-        app.buttons["global-search-button"].tap()
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
@@ -387,7 +389,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Thirty Day Focus"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Complete Thirty Day Focus"].exists)
 
-        app.buttons["global-search-button"].tap()
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
@@ -459,7 +462,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["library-all-entries"].tap()
         XCTAssertTrue(app.staticTexts["Weekly review reflection"].waitForExistence(timeout: 5))
 
-        app.buttons["global-search-button"].tap()
+        app.navigationBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
@@ -634,8 +638,6 @@ final class AppLaunchSmokeTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "-PGOSUITesting", "-PGOSResetData",
-            "-floatingControlsHorizontalFraction", "0.0",
-            "-floatingControlsVerticalFraction", "0.0",
             "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
         ]
         app.launch()
@@ -658,6 +660,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         let keyboardDone = app.buttons["weekly-review-keyboard-done"]
         XCTAssertTrue(keyboardDone.waitForExistence(timeout: 5))
         keyboardDone.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["weekly-review-unsaved"].exists)
         app.buttons["save-weekly-review"].tap()
         let saveConfirmation = app.descendants(matching: .any)["weekly-review-save-confirmation"]
         XCTAssertTrue(saveConfirmation.waitForExistence(timeout: 5))
@@ -688,6 +691,56 @@ final class AppLaunchSmokeTests: XCTestCase {
             "A useful moment"
         )
         XCTAssertEqual(app.switches["weekly-review-completed"].value as? String, "1")
+    }
+
+    func testLibraryHistoryAndSearchReopenTheSavedWeeklyReview() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+
+        app.buttons["today-weekly-review"].tap()
+        app.buttons["start-weekly-review"].tap()
+        let remembered = app.descendants(matching: .any)["weekly-review-remembered"]
+        XCTAssertTrue(remembered.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["save-weekly-review"].isEnabled)
+        remembered.tap()
+        remembered.typeText("Build Six history needle")
+        app.buttons["weekly-review-keyboard-done"].tap()
+        XCTAssertTrue(app.buttons["save-weekly-review"].isEnabled)
+        app.buttons["save-weekly-review"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["weekly-review-save-confirmation"]
+                .waitForExistence(timeout: 5)
+        )
+
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-weekly-reviews"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["weekly-review-history"]
+                .waitForExistence(timeout: 5)
+        )
+        app.staticTexts["Build Six history needle"].tap()
+        XCTAssertEqual(
+            app.descendants(matching: .any)["weekly-review-remembered"].value as? String,
+            "Build Six history needle"
+        )
+
+        app.navigationBars.buttons["Weekly Reviews"].tap()
+        app.navigationBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("history needle")
+        XCTAssertTrue(app.staticTexts["Weekly Reviews"].waitForExistence(timeout: 5))
+        app.staticTexts["Build Six history needle"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["weekly-review-view"]
+                .waitForExistence(timeout: 5)
+        )
     }
 
     func testGrowthAddActionsRemainHittableWithDarkAppearanceAndLargeText() {
