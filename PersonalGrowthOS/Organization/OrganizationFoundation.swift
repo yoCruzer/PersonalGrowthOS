@@ -407,17 +407,20 @@ struct LocalSearchResults {
     let tags: [Tag]
     let habits: [Habit]
     let goals: [Goal]
+    let weeklyReviews: [WeeklyReview]
 
     init(
         entries: [Entry] = [],
         tags: [Tag] = [],
         habits: [Habit] = [],
-        goals: [Goal] = []
+        goals: [Goal] = [],
+        weeklyReviews: [WeeklyReview] = []
     ) {
         self.entries = entries
         self.tags = tags
         self.habits = habits
         self.goals = goals
+        self.weeklyReviews = weeklyReviews
     }
 }
 
@@ -464,7 +467,26 @@ final class LocalSearchService {
             goal.normalizedTitle.contains(normalizedQuery)
                 || TextSearchNormalizer.normalize(goal.title).contains(normalizedQuery)
         }
-        return LocalSearchResults(entries: entries, tags: tags, habits: habits, goals: goals)
+        let weeklyReviews = try context.fetch(FetchDescriptor<WeeklyReview>(sortBy: [
+            SortDescriptor(\WeeklyReview.periodStart, order: .reverse),
+            SortDescriptor(\WeeklyReview.id, order: .forward)
+        ])).filter { review in
+            [
+                review.rememberedText,
+                review.improvementText,
+                review.nextStepText,
+                review.focusText
+            ]
+            .compactMap { $0 }
+            .contains { TextSearchNormalizer.normalize($0).contains(normalizedQuery) }
+        }
+        return LocalSearchResults(
+            entries: entries,
+            tags: tags,
+            habits: habits,
+            goals: goals,
+            weeklyReviews: weeklyReviews
+        )
     }
 }
 

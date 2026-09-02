@@ -9,32 +9,18 @@ struct GlobalSearchView: View {
     @State private var query = ""
     @State private var results = LocalSearchResults(entries: [], tags: [])
     @State private var errorMessage: String?
-    @State private var isCapturing = false
 
     var body: some View {
         NavigationStack {
             content
                 .navigationTitle("Search")
-                .searchable(text: $query, prompt: "Entries, habits, goals and tags")
+                .searchable(text: $query, prompt: "Entries, weekly reviews, habits, goals and tags")
                 .onChange(of: query) { _, _ in search() }
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            isCapturing = true
-                        } label: {
-                            Label("Quick Capture", systemImage: "plus")
-                        }
-                        .accessibilityIdentifier("search-capture-button")
-                    }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { dismiss() }
                     }
                 }
-        }
-        .sheet(isPresented: $isCapturing) {
-            QuickCaptureView(mediaStore: mediaStore) {
-                isCapturing = false
-            }
         }
         .alert("Search Unavailable", isPresented: searchErrorIsPresented) {
             Button("OK", role: .cancel) {}
@@ -52,7 +38,8 @@ struct GlobalSearchView: View {
                 description: Text("Search Entries, Reviews, Tags, Habits, Goals and Flags on this device.")
             )
         } else if results.entries.isEmpty && results.tags.isEmpty
-            && results.habits.isEmpty && results.goals.isEmpty {
+            && results.habits.isEmpty && results.goals.isEmpty
+            && results.weeklyReviews.isEmpty {
             ContentUnavailableView.search(text: query)
         } else {
             SearchResultsList(
@@ -100,6 +87,18 @@ private struct SearchResultsList: View {
                         } label: {
                             TimelineRow(entry: entry, thumbnailStore: thumbnailStore)
                         }
+                    }
+                }
+            }
+            if !results.weeklyReviews.isEmpty {
+                Section("Weekly Reviews") {
+                    ForEach(results.weeklyReviews) { review in
+                        NavigationLink {
+                            WeeklyReviewView(referenceDate: review.periodStart)
+                        } label: {
+                            WeeklyReviewRow(review: review)
+                        }
+                        .accessibilityIdentifier("search-weekly-review-\(review.weekIdentifier)")
                     }
                 }
             }

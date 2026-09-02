@@ -46,6 +46,14 @@ struct WeeklyReviewPeriod: Equatable, Sendable {
     func contains(_ date: Date) -> Bool {
         date >= start && date < endExclusive
     }
+
+    func previous(timeZone: TimeZone = .current) throws -> WeeklyReviewPeriod {
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        guard let previousWeek = calendar.date(byAdding: .day, value: -7, to: start) else {
+            throw WeeklyReviewError.unavailableWeek
+        }
+        return try WeeklyReviewPeriod(containing: previousWeek, timeZone: timeZone)
+    }
 }
 
 @Model
@@ -95,6 +103,44 @@ struct WeeklyReviewDraft: Equatable {
     var nextStepText: String
     var focusText: String
     var isCompleted: Bool
+
+    init(
+        rememberedText: String,
+        improvementText: String,
+        nextStepText: String,
+        focusText: String,
+        isCompleted: Bool
+    ) {
+        self.rememberedText = rememberedText
+        self.improvementText = improvementText
+        self.nextStepText = nextStepText
+        self.focusText = focusText
+        self.isCompleted = isCompleted
+    }
+
+    init(review: WeeklyReview?) {
+        rememberedText = review?.rememberedText ?? ""
+        improvementText = review?.improvementText ?? ""
+        nextStepText = review?.nextStepText ?? ""
+        focusText = review?.focusText ?? ""
+        isCompleted = review?.isCompleted ?? false
+    }
+}
+
+struct WeeklyReviewEditState: Equatable {
+    private(set) var baseline: WeeklyReviewDraft
+
+    init(baseline: WeeklyReviewDraft) {
+        self.baseline = baseline
+    }
+
+    func isDirty(_ draft: WeeklyReviewDraft) -> Bool {
+        draft != baseline
+    }
+
+    mutating func markSaved(_ draft: WeeklyReviewDraft) {
+        baseline = draft
+    }
 }
 
 enum WeeklyReviewRules {
@@ -170,6 +216,11 @@ final class WeeklyReviewService {
             SortDescriptor(\WeeklyReview.createdAt, order: .reverse),
             SortDescriptor(\WeeklyReview.id, order: .forward)
         ]))
+    }
+
+    func previousReview(containing date: Date) throws -> WeeklyReview? {
+        let period = try WeeklyReviewPeriod(containing: date, timeZone: timeZone)
+        return try fetchReview(identifier: period.previous(timeZone: timeZone).identifier)
     }
 
     private func fetchReview(identifier: String) throws -> WeeklyReview? {
