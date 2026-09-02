@@ -46,6 +46,7 @@
 		B00000000000000000000037 /* WeeklyReviewFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* WeeklyReviewFoundation.swift */; };
 		B00000000000000000000038 /* WeeklyReviewFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */; };
 		B00000000000000000000039 /* WeeklyReviewViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000042 /* WeeklyReviewViews.swift */; };
+		B00000000000000000000040 /* ReminderFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000043 /* ReminderFoundation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +109,7 @@
 		A00000000000000000000040 /* WeeklyReviewFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewFoundation.swift; sourceTree = "<group>"; };
 		A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewFoundationTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000042 /* WeeklyReviewViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewViews.swift; sourceTree = "<group>"; };
+		A00000000000000000000043 /* ReminderFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderFoundation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,6 +211,7 @@
 			children = (
 				A00000000000000000000009 /* AppConfiguration.swift */,
 				A00000000000000000000010 /* AppContainer.swift */,
+				A00000000000000000000043 /* ReminderFoundation.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -485,6 +488,7 @@
 				B00000000000000000000036 /* WeightViews.swift in Sources */,
 				B00000000000000000000037 /* WeeklyReviewFoundation.swift in Sources */,
 				B00000000000000000000039 /* WeeklyReviewViews.swift in Sources */,
+				B00000000000000000000040 /* ReminderFoundation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -561,7 +565,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 83SKX2PM7B;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "随心log";
@@ -589,7 +593,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 83SKX2PM7B;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "随心log";

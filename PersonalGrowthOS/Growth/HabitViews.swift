@@ -85,72 +85,65 @@ struct RepeatableHabitCounter: View {
     let increase: () -> Void
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 8) {
-                habitSummary
-                Spacer(minLength: 8)
-                controls
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                habitSummary
-                controls
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-
-    private var habitSummary: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 8) {
             Text(habitName)
-                .font(.headline)
                 .lineLimit(2)
                 .layoutPriority(1)
-            progressText
+            Spacer(minLength: 4)
+            controls
         }
-    }
-
-    private var progressText: some View {
-        Text(progress.actionTitle)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-count")
+        .padding(.vertical, 2)
     }
 
     private var controls: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 0) {
             Button(action: decrease) {
                 Image(systemName: "minus")
                     .font(.subheadline.weight(.semibold))
-                    .frame(width: 28, height: 28)
-                    .background(.quaternary, in: Circle())
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
             }
-            .frame(width: 44, height: 44)
             .buttonStyle(.borderless)
             .disabled(progress.count == 0)
             .accessibilityLabel("Decrease \(habitName)")
             .accessibilityValue("Current count: \(progress.count)")
             .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-decrease")
 
-            Text("\(progress.count)")
+            Divider()
+                .frame(height: 22)
+
+            Text(countText)
                 .font(.headline.monospacedDigit())
-                .frame(minWidth: 32)
-                .accessibilityHidden(true)
+                .lineLimit(1)
+                .frame(minWidth: progress.settings.dailyTargetCount == nil ? 36 : 58)
+                .accessibilityLabel("Current count")
+                .accessibilityValue("\(progress.count)")
+                .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-count")
+
+            Divider()
+                .frame(height: 22)
 
             Button(action: increase) {
                 Image(systemName: "plus")
                     .font(.subheadline.weight(.semibold))
-                    .frame(width: 28, height: 28)
-                    .background(.tint, in: Circle())
-                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
             }
-            .frame(width: 44, height: 44)
             .buttonStyle(.borderless)
             .accessibilityLabel("Increase \(habitName)")
             .accessibilityValue("Current count: \(progress.count)")
             .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
         }
+        .foregroundStyle(.primary)
+        .background(.quaternary, in: Capsule())
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    private var countText: String {
+        if let target = progress.settings.dailyTargetCount {
+            return "\(progress.count) / \(target)"
+        }
+        return "\(progress.count)"
     }
 }
 
@@ -351,7 +344,6 @@ struct HabitDetailView: View {
                 }
             }
         }
-        .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle(habit.name)
         .toolbar {
             Button("Edit") {

@@ -30,10 +30,17 @@ struct LibraryView: View {
     @Query private var entries: [Entry]
     @Query private var tags: [Tag]
     @State private var isCreatingReview = false
+    @State private var isSearching = false
 
     var body: some View {
         List {
             Section {
+                NavigationLink {
+                    WeeklyReviewHistoryView()
+                } label: {
+                    Label("Weekly Reviews", systemImage: "calendar.badge.clock")
+                }
+                .accessibilityIdentifier("library-weekly-reviews")
                 Button {
                     isCreatingReview = true
                 } label: {
@@ -70,8 +77,22 @@ struct LibraryView: View {
         }
         .navigationTitle("Library")
         .accessibilityIdentifier("library-view")
+        .toolbar {
+            Button {
+                isSearching = true
+            } label: {
+                Label("Search", systemImage: "magnifyingglass")
+            }
+            .accessibilityIdentifier("library-search-button")
+        }
         .sheet(isPresented: $isCreatingReview) {
             ReviewComposerView(mediaStore: mediaStore)
+        }
+        .sheet(isPresented: $isSearching) {
+            GlobalSearchView(
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
         }
     }
 

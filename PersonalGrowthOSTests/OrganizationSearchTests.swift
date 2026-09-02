@@ -208,6 +208,34 @@ final class OrganizationSearchTests: XCTestCase {
         XCTAssertEqual(try search.search("健康").tags.map(\.displayName), ["健康"])
     }
 
+    func testSearchFindsWeeklyReviewChineseTextAndOrdersNewestFirst() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let older = WeeklyReview(
+            weekIdentifier: "2026-W30",
+            periodStart: Date(timeIntervalSince1970: 1_000),
+            periodEnd: Date(timeIntervalSince1970: 2_000),
+            improvementText: "每天早点休息",
+            createdAt: Date(timeIntervalSince1970: 1_000)
+        )
+        let newer = WeeklyReview(
+            weekIdentifier: "2026-W31",
+            periodStart: Date(timeIntervalSince1970: 3_000),
+            periodEnd: Date(timeIntervalSince1970: 4_000),
+            rememberedText: "记住这次散步",
+            focusText: "继续早点休息",
+            createdAt: Date(timeIntervalSince1970: 3_000)
+        )
+        context.insert(older)
+        context.insert(newer)
+        try context.save()
+
+        let results = try LocalSearchService(context: context).search("早点休息")
+
+        XCTAssertEqual(results.weeklyReviews.map(\.id), [newer.id, older.id])
+        XCTAssertEqual(try LocalSearchService(context: context).search("散步").weeklyReviews.map(\.id), [newer.id])
+    }
+
     func testManualDailyAndWeeklyReviewsReuseEntryPeriodStorage() throws {
         let fixture = try OrganizationFixture()
         defer { fixture.remove() }

@@ -3,21 +3,43 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-08-13 |
-| Current branch | `feature/usability-s2-review-loop` |
+| Last verified | 2026-09-02 |
+| Current branch | `fix/build6-owner-feedback-round1` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Current base | `c45c666` (`design: refresh app icon for Suixin Log`) |
-| Governance status | Build 5 Release Archive prepared for Owner validation; Draft PR #2 open |
-| Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, formal App icon refresh, UX fixes and Usability S2 implementation |
-| Final automated gate | Build 5 candidate: PASS — 142 Unit + 4 focused UI + 25 full UI; V1 Build 3 historical gate: 147/147 |
-| Release gate | Owner TestFlight upload and Build 5 physical-device revalidation remain external actions; this separate S2 branch remains unmerged |
-| Next checkpoint | Owner validates the Build 5 Archive in Xcode Organizer; do not upload or merge automatically |
+| Current base | `1a1f6bb` (`docs: record build 5 archive handoff`) |
+| Governance status | Build 6 Owner Feedback Round 1 candidate pushed; [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) open for independent review |
+| Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, and Build 6 Round 1 implementation |
+| Final automated gate | Build 6: PASS — 146 Unit + 5 focused UI + Simulator Debug build |
+| Release gate | Build 6 physical-device validation remains external; do not merge or upload TestFlight automatically |
+| Next checkpoint | Independent review of Draft PR #3, followed by Owner device validation; keep the PR unmerged |
 
 ## Authoritative Product Baseline
 
 The Foundation Documents in `Docs/INDEX.md` remain authoritative. `Docs/V1_IMPLEMENTATION_PLAN.md` defines the completed S1–S10 delivery. The Owner-approved 2026-07-31 Completion Push adds only lightweight manual Weight records to V1; it does not introduce a separate health product.
 
 The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first Owner-supplied iPhone smoke test. It was safely fast-forwarded to `main` before the isolated `feature/v1-completion-push` branch was created. `main` remains unchanged; the V1 distribution branch and the newer S2 branch remain unmerged.
+
+## Build 6 Owner Feedback Round 1
+
+Build 6 starts from the clean Build 5 handoff `1a1f6bb` and keeps SwiftData schema V7 and backup schema v3 unchanged. Implementation commit `48b324c` completes the bounded owner-feedback scope:
+
+- Library now provides Weekly Review history and Search; history and search reopen the exact stored calendar week, and search covers all four WeeklyReview text fields including Chinese content.
+- Weekly Review uses a persisted edit baseline: unchanged Save is disabled, edits show Unsaved changes, successful save briefly shows Saved, and a cancellable task prevents stale feedback from overwriting newer edits.
+- The factual weekly summary uses a compact adaptive Your Week block. The exact adjacent week’s focus appears as Last Week’s Focus in the review and This Week’s Focus on Today.
+- Full-screen Entry images are centered independently of the top-right Close overlay. The repeatable Habit control is one capsule with one count and 44-point decrement/increment targets.
+- The draggable Search/Capture cluster and coordinate logic are removed. A fixed bottom-center Quick Capture action sits between the four native tabs, while Search is available from Library.
+- Settings includes opt-in daily recording and weekly review local reminders. Stable identifiers replace pending requests deterministically; notification permission is requested only from an enable action, and denied authorization exposes an iOS Settings path.
+- New user-visible strings have English and Simplified Chinese values.
+
+Final simulator evidence on iPhone 16, iOS 26.5 (`5F04DE28-8329-4774-9488-076D6DDC5230`):
+
+- Debug build: PASS — `/tmp/PersonalGrowthOS-Build6-FinalBuild2.xcresult`.
+- Focused Unit tests: 39/39 — `/tmp/PersonalGrowthOS-Build6-Focused3.xcresult`.
+- Full Unit suite: 146/146 — `/tmp/PersonalGrowthOS-Build6-FinalUnit.xcresult`.
+- Focused changed-flow UI tests: 5/5 — `/tmp/PersonalGrowthOS-Build6-FinalUI2.xcresult`.
+- JSON parsing, bilingual catalog completeness, conflict-marker scan and `git diff --check`: PASS.
+
+Physical-device validation is still required for portrait/landscape image centering; bottom capture safe-area placement; Habit pill layout and tap comfort; notification permission allow/deny, rescheduling, relaunch and actual delivery; Chinese Weekly Review input/save/fade/relaunch; and focus visibility across a real calendar-week boundary. No Build 6 TestFlight, archive or device PASS is claimed.
 
 ## Post-V1 Usability S2
 
@@ -113,12 +135,12 @@ The existing Archive is a normal Automatic Signing development-signed intermedia
 
 ## Quality State
 
-- Known P0: the Build 4 Weekly Review device failure is included in the Build 5 Archive but remains an Owner revalidation gate.
+- Known P0: none in the Build 6 simulator candidate.
 - Known P1: none.
 - Known new product P2: none.
 - Open non-blocking P2: none from this feedback batch; UX-01 and UX-02 are resolved in `Docs/UX_DEBT.md`.
-- Build 4 Owner-data overlay is claimed as passed; Build 5 physical-device revalidation and App Store Connect/TestFlight upload, iCloud multi-device validation and Build 3 TestFlight distribution remain unclaimed.
+- Build 4 Owner-data overlay remains historically passed; Build 6 physical-device validation and any TestFlight distribution remain unclaimed.
 
 ## Next Action
 
-In Xcode Organizer, select `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`, validate it and let the Owner decide whether to upload it through the correct App Store Connect account for TestFlight. After installation, repeat Weekly Review Chinese input/save/relaunch and the bounded new interaction checks on iPhone. Keep [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2) and this branch unmerged. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.
+Review [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) against `feature/usability-s2-review-loop`. After review, the Owner decides whether to create a TestFlight build and perform the listed physical-device checks. Do not merge or publish automatically. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.

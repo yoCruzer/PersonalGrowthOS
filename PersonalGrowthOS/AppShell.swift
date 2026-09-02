@@ -16,11 +16,6 @@ struct AppShell: View {
     @State private var selectedTab: AppTab = .today
     @State private var isCapturing = false
     @State private var isShowingStorage = false
-    @State private var isSearching = false
-    @AppStorage("floatingControlsHorizontalFraction") private var floatingControlsHorizontalFraction = 1.0
-    @AppStorage("floatingControlsVerticalFraction") private var floatingControlsVerticalFraction = 1.0
-    @State private var floatingControlsDragOrigin: CGPoint?
-    @State private var isKeyboardVisible = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -77,160 +72,27 @@ struct AppShell: View {
                 integrityReport: container.mediaIntegrityReport
             )
         }
-        .sheet(isPresented: $isSearching) {
-            GlobalSearchView(
-                mediaStore: container.mediaStore,
-                thumbnailStore: container.thumbnailStore
-            )
-        }
         .overlay {
             GeometryReader { proxy in
-                let layout = FloatingControlsLayout(
-                    containerSize: proxy.size,
-                    safeAreaInsets: proxy.safeAreaInsets
-                )
-                if !isKeyboardVisible && !isCapturing && !isSearching {
-                    FloatingControlsCluster(
-                        openSearch: { isSearching = true },
-                        openCapture: { isCapturing = true },
-                        dragBegan: {
-                            floatingControlsDragOrigin = layout.point(
-                                horizontalFraction: floatingControlsHorizontalFraction,
-                                verticalFraction: floatingControlsVerticalFraction
-                            )
-                        },
-                        dragChanged: { translation in
-                            guard let origin = floatingControlsDragOrigin else { return }
-                            let point = layout.clampedPoint(
-                                CGPoint(
-                                    x: origin.x + translation.width,
-                                    y: origin.y + translation.height
-                                )
-                            )
-                            let fraction = layout.fraction(for: point)
-                            floatingControlsHorizontalFraction = fraction.horizontal
-                            floatingControlsVerticalFraction = fraction.vertical
-                        },
-                        dragEnded: {
-                            floatingControlsDragOrigin = nil
+                if !isCapturing {
+                    VStack {
+                        Spacer()
+                        Button { isCapturing = true } label: {
+                            Image(systemName: "plus")
+                                .font(.title2.bold())
+                                .frame(width: 52, height: 52)
+                                .background(.tint, in: Circle())
+                                .foregroundStyle(.white)
+                                .shadow(radius: 3, y: 1)
                         }
-                    )
-                    .position(layout.point(
-                        horizontalFraction: floatingControlsHorizontalFraction,
-                        verticalFraction: floatingControlsVerticalFraction
-                    ))
-                    .transition(.opacity)
-                }
-            }
-        }
-        .animation(.easeOut(duration: 0.18), value: isKeyboardVisible)
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-            isKeyboardVisible = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            isKeyboardVisible = false
-        }
-    }
-}
-
-struct FloatingControlsLayout: Equatable {
-    static let clusterSize = CGSize(width: 52, height: 108)
-    private static let edgePadding: CGFloat = 16
-    private static let topReservedHeight: CGFloat = 64
-    private static let bottomReservedHeight: CGFloat = 92
-
-    let containerSize: CGSize
-    let safeAreaInsets: EdgeInsets
-
-    var allowedRect: CGRect {
-        let halfWidth = Self.clusterSize.width / 2
-        let halfHeight = Self.clusterSize.height / 2
-        let minimumX = safeAreaInsets.leading + Self.edgePadding + halfWidth
-        let maximumX = max(minimumX, containerSize.width - safeAreaInsets.trailing - Self.edgePadding - halfWidth)
-        let minimumY = safeAreaInsets.top + Self.topReservedHeight + halfHeight
-        let maximumY = max(minimumY, containerSize.height - safeAreaInsets.bottom - Self.bottomReservedHeight - halfHeight)
-        return CGRect(
-            x: minimumX,
-            y: minimumY,
-            width: maximumX - minimumX,
-            height: maximumY - minimumY
-        )
-    }
-
-    func point(horizontalFraction: Double, verticalFraction: Double) -> CGPoint {
-        let horizontal = min(max(horizontalFraction, 0), 1)
-        let vertical = min(max(verticalFraction, 0), 1)
-        return CGPoint(
-            x: allowedRect.minX + allowedRect.width * horizontal,
-            y: allowedRect.minY + allowedRect.height * vertical
-        )
-    }
-
-    func clampedPoint(_ point: CGPoint) -> CGPoint {
-        CGPoint(
-            x: min(max(point.x, allowedRect.minX), allowedRect.maxX),
-            y: min(max(point.y, allowedRect.minY), allowedRect.maxY)
-        )
-    }
-
-    func fraction(for point: CGPoint) -> (horizontal: Double, vertical: Double) {
-        let clamped = clampedPoint(point)
-        return (
-            horizontal: allowedRect.width == 0 ? 0 : Double((clamped.x - allowedRect.minX) / allowedRect.width),
-            vertical: allowedRect.height == 0 ? 0 : Double((clamped.y - allowedRect.minY) / allowedRect.height)
-        )
-    }
-}
-
-private struct FloatingControlsCluster: View {
-    let openSearch: () -> Void
-    let openCapture: () -> Void
-    let dragBegan: () -> Void
-    let dragChanged: (CGSize) -> Void
-    let dragEnded: () -> Void
-
-    @State private var isDragging = false
-
-    var body: some View {
-        VStack(spacing: 12) {
-            Button(action: openSearch) {
-                Image(systemName: "magnifyingglass")
-                    .font(.headline.bold())
-                    .frame(width: 44, height: 44)
-                    .background(.regularMaterial, in: Circle())
-                    .shadow(radius: 3, y: 1)
-            }
-            .accessibilityLabel("Search")
-            .accessibilityIdentifier("global-search-button")
-
-            Button(action: openCapture) {
-                Image(systemName: "plus")
-                    .font(.title2.bold())
-                    .frame(width: 52, height: 52)
-                    .background(.tint, in: Circle())
-                    .foregroundStyle(.white)
-                    .shadow(radius: 4, y: 2)
-            }
-            .accessibilityLabel("Quick Capture")
-            .accessibilityIdentifier("global-capture-button")
-        }
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.35)
-                .sequenced(before: DragGesture(minimumDistance: 0))
-                .onChanged { value in
-                    guard case .second(true, let drag?) = value else { return }
-                    if !isDragging {
-                        isDragging = true
-                        dragBegan()
+                        .accessibilityLabel("Quick Capture")
+                        .accessibilityIdentifier("global-capture-button")
+                        .padding(.bottom, proxy.safeAreaInsets.bottom + 2)
                     }
-                    dragChanged(drag.translation)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .onEnded { _ in
-                    guard isDragging else { return }
-                    isDragging = false
-                    dragEnded()
-                }
-        )
+            }
+        }
     }
 }
 
@@ -254,6 +116,7 @@ private struct TodayView: View {
     @Query private var habitConfigurations: [HabitConfiguration]
     @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
     private var queriedWeightRecords: [WeightRecord]
+    @Query private var weeklyReviews: [WeeklyReview]
     @State private var coolingDownHabitIDs: Set<UUID> = []
     @State private var recentCheckIn: RecentHabitCheckIn?
     @State private var transientMessage: String?
@@ -271,6 +134,18 @@ private struct TodayView: View {
         WeightRecordOrdering.newestFirst(queriedWeightRecords)
     }
 
+    private var thisWeeksFocus: String? {
+        guard let period = try? WeeklyReviewPeriod(containing: Date()),
+              let previousPeriod = try? period.previous(),
+              let focus = weeklyReviews.first(where: {
+                $0.weekIdentifier == previousPeriod.identifier
+              })?.focusText?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !focus.isEmpty else {
+            return nil
+        }
+        return focus
+    }
+
     var body: some View {
         List {
             Section {
@@ -282,6 +157,12 @@ private struct TodayView: View {
                 .accessibilityIdentifier("quick-capture-button")
             } footer: {
                 Text("Save a thought or photo now. Organize it later if you want.")
+            }
+            if let thisWeeksFocus {
+                Section("This Week’s Focus") {
+                    Label(thisWeeksFocus, systemImage: "scope")
+                        .accessibilityIdentifier("today-weekly-focus")
+                }
             }
             if activeHabits.isEmpty && activeGoals.isEmpty {
                 Section {
@@ -374,7 +255,6 @@ private struct TodayView: View {
             }
             weightAndReviewSections
         }
-        .contentMargins(.bottom, 72, for: .scrollContent)
         .navigationTitle("Today")
         .toolbar {
             Button(action: openStorage) {
@@ -741,6 +621,16 @@ private struct MediaStorageView: View {
     @State private var transferMessage: String?
     @State private var transferTask: Task<Void, Never>?
     @State private var isTransferring = false
+    @AppStorage("dailyRecordingReminderEnabled") private var dailyReminderEnabled = false
+    @AppStorage("dailyRecordingReminderMinutes") private var dailyReminderMinutes = 20 * 60
+    @AppStorage("weeklyReviewReminderEnabled") private var weeklyReminderEnabled = false
+    @AppStorage("weeklyReviewReminderWeekday") private var weeklyReminderWeekday = 1
+    @AppStorage("weeklyReviewReminderMinutes") private var weeklyReminderMinutes = 19 * 60
+    @State private var notificationPermissionDenied = false
+    @State private var reminderMessage: String?
+    @State private var reminderAlertOffersSettings = false
+    @State private var dailyReminderTask: Task<Void, Never>?
+    @State private var weeklyReminderTask: Task<Void, Never>?
 
     var body: some View {
         NavigationStack {
@@ -777,6 +667,50 @@ private struct MediaStorageView: View {
                     } footer: {
                         Text("The app preserved recoverable files instead of deleting them. Keep an app backup before troubleshooting.")
                     }
+                }
+                Section {
+                    Toggle("Daily Recording Reminder", isOn: $dailyReminderEnabled)
+                        .accessibilityIdentifier("daily-reminder-toggle")
+                    if dailyReminderEnabled {
+                        DatePicker(
+                            "Time",
+                            selection: dailyReminderTime,
+                            displayedComponents: .hourAndMinute
+                        )
+                        .accessibilityIdentifier("daily-reminder-time")
+                    }
+
+                    Toggle("Weekly Review Reminder", isOn: $weeklyReminderEnabled)
+                        .accessibilityIdentifier("weekly-reminder-toggle")
+                    if weeklyReminderEnabled {
+                        Picker("Weekday", selection: $weeklyReminderWeekday) {
+                            ForEach(Array(Calendar.current.weekdaySymbols.enumerated()), id: \.offset) {
+                                index, weekday in
+                                Text(verbatim: weekday).tag(index + 1)
+                            }
+                        }
+                        .accessibilityIdentifier("weekly-reminder-weekday")
+                        DatePicker(
+                            "Time",
+                            selection: weeklyReminderTime,
+                            displayedComponents: .hourAndMinute
+                        )
+                        .accessibilityIdentifier("weekly-reminder-time")
+                    }
+
+                    if notificationPermissionDenied {
+                        Label(
+                            "Notifications are disabled in iOS Settings.",
+                            systemImage: "exclamationmark.triangle"
+                        )
+                        .foregroundStyle(.secondary)
+                        Button("Open iOS Settings", action: openSystemSettings)
+                            .accessibilityIdentifier("reminders-open-settings")
+                    }
+                } header: {
+                    Text("Reminders")
+                } footer: {
+                    Text("Reminders stay on this device and are scheduled only after you turn them on.")
                 }
                 Section {
                     Button {
@@ -833,6 +767,26 @@ private struct MediaStorageView: View {
             .interactiveDismissDisabled(isTransferring)
             .task {
                 byteCount = try? mediaStore.originalsByteCount()
+                notificationPermissionDenied = await LocalReminderScheduler()
+                    .authorizationIsDenied()
+            }
+            .onChange(of: dailyReminderEnabled) { _, enabled in
+                updateDailyReminder(requestPermission: enabled)
+            }
+            .onChange(of: dailyReminderMinutes) { _, _ in
+                guard dailyReminderEnabled else { return }
+                updateDailyReminder(requestPermission: false)
+            }
+            .onChange(of: weeklyReminderEnabled) { _, enabled in
+                updateWeeklyReminder(requestPermission: enabled)
+            }
+            .onChange(of: weeklyReminderWeekday) { _, _ in
+                guard weeklyReminderEnabled else { return }
+                updateWeeklyReminder(requestPermission: false)
+            }
+            .onChange(of: weeklyReminderMinutes) { _, _ in
+                guard weeklyReminderEnabled else { return }
+                updateWeeklyReminder(requestPermission: false)
             }
             .sheet(isPresented: $isCapturing) {
                 QuickCaptureView(mediaStore: mediaStore) {
@@ -879,11 +833,119 @@ private struct MediaStorageView: View {
             } message: {
                 Text(transferMessage ?? "")
             }
+            .alert("Reminders", isPresented: Binding(
+                get: { reminderMessage != nil },
+                set: { if !$0 { reminderMessage = nil } }
+            )) {
+                if reminderAlertOffersSettings {
+                    Button("Open iOS Settings", action: openSystemSettings)
+                }
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(reminderMessage ?? "")
+            }
             .onDisappear {
                 transferTask?.cancel()
                 cleanupExport()
             }
         }
+    }
+
+    private var dailyReminderTime: Binding<Date> {
+        reminderTimeBinding(minutes: $dailyReminderMinutes)
+    }
+
+    private var weeklyReminderTime: Binding<Date> {
+        reminderTimeBinding(minutes: $weeklyReminderMinutes)
+    }
+
+    private func reminderTimeBinding(minutes: Binding<Int>) -> Binding<Date> {
+        Binding(
+            get: {
+                Calendar.current.date(
+                    bySettingHour: minutes.wrappedValue / 60,
+                    minute: minutes.wrappedValue % 60,
+                    second: 0,
+                    of: Date()
+                ) ?? Date()
+            },
+            set: { date in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+                minutes.wrappedValue = (components.hour ?? 0) * 60 + (components.minute ?? 0)
+            }
+        )
+    }
+
+    private func updateDailyReminder(requestPermission: Bool) {
+        dailyReminderTask?.cancel()
+        dailyReminderTask = Task {
+            do {
+                let result = try await LocalReminderScheduler().updateDaily(
+                    enabled: dailyReminderEnabled,
+                    minutesAfterMidnight: dailyReminderMinutes,
+                    requestPermission: requestPermission
+                )
+                handleReminderResult(result) { dailyReminderEnabled = false }
+            } catch is CancellationError {
+                return
+            } catch {
+                dailyReminderEnabled = false
+                showReminderError()
+            }
+        }
+    }
+
+    private func updateWeeklyReminder(requestPermission: Bool) {
+        weeklyReminderTask?.cancel()
+        weeklyReminderTask = Task {
+            do {
+                let result = try await LocalReminderScheduler().updateWeekly(
+                    enabled: weeklyReminderEnabled,
+                    weekday: weeklyReminderWeekday,
+                    minutesAfterMidnight: weeklyReminderMinutes,
+                    requestPermission: requestPermission
+                )
+                handleReminderResult(result) { weeklyReminderEnabled = false }
+            } catch is CancellationError {
+                return
+            } catch {
+                weeklyReminderEnabled = false
+                showReminderError()
+            }
+        }
+    }
+
+    private func handleReminderResult(
+        _ result: ReminderUpdateResult,
+        disable: () -> Void
+    ) {
+        switch result {
+        case .scheduled:
+            notificationPermissionDenied = false
+        case .removed:
+            break
+        case .permissionDenied:
+            disable()
+            notificationPermissionDenied = true
+            reminderAlertOffersSettings = true
+            reminderMessage = String(
+                localized: "Notifications are disabled. You can enable them in iOS Settings."
+            )
+        case .permissionRequired:
+            disable()
+            reminderAlertOffersSettings = false
+            reminderMessage = String(localized: "Turn the reminder on again to allow notifications.")
+        }
+    }
+
+    private func showReminderError() {
+        reminderAlertOffersSettings = false
+        reminderMessage = String(localized: "The reminder could not be updated. Please try again.")
+    }
+
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
     }
 
     private func startExport() {
@@ -1069,13 +1131,15 @@ private struct EntryImagePreview: View {
     @State private var image: UIImage?
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             Color.black.ignoresSafeArea()
             Image(uiImage: image ?? fallbackImage)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .padding()
                 .accessibilityLabel("Large photo")
+        }
+        .overlay(alignment: .topTrailing) {
             Button("Close", systemImage: "xmark.circle.fill") { dismiss() }
                 .font(.title2)
                 .foregroundStyle(.white)

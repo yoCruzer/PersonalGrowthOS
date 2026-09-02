@@ -49,6 +49,47 @@ final class WeeklyReviewFoundationTests: XCTestCase {
         XCTAssertTrue(period.contains(date))
     }
 
+    func testCanonicalIdentifierReopensExactReviewAcrossTimeZones() throws {
+        let shanghai = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let losAngeles = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let shanghaiPeriod = try WeeklyReviewPeriod(
+            identifier: "2026-W35",
+            timeZone: shanghai
+        )
+        let losAngelesPeriod = try WeeklyReviewPeriod(
+            identifier: "2026-W35",
+            timeZone: losAngeles
+        )
+
+        XCTAssertEqual(shanghaiPeriod.identifier, "2026-W35")
+        XCTAssertEqual(losAngelesPeriod.identifier, "2026-W35")
+
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let review = WeeklyReview(
+            weekIdentifier: shanghaiPeriod.identifier,
+            periodStart: shanghaiPeriod.start,
+            periodEnd: shanghaiPeriod.end,
+            createdAt: shanghaiPeriod.start
+        )
+        container.mainContext.insert(review)
+        try container.mainContext.save()
+
+        let reopened = try XCTUnwrap(
+            WeeklyReviewService(
+                context: container.mainContext,
+                timeZone: losAngeles
+            ).review(identifier: losAngelesPeriod.identifier)
+        )
+        XCTAssertEqual(reopened.id, review.id)
+    }
+
+    func testCanonicalIdentifierParsingRejectsNonCanonicalOrInvalidWeeks() {
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-W5"))
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-W00"))
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-W54"))
+        XCTAssertThrowsError(try WeeklyReviewPeriod(identifier: "2026-X35"))
+    }
+
     func testWeeklyReviewDeduplicatesWeekAndPersistsDraftAcrossReopen() throws {
         let fixture = try WeeklyReviewFixture()
         defer { fixture.remove() }
@@ -97,6 +138,57 @@ final class WeeklyReviewFoundationTests: XCTestCase {
         XCTAssertEqual(review.focusText, "One focused hour")
         XCTAssertTrue(review.isCompleted)
         XCTAssertGreaterThan(review.updatedAt, review.createdAt)
+    }
+
+    func testHistoryIsNewestFirstAndPreviousReviewUsesExactAdjacentWeek() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .gmt
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        let currentDate = try XCTUnwrap(calendar.date(from: DateComponents(
+            year: 2026,
+            month: 8,
+            day: 12,
+            hour: 12
+        )))
+        let previousDate = try XCTUnwrap(calendar.date(byAdding: .day, value: -7, to: currentDate))
+        let olderDate = try XCTUnwrap(calendar.date(byAdding: .day, value: -14, to: currentDate))
+        let service = WeeklyReviewService(context: container.mainContext, timeZone: timeZone)
+        let older = try XCTUnwrap(service.review(containing: olderDate))
+        older.focusText = "Not adjacent"
+        let previous = try XCTUnwrap(service.review(containing: previousDate))
+        previous.focusText = "Ship one calm improvement"
+        let current = try XCTUnwrap(service.review(containing: currentDate))
+        try container.mainContext.save()
+
+        XCTAssertEqual(try service.history().map(\.id), [current.id, previous.id, older.id])
+        XCTAssertEqual(
+            try service.previousReview(containing: currentDate)?.id,
+            previous.id
+        )
+
+        container.mainContext.delete(previous)
+        try container.mainContext.save()
+        XCTAssertNil(try service.previousReview(containing: currentDate))
+    }
+
+    func testEditStateTracksPersistedBaselineAndNewSave() {
+        let baseline = WeeklyReviewDraft(
+            rememberedText: "Original",
+            improvementText: "",
+            nextStepText: "",
+            focusText: "Focus",
+            isCompleted: false
+        )
+        var state = WeeklyReviewEditState(baseline: baseline)
+        var edited = baseline
+
+        XCTAssertFalse(state.isDirty(edited))
+        edited.isCompleted = true
+        XCTAssertTrue(state.isDirty(edited))
+        state.markSaved(edited)
+        XCTAssertFalse(state.isDirty(edited))
+        edited.focusText = "New focus"
+        XCTAssertTrue(state.isDirty(edited))
     }
 
     func testV6StoreMigratesToV7WithoutChangingExistingData() throws {
