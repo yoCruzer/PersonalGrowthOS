@@ -2,47 +2,44 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | Post-V1 Usability S2 — Build 5 Owner device-validation Archive ready |
-| Status | BUILD 5 ARCHIVE READY — DRAFT PR #2 OPEN |
-| Execution branch | `feature/usability-s2-review-loop` |
-| Base | `c45c666` (`design: refresh app icon for Suixin Log`) |
-| Prior committed UX work | `53f2326` add-action consistency; `06cc913` reversible repeatable Habit check-ins |
-| Automated gate | PASS — 142 Unit tests, 4 focused UI smokes, 25 full UI tests and Simulator Debug build |
-| External V1 release status | Separate Owner-only Build 3 archive/export/upload work remains on `feature/v1-completion-push` |
-
-## Objective
-
-Prepare the independently reviewed Build 5 candidate as a local Release Archive for Owner TestFlight and physical-device validation, without uploading, publishing, merging or widening product scope.
-
-The user starts a weekly review explicitly from Today. The screen shows only local facts from the natural current week (Entries, entry days/photos, completed HabitLogs, a representative Habit, Weight change, Tags and recent Entries). The user may write what to remember, what to improve, a next step and one focus, then save and later reopen the same week’s review. Nothing is generated automatically.
+| Current checkpoint | Build 6 Owner Feedback Round 1 — implementation candidate |
+| Status | LOCAL IMPLEMENTATION + FINAL SIMULATOR GATE PASS |
+| Execution branch | `fix/build6-owner-feedback-round1` |
+| Base | `1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed` |
+| Implementation tip | `48b324c` (`fix: stabilize empty weekly summary layout`) |
+| Automated gate | PASS — 146 Unit tests, 5 focused changed-flow UI tests and Simulator Debug build |
+| External status | Push, Draft PR, independent review and physical-device validation remain |
 
 ## Completed Boundary
 
-- Schema V7 adds `WeeklyReview` with one stable natural-week identifier; V6 stores migrate without changing existing Entry, Habit or Weight data.
-- Weekly Review identity uses centralized ISO-style Gregorian Monday-week rules with local time-zone semantics, independent of Locale, Region and non-Gregorian system calendar selection.
-- The local summary has empty-state semantics and excludes Review Entries from Entry activity totals.
-- Weekly Review is available from Today and remains voluntary; opening the screen creates no record.
-- A record is created only from the explicit Start action; optional text is trimmed and restart persistence is covered.
-- Full backups use package schema v3 and preserve WeeklyReview identity and fields. Import remains compatible with schema v1/v2 packages that contain no WeeklyReview data.
-- Once-per-day Habit Undo remains unchanged. Multiple-per-day detail and Insight check-ins rely solely on immediate +/- counter reversal; decrement retains linked Entry content and its Habit relation.
-- English and Simplified Chinese strings are supplied for the new flow.
-- Targeted validation passed: Habit + Weekly Review Unit 37/37, schema-v3/Weekly Review import-export 3/3 and focused mixed-path UI smoke 1/1.
-- Full Unit validation passed: 141/141.
-- Version 1.0 (Build 4) Release Archive was prepared from `bacb504afb30c582c869ae68f8558831c5067437` at `/tmp/PersonalGrowthOS-S2-Build4.xcarchive`; local Archive metadata and formal AppIcon inspection passed, then the Owner distributed it through TestFlight and performed physical iPhone validation.
-- Build 4 Owner iPhone validation passed V5→V6→V7 overlay migration, retention/relaunch of existing data, Weight persistence, repeatable-Habit `+++--`, Insight→`+`→`-` linked-Entry retention, explicit-only Weekly Review creation, and V7 export.
-- Build 4 failed the Weekly Review save/Chinese keyboard closure; the current candidate adds explicit focus/keyboard dismissal, visible save success/failure feedback, and a stable save refetch. Build 5 Owner revalidation remains required.
-- A final independent-review closure clears stale Saved feedback when the completion Toggle changes or a new save starts; focused UI coverage verifies save → Toggle change → feedback clears → save → relaunch completion persistence.
-- Version 1.0 (Build 5) Release Archive was created from `6027d758c5d18183a3aacae75ef8e1b3f8dc6d0b` at `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`. Inspection passed for the Release arm64 app, `com.yocruzer.PersonalGrowthOS`, display name `随心log`, Team `83SKX2PM7B`, AppIcon, encryption declaration and deep strict codesign verification.
-- The Archive has not been uploaded to App Store Connect/TestFlight; Build 5 Owner physical-device revalidation has not occurred, and Draft PR #2 remains open.
+- Weekly Review history is available from Library, sorted newest first, and reopens an exact stored week.
+- Local Search covers WeeklyReview reflection, improvement, next-step and focus text, including Chinese content, and navigates to the matching week.
+- Weekly Review Save is baseline-driven: clean Save is disabled, edits show Unsaved changes, success briefly shows Saved, and stale toast tasks are cancelled.
+- Full-screen Entry images center in the viewport while Close remains in a separate top-right overlay.
+- Repeatable Habits use one compact capsule with one count, optional target, 44-point +/- targets and unchanged persistence semantics.
+- The draggable Search/Capture overlay and coordinate storage path are removed. Quick Capture is a fixed bottom-center action over the native four-tab shell; Search is in Library.
+- Settings includes explicit opt-in daily and weekly local reminders with time/weekday settings, stable request identifiers, permission-on-enable behavior, deterministic removal/replacement and an iOS Settings path after denial.
+- The exact prior calendar week’s focus appears in the current Weekly Review and on Today. The factual weekly summary is a compact Your Week block.
+- English and Simplified Chinese catalog values are present for new UI.
+- SwiftData remains V7, backup remains v3, and existing Build 5 WeeklyReview records remain compatible.
 
-## Explicit Non-Goals
+## Validation Evidence
 
-- No automatic weekly/monthly/yearly report or prompt.
-- No AI summary, mood analysis, advanced statistics, templates, reminders or generated conclusions.
-- No new task, Goal, HealthKit, diet, medical or health-advice behavior.
-- No change to the existing lightweight manual `EntryKind.review` model.
-- No App Store export/upload, merge to `main`, signing/account configuration change, or Build 5 physical-device claim in this batch.
+- Simulator Debug build: PASS — `/tmp/PersonalGrowthOS-Build6-FinalBuild2.xcresult`.
+- Focused Unit: 39/39 PASS — `/tmp/PersonalGrowthOS-Build6-Focused3.xcresult`.
+- Full Unit: 146/146 PASS — `/tmp/PersonalGrowthOS-Build6-FinalUnit.xcresult`.
+- Focused UI: 5/5 PASS — `/tmp/PersonalGrowthOS-Build6-FinalUI2.xcresult`.
+- Catalog JSON and bilingual completeness, conflict-marker scan and `git diff --check`: PASS.
+
+## Remaining Owner Device Validation
+
+- Portrait and landscape full-screen image centering and Close reachability.
+- Bottom-center Quick Capture placement, safe-area behavior and non-overlap on the physical device.
+- Repeatable Habit capsule layout, long names, target/no-target display and tap comfort.
+- Daily/weekly reminder permission allow/deny, time/weekday updates, off cancellation, relaunch consistency and actual delivery.
+- Chinese Weekly Review input, dirty state, saved fade and relaunch persistence.
+- Previous-week focus visibility across an actual calendar-week boundary.
 
 ## Next Action
 
-In Xcode Organizer, select `/tmp/PersonalGrowthOS-S2-Build5.xcarchive`, validate it and let the Owner decide whether to distribute it through the correct App Store Connect account for TestFlight. After installation, revalidate Weekly Review Chinese input/save/relaunch, floating-control interaction, Habit compact layout and Entry media preview. Keep [Draft PR #2](https://github.com/yoCruzer/PersonalGrowthOS/pull/2), this branch and the separate Build 3 distribution handoff unmerged.
+Push this branch to `origin`, create a Draft PR with base `feature/usability-s2-review-loop`, and hand the pushed commit/PR to ChatGPT for independent review. Do not merge and do not publish TestFlight in this goal.
