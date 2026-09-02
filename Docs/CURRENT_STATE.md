@@ -7,11 +7,11 @@
 | Current branch | `fix/build6-owner-feedback-round1` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `1a1f6bb` (`docs: record build 5 archive handoff`) |
-| Governance status | Build 6 Owner Feedback Round 1 implementation candidate ready for independent Draft PR review |
+| Governance status | Build 6 Owner Feedback Round 1 candidate pushed; [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) open for independent review |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, and Build 6 Round 1 implementation |
 | Final automated gate | Build 6: PASS — 146 Unit + 5 focused UI + Simulator Debug build |
 | Release gate | Build 6 physical-device validation remains external; do not merge or upload TestFlight automatically |
-| Next checkpoint | Push `fix/build6-owner-feedback-round1`, create a Draft PR to `feature/usability-s2-review-loop`, then obtain independent review and Owner device validation |
+| Next checkpoint | Independent review of Draft PR #3, followed by Owner device validation; keep the PR unmerged |
 
 ## Authoritative Product Baseline
 
@@ -143,4 +143,4 @@ The existing Archive is a normal Automatic Signing development-signed intermedia
 
 ## Next Action
 
-Push the Build 6 branch and open its Draft PR against `feature/usability-s2-review-loop` for independent review. After review, the Owner decides whether to create a TestFlight build and perform the listed physical-device checks. Do not merge or publish automatically. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.
+Review [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) against `feature/usability-s2-review-loop`. After review, the Owner decides whether to create a TestFlight build and perform the listed physical-device checks. Do not merge or publish automatically. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.

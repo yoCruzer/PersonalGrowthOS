@@ -3,12 +3,12 @@
 | Item | Value |
 | --- | --- |
 | Current checkpoint | Build 6 Owner Feedback Round 1 — implementation candidate |
-| Status | LOCAL IMPLEMENTATION + FINAL SIMULATOR GATE PASS |
+| Status | PUSHED — DRAFT PR #3 OPEN — FINAL SIMULATOR GATE PASS |
 | Execution branch | `fix/build6-owner-feedback-round1` |
 | Base | `1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed` |
 | Implementation tip | `48b324c` (`fix: stabilize empty weekly summary layout`) |
 | Automated gate | PASS — 146 Unit tests, 5 focused changed-flow UI tests and Simulator Debug build |
-| External status | Push, Draft PR, independent review and physical-device validation remain |
+| External status | [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) open; independent review and physical-device validation remain |
 
 ## Completed Boundary
 
@@ -42,4 +42,4 @@
 
 ## Next Action
 
-Push this branch to `origin`, create a Draft PR with base `feature/usability-s2-review-loop`, and hand the pushed commit/PR to ChatGPT for independent review. Do not merge and do not publish TestFlight in this goal.
+Hand [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) to ChatGPT for independent review. Do not merge and do not publish TestFlight in this goal.
