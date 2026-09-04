@@ -3,12 +3,12 @@
 | Item | Value |
 | --- | --- |
 | Current checkpoint | Build 7 Owner Feedback Round 2 — implementation candidate |
-| Status | P1 REVIEW CLOSURE COMMITTED — PUSH PENDING |
+| Status | P1 REVIEW CLOSURE PUSHED — DRAFT PR #4 OPEN |
 | Execution branch | `fix/build7-owner-feedback-round2` |
 | Base | `c15513f2389d01f28c12ba351933580b37afe4b7` |
 | Implementation tip | `839ce71` (`fix: preserve legacy habit targets in imports`) |
 | Automated gate | PASS — 5 focused Import/Export and Habit tests |
-| External status | [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) is open against `fix/build6-owner-feedback-round1`; this closure must be pushed before independent review resumes |
+| External status | [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) is open against `fix/build6-owner-feedback-round1`; independent review and physical-device validation remain |
 
 ## Completed Boundary
 
@@ -40,4 +40,4 @@
 
 ## Next Action
 
-Push this P1 closure to [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4), then resume independent review. Do not merge, archive or publish TestFlight.
+Hand [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) back to ChatGPT for independent review. Do not merge, archive or publish TestFlight.
