@@ -7,11 +7,11 @@
 | Current branch | `fix/build7-owner-feedback-round2` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `c15513f2389d01f28c12ba351933580b37afe4b7` (Build 6 reviewed head) |
-| Governance status | Build 7 Owner Feedback Round 2 candidate pushed; [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) open for independent review |
+| Governance status | Build 7 P1 import-compatibility review closure committed locally; [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) awaits push/update |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, Build 6 Round 1, and Build 7 Round 2 implementation |
-| Final automated gate | Build 7: PASS — 29 focused Habit Unit + 3 focused UI + Simulator Debug build |
+| Final automated gate | Build 7 P1 closure: PASS — 5 focused Import/Export and Habit tests |
 | Release gate | Build 7 physical-device validation remains external; do not merge, archive or upload TestFlight automatically |
-| Next checkpoint | Independent review of Draft PR #4, followed by Owner physical-device validation; keep the PR unmerged |
+| Next checkpoint | Push the Build 7 P1 closure to Draft PR #4, then resume independent review; keep the PR unmerged |
 
 ## Authoritative Product Baseline
 
@@ -61,6 +61,12 @@ Focused simulator evidence on iPhone 16, iOS 26.5 (`5F04DE28-8329-4774-9488-076D
 - `git diff --check` and String Catalog JSON parsing: PASS.
 
 Owner physical-device validation is still required for native five-tab keyboard behavior, Record draft preservation, light/dark counter appearance and touch separation, Chinese Weekly Review prompt/input hierarchy, daily-target editing, and archive/restore navigation. No Archive, TestFlight upload or device PASS is claimed.
+
+### P1 Independent Review Closure
+
+Commit `839ce71` separates backup restore validation from the stricter Habit create/update rule. v3 import now preserves an explicit legacy multiple-per-day configuration with a nil target, still rejects explicit zero or negative targets, and normalizes once-per-day targets to nil. It does not migrate data, alter schema V7 or change backup schema v3. The Weekly Review answer fields also expose their already-visible persistent prompts as accessibility labels.
+
+Focused simulator evidence: 5/5 PASS — the explicit legacy-configuration export/import round trip, non-positive target rejection, and the directly related Habit rule tests — `/tmp/PersonalGrowthOS-Build7-PR4-ImportCompatibility.xcresult`. `git diff --check` passed. No full suite, UI suite, Archive or TestFlight action was run for this review closure.
 
 ## Post-V1 Usability S2
 
