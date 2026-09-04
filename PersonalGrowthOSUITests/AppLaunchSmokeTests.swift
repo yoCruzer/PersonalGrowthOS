@@ -8,7 +8,7 @@ final class AppLaunchSmokeTests: XCTestCase {
 
         XCTAssertTrue(app.descendants(matching: .any)["app-shell"].waitForExistence(timeout: 5))
         try performSemanticAccessibilityAudit(app)
-        for tab in ["Timeline", "Growth", "Library"] {
+        for tab in ["Timeline", "Record", "Growth", "Library"] {
             app.tabBars.buttons[tab].tap()
             try performSemanticAccessibilityAudit(app)
         }
@@ -107,14 +107,14 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["No Entries Yet"].waitForExistence(timeout: 5))
     }
 
-    func testGlobalCaptureIsAvailableFromTimeline() {
+    func testRecordTabIsTheNativeCaptureDestination() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        app.tabBars.buttons["Timeline"].tap()
-        XCTAssertFalse(app.tabBars.buttons["Quick Capture"].exists)
-        app.buttons["global-capture-button"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Record"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["global-capture-button"].exists)
+        app.tabBars.buttons["Record"].tap()
 
         XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
     }
@@ -523,7 +523,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         ]
         app.launch()
 
-        for tab in ["今天", "时间线", "成长", "资料库"] {
+        for tab in ["今天", "时间线", "记录", "成长", "资料库"] {
             XCTAssertTrue(app.tabBars.buttons[tab].waitForExistence(timeout: 5))
         }
         XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("快速记录"))
@@ -538,7 +538,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         ]
         app.launch()
 
-        for tab in ["Today", "Timeline", "Growth", "Library"] {
+        for tab in ["Today", "Timeline", "Record", "Growth", "Library"] {
             XCTAssertTrue(app.tabBars.buttons[tab].waitForExistence(timeout: 5))
         }
         XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("Quick Capture"))
@@ -652,6 +652,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(remembered.waitForExistence(timeout: 5))
         remembered.tap()
         remembered.typeText("A useful moment")
+        XCTAssertTrue(app.staticTexts["What do you want to remember?"].exists)
 
         let nextStep = app.descendants(matching: .any)["weekly-review-next-step"]
         XCTAssertTrue(nextStep.waitForExistence(timeout: 5))
@@ -690,7 +691,10 @@ final class AppLaunchSmokeTests: XCTestCase {
             app.descendants(matching: .any)["weekly-review-remembered"].value as? String,
             "A useful moment"
         )
-        XCTAssertEqual(app.switches["weekly-review-completed"].value as? String, "1")
+        weeklyReview.swipeUp()
+        let restoredCompleted = app.switches["weekly-review-completed"]
+        XCTAssertTrue(restoredCompleted.waitForExistence(timeout: 5))
+        XCTAssertEqual(restoredCompleted.value as? String, "1")
     }
 
     func testLibraryHistoryAndSearchReopenTheSavedWeeklyReview() {

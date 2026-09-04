@@ -366,6 +366,14 @@ enum TransferValidator {
                   habit.updatedAt >= habit.createdAt else {
                 throw TransferPackageError.invalidObject("habit")
             }
+            if let rawMode = habit.recordingMode {
+                guard let mode = HabitRecordingMode(rawValue: rawMode) else {
+                    throw TransferPackageError.invalidObject("habit")
+                }
+                _ = try validatedImportedDailyTarget(habit.dailyTargetCount, mode: mode)
+            } else if habit.dailyTargetCount != nil {
+                throw TransferPackageError.invalidObject("habit")
+            }
         }
         for goal in data.goals {
             guard GoalKind(rawValue: goal.kind) != nil,
@@ -436,6 +444,16 @@ enum TransferValidator {
 
     private static func unique(_ ids: [UUID], type: String) throws {
         guard Set(ids).count == ids.count else { throw TransferPackageError.duplicateID(type) }
+    }
+
+    static func validatedImportedDailyTarget(
+        _ value: Int?,
+        mode: HabitRecordingMode
+    ) throws -> Int? {
+        guard value.map({ $0 > 0 }) ?? true else {
+            throw TransferPackageError.invalidObject("habit")
+        }
+        return mode == .multiplePerDay ? value : nil
     }
 
     private static func endpointExists(

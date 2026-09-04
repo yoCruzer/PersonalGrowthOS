@@ -2,44 +2,42 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | Build 6 Owner Feedback Round 1 — implementation candidate |
-| Status | PUSHED — DRAFT PR #3 OPEN — FINAL SIMULATOR GATE PASS |
-| Execution branch | `fix/build6-owner-feedback-round1` |
-| Base | `1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed` |
-| Implementation tip | `48b324c` (`fix: stabilize empty weekly summary layout`) |
-| Automated gate | PASS — 146 Unit tests, 5 focused changed-flow UI tests and Simulator Debug build |
-| External status | [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) open; independent review and physical-device validation remain |
+| Current checkpoint | Build 7 Owner Feedback Round 2 — implementation candidate |
+| Status | P1 REVIEW CLOSURE PUSHED — DRAFT PR #4 OPEN |
+| Execution branch | `fix/build7-owner-feedback-round2` |
+| Base | `c15513f2389d01f28c12ba351933580b37afe4b7` |
+| Implementation tip | `839ce71` (`fix: preserve legacy habit targets in imports`) |
+| Automated gate | PASS — 5 focused Import/Export and Habit tests |
+| External status | [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) is open against `fix/build6-owner-feedback-round1`; independent review and physical-device validation remain |
 
 ## Completed Boundary
 
-- Weekly Review history is available from Library, sorted newest first, and reopens an exact stored week.
-- Local Search covers WeeklyReview reflection, improvement, next-step and focus text, including Chinese content, and navigates to the matching week.
-- Weekly Review Save is baseline-driven: clean Save is disabled, edits show Unsaved changes, success briefly shows Saved, and stale toast tasks are cancelled.
-- Full-screen Entry images center in the viewport while Close remains in a separate top-right overlay.
-- Repeatable Habits use one compact capsule with one count, optional target, 44-point +/- targets and unchanged persistence semantics.
-- The draggable Search/Capture overlay and coordinate storage path are removed. Quick Capture is a fixed bottom-center action over the native four-tab shell; Search is in Library.
-- Settings includes explicit opt-in daily and weekly local reminders with time/weekday settings, stable request identifiers, permission-on-enable behavior, deterministic removal/replacement and an iOS Settings path after denial.
-- The exact prior calendar week’s focus appears in the current Weekly Review and on Today. The factual weekly summary is a compact Your Week block.
-- English and Simplified Chinese catalog values are present for new UI.
-- SwiftData remains V7, backup remains v3, and existing Build 5 WeeklyReview records remain compatible.
+- Weekly Review prompts remain visible with both empty and saved answers, while existing baseline-driven Save, Search and canonical-week behavior remain unchanged.
+- Record is the third native tab. The AppShell floating capture overlay is removed; Record preserves an unsaved tab-switch draft, resets after save and routes the saved Entry to Timeline.
+- Today repeatable Habit controls have a lighter 34-point visual capsule inside separate 44-point +/- targets, with uncapped `current / target` display.
+- Multiple-per-day Habit create/update validation requires a positive Daily Target in the shared domain/service path. The editor suggests 2 for a new multiple mode; legacy targetless data remains readable and usable until edited.
+- Archived Habits are excluded from the default main list, have a counted Archived destination and preserve existing Restore/detail/history behavior.
+- SwiftData remains V7, backup remains v3, marketing version remains 1.0 and Debug/Release build number is 7.
+- Backup import now preserves an explicit legacy multiple-per-day nil target while continuing to reject a provided non-positive target; Weekly Review persistent prompts are also exposed as matching accessibility labels.
 
 ## Validation Evidence
 
-- Simulator Debug build: PASS — `/tmp/PersonalGrowthOS-Build6-FinalBuild2.xcresult`.
-- Focused Unit: 39/39 PASS — `/tmp/PersonalGrowthOS-Build6-Focused3.xcresult`.
-- Full Unit: 146/146 PASS — `/tmp/PersonalGrowthOS-Build6-FinalUnit.xcresult`.
-- Focused UI: 5/5 PASS — `/tmp/PersonalGrowthOS-Build6-FinalUI2.xcresult`.
-- Catalog JSON and bilingual completeness, conflict-marker scan and `git diff --check`: PASS.
+- Habit Unit: 29/29 PASS — `/tmp/PersonalGrowthOS-Build7-Habit2.xcresult`.
+- Record tab and repeatable-counter UI smoke: 2/2 PASS — `/tmp/PersonalGrowthOS-Build7-UI.xcresult`.
+- Weekly Review persistent-prompt/save/relaunch UI smoke: 1/1 PASS — `/tmp/PersonalGrowthOS-Build7-WeeklyUI2.xcresult`.
+- Final Simulator Debug build: PASS.
+- `git diff --check` and String Catalog JSON parse: PASS.
+- P1 import-compatibility closure: 5/5 focused Import/Export and Habit tests PASS — `/tmp/PersonalGrowthOS-Build7-PR4-ImportCompatibility.xcresult`.
 
 ## Remaining Owner Device Validation
 
-- Portrait and landscape full-screen image centering and Close reachability.
-- Bottom-center Quick Capture placement, safe-area behavior and non-overlap on the physical device.
-- Repeatable Habit capsule layout, long names, target/no-target display and tap comfort.
-- Daily/weekly reminder permission allow/deny, time/weekday updates, off cancellation, relaunch consistency and actual delivery.
-- Chinese Weekly Review input, dirty state, saved fade and relaunch persistence.
-- Previous-week focus visibility across an actual calendar-week boundary.
+- Five native tabs and no floating capture control during keyboard input.
+- Record draft persistence across tab switches and clean state after save.
+- Today once/multiple Habit visual row parity, long names, Dynamic Type, light/dark appearance and non-overlapping +/- touch regions.
+- Daily Target editing, target overrun and legacy targetless Habit editing.
+- Weekly Review Chinese prompt hierarchy, input, save confirmation and relaunch persistence.
+- Habit Archive → Archived → Restore navigation with preserved history.
 
 ## Next Action
 
-Hand [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) to ChatGPT for independent review. Do not merge and do not publish TestFlight in this goal.
+Hand [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) back to ChatGPT for independent review. Do not merge, archive or publish TestFlight.

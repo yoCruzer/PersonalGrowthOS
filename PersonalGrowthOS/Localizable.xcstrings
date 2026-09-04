@@ -417,6 +417,22 @@
         }
       }
     },
+    "Archived habits are hidden from Today and the main Habits list. Their history is kept and they can be restored.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archived habits are hidden from Today and the main Habits list. Their history is kept and they can be restored."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已归档的习惯不会显示在今日和主要习惯列表中。历史会保留，且可随时恢复。"
+          }
+        }
+      }
+    },
     "Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.": {
       "localizations": {
         "en": {
@@ -589,6 +605,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "适用于每天可能记录多次的习惯。每日目标可不填。"
+          }
+        }
+      }
+    },
+    "Choose this for Habits you may record several times each day. Set a daily target you can exceed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose this for Habits you may record several times each day. Set a daily target you can exceed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "适用于每天可能记录多次的习惯。请设置一个可以超额完成的每日目标。"
           }
         }
       }
@@ -2225,6 +2257,22 @@
         }
       }
     },
+    "No Archived Habits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Archived Habits"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有已归档的习惯"
+          }
+        }
+      }
+    },
     "No Entries Tagged %@": {
       "localizations": {
         "en": {
@@ -2845,6 +2893,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "记录今天"
+          }
+        }
+      }
+    },
+    "Record": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录"
           }
         }
       }

@@ -6,6 +6,7 @@ import UIKit
 enum AppTab: Hashable {
     case today
     case timeline
+    case record
     case growth
     case library
 }
@@ -14,14 +15,13 @@ struct AppShell: View {
     let container: AppContainer
 
     @State private var selectedTab: AppTab = .today
-    @State private var isCapturing = false
     @State private var isShowingStorage = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
                 TodayView(
-                    openCapture: { isCapturing = true },
+                    openCapture: { selectedTab = .record },
                     openStorage: { isShowingStorage = true },
                     openGrowth: { selectedTab = .growth },
                     mediaStore: container.mediaStore,
@@ -39,6 +39,16 @@ struct AppShell: View {
             }
             .tabItem { Label("Timeline", systemImage: "clock") }
             .tag(AppTab.timeline)
+
+            QuickCaptureView(
+                mediaStore: container.mediaStore,
+                showsCancel: false,
+                cleansUpOnDisappear: false
+            ) { _ in
+                selectedTab = .timeline
+            }
+            .tabItem { Label("Record", systemImage: "plus.circle.fill") }
+            .tag(AppTab.record)
 
             NavigationStack {
                 GrowthView(
@@ -59,39 +69,12 @@ struct AppShell: View {
             .tag(AppTab.library)
         }
         .accessibilityIdentifier("app-shell")
-        .sheet(isPresented: $isCapturing) {
-            QuickCaptureView(mediaStore: container.mediaStore) {
-                selectedTab = .timeline
-                isCapturing = false
-            }
-        }
         .sheet(isPresented: $isShowingStorage) {
             MediaStorageView(
                 mediaStore: container.mediaStore,
                 importExportService: container.importExportService,
                 integrityReport: container.mediaIntegrityReport
             )
-        }
-        .overlay {
-            GeometryReader { proxy in
-                if !isCapturing {
-                    VStack {
-                        Spacer()
-                        Button { isCapturing = true } label: {
-                            Image(systemName: "plus")
-                                .font(.title2.bold())
-                                .frame(width: 52, height: 52)
-                                .background(.tint, in: Circle())
-                                .foregroundStyle(.white)
-                                .shadow(radius: 3, y: 1)
-                        }
-                        .accessibilityLabel("Quick Capture")
-                        .accessibilityIdentifier("global-capture-button")
-                        .padding(.bottom, proxy.safeAreaInsets.bottom + 2)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            }
         }
     }
 }

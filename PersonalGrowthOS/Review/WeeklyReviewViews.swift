@@ -226,22 +226,34 @@ struct WeeklyReviewView: View {
     private var reflectionSections: some View {
         Group {
             Section("Reflect") {
-                TextField("What do you want to remember?", text: $rememberedText, axis: .vertical)
-                    .lineLimit(3...6)
-                    .focused($focusedField, equals: .remembered)
-                    .accessibilityIdentifier("weekly-review-remembered")
-                TextField("What could be better?", text: $improvementText, axis: .vertical)
-                    .lineLimit(3...6)
-                    .focused($focusedField, equals: .improvement)
-                    .accessibilityIdentifier("weekly-review-improvement")
-                TextField("What is your next step?", text: $nextStepText, axis: .vertical)
-                    .lineLimit(2...4)
-                    .focused($focusedField, equals: .nextStep)
-                    .accessibilityIdentifier("weekly-review-next-step")
-                TextField("One focus for next week", text: $focusText, axis: .vertical)
-                    .lineLimit(2...4)
-                    .focused($focusedField, equals: .focus)
-                    .accessibilityIdentifier("weekly-review-focus")
+                reflectionField(
+                    "What do you want to remember?",
+                    text: $rememberedText,
+                    field: .remembered,
+                    lineLimit: 3...6,
+                    identifier: "weekly-review-remembered"
+                )
+                reflectionField(
+                    "What could be better?",
+                    text: $improvementText,
+                    field: .improvement,
+                    lineLimit: 3...6,
+                    identifier: "weekly-review-improvement"
+                )
+                reflectionField(
+                    "What is your next step?",
+                    text: $nextStepText,
+                    field: .nextStep,
+                    lineLimit: 2...4,
+                    identifier: "weekly-review-next-step"
+                )
+                reflectionField(
+                    "One focus for next week",
+                    text: $focusText,
+                    field: .focus,
+                    lineLimit: 2...4,
+                    identifier: "weekly-review-focus"
+                )
             }
             Section {
                 Toggle("Mark this review complete", isOn: $isCompleted)
@@ -265,6 +277,26 @@ struct WeeklyReviewView: View {
                 Text("Your review is saved only on this device.")
             }
         }
+    }
+
+    private func reflectionField(
+        _ prompt: LocalizedStringKey,
+        text: Binding<String>,
+        field: Field,
+        lineLimit: ClosedRange<Int>,
+        identifier: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(prompt)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            TextField("", text: text, axis: .vertical)
+                .lineLimit(lineLimit)
+                .focused($focusedField, equals: field)
+                .accessibilityLabel(Text(prompt))
+                .accessibilityIdentifier(identifier)
+        }
+        .padding(.vertical, 3)
     }
 
     private func createReview() {

@@ -16,11 +16,16 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertThrowsError(try HabitRules.validatedDailyTarget(0, mode: .multiplePerDay)) {
             XCTAssertEqual($0 as? HabitValidationError, .invalidDailyTarget)
         }
+        XCTAssertThrowsError(try HabitRules.validatedDailyTarget(nil, mode: .multiplePerDay)) {
+            XCTAssertEqual($0 as? HabitValidationError, .invalidDailyTarget)
+        }
         XCTAssertEqual(try HabitRules.validatedDailyTarget(8, mode: .multiplePerDay), 8)
         XCTAssertNil(try HabitRules.validatedDailyTarget(8, mode: .oncePerDay))
     }
 
     func testLegacyHabitDefaultsToMultiplePerDayWithoutChangingIdentityOrHistory() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
         let container = try PersistenceContainerFactory.makeInMemory()
         let context = container.mainContext
         let habitID = UUID()
@@ -46,6 +51,11 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(try context.fetch(FetchDescriptor<Habit>()).first?.id, habitID)
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).first?.id, logID)
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitConfiguration>()).count, 0)
+        XCTAssertNoThrow(try HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max })
+        ).incrementCount(try XCTUnwrap(context.fetch(FetchDescriptor<Habit>()).first)))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 2)
     }
 
     func testV4StoreMigratesToV5AndLegacyHabitRemainsMultiplePerDay() throws {
@@ -170,7 +180,8 @@ final class HabitFoundationTests: XCTestCase {
         let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
         let habit = try HabitService(context: context, now: { timestamp }).create(
             name: "Water",
-            recordingMode: .multiplePerDay
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 2
         )
         let service = HabitCheckInService(
             context: context,
@@ -187,7 +198,7 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(HabitTodayProgress(
             habitID: habit.id,
             logs: logs,
-            settings: HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: nil),
+            settings: HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: 2),
             now: timestamp,
             calendar: Calendar(identifier: .gregorian)
         ).count, 3)
@@ -204,7 +215,8 @@ final class HabitFoundationTests: XCTestCase {
         var clock = dayOne
         let habit = try HabitService(context: context, now: { clock }).create(
             name: "Water",
-            recordingMode: .multiplePerDay
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 2
         )
         let service = HabitCheckInService(
             context: context,
@@ -239,7 +251,8 @@ final class HabitFoundationTests: XCTestCase {
         let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
         let habit = try HabitService(context: context, now: { timestamp }).create(
             name: "Run",
-            recordingMode: .multiplePerDay
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 2
         )
         let service = HabitCheckInService(
             context: context,
@@ -277,7 +290,8 @@ final class HabitFoundationTests: XCTestCase {
         let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
         let habit = try HabitService(context: context, now: { timestamp }).create(
             name: "Reflect",
-            recordingMode: .multiplePerDay
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 2
         )
         let service = HabitCheckInService(
             context: context,
@@ -312,7 +326,8 @@ final class HabitFoundationTests: XCTestCase {
         let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
         let habit = try HabitService(context: context, now: { timestamp }).create(
             name: "Journal",
-            recordingMode: .multiplePerDay
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 2
         )
         let service = HabitCheckInService(
             context: context,
@@ -349,7 +364,8 @@ final class HabitFoundationTests: XCTestCase {
             let container = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
             let habit = try HabitService(context: container.mainContext, now: { dayOne }).create(
                 name: "Water",
-                recordingMode: .multiplePerDay
+                recordingMode: .multiplePerDay,
+                dailyTargetCount: 2
             )
             habitID = habit.id
             let service = HabitCheckInService(
@@ -441,7 +457,11 @@ final class HabitFoundationTests: XCTestCase {
         let base = Date(timeIntervalSince1970: 1_700_035_200)
         var clock = base
         let service = HabitService(context: context, now: { clock })
-        let habit = try service.create(name: "  Water  ", recordingMode: .multiplePerDay)
+        let habit = try service.create(
+            name: "  Water  ",
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 2
+        )
         let checkInService = HabitCheckInService(
             context: context,
             mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
@@ -464,6 +484,14 @@ final class HabitFoundationTests: XCTestCase {
             try HabitSettingsResolver.settings(for: habit.id, context: context),
             HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil)
         )
+        XCTAssertThrowsError(try service.update(
+            habit,
+            name: "Morning Water",
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: nil
+        )) {
+            XCTAssertEqual($0 as? HabitValidationError, .invalidDailyTarget)
+        }
         XCTAssertThrowsError(try service.update(
             habit,
             name: " ",
