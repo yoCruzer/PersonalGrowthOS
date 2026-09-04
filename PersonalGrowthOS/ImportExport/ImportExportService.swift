@@ -721,7 +721,7 @@ final class ImportExportService {
                     guard let mode = HabitRecordingMode(rawValue: rawMode) else {
                         throw TransferPackageError.invalidObject("habit")
                     }
-                    let target = try HabitRules.validatedDailyTarget(
+                    let target = try TransferValidator.validatedImportedDailyTarget(
                         record.dailyTargetCount,
                         mode: mode
                     )

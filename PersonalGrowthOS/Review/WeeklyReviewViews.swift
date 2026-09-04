@@ -293,6 +293,7 @@ struct WeeklyReviewView: View {
             TextField("", text: text, axis: .vertical)
                 .lineLimit(lineLimit)
                 .focused($focusedField, equals: field)
+                .accessibilityLabel(Text(prompt))
                 .accessibilityIdentifier(identifier)
         }
         .padding(.vertical, 3)

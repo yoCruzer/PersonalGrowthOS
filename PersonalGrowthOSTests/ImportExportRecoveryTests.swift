@@ -259,6 +259,69 @@ final class ImportExportRecoveryTests: XCTestCase {
         XCTAssertFalse(joinedLogs.contains(fixture.imageData.base64EncodedString()))
     }
 
+    func testLegacyTargetlessMultipleHabitRoundTripsWithoutChangingIdentityOrHistory() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let sourceContext = source.container.mainContext
+        let sourceHabit = try XCTUnwrap(sourceContext.fetch(FetchDescriptor<Habit>()).first)
+        let sourceLogIDs = Set(try sourceContext.fetch(FetchDescriptor<HabitLog>()).map(\.id))
+        sourceContext.insert(HabitConfiguration(
+            habitID: sourceHabit.id,
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: nil,
+            updatedAt: sourceHabit.updatedAt
+        ))
+        try sourceContext.save()
+
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "LegacyTargetless")
+
+        _ = try await target.service.importPackage(from: lease.url)
+
+        let restoredHabit = try XCTUnwrap(
+            target.container.mainContext.fetch(FetchDescriptor<Habit>()).first
+        )
+        XCTAssertEqual(restoredHabit.id, sourceHabit.id)
+        XCTAssertEqual(
+            try HabitSettingsResolver.settings(
+                for: restoredHabit.id,
+                context: target.container.mainContext
+            ),
+            HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: nil)
+        )
+        XCTAssertEqual(
+            Set(try target.container.mainContext.fetch(FetchDescriptor<HabitLog>()).map(\.id)),
+            sourceLogIDs
+        )
+        XCTAssertEqual(try ids(in: target.container.mainContext), source.expectedIDs)
+        XCTAssertNoThrow(try LinkIntegrityService.validate(context: target.container.mainContext))
+    }
+
+    func testTransferValidatorRejectsNonPositiveProvidedHabitTarget() throws {
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        for target in [0, -1] {
+            let data = makeTransferData(habits: [HabitTransfer(
+                id: UUID(),
+                name: "Water",
+                normalizedName: "water",
+                status: HabitStatus.active.rawValue,
+                recordingMode: HabitRecordingMode.multiplePerDay.rawValue,
+                dailyTargetCount: target,
+                createdAt: timestamp,
+                updatedAt: timestamp
+            )])
+            XCTAssertThrowsError(try TransferValidator.validate(
+                manifest: makeManifest(schemaVersion: 3, data: data),
+                data: data,
+                limits: .production
+            )) {
+                XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habit"))
+            }
+        }
+    }
+
     func testDeleteIsolatedDatasetThenRestoreSameOnDiskStore() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -757,6 +820,7 @@ private struct TransferStore {
 }
 
 private func makeTransferData(
+    habits: [HabitTransfer] = [],
     weightRecords: [WeightRecordTransfer] = [],
     weeklyReviews: [WeeklyReviewTransfer] = []
 ) -> TransferData {
@@ -765,7 +829,7 @@ private func makeTransferData(
         images: [],
         tags: [],
         links: [],
-        habits: [],
+        habits: habits,
         habitLogs: [],
         goals: [],
         goalEvents: [],
