@@ -3,15 +3,15 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-09-02 |
-| Current branch | `fix/build6-owner-feedback-round1` |
+| Last verified | 2026-09-04 |
+| Current branch | `fix/build7-owner-feedback-round2` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Current base | `1a1f6bb` (`docs: record build 5 archive handoff`) |
-| Governance status | Build 6 Owner Feedback Round 1 candidate pushed; [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) open for independent review |
-| Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, and Build 6 Round 1 implementation |
-| Final automated gate | Build 6: PASS — 146 Unit + 5 focused UI + Simulator Debug build |
-| Release gate | Build 6 physical-device validation remains external; do not merge or upload TestFlight automatically |
-| Next checkpoint | Independent review of Draft PR #3, followed by Owner device validation; keep the PR unmerged |
+| Current base | `c15513f2389d01f28c12ba351933580b37afe4b7` (Build 6 reviewed head) |
+| Governance status | Build 7 Owner Feedback Round 2 candidate committed locally; push and Draft PR remain pending |
+| Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, Build 6 Round 1, and Build 7 Round 2 implementation |
+| Final automated gate | Build 7: PASS — 29 focused Habit Unit + 3 focused UI + Simulator Debug build |
+| Release gate | Build 7 physical-device validation remains external; do not merge, archive or upload TestFlight automatically |
+| Next checkpoint | Push the Build 7 branch, create a Draft PR against `fix/build6-owner-feedback-round1`, then hand it to ChatGPT for independent review |
 
 ## Authoritative Product Baseline
 
@@ -40,6 +40,27 @@ Final simulator evidence on iPhone 16, iOS 26.5 (`5F04DE28-8329-4774-9488-076D6D
 - JSON parsing, bilingual catalog completeness, conflict-marker scan and `git diff --check`: PASS.
 
 Physical-device validation is still required for portrait/landscape image centering; bottom capture safe-area placement; Habit pill layout and tap comfort; notification permission allow/deny, rescheduling, relaunch and actual delivery; Chinese Weekly Review input/save/fade/relaunch; and focus visibility across a real calendar-week boundary. No Build 6 TestFlight, archive or device PASS is claimed.
+
+## Build 7 Owner Feedback Round 2
+
+Build 7 starts from the reviewed Build 6 head `c15513f` and keeps SwiftData schema V7 and backup schema v3 unchanged. Implementation commit `fde3ea8` closes the bounded UX and semantics feedback:
+
+- Weekly Review now shows all four reflection prompts persistently above their editable answers, without changing the stored fields, search coverage or dirty/save behavior.
+- The former global floating capture overlay is removed. `Record` is the third native tab; its draft survives a tab switch, resets after a successful save and then navigates to Timeline.
+- Repeatable Habit rows retain 44-point +/- targets within their own row while using a lighter 34-point semantic capsule. Count text remains monospaced, can grow for larger numbers and is not capped by the daily target.
+- New and edited multiple-per-day Habits require a positive daily target through the shared domain/service validation. The editor suggests 2 when appropriate; legacy targetless multiple Habits remain readable and check-in capable until edited.
+- Archived Habits are hidden from the main Habits list, exposed through a counted Archived destination with an explanatory empty state, and retain their existing detail/Restore behavior and history.
+- All new user-visible strings are localized in English and Simplified Chinese. Marketing version remains 1.0 and Debug/Release build number is 7.
+
+Focused simulator evidence on iPhone 16, iOS 26.5 (`5F04DE28-8329-4774-9488-076D6DDC5230`):
+
+- Habit Unit tests: 29/29 PASS — `/tmp/PersonalGrowthOS-Build7-Habit2.xcresult`.
+- Record tab and repeatable-counter UI smoke: 2/2 PASS — `/tmp/PersonalGrowthOS-Build7-UI.xcresult`.
+- Weekly Review persistent-prompt/save/relaunch UI smoke: 1/1 PASS — `/tmp/PersonalGrowthOS-Build7-WeeklyUI2.xcresult`.
+- Final Simulator Debug build: PASS.
+- `git diff --check` and String Catalog JSON parsing: PASS.
+
+Owner physical-device validation is still required for native five-tab keyboard behavior, Record draft preservation, light/dark counter appearance and touch separation, Chinese Weekly Review prompt/input hierarchy, daily-target editing, and archive/restore navigation. No Archive, TestFlight upload or device PASS is claimed.
 
 ## Post-V1 Usability S2
 
