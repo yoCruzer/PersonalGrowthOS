@@ -7,11 +7,11 @@
 | Current branch | `fix/build7-owner-feedback-round2` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `c15513f2389d01f28c12ba351933580b37afe4b7` (Build 6 reviewed head) |
-| Governance status | Build 7 Owner Feedback Round 2 candidate committed locally; push and Draft PR remain pending |
+| Governance status | Build 7 Owner Feedback Round 2 candidate pushed; [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) open for independent review |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, Build 6 Round 1, and Build 7 Round 2 implementation |
 | Final automated gate | Build 7: PASS — 29 focused Habit Unit + 3 focused UI + Simulator Debug build |
 | Release gate | Build 7 physical-device validation remains external; do not merge, archive or upload TestFlight automatically |
-| Next checkpoint | Push the Build 7 branch, create a Draft PR against `fix/build6-owner-feedback-round1`, then hand it to ChatGPT for independent review |
+| Next checkpoint | Independent review of Draft PR #4, followed by Owner physical-device validation; keep the PR unmerged |
 
 ## Authoritative Product Baseline
 
