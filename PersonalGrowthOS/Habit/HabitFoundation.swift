@@ -124,7 +124,7 @@ final class HabitService {
     func create(
         name: String,
         recordingMode: HabitRecordingMode = .multiplePerDay,
-        dailyTargetCount: Int? = nil
+        dailyTargetCount: Int? = 2
     ) throws -> Habit {
         let validatedName = try HabitRules.validatedName(name)
         let validatedTarget = try HabitRules.validatedDailyTarget(

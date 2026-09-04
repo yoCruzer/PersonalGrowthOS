@@ -37,7 +37,7 @@ enum HabitRules {
         mode: HabitRecordingMode
     ) throws -> Int? {
         guard mode == .multiplePerDay else { return nil }
-        guard let value else { return nil }
+        guard let value else { throw HabitValidationError.invalidDailyTarget }
         guard value > 0 else { throw HabitValidationError.invalidDailyTarget }
         return value
     }

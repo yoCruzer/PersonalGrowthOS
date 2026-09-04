@@ -92,50 +92,51 @@ struct RepeatableHabitCounter: View {
             Spacer(minLength: 4)
             controls
         }
-        .padding(.vertical, 2)
     }
 
     private var controls: some View {
-        HStack(spacing: 0) {
-            Button(action: decrease) {
-                Image(systemName: "minus")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(width: 44, height: 44)
-                    .contentShape(.rect)
+        ZStack {
+            Capsule()
+                .fill(.quaternary)
+                .frame(height: 34)
+            Capsule()
+                .stroke(.separator.opacity(0.35), lineWidth: 0.5)
+                .frame(height: 34)
+            HStack(spacing: 0) {
+                Button(action: decrease) {
+                    Image(systemName: "minus")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(width: 44, height: 44)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.borderless)
+                .disabled(progress.count == 0)
+                .accessibilityLabel("Decrease \(habitName)")
+                .accessibilityValue("Current count: \(progress.count)")
+                .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-decrease")
+
+                Text(countText)
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 4)
+                    .accessibilityLabel("Current count")
+                    .accessibilityValue("\(progress.count)")
+                    .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-count")
+
+                Button(action: increase) {
+                    Image(systemName: "plus")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(width: 44, height: 44)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Increase \(habitName)")
+                .accessibilityValue("Current count: \(progress.count)")
+                .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
             }
-            .buttonStyle(.borderless)
-            .disabled(progress.count == 0)
-            .accessibilityLabel("Decrease \(habitName)")
-            .accessibilityValue("Current count: \(progress.count)")
-            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-decrease")
-
-            Divider()
-                .frame(height: 22)
-
-            Text(countText)
-                .font(.headline.monospacedDigit())
-                .lineLimit(1)
-                .frame(minWidth: progress.settings.dailyTargetCount == nil ? 36 : 58)
-                .accessibilityLabel("Current count")
-                .accessibilityValue("\(progress.count)")
-                .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-count")
-
-            Divider()
-                .frame(height: 22)
-
-            Button(action: increase) {
-                Image(systemName: "plus")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(width: 44, height: 44)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.borderless)
-            .accessibilityLabel("Increase \(habitName)")
-            .accessibilityValue("Current count: \(progress.count)")
-            .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
         }
         .foregroundStyle(.primary)
-        .background(.quaternary, in: Capsule())
         .fixedSize(horizontal: true, vertical: false)
     }
 
@@ -157,9 +158,17 @@ struct HabitsView: View {
     ]) private var habits: [Habit]
     @State private var isCreatingHabit = false
 
+    private var mainHabits: [Habit] {
+        habits.filter { $0.status != .archived }
+    }
+
+    private var archivedHabits: [Habit] {
+        habits.filter { $0.status == .archived }
+    }
+
     var body: some View {
         List {
-            if habits.isEmpty {
+            if mainHabits.isEmpty {
                 Section {
                     VStack(spacing: 16) {
                         ContentUnavailableView {
@@ -179,7 +188,7 @@ struct HabitsView: View {
                 }
             } else {
                 Section("Habits") {
-                    ForEach(habits) { habit in
+                    ForEach(mainHabits) { habit in
                         NavigationLink {
                             HabitDetailView(
                                 habit: habit,
@@ -196,10 +205,23 @@ struct HabitsView: View {
                     }
                 }
             }
+            if !archivedHabits.isEmpty {
+                Section {
+                    NavigationLink {
+                        ArchivedHabitsView(
+                            mediaStore: mediaStore,
+                            thumbnailStore: thumbnailStore
+                        )
+                    } label: {
+                        LabeledContent("Archived", value: "\(archivedHabits.count)")
+                    }
+                    .accessibilityIdentifier("archived-habits")
+                }
+            }
         }
         .navigationTitle("Habits")
         .toolbar {
-            if !habits.isEmpty {
+            if !mainHabits.isEmpty {
                 Button {
                     isCreatingHabit = true
                 } label: {
@@ -215,6 +237,56 @@ struct HabitsView: View {
                 didSave: { isCreatingHabit = false }
             )
         }
+    }
+}
+
+private struct ArchivedHabitsView: View {
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    @Query(sort: [
+        SortDescriptor(\Habit.normalizedName, order: .forward),
+        SortDescriptor(\Habit.id, order: .forward)
+    ]) private var habits: [Habit]
+
+    private var archivedHabits: [Habit] {
+        habits.filter { $0.status == .archived }
+    }
+
+    var body: some View {
+        Group {
+            if archivedHabits.isEmpty {
+                ContentUnavailableView(
+                    "No Archived Habits",
+                    systemImage: "archivebox",
+                    description: Text("Archived habits are hidden from Today and the main Habits list. Their history is kept and they can be restored.")
+                )
+            } else {
+                List(archivedHabits) { habit in
+                    NavigationLink {
+                        HabitDetailView(
+                            habit: habit,
+                            mediaStore: mediaStore,
+                            thumbnailStore: thumbnailStore
+                        )
+                    } label: {
+                        LabeledContent(habit.name, value: habit.status.localizedName)
+                    }
+                    .accessibilityIdentifier("archived-habit-\(habit.normalizedName)")
+                }
+            }
+        }
+        .navigationTitle("Archived")
+        .safeAreaInset(edge: .bottom) {
+            Text("Archived habits are hidden from Today and the main Habits list. Their history is kept and they can be restored.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.bar)
+        }
+        .accessibilityIdentifier("archived-habits-view")
     }
 }
 
@@ -567,7 +639,8 @@ private struct HabitEditorView: View {
         self.didSave = didSave
         _name = State(initialValue: habit?.name ?? "")
         _recordingMode = State(initialValue: settings.recordingMode)
-        _dailyTarget = State(initialValue: settings.dailyTargetCount.map(String.init) ?? "")
+        _dailyTarget = State(initialValue: settings.dailyTargetCount.map(String.init)
+            ?? (settings.recordingMode == .multiplePerDay ? "2" : ""))
     }
 
     var body: some View {
@@ -592,7 +665,7 @@ private struct HabitEditorView: View {
                     .accessibilityIdentifier("habit-recording-mode")
 
                     if recordingMode == .multiplePerDay {
-                        TextField("Daily target (optional)", text: $dailyTarget)
+                        TextField("Daily Target", text: $dailyTarget)
                             .keyboardType(.numberPad)
                             .accessibilityIdentifier("habit-daily-target")
                     }
@@ -601,7 +674,7 @@ private struct HabitEditorView: View {
                 } footer: {
                     Text(recordingMode == .oncePerDay
                         ? String(localized: "Choose this when completing the Habit once is enough for the day.")
-                        : String(localized: "Choose this for Habits you may record several times each day. The target is optional."))
+                        : String(localized: "Choose this for Habits you may record several times each day. Set a daily target you can exceed."))
                 }
 
                 if habit != nil {
@@ -623,6 +696,12 @@ private struct HabitEditorView: View {
                     ? String(localized: "New Habit")
                     : String(localized: "Edit Habit")
             )
+            .onChange(of: recordingMode) { _, mode in
+                if mode == .multiplePerDay,
+                   dailyTarget.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    dailyTarget = "2"
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -640,7 +719,7 @@ private struct HabitEditorView: View {
     private func save() {
         let target: Int?
         let trimmedTarget = dailyTarget.trimmingCharacters(in: .whitespacesAndNewlines)
-        if recordingMode == .multiplePerDay, !trimmedTarget.isEmpty {
+        if recordingMode == .multiplePerDay {
             guard let value = Int(trimmedTarget), value > 0 else {
                 errorMessage = String(localized: "Daily target must be a positive whole number.")
                 return

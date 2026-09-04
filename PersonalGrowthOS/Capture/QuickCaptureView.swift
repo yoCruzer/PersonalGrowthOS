@@ -61,6 +61,13 @@ final class CaptureDraftState: ObservableObject {
             errorMessage = String(localized: "The entry could not be saved. Your draft was kept.")
         }
     }
+
+    func reset() {
+        body = ""
+        imageSources = []
+        errorMessage = nil
+        isLoadingImage = false
+    }
 }
 
 enum CaptureImageLoadError: Error {
@@ -72,6 +79,8 @@ struct QuickCaptureView: View {
     let mediaStore: MediaStore
     let navigationTitle: String
     let saveDraft: ((EntryCreationDraft) throws -> Entry)?
+    let showsCancel: Bool
+    let cleansUpOnDisappear: Bool
     let didSave: (Entry) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -83,10 +92,26 @@ struct QuickCaptureView: View {
     @State private var isShowingCamera = false
 
     init(mediaStore: MediaStore, didSave: @escaping () -> Void) {
+        self.init(
+            mediaStore: mediaStore,
+            showsCancel: true,
+            cleansUpOnDisappear: true,
+            didSave: { _ in didSave() }
+        )
+    }
+
+    init(
+        mediaStore: MediaStore,
+        showsCancel: Bool,
+        cleansUpOnDisappear: Bool,
+        didSave: @escaping (Entry) -> Void
+    ) {
         self.mediaStore = mediaStore
         navigationTitle = String(localized: "Quick Capture")
         saveDraft = nil
-        self.didSave = { _ in didSave() }
+        self.showsCancel = showsCancel
+        self.cleansUpOnDisappear = cleansUpOnDisappear
+        self.didSave = didSave
     }
 
     init(
@@ -98,6 +123,8 @@ struct QuickCaptureView: View {
         self.mediaStore = mediaStore
         self.navigationTitle = navigationTitle
         self.saveDraft = saveDraft
+        showsCancel = true
+        cleansUpOnDisappear = true
         self.didSave = didSave
     }
 
@@ -168,8 +195,10 @@ struct QuickCaptureView: View {
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                if showsCancel {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
@@ -204,7 +233,11 @@ struct QuickCaptureView: View {
                 )
                 .ignoresSafeArea()
             }
-            .onDisappear { removeTemporaryImages() }
+            .onDisappear {
+                if cleansUpOnDisappear {
+                    removeTemporaryImages()
+                }
+            }
         }
     }
 
@@ -262,6 +295,9 @@ struct QuickCaptureView: View {
                 entry = try service.create(entryDraft)
             }
             removeTemporaryImages()
+            draft.reset()
+            selectedItems = []
+            isSaving = false
             didSave(entry)
         } catch {
             isSaving = false
