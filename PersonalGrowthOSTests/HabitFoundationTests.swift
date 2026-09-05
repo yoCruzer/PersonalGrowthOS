@@ -1760,6 +1760,166 @@ final class HabitFoundationTests: XCTestCase {
         )
     }
 
+    func testCurrentDailyMetricsDoNotBridgeAcrossWeeklyPlanSegment() {
+        let firstDay = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let firstSaturday = HabitLocalDay(year: 2026, month: 9, day: 5)
+        let firstSunday = HabitLocalDay(year: 2026, month: 9, day: 6)
+        let weeklyStart = HabitLocalDay(year: 2026, month: 9, day: 7)
+        let currentStart = HabitLocalDay(year: 2026, month: 9, day: 14)
+        let currentDay = HabitLocalDay(year: 2026, month: 9, day: 15)
+        let dailyPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .day,
+            goal: .everyDay,
+            targetCount: 1,
+            weekdays: []
+        )
+        let weeklyPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .week,
+            goal: .count,
+            targetCount: 3,
+            weekdays: []
+        )
+        let summary = HabitAnalyticsEngine.evaluate(
+            createdAt: firstDay,
+            logs: [firstSaturday, firstSunday, currentStart, currentDay].map {
+                HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+            },
+            plans: [
+                HabitPlanSnapshot(effectiveDay: firstDay, plan: dailyPlan, trustStartDay: firstDay),
+                HabitPlanSnapshot(effectiveDay: weeklyStart, plan: weeklyPlan, trustStartDay: weeklyStart),
+                HabitPlanSnapshot(effectiveDay: currentStart, plan: dailyPlan, trustStartDay: currentStart)
+            ],
+            lifecycle: [HabitLifecycleSnapshot(day: firstDay, kind: .created)],
+            asOf: currentDay,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        XCTAssertEqual(summary.adherence, 1)
+        XCTAssertEqual(summary.consistency, 1)
+        XCTAssertEqual(summary.currentStreak, 2)
+        XCTAssertEqual(summary.bestStreak, 2)
+    }
+
+    func testCurrentWeeklyMetricsDoNotBridgeAcrossMonthlyPlanSegment() {
+        let firstWeek = HabitLocalDay(year: 2026, month: 8, day: 3)
+        let monthStart = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let currentWeek = HabitLocalDay(year: 2026, month: 10, day: 5)
+        let afterCurrentWeek = HabitLocalDay(year: 2026, month: 10, day: 12)
+        let weeklyPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .week,
+            goal: .count,
+            targetCount: 3,
+            weekdays: []
+        )
+        let monthlyPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .month,
+            goal: .count,
+            targetCount: 3,
+            weekdays: []
+        )
+        let summary = HabitAnalyticsEngine.evaluate(
+            createdAt: firstWeek,
+            logs: [currentWeek, currentWeek.adding(days: 1)!, currentWeek.adding(days: 2)!].map {
+                HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+            },
+            plans: [
+                HabitPlanSnapshot(effectiveDay: firstWeek, plan: weeklyPlan, trustStartDay: firstWeek),
+                HabitPlanSnapshot(effectiveDay: monthStart, plan: monthlyPlan, trustStartDay: monthStart),
+                HabitPlanSnapshot(effectiveDay: currentWeek, plan: weeklyPlan, trustStartDay: currentWeek)
+            ],
+            lifecycle: [HabitLifecycleSnapshot(day: firstWeek, kind: .created)],
+            asOf: afterCurrentWeek,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        XCTAssertEqual(summary.adherence, 1)
+        XCTAssertEqual(summary.consistency, 1)
+        XCTAssertEqual(summary.currentStreak, 1)
+        XCTAssertEqual(summary.bestStreak, 1)
+    }
+
+    func testLifecycleRestartStartsNewCurrentMetricsSegment() {
+        let day1 = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let day2 = HabitLocalDay(year: 2026, month: 9, day: 2)
+        let day3 = HabitLocalDay(year: 2026, month: 9, day: 3)
+        let day4 = HabitLocalDay(year: 2026, month: 9, day: 4)
+        let day5 = HabitLocalDay(year: 2026, month: 9, day: 5)
+        let day6 = HabitLocalDay(year: 2026, month: 9, day: 6)
+        let plan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .day,
+            goal: .everyDay,
+            targetCount: 1,
+            weekdays: []
+        )
+        let transitions: [(HabitLifecycleEventKind, HabitLifecycleEventKind)] = [
+            (.paused, .resumed),
+            (.completed, .restarted),
+            (.archived, .restarted)
+        ]
+
+        for (stop, restart) in transitions {
+            let summary = HabitAnalyticsEngine.evaluate(
+                createdAt: day1,
+                logs: [day2, day5, day6].map {
+                    HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+                },
+                plans: [HabitPlanSnapshot(effectiveDay: day1, plan: plan, trustStartDay: day1)],
+                lifecycle: [
+                    HabitLifecycleSnapshot(day: day1, kind: .created),
+                    HabitLifecycleSnapshot(day: day3, kind: stop),
+                    HabitLifecycleSnapshot(day: day4, kind: restart)
+                ],
+                asOf: day6,
+                timeZone: TimeZone(secondsFromGMT: 0)!
+            )
+
+            XCTAssertEqual(summary.adherence, 1, "Failed transition \(stop) → \(restart)")
+            XCTAssertEqual(summary.consistency, 1, "Failed transition \(stop) → \(restart)")
+            XCTAssertEqual(summary.currentStreak, 2, "Failed transition \(stop) → \(restart)")
+        }
+    }
+
+    func testTrackingOnlyToDailyStartsStrictMetricsAtDailyBoundary() {
+        let day1 = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let day3 = HabitLocalDay(year: 2026, month: 9, day: 3)
+        let day4 = HabitLocalDay(year: 2026, month: 9, day: 4)
+        let summary = HabitAnalyticsEngine.evaluate(
+            createdAt: day1,
+            logs: [day1, day3, day4].map {
+                HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+            },
+            plans: [
+                HabitPlanSnapshot(
+                    effectiveDay: day1,
+                    plan: .trackingOnly(recordingMode: .oncePerDay),
+                    trustStartDay: day1
+                ),
+                HabitPlanSnapshot(
+                    effectiveDay: day3,
+                    plan: HabitPlan(
+                        recordingMode: .oncePerDay,
+                        period: .day,
+                        goal: .everyDay,
+                        targetCount: 1,
+                        weekdays: []
+                    ),
+                    trustStartDay: day3
+                )
+            ],
+            lifecycle: [HabitLifecycleSnapshot(day: day1, kind: .created)],
+            asOf: day4,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        XCTAssertEqual(summary.adherence, 1)
+        XCTAssertEqual(summary.currentStreak, 2)
+    }
+
     func testLocalDayUsesCivilCalendarAcrossDSTChanges() {
         let timeZone = TimeZone(identifier: "America/New_York")!
         var calendar = Calendar(identifier: .gregorian)

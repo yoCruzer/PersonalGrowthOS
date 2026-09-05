@@ -259,9 +259,12 @@ enum HabitAnalyticsEngine {
             asOf: asOf, timeZone: timeZone
         )
         let currentPlan = plan(on: asOf, plans: sortedPlans)
-        let comparable = evaluations.filter { evaluation in
-            evaluation.plan?.period == currentPlan?.plan.period && evaluation.plan?.isTrackingOnly == false
-        }
+        let comparable = currentComparableSegment(
+            evaluations: evaluations,
+            currentPlan: currentPlan,
+            lifecycle: sortedEvents,
+            asOf: asOf
+        )
         let evaluated = comparable.filter {
             $0.end < asOf && ($0.outcome == .achieved || $0.outcome == .missed)
         }
@@ -342,6 +345,22 @@ enum HabitAnalyticsEngine {
 
     private static func plan(on day: HabitLocalDay, plans: [HabitPlanSnapshot]) -> HabitPlanSnapshot? {
         plans.last { $0.effectiveDay <= day }
+    }
+
+    private static func currentComparableSegment(
+        evaluations: [HabitPeriodEvaluation],
+        currentPlan: HabitPlanSnapshot?,
+        lifecycle: [HabitLifecycleSnapshot],
+        asOf: HabitLocalDay
+    ) -> [HabitPeriodEvaluation] {
+        guard let currentPlan, !currentPlan.plan.isTrackingOnly else { return [] }
+        let lifecycleBoundary = lifecycle.last {
+            $0.day <= asOf && $0.kind != .created
+        }?.day
+        let segmentStart = max(currentPlan.effectiveDay, lifecycleBoundary ?? currentPlan.effectiveDay)
+        return evaluations.filter {
+            $0.end >= segmentStart && $0.plan == currentPlan.plan
+        }
     }
 
     private static func isActive(on day: HabitLocalDay, events: [HabitLifecycleSnapshot]) -> Bool {
