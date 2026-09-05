@@ -276,6 +276,26 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
     }
 
+    func testHabitOverviewSupportsDirectCheckIn() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Walk")
+        app.buttons["habit-editor-save"].tap()
+
+        let checkIn = app.buttons["habit-overview-check-in"]
+        XCTAssertTrue(checkIn.waitForExistence(timeout: 5))
+        checkIn.tap()
+        XCTAssertFalse(checkIn.isEnabled)
+    }
+
     func testRepeatableHabitCounterIncrementsDecrementsAndPersists() throws {
         let app = XCUIApplication()
         app.launchArguments = [
