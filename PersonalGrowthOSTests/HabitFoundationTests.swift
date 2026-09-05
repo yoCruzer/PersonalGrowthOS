@@ -1105,29 +1105,27 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(revisions.map(\.effectiveLocalDay).sorted(), ["2026-09-09", "2026-09-14"])
     }
 
-    func testWeeklyAnalyticsCreditsAtMostOneCompletionPerLocalDay() {
-        let monday = HabitLocalDay(year: 2026, month: 9, day: 7)
-        let wednesday = HabitLocalDay(year: 2026, month: 9, day: 9)
-        let followingMonday = HabitLocalDay(year: 2026, month: 9, day: 14)
+    func testMultiplePerDayAnalyticsPreservesEachPositiveCompletion() {
+        let day = HabitLocalDay(year: 2026, month: 9, day: 7)
         let plan = HabitPlanSnapshot(
-            effectiveDay: monday,
-            plan: HabitPlan(period: .week, goal: .count, targetCount: 2, weekdays: []),
-            trustStartDay: monday
+            effectiveDay: day,
+            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 5, weekdays: []),
+            trustStartDay: day
         )
         let result = HabitAnalyticsEngine.evaluate(
-            createdAt: monday,
-            logs: [monday, monday, wednesday].map {
+            createdAt: day,
+            logs: [day, day, day].map {
                 HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
             },
             plans: [plan],
-            lifecycle: [HabitLifecycleSnapshot(day: monday, kind: .created)],
-            asOf: followingMonday,
+            lifecycle: [HabitLifecycleSnapshot(day: day, kind: .created)],
+            asOf: day,
             timeZone: TimeZone(secondsFromGMT: 0)!
         )
 
-        let firstWeek = result.evaluations.first { $0.start == monday && $0.period == .week }
-        XCTAssertEqual(firstWeek?.actual, 2)
-        XCTAssertEqual(firstWeek?.outcome, .achieved)
+        XCTAssertEqual(result.current?.actual, 3)
+        XCTAssertEqual(result.current?.progress, 0.6)
+        XCTAssertEqual(result.current?.outcome, .open)
     }
 
     func testPlanChangeInsideWeekKeepsThatWeekNeutral() {

@@ -259,7 +259,7 @@ enum HabitAnalyticsEngine {
             bestStreak: currentPlan?.plan.isTrackingOnly == true ? nil : streak.best,
             streakUnit: currentPlan.map { streakUnit($0.plan) },
             activityByDay: activity,
-            coverageStart: currentPlan.flatMap { _ in sortedPlans.last?.trustStartDay }
+            coverageStart: currentPlan.map(\.trustStartDay)
         )
     }
 
@@ -283,7 +283,11 @@ enum HabitAnalyticsEngine {
             let isOpen = bounds.end >= asOf
             let coverage = plan.trustStartDay <= bounds.start
             let actual = periodDays.reduce(0) { total, currentDay in
-                total + min(activity[currentDay] ?? 0, 1)
+                let raw = activity[currentDay] ?? 0
+                let credit = plan.plan.period == .day && plan.plan.targetCount == 1
+                    ? min(raw, 1)
+                    : raw
+                return total + credit
             }
             let outcome: HabitPeriodOutcome
             if isFuture { outcome = .notEvaluated(.future) }

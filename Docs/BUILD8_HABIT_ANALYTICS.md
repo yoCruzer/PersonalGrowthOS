@@ -13,7 +13,7 @@
 - On first V8 launch, legacy logs are frozen using that migration device's local civil calendar and time-zone identifier. Legacy plans and lifecycle truth begin at the migration boundary, so earlier activity stays visible but does not receive fabricated strict adherence.
 - Habit creation creates an effective plan/lifecycle record. Status changes append lifecycle events in the same save operation. Plans are effective-dated; replacing a pending boundary replaces that pending revision.
 - The pure `HabitAnalyticsEngine` derives grouped credit, period progress, outcomes, strict adherence, consistency, streaks and activity cells from value snapshots.
-- Daily credit is capped at one positive completion per immutable Local Day for every schedule period. A plan change inside an open week/month leaves that whole strict period neutral rather than fabricating a miss.
+- Once-per-day credit is capped at one positive completion per immutable Local Day; multiple-per-day credit retains each positive completion. A plan change inside an open week/month leaves that whole strict period neutral rather than fabricating a miss.
 - Plan edits use next-day/next-Monday/next-month boundaries; cross-period edits choose the coarser boundary. Journey filters out not-yet-effective revisions and Context uses existing Entry/Habit/Goal links.
 - Backup package v4 carries Local Day metadata, plan revisions and lifecycle events while decoding v1–v3 payloads without these fields.
 - v4 export/import preserves plan revision and lifecycle IDs plus HabitLog Local Day/time-zone provenance; old-package imports are bootstrapped during the same atomic publication transaction.
