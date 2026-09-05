@@ -1157,6 +1157,63 @@ final class HabitFoundationTests: XCTestCase {
             .notEvaluated(.partialCoverage)
         )
     }
+
+    func testLocalDayUsesCivilCalendarAcrossDSTChanges() {
+        let timeZone = TimeZone(identifier: "America/New_York")!
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let spring = calendar.date(from: DateComponents(year: 2026, month: 3, day: 8, hour: 12))!
+        let autumn = calendar.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 12))!
+
+        XCTAssertEqual(HabitLocalDay(date: spring, timeZone: timeZone).adding(days: 1, timeZone: timeZone), HabitLocalDay(year: 2026, month: 3, day: 9))
+        XCTAssertEqual(HabitLocalDay(date: autumn, timeZone: timeZone).adding(days: 1, timeZone: timeZone), HabitLocalDay(year: 2026, month: 11, day: 2))
+    }
+
+    func testAnalyticsIsIndependentOfInputOrdering() {
+        let first = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let second = HabitLocalDay(year: 2026, month: 9, day: 2)
+        let third = HabitLocalDay(year: 2026, month: 9, day: 3)
+        let plan = HabitPlanSnapshot(
+            effectiveDay: first,
+            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            trustStartDay: first
+        )
+        let logs = [first, second].map {
+            HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+        }
+        let events = [HabitLifecycleSnapshot(day: first, kind: .created)]
+        let normal = HabitAnalyticsEngine.evaluate(createdAt: first, logs: logs, plans: [plan], lifecycle: events, asOf: third)
+        let shuffled = HabitAnalyticsEngine.evaluate(createdAt: first, logs: Array(logs.reversed()), plans: [plan], lifecycle: Array(events.reversed()), asOf: third)
+
+        XCTAssertEqual(normal, shuffled)
+    }
+
+    func testMonthlyMidMonthCreationIsNeutralAndTrackingOnlyHasNoStrictMetrics() {
+        let midMonth = HabitLocalDay(year: 2026, month: 9, day: 15)
+        let monthEnd = HabitLocalDay(year: 2026, month: 9, day: 30)
+        let monthly = HabitPlanSnapshot(
+            effectiveDay: midMonth,
+            plan: HabitPlan(period: .month, goal: .count, targetCount: 3, weekdays: []),
+            trustStartDay: midMonth
+        )
+        let monthlySummary = HabitAnalyticsEngine.evaluate(
+            createdAt: midMonth,
+            logs: [], plans: [monthly],
+            lifecycle: [HabitLifecycleSnapshot(day: midMonth, kind: .created)], asOf: monthEnd
+        )
+        XCTAssertEqual(monthlySummary.current?.outcome, .notEvaluated(.partialCoverage))
+
+        let tracking = HabitPlanSnapshot(effectiveDay: midMonth, plan: .trackingOnly, trustStartDay: midMonth)
+        let trackingSummary = HabitAnalyticsEngine.evaluate(
+            createdAt: midMonth,
+            logs: [HabitAnalyticsLog(id: UUID(), localDay: midMonth, isCompleted: true, occurredAt: Date())],
+            plans: [tracking], lifecycle: [HabitLifecycleSnapshot(day: midMonth, kind: .created)], asOf: monthEnd
+        )
+        XCTAssertNil(trackingSummary.adherence)
+        XCTAssertNil(trackingSummary.consistency)
+        XCTAssertNil(trackingSummary.currentStreak)
+        XCTAssertEqual(trackingSummary.activityByDay[midMonth], 1)
+    }
 }
 
 private enum InjectedHabitFailure: Error {

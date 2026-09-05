@@ -292,13 +292,13 @@ enum HabitAnalyticsEngine {
             let outcome: HabitPeriodOutcome
             if isFuture { outcome = .notEvaluated(.future) }
             else if plan.plan.isTrackingOnly { outcome = .notEvaluated(.trackingOnly) }
-            else if !coverage { outcome = .notEvaluated(.beforeTrustedCoverage) }
             else if transition { outcome = .notEvaluated(.lifecycleTransition) }
             else if !active { outcome = .notEvaluated(.inactive) }
             else if plan.plan.period != .day && (
                 plan.effectiveDay > bounds.start
                 || plans.contains(where: { bounds.start < $0.effectiveDay && $0.effectiveDay <= bounds.end })
             ) { outcome = .notEvaluated(.partialCoverage) }
+            else if !coverage { outcome = .notEvaluated(.beforeTrustedCoverage) }
             else if plan.plan.period == .day && plan.plan.goal == .selectedWeekdays && !isScheduled(day, plan: plan.plan, timeZone: timeZone) { outcome = .notEvaluated(.notScheduled) }
             else if let target = plan.plan.targetCount, actual >= target { outcome = .achieved }
             else if isOpen { outcome = .open }
