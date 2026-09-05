@@ -987,6 +987,31 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(plan.trustCoverageStartLocalDay, HabitLocalDay(date: now, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).count, 1)
     }
+
+    func testAnalyticsMakesPauseResumeTransitionDaysNeutralAndStartsNewStreakSegment() {
+        let day1 = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let day2 = HabitLocalDay(year: 2026, month: 9, day: 2)
+        let day3 = HabitLocalDay(year: 2026, month: 9, day: 3)
+        let day4 = HabitLocalDay(year: 2026, month: 9, day: 4)
+        let plan = HabitPlanSnapshot(
+            effectiveDay: day1,
+            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            trustStartDay: day1
+        )
+        let logs = [day1, day2, day4].map {
+            HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+        }
+        let result = HabitAnalyticsEngine.evaluate(
+            createdAt: day1, logs: logs, plans: [plan], lifecycle: [
+                HabitLifecycleSnapshot(day: day1, kind: .created),
+                HabitLifecycleSnapshot(day: day2, kind: .paused),
+                HabitLifecycleSnapshot(day: day3, kind: .resumed)
+            ], asOf: day4
+        )
+        XCTAssertEqual(result.evaluations.first { $0.start == day2 }?.outcome, .notEvaluated(.lifecycleTransition))
+        XCTAssertEqual(result.evaluations.first { $0.start == day3 }?.outcome, .notEvaluated(.lifecycleTransition))
+        XCTAssertEqual(result.currentStreak, 1)
+    }
 }
 
 private enum InjectedHabitFailure: Error {

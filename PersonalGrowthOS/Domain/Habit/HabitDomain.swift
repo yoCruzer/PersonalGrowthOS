@@ -276,7 +276,7 @@ enum HabitAnalyticsEngine {
             guard emitted.insert(key).inserted else { return nil }
             let periodDays = sequence(from: bounds.start, through: bounds.end, timeZone: timeZone)
             let eventsInPeriod = lifecycle.filter { bounds.start <= $0.day && $0.day <= bounds.end }
-            let transition = !eventsInPeriod.isEmpty && plan.plan.period != .day
+            let transition = eventsInPeriod.contains { $0.kind != .created }
             let active = isActive(on: day, events: lifecycle)
             let isFuture = bounds.start > asOf
             let isOpen = bounds.end >= asOf
@@ -362,6 +362,9 @@ enum HabitAnalyticsEngine {
                 running += 1; best = max(best, running); current = running
             case .missed:
                 running = 0; current = 0
+            case .notEvaluated(.lifecycleTransition):
+                running = 0
+                current = 0
             case .open, .notEvaluated:
                 break
             }

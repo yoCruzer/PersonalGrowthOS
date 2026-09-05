@@ -208,7 +208,7 @@ enum HabitAnalyticsMigrationBootstrap {
                 let settings = HabitSettingsResolver.settings(for: habit.id, configurations: configurations)
                 context.insert(HabitPlanRevision(
                     habitID: habit.id,
-                    effectiveLocalDay: boundary.description,
+                    effectiveLocalDay: HabitLocalDay(date: habit.createdAt, timeZone: timeZone).description,
                     plan: HabitPlan.legacy(mode: settings.recordingMode, target: settings.dailyTargetCount),
                     trustCoverageStartLocalDay: boundary.description,
                     createdAt: now
