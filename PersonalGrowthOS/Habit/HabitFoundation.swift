@@ -217,6 +217,74 @@ enum HabitJourneyBuilder {
     }
 }
 
+enum HabitAnalyticsSnapshotBuilder {
+    static func summary(
+        habit: Habit,
+        logs: [HabitLog],
+        dayMetadata: [HabitLogDayMetadata],
+        plans: [HabitPlanRevision],
+        lifecycleEvents: [HabitLifecycleEvent],
+        legacyConfigurations: [HabitConfiguration],
+        asOf: Date = Date(),
+        timeZone: TimeZone = .current
+    ) -> HabitAnalyticsSummary {
+        let habitPlans = plans.filter { $0.habitID == habit.id }
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(dayMetadata)
+        let snapshots: [HabitPlanSnapshot]
+        if habitPlans.isEmpty {
+            let settings = HabitSettingsResolver.settings(
+                for: habit.id,
+                configurations: legacyConfigurations
+            )
+            snapshots = [HabitPlanSnapshot(
+                effectiveDay: HabitLocalDay(date: habit.createdAt, timeZone: timeZone),
+                plan: HabitPlan.legacy(mode: settings.recordingMode, target: settings.dailyTargetCount),
+                trustStartDay: HabitLocalDay(date: asOf, timeZone: timeZone)
+            )]
+        } else {
+            snapshots = habitPlans.compactMap {
+                guard let effectiveDay = HabitLocalDay($0.effectiveLocalDay),
+                      let trustStartDay = HabitLocalDay($0.trustCoverageStartLocalDay) else {
+                    return nil
+                }
+                return HabitPlanSnapshot(
+                    effectiveDay: effectiveDay,
+                    plan: $0.plan,
+                    trustStartDay: trustStartDay
+                )
+            }
+        }
+        return HabitAnalyticsEngine.evaluate(
+            createdAt: HabitLocalDay(date: habit.createdAt, timeZone: timeZone),
+            logs: logs.filter { $0.habitID == habit.id }.map {
+                HabitAnalyticsLog(
+                    id: $0.id,
+                    localDay: HabitLogDayResolver.localDay(
+                        for: $0,
+                        metadataByLogID: metadataByLogID,
+                        fallbackTimeZone: timeZone
+                    ),
+                    isCompleted: $0.isCompleted,
+                    occurredAt: $0.occurredAt
+                )
+            },
+            plans: snapshots,
+            lifecycle: lifecycleEvents.filter { $0.habitID == habit.id }.map {
+                HabitLifecycleSnapshot(
+                    id: $0.id,
+                    day: HabitLocalDay($0.occurredLocalDay)
+                        ?? HabitLocalDay(date: $0.occurredAt, timeZone: timeZone),
+                    kind: $0.kind,
+                    knownStatus: $0.knownStatus,
+                    occurredAt: $0.occurredAt
+                )
+            },
+            asOf: HabitLocalDay(date: asOf, timeZone: timeZone),
+            timeZone: timeZone
+        )
+    }
+}
+
 @Model
 final class HabitConfiguration {
     @Attribute(.unique) var id: UUID

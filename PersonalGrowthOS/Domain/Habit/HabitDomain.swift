@@ -270,6 +270,76 @@ struct HabitAnalyticsSummary: Equatable, Sendable {
     let coverageStart: HabitLocalDay?
 }
 
+enum HabitCalendarDayState: String, Equatable, Sendable {
+    case achieved
+    case missed
+    case open
+    case rest
+    case neutral
+    case beforeCoverage
+    case future
+}
+
+struct HabitCalendarDayCell: Identifiable, Equatable, Sendable {
+    let day: HabitLocalDay
+    let state: HabitCalendarDayState
+    let activityCount: Int
+
+    var id: String { day.description }
+}
+
+enum HabitMonthCalendarBuilder {
+    static func cells(
+        containing asOf: HabitLocalDay,
+        evaluations: [HabitPeriodEvaluation],
+        activityByDay: [HabitLocalDay: Int],
+        timeZone: TimeZone = .current
+    ) -> [HabitCalendarDayCell] {
+        guard let date = asOf.date(timeZone: timeZone),
+              let interval = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+                .dateInterval(of: .month, for: date) else { return [] }
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        let start = HabitLocalDay(date: interval.start, timeZone: timeZone)
+        let endDate = calendar.date(byAdding: .day, value: -1, to: interval.end) ?? interval.start
+        let end = HabitLocalDay(date: endDate, timeZone: timeZone)
+        let evaluationsByDay = Dictionary(
+            evaluations.filter { $0.period == .day }.map { ($0.start, $0) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+        var result: [HabitCalendarDayCell] = []
+        var day: HabitLocalDay? = start
+        while let current = day, current <= end {
+            let dayState: HabitCalendarDayState
+            if current > asOf {
+                dayState = .future
+            } else if let evaluation = evaluationsByDay[current] {
+                dayState = calendarState(for: evaluation.outcome)
+            } else {
+                dayState = .neutral
+            }
+            result.append(HabitCalendarDayCell(
+                day: current,
+                state: dayState,
+                activityCount: activityByDay[current, default: 0]
+            ))
+            day = current.adding(days: 1, timeZone: timeZone)
+        }
+        return result
+    }
+
+    private static func calendarState(for outcome: HabitPeriodOutcome) -> HabitCalendarDayState {
+        switch outcome {
+        case .achieved: .achieved
+        case .missed: .missed
+        case .open: .open
+        case .notEvaluated(.notScheduled): .rest
+        case .notEvaluated(.beforeTrustedCoverage): .beforeCoverage
+        case .notEvaluated(.future): .future
+        case .notEvaluated: .neutral
+        }
+    }
+}
+
 /// The single source of derived Habit mathematics. It receives immutable value
 /// snapshots so ordering of SwiftData fetches cannot change results.
 enum HabitAnalyticsEngine {

@@ -25,9 +25,11 @@
 
 ## Current UI integration
 
-- Habits are grouped as Today, This Week, This Month or Tracking Only using plan data, never the Habit name; active rows provide direct check-in or +/- controls without turning the row itself into the control.
+- Habits are grouped as Today, This Week, This Month or Tracking Only using plan data, never the Habit name. Overview rows consume the same authoritative current-segment snapshot as Detail and report actual/target/remaining for day, week and month or honest record counts for Tracking Only; active rows retain direct check-in or +/- controls without turning the row itself into the control.
 - The editor exposes No Goal, Every Day, Selected Days, Times per Week and Times per Month, and restores the current effective plan when editing.
-- Habit Detail has current-period day/week/month activity grids, Adherence, Consistency, streaks, trend, weekday pattern, effective Journey, linked Context and a 365-day heatmap.
+- Habit Detail starts with a Now section containing current-period progress, lifecycle status, the primary structured check-in, Insight/Details routes, adherence and streaks. The dashboard follows rather than displacing the action surface.
+- Daily Progress is a full current civil-month calendar that distinguishes achieved, missed, open, rest, lifecycle-neutral, pre-coverage and future dates while retaining factual rest-day activity. Weekly/monthly/tracking-only Progress remains scoped to the current evaluation; Year Activity is a separate 365-day view.
+- Recent Activity is bounded to five facts and links to full history. The remaining dashboard includes Consistency, Trend, weekday pattern, effective Journey and linked Context.
 
 ## Stage 0 recovery checkpoint
 
@@ -44,8 +46,8 @@
 
 ## Known gaps before Build 8 can be reviewed
 
-- The complete acceptance matrix has not yet been implemented or exercised. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments and lifecycle history are covered, but selected-weekday calendar UI, period-aware P0/P1 presentation, visual row-polish, full backup compatibility and all-package regression remain.
-- Remote head is `bdb17449af6db016b70fd404712b2342e27e8504`; the recovered Stage 0 checkpoint has not been pushed. No Draft PR, archive, TestFlight action or merge has occurred.
+- The complete acceptance matrix has not yet been implemented or exercised. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments, lifecycle history and the period-aware P0 dashboard are covered; P1 weekday-pattern semantics, final visual/a11y polish, full backup compatibility/localization and all-package regression remain.
+- Remote head is `bdb17449af6db016b70fd404712b2342e27e8504`; recovered staged checkpoints remain local until the final Build 8 gate. No Draft PR, archive, TestFlight action or merge has occurred.
 - Physical-device validation is entirely outstanding.
 
 ## Verification so far
@@ -63,3 +65,4 @@
 - Stage 4 pending-Plan regression: Habit Foundation 50/50 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage4-PendingPlan.xcresult`).
 - Stage 5 contiguous-analytics regression: Habit Foundation 54/54 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage5-ContiguousAnalytics.xcresult`).
 - Stage 6/7 Local Day/lifecycle/v4 regression: 58/58 PASS (`/tmp/PersonalGrowthOS-Build8-Stage67-LocalDayLifecycle.xcresult`), focused validation 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-Stage67-Focused.xcresult`), and conservative real-migration boundary 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-Stage67-MigrationBoundary.xcresult`) on iPhone 17 Pro Simulator, iOS 26.5.
+- Stage 8 P0 dashboard regression: Habit Foundation 60/60 PASS (`/tmp/PersonalGrowthOS-Build8-Stage8-P0Dashboard-Final.xcresult`) on iPhone 17 Pro Simulator, plus focused create/check-in/detail UI 1/1 PASS (`/tmp/PersonalGrowthOS-Build8-Stage8-P0UI.xcresult`) and visual inspection of the Now/month-calendar hierarchy on a clean iPhone 16 Simulator, iOS 26.5.

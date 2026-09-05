@@ -273,7 +273,10 @@ final class AppLaunchSmokeTests: XCTestCase {
 
         app.tabBars.buttons["Growth"].tap()
         app.buttons["habit-read"].tap()
-        XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
+        let completedCheckIn = app.buttons["habit-check-in"]
+        XCTAssertTrue(completedCheckIn.waitForExistence(timeout: 5))
+        XCTAssertEqual(completedCheckIn.label, "Completed Today")
+        XCTAssertFalse(completedCheckIn.isEnabled)
     }
 
     func testHabitOverviewSupportsDirectCheckIn() {

@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | Local Day and lifecycle historical truth are verified; next batch is the period-aware P0 dashboard |
-| Automated gate | Stage 6/7 targeted Habit/transfer 58/58 plus focused 2/2 and migration 2/2 PASS; complete Build 8 gate not run |
+| Implementation tip | The period-aware P0 Overview and Dashboard are verified; next batch is P1 weekday-pattern semantics |
+| Automated gate | Stage 8 Habit Foundation 60/60 and focused Habit UI 1/1 PASS; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -30,8 +30,10 @@
 - Name-only saves carry no Plan change and preserve pending revision IDs. The editor loads and labels a pending Plan/effective date; an actual Plan edit removes the never-effective pending revision before inserting its replacement.
 - Current adherence, consistency and streaks use only the current contiguous Plan/lifecycle segment. Day→week→day, week→month→week, Tracking Only→daily and pause/complete/archive restart boundaries no longer bridge metrics.
 - Local Day parsing rejects impossible dates and preserves leap days; backdated positives recompute history. Migration uses a hidden baseline with known current status and a conservative Plan boundary. Resume, Restart and Restore are distinct, same-day lifecycle ordering is deterministic, and visible Plan/lifecycle Journey facts are merged chronologically.
+- Overview and Detail now share one authoritative analytics snapshot. Overview reports daily/weekly/monthly/tracking-only progress without a fake denominator; Detail leads with current progress, state and check-in actions, then shows the dashboard, five recent facts and a complete history route.
+- Daily Progress uses a full civil-month calendar with scheduled success/miss/open/rest, lifecycle-neutral, pre-coverage and future states. Weekly/monthly current activity remains period-scoped and Year Activity remains a separate 365-day view.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
-- This is not a candidate: the acceptance matrix, migration verification, UI verification, documentation closure and remote review handoff remain incomplete.
+- This is not a candidate: P1 pattern semantics, backup/localization gates, complete regression, documentation closure and remote review handoff remain incomplete.
 
 ## Historical Build 7 Validation Evidence
 
@@ -53,4 +55,4 @@
 
 ## Next Action
 
-Make Habits Overview consume authoritative current-period evaluations for daily/weekly/monthly/tracking-only rows, then finish the period grid and Year Activity P0 presentation. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.
+Correct the weekday-pattern calculation: daily plans use achieved/eligible scheduled-day rates, while weekly/monthly/tracking-only plans show activity distribution with honest labels. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.

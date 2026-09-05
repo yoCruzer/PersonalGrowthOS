@@ -1938,6 +1938,107 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(summary.currentStreak, 2)
     }
 
+    func testWeeklyAndMonthlyCurrentEvaluationsUseWholePeriodActivity() {
+        let monday = HabitLocalDay(year: 2026, month: 9, day: 7)
+        let tuesday = HabitLocalDay(year: 2026, month: 9, day: 8)
+        let wednesday = HabitLocalDay(year: 2026, month: 9, day: 9)
+        let weeklyPlan = HabitPlanSnapshot(
+            effectiveDay: monday,
+            plan: HabitPlan(
+                recordingMode: .oncePerDay,
+                period: .week,
+                goal: .count,
+                targetCount: 3,
+                weekdays: []
+            ),
+            trustStartDay: monday
+        )
+        let weekly = HabitAnalyticsEngine.evaluate(
+            createdAt: monday,
+            logs: [monday, tuesday].map {
+                HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+            },
+            plans: [weeklyPlan],
+            lifecycle: [HabitLifecycleSnapshot(day: monday, kind: .created)],
+            asOf: wednesday,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+        XCTAssertEqual(weekly.current?.start, monday)
+        XCTAssertEqual(weekly.current?.actual, 2)
+        XCTAssertEqual(weekly.current?.target, 3)
+
+        let monthStart = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let monthNow = HabitLocalDay(year: 2026, month: 9, day: 15)
+        let monthlyPlan = HabitPlanSnapshot(
+            effectiveDay: monthStart,
+            plan: HabitPlan(
+                recordingMode: .multiplePerDay,
+                period: .month,
+                goal: .count,
+                targetCount: 5,
+                weekdays: []
+            ),
+            trustStartDay: monthStart
+        )
+        let monthly = HabitAnalyticsEngine.evaluate(
+            createdAt: monthStart,
+            logs: [monthStart, monthStart, HabitLocalDay(year: 2026, month: 9, day: 10)].map {
+                HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+            },
+            plans: [monthlyPlan],
+            lifecycle: [HabitLifecycleSnapshot(day: monthStart, kind: .created)],
+            asOf: monthNow,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+        XCTAssertEqual(monthly.current?.start, monthStart)
+        XCTAssertEqual(monthly.current?.actual, 3)
+        XCTAssertEqual(monthly.current?.target, 5)
+    }
+
+    func testDailyMonthCalendarDistinguishesRestActivityMissNeutralAndFuture() {
+        let monthStart = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let wednesday = HabitLocalDay(year: 2026, month: 9, day: 2)
+        let sunday = HabitLocalDay(year: 2026, month: 9, day: 6)
+        let pauseDay = HabitLocalDay(year: 2026, month: 9, day: 10)
+        let resumeDay = HabitLocalDay(year: 2026, month: 9, day: 11)
+        let asOf = HabitLocalDay(year: 2026, month: 9, day: 15)
+        let summary = HabitAnalyticsEngine.evaluate(
+            createdAt: monthStart,
+            logs: [HabitAnalyticsLog(id: UUID(), localDay: sunday, isCompleted: true, occurredAt: Date())],
+            plans: [HabitPlanSnapshot(
+                effectiveDay: monthStart,
+                plan: HabitPlan(
+                    recordingMode: .oncePerDay,
+                    period: .day,
+                    goal: .selectedWeekdays,
+                    targetCount: 1,
+                    weekdays: [4]
+                ),
+                trustStartDay: monthStart
+            )],
+            lifecycle: [
+                HabitLifecycleSnapshot(day: monthStart, kind: .created),
+                HabitLifecycleSnapshot(day: pauseDay, kind: .paused),
+                HabitLifecycleSnapshot(day: resumeDay, kind: .resumed)
+            ],
+            asOf: asOf,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+        let cells = HabitMonthCalendarBuilder.cells(
+            containing: asOf,
+            evaluations: summary.evaluations,
+            activityByDay: summary.activityByDay,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        XCTAssertEqual(cells.count, 30)
+        XCTAssertEqual(cells.first { $0.day == sunday }?.state, .rest)
+        XCTAssertEqual(cells.first { $0.day == sunday }?.activityCount, 1)
+        XCTAssertEqual(cells.first { $0.day == wednesday }?.state, .missed)
+        XCTAssertEqual(cells.first { $0.day == pauseDay }?.state, .neutral)
+        XCTAssertEqual(cells.first { $0.day == HabitLocalDay(year: 2026, month: 9, day: 30) }?.state, .future)
+    }
+
     func testLocalDayUsesCivilCalendarAcrossDSTChanges() {
         let timeZone = TimeZone(identifier: "America/New_York")!
         var calendar = Calendar(identifier: .gregorian)
