@@ -770,6 +770,9 @@ final class HabitCheckInService {
         createdAt: Date,
         preventsImmediateRepeat: Bool = true
     ) throws {
+        guard occurredAt <= createdAt.addingTimeInterval(5 * 60) else {
+            throw HabitCheckInError.futureOccurrence
+        }
         let settings = try HabitSettingsResolver.settings(for: habitID, context: context)
         let logs = try context.fetch(FetchDescriptor<HabitLog>(
             predicate: #Predicate { $0.habitID == habitID }

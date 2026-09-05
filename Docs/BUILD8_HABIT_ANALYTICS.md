@@ -30,4 +30,4 @@
 ## Verification so far
 
 - Simulator Debug build: PASS after the V8 model/backup/dashboard integration.
-- Focused V8 Local Day/bootstrap and daily-credit tests: PASS on iPhone 16 Simulator, iOS 26.5.
+- Focused V8 Local Day/bootstrap, daily-credit, lifecycle-boundary and future-occurrence tests: 4/4 PASS on iPhone 16 Simulator, iOS 26.5 (`/Users/hanghang/Library/Developer/Xcode/DerivedData/PersonalGrowthOS-emotcgnahyqoknbhmwfzpcczyvfw/Logs/Test/Test-PersonalGrowthOS-2026.09.05_15-07-04-+0800.xcresult`).

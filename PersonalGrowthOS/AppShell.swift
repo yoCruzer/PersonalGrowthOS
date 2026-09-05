@@ -97,6 +97,7 @@ private struct TodayView: View {
     ]) private var goals: [Goal]
     @Query private var habitLogs: [HabitLog]
     @Query private var habitConfigurations: [HabitConfiguration]
+    @Query private var habitPlanRevisions: [HabitPlanRevision]
     @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
     private var queriedWeightRecords: [WeightRecord]
     @Query private var weeklyReviews: [WeeklyReview]
@@ -107,6 +108,17 @@ private struct TodayView: View {
 
     private var activeHabits: [Habit] {
         habits.filter { $0.status == .active }
+    }
+
+    private var todayHabits: [Habit] {
+        activeHabits.filter { habit in
+            let revisions = habitPlanRevisions.filter { $0.habitID == habit.id }
+                .sorted { $0.effectiveLocalDay < $1.effectiveLocalDay }
+            guard let plan = revisions.last?.plan else { return true }
+            guard plan.period == .day else { return false }
+            guard plan.goal == .selectedWeekdays else { return true }
+            return plan.weekdays.contains(Calendar.current.component(.weekday, from: Date()))
+        }
     }
 
     private var activeGoals: [Goal] {
@@ -163,9 +175,9 @@ private struct TodayView: View {
                     .padding(.vertical, 4)
                 }
             }
-            if !activeHabits.isEmpty {
+            if !todayHabits.isEmpty {
                 Section {
-                    ForEach(activeHabits) { habit in
+                    ForEach(todayHabits) { habit in
                         let progress = HabitTodayProgress(
                             habitID: habit.id,
                             logs: habitLogs,
@@ -204,6 +216,7 @@ private struct TodayView: View {
                             )
                             .accessibilityLabel("Check in \(habit.name)")
                             .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
+                            .frame(minHeight: 52)
                         }
                     }
                 } header: {

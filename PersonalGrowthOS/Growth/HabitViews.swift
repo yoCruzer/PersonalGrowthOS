@@ -92,16 +92,17 @@ struct RepeatableHabitCounter: View {
             Spacer(minLength: 4)
             controls
         }
+        .frame(minHeight: 52)
     }
 
     private var controls: some View {
         ZStack {
             Capsule()
                 .fill(.quaternary)
-                .frame(height: 34)
+                .frame(height: 30)
             Capsule()
                 .stroke(.separator.opacity(0.35), lineWidth: 0.5)
-                .frame(height: 34)
+                .frame(height: 30)
             HStack(spacing: 0) {
                 Button(action: decrease) {
                     Image(systemName: "minus")
@@ -142,7 +143,7 @@ struct RepeatableHabitCounter: View {
 
     private var countText: String {
         if let target = progress.settings.dailyTargetCount {
-            return "\(progress.count) / \(target)"
+            return "\(progress.count)/\(target)"
         }
         return "\(progress.count)"
     }
@@ -660,6 +661,7 @@ private struct HabitEditorView: View {
     @State private var recordingMode: HabitRecordingMode
     @State private var dailyTarget = ""
     @State private var goalChoice: HabitGoalChoice
+    @State private var selectedWeekdays: Set<Int> = [2, 3, 4, 5, 6]
     @State private var errorMessage: String?
 
     init(
@@ -697,8 +699,8 @@ private struct HabitEditorView: View {
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("habit-recording-mode")
 
-                    if recordingMode == .multiplePerDay {
-                        TextField("Daily Target", text: $dailyTarget)
+                    if needsTarget {
+                        TextField(goalChoice == .everyDay ? "Daily Target" : "Target", text: $dailyTarget)
                             .keyboardType(.numberPad)
                             .accessibilityIdentifier("habit-daily-target")
                     }
@@ -708,6 +710,18 @@ private struct HabitEditorView: View {
                         }
                     }
                     .accessibilityIdentifier("habit-goal")
+
+                    if goalChoice == .selectedDays {
+                        ForEach(2...7, id: \.self) { weekday in
+                            Toggle(weekdayName(weekday), isOn: Binding(
+                                get: { selectedWeekdays.contains(weekday) },
+                                set: { enabled in
+                                    if enabled { selectedWeekdays.insert(weekday) }
+                                    else { selectedWeekdays.remove(weekday) }
+                                }
+                            ))
+                        }
+                    }
                 } header: {
                     Text("Check-In Frequency")
                 } footer: {
@@ -760,7 +774,7 @@ private struct HabitEditorView: View {
     private func save() {
         let target: Int?
         let trimmedTarget = dailyTarget.trimmingCharacters(in: .whitespacesAndNewlines)
-        if goalChoice != .noGoal && recordingMode == .multiplePerDay {
+        if needsTarget {
             guard let value = Int(trimmedTarget), value > 0 else {
                 errorMessage = String(localized: "Daily target must be a positive whole number.")
                 return
@@ -793,10 +807,19 @@ private struct HabitEditorView: View {
         switch goalChoice {
         case .noGoal: .trackingOnly
         case .everyDay: HabitPlan(period: .day, goal: .everyDay, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: [])
-        case .selectedDays: HabitPlan(period: .day, goal: .selectedWeekdays, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: [2, 3, 4, 5, 6])
+        case .selectedDays: HabitPlan(period: .day, goal: .selectedWeekdays, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: selectedWeekdays)
         case .perWeek: HabitPlan(period: .week, goal: .count, targetCount: target ?? 1, weekdays: [])
         case .perMonth: HabitPlan(period: .month, goal: .count, targetCount: target ?? 1, weekdays: [])
         }
+    }
+
+    private var needsTarget: Bool {
+        goalChoice != .noGoal && !(goalChoice == .everyDay && recordingMode == .oncePerDay)
+    }
+
+    private func weekdayName(_ weekday: Int) -> String {
+        let calendar = Calendar.current
+        return calendar.weekdaySymbols[(weekday - calendar.firstWeekday + 7) % 7]
     }
 }
 

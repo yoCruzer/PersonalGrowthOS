@@ -1012,6 +1012,21 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(result.evaluations.first { $0.start == day3 }?.outcome, .notEvaluated(.lifecycleTransition))
         XCTAssertEqual(result.currentStreak, 1)
     }
+
+    func testCheckInRejectsFutureOccurrence() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let habit = try HabitService(context: context, now: { now }).create(name: "Future guard", recordingMode: .oncePerDay)
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)),
+            now: { now }
+        )
+        XCTAssertThrowsError(try service.checkIn(habit, draft: HabitLogDraft(occurredAt: now.addingTimeInterval(301)))) {
+            XCTAssertEqual($0 as? HabitCheckInError, .futureOccurrence)
+        }
+    }
 }
 
 private enum InjectedHabitFailure: Error {
