@@ -253,6 +253,19 @@ final class ImportExportRecoveryTests: XCTestCase {
         XCTAssertEqual(restoredWeeklyReview.rememberedText, sourceWeeklyReview.rememberedText)
         XCTAssertEqual(restoredWeeklyReview.focusText, sourceWeeklyReview.focusText)
         XCTAssertEqual(restoredWeeklyReview.isCompleted, sourceWeeklyReview.isCompleted)
+        let sourcePlan = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitPlanRevision>()).first)
+        let restoredPlan = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitPlanRevision>()).first)
+        XCTAssertEqual(restoredPlan.id, sourcePlan.id)
+        XCTAssertEqual(restoredPlan.effectiveLocalDay, sourcePlan.effectiveLocalDay)
+        XCTAssertEqual(restoredPlan.plan, sourcePlan.plan)
+        let sourceHabitLog = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitLog>()).first)
+        let restoredHabitLog = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitLog>()).first)
+        XCTAssertEqual(restoredHabitLog.localDayIdentifier, sourceHabitLog.localDayIdentifier)
+        XCTAssertEqual(restoredHabitLog.localTimeZoneIdentifier, sourceHabitLog.localTimeZoneIdentifier)
+        XCTAssertEqual(
+            try target.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id),
+            try source.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id)
+        )
         let joinedLogs = logs.values.joined(separator: "|")
         XCTAssertFalse(joinedLogs.contains(TransferTestFixture.secretBody))
         XCTAssertFalse(joinedLogs.contains(fixture.root.path))
@@ -926,7 +939,22 @@ private final class TransferTestFixture {
             unit: "km",
             result: "steady",
             linkedEntryID: entry.id,
-            createdAt: Date(timeIntervalSince1970: 1_100)
+            createdAt: Date(timeIntervalSince1970: 1_100),
+            localDayIdentifier: HabitLocalDay(date: Date(timeIntervalSince1970: 1_100)).description,
+            localTimeZoneIdentifier: TimeZone.current.identifier
+        )
+        let plan = HabitPlanRevision(
+            habitID: habit.id,
+            effectiveLocalDay: HabitLocalDay(date: base).description,
+            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            trustCoverageStartLocalDay: HabitLocalDay(date: base).description,
+            createdAt: base
+        )
+        let habitEvent = HabitLifecycleEvent(
+            habitID: habit.id,
+            kind: .created,
+            occurredLocalDay: HabitLocalDay(date: base).description,
+            occurredAt: base
         )
         let event = GoalLifecycleEvent(
             goalID: goal.id,
@@ -966,6 +994,8 @@ private final class TransferTestFixture {
         context.insert(habit)
         context.insert(goal)
         context.insert(log)
+        context.insert(plan)
+        context.insert(habitEvent)
         context.insert(event)
         context.insert(weightRecord)
         context.insert(weeklyReview)
@@ -980,7 +1010,8 @@ private final class TransferTestFixture {
             expectedCounts: [
                 "entries": 2, "images": 1, "tags": 1, "links": 5,
                 "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
-                "weightRecords": 1, "weeklyReviews": 1
+                "weightRecords": 1, "weeklyReviews": 1,
+                "habitPlanRevisions": 1, "habitLifecycleEvents": 1
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1037,7 +1068,9 @@ private func ids(in context: ModelContext) throws -> [String: Set<UUID>] {
         "goals": Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id)),
         "goalEvents": Set(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).map(\.id)),
         "weightRecords": Set(try context.fetch(FetchDescriptor<WeightRecord>()).map(\.id)),
-        "weeklyReviews": Set(try context.fetch(FetchDescriptor<WeeklyReview>()).map(\.id))
+        "weeklyReviews": Set(try context.fetch(FetchDescriptor<WeeklyReview>()).map(\.id)),
+        "habitPlanRevisions": Set(try context.fetch(FetchDescriptor<HabitPlanRevision>()).map(\.id)),
+        "habitLifecycleEvents": Set(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id))
     ]
 }
 
@@ -1050,6 +1083,8 @@ private func totalObjectCount(in context: ModelContext) throws -> Int {
 private func deleteAllFixtureData(_ context: ModelContext) throws {
     try context.fetch(FetchDescriptor<ObjectLink>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<HabitLog>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<HabitPlanRevision>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<ImageMetadata>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<Entry>()).forEach(context.delete)
@@ -1057,7 +1092,6 @@ private func deleteAllFixtureData(_ context: ModelContext) throws {
     try context.fetch(FetchDescriptor<Habit>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<Goal>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<WeightRecord>()).forEach(context.delete)
-    try context.fetch(FetchDescriptor<WeeklyReview>()).forEach(context.delete)
 }
 
 private func originalFiles(at mediaRoot: URL) throws -> [URL] {
