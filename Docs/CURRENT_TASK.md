@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | Uncommitted Build 8 foundation work |
-| Automated gate | Debug build PASS; complete Build 8 gate not run |
+| Implementation tip | Build 8 staged implementation; next batch is acceptance-matrix and UI validation |
+| Automated gate | Debug build PASS; Habit Foundation suite 38/38 PASS; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -22,7 +22,7 @@
 
 ## Build 8 In-progress Boundary
 
-- V8 persistence models, Local Day write semantics, plan/lifecycle history, a pure analytics engine and v4 transfer fields are under implementation.
+- V8 persistence models, Local Day write semantics, plan/lifecycle history, a pure analytics engine and v4 transfer fields are implemented in staged commits; acceptance-matrix and UI validation remain.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
 - This is not a candidate: the acceptance matrix, migration verification, UI verification, documentation closure and remote review handoff remain incomplete.
 
@@ -46,4 +46,4 @@
 
 ## Next Action
 
-Continue Build 8 against its frozen package: complete migration/bootstrap coverage, analytics acceptance tests, editor/UI semantics, v4 import/export round trip, then the final test gate. Do not open a Draft PR until the Build 8 completion gate passes. Do not merge, archive or publish TestFlight.
+Continue Build 8 against its frozen package: complete remaining calendar/lifecycle/schedule acceptance cases, UI verification and complete import/export regression, then the final test gate. Do not open a Draft PR until the Build 8 completion gate passes. Do not merge, archive or publish TestFlight.

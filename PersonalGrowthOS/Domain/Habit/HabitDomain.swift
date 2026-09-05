@@ -283,8 +283,7 @@ enum HabitAnalyticsEngine {
             let isOpen = bounds.end >= asOf
             let coverage = plan.trustStartDay <= bounds.start
             let actual = periodDays.reduce(0) { total, currentDay in
-                let raw = activity[currentDay] ?? 0
-                return total + (plan.plan.period == .day ? min(raw, 1) : raw)
+                total + min(activity[currentDay] ?? 0, 1)
             }
             let outcome: HabitPeriodOutcome
             if isFuture { outcome = .notEvaluated(.future) }
@@ -292,7 +291,10 @@ enum HabitAnalyticsEngine {
             else if !coverage { outcome = .notEvaluated(.beforeTrustedCoverage) }
             else if transition { outcome = .notEvaluated(.lifecycleTransition) }
             else if !active { outcome = .notEvaluated(.inactive) }
-            else if plan.plan.period != .day && plan.effectiveDay > bounds.start { outcome = .notEvaluated(.partialCoverage) }
+            else if plan.plan.period != .day && (
+                plan.effectiveDay > bounds.start
+                || plans.contains(where: { bounds.start < $0.effectiveDay && $0.effectiveDay <= bounds.end })
+            ) { outcome = .notEvaluated(.partialCoverage) }
             else if plan.plan.period == .day && plan.plan.goal == .selectedWeekdays && !isScheduled(day, plan: plan.plan, timeZone: timeZone) { outcome = .notEvaluated(.notScheduled) }
             else if let target = plan.plan.targetCount, actual >= target { outcome = .achieved }
             else if isOpen { outcome = .open }

@@ -3,10 +3,10 @@
 | Item | Verified value |
 | --- | --- |
 | Project | Personal Growth OS |
-| Last verified | 2026-09-04 |
+| Last verified | 2026-09-05 |
 | Current branch | `feature/build8-habit-analytics-dashboard` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
-| Current base | `c15513f2389d01f28c12ba351933580b37afe4b7` (Build 6 reviewed head) |
+| Current base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` (Build 8 frozen baseline) |
 | Governance status | Build 8 work has started from the Build 7 review-closure tip; it is not ready for review or distribution |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, Build 6 Round 1, and Build 7 Round 2 implementation |
 | Final automated gate | Build 7 P1 closure: PASS — 5 focused Import/Export and Habit tests |

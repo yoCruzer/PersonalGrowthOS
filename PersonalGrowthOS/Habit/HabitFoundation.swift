@@ -551,7 +551,7 @@ final class HabitService {
             let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
             return HabitLocalDay(date: calendar.dateInterval(of: .weekOfYear, for: nextWeek)?.start ?? nextWeek)
         case .month:
-            var calendar = Calendar(identifier: .gregorian)
+            let calendar = Calendar(identifier: .gregorian)
             let nextMonth = calendar.date(byAdding: .month, value: 1, to: date) ?? date
             let parts = calendar.dateComponents([.year, .month], from: nextMonth)
             return HabitLocalDay(year: parts.year ?? today.year, month: parts.month ?? today.month, day: 1)

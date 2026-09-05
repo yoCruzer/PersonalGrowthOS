@@ -988,6 +988,49 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).count, 1)
     }
 
+    func testV7StoreMigratesAndBootstrapsHabitAnalyticsWithoutChangingHistory() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let habitID = UUID()
+        let logID = UUID()
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        do {
+            let schema = Schema(versionedSchema: PersonalGrowthSchemaV7.self)
+            let configuration = ModelConfiguration(
+                "PersonalGrowthOSV1",
+                schema: schema,
+                url: fixture.storeURL,
+                cloudKitDatabase: .none
+            )
+            let legacy = try ModelContainer(for: schema, configurations: [configuration])
+            let habit = Habit(id: habitID, name: "Migrated", normalizedName: "migrated", createdAt: created)
+            legacy.mainContext.insert(habit)
+            legacy.mainContext.insert(HabitLog(
+                id: logID,
+                habitID: habitID,
+                occurredAt: created,
+                isCompleted: true,
+                createdAt: created
+            ))
+            try legacy.mainContext.save()
+        }
+
+        let migrated = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
+        let timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        XCTAssertTrue(try HabitAnalyticsMigrationBootstrap.apply(
+            context: migrated.mainContext,
+            now: created.addingTimeInterval(86_400),
+            timeZone: timeZone
+        ))
+
+        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).map(\.id), [habitID])
+        let log = try XCTUnwrap(migrated.mainContext.fetch(FetchDescriptor<HabitLog>()).first)
+        XCTAssertEqual(log.id, logID)
+        XCTAssertEqual(log.localDayIdentifier, HabitLocalDay(date: created, timeZone: timeZone).description)
+        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitPlanRevision>()).count, 1)
+        XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).count, 1)
+    }
+
     func testAnalyticsMakesPauseResumeTransitionDaysNeutralAndStartsNewStreakSegment() {
         let day1 = HabitLocalDay(year: 2026, month: 9, day: 1)
         let day2 = HabitLocalDay(year: 2026, month: 9, day: 2)
@@ -1060,6 +1103,61 @@ final class HabitFoundationTests: XCTestCase {
         try service.update(habit, name: habit.name, plan: HabitPlan(period: .week, goal: .count, targetCount: 3, weekdays: []))
         let revisions = try context.fetch(FetchDescriptor<HabitPlanRevision>()).filter { $0.habitID == habit.id }
         XCTAssertEqual(revisions.map(\.effectiveLocalDay).sorted(), ["2026-09-09", "2026-09-14"])
+    }
+
+    func testWeeklyAnalyticsCreditsAtMostOneCompletionPerLocalDay() {
+        let monday = HabitLocalDay(year: 2026, month: 9, day: 7)
+        let wednesday = HabitLocalDay(year: 2026, month: 9, day: 9)
+        let followingMonday = HabitLocalDay(year: 2026, month: 9, day: 14)
+        let plan = HabitPlanSnapshot(
+            effectiveDay: monday,
+            plan: HabitPlan(period: .week, goal: .count, targetCount: 2, weekdays: []),
+            trustStartDay: monday
+        )
+        let result = HabitAnalyticsEngine.evaluate(
+            createdAt: monday,
+            logs: [monday, monday, wednesday].map {
+                HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+            },
+            plans: [plan],
+            lifecycle: [HabitLifecycleSnapshot(day: monday, kind: .created)],
+            asOf: followingMonday,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        let firstWeek = result.evaluations.first { $0.start == monday && $0.period == .week }
+        XCTAssertEqual(firstWeek?.actual, 2)
+        XCTAssertEqual(firstWeek?.outcome, .achieved)
+    }
+
+    func testPlanChangeInsideWeekKeepsThatWeekNeutral() {
+        let monday = HabitLocalDay(year: 2026, month: 9, day: 7)
+        let wednesday = HabitLocalDay(year: 2026, month: 9, day: 9)
+        let followingMonday = HabitLocalDay(year: 2026, month: 9, day: 14)
+        let result = HabitAnalyticsEngine.evaluate(
+            createdAt: monday,
+            logs: [],
+            plans: [
+                HabitPlanSnapshot(
+                    effectiveDay: monday,
+                    plan: HabitPlan(period: .week, goal: .count, targetCount: 3, weekdays: []),
+                    trustStartDay: monday
+                ),
+                HabitPlanSnapshot(
+                    effectiveDay: wednesday,
+                    plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+                    trustStartDay: wednesday
+                )
+            ],
+            lifecycle: [HabitLifecycleSnapshot(day: monday, kind: .created)],
+            asOf: followingMonday,
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        XCTAssertEqual(
+            result.evaluations.first { $0.start == monday && $0.period == .week }?.outcome,
+            .notEvaluated(.partialCoverage)
+        )
     }
 }
 
