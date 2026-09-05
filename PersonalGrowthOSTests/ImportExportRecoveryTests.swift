@@ -258,6 +258,56 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
     }
 
+    func testSchemaV4ValidatesMigrationBaselineKnownStatus() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Legacy Habit",
+            normalizedName: "legacy habit",
+            status: HabitStatus.paused.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+
+        func data(knownStatus: String?, kind: HabitLifecycleEventKind = .migrationBaseline) -> TransferData {
+            makeTransferData(
+                habits: [habit],
+                habitLifecycleEvents: [HabitLifecycleEventTransfer(
+                    id: UUID(),
+                    habitID: habitID,
+                    kind: kind.rawValue,
+                    occurredLocalDay: "2026-09-07",
+                    occurredAt: timestamp,
+                    createdAt: timestamp,
+                    knownStatus: knownStatus
+                )]
+            )
+        }
+
+        let valid = data(knownStatus: HabitStatus.paused.rawValue)
+        XCTAssertNoThrow(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 4, data: valid),
+            data: valid,
+            limits: .production
+        ))
+        for invalid in [
+            data(knownStatus: nil),
+            data(knownStatus: "unknown"),
+            data(knownStatus: HabitStatus.active.rawValue, kind: .created)
+        ] {
+            XCTAssertThrowsError(try TransferValidator.validate(
+                manifest: makeManifest(schemaVersion: 4, data: invalid),
+                data: invalid,
+                limits: .production
+            )) {
+                XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitLifecycleEvent"))
+            }
+        }
+    }
+
     func testFullRoundTripPreservesEveryObjectIdentityRelationshipAndOriginal() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -315,6 +365,10 @@ final class ImportExportRecoveryTests: XCTestCase {
             try target.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id),
             try source.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id)
         )
+        let sourceHabitEvent = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).first)
+        let restoredHabitEvent = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).first)
+        XCTAssertEqual(restoredHabitEvent.kind, sourceHabitEvent.kind)
+        XCTAssertEqual(restoredHabitEvent.knownStatus, sourceHabitEvent.knownStatus)
         let joinedLogs = logs.values.joined(separator: "|")
         XCTAssertFalse(joinedLogs.contains(TransferTestFixture.secretBody))
         XCTAssertFalse(joinedLogs.contains(fixture.root.path))
@@ -885,7 +939,8 @@ private func makeTransferData(
     habits: [HabitTransfer] = [],
     weightRecords: [WeightRecordTransfer] = [],
     weeklyReviews: [WeeklyReviewTransfer] = [],
-    habitPlanRevisions: [HabitPlanRevisionTransfer] = []
+    habitPlanRevisions: [HabitPlanRevisionTransfer] = [],
+    habitLifecycleEvents: [HabitLifecycleEventTransfer] = []
 ) -> TransferData {
     TransferData(
         entries: [],
@@ -898,7 +953,8 @@ private func makeTransferData(
         goalEvents: [],
         weightRecords: weightRecords,
         weeklyReviews: weeklyReviews,
-        habitPlanRevisions: habitPlanRevisions
+        habitPlanRevisions: habitPlanRevisions,
+        habitLifecycleEvents: habitLifecycleEvents
     )
 }
 
@@ -1007,9 +1063,10 @@ private final class TransferTestFixture {
         )
         let habitEvent = HabitLifecycleEvent(
             habitID: habit.id,
-            kind: .created,
+            kind: .migrationBaseline,
             occurredLocalDay: HabitLocalDay(date: base).description,
-            occurredAt: base
+            occurredAt: base,
+            knownStatus: .active
         )
         let event = GoalLifecycleEvent(
             goalID: goal.id,

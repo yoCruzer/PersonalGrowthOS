@@ -1103,6 +1103,12 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(habit.status, .archived)
         try lifecycle.transition(habit, to: .active)
         XCTAssertEqual(habit.status, .active)
+        XCTAssertEqual(
+            try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
+                .sorted { $0.occurredAt < $1.occurredAt }
+                .map(\.kind),
+            [.created, .paused, .completed, .archived, .restored]
+        )
         let originalUpdatedAt = habit.updatedAt
         let failing = HabitService(
             context: context,
@@ -1212,8 +1218,11 @@ final class HabitFoundationTests: XCTestCase {
         let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
         let plan = try XCTUnwrap(plans.first)
         XCTAssertEqual(plan.plan, .trackingOnly(recordingMode: .multiplePerDay))
+        XCTAssertEqual(plan.effectiveLocalDay, HabitLocalDay(date: now, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
         XCTAssertEqual(plan.trustCoverageStartLocalDay, HabitLocalDay(date: now, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
-        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).count, 1)
+        let baseline = try XCTUnwrap(context.fetch(FetchDescriptor<HabitLifecycleEvent>()).first)
+        XCTAssertEqual(baseline.kind, .migrationBaseline)
+        XCTAssertEqual(baseline.knownStatus, .active)
     }
 
     func testV7StoreMigratesAndBootstrapsHabitAnalyticsWithoutChangingHistory() throws {
@@ -1384,10 +1393,19 @@ final class HabitFoundationTests: XCTestCase {
             XCTAssertEqual(plansByHabit[onceHabitID]?.plan, HabitPlan.legacy(mode: .oncePerDay, target: nil))
             XCTAssertEqual(plansByHabit[multipleHabitID]?.plan, HabitPlan.legacy(mode: .multiplePerDay, target: 3))
             XCTAssertEqual(plansByHabit[targetlessHabitID]?.plan, .trackingOnly(recordingMode: .multiplePerDay))
+            XCTAssertTrue(plans.allSatisfy { $0.effectiveLocalDay == bootstrapDay.description })
             XCTAssertTrue(plans.allSatisfy { $0.trustCoverageStartLocalDay == bootstrapDay.description })
             planIDs = Set(plans.map(\.id))
             let lifecycle = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
             XCTAssertEqual(lifecycle.count, 4)
+            let statusByHabitID = Dictionary(uniqueKeysWithValues: lifecycle.map {
+                ($0.habitID, $0.knownStatus)
+            })
+            XCTAssertTrue(lifecycle.allSatisfy { $0.kind == .migrationBaseline })
+            XCTAssertEqual(statusByHabitID[onceHabitID], .active)
+            XCTAssertEqual(statusByHabitID[multipleHabitID], .active)
+            XCTAssertEqual(statusByHabitID[targetlessHabitID], .active)
+            XCTAssertEqual(statusByHabitID[archivedHabitID], .archived)
             lifecycleIDs = Set(lifecycle.map(\.id))
             let metadataAfterBootstrap = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
             XCTAssertEqual(metadataAfterBootstrap.count, expectedLogIDs.count)
@@ -1929,6 +1947,146 @@ final class HabitFoundationTests: XCTestCase {
 
         XCTAssertEqual(HabitLocalDay(date: spring, timeZone: timeZone).adding(days: 1, timeZone: timeZone), HabitLocalDay(year: 2026, month: 3, day: 9))
         XCTAssertEqual(HabitLocalDay(date: autumn, timeZone: timeZone).adding(days: 1, timeZone: timeZone), HabitLocalDay(year: 2026, month: 11, day: 2))
+    }
+
+    func testLocalDayRejectsImpossibleDatesAndAcceptsLeapDay() {
+        XCTAssertNil(HabitLocalDay("2026-02-31"))
+        XCTAssertNil(HabitLocalDay("2027-02-29"))
+        XCTAssertNil(HabitLocalDay("2026-2-03"))
+        XCTAssertEqual(
+            HabitLocalDay("2028-02-29"),
+            HabitLocalDay(year: 2028, month: 2, day: 29)
+        )
+    }
+
+    func testBackdatedPositiveActivityRecomputesHistoricalOutcome() {
+        let day1 = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let day3 = HabitLocalDay(year: 2026, month: 9, day: 3)
+        let plan = HabitPlanSnapshot(
+            effectiveDay: day1,
+            plan: HabitPlan(
+                recordingMode: .oncePerDay,
+                period: .day,
+                goal: .everyDay,
+                targetCount: 1,
+                weekdays: []
+            ),
+            trustStartDay: day1
+        )
+        let lifecycle = [HabitLifecycleSnapshot(day: day1, kind: .created)]
+        let before = HabitAnalyticsEngine.evaluate(
+            createdAt: day1,
+            logs: [],
+            plans: [plan],
+            lifecycle: lifecycle,
+            asOf: day3
+        )
+        let after = HabitAnalyticsEngine.evaluate(
+            createdAt: day1,
+            logs: [HabitAnalyticsLog(id: UUID(), localDay: day1, isCompleted: true, occurredAt: Date())],
+            plans: [plan],
+            lifecycle: lifecycle,
+            asOf: day3
+        )
+
+        XCTAssertEqual(before.evaluations.first { $0.start == day1 }?.outcome, .missed)
+        XCTAssertEqual(after.evaluations.first { $0.start == day1 }?.outcome, .achieved)
+    }
+
+    func testLifecycleTransitionsDistinguishResumeRestartAndRestore() throws {
+        let transitions: [(HabitStatus, HabitLifecycleEventKind)] = [
+            (.paused, .resumed),
+            (.completed, .restarted),
+            (.archived, .restored)
+        ]
+        for (status, expectedKind) in transitions {
+            let container = try PersistenceContainerFactory.makeInMemory()
+            let context = container.mainContext
+            var clock = Date(timeIntervalSince1970: 1_800_000_000)
+            let service = HabitService(context: context, now: { clock })
+            let habit = try service.create(name: "Lifecycle \(status.rawValue)")
+            clock.addTimeInterval(10)
+            try service.transition(habit, to: status)
+            clock.addTimeInterval(10)
+            try service.transition(habit, to: .active)
+            let latest = try XCTUnwrap(context.fetch(FetchDescriptor<HabitLifecycleEvent>())
+                .sorted { $0.createdAt > $1.createdAt }
+                .first)
+            XCTAssertEqual(latest.kind, expectedKind)
+        }
+    }
+
+    func testJourneyMergesPlanAndLifecycleChronologicallyAndHidesMigrationBaseline() {
+        let day1 = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let day2 = HabitLocalDay(year: 2026, month: 9, day: 2)
+        let day3 = HabitLocalDay(year: 2026, month: 9, day: 3)
+        let day4 = HabitLocalDay(year: 2026, month: 9, day: 4)
+        let day5 = HabitLocalDay(year: 2026, month: 9, day: 5)
+        let dailyPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .day,
+            goal: .everyDay,
+            targetCount: 1,
+            weekdays: []
+        )
+        let weeklyPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .week,
+            goal: .count,
+            targetCount: 3,
+            weekdays: []
+        )
+        let habitID = UUID()
+        let plans = [
+            HabitPlanRevision(
+                habitID: habitID,
+                effectiveLocalDay: day1.description,
+                plan: dailyPlan,
+                trustCoverageStartLocalDay: day1.description,
+                createdAt: day1.date()!
+            ),
+            HabitPlanRevision(
+                habitID: habitID,
+                effectiveLocalDay: day3.description,
+                plan: weeklyPlan,
+                trustCoverageStartLocalDay: day3.description,
+                createdAt: day2.date()!
+            )
+        ]
+        let events = [
+            HabitLifecycleEvent(
+                habitID: habitID,
+                kind: .paused,
+                occurredLocalDay: day2.description,
+                occurredAt: day2.date()!
+            ),
+            HabitLifecycleEvent(
+                habitID: habitID,
+                kind: .restored,
+                occurredLocalDay: day4.description,
+                occurredAt: day4.date()!
+            ),
+            HabitLifecycleEvent(
+                habitID: habitID,
+                kind: .migrationBaseline,
+                occurredLocalDay: day5.description,
+                occurredAt: day5.date()!,
+                knownStatus: .active
+            )
+        ]
+
+        let items = HabitJourneyBuilder.items(
+            plans: plans,
+            lifecycleEvents: events,
+            asOf: day5.date()!
+        )
+        XCTAssertEqual(items.map(\.day), [day4, day3, day2, day1])
+        XCTAssertEqual(items.map(\.kind), [
+            .lifecycle(.restored),
+            .plan(weeklyPlan),
+            .lifecycle(.paused),
+            .plan(dailyPlan)
+        ])
     }
 
     func testAnalyticsIsIndependentOfInputOrdering() {

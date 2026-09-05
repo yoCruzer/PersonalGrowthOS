@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | Contiguous analytics segments are verified; next batch is Local Day and lifecycle historical truth |
-| Automated gate | Stage 5 Habit Foundation tests 54/54 PASS; complete Build 8 gate not run |
+| Implementation tip | Local Day and lifecycle historical truth are verified; next batch is the period-aware P0 dashboard |
+| Automated gate | Stage 6/7 targeted Habit/transfer 58/58 plus focused 2/2 and migration 2/2 PASS; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -29,6 +29,7 @@
 - Today, Habits Overview, Habit Detail and check-in validation now resolve settings from the Plan effective on the relevant Local Day. Legacy `HabitConfiguration` is consulted only if no effective Plan exists; contradictory configuration no longer changes V8 runtime behavior.
 - Name-only saves carry no Plan change and preserve pending revision IDs. The editor loads and labels a pending Plan/effective date; an actual Plan edit removes the never-effective pending revision before inserting its replacement.
 - Current adherence, consistency and streaks use only the current contiguous Plan/lifecycle segment. Day→week→day, week→month→week, Tracking Only→daily and pause/complete/archive restart boundaries no longer bridge metrics.
+- Local Day parsing rejects impossible dates and preserves leap days; backdated positives recompute history. Migration uses a hidden baseline with known current status and a conservative Plan boundary. Resume, Restart and Restore are distinct, same-day lifecycle ordering is deterministic, and visible Plan/lifecycle Journey facts are merged chronologically.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
 - This is not a candidate: the acceptance matrix, migration verification, UI verification, documentation closure and remote review handoff remain incomplete.
 
@@ -52,4 +53,4 @@
 
 ## Next Action
 
-Finish Local Day and lifecycle historical truth: deterministic event ordering, neutral migration baseline, correct pause/resume/completed/restart/archive/restore history, and remaining backdated/time-zone cases. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.
+Make Habits Overview consume authoritative current-period evaluations for daily/weekly/monthly/tracking-only rows, then finish the period grid and Year Activity P0 presentation. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.

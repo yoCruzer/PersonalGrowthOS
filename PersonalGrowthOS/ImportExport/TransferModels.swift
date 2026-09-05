@@ -254,7 +254,21 @@ struct HabitPlanRevisionTransfer: Codable, Equatable {
 }
 
 struct HabitLifecycleEventTransfer: Codable, Equatable {
-    let id: UUID; let habitID: UUID; let kind: String; let occurredLocalDay: String; let occurredAt: Date; let createdAt: Date
+    let id: UUID; let habitID: UUID; let kind: String; let occurredLocalDay: String
+    let occurredAt: Date; let createdAt: Date; let knownStatus: String?
+
+    init(
+        id: UUID, habitID: UUID, kind: String, occurredLocalDay: String,
+        occurredAt: Date, createdAt: Date, knownStatus: String? = nil
+    ) {
+        self.id = id
+        self.habitID = habitID
+        self.kind = kind
+        self.occurredLocalDay = occurredLocalDay
+        self.occurredAt = occurredAt
+        self.createdAt = createdAt
+        self.knownStatus = knownStatus
+    }
 }
 
 struct GoalTransfer: Codable, Equatable {
@@ -459,8 +473,16 @@ enum TransferValidator {
             }
         }
         for event in data.habitLifecycleEvents {
-            guard habitIDs.contains(event.habitID), HabitLifecycleEventKind(rawValue: event.kind) != nil,
+            guard habitIDs.contains(event.habitID),
+                  let kind = HabitLifecycleEventKind(rawValue: event.kind),
                   HabitLocalDay(event.occurredLocalDay) != nil else {
+                throw TransferPackageError.invalidObject("habitLifecycleEvent")
+            }
+            if kind == .migrationBaseline {
+                guard event.knownStatus.flatMap(HabitStatus.init(rawValue:)) != nil else {
+                    throw TransferPackageError.invalidObject("habitLifecycleEvent")
+                }
+            } else if event.knownStatus != nil {
                 throw TransferPackageError.invalidObject("habitLifecycleEvent")
             }
         }

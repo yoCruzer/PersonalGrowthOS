@@ -483,7 +483,15 @@ struct HabitDetailView: View {
                 )
             },
             plans: snapshots,
-            lifecycle: lifecycleEvents.filter { $0.habitID == habit.id }.map { HabitLifecycleSnapshot(day: HabitLocalDay($0.occurredLocalDay) ?? HabitLocalDay(date: $0.occurredAt), kind: $0.kind) }
+            lifecycle: lifecycleEvents.filter { $0.habitID == habit.id }.map {
+                HabitLifecycleSnapshot(
+                    id: $0.id,
+                    day: HabitLocalDay($0.occurredLocalDay) ?? HabitLocalDay(date: $0.occurredAt),
+                    kind: $0.kind,
+                    knownStatus: $0.knownStatus,
+                    occurredAt: $0.occurredAt
+                )
+            }
         )
     }
 
@@ -1067,16 +1075,20 @@ private struct HabitAnalyticsDashboard: View {
                 WeekdayActivityPattern(activity: summary.activityByDay)
             }
             Section("Journey") {
-                let today = HabitLocalDay(date: Date())
-                let effectivePlans = plans.filter { (HabitLocalDay($0.effectiveLocalDay) ?? today) <= today }
-                if effectivePlans.isEmpty && lifecycleEvents.isEmpty {
+                let items = HabitJourneyBuilder.items(
+                    plans: plans,
+                    lifecycleEvents: lifecycleEvents
+                )
+                if items.isEmpty {
                     Text("No changes yet.").foregroundStyle(.secondary)
                 } else {
-                    ForEach(effectivePlans.sorted { $0.effectiveLocalDay > $1.effectiveLocalDay }) { plan in
-                        LabeledContent(plan.effectiveLocalDay, value: planDescription(plan.plan))
-                    }
-                    ForEach(lifecycleEvents.sorted { $0.occurredAt > $1.occurredAt }) { event in
-                        LabeledContent(event.occurredLocalDay, value: event.kind.rawValue.capitalized)
+                    ForEach(items) { item in
+                        switch item.kind {
+                        case .plan(let plan):
+                            LabeledContent(item.day.description, value: planDescription(plan))
+                        case .lifecycle(let kind):
+                            LabeledContent(item.day.description, value: lifecycleDescription(kind))
+                        }
                     }
                 }
             }
@@ -1119,6 +1131,19 @@ private struct HabitAnalyticsDashboard: View {
         case .week: return "\(plan.targetCount ?? 0) per week"
         case .month: return "\(plan.targetCount ?? 0) per month"
         case .trackingOnly: return "Tracking Only"
+        }
+    }
+
+    private func lifecycleDescription(_ kind: HabitLifecycleEventKind) -> String {
+        switch kind {
+        case .migrationBaseline: return "Migration Baseline"
+        case .created: return "Created"
+        case .paused: return "Paused"
+        case .resumed: return "Resumed"
+        case .completed: return "Completed"
+        case .archived: return "Archived"
+        case .restarted: return "Restarted"
+        case .restored: return "Restored"
         }
     }
 }

@@ -803,7 +803,8 @@ final class ImportExportService {
                 context.insert(HabitLifecycleEvent(
                     id: record.id, habitID: record.habitID, kind: kind,
                     occurredLocalDay: record.occurredLocalDay, occurredAt: record.occurredAt,
-                    createdAt: record.createdAt
+                    createdAt: record.createdAt,
+                    knownStatus: record.knownStatus.flatMap(HabitStatus.init(rawValue:))
                 ))
             }
             for record in package.data.goalEvents {
@@ -1117,7 +1118,8 @@ private enum TransferSnapshot {
             habitLifecycleEvents: try cancellableMap(habitLifecycleEvents) {
                 HabitLifecycleEventTransfer(
                     id: $0.id, habitID: $0.habitID, kind: $0.kindRawValue,
-                    occurredLocalDay: $0.occurredLocalDay, occurredAt: $0.occurredAt, createdAt: $0.createdAt
+                    occurredLocalDay: $0.occurredLocalDay, occurredAt: $0.occurredAt,
+                    createdAt: $0.createdAt, knownStatus: $0.knownStatusRawValue
                 )
             }.sorted { sortUUID($0.id, $1.id) }
         )

@@ -42,13 +42,29 @@ struct HabitLocalDay: Hashable, Comparable, Codable, Sendable, Identifiable {
     }
 
     init?(_ value: String) {
-        let parts = value.split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 3, (1...12).contains(parts[1]), (1...31).contains(parts[2]) else {
+        let parts = value.split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count == 3,
+              parts[0].count == 4,
+              parts[1].count == 2,
+              parts[2].count == 2,
+              let year = Int(parts[0]),
+              let month = Int(parts[1]),
+              let day = Int(parts[2]),
+              year > 0 else {
             return nil
         }
-        year = parts[0]
-        month = parts[1]
-        day = parts[2]
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let date = calendar.date(from: DateComponents(year: year, month: month, day: day)) else {
+            return nil
+        }
+        let validated = calendar.dateComponents([.year, .month, .day], from: date)
+        guard validated.year == year, validated.month == month, validated.day == day else {
+            return nil
+        }
+        self.year = year
+        self.month = month
+        self.day = day
     }
 
     var description: String { String(format: "%04d-%02d-%02d", year, month, day) }
@@ -86,12 +102,14 @@ enum HabitPlanGoal: String, Codable, CaseIterable, Sendable {
 }
 
 enum HabitLifecycleEventKind: String, Codable, CaseIterable, Sendable {
+    case migrationBaseline
     case created
     case paused
     case resumed
     case completed
     case archived
     case restarted
+    case restored
 }
 
 struct HabitPlan: Equatable, Sendable {
@@ -196,8 +214,25 @@ struct HabitPlanSnapshot: Equatable, Sendable {
 }
 
 struct HabitLifecycleSnapshot: Equatable, Sendable {
+    let id: UUID
     let day: HabitLocalDay
     let kind: HabitLifecycleEventKind
+    let knownStatus: HabitStatus?
+    let occurredAt: Date
+
+    init(
+        id: UUID = UUID(),
+        day: HabitLocalDay,
+        kind: HabitLifecycleEventKind,
+        knownStatus: HabitStatus? = nil,
+        occurredAt: Date? = nil
+    ) {
+        self.id = id
+        self.day = day
+        self.kind = kind
+        self.knownStatus = knownStatus
+        self.occurredAt = occurredAt ?? day.date(timeZone: TimeZone(secondsFromGMT: 0)!) ?? .distantPast
+    }
 }
 
 enum HabitPeriodOutcome: Equatable, Sendable {
@@ -247,7 +282,11 @@ enum HabitAnalyticsEngine {
         timeZone: TimeZone = .current
     ) -> HabitAnalyticsSummary {
         let sortedPlans = plans.sorted { $0.effectiveDay < $1.effectiveDay }
-        let sortedEvents = lifecycle.sorted { $0.day < $1.day }
+        let sortedEvents = lifecycle.sorted {
+            if $0.day != $1.day { return $0.day < $1.day }
+            if $0.occurredAt != $1.occurredAt { return $0.occurredAt < $1.occurredAt }
+            return $0.id.uuidString < $1.id.uuidString
+        }
         let activity = Dictionary(grouping: logs.filter(\.isCompleted), by: \.localDay)
             .mapValues { $0.count }
         guard let first = ([createdAt] + activity.keys + sortedPlans.map(\.effectiveDay)).min() else {
@@ -364,8 +403,15 @@ enum HabitAnalyticsEngine {
     }
 
     private static func isActive(on day: HabitLocalDay, events: [HabitLifecycleSnapshot]) -> Bool {
-        let last = events.last { $0.day <= day }?.kind ?? .created
-        return last == .created || last == .resumed || last == .restarted
+        guard let last = events.last(where: { $0.day <= day }) else { return true }
+        switch last.kind {
+        case .migrationBaseline:
+            return last.knownStatus == .active
+        case .created, .resumed, .restarted, .restored:
+            return true
+        case .paused, .completed, .archived:
+            return false
+        }
     }
 
     private static func isScheduled(_ day: HabitLocalDay, plan: HabitPlan, timeZone: TimeZone) -> Bool {

@@ -144,10 +144,12 @@ final class HabitLifecycleEvent {
     var occurredLocalDay: String
     var occurredAt: Date
     var createdAt: Date
+    var knownStatusRawValue: String?
 
     init(
         id: UUID = UUID(), habitID: UUID, kind: HabitLifecycleEventKind,
-        occurredLocalDay: String, occurredAt: Date, createdAt: Date? = nil
+        occurredLocalDay: String, occurredAt: Date, createdAt: Date? = nil,
+        knownStatus: HabitStatus? = nil
     ) {
         self.id = id
         self.habitID = habitID
@@ -155,10 +157,63 @@ final class HabitLifecycleEvent {
         self.occurredLocalDay = occurredLocalDay
         self.occurredAt = occurredAt
         self.createdAt = createdAt ?? occurredAt
+        knownStatusRawValue = knownStatus?.rawValue
     }
 
     var kind: HabitLifecycleEventKind {
-        HabitLifecycleEventKind(rawValue: kindRawValue) ?? .created
+        HabitLifecycleEventKind(rawValue: kindRawValue) ?? .migrationBaseline
+    }
+
+    var knownStatus: HabitStatus? {
+        knownStatusRawValue.flatMap(HabitStatus.init(rawValue:))
+    }
+}
+
+enum HabitJourneyItemKind: Equatable {
+    case plan(HabitPlan)
+    case lifecycle(HabitLifecycleEventKind)
+}
+
+struct HabitJourneyItem: Identifiable, Equatable {
+    let id: String
+    let day: HabitLocalDay
+    let occurredAt: Date
+    let kind: HabitJourneyItemKind
+}
+
+enum HabitJourneyBuilder {
+    static func items(
+        plans: [HabitPlanRevision],
+        lifecycleEvents: [HabitLifecycleEvent],
+        asOf: Date = Date(),
+        timeZone: TimeZone = .current
+    ) -> [HabitJourneyItem] {
+        let today = HabitLocalDay(date: asOf, timeZone: timeZone)
+        let planItems = plans.compactMap { revision -> HabitJourneyItem? in
+            guard let day = HabitLocalDay(revision.effectiveLocalDay), day <= today else { return nil }
+            return HabitJourneyItem(
+                id: "plan-\(revision.id.uuidString)",
+                day: day,
+                occurredAt: revision.createdAt,
+                kind: .plan(revision.plan)
+            )
+        }
+        let lifecycleItems = lifecycleEvents.compactMap { event -> HabitJourneyItem? in
+            guard event.kind != .migrationBaseline,
+                  let day = HabitLocalDay(event.occurredLocalDay),
+                  day <= today else { return nil }
+            return HabitJourneyItem(
+                id: "lifecycle-\(event.id.uuidString)",
+                day: day,
+                occurredAt: event.occurredAt,
+                kind: .lifecycle(event.kind)
+            )
+        }
+        return (planItems + lifecycleItems).sorted {
+            if $0.day != $1.day { return $0.day > $1.day }
+            if $0.occurredAt != $1.occurredAt { return $0.occurredAt > $1.occurredAt }
+            return $0.id < $1.id
+        }
     }
 }
 
@@ -362,7 +417,7 @@ enum HabitAnalyticsMigrationBootstrap {
                 let settings = HabitSettingsResolver.settings(for: habit.id, configurations: configurations)
                 context.insert(HabitPlanRevision(
                     habitID: habit.id,
-                    effectiveLocalDay: HabitLocalDay(date: habit.createdAt, timeZone: timeZone).description,
+                    effectiveLocalDay: boundary.description,
                     plan: HabitPlan.legacy(mode: settings.recordingMode, target: settings.dailyTargetCount),
                     trustCoverageStartLocalDay: boundary.description,
                     createdAt: now
@@ -370,18 +425,12 @@ enum HabitAnalyticsMigrationBootstrap {
                 changed = true
             }
             if !lifecycleEvents.contains(where: { $0.habitID == habit.id }) {
-                let kind: HabitLifecycleEventKind
-                switch habit.status {
-                case .active: kind = .created
-                case .paused: kind = .paused
-                case .completed: kind = .completed
-                case .archived: kind = .archived
-                }
                 context.insert(HabitLifecycleEvent(
                     habitID: habit.id,
-                    kind: kind,
+                    kind: .migrationBaseline,
                     occurredLocalDay: boundary.description,
-                    occurredAt: now
+                    occurredAt: now,
+                    knownStatus: habit.status
                 ))
                 changed = true
             }
@@ -713,7 +762,13 @@ final class HabitService {
         case .paused: .paused
         case .completed: .completed
         case .archived: .archived
-        case .active: old == .completed || old == .archived ? .restarted : .resumed
+        case .active:
+            switch old {
+            case .paused: .resumed
+            case .completed: .restarted
+            case .archived: .restored
+            case .active: .resumed
+            }
         }
     }
 }
