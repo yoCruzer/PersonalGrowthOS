@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 3
+    static let currentPackageSchemaVersion = 4
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -40,6 +40,8 @@ struct TransferData: Codable, Equatable {
     let goalEvents: [GoalEventTransfer]
     let weightRecords: [WeightRecordTransfer]
     let weeklyReviews: [WeeklyReviewTransfer]
+    let habitPlanRevisions: [HabitPlanRevisionTransfer]
+    let habitLifecycleEvents: [HabitLifecycleEventTransfer]
 
     init(
         entries: [EntryTransfer],
@@ -51,7 +53,9 @@ struct TransferData: Codable, Equatable {
         goals: [GoalTransfer],
         goalEvents: [GoalEventTransfer],
         weightRecords: [WeightRecordTransfer] = [],
-        weeklyReviews: [WeeklyReviewTransfer] = []
+        weeklyReviews: [WeeklyReviewTransfer] = [],
+        habitPlanRevisions: [HabitPlanRevisionTransfer] = [],
+        habitLifecycleEvents: [HabitLifecycleEventTransfer] = []
     ) {
         self.entries = entries
         self.images = images
@@ -63,6 +67,8 @@ struct TransferData: Codable, Equatable {
         self.goalEvents = goalEvents
         self.weightRecords = weightRecords
         self.weeklyReviews = weeklyReviews
+        self.habitPlanRevisions = habitPlanRevisions
+        self.habitLifecycleEvents = habitLifecycleEvents
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -76,6 +82,8 @@ struct TransferData: Codable, Equatable {
         case goalEvents
         case weightRecords
         case weeklyReviews
+        case habitPlanRevisions
+        case habitLifecycleEvents
     }
 
     init(from decoder: Decoder) throws {
@@ -96,6 +104,12 @@ struct TransferData: Codable, Equatable {
             [WeeklyReviewTransfer].self,
             forKey: .weeklyReviews
         ) ?? []
+        habitPlanRevisions = try container.decodeIfPresent(
+            [HabitPlanRevisionTransfer].self, forKey: .habitPlanRevisions
+        ) ?? []
+        habitLifecycleEvents = try container.decodeIfPresent(
+            [HabitLifecycleEventTransfer].self, forKey: .habitLifecycleEvents
+        ) ?? []
     }
 
     var objectCounts: [String: Int] {
@@ -109,7 +123,9 @@ struct TransferData: Codable, Equatable {
             "goals": goals.count,
             "goalEvents": goalEvents.count,
             "weightRecords": weightRecords.count,
-            "weeklyReviews": weeklyReviews.count
+            "weeklyReviews": weeklyReviews.count,
+            "habitPlanRevisions": habitPlanRevisions.count,
+            "habitLifecycleEvents": habitLifecycleEvents.count
         ]
     }
 
@@ -117,6 +133,7 @@ struct TransferData: Codable, Equatable {
         objectCounts.filter { key, _ in
             (version != 1 || key != "weightRecords")
                 && (version >= 3 || key != "weeklyReviews")
+                && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
         }
     }
 
@@ -194,6 +211,31 @@ struct HabitLogTransfer: Codable, Equatable {
     let result: String?
     let linkedEntryID: UUID?
     let createdAt: Date
+    let localDayIdentifier: String?
+    let localTimeZoneIdentifier: String?
+
+    init(id: UUID, habitID: UUID, occurredAt: Date, isCompleted: Bool, quantity: Double?, unit: String?, result: String?, linkedEntryID: UUID?, createdAt: Date, localDayIdentifier: String? = nil, localTimeZoneIdentifier: String? = nil) {
+        self.id = id; self.habitID = habitID; self.occurredAt = occurredAt; self.isCompleted = isCompleted
+        self.quantity = quantity; self.unit = unit; self.result = result; self.linkedEntryID = linkedEntryID; self.createdAt = createdAt
+        self.localDayIdentifier = localDayIdentifier; self.localTimeZoneIdentifier = localTimeZoneIdentifier
+    }
+
+    private enum CodingKeys: String, CodingKey { case id, habitID, occurredAt, isCompleted, quantity, unit, result, linkedEntryID, createdAt, localDayIdentifier, localTimeZoneIdentifier }
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id); habitID = try c.decode(UUID.self, forKey: .habitID); occurredAt = try c.decode(Date.self, forKey: .occurredAt); isCompleted = try c.decode(Bool.self, forKey: .isCompleted)
+        quantity = try c.decodeIfPresent(Double.self, forKey: .quantity); unit = try c.decodeIfPresent(String.self, forKey: .unit); result = try c.decodeIfPresent(String.self, forKey: .result); linkedEntryID = try c.decodeIfPresent(UUID.self, forKey: .linkedEntryID); createdAt = try c.decode(Date.self, forKey: .createdAt)
+        localDayIdentifier = try c.decodeIfPresent(String.self, forKey: .localDayIdentifier); localTimeZoneIdentifier = try c.decodeIfPresent(String.self, forKey: .localTimeZoneIdentifier)
+    }
+}
+
+struct HabitPlanRevisionTransfer: Codable, Equatable {
+    let id: UUID; let habitID: UUID; let effectiveLocalDay: String; let period: String; let goal: String
+    let targetCount: Int?; let weekdays: String; let trustCoverageStartLocalDay: String; let createdAt: Date
+}
+
+struct HabitLifecycleEventTransfer: Codable, Equatable {
+    let id: UUID; let habitID: UUID; let kind: String; let occurredLocalDay: String; let occurredAt: Date; let createdAt: Date
 }
 
 struct GoalTransfer: Codable, Equatable {
@@ -295,6 +337,8 @@ enum TransferValidator {
         try unique(data.goalEvents.map(\.id), type: "goalEvent")
         try unique(data.weightRecords.map(\.id), type: "weightRecord")
         try unique(data.weeklyReviews.map(\.id), type: "weeklyReview")
+        try unique(data.habitPlanRevisions.map(\.id), type: "habitPlanRevision")
+        try unique(data.habitLifecycleEvents.map(\.id), type: "habitLifecycleEvent")
         guard Set(data.weeklyReviews.map(\.weekIdentifier)).count == data.weeklyReviews.count else {
             throw TransferPackageError.duplicateID("weeklyReviewIdentifier")
         }
@@ -373,6 +417,24 @@ enum TransferValidator {
                 _ = try validatedImportedDailyTarget(habit.dailyTargetCount, mode: mode)
             } else if habit.dailyTargetCount != nil {
                 throw TransferPackageError.invalidObject("habit")
+            }
+        }
+        for plan in data.habitPlanRevisions {
+            guard habitIDs.contains(plan.habitID), HabitLocalDay(plan.effectiveLocalDay) != nil,
+                  HabitLocalDay(plan.trustCoverageStartLocalDay) != nil,
+                  let period = HabitPlanPeriod(rawValue: plan.period),
+                  let goal = HabitPlanGoal(rawValue: plan.goal) else {
+                throw TransferPackageError.invalidObject("habitPlanRevision")
+            }
+            let weekdays = Set(plan.weekdays.split(separator: ",").compactMap { Int($0) })
+            guard (try? HabitRules.validatedPlan(HabitPlan(period: period, goal: goal, targetCount: plan.targetCount, weekdays: weekdays))) != nil else {
+                throw TransferPackageError.invalidObject("habitPlanRevision")
+            }
+        }
+        for event in data.habitLifecycleEvents {
+            guard habitIDs.contains(event.habitID), HabitLifecycleEventKind(rawValue: event.kind) != nil,
+                  HabitLocalDay(event.occurredLocalDay) != nil else {
+                throw TransferPackageError.invalidObject("habitLifecycleEvent")
             }
         }
         for goal in data.goals {

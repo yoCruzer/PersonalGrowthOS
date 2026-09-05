@@ -944,6 +944,28 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(habit.updatedAt, originalUpdatedAt)
         XCTAssertEqual(try LocalSearchService(context: context).search("meditate").habits.map(\.id), [habit.id])
     }
+
+    func testAnalyticsCapsDailyCreditAndKeepsOpenPeriodOutOfStrictMetrics() {
+        let start = HabitLocalDay(year: 2026, month: 9, day: 1)
+        let plan = HabitPlanSnapshot(
+            effectiveDay: start,
+            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            trustStartDay: start
+        )
+        let logs = [
+            HabitAnalyticsLog(id: UUID(), localDay: start, isCompleted: false, occurredAt: Date()),
+            HabitAnalyticsLog(id: UUID(), localDay: start, isCompleted: true, occurredAt: Date()),
+            HabitAnalyticsLog(id: UUID(), localDay: start, isCompleted: true, occurredAt: Date())
+        ]
+        let result = HabitAnalyticsEngine.evaluate(
+            createdAt: start, logs: logs, plans: [plan], lifecycle: [
+                HabitLifecycleSnapshot(day: start, kind: .created)
+            ], asOf: start
+        )
+        XCTAssertEqual(result.current?.actual, 1)
+        XCTAssertEqual(result.current?.outcome, .achieved)
+        XCTAssertNil(result.adherence, "The current open period must not enter adherence.")
+    }
 }
 
 private enum InjectedHabitFailure: Error {

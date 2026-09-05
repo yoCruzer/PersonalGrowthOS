@@ -43,6 +43,10 @@ final class HabitLog {
     var result: String?
     var linkedEntryID: UUID?
     var createdAt: Date
+    /// Immutable civil-day identity captured at write time (V8). Legacy rows are
+    /// conservatively frozen during the first analytics bootstrap.
+    var localDayIdentifier: String?
+    var localTimeZoneIdentifier: String?
 
     init(
         id: UUID = UUID(),
@@ -53,7 +57,9 @@ final class HabitLog {
         unit: String? = nil,
         result: String? = nil,
         linkedEntryID: UUID? = nil,
-        createdAt: Date
+        createdAt: Date,
+        localDayIdentifier: String? = nil,
+        localTimeZoneIdentifier: String? = nil
     ) {
         self.id = id
         self.habitID = habitID
@@ -64,6 +70,73 @@ final class HabitLog {
         self.result = result
         self.linkedEntryID = linkedEntryID
         self.createdAt = createdAt
+        self.localDayIdentifier = localDayIdentifier
+        self.localTimeZoneIdentifier = localTimeZoneIdentifier
+    }
+}
+
+@Model
+final class HabitPlanRevision {
+    @Attribute(.unique) var id: UUID
+    var habitID: UUID
+    /// YYYY-MM-DD in the local civil calendar effective at creation/edit time.
+    var effectiveLocalDay: String
+    var periodRawValue: String
+    var goalRawValue: String
+    var targetCount: Int?
+    /// Comma-separated ISO weekday values. Kept scalar for safe SwiftData migration.
+    var weekdaysRawValue: String
+    var trustCoverageStartLocalDay: String
+    var createdAt: Date
+
+    init(
+        id: UUID = UUID(), habitID: UUID, effectiveLocalDay: String,
+        plan: HabitPlan, trustCoverageStartLocalDay: String, createdAt: Date
+    ) {
+        self.id = id
+        self.habitID = habitID
+        self.effectiveLocalDay = effectiveLocalDay
+        periodRawValue = plan.period.rawValue
+        goalRawValue = plan.goal.rawValue
+        targetCount = plan.targetCount
+        weekdaysRawValue = plan.weekdays.sorted().map(String.init).joined(separator: ",")
+        self.trustCoverageStartLocalDay = trustCoverageStartLocalDay
+        self.createdAt = createdAt
+    }
+
+    var plan: HabitPlan {
+        HabitPlan(
+            period: HabitPlanPeriod(rawValue: periodRawValue) ?? .trackingOnly,
+            goal: HabitPlanGoal(rawValue: goalRawValue) ?? .none,
+            targetCount: targetCount,
+            weekdays: Set(weekdaysRawValue.split(separator: ",").compactMap { Int($0) })
+        )
+    }
+}
+
+@Model
+final class HabitLifecycleEvent {
+    @Attribute(.unique) var id: UUID
+    var habitID: UUID
+    var kindRawValue: String
+    var occurredLocalDay: String
+    var occurredAt: Date
+    var createdAt: Date
+
+    init(
+        id: UUID = UUID(), habitID: UUID, kind: HabitLifecycleEventKind,
+        occurredLocalDay: String, occurredAt: Date, createdAt: Date? = nil
+    ) {
+        self.id = id
+        self.habitID = habitID
+        kindRawValue = kind.rawValue
+        self.occurredLocalDay = occurredLocalDay
+        self.occurredAt = occurredAt
+        self.createdAt = createdAt ?? occurredAt
+    }
+
+    var kind: HabitLifecycleEventKind {
+        HabitLifecycleEventKind(rawValue: kindRawValue) ?? .created
     }
 }
 
@@ -144,6 +217,21 @@ final class HabitService {
             dailyTargetCount: validatedTarget,
             updatedAt: timestamp
         ))
+        let localDay = HabitLocalDay(date: timestamp)
+        let plan = HabitPlan.legacy(mode: recordingMode, target: validatedTarget)
+        context.insert(HabitPlanRevision(
+            habitID: habit.id,
+            effectiveLocalDay: localDay.description,
+            plan: plan,
+            trustCoverageStartLocalDay: localDay.description,
+            createdAt: timestamp
+        ))
+        context.insert(HabitLifecycleEvent(
+            habitID: habit.id,
+            kind: .created,
+            occurredLocalDay: localDay.description,
+            occurredAt: timestamp
+        ))
         do {
             try save()
             return habit
@@ -151,6 +239,14 @@ final class HabitService {
             context.rollback()
             throw error
         }
+    }
+
+    func create(name: String, plan: HabitPlan) throws -> Habit {
+        let plan = try HabitRules.validatedPlan(plan)
+        let mode: HabitRecordingMode = plan.targetCount == 1 && plan.period == .day ? .oncePerDay : .multiplePerDay
+        let target = plan.period == .day ? plan.targetCount : nil
+        let habit = try createLegacyCompatibleHabit(name: name, mode: mode, target: target, plan: plan)
+        return habit
     }
 
     func update(
@@ -192,6 +288,14 @@ final class HabitService {
             ))
         }
 
+        let currentPlan = HabitPlan.legacy(mode: recordingMode, target: validatedTarget)
+        try replacePendingPlan(
+            habitID: habit.id,
+            plan: currentPlan,
+            effectiveDay: nextEffectiveDay(for: currentPlan, at: timestamp),
+            timestamp: timestamp
+        )
+
         do {
             try save()
         } catch {
@@ -210,12 +314,40 @@ final class HabitService {
         }
     }
 
+    func update(_ habit: Habit, name: String, plan: HabitPlan) throws {
+        let plan = try HabitRules.validatedPlan(plan)
+        let validatedName = try HabitRules.validatedName(name)
+        guard let persisted = try fetchHabit(habit.id) else { throw HabitCheckInError.missingHabit }
+        let timestamp = now()
+        persisted.name = validatedName
+        persisted.normalizedName = TextSearchNormalizer.normalize(validatedName)
+        persisted.updatedAt = timestamp
+        let mode: HabitRecordingMode = plan.targetCount == 1 && plan.period == .day ? .oncePerDay : .multiplePerDay
+        let target = plan.period == .day ? plan.targetCount : nil
+        if let configuration = try fetchConfiguration(habit.id) {
+            configuration.recordingMode = mode
+            configuration.dailyTargetCount = target
+            configuration.updatedAt = timestamp
+        } else {
+            context.insert(HabitConfiguration(habitID: habit.id, recordingMode: mode, dailyTargetCount: target, updatedAt: timestamp))
+        }
+        try replacePendingPlan(habitID: habit.id, plan: plan, effectiveDay: nextEffectiveDay(for: plan, at: timestamp), timestamp: timestamp)
+        do { try save() } catch { context.rollback(); throw error }
+    }
+
     func transition(_ habit: Habit, to status: HabitStatus) throws {
         guard habit.status != status else { return }
         let originalStatus = habit.status
         let originalUpdatedAt = habit.updatedAt
         habit.status = status
-        habit.updatedAt = now()
+        let timestamp = now()
+        habit.updatedAt = timestamp
+        context.insert(HabitLifecycleEvent(
+            habitID: habit.id,
+            kind: lifecycleKind(from: originalStatus, to: status),
+            occurredLocalDay: HabitLocalDay(date: timestamp).description,
+            occurredAt: timestamp
+        ))
         do {
             try save()
         } catch {
@@ -235,6 +367,12 @@ final class HabitService {
         let configurations = try context.fetch(FetchDescriptor<HabitConfiguration>(
             predicate: #Predicate { $0.habitID == habitID }
         ))
+        let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>(
+            predicate: #Predicate { $0.habitID == habitID }
+        ))
+        let lifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>(
+            predicate: #Predicate { $0.habitID == habitID }
+        ))
         let links = try context.fetch(FetchDescriptor<ObjectLink>(
             predicate: #Predicate {
                 ($0.sourceTypeRawValue == habitType && $0.sourceID == habitID)
@@ -243,6 +381,8 @@ final class HabitService {
         ))
         logs.forEach(context.delete)
         configurations.forEach(context.delete)
+        plans.forEach(context.delete)
+        lifecycleEvents.forEach(context.delete)
         links.forEach(context.delete)
         context.delete(habit)
         do {
@@ -259,12 +399,68 @@ final class HabitService {
         return try context.fetch(descriptor).first
     }
 
+    private func createLegacyCompatibleHabit(
+        name: String, mode: HabitRecordingMode, target: Int?, plan: HabitPlan
+    ) throws -> Habit {
+        let validatedName = try HabitRules.validatedName(name)
+        let timestamp = now()
+        let habit = Habit(name: validatedName, normalizedName: TextSearchNormalizer.normalize(validatedName), createdAt: timestamp)
+        context.insert(habit)
+        context.insert(HabitConfiguration(habitID: habit.id, recordingMode: mode, dailyTargetCount: target, updatedAt: timestamp))
+        let day = HabitLocalDay(date: timestamp)
+        context.insert(HabitPlanRevision(habitID: habit.id, effectiveLocalDay: day.description, plan: plan, trustCoverageStartLocalDay: day.description, createdAt: timestamp))
+        context.insert(HabitLifecycleEvent(habitID: habit.id, kind: .created, occurredLocalDay: day.description, occurredAt: timestamp))
+        do { try save(); return habit } catch { context.rollback(); throw error }
+    }
+
     private func fetchConfiguration(_ habitID: UUID) throws -> HabitConfiguration? {
         var descriptor = FetchDescriptor<HabitConfiguration>(
             predicate: #Predicate { $0.habitID == habitID }
         )
         descriptor.fetchLimit = 1
         return try context.fetch(descriptor).first
+    }
+
+    private func replacePendingPlan(
+        habitID: UUID, plan: HabitPlan, effectiveDay: HabitLocalDay, timestamp: Date
+    ) throws {
+        let pending = try context.fetch(FetchDescriptor<HabitPlanRevision>(
+            predicate: #Predicate { $0.habitID == habitID }
+        )).filter { $0.effectiveLocalDay == effectiveDay.description }
+        pending.forEach(context.delete)
+        context.insert(HabitPlanRevision(
+            habitID: habitID,
+            effectiveLocalDay: effectiveDay.description,
+            plan: plan,
+            trustCoverageStartLocalDay: effectiveDay.description,
+            createdAt: timestamp
+        ))
+    }
+
+    private func nextEffectiveDay(for plan: HabitPlan, at date: Date) -> HabitLocalDay {
+        let today = HabitLocalDay(date: date)
+        switch plan.period {
+        case .trackingOnly, .day:
+            return today.adding(days: 1) ?? today
+        case .week:
+            let calendar = WeeklyReviewCalendarPolicy.calendar()
+            let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
+            return HabitLocalDay(date: calendar.dateInterval(of: .weekOfYear, for: nextWeek)?.start ?? nextWeek)
+        case .month:
+            var calendar = Calendar(identifier: .gregorian)
+            let nextMonth = calendar.date(byAdding: .month, value: 1, to: date) ?? date
+            let parts = calendar.dateComponents([.year, .month], from: nextMonth)
+            return HabitLocalDay(year: parts.year ?? today.year, month: parts.month ?? today.month, day: 1)
+        }
+    }
+
+    private func lifecycleKind(from old: HabitStatus, to new: HabitStatus) -> HabitLifecycleEventKind {
+        switch new {
+        case .paused: .paused
+        case .completed: .completed
+        case .archived: .archived
+        case .active: old == .completed || old == .archived ? .restarted : .resumed
+        }
     }
 }
 
@@ -541,7 +737,8 @@ final class HabitCheckInService {
         linkedEntryID: UUID?,
         createdAt: Date
     ) -> HabitLog {
-        HabitLog(
+        let localDay = HabitLocalDay(date: draft.occurredAt, timeZone: calendar.timeZone)
+        return HabitLog(
             habitID: habit.id,
             occurredAt: draft.occurredAt,
             isCompleted: draft.isCompleted,
@@ -549,7 +746,9 @@ final class HabitCheckInService {
             unit: draft.unit,
             result: draft.result,
             linkedEntryID: linkedEntryID,
-            createdAt: createdAt
+            createdAt: createdAt,
+            localDayIdentifier: localDay.description,
+            localTimeZoneIdentifier: calendar.timeZone.identifier
         )
     }
 
@@ -596,3 +795,5 @@ enum HabitTimelineAggregator {
 extension Habit: Identifiable {}
 extension HabitLog: Identifiable {}
 extension HabitConfiguration: Identifiable {}
+extension HabitPlanRevision: Identifiable {}
+extension HabitLifecycleEvent: Identifiable {}

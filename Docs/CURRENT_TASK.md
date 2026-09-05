@@ -2,15 +2,15 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | Build 7 Owner Feedback Round 2 — implementation candidate |
-| Status | P1 REVIEW CLOSURE PUSHED — DRAFT PR #4 OPEN |
-| Execution branch | `fix/build7-owner-feedback-round2` |
-| Base | `c15513f2389d01f28c12ba351933580b37afe4b7` |
-| Implementation tip | `839ce71` (`fix: preserve legacy habit targets in imports`) |
-| Automated gate | PASS — 5 focused Import/Export and Habit tests |
-| External status | [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) is open against `fix/build6-owner-feedback-round1`; independent review and physical-device validation remain |
+| Current checkpoint | Build 8 Habit Analytics Foundation & Dashboard — in progress |
+| Status | NOT READY FOR REVIEW |
+| Execution branch | `feature/build8-habit-analytics-dashboard` |
+| Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
+| Implementation tip | Uncommitted Build 8 foundation work |
+| Automated gate | Debug build PASS; complete Build 8 gate not run |
+| External status | No Build 8 PR, merge, archive or TestFlight action |
 
-## Completed Boundary
+## Superseded Build 7 Boundary
 
 - Weekly Review prompts remain visible with both empty and saved answers, while existing baseline-driven Save, Search and canonical-week behavior remain unchanged.
 - Record is the third native tab. The AppShell floating capture overlay is removed; Record preserves an unsaved tab-switch draft, resets after save and routes the saved Entry to Timeline.
@@ -20,7 +20,13 @@
 - SwiftData remains V7, backup remains v3, marketing version remains 1.0 and Debug/Release build number is 7.
 - Backup import now preserves an explicit legacy multiple-per-day nil target while continuing to reject a provided non-positive target; Weekly Review persistent prompts are also exposed as matching accessibility labels.
 
-## Validation Evidence
+## Build 8 In-progress Boundary
+
+- V8 persistence models, Local Day write semantics, plan/lifecycle history, a pure analytics engine and v4 transfer fields are under implementation.
+- The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
+- This is not a candidate: the acceptance matrix, migration verification, UI verification, documentation closure and remote review handoff remain incomplete.
+
+## Historical Build 7 Validation Evidence
 
 - Habit Unit: 29/29 PASS — `/tmp/PersonalGrowthOS-Build7-Habit2.xcresult`.
 - Record tab and repeatable-counter UI smoke: 2/2 PASS — `/tmp/PersonalGrowthOS-Build7-UI.xcresult`.
@@ -40,4 +46,4 @@
 
 ## Next Action
 
-Hand [Draft PR #4](https://github.com/yoCruzer/PersonalGrowthOS/pull/4) back to ChatGPT for independent review. Do not merge, archive or publish TestFlight.
+Continue Build 8 against its frozen package: complete migration/bootstrap coverage, analytics acceptance tests, editor/UI semantics, v4 import/export round trip, then the final test gate. Do not open a Draft PR until the Build 8 completion gate passes. Do not merge, archive or publish TestFlight.

@@ -761,6 +761,30 @@ final class ImportExportService {
                     unit: record.unit,
                     result: record.result,
                     linkedEntryID: record.linkedEntryID,
+                    createdAt: record.createdAt,
+                    localDayIdentifier: record.localDayIdentifier,
+                    localTimeZoneIdentifier: record.localTimeZoneIdentifier
+                ))
+            }
+            for record in package.data.habitPlanRevisions {
+                guard let period = HabitPlanPeriod(rawValue: record.period),
+                      let goal = HabitPlanGoal(rawValue: record.goal) else {
+                    throw TransferPackageError.invalidObject("habitPlanRevision")
+                }
+                context.insert(HabitPlanRevision(
+                    id: record.id, habitID: record.habitID, effectiveLocalDay: record.effectiveLocalDay,
+                    plan: HabitPlan(period: period, goal: goal, targetCount: record.targetCount,
+                                    weekdays: Set(record.weekdays.split(separator: ",").compactMap { Int($0) })),
+                    trustCoverageStartLocalDay: record.trustCoverageStartLocalDay, createdAt: record.createdAt
+                ))
+            }
+            for record in package.data.habitLifecycleEvents {
+                guard let kind = HabitLifecycleEventKind(rawValue: record.kind) else {
+                    throw TransferPackageError.invalidObject("habitLifecycleEvent")
+                }
+                context.insert(HabitLifecycleEvent(
+                    id: record.id, habitID: record.habitID, kind: kind,
+                    occurredLocalDay: record.occurredLocalDay, occurredAt: record.occurredAt,
                     createdAt: record.createdAt
                 ))
             }
@@ -853,6 +877,8 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<GoalLifecycleEvent>())
             + context.fetchCount(FetchDescriptor<WeightRecord>())
             + context.fetchCount(FetchDescriptor<WeeklyReview>())
+            + context.fetchCount(FetchDescriptor<HabitPlanRevision>())
+            + context.fetchCount(FetchDescriptor<HabitLifecycleEvent>())
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
 
@@ -916,6 +942,10 @@ private enum TransferSnapshot {
         let weightRecords = try context.fetch(FetchDescriptor<WeightRecord>())
         try Task.checkCancellation()
         let weeklyReviews = try context.fetch(FetchDescriptor<WeeklyReview>())
+        try Task.checkCancellation()
+        let habitPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        try Task.checkCancellation()
+        let habitLifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
         let sortUUID: (UUID, UUID) -> Bool = { $0.uuidString < $1.uuidString }
         return TransferData(
             entries: try cancellableMap(entries) {
@@ -1001,7 +1031,9 @@ private enum TransferSnapshot {
                     unit: $0.unit,
                     result: $0.result,
                     linkedEntryID: $0.linkedEntryID,
-                    createdAt: $0.createdAt
+                    createdAt: $0.createdAt,
+                    localDayIdentifier: $0.localDayIdentifier,
+                    localTimeZoneIdentifier: $0.localTimeZoneIdentifier
                 )
             }.sorted { sortUUID($0.id, $1.id) },
             goals: try cancellableMap(goals) {
@@ -1047,6 +1079,20 @@ private enum TransferSnapshot {
                     isCompleted: $0.isCompleted,
                     createdAt: $0.createdAt,
                     updatedAt: $0.updatedAt
+                )
+            }.sorted { sortUUID($0.id, $1.id) },
+            habitPlanRevisions: try cancellableMap(habitPlans) {
+                HabitPlanRevisionTransfer(
+                    id: $0.id, habitID: $0.habitID, effectiveLocalDay: $0.effectiveLocalDay,
+                    period: $0.periodRawValue, goal: $0.goalRawValue, targetCount: $0.targetCount,
+                    weekdays: $0.weekdaysRawValue, trustCoverageStartLocalDay: $0.trustCoverageStartLocalDay,
+                    createdAt: $0.createdAt
+                )
+            }.sorted { sortUUID($0.id, $1.id) },
+            habitLifecycleEvents: try cancellableMap(habitLifecycleEvents) {
+                HabitLifecycleEventTransfer(
+                    id: $0.id, habitID: $0.habitID, kind: $0.kindRawValue,
+                    occurredLocalDay: $0.occurredLocalDay, occurredAt: $0.occurredAt, createdAt: $0.createdAt
                 )
             }.sorted { sortUUID($0.id, $1.id) }
         )
