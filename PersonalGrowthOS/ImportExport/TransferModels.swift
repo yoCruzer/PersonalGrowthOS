@@ -213,19 +213,20 @@ struct HabitLogTransfer: Codable, Equatable {
     let createdAt: Date
     let localDayIdentifier: String?
     let localTimeZoneIdentifier: String?
+    let localDayProvenance: String?
 
-    init(id: UUID, habitID: UUID, occurredAt: Date, isCompleted: Bool, quantity: Double?, unit: String?, result: String?, linkedEntryID: UUID?, createdAt: Date, localDayIdentifier: String? = nil, localTimeZoneIdentifier: String? = nil) {
+    init(id: UUID, habitID: UUID, occurredAt: Date, isCompleted: Bool, quantity: Double?, unit: String?, result: String?, linkedEntryID: UUID?, createdAt: Date, localDayIdentifier: String? = nil, localTimeZoneIdentifier: String? = nil, localDayProvenance: String? = nil) {
         self.id = id; self.habitID = habitID; self.occurredAt = occurredAt; self.isCompleted = isCompleted
         self.quantity = quantity; self.unit = unit; self.result = result; self.linkedEntryID = linkedEntryID; self.createdAt = createdAt
-        self.localDayIdentifier = localDayIdentifier; self.localTimeZoneIdentifier = localTimeZoneIdentifier
+        self.localDayIdentifier = localDayIdentifier; self.localTimeZoneIdentifier = localTimeZoneIdentifier; self.localDayProvenance = localDayProvenance
     }
 
-    private enum CodingKeys: String, CodingKey { case id, habitID, occurredAt, isCompleted, quantity, unit, result, linkedEntryID, createdAt, localDayIdentifier, localTimeZoneIdentifier }
+    private enum CodingKeys: String, CodingKey { case id, habitID, occurredAt, isCompleted, quantity, unit, result, linkedEntryID, createdAt, localDayIdentifier, localTimeZoneIdentifier, localDayProvenance }
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(UUID.self, forKey: .id); habitID = try c.decode(UUID.self, forKey: .habitID); occurredAt = try c.decode(Date.self, forKey: .occurredAt); isCompleted = try c.decode(Bool.self, forKey: .isCompleted)
         quantity = try c.decodeIfPresent(Double.self, forKey: .quantity); unit = try c.decodeIfPresent(String.self, forKey: .unit); result = try c.decodeIfPresent(String.self, forKey: .result); linkedEntryID = try c.decodeIfPresent(UUID.self, forKey: .linkedEntryID); createdAt = try c.decode(Date.self, forKey: .createdAt)
-        localDayIdentifier = try c.decodeIfPresent(String.self, forKey: .localDayIdentifier); localTimeZoneIdentifier = try c.decodeIfPresent(String.self, forKey: .localTimeZoneIdentifier)
+        localDayIdentifier = try c.decodeIfPresent(String.self, forKey: .localDayIdentifier); localTimeZoneIdentifier = try c.decodeIfPresent(String.self, forKey: .localTimeZoneIdentifier); localDayProvenance = try c.decodeIfPresent(String.self, forKey: .localDayProvenance)
     }
 }
 
@@ -472,6 +473,16 @@ enum TransferValidator {
             guard habitIDs.contains(log.habitID),
                   log.linkedEntryID.map(entryIDs.contains) ?? true else {
                 throw TransferPackageError.missingEndpoint
+            }
+            if let localDayIdentifier = log.localDayIdentifier {
+                guard HabitLocalDay(localDayIdentifier) != nil,
+                      let timeZoneIdentifier = log.localTimeZoneIdentifier,
+                      TimeZone(identifier: timeZoneIdentifier) != nil,
+                      log.localDayProvenance.map({ HabitLogDayProvenance(rawValue: $0) != nil }) ?? true else {
+                    throw TransferPackageError.invalidObject("habitLog")
+                }
+            } else if log.localTimeZoneIdentifier != nil || log.localDayProvenance != nil {
+                throw TransferPackageError.invalidObject("habitLog")
             }
         }
         for event in data.goalEvents {

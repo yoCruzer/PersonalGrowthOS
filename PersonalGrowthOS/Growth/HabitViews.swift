@@ -163,6 +163,7 @@ struct HabitsView: View {
     @Query private var planRevisions: [HabitPlanRevision]
     @Query private var configurations: [HabitConfiguration]
     @Query private var allLogs: [HabitLog]
+    @Query private var allLogDayMetadata: [HabitLogDayMetadata]
     @State private var isCreatingHabit = false
 
     private var mainHabits: [Habit] {
@@ -214,6 +215,7 @@ struct HabitsView: View {
                                     plan: HabitPlanResolver.currentPlan(for: habit.id, plans: planRevisions),
                                     settings: HabitSettingsResolver.settings(for: habit.id, configurations: configurations),
                                     logs: allLogs.filter { $0.habitID == habit.id },
+                                    dayMetadata: allLogDayMetadata,
                                     mediaStore: mediaStore,
                                     thumbnailStore: thumbnailStore
                                 )
@@ -263,6 +265,7 @@ private struct HabitOverviewRow: View {
     let plan: HabitPlan?
     let settings: HabitSettings
     let logs: [HabitLog]
+    let dayMetadata: [HabitLogDayMetadata]
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
 
@@ -277,7 +280,12 @@ private struct HabitOverviewRow: View {
     }
 
     private var progress: HabitTodayProgress {
-        HabitTodayProgress(habitID: habit.id, logs: logs, settings: settings)
+        HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            dayMetadata: dayMetadata,
+            settings: settings
+        )
     }
 
     var body: some View {
@@ -393,6 +401,7 @@ struct HabitDetailView: View {
         SortDescriptor(\HabitLog.createdAt, order: .reverse),
         SortDescriptor(\HabitLog.id, order: .forward)
     ]) private var allLogs: [HabitLog]
+    @Query private var allLogDayMetadata: [HabitLogDayMetadata]
     @Query private var configurations: [HabitConfiguration]
     @Query private var planRevisions: [HabitPlanRevision]
     @Query private var lifecycleEvents: [HabitLifecycleEvent]
@@ -435,19 +444,28 @@ struct HabitDetailView: View {
         HabitTodayProgress(
             habitID: habit.id,
             logs: logs,
+            dayMetadata: allLogDayMetadata,
             settings: settings
         )
     }
 
     private var analytics: HabitAnalyticsSummary {
         let fallback = HabitPlan.legacy(mode: settings.recordingMode, target: settings.dailyTargetCount)
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(allLogDayMetadata)
         let plans = planRevisions.filter { $0.habitID == habit.id }.map {
             HabitPlanSnapshot(effectiveDay: HabitLocalDay($0.effectiveLocalDay) ?? HabitLocalDay(date: habit.createdAt), plan: $0.plan, trustStartDay: HabitLocalDay($0.trustCoverageStartLocalDay) ?? HabitLocalDay(date: habit.createdAt))
         }
         let snapshots = plans.isEmpty ? [HabitPlanSnapshot(effectiveDay: HabitLocalDay(date: habit.createdAt), plan: fallback, trustStartDay: HabitLocalDay(date: Date()))] : plans
         return HabitAnalyticsEngine.evaluate(
             createdAt: HabitLocalDay(date: habit.createdAt),
-            logs: logs.map { HabitAnalyticsLog(id: $0.id, localDay: HabitLocalDay($0.localDayIdentifier ?? "") ?? HabitLocalDay(date: $0.occurredAt), isCompleted: $0.isCompleted, occurredAt: $0.occurredAt) },
+            logs: logs.map {
+                HabitAnalyticsLog(
+                    id: $0.id,
+                    localDay: HabitLogDayResolver.localDay(for: $0, metadataByLogID: metadataByLogID),
+                    isCompleted: $0.isCompleted,
+                    occurredAt: $0.occurredAt
+                )
+            },
             plans: snapshots,
             lifecycle: lifecycleEvents.filter { $0.habitID == habit.id }.map { HabitLifecycleSnapshot(day: HabitLocalDay($0.occurredLocalDay) ?? HabitLocalDay(date: $0.occurredAt), kind: $0.kind) }
         )

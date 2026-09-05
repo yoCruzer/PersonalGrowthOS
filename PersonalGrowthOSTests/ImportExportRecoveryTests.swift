@@ -267,10 +267,12 @@ final class ImportExportRecoveryTests: XCTestCase {
         XCTAssertEqual(restoredPlan.id, sourcePlan.id)
         XCTAssertEqual(restoredPlan.effectiveLocalDay, sourcePlan.effectiveLocalDay)
         XCTAssertEqual(restoredPlan.plan, sourcePlan.plan)
-        let sourceHabitLog = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitLog>()).first)
-        let restoredHabitLog = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitLog>()).first)
-        XCTAssertEqual(restoredHabitLog.localDayIdentifier, sourceHabitLog.localDayIdentifier)
-        XCTAssertEqual(restoredHabitLog.localTimeZoneIdentifier, sourceHabitLog.localTimeZoneIdentifier)
+        let sourceDayMetadata = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitLogDayMetadata>()).first)
+        let restoredDayMetadata = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitLogDayMetadata>()).first)
+        XCTAssertEqual(restoredDayMetadata.habitLogID, sourceDayMetadata.habitLogID)
+        XCTAssertEqual(restoredDayMetadata.localDayIdentifier, sourceDayMetadata.localDayIdentifier)
+        XCTAssertEqual(restoredDayMetadata.localTimeZoneIdentifier, sourceDayMetadata.localTimeZoneIdentifier)
+        XCTAssertEqual(restoredDayMetadata.provenance, sourceDayMetadata.provenance)
         XCTAssertEqual(
             try target.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id),
             try source.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id)
@@ -948,9 +950,13 @@ private final class TransferTestFixture {
             unit: "km",
             result: "steady",
             linkedEntryID: entry.id,
-            createdAt: Date(timeIntervalSince1970: 1_100),
+            createdAt: Date(timeIntervalSince1970: 1_100)
+        )
+        let logDayMetadata = HabitLogDayMetadata(
+            habitLogID: log.id,
             localDayIdentifier: HabitLocalDay(date: Date(timeIntervalSince1970: 1_100)).description,
-            localTimeZoneIdentifier: TimeZone.current.identifier
+            localTimeZoneIdentifier: TimeZone.current.identifier,
+            provenance: .capturedAtWrite
         )
         let plan = HabitPlanRevision(
             habitID: habit.id,
@@ -1003,6 +1009,7 @@ private final class TransferTestFixture {
         context.insert(habit)
         context.insert(goal)
         context.insert(log)
+        context.insert(logDayMetadata)
         context.insert(plan)
         context.insert(habitEvent)
         context.insert(event)

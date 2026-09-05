@@ -43,10 +43,6 @@ final class HabitLog {
     var result: String?
     var linkedEntryID: UUID?
     var createdAt: Date
-    /// Immutable civil-day identity captured at write time (V8). Legacy rows are
-    /// conservatively frozen during the first analytics bootstrap.
-    var localDayIdentifier: String?
-    var localTimeZoneIdentifier: String?
 
     init(
         id: UUID = UUID(),
@@ -57,9 +53,7 @@ final class HabitLog {
         unit: String? = nil,
         result: String? = nil,
         linkedEntryID: UUID? = nil,
-        createdAt: Date,
-        localDayIdentifier: String? = nil,
-        localTimeZoneIdentifier: String? = nil
+        createdAt: Date
     ) {
         self.id = id
         self.habitID = habitID
@@ -70,8 +64,33 @@ final class HabitLog {
         self.result = result
         self.linkedEntryID = linkedEntryID
         self.createdAt = createdAt
+    }
+}
+
+@Model
+final class HabitLogDayMetadata {
+    @Attribute(.unique) var id: UUID
+    @Attribute(.unique) var habitLogID: UUID
+    var localDayIdentifier: String
+    var localTimeZoneIdentifier: String
+    var provenanceRawValue: String
+
+    var provenance: HabitLogDayProvenance {
+        HabitLogDayProvenance(rawValue: provenanceRawValue) ?? .legacyBootstrap
+    }
+
+    init(
+        id: UUID = UUID(),
+        habitLogID: UUID,
+        localDayIdentifier: String,
+        localTimeZoneIdentifier: String,
+        provenance: HabitLogDayProvenance
+    ) {
+        self.id = id
+        self.habitLogID = habitLogID
         self.localDayIdentifier = localDayIdentifier
         self.localTimeZoneIdentifier = localTimeZoneIdentifier
+        provenanceRawValue = provenance.rawValue
     }
 }
 
@@ -178,6 +197,26 @@ struct HabitSettings: Equatable {
     )
 }
 
+enum HabitLogDayResolver {
+    static func metadataByLogID(
+        _ metadata: [HabitLogDayMetadata]
+    ) -> [UUID: HabitLogDayMetadata] {
+        Dictionary(metadata.map { ($0.habitLogID, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    static func localDay(
+        for log: HabitLog,
+        metadataByLogID: [UUID: HabitLogDayMetadata],
+        fallbackTimeZone: TimeZone = .current
+    ) -> HabitLocalDay {
+        if let value = metadataByLogID[log.id]?.localDayIdentifier,
+           let localDay = HabitLocalDay(value) {
+            return localDay
+        }
+        return HabitLocalDay(date: log.occurredAt, timeZone: fallbackTimeZone)
+    }
+}
+
 enum HabitPlanResolver {
     static func currentPlan(
         for habitID: UUID,
@@ -225,12 +264,19 @@ enum HabitAnalyticsMigrationBootstrap {
         let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
         let lifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        let logDayMetadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
         let boundary = HabitLocalDay(date: now, timeZone: timeZone)
         var changed = false
 
-        for log in logs where log.localDayIdentifier == nil {
-            log.localDayIdentifier = HabitLocalDay(date: log.occurredAt, timeZone: timeZone).description
-            log.localTimeZoneIdentifier = timeZone.identifier
+        var metadataLogIDs = Set(logDayMetadata.map(\.habitLogID))
+        for log in logs where !metadataLogIDs.contains(log.id) {
+            context.insert(HabitLogDayMetadata(
+                habitLogID: log.id,
+                localDayIdentifier: HabitLocalDay(date: log.occurredAt, timeZone: timeZone).description,
+                localTimeZoneIdentifier: timeZone.identifier,
+                provenance: .legacyBootstrap
+            ))
+            metadataLogIDs.insert(log.id)
             changed = true
         }
         for habit in habits {
@@ -476,6 +522,9 @@ final class HabitService {
         let lifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>(
             predicate: #Predicate { $0.habitID == habitID }
         ))
+        let logIDs = Set(logs.map(\.id))
+        let logDayMetadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+            .filter { logIDs.contains($0.habitLogID) }
         let links = try context.fetch(FetchDescriptor<ObjectLink>(
             predicate: #Predicate {
                 ($0.sourceTypeRawValue == habitType && $0.sourceID == habitID)
@@ -483,6 +532,7 @@ final class HabitService {
             }
         ))
         logs.forEach(context.delete)
+        logDayMetadata.forEach(context.delete)
         configurations.forEach(context.delete)
         plans.forEach(context.delete)
         lifecycleEvents.forEach(context.delete)
@@ -657,10 +707,20 @@ final class HabitCheckInService {
                 SortDescriptor(\HabitLog.id, order: .reverse)
             ]
         )
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(
+            try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        )
         guard let latest = try context.fetch(descriptor).first(where: {
             $0.isCompleted
-                && ($0.localDayIdentifier ?? HabitLocalDay(date: $0.occurredAt, timeZone: calendar.timeZone).description) == requestedDay
+                && HabitLogDayResolver.localDay(
+                    for: $0,
+                    metadataByLogID: metadataByLogID,
+                    fallbackTimeZone: calendar.timeZone
+                ).description == requestedDay
         }) else { return nil }
+        if let dayMetadata = metadataByLogID[latest.id] {
+            context.delete(dayMetadata)
+        }
         context.delete(latest)
         do {
             try save()
@@ -688,16 +748,17 @@ final class HabitCheckInService {
             isCompleted: draft.isCompleted,
             preventsImmediateRepeat: preventsImmediateRepeat
         )
-        let log = makeLog(
+        let created = makeLog(
             habit: persistedHabit,
             draft: draft,
             linkedEntryID: nil,
             createdAt: timestamp
         )
-        context.insert(log)
+        context.insert(created.log)
+        context.insert(created.dayMetadata)
         do {
             try save()
-            return log
+            return created.log
         } catch {
             context.rollback()
             throw error
@@ -752,7 +813,7 @@ final class HabitCheckInService {
                 images: metadata
             )
             metadata.forEach { $0.entry = entry }
-            let log = makeLog(
+            let created = makeLog(
                 habit: persistedHabit,
                 draft: logDraft,
                 linkedEntryID: entry.id,
@@ -767,10 +828,11 @@ final class HabitCheckInService {
                 createdAt: timestamp
             )
             context.insert(entry)
-            context.insert(log)
+            context.insert(created.log)
+            context.insert(created.dayMetadata)
             context.insert(link)
             try save()
-            return (log, entry)
+            return (created.log, entry)
         } catch let operationError {
             context.rollback()
             var rollbackIncomplete = false
@@ -801,6 +863,11 @@ final class HabitCheckInService {
               latest.id == logID else {
             throw HabitCheckInError.checkInIsNotLatest
         }
+        let dayMetadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+            .first { $0.habitLogID == logID }
+        if let dayMetadata {
+            context.delete(dayMetadata)
+        }
         context.delete(latest)
         do {
             try save()
@@ -824,11 +891,18 @@ final class HabitCheckInService {
         let logs = try context.fetch(FetchDescriptor<HabitLog>(
             predicate: #Predicate { $0.habitID == habitID }
         ))
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(
+            try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        )
         if settings.recordingMode == .oncePerDay, isCompleted {
             let requestedDay = HabitLocalDay(date: occurredAt, timeZone: calendar.timeZone).description
             guard !logs.contains(where: { log in
                 log.isCompleted
-                    && (log.localDayIdentifier ?? HabitLocalDay(date: log.occurredAt, timeZone: calendar.timeZone).description) == requestedDay
+                    && HabitLogDayResolver.localDay(
+                        for: log,
+                        metadataByLogID: metadataByLogID,
+                        fallbackTimeZone: calendar.timeZone
+                    ).description == requestedDay
             }) else {
                 throw HabitCheckInError.alreadyCheckedInToday
             }
@@ -848,9 +922,9 @@ final class HabitCheckInService {
         draft: HabitLogDraft,
         linkedEntryID: UUID?,
         createdAt: Date
-    ) -> HabitLog {
+    ) -> (log: HabitLog, dayMetadata: HabitLogDayMetadata) {
         let localDay = HabitLocalDay(date: draft.occurredAt, timeZone: calendar.timeZone)
-        return HabitLog(
+        let log = HabitLog(
             habitID: habit.id,
             occurredAt: draft.occurredAt,
             isCompleted: draft.isCompleted,
@@ -858,9 +932,16 @@ final class HabitCheckInService {
             unit: draft.unit,
             result: draft.result,
             linkedEntryID: linkedEntryID,
-            createdAt: createdAt,
-            localDayIdentifier: localDay.description,
-            localTimeZoneIdentifier: calendar.timeZone.identifier
+            createdAt: createdAt
+        )
+        return (
+            log,
+            HabitLogDayMetadata(
+                habitLogID: log.id,
+                localDayIdentifier: localDay.description,
+                localTimeZoneIdentifier: calendar.timeZone.identifier,
+                provenance: .capturedAtWrite
+            )
         )
     }
 

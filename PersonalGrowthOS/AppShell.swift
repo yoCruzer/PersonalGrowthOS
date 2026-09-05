@@ -96,6 +96,7 @@ private struct TodayView: View {
         SortDescriptor(\Goal.id, order: .forward)
     ]) private var goals: [Goal]
     @Query private var habitLogs: [HabitLog]
+    @Query private var habitLogDayMetadata: [HabitLogDayMetadata]
     @Query private var habitConfigurations: [HabitConfiguration]
     @Query private var habitPlanRevisions: [HabitPlanRevision]
     @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
@@ -182,6 +183,7 @@ private struct TodayView: View {
                         let progress = HabitTodayProgress(
                             habitID: habit.id,
                             logs: habitLogs,
+                            dayMetadata: habitLogDayMetadata,
                             settings: HabitSettingsResolver.settings(
                                 for: habit.id,
                                 configurations: habitConfigurations
@@ -412,15 +414,21 @@ struct HabitTodayProgress: Equatable {
     init(
         habitID: UUID,
         logs: [HabitLog],
+        dayMetadata: [HabitLogDayMetadata] = [],
         settings: HabitSettings,
         now: Date = Date(),
         calendar: Calendar = .current
     ) {
         let currentDay = HabitLocalDay(date: now, timeZone: calendar.timeZone).description
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(dayMetadata)
         count = logs.filter {
             $0.habitID == habitID
                 && $0.isCompleted
-                && ($0.localDayIdentifier ?? HabitLocalDay(date: $0.occurredAt, timeZone: calendar.timeZone).description) == currentDay
+                && HabitLogDayResolver.localDay(
+                    for: $0,
+                    metadataByLogID: metadataByLogID,
+                    fallbackTimeZone: calendar.timeZone
+                ).description == currentDay
         }.count
         self.settings = settings
     }

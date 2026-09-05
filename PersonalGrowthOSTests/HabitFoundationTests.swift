@@ -169,6 +169,10 @@ final class HabitFoundationTests: XCTestCase {
 
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
         XCTAssertEqual(logs.count, 2)
+        let dayMetadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        XCTAssertEqual(dayMetadata.count, 2)
+        XCTAssertEqual(Set(dayMetadata.map(\.habitLogID)), Set(logs.map(\.id)))
+        XCTAssertTrue(dayMetadata.allSatisfy { $0.provenance == .capturedAtWrite })
         let progress = HabitTodayProgress(
             habitID: habit.id,
             logs: logs,
@@ -193,20 +197,27 @@ final class HabitFoundationTests: XCTestCase {
             name: "Read",
             recordingMode: .oncePerDay
         )
-        context.insert(HabitLog(
+        let migratedLog = HabitLog(
             habitID: habit.id,
             occurredAt: yesterday,
             isCompleted: true,
-            createdAt: yesterday,
+            createdAt: yesterday
+        )
+        let migratedDayMetadata = HabitLogDayMetadata(
+            habitLogID: migratedLog.id,
             localDayIdentifier: HabitLocalDay(date: today, timeZone: calendar.timeZone).description,
-            localTimeZoneIdentifier: calendar.timeZone.identifier
-        ))
+            localTimeZoneIdentifier: calendar.timeZone.identifier,
+            provenance: .legacyBootstrap
+        )
+        context.insert(migratedLog)
+        context.insert(migratedDayMetadata)
         try context.save()
 
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
         XCTAssertEqual(HabitTodayProgress(
             habitID: habit.id,
             logs: logs,
+            dayMetadata: [migratedDayMetadata],
             settings: HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil),
             now: today,
             calendar: calendar
@@ -352,20 +363,28 @@ final class HabitFoundationTests: XCTestCase {
             habitID: habit.id,
             occurredAt: yesterday,
             isCompleted: true,
-            createdAt: yesterday,
-            localDayIdentifier: todayIdentifier,
-            localTimeZoneIdentifier: calendar.timeZone.identifier
+            createdAt: yesterday
         )
         let negative = HabitLog(
             habitID: habit.id,
             occurredAt: today,
             isCompleted: false,
-            createdAt: today,
-            localDayIdentifier: todayIdentifier,
-            localTimeZoneIdentifier: calendar.timeZone.identifier
+            createdAt: today
         )
         context.insert(positive)
         context.insert(negative)
+        context.insert(HabitLogDayMetadata(
+            habitLogID: positive.id,
+            localDayIdentifier: todayIdentifier,
+            localTimeZoneIdentifier: calendar.timeZone.identifier,
+            provenance: .legacyBootstrap
+        ))
+        context.insert(HabitLogDayMetadata(
+            habitLogID: negative.id,
+            localDayIdentifier: todayIdentifier,
+            localTimeZoneIdentifier: calendar.timeZone.identifier,
+            provenance: .capturedAtWrite
+        ))
         try context.save()
 
         let removed = try HabitCheckInService(
@@ -377,6 +396,10 @@ final class HabitFoundationTests: XCTestCase {
 
         XCTAssertEqual(removed?.id, positive.id)
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [negative.id])
+        XCTAssertEqual(
+            try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).map(\.habitLogID),
+            [negative.id]
+        )
     }
 
     func testRepeatableCounterKeepsDetailedCheckInWhenCounterAddsAndRemoves() throws {
@@ -516,6 +539,7 @@ final class HabitFoundationTests: XCTestCase {
 
         let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
         let logs = try reopened.mainContext.fetch(FetchDescriptor<HabitLog>())
+        let dayMetadata = try reopened.mainContext.fetch(FetchDescriptor<HabitLogDayMetadata>())
         let configurations = try reopened.mainContext.fetch(FetchDescriptor<HabitConfiguration>())
         let settings = HabitSettingsResolver.settings(
             for: habitID,
@@ -524,6 +548,7 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(HabitTodayProgress(
             habitID: habitID,
             logs: logs,
+            dayMetadata: dayMetadata,
             settings: settings,
             now: dayOne,
             calendar: calendar
@@ -531,6 +556,7 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(HabitTodayProgress(
             habitID: habitID,
             logs: logs,
+            dayMetadata: dayMetadata,
             settings: settings,
             now: dayTwo,
             calendar: calendar
@@ -561,6 +587,10 @@ final class HabitFoundationTests: XCTestCase {
 
         let remaining = try context.fetch(FetchDescriptor<HabitLog>())
         XCTAssertEqual(remaining.map(\.id), [first.id])
+        XCTAssertEqual(
+            try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).map(\.habitLogID),
+            [first.id]
+        )
     }
 
     func testOncePerDayCheckInStillUsesLatestUndoSemantics() throws {
@@ -583,6 +613,7 @@ final class HabitFoundationTests: XCTestCase {
         try service.undoLatestCheckIn(habitID: habit.id, logID: log.id)
 
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).count, 0)
     }
 
     func testHabitEditKeepsIDHistoryAndModeChangesDoNotRewriteLogs() throws {
@@ -661,10 +692,12 @@ final class HabitFoundationTests: XCTestCase {
 
         let reopened = try PersistenceContainerFactory.makeOnDisk(at: fixture.storeURL)
         let logs = try reopened.mainContext.fetch(FetchDescriptor<HabitLog>())
+        let dayMetadata = try reopened.mainContext.fetch(FetchDescriptor<HabitLogDayMetadata>())
         let configurations = try reopened.mainContext.fetch(FetchDescriptor<HabitConfiguration>())
         let progress = HabitTodayProgress(
             habitID: habitID,
             logs: logs,
+            dayMetadata: dayMetadata,
             settings: HabitSettingsResolver.settings(
                 for: habitID,
                 configurations: configurations
@@ -917,6 +950,7 @@ final class HabitFoundationTests: XCTestCase {
 
         XCTAssertEqual(try context.fetch(FetchDescriptor<Habit>()).count, 0)
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 0)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).count, 0)
         XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 0)
         XCTAssertNotNil(try EntryRepository(context: context).fetch(id: result.entry.id))
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
@@ -938,6 +972,7 @@ final class HabitFoundationTests: XCTestCase {
 
         XCTAssertEqual(try context.fetch(FetchDescriptor<Habit>()).count, 1)
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 1)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).count, 1)
         XCTAssertEqual(try context.fetch(FetchDescriptor<ObjectLink>()).count, 1)
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
     }
@@ -1116,7 +1151,10 @@ final class HabitFoundationTests: XCTestCase {
 
         let now = created.addingTimeInterval(86_400 * 30)
         XCTAssertTrue(try HabitAnalyticsMigrationBootstrap.apply(context: context, now: now, timeZone: TimeZone(identifier: "Asia/Tokyo")!))
-        XCTAssertEqual(log.localDayIdentifier, HabitLocalDay(date: created, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
+        let dayMetadata = try XCTUnwrap(context.fetch(FetchDescriptor<HabitLogDayMetadata>()).first)
+        XCTAssertEqual(dayMetadata.habitLogID, log.id)
+        XCTAssertEqual(dayMetadata.localDayIdentifier, HabitLocalDay(date: created, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
+        XCTAssertEqual(dayMetadata.provenance, .legacyBootstrap)
         let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
         let plan = try XCTUnwrap(plans.first)
         XCTAssertEqual(plan.plan, .trackingOnly)
@@ -1162,9 +1200,173 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<Habit>()).map(\.id), [habitID])
         let log = try XCTUnwrap(migrated.mainContext.fetch(FetchDescriptor<HabitLog>()).first)
         XCTAssertEqual(log.id, logID)
-        XCTAssertEqual(log.localDayIdentifier, HabitLocalDay(date: created, timeZone: timeZone).description)
+        let dayMetadata = try XCTUnwrap(migrated.mainContext.fetch(FetchDescriptor<HabitLogDayMetadata>()).first)
+        XCTAssertEqual(dayMetadata.habitLogID, logID)
+        XCTAssertEqual(dayMetadata.localDayIdentifier, HabitLocalDay(date: created, timeZone: timeZone).description)
         XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitPlanRevision>()).count, 1)
         XCTAssertEqual(try migrated.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).count, 1)
+    }
+
+    func testExactBuild7V7FixtureMigratesBootstrapsAndReopensWithoutDataLoss() throws {
+        let fixtureResource = try XCTUnwrap(Bundle(for: HabitFoundationTests.self).url(
+            forResource: "Build7V7Fixture",
+            withExtension: nil
+        ))
+        let temporaryParent = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PGOS-RealV7-\(UUID().uuidString)", isDirectory: true)
+        let fixtureRoot = temporaryParent.appendingPathComponent("Build7V7Fixture", isDirectory: true)
+        try FileManager.default.createDirectory(at: temporaryParent, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: fixtureResource, to: fixtureRoot)
+        defer { try? FileManager.default.removeItem(at: temporaryParent) }
+
+        let storeURL = fixtureRoot.appendingPathComponent("PersonalGrowthOS.store")
+        let mediaURL = fixtureRoot
+            .appendingPathComponent("Media/originals/22222222-2222-4222-8222-222222222222.png")
+        let expectedImageData = Data(base64Encoded:
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+        )!
+        let entryID = UUID(uuidString: "11111111-1111-4111-8111-111111111111")!
+        let imageID = UUID(uuidString: "22222222-2222-4222-8222-222222222222")!
+        let tagID = UUID(uuidString: "33333333-3333-4333-8333-333333333333")!
+        let onceHabitID = UUID(uuidString: "44444444-4444-4444-8444-444444444444")!
+        let multipleHabitID = UUID(uuidString: "55555555-5555-4555-8555-555555555555")!
+        let targetlessHabitID = UUID(uuidString: "66666666-6666-4666-8666-666666666666")!
+        let archivedHabitID = UUID(uuidString: "77777777-7777-4777-8777-777777777777")!
+        let goalID = UUID(uuidString: "88888888-8888-4888-8888-888888888888")!
+        let weightID = UUID(uuidString: "99999999-9999-4999-8999-999999999999")!
+        let reviewID = UUID(uuidString: "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA")!
+        let expectedLogIDs: Set<UUID> = [
+            UUID(uuidString: "F1111111-1111-4111-8111-111111111111")!,
+            UUID(uuidString: "F2222222-2222-4222-8222-222222222222")!,
+            UUID(uuidString: "F3333333-3333-4333-8333-333333333333")!,
+            UUID(uuidString: "F4444444-4444-4444-8444-444444444444")!,
+            UUID(uuidString: "F5555555-5555-4555-8555-555555555555")!,
+            UUID(uuidString: "F6666666-6666-4666-8666-666666666666")!
+        ]
+        let expectedLinkIDs: Set<UUID> = [
+            UUID(uuidString: "BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB")!,
+            UUID(uuidString: "CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC")!,
+            UUID(uuidString: "DDDDDDDD-DDDD-4DDD-8DDD-DDDDDDDDDDDD")!
+        ]
+
+        func assertSourceFacts(_ context: ModelContext) throws {
+            let entries = try context.fetch(FetchDescriptor<Entry>())
+            let entry = try XCTUnwrap(entries.first { $0.id == entryID })
+            XCTAssertEqual(entries.count, 1)
+            XCTAssertEqual(entry.body, "Exact 95076bf source fact")
+            XCTAssertEqual(entry.images.map(\.id), [imageID])
+            let image = try XCTUnwrap(context.fetch(FetchDescriptor<ImageMetadata>()).first)
+            XCTAssertEqual(image.id, imageID)
+            XCTAssertEqual(image.entry?.id, entryID)
+            XCTAssertEqual(image.relativePath, "originals/22222222-2222-4222-8222-222222222222.png")
+            XCTAssertEqual(try Data(contentsOf: mediaURL), expectedImageData)
+            XCTAssertEqual(Set(try context.fetch(FetchDescriptor<Tag>()).map(\.id)), [tagID])
+            XCTAssertEqual(Set(try context.fetch(FetchDescriptor<ObjectLink>()).map(\.id)), expectedLinkIDs)
+
+            let habits = try context.fetch(FetchDescriptor<Habit>())
+            XCTAssertEqual(Set(habits.map(\.id)), [onceHabitID, multipleHabitID, targetlessHabitID, archivedHabitID])
+            XCTAssertEqual(habits.first { $0.id == archivedHabitID }?.status, .archived)
+            XCTAssertEqual(
+                try HabitSettingsResolver.settings(for: onceHabitID, context: context),
+                HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil)
+            )
+            XCTAssertEqual(
+                try HabitSettingsResolver.settings(for: multipleHabitID, context: context),
+                HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: 3)
+            )
+            XCTAssertEqual(
+                try HabitSettingsResolver.settings(for: targetlessHabitID, context: context),
+                HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: nil)
+            )
+            let logs = try context.fetch(FetchDescriptor<HabitLog>())
+            XCTAssertEqual(Set(logs.map(\.id)), expectedLogIDs)
+            XCTAssertEqual(logs.filter(\.isCompleted).count, 5)
+            let linkedLog = try XCTUnwrap(logs.first { $0.id == UUID(uuidString: "F1111111-1111-4111-8111-111111111111")! })
+            XCTAssertEqual(linkedLog.linkedEntryID, entryID)
+            XCTAssertEqual(linkedLog.quantity, 1)
+            XCTAssertEqual(linkedLog.unit, "session")
+            XCTAssertEqual(linkedLog.result, "done")
+
+            XCTAssertEqual(Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id)), [goalID])
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<GoalLifecycleEvent>()), 1)
+            let weight = try XCTUnwrap(context.fetch(FetchDescriptor<WeightRecord>()).first)
+            XCTAssertEqual(weight.id, weightID)
+            XCTAssertEqual(weight.weightKilograms, 72.5)
+            let review = try XCTUnwrap(context.fetch(FetchDescriptor<WeeklyReview>()).first)
+            XCTAssertEqual(review.id, reviewID)
+            XCTAssertEqual(review.rememberedText, "Build 7 memory")
+            XCTAssertTrue(review.isCompleted)
+            XCTAssertNoThrow(try LinkIntegrityService.validate(context: context))
+        }
+
+        let bootstrapDate = Date(timeIntervalSince1970: 1_730_000_000)
+        let bootstrapTimeZone = TimeZone(identifier: "Asia/Tokyo")!
+        let bootstrapDay = HabitLocalDay(date: bootstrapDate, timeZone: bootstrapTimeZone)
+        var planIDs: Set<UUID> = []
+        var lifecycleIDs: Set<UUID> = []
+        var metadataIDs: Set<UUID> = []
+        var frozenLocalDays: [UUID: String] = [:]
+        do {
+            let migrated = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+            let context = migrated.mainContext
+            try assertSourceFacts(context)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<HabitLogDayMetadata>()), 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<HabitPlanRevision>()), 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<HabitLifecycleEvent>()), 0)
+
+            XCTAssertTrue(try HabitAnalyticsMigrationBootstrap.apply(
+                context: context,
+                now: bootstrapDate,
+                timeZone: bootstrapTimeZone
+            ))
+            XCTAssertFalse(try HabitAnalyticsMigrationBootstrap.apply(
+                context: context,
+                now: bootstrapDate,
+                timeZone: bootstrapTimeZone
+            ))
+            let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+            XCTAssertEqual(plans.count, 4)
+            let plansByHabit = Dictionary(uniqueKeysWithValues: plans.map { ($0.habitID, $0) })
+            XCTAssertEqual(plansByHabit[onceHabitID]?.plan, HabitPlan.legacy(mode: .oncePerDay, target: nil))
+            XCTAssertEqual(plansByHabit[multipleHabitID]?.plan, HabitPlan.legacy(mode: .multiplePerDay, target: 3))
+            XCTAssertEqual(plansByHabit[targetlessHabitID]?.plan, .trackingOnly)
+            XCTAssertTrue(plans.allSatisfy { $0.trustCoverageStartLocalDay == bootstrapDay.description })
+            planIDs = Set(plans.map(\.id))
+            let lifecycle = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
+            XCTAssertEqual(lifecycle.count, 4)
+            lifecycleIDs = Set(lifecycle.map(\.id))
+            let metadataAfterBootstrap = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+            XCTAssertEqual(metadataAfterBootstrap.count, expectedLogIDs.count)
+            XCTAssertTrue(metadataAfterBootstrap.allSatisfy {
+                $0.localTimeZoneIdentifier == bootstrapTimeZone.identifier
+                    && $0.provenance == .legacyBootstrap
+            })
+            metadataIDs = Set(metadataAfterBootstrap.map(\.id))
+            frozenLocalDays = Dictionary(uniqueKeysWithValues: metadataAfterBootstrap.map {
+                ($0.habitLogID, $0.localDayIdentifier)
+            })
+            XCTAssertTrue(frozenLocalDays.values.allSatisfy { HabitLocalDay($0) != nil })
+        }
+
+        do {
+            let reopened = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+            let context = reopened.mainContext
+            try assertSourceFacts(context)
+            XCTAssertFalse(try HabitAnalyticsMigrationBootstrap.apply(
+                context: context,
+                now: bootstrapDate.addingTimeInterval(86_400),
+                timeZone: TimeZone(identifier: "America/New_York")!
+            ))
+            XCTAssertEqual(Set(try context.fetch(FetchDescriptor<HabitPlanRevision>()).map(\.id)), planIDs)
+            XCTAssertEqual(Set(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id)), lifecycleIDs)
+            XCTAssertEqual(Set(try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).map(\.id)), metadataIDs)
+            XCTAssertEqual(
+                Dictionary(uniqueKeysWithValues: try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).map {
+                    ($0.habitLogID, $0.localDayIdentifier)
+                }),
+                frozenLocalDays
+            )
+        }
     }
 
     func testAnalyticsMakesPauseResumeTransitionDaysNeutralAndStartsNewStreakSegment() {
@@ -1226,6 +1428,9 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertNoThrow(try service.checkIn(habit, draft: HabitLogDraft(occurredAt: monday)))
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
         XCTAssertEqual(logs.count, 1)
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(
+            try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        )
 
         let mondayLocalDay = HabitLocalDay(date: monday, timeZone: calendar.timeZone)
         let analytics = HabitAnalyticsEngine.evaluate(
@@ -1233,7 +1438,11 @@ final class HabitFoundationTests: XCTestCase {
             logs: logs.map {
                 HabitAnalyticsLog(
                     id: $0.id,
-                    localDay: HabitLocalDay($0.localDayIdentifier ?? "") ?? mondayLocalDay,
+                    localDay: HabitLogDayResolver.localDay(
+                        for: $0,
+                        metadataByLogID: metadataByLogID,
+                        fallbackTimeZone: calendar.timeZone
+                    ),
                     isCompleted: $0.isCompleted,
                     occurredAt: $0.occurredAt
                 )

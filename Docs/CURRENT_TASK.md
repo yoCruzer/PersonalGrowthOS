@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | Stage 0 recovery fixes are verified locally; next batch is the real V7→V8 overlay/reopen proof |
-| Automated gate | Stage 0 Habit Foundation suite 45/45 PASS; complete Build 8 gate not run |
+| Implementation tip | Real V7 migration and additive Local Day metadata are verified locally; next batch is historical Plan `recordingMode` |
+| Automated gate | Stage 1 targeted migration/Habit/transfer tests 48/48 PASS; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -24,6 +24,7 @@
 
 - V8 persistence models, Local Day write semantics, plan/lifecycle history, a pure analytics engine and v4 transfer fields are implemented in staged commits; acceptance-matrix and UI validation remain.
 - The recovered Stage 0 batch makes positive persisted Local Day authoritative for once/day duplicate, Today completion and decrement behavior; false logs no longer block true completion, rest-day activity remains factual without becoming expected, and Sunday uses the documented weekday identity.
+- The exact-`95076bf` V7 fixture rejected the direct-`HabitLog`-column design with an unknown model-version error. V8 now uses additive `HabitLogDayMetadata`; representative Entry/Image/Habit/HabitLog/Goal/links/Weight/WeeklyReview facts survive overlay, idempotent bootstrap and reopen.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
 - This is not a candidate: the acceptance matrix, migration verification, UI verification, documentation closure and remote review handoff remain incomplete.
 
@@ -47,4 +48,4 @@
 
 ## Next Action
 
-Generate a representative store with the exact `95076bf` Build 7 source, open it under current V8, verify IDs/relationships/media and reopen persistence, and change the V8 Local Day storage design if direct column migration cannot be proven safe. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.
+Add explicit `recordingMode` to historical Plan truth and backup v4 so weekly/monthly once-per-day and multiple-per-day credit semantics cannot be inferred from period or target. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.

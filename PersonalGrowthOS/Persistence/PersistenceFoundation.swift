@@ -166,7 +166,7 @@ enum PersonalGrowthSchemaV8: VersionedSchema {
         [
             Entry.self, ImageMetadata.self, Tag.self, ObjectLink.self,
             Habit.self, HabitLog.self, HabitConfiguration.self,
-            HabitPlanRevision.self, HabitLifecycleEvent.self,
+            HabitLogDayMetadata.self, HabitPlanRevision.self, HabitLifecycleEvent.self,
             Goal.self, GoalLifecycleEvent.self, WeightRecord.self, WeeklyReview.self
         ]
     }

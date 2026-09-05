@@ -47,6 +47,7 @@
 		B00000000000000000000038 /* WeeklyReviewFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */; };
 		B00000000000000000000039 /* WeeklyReviewViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000042 /* WeeklyReviewViews.swift */; };
 		B00000000000000000000040 /* ReminderFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000043 /* ReminderFoundation.swift */; };
+		B00000000000000000000041 /* Build7V7Fixture in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000044 /* Build7V7Fixture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -110,6 +111,7 @@
 		A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewFoundationTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000042 /* WeeklyReviewViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReviewViews.swift; sourceTree = "<group>"; };
 		A00000000000000000000043 /* ReminderFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderFoundation.swift; sourceTree = "<group>"; };
+		A00000000000000000000044 /* Build7V7Fixture */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fixtures/Build7V7Fixture; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -184,6 +186,7 @@
 				A00000000000000000000035 /* ImportExportRecoveryTests.swift */,
 				A00000000000000000000038 /* WeightFoundationTests.swift */,
 				A00000000000000000000041 /* WeeklyReviewFoundationTests.swift */,
+				A00000000000000000000044 /* Build7V7Fixture */,
 			);
 			path = PersonalGrowthOSTests;
 			sourceTree = "<group>";
@@ -444,6 +447,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00000000000000000000041 /* Build7V7Fixture in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

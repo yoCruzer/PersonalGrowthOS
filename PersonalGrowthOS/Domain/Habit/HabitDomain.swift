@@ -12,6 +12,11 @@ enum HabitRecordingMode: String, Codable, CaseIterable, Sendable {
     case multiplePerDay
 }
 
+enum HabitLogDayProvenance: String, Codable, CaseIterable, Sendable {
+    case capturedAtWrite
+    case legacyBootstrap
+}
+
 /// A persisted civil date. It intentionally has no time-zone offset: once written,
 /// activity keeps belonging to this day even when the device later changes zones.
 struct HabitLocalDay: Hashable, Comparable, Codable, Sendable, Identifiable {

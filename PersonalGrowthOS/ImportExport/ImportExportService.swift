@@ -759,7 +759,7 @@ final class ImportExportService {
             }
             for record in package.data.habitLogs {
                 try Task.checkCancellation()
-                context.insert(HabitLog(
+                let log = HabitLog(
                     id: record.id,
                     habitID: record.habitID,
                     occurredAt: record.occurredAt,
@@ -768,10 +768,19 @@ final class ImportExportService {
                     unit: record.unit,
                     result: record.result,
                     linkedEntryID: record.linkedEntryID,
-                    createdAt: record.createdAt,
-                    localDayIdentifier: record.localDayIdentifier,
-                    localTimeZoneIdentifier: record.localTimeZoneIdentifier
-                ))
+                    createdAt: record.createdAt
+                )
+                context.insert(log)
+                if let localDayIdentifier = record.localDayIdentifier,
+                   let localTimeZoneIdentifier = record.localTimeZoneIdentifier {
+                    context.insert(HabitLogDayMetadata(
+                        habitLogID: log.id,
+                        localDayIdentifier: localDayIdentifier,
+                        localTimeZoneIdentifier: localTimeZoneIdentifier,
+                        provenance: record.localDayProvenance.flatMap(HabitLogDayProvenance.init(rawValue:))
+                            ?? .legacyBootstrap
+                    ))
+                }
             }
             for record in package.data.habitPlanRevisions {
                 guard let period = HabitPlanPeriod(rawValue: record.period),
@@ -880,6 +889,7 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<ObjectLink>())
             + context.fetchCount(FetchDescriptor<Habit>())
             + context.fetchCount(FetchDescriptor<HabitLog>())
+            + context.fetchCount(FetchDescriptor<HabitLogDayMetadata>())
             + context.fetchCount(FetchDescriptor<Goal>())
             + context.fetchCount(FetchDescriptor<GoalLifecycleEvent>())
             + context.fetchCount(FetchDescriptor<WeightRecord>())
@@ -942,6 +952,8 @@ private enum TransferSnapshot {
         try Task.checkCancellation()
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
         try Task.checkCancellation()
+        let logDayMetadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        try Task.checkCancellation()
         let goals = try context.fetch(FetchDescriptor<Goal>())
         try Task.checkCancellation()
         let events = try context.fetch(FetchDescriptor<GoalLifecycleEvent>())
@@ -953,6 +965,7 @@ private enum TransferSnapshot {
         let habitPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
         try Task.checkCancellation()
         let habitLifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(logDayMetadata)
         let sortUUID: (UUID, UUID) -> Bool = { $0.uuidString < $1.uuidString }
         return TransferData(
             entries: try cancellableMap(entries) {
@@ -1029,7 +1042,8 @@ private enum TransferSnapshot {
                 )
             }.sorted { sortUUID($0.id, $1.id) },
             habitLogs: try cancellableMap(logs) {
-                HabitLogTransfer(
+                let dayMetadata = metadataByLogID[$0.id]
+                return HabitLogTransfer(
                     id: $0.id,
                     habitID: $0.habitID,
                     occurredAt: $0.occurredAt,
@@ -1039,8 +1053,9 @@ private enum TransferSnapshot {
                     result: $0.result,
                     linkedEntryID: $0.linkedEntryID,
                     createdAt: $0.createdAt,
-                    localDayIdentifier: $0.localDayIdentifier,
-                    localTimeZoneIdentifier: $0.localTimeZoneIdentifier
+                    localDayIdentifier: dayMetadata?.localDayIdentifier,
+                    localTimeZoneIdentifier: dayMetadata?.localTimeZoneIdentifier,
+                    localDayProvenance: dayMetadata?.provenanceRawValue
                 )
             }.sorted { sortUUID($0.id, $1.id) },
             goals: try cancellableMap(goals) {
