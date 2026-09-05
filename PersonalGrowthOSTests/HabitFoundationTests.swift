@@ -1635,6 +1635,78 @@ final class HabitFoundationTests: XCTestCase {
         ).count, 2)
     }
 
+    func testNameOnlyEditPreservesPendingPlanAndPlanEditReplacesIt() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let wednesday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
+        let service = HabitService(context: context, now: { wednesday })
+        let habit = try service.create(
+            name: "Run",
+            plan: HabitPlan(
+                recordingMode: .oncePerDay,
+                period: .day,
+                goal: .everyDay,
+                targetCount: 1,
+                weekdays: []
+            )
+        )
+        let firstPendingPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .week,
+            goal: .count,
+            targetCount: 3,
+            weekdays: []
+        )
+        try service.updatePlan(habit, plan: firstPendingPlan)
+
+        var revisions = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        let firstPending = try XCTUnwrap(HabitPlanResolver.pendingPlanRevision(
+            for: habit.id,
+            on: wednesday,
+            plans: revisions,
+            timeZone: calendar.timeZone
+        ))
+        XCTAssertEqual(firstPending.plan, firstPendingPlan)
+        XCTAssertEqual(firstPending.effectiveLocalDay, "2026-09-14")
+        let revisionIDsBeforeNameEdit = Set(revisions.map(\.id))
+
+        try service.updateName(habit, name: "Morning Run")
+        revisions = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        XCTAssertEqual(habit.name, "Morning Run")
+        XCTAssertEqual(Set(revisions.map(\.id)), revisionIDsBeforeNameEdit)
+        XCTAssertEqual(
+            HabitPlanResolver.pendingPlanRevision(
+                for: habit.id,
+                on: wednesday,
+                plans: revisions,
+                timeZone: calendar.timeZone
+            )?.plan,
+            firstPendingPlan
+        )
+
+        let replacementPlan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .week,
+            goal: .count,
+            targetCount: 5,
+            weekdays: []
+        )
+        try service.updatePlan(habit, plan: replacementPlan)
+        revisions = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        let replacement = try XCTUnwrap(HabitPlanResolver.pendingPlanRevision(
+            for: habit.id,
+            on: wednesday,
+            plans: revisions,
+            timeZone: calendar.timeZone
+        ))
+        XCTAssertEqual(revisions.count, 2)
+        XCTAssertFalse(revisions.contains { $0.id == firstPending.id })
+        XCTAssertEqual(replacement.plan, replacementPlan)
+        XCTAssertEqual(replacement.effectiveLocalDay, "2026-09-14")
+    }
+
     func testMultiplePerDayAnalyticsPreservesEachPositiveCompletion() {
         let day = HabitLocalDay(year: 2026, month: 9, day: 7)
         let plan = HabitPlanSnapshot(

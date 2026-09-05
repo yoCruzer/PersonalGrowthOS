@@ -238,6 +238,27 @@ enum HabitPlanResolver {
             .last?.1
     }
 
+    static func pendingPlanRevision(
+        for habitID: UUID,
+        on date: Date = Date(),
+        plans: [HabitPlanRevision],
+        timeZone: TimeZone = .current
+    ) -> HabitPlanRevision? {
+        let day = HabitLocalDay(date: date, timeZone: timeZone)
+        return plans
+            .filter { $0.habitID == habitID }
+            .compactMap { revision -> (HabitLocalDay, HabitPlanRevision)? in
+                HabitLocalDay(revision.effectiveLocalDay).map { ($0, revision) }
+            }
+            .filter { $0.0 > day }
+            .sorted {
+                if $0.0 != $1.0 { return $0.0 < $1.0 }
+                if $0.1.createdAt != $1.1.createdAt { return $0.1.createdAt > $1.1.createdAt }
+                return $0.1.id.uuidString < $1.1.id.uuidString
+            }
+            .first?.1
+    }
+
     static func isScheduled(
         _ plan: HabitPlan,
         on date: Date,
@@ -516,28 +537,42 @@ final class HabitService {
     }
 
     func update(_ habit: Habit, name: String, plan: HabitPlan) throws {
-        let plan = try HabitRules.validatedPlan(plan)
+        try update(habit, name: name, planChange: plan)
+    }
+
+    func updateName(_ habit: Habit, name: String) throws {
+        try update(habit, name: name, planChange: nil)
+    }
+
+    func updatePlan(_ habit: Habit, plan: HabitPlan) throws {
+        try update(habit, name: habit.name, planChange: plan)
+    }
+
+    func update(_ habit: Habit, name: String, planChange: HabitPlan?) throws {
+        let planChange = try planChange.map(HabitRules.validatedPlan)
         let validatedName = try HabitRules.validatedName(name)
         guard let persisted = try fetchHabit(habit.id) else { throw HabitCheckInError.missingHabit }
         let timestamp = now()
         persisted.name = validatedName
         persisted.normalizedName = TextSearchNormalizer.normalize(validatedName)
         persisted.updatedAt = timestamp
-        let mode = plan.recordingMode
-        let target = plan.period == .day ? plan.targetCount : nil
-        if let configuration = try fetchConfiguration(habit.id) {
-            configuration.recordingMode = mode
-            configuration.dailyTargetCount = target
-            configuration.updatedAt = timestamp
-        } else {
-            context.insert(HabitConfiguration(habitID: habit.id, recordingMode: mode, dailyTargetCount: target, updatedAt: timestamp))
+        if let plan = planChange {
+            let mode = plan.recordingMode
+            let target = plan.period == .day ? plan.targetCount : nil
+            if let configuration = try fetchConfiguration(habit.id) {
+                configuration.recordingMode = mode
+                configuration.dailyTargetCount = target
+                configuration.updatedAt = timestamp
+            } else {
+                context.insert(HabitConfiguration(habitID: habit.id, recordingMode: mode, dailyTargetCount: target, updatedAt: timestamp))
+            }
+            let habitID = habit.id
+            let existingPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>(
+                predicate: #Predicate { $0.habitID == habitID }
+            ))
+            let previousPlan = HabitPlanResolver.currentPlan(for: habit.id, on: timestamp, plans: existingPlans)
+            try replacePendingPlan(habitID: habit.id, plan: plan, effectiveDay: nextEffectiveDay(from: previousPlan, to: plan, at: timestamp), timestamp: timestamp)
         }
-        let habitID = habit.id
-        let existingPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>(
-            predicate: #Predicate { $0.habitID == habitID }
-        ))
-        let previousPlan = HabitPlanResolver.currentPlan(for: habit.id, on: timestamp, plans: existingPlans)
-        try replacePendingPlan(habitID: habit.id, plan: plan, effectiveDay: nextEffectiveDay(from: previousPlan, to: plan, at: timestamp), timestamp: timestamp)
         do { try save() } catch { context.rollback(); throw error }
     }
 
@@ -634,9 +669,13 @@ final class HabitService {
     private func replacePendingPlan(
         habitID: UUID, plan: HabitPlan, effectiveDay: HabitLocalDay, timestamp: Date
     ) throws {
+        let today = HabitLocalDay(date: timestamp)
         let pending = try context.fetch(FetchDescriptor<HabitPlanRevision>(
             predicate: #Predicate { $0.habitID == habitID }
-        )).filter { $0.effectiveLocalDay == effectiveDay.description }
+        )).filter {
+            guard let day = HabitLocalDay($0.effectiveLocalDay) else { return false }
+            return day > today
+        }
         pending.forEach(context.delete)
         context.insert(HabitPlanRevision(
             habitID: habitID,

@@ -258,6 +258,7 @@ struct HabitsView: View {
                 habit: nil,
                 settings: HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil),
                 plan: nil,
+                pendingEffectiveDay: nil,
                 didSave: { isCreatingHabit = false }
             )
         }
@@ -439,6 +440,13 @@ struct HabitDetailView: View {
 
     private var currentPlan: HabitPlan? {
         HabitPlanResolver.currentPlan(
+            for: habit.id,
+            plans: planRevisions
+        )
+    }
+
+    private var pendingPlanRevision: HabitPlanRevision? {
+        HabitPlanResolver.pendingPlanRevision(
             for: habit.id,
             plans: planRevisions
         )
@@ -629,7 +637,10 @@ struct HabitDetailView: View {
             HabitEditorView(
                 habit: habit,
                 settings: settings,
-                plan: currentPlan,
+                plan: pendingPlanRevision?.plan ?? currentPlan,
+                pendingEffectiveDay: pendingPlanRevision.flatMap {
+                    HabitLocalDay($0.effectiveLocalDay)
+                },
                 didSave: { isEditing = false }
             )
         }
@@ -790,6 +801,8 @@ struct HabitDetailView: View {
 
 private struct HabitEditorView: View {
     let habit: Habit?
+    let initialPlan: HabitPlan
+    let pendingEffectiveDay: HabitLocalDay?
     let didSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -805,6 +818,7 @@ private struct HabitEditorView: View {
         habit: Habit?,
         settings: HabitSettings,
         plan: HabitPlan?,
+        pendingEffectiveDay: HabitLocalDay?,
         didSave: @escaping () -> Void
     ) {
         self.habit = habit
@@ -814,6 +828,8 @@ private struct HabitEditorView: View {
             mode: settings.recordingMode,
             target: settings.dailyTargetCount
         )
+        self.initialPlan = initialPlan
+        self.pendingEffectiveDay = pendingEffectiveDay
         let initialChoice = HabitGoalChoice(plan: initialPlan)
         let initialMode = initialPlan.recordingMode
         _recordingMode = State(initialValue: initialMode)
@@ -884,6 +900,9 @@ private struct HabitEditorView: View {
                     Section {
                         Text("Changing the name does not affect history. If the Habit itself has changed, consider archiving it and creating a new one.")
                             .foregroundStyle(.secondary)
+                        if let pendingEffectiveDay {
+                            LabeledContent("Pending Plan", value: "Starts \(pendingEffectiveDay.description)")
+                        }
                     }
                 }
 
@@ -936,7 +955,11 @@ private struct HabitEditorView: View {
             let service = HabitService(context: modelContext)
             let plan = makePlan(target: target)
             if let habit {
-                try service.update(habit, name: name, plan: plan)
+                try service.update(
+                    habit,
+                    name: name,
+                    planChange: plan == initialPlan ? nil : plan
+                )
             } else {
                 _ = try service.create(name: name, plan: plan)
             }

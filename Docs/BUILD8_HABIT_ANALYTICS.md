@@ -14,6 +14,7 @@
 - Habit creation creates an effective plan/lifecycle record. Status changes append lifecycle events in the same save operation. Plans are effective-dated; replacing a pending boundary replaces that pending revision.
 - Plan revisions persist `recordingMode` independently from schedule. Once/day caps credit at one per Local Day for day/week/month targets; multiple/day preserves every positive completion. Tracking Only also retains its explicit recording mode, and backup v4 requires and round-trips it.
 - Runtime settings come from the Plan effective on the relevant Local Day across Today, Overview, Detail and check-in validation. Legacy configuration is only a no-effective-Plan fallback, so a contradictory mutable configuration cannot change V8 behavior.
+- Name-only edits do not create or replace Plan revisions. The editor loads an existing pending Plan and shows its effective date; a real Plan change removes the never-effective pending revision before writing one replacement.
 - The pure `HabitAnalyticsEngine` derives grouped credit, period progress, outcomes, strict adherence, consistency, streaks and activity cells from value snapshots.
 - Once-per-day credit is capped at one positive completion per immutable Local Day; multiple-per-day credit retains each positive completion. A plan change inside an open week/month leaves that whole strict period neutral rather than fabricating a miss.
 - Plan edits use next-day/next-Monday/next-month boundaries; cross-period edits choose the coarser boundary. Journey filters out not-yet-effective revisions and Context uses existing Entry/Habit/Goal links.
@@ -41,7 +42,7 @@
 
 ## Known gaps before Build 8 can be reviewed
 
-- The complete acceptance matrix has not yet been implemented or exercised. Real V7→V8 migration/bootstrap, Local Day credit, historical `recordingMode`, single runtime Plan truth and plan-transition cases are covered, but pending Plan correctness, contiguous segments, calendar/DST variants, selected-weekday UI, lifecycle history, visual row-polish, full backup compatibility and all-package regression remain.
+- The complete acceptance matrix has not yet been implemented or exercised. Real V7→V8 migration/bootstrap, Local Day credit, historical `recordingMode`, single runtime Plan truth, pending Plan correctness and plan-transition cases are covered, but contiguous segments, calendar/DST variants, selected-weekday UI, lifecycle history, visual row-polish, full backup compatibility and all-package regression remain.
 - Remote head is `bdb17449af6db016b70fd404712b2342e27e8504`; the recovered Stage 0 checkpoint has not been pushed. No Draft PR, archive, TestFlight action or merge has occurred.
 - Physical-device validation is entirely outstanding.
 
@@ -57,3 +58,4 @@
 - Stage 1 migration/Habit/transfer regression: 48/48 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage1-Targeted2.xcresult`). The complete Build 8 gate has not run.
 - Stage 2 Habit/recording-mode/transfer regression: 50/50 PASS (`/tmp/PersonalGrowthOS-Build8-Stage2-RecordingMode.xcresult`) plus focused real-migration and v4 proof 5/5 PASS (`/tmp/PersonalGrowthOS-Build8-Stage2-RecordingMode-2.xcresult`) on iPhone 17 Pro Simulator, iOS 26.5.
 - Stage 3 effective-Plan runtime regression: Habit Foundation 49/49 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage3-RuntimeTruth.xcresult`).
+- Stage 4 pending-Plan regression: Habit Foundation 50/50 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage4-PendingPlan.xcresult`).
