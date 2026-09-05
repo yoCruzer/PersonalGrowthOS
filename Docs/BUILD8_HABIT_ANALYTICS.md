@@ -10,6 +10,7 @@
 
 - SwiftData V8 adds `HabitPlanRevision` and `HabitLifecycleEvent`; `HabitLog` now stores an optional immutable Local Day and time-zone provenance.
 - New check-ins persist their Gregorian civil day. The weekly calculation shares the existing Monday-first, four-day-first-week policy.
+- On first V8 launch, legacy logs are frozen using that migration device's local civil calendar and time-zone identifier. Legacy plans and lifecycle truth begin at the migration boundary, so earlier activity stays visible but does not receive fabricated strict adherence.
 - Habit creation creates an effective plan/lifecycle record. Status changes append lifecycle events in the same save operation. Plans are effective-dated; replacing a pending boundary replaces that pending revision.
 - The pure `HabitAnalyticsEngine` derives grouped credit, period progress, outcomes, strict adherence, consistency, streaks and activity cells from value snapshots.
 - Backup package v4 carries Local Day metadata, plan revisions and lifecycle events while decoding v1–v3 payloads without these fields.
@@ -29,4 +30,4 @@
 ## Verification so far
 
 - Simulator Debug build: PASS after the V8 model/backup/dashboard integration.
-- A new focused analytics XCTest has been added; complete simulator execution remains pending.
+- Focused V8 Local Day/bootstrap and daily-credit tests: PASS on iPhone 16 Simulator, iOS 26.5.

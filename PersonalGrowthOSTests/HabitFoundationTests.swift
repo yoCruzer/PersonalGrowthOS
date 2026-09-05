@@ -966,6 +966,27 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(result.current?.outcome, .achieved)
         XCTAssertNil(result.adherence, "The current open period must not enter adherence.")
     }
+
+    func testAnalyticsBootstrapFreezesLegacyLocalDaysAndStartsConservativeCoverage() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        let habit = Habit(name: "Legacy", normalizedName: "legacy", createdAt: created)
+        context.insert(habit)
+        context.insert(HabitConfiguration(habitID: habit.id, recordingMode: .multiplePerDay, dailyTargetCount: nil, updatedAt: created))
+        let log = HabitLog(habitID: habit.id, occurredAt: created, isCompleted: true, createdAt: created)
+        context.insert(log)
+        try context.save()
+
+        let now = created.addingTimeInterval(86_400 * 30)
+        XCTAssertTrue(try HabitAnalyticsMigrationBootstrap.apply(context: context, now: now, timeZone: TimeZone(identifier: "Asia/Tokyo")!))
+        XCTAssertEqual(log.localDayIdentifier, HabitLocalDay(date: created, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
+        let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        let plan = try XCTUnwrap(plans.first)
+        XCTAssertEqual(plan.plan, .trackingOnly)
+        XCTAssertEqual(plan.trustCoverageStartLocalDay, HabitLocalDay(date: now, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).count, 1)
+    }
 }
 
 private enum InjectedHabitFailure: Error {

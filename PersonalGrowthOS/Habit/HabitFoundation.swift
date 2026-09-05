@@ -178,6 +178,65 @@ struct HabitSettings: Equatable {
     )
 }
 
+/// Lightweight migration can add V8 columns but cannot safely manufacture
+/// historical facts. This one-shot bootstrap freezes legacy activity using the
+/// migration device's civil calendar, then starts strict plan/lifecycle coverage
+/// at that migration boundary.
+@MainActor
+enum HabitAnalyticsMigrationBootstrap {
+    @discardableResult
+    static func apply(
+        context: ModelContext,
+        now: Date = Date(),
+        timeZone: TimeZone = .current
+    ) throws -> Bool {
+        let habits = try context.fetch(FetchDescriptor<Habit>())
+        let configurations = try context.fetch(FetchDescriptor<HabitConfiguration>())
+        let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        let lifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
+        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        let boundary = HabitLocalDay(date: now, timeZone: timeZone)
+        var changed = false
+
+        for log in logs where log.localDayIdentifier == nil {
+            log.localDayIdentifier = HabitLocalDay(date: log.occurredAt, timeZone: timeZone).description
+            log.localTimeZoneIdentifier = timeZone.identifier
+            changed = true
+        }
+        for habit in habits {
+            if !plans.contains(where: { $0.habitID == habit.id }) {
+                let settings = HabitSettingsResolver.settings(for: habit.id, configurations: configurations)
+                context.insert(HabitPlanRevision(
+                    habitID: habit.id,
+                    effectiveLocalDay: boundary.description,
+                    plan: HabitPlan.legacy(mode: settings.recordingMode, target: settings.dailyTargetCount),
+                    trustCoverageStartLocalDay: boundary.description,
+                    createdAt: now
+                ))
+                changed = true
+            }
+            if !lifecycleEvents.contains(where: { $0.habitID == habit.id }) {
+                let kind: HabitLifecycleEventKind
+                switch habit.status {
+                case .active: kind = .created
+                case .paused: kind = .paused
+                case .completed: kind = .completed
+                case .archived: kind = .archived
+                }
+                context.insert(HabitLifecycleEvent(
+                    habitID: habit.id,
+                    kind: kind,
+                    occurredLocalDay: boundary.description,
+                    occurredAt: now
+                ))
+                changed = true
+            }
+        }
+        if changed { try context.save() }
+        return changed
+    }
+}
+
 @MainActor
 final class HabitService {
     private let context: ModelContext
