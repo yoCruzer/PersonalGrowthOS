@@ -273,7 +273,7 @@ private struct HabitOverviewRow: View {
     }
 
     private var checkedInToday: Bool {
-        logs.contains { Calendar.current.isDateInToday($0.occurredAt) }
+        progress.isCompletedForOncePerDay
     }
 
     private var progress: HabitTodayProgress {
@@ -428,7 +428,7 @@ struct HabitDetailView: View {
     }
 
     private var checkedInToday: Bool {
-        logs.contains { Calendar.current.isDateInToday($0.occurredAt) }
+        todayProgress.isCompletedForOncePerDay
     }
 
     private var todayProgress: HabitTodayProgress {
@@ -838,7 +838,7 @@ private struct HabitEditorView: View {
                     .accessibilityIdentifier("habit-goal")
 
                     if goalChoice == .selectedDays {
-                        ForEach(2...7, id: \.self) { weekday in
+                        ForEach(1...7, id: \.self) { weekday in
                             Toggle(weekdayName(weekday), isOn: Binding(
                                 get: { selectedWeekdays.contains(weekday) },
                                 set: { enabled in
@@ -945,7 +945,7 @@ private struct HabitEditorView: View {
 
     private func weekdayName(_ weekday: Int) -> String {
         let calendar = Calendar.current
-        return calendar.weekdaySymbols[(weekday - calendar.firstWeekday + 7) % 7]
+        return calendar.weekdaySymbols[weekday - 1]
     }
 }
 

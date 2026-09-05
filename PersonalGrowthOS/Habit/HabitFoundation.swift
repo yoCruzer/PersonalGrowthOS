@@ -648,24 +648,19 @@ final class HabitCheckInService {
         habitID: UUID,
         on day: Date = Date()
     ) throws -> HabitLog? {
-        let dayStart = calendar.startOfDay(for: day)
-        guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else {
-            return nil
-        }
-        var descriptor = FetchDescriptor<HabitLog>(
-            predicate: #Predicate {
-                $0.habitID == habitID
-                    && $0.occurredAt >= dayStart
-                    && $0.occurredAt < dayEnd
-            },
+        let requestedDay = HabitLocalDay(date: day, timeZone: calendar.timeZone).description
+        let descriptor = FetchDescriptor<HabitLog>(
+            predicate: #Predicate { $0.habitID == habitID },
             sortBy: [
                 SortDescriptor(\HabitLog.occurredAt, order: .reverse),
                 SortDescriptor(\HabitLog.createdAt, order: .reverse),
                 SortDescriptor(\HabitLog.id, order: .reverse)
             ]
         )
-        descriptor.fetchLimit = 1
-        guard let latest = try context.fetch(descriptor).first else { return nil }
+        guard let latest = try context.fetch(descriptor).first(where: {
+            $0.isCompleted
+                && ($0.localDayIdentifier ?? HabitLocalDay(date: $0.occurredAt, timeZone: calendar.timeZone).description) == requestedDay
+        }) else { return nil }
         context.delete(latest)
         do {
             try save()
@@ -690,6 +685,7 @@ final class HabitCheckInService {
             habitID: persistedHabit.id,
             occurredAt: draft.occurredAt,
             createdAt: timestamp,
+            isCompleted: draft.isCompleted,
             preventsImmediateRepeat: preventsImmediateRepeat
         )
         let log = makeLog(
@@ -721,7 +717,8 @@ final class HabitCheckInService {
         try validateCheckIn(
             habitID: persistedHabit.id,
             occurredAt: logDraft.occurredAt,
-            createdAt: timestamp
+            createdAt: timestamp,
+            isCompleted: logDraft.isCompleted
         )
         try EntryRules.validateContent(body: entryDraft.body, imageCount: entryDraft.images.count)
         var storedFiles: [StoredMediaFile] = []
@@ -817,37 +814,30 @@ final class HabitCheckInService {
         habitID: UUID,
         occurredAt: Date,
         createdAt: Date,
+        isCompleted: Bool,
         preventsImmediateRepeat: Bool = true
     ) throws {
         guard occurredAt <= createdAt.addingTimeInterval(5 * 60) else {
             throw HabitCheckInError.futureOccurrence
         }
         let settings = try HabitSettingsResolver.settings(for: habitID, context: context)
-        let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>(
-            predicate: #Predicate { $0.habitID == habitID }
-        ))
-        if let plan = HabitPlanResolver.currentPlan(
-            for: habitID,
-            on: occurredAt,
-            plans: plans,
-            timeZone: calendar.timeZone
-        ), !HabitPlanResolver.isScheduled(plan, on: occurredAt, timeZone: calendar.timeZone) {
-            throw HabitCheckInError.notScheduled
-        }
         let logs = try context.fetch(FetchDescriptor<HabitLog>(
             predicate: #Predicate { $0.habitID == habitID }
         ))
-        if settings.recordingMode == .oncePerDay {
-            let requestedDay = calendar.startOfDay(for: occurredAt)
-            guard !logs.contains(where: {
-                calendar.startOfDay(for: $0.occurredAt) == requestedDay
+        if settings.recordingMode == .oncePerDay, isCompleted {
+            let requestedDay = HabitLocalDay(date: occurredAt, timeZone: calendar.timeZone).description
+            guard !logs.contains(where: { log in
+                log.isCompleted
+                    && (log.localDayIdentifier ?? HabitLocalDay(date: log.occurredAt, timeZone: calendar.timeZone).description) == requestedDay
             }) else {
                 throw HabitCheckInError.alreadyCheckedInToday
             }
         }
         if preventsImmediateRepeat {
             let threshold = createdAt.addingTimeInterval(-duplicatePreventionInterval)
-            guard !logs.contains(where: { $0.createdAt >= threshold }) else {
+            guard !logs.contains(where: {
+                $0.isCompleted == isCompleted && $0.createdAt >= threshold
+            }) else {
                 throw HabitCheckInError.recentlyCheckedIn
             }
         }

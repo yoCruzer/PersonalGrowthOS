@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | Build 8 staged implementation; next batch is acceptance-matrix and UI validation |
-| Automated gate | Debug build PASS; Habit Foundation suite 38/38 PASS; complete Build 8 gate not run |
+| Implementation tip | Stage 0 recovery fixes are verified locally; next batch is the real V7→V8 overlay/reopen proof |
+| Automated gate | Stage 0 Habit Foundation suite 45/45 PASS; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -23,6 +23,7 @@
 ## Build 8 In-progress Boundary
 
 - V8 persistence models, Local Day write semantics, plan/lifecycle history, a pure analytics engine and v4 transfer fields are implemented in staged commits; acceptance-matrix and UI validation remain.
+- The recovered Stage 0 batch makes positive persisted Local Day authoritative for once/day duplicate, Today completion and decrement behavior; false logs no longer block true completion, rest-day activity remains factual without becoming expected, and Sunday uses the documented weekday identity.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
 - This is not a candidate: the acceptance matrix, migration verification, UI verification, documentation closure and remote review handoff remain incomplete.
 
@@ -46,4 +47,4 @@
 
 ## Next Action
 
-Continue Build 8 against its frozen package: complete remaining calendar/lifecycle/schedule acceptance cases, UI verification and complete import/export regression, then the final test gate. Do not open a Draft PR until the Build 8 completion gate passes. Do not merge, archive or publish TestFlight.
+Generate a representative store with the exact `95076bf` Build 7 source, open it under current V8, verify IDs/relationships/media and reopen persistence, and change the V8 Local Day storage design if direct column migration cannot be proven safe. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.

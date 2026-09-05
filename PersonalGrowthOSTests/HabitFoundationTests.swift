@@ -132,6 +132,96 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).count, 2)
     }
 
+    func testOncePerDayFalseLogDoesNotBlockImmediateTrueCompletion() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let timestamp = Date(timeIntervalSince1970: 1_700_035_200)
+        let habit = try HabitService(context: context, now: { timestamp }).create(
+            name: "Vitamin",
+            recordingMode: .oncePerDay
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { timestamp },
+            calendar: calendar
+        )
+
+        _ = try service.checkIn(habit, draft: HabitLogDraft(
+            occurredAt: timestamp,
+            isCompleted: false
+        ))
+        let falseOnlyProgress = HabitTodayProgress(
+            habitID: habit.id,
+            logs: try context.fetch(FetchDescriptor<HabitLog>()),
+            settings: HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil),
+            now: timestamp,
+            calendar: calendar
+        )
+        XCTAssertEqual(falseOnlyProgress.count, 0)
+        XCTAssertFalse(falseOnlyProgress.isCompletedForOncePerDay)
+
+        XCTAssertNoThrow(try service.checkIn(habit, draft: HabitLogDraft(occurredAt: timestamp)))
+
+        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        XCTAssertEqual(logs.count, 2)
+        let progress = HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            settings: HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil),
+            now: timestamp,
+            calendar: calendar
+        )
+        XCTAssertEqual(progress.count, 1)
+        XCTAssertTrue(progress.isCompletedForOncePerDay)
+    }
+
+    func testPersistedLocalDayControlsOncePerDayDuplicateAndTodayProgress() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let today = Date(timeIntervalSince1970: 1_700_035_200)
+        let yesterday = today.addingTimeInterval(-86_400)
+        let habit = try HabitService(context: context, now: { today }).create(
+            name: "Read",
+            recordingMode: .oncePerDay
+        )
+        context.insert(HabitLog(
+            habitID: habit.id,
+            occurredAt: yesterday,
+            isCompleted: true,
+            createdAt: yesterday,
+            localDayIdentifier: HabitLocalDay(date: today, timeZone: calendar.timeZone).description,
+            localTimeZoneIdentifier: calendar.timeZone.identifier
+        ))
+        try context.save()
+
+        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            settings: HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil),
+            now: today,
+            calendar: calendar
+        ).count, 1)
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { today },
+            calendar: calendar
+        )
+        XCTAssertThrowsError(try service.checkIn(habit, draft: HabitLogDraft(occurredAt: today))) {
+            XCTAssertEqual($0 as? HabitCheckInError, .alreadyCheckedInToday)
+        }
+    }
+
     func testMultiplePerDayAllowsRepeatedCheckInsAfterDebounceWindow() throws {
         let fixture = try HabitFixture()
         defer { fixture.remove() }
@@ -241,6 +331,52 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo)?.id, earlierDayTwoLog.id)
         XCTAssertNil(try service.removeLatestStructuredCheckIn(habitID: habit.id, on: dayTwo))
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [dayOneLog.id])
+    }
+
+    func testRepeatableCounterDecrementUsesPersistedLocalDayAndSkipsFalseLogs() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let today = Date(timeIntervalSince1970: 1_700_035_200)
+        let yesterday = today.addingTimeInterval(-86_400)
+        let habit = try HabitService(context: context, now: { today }).create(
+            name: "Water",
+            recordingMode: .multiplePerDay,
+            dailyTargetCount: 2
+        )
+        let todayIdentifier = HabitLocalDay(date: today, timeZone: calendar.timeZone).description
+        let positive = HabitLog(
+            habitID: habit.id,
+            occurredAt: yesterday,
+            isCompleted: true,
+            createdAt: yesterday,
+            localDayIdentifier: todayIdentifier,
+            localTimeZoneIdentifier: calendar.timeZone.identifier
+        )
+        let negative = HabitLog(
+            habitID: habit.id,
+            occurredAt: today,
+            isCompleted: false,
+            createdAt: today,
+            localDayIdentifier: todayIdentifier,
+            localTimeZoneIdentifier: calendar.timeZone.identifier
+        )
+        context.insert(positive)
+        context.insert(negative)
+        try context.save()
+
+        let removed = try HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }),
+            now: { today },
+            calendar: calendar
+        ).removeLatestStructuredCheckIn(habitID: habit.id, on: today)
+
+        XCTAssertEqual(removed?.id, positive.id)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLog>()).map(\.id), [negative.id])
     }
 
     func testRepeatableCounterKeepsDetailedCheckInWhenCounterAddsAndRemoves() throws {
@@ -1071,7 +1207,7 @@ final class HabitFoundationTests: XCTestCase {
         }
     }
 
-    func testSelectedWeekdayPlanRejectsRestDayCheckIn() throws {
+    func testSelectedWeekdayPlanAllowsRestDayActivityWithoutCreatingExpectation() throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         let context = container.mainContext
         var calendar = Calendar(identifier: .gregorian)
@@ -1087,9 +1223,48 @@ final class HabitFoundationTests: XCTestCase {
             now: { monday },
             calendar: calendar
         )
-        XCTAssertThrowsError(try service.checkIn(habit, draft: HabitLogDraft(occurredAt: monday))) {
-            XCTAssertEqual($0 as? HabitCheckInError, .notScheduled)
-        }
+        XCTAssertNoThrow(try service.checkIn(habit, draft: HabitLogDraft(occurredAt: monday)))
+        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        XCTAssertEqual(logs.count, 1)
+
+        let mondayLocalDay = HabitLocalDay(date: monday, timeZone: calendar.timeZone)
+        let analytics = HabitAnalyticsEngine.evaluate(
+            createdAt: mondayLocalDay,
+            logs: logs.map {
+                HabitAnalyticsLog(
+                    id: $0.id,
+                    localDay: HabitLocalDay($0.localDayIdentifier ?? "") ?? mondayLocalDay,
+                    isCompleted: $0.isCompleted,
+                    occurredAt: $0.occurredAt
+                )
+            },
+            plans: [HabitPlanSnapshot(
+                effectiveDay: mondayLocalDay,
+                plan: HabitPlan(period: .day, goal: .selectedWeekdays, targetCount: 1, weekdays: [4]),
+                trustStartDay: mondayLocalDay
+            )],
+            lifecycle: [HabitLifecycleSnapshot(day: mondayLocalDay, kind: .created)],
+            asOf: mondayLocalDay,
+            timeZone: calendar.timeZone
+        )
+        XCTAssertEqual(analytics.activityByDay[mondayLocalDay], 1)
+        XCTAssertEqual(analytics.current?.outcome, .notEvaluated(.notScheduled))
+    }
+
+    func testSelectedWeekdayPlanUsesStableSundayWeekdayIdentity() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let sunday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 6, hour: 12))!
+        let monday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 12))!
+        let plan = try HabitRules.validatedPlan(HabitPlan(
+            period: .day,
+            goal: .selectedWeekdays,
+            targetCount: 1,
+            weekdays: [1]
+        ))
+
+        XCTAssertTrue(HabitPlanResolver.isScheduled(plan, on: sunday, timeZone: calendar.timeZone))
+        XCTAssertFalse(HabitPlanResolver.isScheduled(plan, on: monday, timeZone: calendar.timeZone))
     }
 
     func testCrossPeriodPlanEditUsesCoarserCleanBoundary() throws {

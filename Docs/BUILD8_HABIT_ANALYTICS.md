@@ -24,10 +24,17 @@
 - The editor exposes No Goal, Every Day, Selected Days, Times per Week and Times per Month, and restores the current effective plan when editing.
 - Habit Detail has current-period day/week/month activity grids, Adherence, Consistency, streaks, trend, weekday pattern, effective Journey, linked Context and a 365-day heatmap.
 
+## Stage 0 recovery checkpoint
+
+- Sunday is selectable using the documented `1 = Sunday ... 7 = Saturday` identity, independent of the device's first weekday.
+- Selected-day schedules define expectation only: a rest-day activity fact can be stored while analytics keeps that day `notScheduled`.
+- Once/day duplicate detection, Today completion and repeatable decrement use persisted Local Day; only positive completed logs contribute to completion/count/decrement.
+- A false log does not mark Today complete and does not block an immediate true completion on the same Local Day.
+
 ## Known gaps before Build 8 can be reviewed
 
 - The complete acceptance matrix has not yet been implemented or exercised. V7→V8 migration/bootstrap, day-credit and plan-transition cases are covered, but calendar/DST variants, selected-weekday UI, all lifecycle/schedule combinations, visual row-polish, full backup compatibility and all-package regression remain.
-- The Build 8 branch has not been pushed and no Draft PR exists. No archive, TestFlight action or merge has occurred.
+- Remote head is `bdb17449af6db016b70fd404712b2342e27e8504`; the recovered Stage 0 checkpoint has not been pushed. No Draft PR, archive, TestFlight action or merge has occurred.
 - Physical-device validation is entirely outstanding.
 
 ## Verification so far
@@ -37,3 +44,4 @@
 - v4 full import/export round-trip: PASS on iPhone 16 Simulator, iOS 26.5 (`/Users/hanghang/Library/Developer/Xcode/DerivedData/PersonalGrowthOS-emotcgnahyqoknbhmwfzpcczyvfw/Logs/Test/Test-PersonalGrowthOS-2026.09.05_15-12-27-+0800.xcresult`).
 - Cross-period plan-boundary test: PASS on iPhone 16 Simulator, iOS 26.5 (`/Users/hanghang/Library/Developer/Xcode/DerivedData/PersonalGrowthOS-emotcgnahyqoknbhmwfzpcczyvfw/Logs/Test/Test-PersonalGrowthOS-2026.09.05_15-16-21-+0800.xcresult`).
 - Habit Foundation suite: 38/38 PASS on iPhone 17 Pro Simulator, iOS 26.5, including V7→V8 bootstrap and week-credit/transition cases (`/Users/hanghang/Library/Developer/Xcode/DerivedData/PersonalGrowthOS-emotcgnahyqoknbhmwfzpcczyvfw/Logs/Test/Test-PersonalGrowthOS-2026.09.05_15-26-56-+0800.xcresult`).
+- Recovered Stage 0 Habit Foundation suite: 45/45 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage0-HabitFoundation.xcresult`). The complete Build 8 gate has not run.

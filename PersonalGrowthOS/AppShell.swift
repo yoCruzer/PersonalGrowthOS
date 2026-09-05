@@ -416,9 +416,11 @@ struct HabitTodayProgress: Equatable {
         now: Date = Date(),
         calendar: Calendar = .current
     ) {
+        let currentDay = HabitLocalDay(date: now, timeZone: calendar.timeZone).description
         count = logs.filter {
             $0.habitID == habitID
-                && calendar.isDate($0.occurredAt, inSameDayAs: now)
+                && $0.isCompleted
+                && ($0.localDayIdentifier ?? HabitLocalDay(date: $0.occurredAt, timeZone: calendar.timeZone).description) == currentDay
         }.count
         self.settings = settings
     }

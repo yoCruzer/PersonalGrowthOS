@@ -7,15 +7,15 @@
 | Current branch | `feature/build8-habit-analytics-dashboard` |
 | Current `main` baseline | `dd09975d3a3736b24f8646fa4f197cc883ab1796` |
 | Current base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` (Build 8 frozen baseline) |
-| Governance status | Build 8 work has started from the Build 7 review-closure tip; it is not ready for review or distribution |
+| Governance status | Build 8 Stage 0 recovery fixes are locally verified; the branch is not ready for review or distribution |
 | Completed delivery | S0–S10, Completion Push C0–C5, Final Candidate C6, App icon refresh, Usability S2, Build 6 Round 1, and Build 7 Round 2 implementation |
-| Final automated gate | Build 7 P1 closure: PASS — 5 focused Import/Export and Habit tests |
+| Final automated gate | Build 8 Stage 0 Habit Foundation: 45/45 PASS; the complete Build 8 gate has not run |
 | Release gate | Build 7 physical-device validation remains external; do not merge, archive or upload TestFlight automatically |
-| Next checkpoint | Complete the frozen Build 8 acceptance matrix and final validation before creating its stacked Draft PR; keep all PRs unmerged |
+| Next checkpoint | Prove an exact-`95076bf` V7 store overlay/reopen under V8, then correct Local Day persistence architecture if the proof requires it |
 
 ## Build 8 In-progress Foundation
 
-Build 8 starts at exact SHA `95076bf5c2a86122fbd327903d80bccdfb8c768d` on a dedicated stacked branch. The attached frozen package authorizes V8 Habit plan/lifecycle history, stable Local Day, conservative analytics coverage, schedule-aware analytics/dashboard and backup v4. The implementation is incomplete and has no review handoff yet. See `Docs/BUILD8_HABIT_ANALYTICS.md` for its verified scope, current work and known gaps.
+Build 8 starts at exact SHA `95076bf5c2a86122fbd327903d80bccdfb8c768d` on a dedicated stacked branch. Remote head `bdb17449af6db016b70fd404712b2342e27e8504` contains the first-pass implementation. The recovered Stage 0 batch makes positive persisted Local Day the shared once/day duplicate, Today completion and decrement fact; permits rest-day activity without creating scheduled success; permits false→true completion; and restores Sunday selection. The implementation remains incomplete and has no review handoff yet. See `Docs/BUILD8_HABIT_ANALYTICS.md` for its verified scope, current work and known gaps.
 
 ## Authoritative Product Baseline
 
