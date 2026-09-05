@@ -82,11 +82,20 @@ final class ImportExportRecoveryTests: XCTestCase {
         var expectedCounts = source.expectedCounts
         expectedCounts["weightRecords"] = 0
         expectedCounts["weeklyReviews"] = 0
+        expectedCounts["habitPlanRevisions"] = 0
+        expectedCounts["habitLifecycleEvents"] = 0
         var expectedIDs = source.expectedIDs
         expectedIDs["weightRecords"] = []
         expectedIDs["weeklyReviews"] = []
         XCTAssertEqual(result.objectCounts, expectedCounts)
-        XCTAssertEqual(try ids(in: target.container.mainContext), expectedIDs)
+        var importedIDs = try ids(in: target.container.mainContext)
+        importedIDs["habitPlanRevisions"] = []
+        importedIDs["habitLifecycleEvents"] = []
+        expectedIDs["habitPlanRevisions"] = []
+        expectedIDs["habitLifecycleEvents"] = []
+        XCTAssertEqual(importedIDs, expectedIDs)
+        XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<HabitPlanRevision>()), 1)
+        XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<HabitLifecycleEvent>()), 1)
         XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<WeightRecord>()), 0)
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: target.container.mainContext))
     }
@@ -508,7 +517,7 @@ final class ImportExportRecoveryTests: XCTestCase {
             rewriteJSON: { manifest, data in
                 (ExportManifest(
                     formatIdentifier: manifest.formatIdentifier,
-                    packageSchemaVersion: 4,
+                    packageSchemaVersion: 5,
                     appVersion: manifest.appVersion,
                     appBuild: manifest.appBuild,
                     exportID: manifest.exportID,
@@ -527,7 +536,7 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
         let schemaTarget = try fixture.makeEmptyStore(named: "SchemaTarget")
         await assertThrows({ try await schemaTarget.service.importPackage(from: unsupported) }) {
-            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(4))
+            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(5))
         }
     }
 
@@ -1092,6 +1101,7 @@ private func deleteAllFixtureData(_ context: ModelContext) throws {
     try context.fetch(FetchDescriptor<Habit>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<Goal>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<WeightRecord>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<WeeklyReview>()).forEach(context.delete)
 }
 
 private func originalFiles(at mediaRoot: URL) throws -> [URL] {
