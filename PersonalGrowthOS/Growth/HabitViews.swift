@@ -213,7 +213,11 @@ struct HabitsView: View {
                                 HabitOverviewRow(
                                     habit: habit,
                                     plan: HabitPlanResolver.currentPlan(for: habit.id, plans: planRevisions),
-                                    settings: HabitSettingsResolver.settings(for: habit.id, configurations: configurations),
+                                    settings: HabitRuntimeResolver.settings(
+                                        for: habit.id,
+                                        plans: planRevisions,
+                                        legacyConfigurations: configurations
+                                    ),
                                     logs: allLogs.filter { $0.habitID == habit.id },
                                     dayMetadata: allLogDayMetadata,
                                     mediaStore: mediaStore,
@@ -426,7 +430,11 @@ struct HabitDetailView: View {
     }
 
     private var settings: HabitSettings {
-        HabitSettingsResolver.settings(for: habit.id, configurations: configurations)
+        HabitRuntimeResolver.settings(
+            for: habit.id,
+            plans: planRevisions,
+            legacyConfigurations: configurations
+        )
     }
 
     private var currentPlan: HabitPlan? {

@@ -1544,6 +1544,97 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(revisions.map(\.effectiveLocalDay).sorted(), ["2026-09-09", "2026-09-14"])
     }
 
+    func testEffectivePlanControlsRuntimeBeforeAndAfterFutureBoundary() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let dayOne = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 12))!
+        let dayTwo = calendar.date(from: DateComponents(year: 2026, month: 9, day: 8, hour: 12))!
+        var clock = dayOne
+        let habitService = HabitService(context: context, now: { clock })
+        let habit = try habitService.create(
+            name: "Effective source",
+            plan: HabitPlan(
+                recordingMode: .oncePerDay,
+                period: .day,
+                goal: .everyDay,
+                targetCount: 1,
+                weekdays: []
+            )
+        )
+        try habitService.update(
+            habit,
+            name: habit.name,
+            plan: HabitPlan(
+                recordingMode: .multiplePerDay,
+                period: .day,
+                goal: .everyDay,
+                targetCount: 5,
+                weekdays: []
+            )
+        )
+
+        let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        let configuration = try XCTUnwrap(context.fetch(FetchDescriptor<HabitConfiguration>()).first)
+        XCTAssertEqual(configuration.recordingMode, .multiplePerDay)
+        XCTAssertEqual(
+            HabitRuntimeResolver.settings(
+                for: habit.id,
+                on: dayOne,
+                plans: plans,
+                legacyConfigurations: [configuration],
+                timeZone: calendar.timeZone
+            ),
+            HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil)
+        )
+
+        let checkInService = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)),
+            now: { clock },
+            calendar: calendar
+        )
+        XCTAssertNoThrow(try checkInService.incrementCount(habit, occurredAt: dayOne))
+        XCTAssertThrowsError(try checkInService.incrementCount(habit, occurredAt: dayOne)) {
+            XCTAssertEqual($0 as? HabitCheckInError, .alreadyCheckedInToday)
+        }
+
+        configuration.recordingMode = .oncePerDay
+        configuration.dailyTargetCount = nil
+        try context.save()
+        clock = dayTwo
+        XCTAssertEqual(
+            HabitRuntimeResolver.settings(
+                for: habit.id,
+                on: dayTwo,
+                plans: plans,
+                legacyConfigurations: [configuration],
+                timeZone: calendar.timeZone
+            ),
+            HabitSettings(recordingMode: .multiplePerDay, dailyTargetCount: 5)
+        )
+        XCTAssertNoThrow(try checkInService.incrementCount(habit, occurredAt: dayTwo))
+        XCTAssertNoThrow(try checkInService.incrementCount(habit, occurredAt: dayTwo))
+
+        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        let metadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        XCTAssertEqual(HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            dayMetadata: metadata,
+            settings: HabitRuntimeResolver.settings(
+                for: habit.id,
+                on: dayTwo,
+                plans: plans,
+                legacyConfigurations: [configuration],
+                timeZone: calendar.timeZone
+            ),
+            now: dayTwo,
+            calendar: calendar
+        ).count, 2)
+    }
+
     func testMultiplePerDayAnalyticsPreservesEachPositiveCompletion() {
         let day = HabitLocalDay(year: 2026, month: 9, day: 7)
         let plan = HabitPlanSnapshot(

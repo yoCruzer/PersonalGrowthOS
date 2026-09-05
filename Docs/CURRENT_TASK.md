@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | Historical Plan `recordingMode` is verified locally; next batch is effective Plan as the single runtime truth |
-| Automated gate | Stage 2 Habit/recording-mode/transfer tests 50/50 PASS plus focused 5/5 PASS; complete Build 8 gate not run |
+| Implementation tip | Effective Plan is the verified runtime truth; next batch is current/pending Plan editor correctness |
+| Automated gate | Stage 3 Habit Foundation tests 49/49 PASS; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -26,6 +26,7 @@
 - The recovered Stage 0 batch makes positive persisted Local Day authoritative for once/day duplicate, Today completion and decrement behavior; false logs no longer block true completion, rest-day activity remains factual without becoming expected, and Sunday uses the documented weekday identity.
 - The exact-`95076bf` V7 fixture rejected the direct-`HabitLog`-column design with an unknown model-version error. V8 now uses additive `HabitLogDayMetadata`; representative Entry/Image/Habit/HabitLog/Goal/links/Weight/WeeklyReview facts survive overlay, idempotent bootstrap and reopen.
 - `HabitPlan` and `HabitPlanRevision` now persist explicit `recordingMode`; weekly once/day credits distinct LocalDays, weekly multiple/day may credit repeated same-day activity, Tracking Only retains its mode, and backup v4 validates and round-trips the field.
+- Today, Habits Overview, Habit Detail and check-in validation now resolve settings from the Plan effective on the relevant Local Day. Legacy `HabitConfiguration` is consulted only if no effective Plan exists; contradictory configuration no longer changes V8 runtime behavior.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
 - This is not a candidate: the acceptance matrix, migration verification, UI verification, documentation closure and remote review handoff remain incomplete.
 
@@ -49,4 +50,4 @@
 
 ## Next Action
 
-Resolve Today, Detail and check-in runtime behavior from the Plan effective on the same Local Day, so mutable `HabitConfiguration` cannot diverge from historical analytics. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.
+Separate identity edits from Plan edits, preserve an existing pending future revision when only the name changes, and let the editor represent/replace the pending Plan deliberately. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.

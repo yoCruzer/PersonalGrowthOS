@@ -250,6 +250,60 @@ enum HabitPlanResolver {
     }
 }
 
+enum HabitRuntimeResolver {
+    static func settings(for plan: HabitPlan) -> HabitSettings {
+        HabitSettings(
+            recordingMode: plan.recordingMode,
+            dailyTargetCount: plan.recordingMode == .multiplePerDay && plan.period == .day
+                ? plan.targetCount
+                : nil
+        )
+    }
+
+    static func settings(
+        for habitID: UUID,
+        on date: Date = Date(),
+        plans: [HabitPlanRevision],
+        legacyConfigurations: [HabitConfiguration],
+        timeZone: TimeZone = .current
+    ) -> HabitSettings {
+        guard let plan = HabitPlanResolver.currentPlan(
+            for: habitID,
+            on: date,
+            plans: plans,
+            timeZone: timeZone
+        ) else {
+            return HabitSettingsResolver.settings(
+                for: habitID,
+                configurations: legacyConfigurations
+            )
+        }
+        return settings(for: plan)
+    }
+
+    @MainActor
+    static func settings(
+        for habitID: UUID,
+        on date: Date,
+        context: ModelContext,
+        timeZone: TimeZone = .current
+    ) throws -> HabitSettings {
+        let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>(
+            predicate: #Predicate { $0.habitID == habitID }
+        ))
+        let configurations = try context.fetch(FetchDescriptor<HabitConfiguration>(
+            predicate: #Predicate { $0.habitID == habitID }
+        ))
+        return settings(
+            for: habitID,
+            on: date,
+            plans: plans,
+            legacyConfigurations: configurations,
+            timeZone: timeZone
+        )
+    }
+}
+
 /// Lightweight migration can add V8 columns but cannot safely manufacture
 /// historical facts. This one-shot bootstrap freezes legacy activity using the
 /// migration device's civil calendar, then starts strict plan/lifecycle coverage
@@ -687,7 +741,12 @@ final class HabitCheckInService {
         _ habit: Habit,
         occurredAt: Date = Date()
     ) throws -> HabitLog {
-        let settings = try HabitSettingsResolver.settings(for: habit.id, context: context)
+        let settings = try HabitRuntimeResolver.settings(
+            for: habit.id,
+            on: occurredAt,
+            context: context,
+            timeZone: calendar.timeZone
+        )
         return try saveCheckIn(
             habit,
             draft: HabitLogDraft(occurredAt: occurredAt),
@@ -890,7 +949,12 @@ final class HabitCheckInService {
         guard occurredAt <= createdAt.addingTimeInterval(5 * 60) else {
             throw HabitCheckInError.futureOccurrence
         }
-        let settings = try HabitSettingsResolver.settings(for: habitID, context: context)
+        let settings = try HabitRuntimeResolver.settings(
+            for: habitID,
+            on: occurredAt,
+            context: context,
+            timeZone: calendar.timeZone
+        )
         let logs = try context.fetch(FetchDescriptor<HabitLog>(
             predicate: #Predicate { $0.habitID == habitID }
         ))

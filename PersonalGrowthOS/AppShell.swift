@@ -184,9 +184,10 @@ private struct TodayView: View {
                             habitID: habit.id,
                             logs: habitLogs,
                             dayMetadata: habitLogDayMetadata,
-                            settings: HabitSettingsResolver.settings(
+                            settings: HabitRuntimeResolver.settings(
                                 for: habit.id,
-                                configurations: habitConfigurations
+                                plans: habitPlanRevisions,
+                                legacyConfigurations: habitConfigurations
                             )
                         )
                         if progress.settings.recordingMode == .multiplePerDay {
@@ -264,9 +265,10 @@ private struct TodayView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if let recentCheckIn,
-               HabitSettingsResolver.settings(
+               HabitRuntimeResolver.settings(
                 for: recentCheckIn.habitID,
-                configurations: habitConfigurations
+                plans: habitPlanRevisions,
+                legacyConfigurations: habitConfigurations
                ).recordingMode == .oncePerDay {
                 HabitCheckInUndoBar {
                     undo(recentCheckIn)
