@@ -232,7 +232,25 @@ struct HabitLogTransfer: Codable, Equatable {
 
 struct HabitPlanRevisionTransfer: Codable, Equatable {
     let id: UUID; let habitID: UUID; let effectiveLocalDay: String; let period: String; let goal: String
-    let targetCount: Int?; let weekdays: String; let trustCoverageStartLocalDay: String; let createdAt: Date
+    let targetCount: Int?; let weekdays: String; let recordingMode: String?
+    let trustCoverageStartLocalDay: String; let createdAt: Date
+
+    init(
+        id: UUID, habitID: UUID, effectiveLocalDay: String, period: String, goal: String,
+        targetCount: Int?, weekdays: String, recordingMode: String?,
+        trustCoverageStartLocalDay: String, createdAt: Date
+    ) {
+        self.id = id
+        self.habitID = habitID
+        self.effectiveLocalDay = effectiveLocalDay
+        self.period = period
+        self.goal = goal
+        self.targetCount = targetCount
+        self.weekdays = weekdays
+        self.recordingMode = recordingMode
+        self.trustCoverageStartLocalDay = trustCoverageStartLocalDay
+        self.createdAt = createdAt
+    }
 }
 
 struct HabitLifecycleEventTransfer: Codable, Equatable {
@@ -424,11 +442,19 @@ enum TransferValidator {
             guard habitIDs.contains(plan.habitID), HabitLocalDay(plan.effectiveLocalDay) != nil,
                   HabitLocalDay(plan.trustCoverageStartLocalDay) != nil,
                   let period = HabitPlanPeriod(rawValue: plan.period),
-                  let goal = HabitPlanGoal(rawValue: plan.goal) else {
+                  let goal = HabitPlanGoal(rawValue: plan.goal),
+                  let rawMode = plan.recordingMode,
+                  let recordingMode = HabitRecordingMode(rawValue: rawMode) else {
                 throw TransferPackageError.invalidObject("habitPlanRevision")
             }
             let weekdays = Set(plan.weekdays.split(separator: ",").compactMap { Int($0) })
-            guard (try? HabitRules.validatedPlan(HabitPlan(period: period, goal: goal, targetCount: plan.targetCount, weekdays: weekdays))) != nil else {
+            guard (try? HabitRules.validatedPlan(HabitPlan(
+                recordingMode: recordingMode,
+                period: period,
+                goal: goal,
+                targetCount: plan.targetCount,
+                weekdays: weekdays
+            ))) != nil else {
                 throw TransferPackageError.invalidObject("habitPlanRevision")
             }
         }

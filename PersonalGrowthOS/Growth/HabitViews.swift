@@ -807,11 +807,7 @@ private struct HabitEditorView: View {
             target: settings.dailyTargetCount
         )
         let initialChoice = HabitGoalChoice(plan: initialPlan)
-        let initialMode: HabitRecordingMode = (initialPlan.targetCount ?? 1) > 1
-            || initialPlan.period == .week
-            || initialPlan.period == .month
-            ? .multiplePerDay
-            : .oncePerDay
+        let initialMode = initialPlan.recordingMode
         _recordingMode = State(initialValue: initialMode)
         _dailyTarget = State(initialValue: initialChoice.requiresTarget(for: initialMode)
             ? String(initialPlan.targetCount ?? 1)
@@ -949,11 +945,11 @@ private struct HabitEditorView: View {
 
     private func makePlan(target: Int?) -> HabitPlan {
         switch goalChoice {
-        case .noGoal: .trackingOnly
-        case .everyDay: HabitPlan(period: .day, goal: .everyDay, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: [])
-        case .selectedDays: HabitPlan(period: .day, goal: .selectedWeekdays, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: selectedWeekdays)
-        case .perWeek: HabitPlan(period: .week, goal: .count, targetCount: target ?? 1, weekdays: [])
-        case .perMonth: HabitPlan(period: .month, goal: .count, targetCount: target ?? 1, weekdays: [])
+        case .noGoal: .trackingOnly(recordingMode: recordingMode)
+        case .everyDay: HabitPlan(recordingMode: recordingMode, period: .day, goal: .everyDay, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: [])
+        case .selectedDays: HabitPlan(recordingMode: recordingMode, period: .day, goal: .selectedWeekdays, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: selectedWeekdays)
+        case .perWeek: HabitPlan(recordingMode: recordingMode, period: .week, goal: .count, targetCount: target ?? 1, weekdays: [])
+        case .perMonth: HabitPlan(recordingMode: recordingMode, period: .month, goal: .count, targetCount: target ?? 1, weekdays: [])
         }
     }
 

@@ -100,6 +100,7 @@ final class HabitPlanRevision {
     var habitID: UUID
     /// YYYY-MM-DD in the local civil calendar effective at creation/edit time.
     var effectiveLocalDay: String
+    var recordingModeRawValue: String
     var periodRawValue: String
     var goalRawValue: String
     var targetCount: Int?
@@ -115,6 +116,7 @@ final class HabitPlanRevision {
         self.id = id
         self.habitID = habitID
         self.effectiveLocalDay = effectiveLocalDay
+        recordingModeRawValue = plan.recordingMode.rawValue
         periodRawValue = plan.period.rawValue
         goalRawValue = plan.goal.rawValue
         targetCount = plan.targetCount
@@ -125,6 +127,7 @@ final class HabitPlanRevision {
 
     var plan: HabitPlan {
         HabitPlan(
+            recordingMode: HabitRecordingMode(rawValue: recordingModeRawValue) ?? .multiplePerDay,
             period: HabitPlanPeriod(rawValue: periodRawValue) ?? .trackingOnly,
             goal: HabitPlanGoal(rawValue: goalRawValue) ?? .none,
             targetCount: targetCount,
@@ -378,7 +381,7 @@ final class HabitService {
 
     func create(name: String, plan: HabitPlan) throws -> Habit {
         let plan = try HabitRules.validatedPlan(plan)
-        let mode: HabitRecordingMode = plan.targetCount == 1 && plan.period == .day ? .oncePerDay : .multiplePerDay
+        let mode = plan.recordingMode
         let target = plan.period == .day ? plan.targetCount : nil
         let habit = try createLegacyCompatibleHabit(name: name, mode: mode, target: target, plan: plan)
         return habit
@@ -466,7 +469,7 @@ final class HabitService {
         persisted.name = validatedName
         persisted.normalizedName = TextSearchNormalizer.normalize(validatedName)
         persisted.updatedAt = timestamp
-        let mode: HabitRecordingMode = plan.targetCount == 1 && plan.period == .day ? .oncePerDay : .multiplePerDay
+        let mode = plan.recordingMode
         let target = plan.period == .day ? plan.targetCount : nil
         if let configuration = try fetchConfiguration(habit.id) {
             configuration.recordingMode = mode

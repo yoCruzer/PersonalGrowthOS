@@ -1120,7 +1120,7 @@ final class HabitFoundationTests: XCTestCase {
         let start = HabitLocalDay(year: 2026, month: 9, day: 1)
         let plan = HabitPlanSnapshot(
             effectiveDay: start,
-            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
             trustStartDay: start
         )
         let logs = [
@@ -1136,6 +1136,60 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(result.current?.actual, 1)
         XCTAssertEqual(result.current?.outcome, .achieved)
         XCTAssertNil(result.adherence, "The current open period must not enter adherence.")
+    }
+
+    func testWeeklyCreditUsesHistoricalRecordingModeIndependentlyFromSchedule() {
+        let monday = HabitLocalDay(year: 2026, month: 9, day: 7)
+        let tuesday = HabitLocalDay(year: 2026, month: 9, day: 8)
+        let wednesday = HabitLocalDay(year: 2026, month: 9, day: 9)
+        let followingMonday = HabitLocalDay(year: 2026, month: 9, day: 14)
+        let lifecycle = [HabitLifecycleSnapshot(day: monday, kind: .created)]
+
+        func summary(mode: HabitRecordingMode, logDays: [HabitLocalDay]) -> HabitAnalyticsSummary {
+            HabitAnalyticsEngine.evaluate(
+                createdAt: monday,
+                logs: logDays.map {
+                    HabitAnalyticsLog(id: UUID(), localDay: $0, isCompleted: true, occurredAt: Date())
+                },
+                plans: [HabitPlanSnapshot(
+                    effectiveDay: monday,
+                    plan: HabitPlan(
+                        recordingMode: mode,
+                        period: .week,
+                        goal: .count,
+                        targetCount: 3,
+                        weekdays: []
+                    ),
+                    trustStartDay: monday
+                )],
+                lifecycle: lifecycle,
+                asOf: followingMonday,
+                timeZone: TimeZone(secondsFromGMT: 0)!
+            )
+        }
+
+        let onceSameDay = summary(mode: .oncePerDay, logDays: [monday, monday, monday])
+        XCTAssertEqual(onceSameDay.evaluations.first { $0.start == monday }?.actual, 1)
+        XCTAssertEqual(onceSameDay.evaluations.first { $0.start == monday }?.outcome, .missed)
+
+        let onceDistinctDays = summary(mode: .oncePerDay, logDays: [monday, tuesday, wednesday])
+        XCTAssertEqual(onceDistinctDays.evaluations.first { $0.start == monday }?.actual, 3)
+        XCTAssertEqual(onceDistinctDays.evaluations.first { $0.start == monday }?.outcome, .achieved)
+
+        let multipleSameDay = summary(mode: .multiplePerDay, logDays: [monday, monday, monday])
+        XCTAssertEqual(multipleSameDay.evaluations.first { $0.start == monday }?.actual, 3)
+        XCTAssertEqual(multipleSameDay.evaluations.first { $0.start == monday }?.outcome, .achieved)
+    }
+
+    func testTrackingOnlyPlanRetainsExplicitRecordingMode() throws {
+        XCTAssertEqual(
+            try HabitRules.validatedPlan(.trackingOnly(recordingMode: .oncePerDay)).recordingMode,
+            .oncePerDay
+        )
+        XCTAssertEqual(
+            try HabitRules.validatedPlan(.trackingOnly(recordingMode: .multiplePerDay)).recordingMode,
+            .multiplePerDay
+        )
     }
 
     func testAnalyticsBootstrapFreezesLegacyLocalDaysAndStartsConservativeCoverage() throws {
@@ -1157,7 +1211,7 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(dayMetadata.provenance, .legacyBootstrap)
         let plans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
         let plan = try XCTUnwrap(plans.first)
-        XCTAssertEqual(plan.plan, .trackingOnly)
+        XCTAssertEqual(plan.plan, .trackingOnly(recordingMode: .multiplePerDay))
         XCTAssertEqual(plan.trustCoverageStartLocalDay, HabitLocalDay(date: now, timeZone: TimeZone(identifier: "Asia/Tokyo")!).description)
         XCTAssertEqual(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).count, 1)
     }
@@ -1329,7 +1383,7 @@ final class HabitFoundationTests: XCTestCase {
             let plansByHabit = Dictionary(uniqueKeysWithValues: plans.map { ($0.habitID, $0) })
             XCTAssertEqual(plansByHabit[onceHabitID]?.plan, HabitPlan.legacy(mode: .oncePerDay, target: nil))
             XCTAssertEqual(plansByHabit[multipleHabitID]?.plan, HabitPlan.legacy(mode: .multiplePerDay, target: 3))
-            XCTAssertEqual(plansByHabit[targetlessHabitID]?.plan, .trackingOnly)
+            XCTAssertEqual(plansByHabit[targetlessHabitID]?.plan, .trackingOnly(recordingMode: .multiplePerDay))
             XCTAssertTrue(plans.allSatisfy { $0.trustCoverageStartLocalDay == bootstrapDay.description })
             planIDs = Set(plans.map(\.id))
             let lifecycle = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
@@ -1376,7 +1430,7 @@ final class HabitFoundationTests: XCTestCase {
         let day4 = HabitLocalDay(year: 2026, month: 9, day: 4)
         let plan = HabitPlanSnapshot(
             effectiveDay: day1,
-            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
             trustStartDay: day1
         )
         let logs = [day1, day2, day4].map {
@@ -1417,7 +1471,7 @@ final class HabitFoundationTests: XCTestCase {
         let monday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 12))!
         let habit = try HabitService(context: context, now: { monday }).create(
             name: "Wednesday only",
-            plan: HabitPlan(period: .day, goal: .selectedWeekdays, targetCount: 1, weekdays: [4])
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .selectedWeekdays, targetCount: 1, weekdays: [4])
         )
         let service = HabitCheckInService(
             context: context,
@@ -1449,7 +1503,7 @@ final class HabitFoundationTests: XCTestCase {
             },
             plans: [HabitPlanSnapshot(
                 effectiveDay: mondayLocalDay,
-                plan: HabitPlan(period: .day, goal: .selectedWeekdays, targetCount: 1, weekdays: [4]),
+                plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .selectedWeekdays, targetCount: 1, weekdays: [4]),
                 trustStartDay: mondayLocalDay
             )],
             lifecycle: [HabitLifecycleSnapshot(day: mondayLocalDay, kind: .created)],
@@ -1466,6 +1520,7 @@ final class HabitFoundationTests: XCTestCase {
         let sunday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 6, hour: 12))!
         let monday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 12))!
         let plan = try HabitRules.validatedPlan(HabitPlan(
+            recordingMode: .oncePerDay,
             period: .day,
             goal: .selectedWeekdays,
             targetCount: 1,
@@ -1483,8 +1538,8 @@ final class HabitFoundationTests: XCTestCase {
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         let wednesday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
         let service = HabitService(context: context, now: { wednesday })
-        let habit = try service.create(name: "Cross period", plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []))
-        try service.update(habit, name: habit.name, plan: HabitPlan(period: .week, goal: .count, targetCount: 3, weekdays: []))
+        let habit = try service.create(name: "Cross period", plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .everyDay, targetCount: 1, weekdays: []))
+        try service.update(habit, name: habit.name, plan: HabitPlan(recordingMode: .oncePerDay, period: .week, goal: .count, targetCount: 3, weekdays: []))
         let revisions = try context.fetch(FetchDescriptor<HabitPlanRevision>()).filter { $0.habitID == habit.id }
         XCTAssertEqual(revisions.map(\.effectiveLocalDay).sorted(), ["2026-09-09", "2026-09-14"])
     }
@@ -1493,7 +1548,7 @@ final class HabitFoundationTests: XCTestCase {
         let day = HabitLocalDay(year: 2026, month: 9, day: 7)
         let plan = HabitPlanSnapshot(
             effectiveDay: day,
-            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 5, weekdays: []),
+            plan: HabitPlan(recordingMode: .multiplePerDay, period: .day, goal: .everyDay, targetCount: 5, weekdays: []),
             trustStartDay: day
         )
         let result = HabitAnalyticsEngine.evaluate(
@@ -1522,12 +1577,12 @@ final class HabitFoundationTests: XCTestCase {
             plans: [
                 HabitPlanSnapshot(
                     effectiveDay: monday,
-                    plan: HabitPlan(period: .week, goal: .count, targetCount: 3, weekdays: []),
+                    plan: HabitPlan(recordingMode: .multiplePerDay, period: .week, goal: .count, targetCount: 3, weekdays: []),
                     trustStartDay: monday
                 ),
                 HabitPlanSnapshot(
                     effectiveDay: wednesday,
-                    plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+                    plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
                     trustStartDay: wednesday
                 )
             ],
@@ -1559,7 +1614,7 @@ final class HabitFoundationTests: XCTestCase {
         let third = HabitLocalDay(year: 2026, month: 9, day: 3)
         let plan = HabitPlanSnapshot(
             effectiveDay: first,
-            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
             trustStartDay: first
         )
         let logs = [first, second].map {
@@ -1577,7 +1632,7 @@ final class HabitFoundationTests: XCTestCase {
         let monthEnd = HabitLocalDay(year: 2026, month: 9, day: 30)
         let monthly = HabitPlanSnapshot(
             effectiveDay: midMonth,
-            plan: HabitPlan(period: .month, goal: .count, targetCount: 3, weekdays: []),
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .month, goal: .count, targetCount: 3, weekdays: []),
             trustStartDay: midMonth
         )
         let monthlySummary = HabitAnalyticsEngine.evaluate(
@@ -1587,7 +1642,7 @@ final class HabitFoundationTests: XCTestCase {
         )
         XCTAssertEqual(monthlySummary.current?.outcome, .notEvaluated(.partialCoverage))
 
-        let tracking = HabitPlanSnapshot(effectiveDay: midMonth, plan: .trackingOnly, trustStartDay: midMonth)
+        let tracking = HabitPlanSnapshot(effectiveDay: midMonth, plan: .trackingOnly(recordingMode: .oncePerDay), trustStartDay: midMonth)
         let trackingSummary = HabitAnalyticsEngine.evaluate(
             createdAt: midMonth,
             logs: [HabitAnalyticsLog(id: UUID(), localDay: midMonth, isCompleted: true, occurredAt: Date())],

@@ -784,12 +784,14 @@ final class ImportExportService {
             }
             for record in package.data.habitPlanRevisions {
                 guard let period = HabitPlanPeriod(rawValue: record.period),
-                      let goal = HabitPlanGoal(rawValue: record.goal) else {
+                      let goal = HabitPlanGoal(rawValue: record.goal),
+                      let rawMode = record.recordingMode,
+                      let recordingMode = HabitRecordingMode(rawValue: rawMode) else {
                     throw TransferPackageError.invalidObject("habitPlanRevision")
                 }
                 context.insert(HabitPlanRevision(
                     id: record.id, habitID: record.habitID, effectiveLocalDay: record.effectiveLocalDay,
-                    plan: HabitPlan(period: period, goal: goal, targetCount: record.targetCount,
+                    plan: HabitPlan(recordingMode: recordingMode, period: period, goal: goal, targetCount: record.targetCount,
                                     weekdays: Set(record.weekdays.split(separator: ",").compactMap { Int($0) })),
                     trustCoverageStartLocalDay: record.trustCoverageStartLocalDay, createdAt: record.createdAt
                 ))
@@ -1107,7 +1109,8 @@ private enum TransferSnapshot {
                 HabitPlanRevisionTransfer(
                     id: $0.id, habitID: $0.habitID, effectiveLocalDay: $0.effectiveLocalDay,
                     period: $0.periodRawValue, goal: $0.goalRawValue, targetCount: $0.targetCount,
-                    weekdays: $0.weekdaysRawValue, trustCoverageStartLocalDay: $0.trustCoverageStartLocalDay,
+                    weekdays: $0.weekdaysRawValue, recordingMode: $0.recordingModeRawValue,
+                    trustCoverageStartLocalDay: $0.trustCoverageStartLocalDay,
                     createdAt: $0.createdAt
                 )
             }.sorted { sortUUID($0.id, $1.id) },

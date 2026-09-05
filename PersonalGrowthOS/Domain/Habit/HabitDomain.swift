@@ -95,13 +95,22 @@ enum HabitLifecycleEventKind: String, Codable, CaseIterable, Sendable {
 }
 
 struct HabitPlan: Equatable, Sendable {
+    let recordingMode: HabitRecordingMode
     let period: HabitPlanPeriod
     let goal: HabitPlanGoal
     let targetCount: Int?
     /// ISO weekday values (1 is Sunday, 7 is Saturday), empty for every-day/count schedules.
     let weekdays: Set<Int>
 
-    static let trackingOnly = HabitPlan(period: .trackingOnly, goal: .none, targetCount: nil, weekdays: [])
+    static func trackingOnly(recordingMode: HabitRecordingMode) -> Self {
+        HabitPlan(
+            recordingMode: recordingMode,
+            period: .trackingOnly,
+            goal: .none,
+            targetCount: nil,
+            weekdays: []
+        )
+    }
 
     var isTrackingOnly: Bool { period == .trackingOnly || goal == .none }
     var supportsStrictMetrics: Bool { !isTrackingOnly && (targetCount ?? 0) > 0 }
@@ -109,10 +118,10 @@ struct HabitPlan: Equatable, Sendable {
     static func legacy(mode: HabitRecordingMode, target: Int?) -> Self {
         switch mode {
         case .oncePerDay:
-            return HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: [])
+            return HabitPlan(recordingMode: mode, period: .day, goal: .everyDay, targetCount: 1, weekdays: [])
         case .multiplePerDay:
-            guard let target, target > 0 else { return .trackingOnly }
-            return HabitPlan(period: .day, goal: .everyDay, targetCount: target, weekdays: [])
+            guard let target, target > 0 else { return .trackingOnly(recordingMode: mode) }
+            return HabitPlan(recordingMode: mode, period: .day, goal: .everyDay, targetCount: target, weekdays: [])
         }
     }
 }
@@ -141,7 +150,7 @@ enum HabitRules {
     }
 
     static func validatedPlan(_ plan: HabitPlan) throws -> HabitPlan {
-        guard !plan.isTrackingOnly else { return .trackingOnly }
+        guard !plan.isTrackingOnly else { return .trackingOnly(recordingMode: plan.recordingMode) }
         guard let target = plan.targetCount, target > 0 else { throw HabitValidationError.invalidPlan }
         if plan.goal == .selectedWeekdays {
             guard plan.period == .day, !plan.weekdays.isEmpty,
@@ -153,7 +162,13 @@ enum HabitRules {
                 || ((plan.period == .week || plan.period == .month) && plan.goal == .count) else {
             throw HabitValidationError.invalidPlan
         }
-        return HabitPlan(period: plan.period, goal: plan.goal, targetCount: target, weekdays: plan.weekdays)
+        return HabitPlan(
+            recordingMode: plan.recordingMode,
+            period: plan.period,
+            goal: plan.goal,
+            targetCount: target,
+            weekdays: plan.weekdays
+        )
     }
 
     static func validatedDailyTarget(
@@ -289,7 +304,7 @@ enum HabitAnalyticsEngine {
             let coverage = plan.trustStartDay <= bounds.start
             let actual = periodDays.reduce(0) { total, currentDay in
                 let raw = activity[currentDay] ?? 0
-                let credit = plan.plan.period == .day && plan.plan.targetCount == 1
+                let credit = plan.plan.recordingMode == .oncePerDay
                     ? min(raw, 1)
                     : raw
                 return total + credit

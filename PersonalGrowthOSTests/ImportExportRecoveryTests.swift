@@ -220,6 +220,44 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
     }
 
+    func testSchemaV4RejectsMissingOrInvalidPlanRecordingMode() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Run",
+            normalizedName: "run",
+            status: HabitStatus.active.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+
+        for rawMode in [nil, "not-a-mode"] {
+            let plan = HabitPlanRevisionTransfer(
+                id: UUID(),
+                habitID: habitID,
+                effectiveLocalDay: "2026-09-07",
+                period: HabitPlanPeriod.week.rawValue,
+                goal: HabitPlanGoal.count.rawValue,
+                targetCount: 3,
+                weekdays: "",
+                recordingMode: rawMode,
+                trustCoverageStartLocalDay: "2026-09-07",
+                createdAt: timestamp
+            )
+            let data = makeTransferData(habits: [habit], habitPlanRevisions: [plan])
+            XCTAssertThrowsError(try TransferValidator.validate(
+                manifest: makeManifest(schemaVersion: 4, data: data),
+                data: data,
+                limits: .production
+            )) {
+                XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitPlanRevision"))
+            }
+        }
+    }
+
     func testFullRoundTripPreservesEveryObjectIdentityRelationshipAndOriginal() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -846,7 +884,8 @@ private struct TransferStore {
 private func makeTransferData(
     habits: [HabitTransfer] = [],
     weightRecords: [WeightRecordTransfer] = [],
-    weeklyReviews: [WeeklyReviewTransfer] = []
+    weeklyReviews: [WeeklyReviewTransfer] = [],
+    habitPlanRevisions: [HabitPlanRevisionTransfer] = []
 ) -> TransferData {
     TransferData(
         entries: [],
@@ -858,7 +897,8 @@ private func makeTransferData(
         goals: [],
         goalEvents: [],
         weightRecords: weightRecords,
-        weeklyReviews: weeklyReviews
+        weeklyReviews: weeklyReviews,
+        habitPlanRevisions: habitPlanRevisions
     )
 }
 
@@ -961,7 +1001,7 @@ private final class TransferTestFixture {
         let plan = HabitPlanRevision(
             habitID: habit.id,
             effectiveLocalDay: HabitLocalDay(date: base).description,
-            plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []),
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .week, goal: .count, targetCount: 3, weekdays: []),
             trustCoverageStartLocalDay: HabitLocalDay(date: base).description,
             createdAt: base
         )
