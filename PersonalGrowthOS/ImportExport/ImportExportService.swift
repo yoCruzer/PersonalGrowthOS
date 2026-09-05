@@ -344,7 +344,7 @@ final class ImportExportService {
             try Task.checkCancellation()
             try publicationCheckpoint?(.afterPreflight)
             try Self.ensureTargetIsEmpty(context)
-            try await publish(package: package)
+            try await publish(package: package, importedAt: now())
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.images.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
@@ -504,7 +504,7 @@ final class ImportExportService {
         try verifySnapshot(package.data, context: reopenedContext, mediaStore: reopenedMedia)
     }
 
-    private func publish(package: ValidatedPackage) async throws {
+    private func publish(package: ValidatedPackage, importedAt: Date) async throws {
         let importContainer = container
         let mediaRoot = mediaStore.rootURL
         let checkpoint = publicationCheckpoint
@@ -513,6 +513,7 @@ final class ImportExportService {
                 package: package,
                 container: importContainer,
                 mediaRoot: mediaRoot,
+                importedAt: importedAt,
                 publicationCheckpoint: checkpoint
             )
         }
@@ -528,6 +529,7 @@ final class ImportExportService {
         package: ValidatedPackage,
         container: ModelContainer,
         mediaRoot: URL,
+        importedAt: Date,
         publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
     ) throws {
         let fileManager = FileManager.default
@@ -580,6 +582,11 @@ final class ImportExportService {
                 context: publicationContext,
                 mediaStore: activeStore,
                 copyOriginals: false
+            )
+            _ = try HabitAnalyticsMigrationBootstrap.apply(
+                context: publicationContext,
+                now: importedAt,
+                saveChanges: false
             )
             try Task.checkCancellation()
             try publicationCheckpoint?(.beforeSave)

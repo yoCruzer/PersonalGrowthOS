@@ -169,8 +169,7 @@ struct HabitsView: View {
     }
 
     private func section(for habit: Habit) -> String {
-        let plan = planRevisions.filter { $0.habitID == habit.id }
-            .sorted { $0.effectiveLocalDay < $1.effectiveLocalDay }.last?.plan
+        let plan = HabitPlanResolver.currentPlan(for: habit.id, plans: planRevisions)
         return switch plan?.period {
         case .week: "This Week"
         case .month: "This Month"

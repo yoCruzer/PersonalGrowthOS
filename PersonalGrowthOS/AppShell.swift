@@ -112,9 +112,10 @@ private struct TodayView: View {
 
     private var todayHabits: [Habit] {
         activeHabits.filter { habit in
-            let revisions = habitPlanRevisions.filter { $0.habitID == habit.id }
-                .sorted { $0.effectiveLocalDay < $1.effectiveLocalDay }
-            guard let plan = revisions.last?.plan else { return true }
+            guard let plan = HabitPlanResolver.currentPlan(
+                for: habit.id,
+                plans: habitPlanRevisions
+            ) else { return true }
             guard plan.period == .day else { return false }
             guard plan.goal == .selectedWeekdays else { return true }
             return plan.weekdays.contains(Calendar.current.component(.weekday, from: Date()))

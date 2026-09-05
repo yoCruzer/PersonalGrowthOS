@@ -1027,6 +1027,27 @@ final class HabitFoundationTests: XCTestCase {
             XCTAssertEqual($0 as? HabitCheckInError, .futureOccurrence)
         }
     }
+
+    func testSelectedWeekdayPlanRejectsRestDayCheckIn() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let monday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 12))!
+        let habit = try HabitService(context: context, now: { monday }).create(
+            name: "Wednesday only",
+            plan: HabitPlan(period: .day, goal: .selectedWeekdays, targetCount: 1, weekdays: [4])
+        )
+        let service = HabitCheckInService(
+            context: context,
+            mediaStore: MediaStore(rootURL: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)),
+            now: { monday },
+            calendar: calendar
+        )
+        XCTAssertThrowsError(try service.checkIn(habit, draft: HabitLogDraft(occurredAt: monday))) {
+            XCTAssertEqual($0 as? HabitCheckInError, .notScheduled)
+        }
+    }
 }
 
 private enum InjectedHabitFailure: Error {

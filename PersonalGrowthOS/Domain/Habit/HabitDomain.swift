@@ -125,6 +125,7 @@ enum HabitCheckInError: Error, Equatable {
     case recentlyCheckedIn
     case checkInIsNotLatest
     case futureOccurrence
+    case notScheduled
 }
 
 enum HabitRules {
