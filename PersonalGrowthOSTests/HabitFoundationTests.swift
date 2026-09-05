@@ -1048,6 +1048,19 @@ final class HabitFoundationTests: XCTestCase {
             XCTAssertEqual($0 as? HabitCheckInError, .notScheduled)
         }
     }
+
+    func testCrossPeriodPlanEditUsesCoarserCleanBoundary() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let wednesday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 9, hour: 12))!
+        let service = HabitService(context: context, now: { wednesday })
+        let habit = try service.create(name: "Cross period", plan: HabitPlan(period: .day, goal: .everyDay, targetCount: 1, weekdays: []))
+        try service.update(habit, name: habit.name, plan: HabitPlan(period: .week, goal: .count, targetCount: 3, weekdays: []))
+        let revisions = try context.fetch(FetchDescriptor<HabitPlanRevision>()).filter { $0.habitID == habit.id }
+        XCTAssertEqual(revisions.map(\.effectiveLocalDay).sorted(), ["2026-09-09", "2026-09-14"])
+    }
 }
 
 private enum InjectedHabitFailure: Error {

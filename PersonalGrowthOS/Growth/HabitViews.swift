@@ -320,6 +320,8 @@ struct HabitDetailView: View {
     @Query private var planRevisions: [HabitPlanRevision]
     @Query private var lifecycleEvents: [HabitLifecycleEvent]
     @Query private var entries: [Entry]
+    @Query private var links: [ObjectLink]
+    @Query private var goals: [Goal]
     @State private var isAddingInsight = false
     @State private var isLoggingDetails = false
     @State private var isEditing = false
@@ -367,9 +369,34 @@ struct HabitDetailView: View {
         )
     }
 
+    private var relatedInsights: [Entry] {
+        let entryIDs = Set(links.compactMap { link -> UUID? in
+            link.targetTypeRawValue == LinkObjectType.habit.rawValue && link.targetID == habit.id
+                && link.sourceTypeRawValue == LinkObjectType.entry.rawValue ? link.sourceID : nil
+        })
+        return entries.filter { entryIDs.contains($0.id) }
+    }
+
+    private var relatedGoals: [Goal] {
+        let goalIDs = Set(links.compactMap { link -> UUID? in
+            link.sourceTypeRawValue == LinkObjectType.habit.rawValue && link.sourceID == habit.id
+                && link.targetTypeRawValue == LinkObjectType.goal.rawValue ? link.targetID : nil
+        })
+        return goals.filter { goalIDs.contains($0.id) }
+    }
+
     var body: some View {
         List {
-            HabitAnalyticsDashboard(summary: analytics, habitName: habit.name)
+            HabitAnalyticsDashboard(
+                summary: analytics,
+                habitName: habit.name,
+                plans: planRevisions.filter { $0.habitID == habit.id },
+                lifecycleEvents: lifecycleEvents.filter { $0.habitID == habit.id },
+                insights: relatedInsights,
+                goals: relatedGoals,
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
             Section("Status") {
                 LabeledContent("Status", value: habit.status.localizedName)
                 LabeledContent("Recording Mode", value: settings.recordingMode.localizedName)
@@ -843,6 +870,12 @@ struct RecentHabitCheckIn: Equatable {
 private struct HabitAnalyticsDashboard: View {
     let summary: HabitAnalyticsSummary
     let habitName: String
+    let plans: [HabitPlanRevision]
+    let lifecycleEvents: [HabitLifecycleEvent]
+    let insights: [Entry]
+    let goals: [Goal]
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
 
     var body: some View {
         if let current = summary.current {
@@ -872,12 +905,39 @@ private struct HabitAnalyticsDashboard: View {
                 }
             }
             Section("Weekday Pattern") {
-                Text("Activity is shown from completed check-ins; weekly and monthly goals do not turn individual days into failures.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                WeekdayActivityPattern(activity: summary.activityByDay)
             }
             Section("Journey") {
-                Text("Plan and lifecycle changes are preserved as effective history.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                let today = HabitLocalDay(date: Date())
+                let effectivePlans = plans.filter { (HabitLocalDay($0.effectiveLocalDay) ?? today) <= today }
+                if effectivePlans.isEmpty && lifecycleEvents.isEmpty {
+                    Text("No changes yet.").foregroundStyle(.secondary)
+                } else {
+                    ForEach(effectivePlans.sorted { $0.effectiveLocalDay > $1.effectiveLocalDay }) { plan in
+                        LabeledContent(plan.effectiveLocalDay, value: planDescription(plan.plan))
+                    }
+                    ForEach(lifecycleEvents.sorted { $0.occurredAt > $1.occurredAt }) { event in
+                        LabeledContent(event.occurredLocalDay, value: event.kind.rawValue.capitalized)
+                    }
+                }
+            }
+            if !insights.isEmpty || !goals.isEmpty {
+                Section("Context") {
+                    ForEach(insights) { entry in
+                        NavigationLink {
+                            EntryDetailView(entry: entry, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+                        } label: {
+                            Label(entry.title ?? entry.body ?? "Insight", systemImage: "doc.text")
+                        }
+                    }
+                    ForEach(goals) { goal in
+                        NavigationLink {
+                            GoalDetailView(goal: goal, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+                        } label: {
+                            Label(goal.title, systemImage: "target")
+                        }
+                    }
+                }
             }
             if summary.coverageStart != nil {
                 Section {
@@ -891,6 +951,42 @@ private struct HabitAnalyticsDashboard: View {
     private func progressText(_ evaluation: HabitPeriodEvaluation) -> String {
         guard let target = evaluation.target else { return "\(evaluation.actual) recorded" }
         return "\(evaluation.actual)/\(target)"
+    }
+
+    private func planDescription(_ plan: HabitPlan) -> String {
+        if plan.isTrackingOnly { return "Tracking Only" }
+        switch plan.period {
+        case .day: return plan.goal == .selectedWeekdays ? "Selected Days" : "Daily \(plan.targetCount ?? 1)"
+        case .week: return "\(plan.targetCount ?? 0) per week"
+        case .month: return "\(plan.targetCount ?? 0) per month"
+        case .trackingOnly: return "Tracking Only"
+        }
+    }
+}
+
+private struct WeekdayActivityPattern: View {
+    let activity: [HabitLocalDay: Int]
+    var body: some View {
+        let calendar = WeeklyReviewCalendarPolicy.calendar()
+        let values = weekdayValues(calendar: calendar)
+        HStack(spacing: 8) {
+            ForEach(1...7, id: \.self) { weekday in
+                VStack(spacing: 2) {
+                    Text(calendar.veryShortWeekdaySymbols[weekday - 1])
+                    Text("\(values[weekday, default: 0])").monospacedDigit()
+                }
+                .font(.caption)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .accessibilityLabel("Weekday activity pattern")
+    }
+
+    private func weekdayValues(calendar: Calendar) -> [Int: Int] {
+        activity.reduce(into: [:]) { result, item in
+            let weekday = calendar.component(.weekday, from: item.key.date() ?? Date())
+            result[weekday, default: 0] += item.value
+        }
     }
 }
 

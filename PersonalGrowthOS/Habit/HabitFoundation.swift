@@ -378,10 +378,19 @@ final class HabitService {
         }
 
         let currentPlan = HabitPlan.legacy(mode: recordingMode, target: validatedTarget)
+        let habitID = habit.id
+        let existingPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>(
+            predicate: #Predicate { $0.habitID == habitID }
+        ))
+        let previousPlan = HabitPlanResolver.currentPlan(
+            for: habit.id,
+            on: timestamp,
+            plans: existingPlans
+        )
         try replacePendingPlan(
             habitID: habit.id,
             plan: currentPlan,
-            effectiveDay: nextEffectiveDay(for: currentPlan, at: timestamp),
+            effectiveDay: nextEffectiveDay(from: previousPlan, to: currentPlan, at: timestamp),
             timestamp: timestamp
         )
 
@@ -420,7 +429,12 @@ final class HabitService {
         } else {
             context.insert(HabitConfiguration(habitID: habit.id, recordingMode: mode, dailyTargetCount: target, updatedAt: timestamp))
         }
-        try replacePendingPlan(habitID: habit.id, plan: plan, effectiveDay: nextEffectiveDay(for: plan, at: timestamp), timestamp: timestamp)
+        let habitID = habit.id
+        let existingPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>(
+            predicate: #Predicate { $0.habitID == habitID }
+        ))
+        let previousPlan = HabitPlanResolver.currentPlan(for: habit.id, on: timestamp, plans: existingPlans)
+        try replacePendingPlan(habitID: habit.id, plan: plan, effectiveDay: nextEffectiveDay(from: previousPlan, to: plan, at: timestamp), timestamp: timestamp)
         do { try save() } catch { context.rollback(); throw error }
     }
 
@@ -526,9 +540,10 @@ final class HabitService {
         ))
     }
 
-    private func nextEffectiveDay(for plan: HabitPlan, at date: Date) -> HabitLocalDay {
+    private func nextEffectiveDay(from oldPlan: HabitPlan?, to newPlan: HabitPlan, at date: Date) -> HabitLocalDay {
         let today = HabitLocalDay(date: date)
-        switch plan.period {
+        let period = [oldPlan?.period, newPlan.period].compactMap { $0 }.max { rank($0) < rank($1) } ?? .day
+        switch period {
         case .trackingOnly, .day:
             return today.adding(days: 1) ?? today
         case .week:
@@ -541,6 +556,10 @@ final class HabitService {
             let parts = calendar.dateComponents([.year, .month], from: nextMonth)
             return HabitLocalDay(year: parts.year ?? today.year, month: parts.month ?? today.month, day: 1)
         }
+    }
+
+    private func rank(_ period: HabitPlanPeriod) -> Int {
+        switch period { case .trackingOnly, .day: 0; case .week: 1; case .month: 2 }
     }
 
     private func lifecycleKind(from old: HabitStatus, to new: HabitStatus) -> HabitLifecycleEventKind {
