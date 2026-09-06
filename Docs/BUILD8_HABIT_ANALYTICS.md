@@ -1,10 +1,11 @@
-# Build 8 Habit Analytics — In-progress Implementation Record
+# Build 8 Habit Analytics — Draft Review Handoff
 
 | Item | Value |
 | --- | --- |
 | Baseline | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
 | Branch | `feature/build8-habit-analytics-dashboard` |
-| State | In progress — not a review candidate |
+| State | Draft review candidate — automated gate passed; Owner device validation outstanding |
+| Draft PR | [#5](https://github.com/yoCruzer/PersonalGrowthOS/pull/5), base `fix/build7-owner-feedback-round2` |
 
 ## Implemented foundation
 
@@ -46,11 +47,12 @@
 - The first real overlay rejected direct Local Day columns on `HabitLog` because that design changed the historical V7 model checksum (`Cannot use staged migration with an unknown model version`). No destructive fallback was used.
 - The corrected additive metadata design opens that V7 store, preserves Entry/Image/Habit/HabitLog/Goal/ObjectLink/Weight/WeeklyReview IDs and facts, bootstraps Local Day metadata/plans/lifecycle exactly once, and reopens with the same additions and civil days under a different time zone.
 
-## Known gaps before Build 8 can be reviewed
+## Review boundary
 
-- The complete acceptance matrix has not yet been exercised end-to-end. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments, lifecycle history, period-aware P0/P1 dashboard, backup schema boundaries, Dashboard localization and frozen visual/a11y carryover are covered; the final all-package regression remains.
-- Remote head is `bdb17449af6db016b70fd404712b2342e27e8504`; recovered staged checkpoints remain local until the final Build 8 gate. No Draft PR, archive, TestFlight action or merge has occurred.
+- The complete automated acceptance matrix passed on the recovered staged implementation. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments, lifecycle history, period-aware P0/P1 dashboard, backup schema boundaries, Dashboard localization and frozen visual/a11y carryover are covered.
+- Implementation and final regression commits through `e922c21` are pushed to `feature/build8-habit-analytics-dashboard`; Draft PR [#5](https://github.com/yoCruzer/PersonalGrowthOS/pull/5) targets the exact Build 7 handoff branch.
 - Physical-device validation is entirely outstanding.
+- No merge, archive or TestFlight action has occurred or is authorized by this handoff.
 
 ## Verification so far
 
@@ -59,9 +61,9 @@
 - v4 full import/export round-trip: PASS on iPhone 16 Simulator, iOS 26.5 (`/Users/hanghang/Library/Developer/Xcode/DerivedData/PersonalGrowthOS-emotcgnahyqoknbhmwfzpcczyvfw/Logs/Test/Test-PersonalGrowthOS-2026.09.05_15-12-27-+0800.xcresult`).
 - Cross-period plan-boundary test: PASS on iPhone 16 Simulator, iOS 26.5 (`/Users/hanghang/Library/Developer/Xcode/DerivedData/PersonalGrowthOS-emotcgnahyqoknbhmwfzpcczyvfw/Logs/Test/Test-PersonalGrowthOS-2026.09.05_15-16-21-+0800.xcresult`).
 - Habit Foundation suite: 38/38 PASS on iPhone 17 Pro Simulator, iOS 26.5, including V7→V8 bootstrap and week-credit/transition cases (`/Users/hanghang/Library/Developer/Xcode/DerivedData/PersonalGrowthOS-emotcgnahyqoknbhmwfzpcczyvfw/Logs/Test/Test-PersonalGrowthOS-2026.09.05_15-26-56-+0800.xcresult`).
-- Recovered Stage 0 Habit Foundation suite: 45/45 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage0-HabitFoundation.xcresult`). The complete Build 8 gate has not run.
+- Recovered Stage 0 Habit Foundation suite: 45/45 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage0-HabitFoundation.xcresult`).
 - Exact-`95076bf` fixture generation: 1/1 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build7-V7Fixture-Generate.xcresult`).
-- Stage 1 migration/Habit/transfer regression: 48/48 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage1-Targeted2.xcresult`). The complete Build 8 gate has not run.
+- Stage 1 migration/Habit/transfer regression: 48/48 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage1-Targeted2.xcresult`).
 - Stage 2 Habit/recording-mode/transfer regression: 50/50 PASS (`/tmp/PersonalGrowthOS-Build8-Stage2-RecordingMode.xcresult`) plus focused real-migration and v4 proof 5/5 PASS (`/tmp/PersonalGrowthOS-Build8-Stage2-RecordingMode-2.xcresult`) on iPhone 17 Pro Simulator, iOS 26.5.
 - Stage 3 effective-Plan runtime regression: Habit Foundation 49/49 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage3-RuntimeTruth.xcresult`).
 - Stage 4 pending-Plan regression: Habit Foundation 50/50 PASS on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-Stage4-PendingPlan.xcresult`).
@@ -71,3 +73,8 @@
 - Stage 9 weekday-pattern regression: Habit Foundation 62/62 PASS (`/tmp/PersonalGrowthOS-Build8-Stage9-WeekdayPattern.xcresult`) on iPhone 17 Pro Simulator, iOS 26.5, including daily scheduled-denominator exclusions and weekly/monthly/tracking-only activity distribution.
 - Stage 10 backup/localization regression: Habit Foundation plus Import/Export Recovery 88/88 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-BackupLocalizationFinal.xcresult`) on iPhone 16 Simulator, iOS 26.5. Focused English/system-language UI 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-EnDashboardUI.xcresult`) and Simplified Chinese Dashboard UI 1/1 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-ZhDashboardUI2.xcresult`). The 423-entry catalog parses with complete English and Simplified Chinese values; all 85 explicit `HabitViews` localization keys resolve, and both language catalogs compile independently.
 - Stage 11 visual/accessibility closure: mixed once/day, adjacent multiple/day, over-target, Tracking Only and long-name rows pass enabled semantic accessibility audits with measured >=44-point +/- targets and non-intersecting adjacent controls in both Light/default text (`/tmp/PersonalGrowthOS-Build8-Stage11-LightFinal.xcresult`) and Dark/system accessibility-extra-large (`/tmp/PersonalGrowthOS-Build8-Stage11-DarkLargeFinal.xcresult`). Exported screenshots were visually inspected; accessibility-size actions retain full-width text above compact controls.
+- Final complete Unit suite: 186/186 PASS, 0 failed, 0 skipped on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-FinalUnit-Rerun.xcresult`).
+- Final complete UI suite: 29/29 PASS, 0 failed, 0 skipped on iPhone 17 Pro Simulator, iOS 26.5 (`/tmp/PersonalGrowthOS-Build8-FinalUI-Rerun.xcresult`). The enabled semantic audit includes useful-description coverage for the Quick Capture editor; Habit Insight, Weekly Review and Tag Search use only visible navigation and scrolling.
+- Final exact-V7 overlay/bootstrap/reopen and v4 full backup round-trip proof: 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-FinalDataProofs.xcresult`).
+- Final Simulator Debug build and independent English/Simplified Chinese `build-for-testing` runs: PASS. The 423-entry String Catalog has complete values in both languages.
+- Final project parse, JSON/catalog structure, conflict-marker, `git diff --check` and recovery-patch SHA-256 checks: PASS. The preserved pre-recovery patch remains `/tmp/PersonalGrowthOS-Build8-pre-recovery-bdb1744.patch` with SHA-256 `812464f2da6e52129972caf7f49ab321cabf37d2c4a72ebc9fa2bb3bf51e8618`.
