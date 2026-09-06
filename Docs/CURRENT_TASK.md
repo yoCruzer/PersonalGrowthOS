@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | P0/P1 dashboard semantics are verified; next batch is backup schema validation and localization |
-| Automated gate | Stage 9 Habit Foundation 62/62 and Stage 8 focused Habit UI 1/1 PASS; complete Build 8 gate not run |
+| Implementation tip | Backup boundary and bilingual Dashboard are verified; next batch is final Habit-row UI/accessibility closure |
+| Automated gate | Stage 10 backup/Habit regression 88/88 and focused localized UI 3/3 PASS; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -33,8 +33,9 @@
 - Overview and Detail now share one authoritative analytics snapshot. Overview reports daily/weekly/monthly/tracking-only progress without a fake denominator; Detail leads with current progress, state and check-in actions, then shows the dashboard, five recent facts and a complete history route.
 - Daily Progress uses a full civil-month calendar with scheduled success/miss/open/rest, lifecycle-neutral, pre-coverage and future states. Weekly/monthly current activity remains period-scoped and Year Activity remains a separate 365-day view.
 - Daily weekday patterns display achieved/eligible success rates using only strict scheduled outcomes. Weekly, monthly and Tracking Only patterns display factual activity counts by weekday and are explicitly labeled as a distribution.
+- Backup validation rejects schema-v1/v2/v3 packages carrying v4-only Plan/lifecycle payloads, while supported old packages remain compatible and v4 recording modes remain validated. Dashboard strings, streak units and Journey events now have English and Simplified Chinese coverage verified in compiled catalogs and live UI.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
-- This is not a candidate: backup/localization gates, final UI/a11y polish, complete regression, documentation closure and remote review handoff remain incomplete.
+- This is not a candidate: final UI/a11y polish, complete regression, documentation closure and remote review handoff remain incomplete.
 
 ## Historical Build 7 Validation Evidence
 
@@ -56,4 +57,4 @@
 
 ## Next Action
 
-Reject schema-v3 packages that smuggle v4 Plan/lifecycle data, preserve supported old-package behavior, validate recording modes, then complete English and Simplified Chinese Dashboard strings. Do not open a Draft PR until the complete Build 8 gate passes. Do not merge, archive or publish TestFlight.
+Close the frozen Habit-row visual/accessibility carryover in light/dark and Dynamic Type, inspect the enabled accessibility audit evidence, then run the complete Build 8 gate. Do not open a Draft PR until that gate passes. Do not merge, archive or publish TestFlight.

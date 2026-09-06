@@ -22,6 +22,7 @@
 - Plan edits use next-day/next-Monday/next-month boundaries; cross-period edits choose the coarser boundary. Journey filters out not-yet-effective revisions and Context uses existing Entry/Habit/Goal links.
 - Backup package v4 carries Local Day metadata, plan revisions and lifecycle events while decoding v1–v3 payloads without these fields.
 - v4 export/import preserves plan revision and lifecycle IDs plus HabitLog Local Day/time-zone provenance; old-package imports are bootstrapped during the same atomic publication transaction.
+- Older package schemas reject v4-only Plan/lifecycle payloads instead of silently materializing them. The Dashboard, streak units and Journey strings compile for English and Simplified Chinese and are exercised through localized UI flows.
 
 ## Current UI integration
 
@@ -46,7 +47,7 @@
 
 ## Known gaps before Build 8 can be reviewed
 
-- The complete acceptance matrix has not yet been implemented or exercised. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments, lifecycle history and the period-aware P0/P1 dashboard are covered; final visual/a11y polish, full backup compatibility/localization and all-package regression remain.
+- The complete acceptance matrix has not yet been exercised end-to-end. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments, lifecycle history, period-aware P0/P1 dashboard, backup schema boundaries and Dashboard localization are covered; final visual/a11y polish and all-package regression remain.
 - Remote head is `bdb17449af6db016b70fd404712b2342e27e8504`; recovered staged checkpoints remain local until the final Build 8 gate. No Draft PR, archive, TestFlight action or merge has occurred.
 - Physical-device validation is entirely outstanding.
 
@@ -67,3 +68,4 @@
 - Stage 6/7 Local Day/lifecycle/v4 regression: 58/58 PASS (`/tmp/PersonalGrowthOS-Build8-Stage67-LocalDayLifecycle.xcresult`), focused validation 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-Stage67-Focused.xcresult`), and conservative real-migration boundary 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-Stage67-MigrationBoundary.xcresult`) on iPhone 17 Pro Simulator, iOS 26.5.
 - Stage 8 P0 dashboard regression: Habit Foundation 60/60 PASS (`/tmp/PersonalGrowthOS-Build8-Stage8-P0Dashboard-Final.xcresult`) on iPhone 17 Pro Simulator, plus focused create/check-in/detail UI 1/1 PASS (`/tmp/PersonalGrowthOS-Build8-Stage8-P0UI.xcresult`) and visual inspection of the Now/month-calendar hierarchy on a clean iPhone 16 Simulator, iOS 26.5.
 - Stage 9 weekday-pattern regression: Habit Foundation 62/62 PASS (`/tmp/PersonalGrowthOS-Build8-Stage9-WeekdayPattern.xcresult`) on iPhone 17 Pro Simulator, iOS 26.5, including daily scheduled-denominator exclusions and weekly/monthly/tracking-only activity distribution.
+- Stage 10 backup/localization regression: Habit Foundation plus Import/Export Recovery 88/88 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-BackupLocalizationFinal.xcresult`) on iPhone 16 Simulator, iOS 26.5. Focused English/system-language UI 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-EnDashboardUI.xcresult`) and Simplified Chinese Dashboard UI 1/1 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-ZhDashboardUI2.xcresult`). The 423-entry catalog parses with complete English and Simplified Chinese values; all 85 explicit `HabitViews` localization keys resolve, and both language catalogs compile independently.

@@ -175,13 +175,22 @@ struct HabitsView: View {
         habits.filter { $0.status == .archived }
     }
 
-    private func section(for habit: Habit) -> String {
+    private func section(for habit: Habit) -> HabitPlanPeriod {
         let plan = HabitPlanResolver.currentPlan(for: habit.id, plans: planRevisions)
         return switch plan?.period {
-        case .week: "This Week"
-        case .month: "This Month"
-        case .trackingOnly: "Tracking Only"
-        default: "Today"
+        case .week: .week
+        case .month: .month
+        case .trackingOnly: .trackingOnly
+        default: .day
+        }
+    }
+
+    private func sectionTitle(_ period: HabitPlanPeriod) -> String {
+        switch period {
+        case .day: String(localized: "Today")
+        case .week: String(localized: "This Week")
+        case .month: String(localized: "This Month")
+        case .trackingOnly: String(localized: "Tracking Only")
         }
     }
 
@@ -206,10 +215,13 @@ struct HabitsView: View {
                     Text("Use a specific, actionable name. You can change it later without losing check-ins.")
                 }
             } else {
-                ForEach(["Today", "This Week", "This Month", "Tracking Only"], id: \.self) { title in
-                    let grouped = mainHabits.filter { section(for: $0) == title }
+                ForEach(
+                    [HabitPlanPeriod.day, .week, .month, .trackingOnly],
+                    id: \.rawValue
+                ) { period in
+                    let grouped = mainHabits.filter { section(for: $0) == period }
                     if !grouped.isEmpty {
-                        Section(title) {
+                        Section(sectionTitle(period)) {
                             ForEach(grouped) { habit in
                                 HabitOverviewRow(
                                     habit: habit,
@@ -349,21 +361,37 @@ private struct HabitOverviewRow: View {
     private var periodProgressText: String {
         guard let current = analytics.current else { return habit.status.localizedName }
         if current.period == .trackingOnly || current.target == nil {
-            return current.actual == 1 ? "1 recorded" : "\(current.actual) recorded"
+            return recordedText(current.actual)
         }
         let remaining = max((current.target ?? 0) - current.actual, 0)
         let scope: String = switch current.period {
-        case .day: "today"
-        case .week: "this week"
-        case .month: "this month"
+        case .day: String(localized: "today")
+        case .week: String(localized: "this week")
+        case .month: String(localized: "this month")
         case .trackingOnly: ""
         }
         if current.outcome == .notEvaluated(.notScheduled) {
-            return current.actual > 0 ? "\(current.actual) recorded · Rest day" : "Rest day"
+            return current.actual > 0
+                ? String.localizedStringWithFormat(
+                    String(localized: "%lld recorded · Rest day"), current.actual
+                )
+                : String(localized: "Rest day")
         }
         return remaining > 0
-            ? "\(current.actual)/\(current.target ?? 0) \(scope) · \(remaining) remaining"
-            : "\(current.actual)/\(current.target ?? 0) \(scope)"
+            ? String.localizedStringWithFormat(
+                String(localized: "%lld/%lld %@ · %lld remaining"),
+                current.actual, current.target ?? 0, scope, remaining
+            )
+            : String.localizedStringWithFormat(
+                String(localized: "%lld/%lld %@"),
+                current.actual, current.target ?? 0, scope
+            )
+    }
+
+    private func recordedText(_ count: Int) -> String {
+        count == 1
+            ? String(localized: "1 recorded")
+            : String.localizedStringWithFormat(String(localized: "%lld recorded"), count)
     }
 
     private func checkIn() {
@@ -706,27 +734,39 @@ struct HabitDetailView: View {
     private func progressText(_ evaluation: HabitPeriodEvaluation) -> String {
         if evaluation.outcome == .notEvaluated(.notScheduled) {
             return evaluation.actual > 0
-                ? "Rest day · \(evaluation.actual) recorded"
-                : "Rest day"
+                ? String.localizedStringWithFormat(
+                    String(localized: "Rest day · %lld recorded"), evaluation.actual
+                )
+                : String(localized: "Rest day")
         }
-        guard let target = evaluation.target else { return "\(evaluation.actual) recorded" }
+        guard let target = evaluation.target else {
+            return evaluation.actual == 1
+                ? String(localized: "1 recorded")
+                : String.localizedStringWithFormat(
+                    String(localized: "%lld recorded"), evaluation.actual
+                )
+        }
         let scope: String = switch evaluation.period {
-        case .day: "today"
-        case .week: "this week"
-        case .month: "this month"
+        case .day: String(localized: "today")
+        case .week: String(localized: "this week")
+        case .month: String(localized: "this month")
         case .trackingOnly: ""
         }
-        return "\(evaluation.actual)/\(target) \(scope)"
+        return String.localizedStringWithFormat(
+            String(localized: "%lld/%lld %@"), evaluation.actual, target, scope
+        )
     }
 
     private func streakText(_ count: Int, unit: String) -> String {
-        let singular = switch unit {
-        case "days": "day"
-        case "weeks": "week"
-        case "months": "month"
+        let localizedUnit = switch unit {
+        case "days": count == 1 ? String(localized: "day") : String(localized: "days")
+        case "weeks": count == 1 ? String(localized: "week") : String(localized: "weeks")
+        case "months": count == 1 ? String(localized: "month") : String(localized: "months")
         default: unit
         }
-        return "\(count) \(count == 1 ? singular : unit)"
+        return String.localizedStringWithFormat(
+            String(localized: "%lld %@"), count, localizedUnit
+        )
     }
 
     @ViewBuilder
@@ -895,7 +935,9 @@ private struct HabitHistoryView: View {
                 thumbnailStore: thumbnailStore
             )
         }
-        .navigationTitle("\(habitName) Activity")
+        .navigationTitle(String.localizedStringWithFormat(
+            String(localized: "%@ Activity"), habitName
+        ))
     }
 }
 
@@ -964,7 +1006,7 @@ private struct HabitEditorView: View {
                     .accessibilityIdentifier("habit-recording-mode")
 
                     if needsTarget {
-                        TextField(goalChoice == .everyDay ? "Daily Target" : "Target", text: $dailyTarget)
+                        TextField(targetFieldLabel, text: $dailyTarget)
                             .keyboardType(.numberPad)
                             .accessibilityIdentifier("habit-daily-target")
                     }
@@ -1001,7 +1043,13 @@ private struct HabitEditorView: View {
                         Text("Changing the name does not affect history. If the Habit itself has changed, consider archiving it and creating a new one.")
                             .foregroundStyle(.secondary)
                         if let pendingEffectiveDay {
-                            LabeledContent("Pending Plan", value: "Starts \(pendingEffectiveDay.description)")
+                            LabeledContent(
+                                "Pending Plan",
+                                value: String.localizedStringWithFormat(
+                                    String(localized: "Starts %@"),
+                                    pendingEffectiveDay.description
+                                )
+                            )
                         }
                     }
                 }
@@ -1088,6 +1136,12 @@ private struct HabitEditorView: View {
         goalChoice.requiresTarget(for: recordingMode)
     }
 
+    private var targetFieldLabel: String {
+        goalChoice == .everyDay
+            ? String(localized: "Daily Target")
+            : String(localized: "Target")
+    }
+
     private func weekdayName(_ weekday: Int) -> String {
         let calendar = Calendar.current
         return calendar.weekdaySymbols[weekday - 1]
@@ -1098,11 +1152,11 @@ private enum HabitGoalChoice: String, CaseIterable {
     case noGoal, everyDay, selectedDays, perWeek, perMonth
     var title: String {
         switch self {
-        case .noGoal: "No Goal"
-        case .everyDay: "Every Day"
-        case .selectedDays: "Selected Days"
-        case .perWeek: "Times per Week"
-        case .perMonth: "Times per Month"
+        case .noGoal: String(localized: "No Goal")
+        case .everyDay: String(localized: "Every Day")
+        case .selectedDays: String(localized: "Selected Days")
+        case .perWeek: String(localized: "Times per Week")
+        case .perMonth: String(localized: "Times per Month")
         }
     }
 
@@ -1154,7 +1208,9 @@ private struct HabitAnalyticsDashboard: View {
                 let total = summary.activityByDay.values.reduce(0, +)
                 LabeledContent("Completed check-ins", value: "\(total)")
                 ActivityHeatmap(activity: summary.activityByDay)
-                    .accessibilityLabel("Year activity for \(habitName)")
+                    .accessibilityLabel(String.localizedStringWithFormat(
+                        String(localized: "Year activity for %@"), habitName
+                    ))
             }
             Section("Trend") {
                 let recent = summary.evaluations.suffix(6)
@@ -1169,8 +1225,8 @@ private struct HabitAnalyticsDashboard: View {
                     activityByDay: summary.activityByDay
                 )
                 Text(pattern.metric == .scheduledDaySuccessRate
-                    ? "Success rate on scheduled days"
-                    : "Activity distribution by weekday")
+                    ? String(localized: "Success rate on scheduled days")
+                    : String(localized: "Activity distribution by weekday"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 WeekdayPatternView(pattern: pattern)
@@ -1199,7 +1255,10 @@ private struct HabitAnalyticsDashboard: View {
                         NavigationLink {
                             EntryDetailView(entry: entry, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
                         } label: {
-                            Label(entry.title ?? entry.body ?? "Insight", systemImage: "doc.text")
+                            Label(
+                                entry.title ?? entry.body ?? String(localized: "Insight"),
+                                systemImage: "doc.text"
+                            )
                         }
                     }
                     ForEach(goals) { goal in
@@ -1221,30 +1280,48 @@ private struct HabitAnalyticsDashboard: View {
     }
 
     private func planDescription(_ plan: HabitPlan) -> String {
-        if plan.isTrackingOnly { return "Tracking Only" }
+        if plan.isTrackingOnly { return String(localized: "Tracking Only") }
         switch plan.period {
-        case .day: return plan.goal == .selectedWeekdays ? "Selected Days" : "Daily \(plan.targetCount ?? 1)"
-        case .week: return "\(plan.targetCount ?? 0) per week"
-        case .month: return "\(plan.targetCount ?? 0) per month"
-        case .trackingOnly: return "Tracking Only"
+        case .day:
+            return plan.goal == .selectedWeekdays
+                ? String(localized: "Selected Days")
+                : String.localizedStringWithFormat(
+                    String(localized: "Daily %lld"), plan.targetCount ?? 1
+                )
+        case .week:
+            return String.localizedStringWithFormat(
+                String(localized: "%lld per week"), plan.targetCount ?? 0
+            )
+        case .month:
+            return String.localizedStringWithFormat(
+                String(localized: "%lld per month"), plan.targetCount ?? 0
+            )
+        case .trackingOnly:
+            return String(localized: "Tracking Only")
         }
     }
 
     private func progressText(_ evaluation: HabitPeriodEvaluation) -> String {
-        guard let target = evaluation.target else { return "\(evaluation.actual) recorded" }
+        guard let target = evaluation.target else {
+            return evaluation.actual == 1
+                ? String(localized: "1 recorded")
+                : String.localizedStringWithFormat(
+                    String(localized: "%lld recorded"), evaluation.actual
+                )
+        }
         return "\(evaluation.actual)/\(target)"
     }
 
     private func lifecycleDescription(_ kind: HabitLifecycleEventKind) -> String {
         switch kind {
-        case .migrationBaseline: return "Migration Baseline"
-        case .created: return "Created"
-        case .paused: return "Paused"
-        case .resumed: return "Resumed"
-        case .completed: return "Completed"
-        case .archived: return "Archived"
-        case .restarted: return "Restarted"
-        case .restored: return "Restored"
+        case .migrationBaseline: return String(localized: "Migration Baseline")
+        case .created: return String(localized: "Created")
+        case .paused: return String(localized: "Paused")
+        case .resumed: return String(localized: "Resumed")
+        case .completed: return String(localized: "Completed")
+        case .archived: return String(localized: "Archived")
+        case .restarted: return String(localized: "Restarted")
+        case .restored: return String(localized: "Restored")
         }
     }
 }
@@ -1306,7 +1383,7 @@ private struct HabitMonthCalendar: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Month calendar")
+        .accessibilityLabel(String(localized: "Month calendar"))
     }
 
     private func color(for state: HabitCalendarDayState) -> Color {
@@ -1323,15 +1400,20 @@ private struct HabitMonthCalendar: View {
 
     private func accessibilityLabel(for cell: HabitCalendarDayCell) -> String {
         let state: String = switch cell.state {
-        case .achieved: "achieved"
-        case .missed: "missed"
-        case .open: "open"
-        case .rest: "rest day"
-        case .neutral: "neutral"
-        case .beforeCoverage: "before trusted coverage"
-        case .future: "future"
+        case .achieved: String(localized: "achieved")
+        case .missed: String(localized: "missed")
+        case .open: String(localized: "open")
+        case .rest: String(localized: "rest day")
+        case .neutral: String(localized: "neutral")
+        case .beforeCoverage: String(localized: "before trusted coverage")
+        case .future: String(localized: "future")
         }
-        return "\(cell.day.description), \(state), \(cell.activityCount) activities"
+        let format = cell.activityCount == 1
+            ? String(localized: "%@, %@, %lld activity")
+            : String(localized: "%@, %@, %lld activities")
+        return String.localizedStringWithFormat(
+            format, cell.day.description, state, cell.activityCount
+        )
     }
 }
 
@@ -1354,8 +1436,8 @@ private struct WeekdayPatternView: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(pattern.metric == .scheduledDaySuccessRate
-            ? "Weekday scheduled success rate"
-            : "Weekday activity distribution")
+            ? String(localized: "Weekday scheduled success rate")
+            : String(localized: "Weekday activity distribution"))
     }
 
     private func valueText(_ bucket: HabitWeekdayPatternBucket) -> String {
@@ -1371,12 +1453,26 @@ private struct WeekdayPatternView: View {
         let weekday = calendar.weekdaySymbols[bucket.weekday - 1]
         switch pattern.metric {
         case .scheduledDaySuccessRate:
-            guard let rate = bucket.successRate else { return "\(weekday), no eligible days" }
-            let unit = bucket.eligibleCount == 1 ? "day" : "days"
-            return "\(weekday), \(rate.formatted(.percent.precision(.fractionLength(0)))), \(bucket.achievedCount) of \(bucket.eligibleCount) eligible \(unit)"
+            guard let rate = bucket.successRate else {
+                return String.localizedStringWithFormat(
+                    String(localized: "%@, no eligible days"), weekday
+                )
+            }
+            let format = bucket.eligibleCount == 1
+                ? String(localized: "%@, %@, %lld of %lld eligible day")
+                : String(localized: "%@, %@, %lld of %lld eligible days")
+            return String.localizedStringWithFormat(
+                format,
+                weekday,
+                rate.formatted(.percent.precision(.fractionLength(0))),
+                bucket.achievedCount,
+                bucket.eligibleCount
+            )
         case .activityDistribution:
-            let unit = bucket.activityCount == 1 ? "activity" : "activities"
-            return "\(weekday), \(bucket.activityCount) \(unit)"
+            let format = bucket.activityCount == 1
+                ? String(localized: "%@, %lld activity")
+                : String(localized: "%@, %lld activities")
+            return String.localizedStringWithFormat(format, weekday, bucket.activityCount)
         }
     }
 }
@@ -1399,11 +1495,17 @@ private struct ActivityHeatmap: View {
                     RoundedRectangle(cornerRadius: 2)
                         .fill((activity[day, default: 0] > 0 ? Color.accentColor : Color.secondary.opacity(0.15)))
                         .frame(width: 10, height: 10)
-                        .accessibilityLabel("\(day.description): \(activity[day, default: 0])")
+                        .accessibilityLabel(activityLabel(day))
                 }
             }
         }
         .frame(height: 88)
+    }
+
+    private func activityLabel(_ day: HabitLocalDay) -> String {
+        String.localizedStringWithFormat(
+            String(localized: "%@: %lld"), day.description, activity[day, default: 0]
+        )
     }
 }
 
@@ -1439,11 +1541,17 @@ private struct PeriodActivityGrid: View {
                             .frame(width: 8, height: 8)
                     }
                     .font(.caption2)
-                    .accessibilityLabel("\(day.description): \(activity[day, default: 0])")
+                    .accessibilityLabel(activityLabel(day))
                 }
             }
-            .accessibilityLabel("Current period activity")
+            .accessibilityLabel(String(localized: "Current period activity"))
         }
+    }
+
+    private func activityLabel(_ day: HabitLocalDay) -> String {
+        String.localizedStringWithFormat(
+            String(localized: "%@: %lld"), day.description, activity[day, default: 0]
+        )
     }
 
     private func dayLabel(_ day: HabitLocalDay) -> String {

@@ -567,6 +567,56 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("Quick Capture"))
     }
 
+    func testHabitDashboardLocalizesInSimplifiedChinese() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(zh-Hans)",
+            "-AppleLocale", "zh_Hans_CN"
+        ]
+        app.launch()
+
+        app.tabBars.buttons["成长"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Localized Habit")
+        app.buttons["habit-editor-save"].tap()
+
+        let overviewCheckIn = app.buttons["habit-overview-check-in"]
+        XCTAssertTrue(overviewCheckIn.waitForExistence(timeout: 5))
+        overviewCheckIn.tap()
+        app.buttons["habit-localized habit"].tap()
+
+        XCTAssertTrue(app.staticTexts["当前"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["进度"].exists)
+        XCTAssertTrue(app.staticTexts["状态"].exists)
+        XCTAssertTrue(app.staticTexts["当前连续达成"].exists)
+        XCTAssertTrue(app.staticTexts["最佳连续达成"].exists)
+        XCTAssertTrue(
+            app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "1 天", "1 天"))
+                .firstMatch.exists
+        )
+        XCTAssertEqual(app.buttons["habit-check-in"].label, "今日已完成")
+
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["年度活动"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["趋势"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["星期规律"].exists)
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["历程"].waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "已创建", "已创建"))
+                .firstMatch.exists
+        )
+        XCTAssertTrue(app.staticTexts["最近活动"].exists)
+    }
+
     func testTodayAndTagEmptyStatesOfferClearStartingActions() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

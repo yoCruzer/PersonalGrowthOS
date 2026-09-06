@@ -350,6 +350,12 @@ enum TransferValidator {
         guard manifest.packageSchemaVersion >= 3 || data.weeklyReviews.isEmpty else {
             throw TransferPackageError.invalidObject("weeklyReview")
         }
+        guard manifest.packageSchemaVersion >= 4 || data.habitPlanRevisions.isEmpty else {
+            throw TransferPackageError.invalidObject("habitPlanRevision")
+        }
+        guard manifest.packageSchemaVersion >= 4 || data.habitLifecycleEvents.isEmpty else {
+            throw TransferPackageError.invalidObject("habitLifecycleEvent")
+        }
         guard data.totalObjectCount <= limits.maximumObjectCount else {
             throw TransferPackageError.objectLimitExceeded
         }

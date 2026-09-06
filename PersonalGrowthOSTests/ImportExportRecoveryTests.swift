@@ -258,6 +258,62 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
     }
 
+    func testOlderSchemasRejectV4HabitPlanAndLifecyclePayloads() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Run",
+            normalizedName: "run",
+            status: HabitStatus.active.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        let planData = makeTransferData(
+            habits: [habit],
+            habitPlanRevisions: [HabitPlanRevisionTransfer(
+                id: UUID(),
+                habitID: habitID,
+                effectiveLocalDay: "2026-09-07",
+                period: HabitPlanPeriod.week.rawValue,
+                goal: HabitPlanGoal.count.rawValue,
+                targetCount: 3,
+                weekdays: "",
+                recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+                trustCoverageStartLocalDay: "2026-09-07",
+                createdAt: timestamp
+            )]
+        )
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 3, data: planData),
+            data: planData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitPlanRevision"))
+        }
+
+        let lifecycleData = makeTransferData(
+            habits: [habit],
+            habitLifecycleEvents: [HabitLifecycleEventTransfer(
+                id: UUID(),
+                habitID: habitID,
+                kind: HabitLifecycleEventKind.created.rawValue,
+                occurredLocalDay: "2026-09-07",
+                occurredAt: timestamp,
+                createdAt: timestamp
+            )]
+        )
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 3, data: lifecycleData),
+            data: lifecycleData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitLifecycleEvent"))
+        }
+    }
+
     func testSchemaV4ValidatesMigrationBaselineKnownStatus() throws {
         let habitID = UUID()
         let timestamp = Date(timeIntervalSince1970: 1_000)
@@ -1195,6 +1251,7 @@ private func totalObjectCount(in context: ModelContext) throws -> Int {
 @MainActor
 private func deleteAllFixtureData(_ context: ModelContext) throws {
     try context.fetch(FetchDescriptor<ObjectLink>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<HabitLog>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<HabitPlanRevision>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).forEach(context.delete)
