@@ -138,6 +138,7 @@ struct QuickCaptureView: View {
                 Section("What do you want to remember?") {
                     TextEditor(text: $draft.body)
                         .frame(minHeight: 140)
+                        .accessibilityLabel("What do you want to remember?")
                         .accessibilityIdentifier("capture-body")
                 }
 

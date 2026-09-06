@@ -233,6 +233,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["Learning"].tap()
         XCTAssertEqual(app.buttons["Learning"].value as? String, "Selected")
         app.buttons["Done"].tap()
+        app.navigationBars.buttons["Timeline"].tap()
+        app.tabBars.buttons["Library"].tap()
         app.navigationBars.buttons["Library"].tap()
         app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
@@ -371,17 +373,26 @@ final class AppLaunchSmokeTests: XCTestCase {
         body.tap()
         body.typeText("Habit insight entry")
         app.buttons["capture-save"].tap()
-        XCTAssertTrue(app.staticTexts["Linked Entry"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["habit-check-in-undo"].exists)
 
         let increase = app.buttons["habit-detail-counter-increase"]
         let decrease = app.buttons["habit-detail-counter-decrease"]
-        XCTAssertTrue(increase.exists)
+        let count = app.staticTexts["habit-detail-counter-count"]
+        XCTAssertTrue(increase.waitForExistence(timeout: 5))
+        XCTAssertEqual(count.value as? String, "1")
         increase.tap()
+        XCTAssertEqual(count.value as? String, "2")
         XCTAssertTrue(decrease.isEnabled)
         decrease.tap()
-        XCTAssertTrue(app.staticTexts["Linked Entry"].exists)
+        XCTAssertEqual(count.value as? String, "1")
 
+        let linkedEntry = app.staticTexts["Linked Entry"]
+        for _ in 0..<6 where !linkedEntry.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(linkedEntry.exists)
+
+        app.navigationBars.buttons["Habits"].tap()
         app.tabBars.buttons["Library"].tap()
         app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
@@ -860,14 +871,27 @@ final class AppLaunchSmokeTests: XCTestCase {
         let startReview = app.buttons["start-weekly-review"]
         XCTAssertTrue(startReview.waitForExistence(timeout: 5))
         startReview.tap()
+        let weeklyReview = app.descendants(matching: .any)["weekly-review-view"]
         let remembered = app.descendants(matching: .any)["weekly-review-remembered"]
         XCTAssertTrue(remembered.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["save-weekly-review"].isEnabled)
+        let saveReview = app.buttons["save-weekly-review"]
+        for _ in 0..<4 where !saveReview.exists {
+            weeklyReview.swipeUp()
+        }
+        XCTAssertTrue(saveReview.exists)
+        XCTAssertFalse(saveReview.isEnabled)
+        for _ in 0..<4 where !remembered.exists {
+            weeklyReview.swipeDown()
+        }
+        XCTAssertTrue(remembered.exists)
         remembered.tap()
         remembered.typeText("Build Six history needle")
         app.buttons["weekly-review-keyboard-done"].tap()
-        XCTAssertTrue(app.buttons["save-weekly-review"].isEnabled)
-        app.buttons["save-weekly-review"].tap()
+        for _ in 0..<4 where !saveReview.exists {
+            weeklyReview.swipeUp()
+        }
+        XCTAssertTrue(saveReview.isEnabled)
+        saveReview.tap()
         XCTAssertTrue(
             app.descendants(matching: .any)["weekly-review-save-confirmation"]
                 .waitForExistence(timeout: 5)
