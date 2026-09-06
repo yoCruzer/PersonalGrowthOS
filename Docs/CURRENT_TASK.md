@@ -2,12 +2,12 @@
 
 | Item | Value |
 | --- | --- |
-| Current checkpoint | Build 8 Draft PR #5 — bounded review closure handoff |
+| Current checkpoint | Build 8 Draft PR #5 — bounded lifecycle-detail review closure handoff |
 | Status | AUTOMATED GATE PASSED — OWNER DEVICE VALIDATION REQUIRED |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | `41194b8` closes the second-round PR #5 analytics, Plan, backup and UX blockers after reviewed head `9bb435c` |
-| Automated gate | 196/196 Unit and 31/31 UI PASS; post-closure Debug plus targeted Habit/ImportExport/UI PASS; prior bilingual, v4 backup and exact-V7 overlay/reopen evidence remains green |
+| Implementation tip | Current branch tip adds the bounded inactive Habit Detail presentation closure after `41194b8` |
+| Automated gate | 196/196 Unit and 31/31 UI PASS; lifecycle-detail 2/2 targeted Unit, 1/1 targeted UI and Debug PASS; prior targeted, bilingual, v4 backup and exact-V7 overlay/reopen evidence remains green |
 | External status | Draft PR [#5](https://github.com/yoCruzer/PersonalGrowthOS/pull/5) open; no merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -28,6 +28,7 @@
 - Only active Habits enter active schedule sections. Paused and Completed remain available in lower-priority status sections with history but without due/remaining controls; Archived behavior is unchanged.
 - Migration-bootstrap Plan provenance is persisted and omitted from Journey; legacy coverage messaging appears only for an actual migration trust boundary. Duplicate Habit/effective-day revisions and v4 HabitLog LocalDay fields in schema v1–v3 packages are rejected, while resolver ties are deterministic.
 - Overview action failures are visible, and Month Calendar now uses the Monday-first Weekly Review header/offset policy without changing persisted Foundation/Gregorian weekday identities.
+- Inactive Habit Detail `Now` is status-led and omits current progress, adherence, Current Streak and check-in guidance; a meaningful historical Best Streak remains available, while Active Detail and all later dashboard/history sections are unchanged.
 
 - V8 persistence models, Local Day write semantics, plan/lifecycle history, a pure analytics engine and v4 transfer fields are implemented in staged commits; the complete automated acceptance matrix and UI validation pass.
 - The recovered Stage 0 batch makes positive persisted Local Day authoritative for once/day duplicate, Today completion and decrement behavior; false logs no longer block true completion, rest-day activity remains factual without becoming expected, and Sunday uses the documented weekday identity.

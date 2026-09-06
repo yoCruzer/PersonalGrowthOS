@@ -558,6 +558,31 @@ private struct ArchivedHabitsView: View {
     }
 }
 
+struct HabitDetailNowPresentation: Equatable {
+    let currentProgress: HabitPeriodEvaluation?
+    let adherence: Double?
+    let currentStreak: Int?
+    let bestStreak: Int?
+    let streakUnit: String?
+    let showsCurrentExpectation: Bool
+
+    init(status: HabitStatus, analytics: HabitAnalyticsSummary) {
+        showsCurrentExpectation = status == .active
+        if showsCurrentExpectation {
+            currentProgress = analytics.current
+            adherence = analytics.adherence
+            currentStreak = analytics.currentStreak
+            bestStreak = analytics.currentStreak == nil ? nil : analytics.bestStreak ?? 0
+        } else {
+            currentProgress = nil
+            adherence = nil
+            currentStreak = nil
+            bestStreak = (analytics.bestStreak ?? 0) > 0 ? analytics.bestStreak : nil
+        }
+        streakUnit = analytics.streakUnit
+    }
+}
+
 struct HabitDetailView: View {
     let habit: Habit
     let mediaStore: MediaStore
@@ -640,6 +665,10 @@ struct HabitDetailView: View {
         )
     }
 
+    private var nowPresentation: HabitDetailNowPresentation {
+        HabitDetailNowPresentation(status: habit.status, analytics: analytics)
+    }
+
     private var relatedInsights: [Entry] {
         let entryIDs = Set(links.compactMap { link -> UUID? in
             link.targetTypeRawValue == LinkObjectType.habit.rawValue && link.targetID == habit.id
@@ -659,11 +688,13 @@ struct HabitDetailView: View {
     var body: some View {
         List {
             Section {
-                if let current = analytics.current {
+                if let current = nowPresentation.currentProgress {
                     LabeledContent("Progress", value: progressText(current))
+                        .accessibilityIdentifier("habit-detail-current-progress")
                 }
                 LabeledContent("Status", value: habit.status.localizedName)
-                if habit.status == .active {
+                    .accessibilityIdentifier("habit-detail-status")
+                if nowPresentation.showsCurrentExpectation {
                     if settings.recordingMode == .multiplePerDay {
                         RepeatableHabitCounter(
                             habitName: habit.name,
@@ -703,18 +734,26 @@ struct HabitDetailView: View {
                     .disabled(isCoolingDown || (settings.recordingMode == .oncePerDay && checkedInToday))
                     .accessibilityIdentifier("habit-check-in-insight")
                 }
-                if let adherence = analytics.adherence {
+                if let adherence = nowPresentation.adherence {
                     LabeledContent("Adherence", value: adherence.formatted(.percent.precision(.fractionLength(0))))
+                        .accessibilityIdentifier("habit-detail-current-adherence")
                 }
-                if let currentStreak = analytics.currentStreak,
-                   let unit = analytics.streakUnit {
+                if let currentStreak = nowPresentation.currentStreak,
+                   let unit = nowPresentation.streakUnit {
                     LabeledContent("Current Streak", value: streakText(currentStreak, unit: unit))
-                    LabeledContent("Best Streak", value: streakText(analytics.bestStreak ?? 0, unit: unit))
+                        .accessibilityIdentifier("habit-detail-current-streak")
+                }
+                if let bestStreak = nowPresentation.bestStreak,
+                   let unit = nowPresentation.streakUnit {
+                    LabeledContent("Best Streak", value: streakText(bestStreak, unit: unit))
+                        .accessibilityIdentifier("habit-detail-best-streak")
                 }
             } header: {
                 Text("Now")
             } footer: {
-                Text("A simple check-in saves only a structured fact. Text and photos are saved in a linked Entry.")
+                if nowPresentation.showsCurrentExpectation {
+                    Text("A simple check-in saves only a structured fact. Text and photos are saved in a linked Entry.")
+                }
             }
             HabitAnalyticsDashboard(
                 summary: analytics,

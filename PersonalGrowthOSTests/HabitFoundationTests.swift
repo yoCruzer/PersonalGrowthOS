@@ -1467,6 +1467,90 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(result.currentStreak, 1)
     }
 
+    func testInactiveHabitDetailNowPresentationOmitsCurrentExpectation() {
+        let day = HabitLocalDay(year: 2026, month: 9, day: 6)
+        let current = HabitPeriodEvaluation(
+            id: day.description,
+            start: day,
+            end: day,
+            period: .day,
+            actual: 0,
+            target: 1,
+            progress: 0,
+            outcome: .open,
+            plan: HabitPlan(
+                recordingMode: .oncePerDay,
+                period: .day,
+                goal: .everyDay,
+                targetCount: 1,
+                weekdays: []
+            )
+        )
+        let analytics = HabitAnalyticsSummary(
+            current: current,
+            evaluations: [current],
+            adherence: 0,
+            consistency: 0,
+            currentStreak: 0,
+            bestStreak: 4,
+            streakUnit: "days",
+            activityByDay: [:],
+            coverageStart: day,
+            hasIncompleteHistoricalCoverage: false
+        )
+
+        for status in [HabitStatus.paused, .completed, .archived] {
+            let presentation = HabitDetailNowPresentation(status: status, analytics: analytics)
+            XCTAssertFalse(presentation.showsCurrentExpectation)
+            XCTAssertNil(presentation.currentProgress)
+            XCTAssertNil(presentation.adherence)
+            XCTAssertNil(presentation.currentStreak)
+            XCTAssertEqual(presentation.bestStreak, 4)
+            XCTAssertEqual(presentation.streakUnit, "days")
+        }
+    }
+
+    func testActiveHabitDetailNowPresentationKeepsCurrentExpectation() {
+        let day = HabitLocalDay(year: 2026, month: 9, day: 6)
+        let current = HabitPeriodEvaluation(
+            id: day.description,
+            start: day,
+            end: day,
+            period: .day,
+            actual: 0,
+            target: 1,
+            progress: 0,
+            outcome: .open,
+            plan: HabitPlan(
+                recordingMode: .oncePerDay,
+                period: .day,
+                goal: .everyDay,
+                targetCount: 1,
+                weekdays: []
+            )
+        )
+        let analytics = HabitAnalyticsSummary(
+            current: current,
+            evaluations: [current],
+            adherence: 0.75,
+            consistency: 0.75,
+            currentStreak: 0,
+            bestStreak: 3,
+            streakUnit: "days",
+            activityByDay: [:],
+            coverageStart: day,
+            hasIncompleteHistoricalCoverage: false
+        )
+
+        let presentation = HabitDetailNowPresentation(status: .active, analytics: analytics)
+        XCTAssertTrue(presentation.showsCurrentExpectation)
+        XCTAssertEqual(presentation.currentProgress, current)
+        XCTAssertEqual(presentation.adherence, 0.75)
+        XCTAssertEqual(presentation.currentStreak, 0)
+        XCTAssertEqual(presentation.bestStreak, 3)
+        XCTAssertEqual(presentation.streakUnit, "days")
+    }
+
     func testCheckInRejectsFutureOccurrence() throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         let context = container.mainContext

@@ -751,6 +751,67 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertFalse(app.buttons["habit-overview-check-in"].exists)
     }
 
+    func testHabitDetailNowPresentationFollowsLifecycle() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+
+        func addHabit(named habitName: String) {
+            app.buttons["add-habit"].tap()
+            let name = app.textFields["habit-editor-name"]
+            XCTAssertTrue(name.waitForExistence(timeout: 5))
+            name.tap()
+            name.typeText(habitName)
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        }
+
+        func assertNoCurrentExpectation(status: String) {
+            let statusValue = app.descendants(matching: .any)["habit-detail-status"]
+            XCTAssertTrue(statusValue.waitForExistence(timeout: 5))
+            XCTAssertTrue(
+                statusValue.label.contains(status)
+                    || (statusValue.value as? String)?.contains(status) == true
+            )
+            XCTAssertFalse(app.descendants(matching: .any)["habit-detail-current-progress"].exists)
+            XCTAssertFalse(app.descendants(matching: .any)["habit-detail-current-adherence"].exists)
+            XCTAssertFalse(app.descendants(matching: .any)["habit-detail-current-streak"].exists)
+            XCTAssertFalse(app.buttons["habit-check-in"].exists)
+            XCTAssertFalse(app.buttons["habit-log-details"].exists)
+            XCTAssertFalse(app.buttons["habit-check-in-insight"].exists)
+        }
+
+        addHabit(named: "Active Detail")
+        app.buttons["habit-active detail"].tap()
+        let activeProgress = app.descendants(matching: .any)["habit-detail-current-progress"]
+        XCTAssertTrue(activeProgress.waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            activeProgress.label.contains("0/1 today")
+                || (activeProgress.value as? String)?.contains("0/1 today") == true
+        )
+        XCTAssertTrue(app.descendants(matching: .any)["habit-detail-current-streak"].exists)
+        XCTAssertTrue(app.buttons["habit-check-in"].exists)
+        app.navigationBars.buttons["Habits"].tap()
+
+        addHabit(named: "Paused Detail")
+        app.buttons["habit-paused detail"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Pause"].tap()
+        assertNoCurrentExpectation(status: "Paused")
+        app.navigationBars.buttons["Habits"].tap()
+
+        addHabit(named: "Completed Detail")
+        app.buttons["habit-completed detail"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Complete"].tap()
+        assertNoCurrentExpectation(status: "Completed")
+    }
+
     func testOncePerDayEditorHidesSelectedDayTargetAndValidatesPeriodMaximum() {
         let app = XCUIApplication()
         app.launchArguments = [
