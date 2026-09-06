@@ -233,6 +233,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["Learning"].tap()
         XCTAssertEqual(app.buttons["Learning"].value as? String, "Selected")
         app.buttons["Done"].tap()
+        app.navigationBars.buttons["Timeline"].tap()
+        app.tabBars.buttons["Library"].tap()
         app.navigationBars.buttons["Library"].tap()
         app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
@@ -273,7 +275,30 @@ final class AppLaunchSmokeTests: XCTestCase {
 
         app.tabBars.buttons["Growth"].tap()
         app.buttons["habit-read"].tap()
-        XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
+        let completedCheckIn = app.buttons["habit-check-in"]
+        XCTAssertTrue(completedCheckIn.waitForExistence(timeout: 5))
+        XCTAssertEqual(completedCheckIn.label, "Completed Today")
+        XCTAssertFalse(completedCheckIn.isEnabled)
+    }
+
+    func testHabitOverviewSupportsDirectCheckIn() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Walk")
+        app.buttons["habit-editor-save"].tap()
+
+        let checkIn = app.buttons["habit-overview-check-in"]
+        XCTAssertTrue(checkIn.waitForExistence(timeout: 5))
+        checkIn.tap()
+        XCTAssertFalse(checkIn.isEnabled)
     }
 
     func testRepeatableHabitCounterIncrementsDecrementsAndPersists() throws {
@@ -348,17 +373,26 @@ final class AppLaunchSmokeTests: XCTestCase {
         body.tap()
         body.typeText("Habit insight entry")
         app.buttons["capture-save"].tap()
-        XCTAssertTrue(app.staticTexts["Linked Entry"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["habit-check-in-undo"].exists)
 
         let increase = app.buttons["habit-detail-counter-increase"]
         let decrease = app.buttons["habit-detail-counter-decrease"]
-        XCTAssertTrue(increase.exists)
+        let count = app.staticTexts["habit-detail-counter-count"]
+        XCTAssertTrue(increase.waitForExistence(timeout: 5))
+        XCTAssertEqual(count.value as? String, "1")
         increase.tap()
+        XCTAssertEqual(count.value as? String, "2")
         XCTAssertTrue(decrease.isEnabled)
         decrease.tap()
-        XCTAssertTrue(app.staticTexts["Linked Entry"].exists)
+        XCTAssertEqual(count.value as? String, "1")
 
+        let linkedEntry = app.staticTexts["Linked Entry"]
+        for _ in 0..<6 where !linkedEntry.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(linkedEntry.exists)
+
+        app.navigationBars.buttons["Habits"].tap()
         app.tabBars.buttons["Library"].tap()
         app.buttons["library-search-button"].tap()
         let search = app.searchFields.firstMatch
@@ -544,6 +578,270 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("Quick Capture"))
     }
 
+    func testHabitDashboardLocalizesInSimplifiedChinese() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(zh-Hans)",
+            "-AppleLocale", "zh_Hans_CN"
+        ]
+        app.launch()
+
+        app.tabBars.buttons["成长"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Localized Habit")
+        app.buttons["habit-editor-save"].tap()
+
+        let overviewCheckIn = app.buttons["habit-overview-check-in"]
+        XCTAssertTrue(overviewCheckIn.waitForExistence(timeout: 5))
+        overviewCheckIn.tap()
+        app.buttons["habit-localized habit"].tap()
+
+        XCTAssertTrue(app.staticTexts["当前"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["进度"].exists)
+        XCTAssertTrue(app.staticTexts["状态"].exists)
+        XCTAssertTrue(app.staticTexts["当前连续达成"].exists)
+        XCTAssertTrue(app.staticTexts["最佳连续达成"].exists)
+        XCTAssertTrue(
+            app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "1 天", "1 天"))
+                .firstMatch.exists
+        )
+        XCTAssertEqual(app.buttons["habit-check-in"].label, "今日已完成")
+
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["年度活动"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["趋势"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["星期规律"].exists)
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["历程"].waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "已创建", "已创建"))
+                .firstMatch.exists
+        )
+        XCTAssertTrue(app.staticTexts["最近活动"].exists)
+    }
+
+    func testMixedHabitRowsRemainAccessibleAcrossAppearanceAndTextSize() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+
+        func addHabit(_ name: String, multiple: Bool = false, trackingOnly: Bool = false) {
+            app.buttons["add-habit"].tap()
+            let field = app.textFields["habit-editor-name"]
+            XCTAssertTrue(field.waitForExistence(timeout: 5))
+            field.tap()
+            field.typeText(name)
+            if multiple {
+                app.segmentedControls.buttons["Multiple times per day"].tap()
+            }
+            if trackingOnly {
+                app.buttons["habit-goal"].tap()
+                app.buttons["No Goal"].tap()
+            }
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        }
+
+        addHabit("Anchor Read")
+        addHabit("Water", multiple: true)
+        addHabit("Breathe", multiple: true)
+        addHabit(
+            "Observe one small detail with a deliberately long habit name",
+            multiple: true,
+            trackingOnly: true
+        )
+
+        let waterMinus = app.buttons["habit-overview-water-counter-decrease"]
+        let waterPlus = app.buttons["habit-overview-water-counter-increase"]
+        let waterCount = app.staticTexts["habit-overview-water-counter-count"]
+        let breathePlus = app.buttons["habit-overview-breathe-counter-increase"]
+        let trackingCount = app.staticTexts[
+            "habit-overview-observe one small detail with a deliberately long habit name-counter-count"
+        ]
+        let longNameIncrease = app.buttons[
+            "habit-overview-observe one small detail with a deliberately long habit name-counter-increase"
+        ]
+        XCTAssertTrue(waterPlus.waitForExistence(timeout: 5))
+        XCTAssertTrue(breathePlus.exists)
+        XCTAssertGreaterThanOrEqual(waterMinus.frame.width, 44)
+        XCTAssertGreaterThanOrEqual(waterMinus.frame.height, 44)
+        XCTAssertGreaterThanOrEqual(waterPlus.frame.width, 44)
+        XCTAssertGreaterThanOrEqual(waterPlus.frame.height, 44)
+        XCTAssertFalse(waterPlus.frame.intersects(breathePlus.frame))
+        XCTAssertEqual(waterCount.value as? String, "0")
+
+        waterPlus.tap()
+        waterPlus.tap()
+        waterPlus.tap()
+        XCTAssertEqual(waterCount.value as? String, "3")
+        try performSemanticAccessibilityAudit(app)
+        if !trackingCount.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(trackingCount.waitForExistence(timeout: 5))
+        XCTAssertEqual(trackingCount.value as? String, "0")
+        if !longNameIncrease.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(longNameIncrease.waitForExistence(timeout: 5))
+        XCTAssertTrue(longNameIncrease.isHittable)
+        try performSemanticAccessibilityAudit(app)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Build 8 mixed Habit rows"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    func testPausedAndCompletedHabitsStayOutOfActiveScheduleSections() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+
+        func addHabit(named habitName: String) {
+            app.buttons["add-habit"].tap()
+            let name = app.textFields["habit-editor-name"]
+            XCTAssertTrue(name.waitForExistence(timeout: 5))
+            name.tap()
+            name.typeText(habitName)
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        }
+
+        addHabit(named: "Pause Me")
+        app.buttons["habit-pause me"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Pause"].tap()
+        app.navigationBars.buttons["Habits"].tap()
+
+        addHabit(named: "Complete Me")
+        app.buttons["habit-complete me"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Complete"].tap()
+        app.navigationBars.buttons["Habits"].tap()
+
+        XCTAssertTrue(app.staticTexts["No Active Habits"].waitForExistence(timeout: 5))
+        XCTAssertEqual(
+            app.staticTexts["habit-paused-pause me-status"].value as? String,
+            "Paused"
+        )
+        XCTAssertEqual(
+            app.staticTexts["habit-completed-complete me-status"].value as? String,
+            "Completed"
+        )
+        XCTAssertFalse(app.staticTexts["0/1 today · 1 remaining"].exists)
+        XCTAssertFalse(app.buttons["habit-overview-check-in"].exists)
+    }
+
+    func testHabitDetailNowPresentationFollowsLifecycle() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+
+        func addHabit(named habitName: String) {
+            app.buttons["add-habit"].tap()
+            let name = app.textFields["habit-editor-name"]
+            XCTAssertTrue(name.waitForExistence(timeout: 5))
+            name.tap()
+            name.typeText(habitName)
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        }
+
+        func assertNoCurrentExpectation(status: String) {
+            let statusValue = app.descendants(matching: .any)["habit-detail-status"]
+            XCTAssertTrue(statusValue.waitForExistence(timeout: 5))
+            XCTAssertTrue(
+                statusValue.label.contains(status)
+                    || (statusValue.value as? String)?.contains(status) == true
+            )
+            XCTAssertFalse(app.descendants(matching: .any)["habit-detail-current-progress"].exists)
+            XCTAssertFalse(app.descendants(matching: .any)["habit-detail-current-adherence"].exists)
+            XCTAssertFalse(app.descendants(matching: .any)["habit-detail-current-streak"].exists)
+            XCTAssertFalse(app.buttons["habit-check-in"].exists)
+            XCTAssertFalse(app.buttons["habit-log-details"].exists)
+            XCTAssertFalse(app.buttons["habit-check-in-insight"].exists)
+        }
+
+        addHabit(named: "Active Detail")
+        app.buttons["habit-active detail"].tap()
+        let activeProgress = app.descendants(matching: .any)["habit-detail-current-progress"]
+        XCTAssertTrue(activeProgress.waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            activeProgress.label.contains("0/1 today")
+                || (activeProgress.value as? String)?.contains("0/1 today") == true
+        )
+        XCTAssertTrue(app.descendants(matching: .any)["habit-detail-current-streak"].exists)
+        XCTAssertTrue(app.buttons["habit-check-in"].exists)
+        app.navigationBars.buttons["Habits"].tap()
+
+        addHabit(named: "Paused Detail")
+        app.buttons["habit-paused detail"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Pause"].tap()
+        assertNoCurrentExpectation(status: "Paused")
+        app.navigationBars.buttons["Habits"].tap()
+
+        addHabit(named: "Completed Detail")
+        app.buttons["habit-completed detail"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Complete"].tap()
+        assertNoCurrentExpectation(status: "Completed")
+    }
+
+    func testOncePerDayEditorHidesSelectedDayTargetAndValidatesPeriodMaximum() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Bounded Plan")
+        app.buttons["habit-goal"].tap()
+        app.buttons["Selected Days"].tap()
+        XCTAssertFalse(app.textFields["habit-daily-target"].exists)
+
+        app.buttons["habit-goal"].tap()
+        app.buttons["Times per Week"].tap()
+        let target = app.textFields["habit-daily-target"]
+        XCTAssertTrue(target.waitForExistence(timeout: 5))
+        XCTAssertEqual(target.label, "Weekly Target")
+        target.tap()
+        target.typeText("8")
+        app.buttons["habit-editor-save"].tap()
+        XCTAssertTrue(app.staticTexts["Target must be between 1 and 7."].waitForExistence(timeout: 5))
+    }
+
     func testTodayAndTagEmptyStatesOfferClearStartingActions() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -661,7 +959,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         let keyboardDone = app.buttons["weekly-review-keyboard-done"]
         XCTAssertTrue(keyboardDone.waitForExistence(timeout: 5))
         keyboardDone.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["weekly-review-unsaved"].exists)
+        XCTAssertTrue(
+            app.descendants(matching: .any)["weekly-review-unsaved"]
+                .waitForExistence(timeout: 5)
+        )
         app.buttons["save-weekly-review"].tap()
         let saveConfirmation = app.descendants(matching: .any)["weekly-review-save-confirmation"]
         XCTAssertTrue(saveConfirmation.waitForExistence(timeout: 5))
@@ -709,14 +1010,27 @@ final class AppLaunchSmokeTests: XCTestCase {
         let startReview = app.buttons["start-weekly-review"]
         XCTAssertTrue(startReview.waitForExistence(timeout: 5))
         startReview.tap()
+        let weeklyReview = app.descendants(matching: .any)["weekly-review-view"]
         let remembered = app.descendants(matching: .any)["weekly-review-remembered"]
         XCTAssertTrue(remembered.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["save-weekly-review"].isEnabled)
+        let saveReview = app.buttons["save-weekly-review"]
+        for _ in 0..<4 where !saveReview.exists {
+            weeklyReview.swipeUp()
+        }
+        XCTAssertTrue(saveReview.exists)
+        XCTAssertFalse(saveReview.isEnabled)
+        for _ in 0..<4 where !remembered.exists {
+            weeklyReview.swipeDown()
+        }
+        XCTAssertTrue(remembered.exists)
         remembered.tap()
         remembered.typeText("Build Six history needle")
         app.buttons["weekly-review-keyboard-done"].tap()
-        XCTAssertTrue(app.buttons["save-weekly-review"].isEnabled)
-        app.buttons["save-weekly-review"].tap()
+        for _ in 0..<4 where !saveReview.exists {
+            weeklyReview.swipeUp()
+        }
+        XCTAssertTrue(saveReview.isEnabled)
+        saveReview.tap()
         XCTAssertTrue(
             app.descendants(matching: .any)["weekly-review-save-confirmation"]
                 .waitForExistence(timeout: 5)

@@ -97,6 +97,7 @@ struct AppContainer {
             thumbnailStore: thumbnailStore,
             imageMetadata: imageMetadata
         )
+        _ = try HabitAnalyticsMigrationBootstrap.apply(context: modelContainer.mainContext)
         try LinkIntegrityService.validate(context: modelContainer.mainContext)
         return AppContainer(
             configuration: configuration,

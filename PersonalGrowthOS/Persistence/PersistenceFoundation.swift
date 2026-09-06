@@ -160,6 +160,18 @@ enum PersonalGrowthSchemaV7: VersionedSchema {
     }
 }
 
+enum PersonalGrowthSchemaV8: VersionedSchema {
+    static let versionIdentifier = Schema.Version(8, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [
+            Entry.self, ImageMetadata.self, Tag.self, ObjectLink.self,
+            Habit.self, HabitLog.self, HabitConfiguration.self,
+            HabitLogDayMetadata.self, HabitPlanRevision.self, HabitLifecycleEvent.self,
+            Goal.self, GoalLifecycleEvent.self, WeightRecord.self, WeeklyReview.self
+        ]
+    }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -169,7 +181,8 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             PersonalGrowthSchemaV4.self,
             PersonalGrowthSchemaV5.self,
             PersonalGrowthSchemaV6.self,
-            PersonalGrowthSchemaV7.self
+            PersonalGrowthSchemaV7.self,
+            PersonalGrowthSchemaV8.self
         ]
     }
 
@@ -198,6 +211,10 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             MigrationStage.lightweight(
                 fromVersion: PersonalGrowthSchemaV6.self,
                 toVersion: PersonalGrowthSchemaV7.self
+            ),
+            MigrationStage.lightweight(
+                fromVersion: PersonalGrowthSchemaV7.self,
+                toVersion: PersonalGrowthSchemaV8.self
             )
         ]
     }
@@ -207,7 +224,7 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV7.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV8.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
@@ -216,7 +233,7 @@ enum PersistenceContainerFactory {
     static func makeOnDisk(at storeURL: URL) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV7.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV8.self),
             url: storeURL,
             cloudKitDatabase: .none
         ))
@@ -224,7 +241,7 @@ enum PersistenceContainerFactory {
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV7.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV8.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )

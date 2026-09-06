@@ -344,7 +344,7 @@ final class ImportExportService {
             try Task.checkCancellation()
             try publicationCheckpoint?(.afterPreflight)
             try Self.ensureTargetIsEmpty(context)
-            try await publish(package: package)
+            try await publish(package: package, importedAt: now())
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.images.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
@@ -504,7 +504,7 @@ final class ImportExportService {
         try verifySnapshot(package.data, context: reopenedContext, mediaStore: reopenedMedia)
     }
 
-    private func publish(package: ValidatedPackage) async throws {
+    private func publish(package: ValidatedPackage, importedAt: Date) async throws {
         let importContainer = container
         let mediaRoot = mediaStore.rootURL
         let checkpoint = publicationCheckpoint
@@ -513,6 +513,7 @@ final class ImportExportService {
                 package: package,
                 container: importContainer,
                 mediaRoot: mediaRoot,
+                importedAt: importedAt,
                 publicationCheckpoint: checkpoint
             )
         }
@@ -528,6 +529,7 @@ final class ImportExportService {
         package: ValidatedPackage,
         container: ModelContainer,
         mediaRoot: URL,
+        importedAt: Date,
         publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
     ) throws {
         let fileManager = FileManager.default
@@ -580,6 +582,11 @@ final class ImportExportService {
                 context: publicationContext,
                 mediaStore: activeStore,
                 copyOriginals: false
+            )
+            _ = try HabitAnalyticsMigrationBootstrap.apply(
+                context: publicationContext,
+                now: importedAt,
+                saveChanges: false
             )
             try Task.checkCancellation()
             try publicationCheckpoint?(.beforeSave)
@@ -752,7 +759,7 @@ final class ImportExportService {
             }
             for record in package.data.habitLogs {
                 try Task.checkCancellation()
-                context.insert(HabitLog(
+                let log = HabitLog(
                     id: record.id,
                     habitID: record.habitID,
                     occurredAt: record.occurredAt,
@@ -762,6 +769,44 @@ final class ImportExportService {
                     result: record.result,
                     linkedEntryID: record.linkedEntryID,
                     createdAt: record.createdAt
+                )
+                context.insert(log)
+                if let localDayIdentifier = record.localDayIdentifier,
+                   let localTimeZoneIdentifier = record.localTimeZoneIdentifier {
+                    context.insert(HabitLogDayMetadata(
+                        habitLogID: log.id,
+                        localDayIdentifier: localDayIdentifier,
+                        localTimeZoneIdentifier: localTimeZoneIdentifier,
+                        provenance: record.localDayProvenance.flatMap(HabitLogDayProvenance.init(rawValue:))
+                            ?? .legacyBootstrap
+                    ))
+                }
+            }
+            for record in package.data.habitPlanRevisions {
+                guard let period = HabitPlanPeriod(rawValue: record.period),
+                      let goal = HabitPlanGoal(rawValue: record.goal),
+                      let rawMode = record.recordingMode,
+                      let recordingMode = HabitRecordingMode(rawValue: rawMode) else {
+                    throw TransferPackageError.invalidObject("habitPlanRevision")
+                }
+                context.insert(HabitPlanRevision(
+                    id: record.id, habitID: record.habitID, effectiveLocalDay: record.effectiveLocalDay,
+                    plan: HabitPlan(recordingMode: recordingMode, period: period, goal: goal, targetCount: record.targetCount,
+                                    weekdays: Set(record.weekdays.split(separator: ",").compactMap { Int($0) })),
+                    trustCoverageStartLocalDay: record.trustCoverageStartLocalDay,
+                    createdAt: record.createdAt,
+                    origin: record.origin.flatMap(HabitPlanRevisionOrigin.init(rawValue:)) ?? .user
+                ))
+            }
+            for record in package.data.habitLifecycleEvents {
+                guard let kind = HabitLifecycleEventKind(rawValue: record.kind) else {
+                    throw TransferPackageError.invalidObject("habitLifecycleEvent")
+                }
+                context.insert(HabitLifecycleEvent(
+                    id: record.id, habitID: record.habitID, kind: kind,
+                    occurredLocalDay: record.occurredLocalDay, occurredAt: record.occurredAt,
+                    createdAt: record.createdAt,
+                    knownStatus: record.knownStatus.flatMap(HabitStatus.init(rawValue:))
                 ))
             }
             for record in package.data.goalEvents {
@@ -849,10 +894,13 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<ObjectLink>())
             + context.fetchCount(FetchDescriptor<Habit>())
             + context.fetchCount(FetchDescriptor<HabitLog>())
+            + context.fetchCount(FetchDescriptor<HabitLogDayMetadata>())
             + context.fetchCount(FetchDescriptor<Goal>())
             + context.fetchCount(FetchDescriptor<GoalLifecycleEvent>())
             + context.fetchCount(FetchDescriptor<WeightRecord>())
             + context.fetchCount(FetchDescriptor<WeeklyReview>())
+            + context.fetchCount(FetchDescriptor<HabitPlanRevision>())
+            + context.fetchCount(FetchDescriptor<HabitLifecycleEvent>())
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
 
@@ -909,6 +957,8 @@ private enum TransferSnapshot {
         try Task.checkCancellation()
         let logs = try context.fetch(FetchDescriptor<HabitLog>())
         try Task.checkCancellation()
+        let logDayMetadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        try Task.checkCancellation()
         let goals = try context.fetch(FetchDescriptor<Goal>())
         try Task.checkCancellation()
         let events = try context.fetch(FetchDescriptor<GoalLifecycleEvent>())
@@ -916,6 +966,11 @@ private enum TransferSnapshot {
         let weightRecords = try context.fetch(FetchDescriptor<WeightRecord>())
         try Task.checkCancellation()
         let weeklyReviews = try context.fetch(FetchDescriptor<WeeklyReview>())
+        try Task.checkCancellation()
+        let habitPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        try Task.checkCancellation()
+        let habitLifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(logDayMetadata)
         let sortUUID: (UUID, UUID) -> Bool = { $0.uuidString < $1.uuidString }
         return TransferData(
             entries: try cancellableMap(entries) {
@@ -992,7 +1047,8 @@ private enum TransferSnapshot {
                 )
             }.sorted { sortUUID($0.id, $1.id) },
             habitLogs: try cancellableMap(logs) {
-                HabitLogTransfer(
+                let dayMetadata = metadataByLogID[$0.id]
+                return HabitLogTransfer(
                     id: $0.id,
                     habitID: $0.habitID,
                     occurredAt: $0.occurredAt,
@@ -1001,7 +1057,10 @@ private enum TransferSnapshot {
                     unit: $0.unit,
                     result: $0.result,
                     linkedEntryID: $0.linkedEntryID,
-                    createdAt: $0.createdAt
+                    createdAt: $0.createdAt,
+                    localDayIdentifier: dayMetadata?.localDayIdentifier,
+                    localTimeZoneIdentifier: dayMetadata?.localTimeZoneIdentifier,
+                    localDayProvenance: dayMetadata?.provenanceRawValue
                 )
             }.sorted { sortUUID($0.id, $1.id) },
             goals: try cancellableMap(goals) {
@@ -1047,6 +1106,23 @@ private enum TransferSnapshot {
                     isCompleted: $0.isCompleted,
                     createdAt: $0.createdAt,
                     updatedAt: $0.updatedAt
+                )
+            }.sorted { sortUUID($0.id, $1.id) },
+            habitPlanRevisions: try cancellableMap(habitPlans) {
+                HabitPlanRevisionTransfer(
+                    id: $0.id, habitID: $0.habitID, effectiveLocalDay: $0.effectiveLocalDay,
+                    period: $0.periodRawValue, goal: $0.goalRawValue, targetCount: $0.targetCount,
+                    weekdays: $0.weekdaysRawValue, recordingMode: $0.recordingModeRawValue,
+                    trustCoverageStartLocalDay: $0.trustCoverageStartLocalDay,
+                    createdAt: $0.createdAt,
+                    origin: $0.originRawValue
+                )
+            }.sorted { sortUUID($0.id, $1.id) },
+            habitLifecycleEvents: try cancellableMap(habitLifecycleEvents) {
+                HabitLifecycleEventTransfer(
+                    id: $0.id, habitID: $0.habitID, kind: $0.kindRawValue,
+                    occurredLocalDay: $0.occurredLocalDay, occurredAt: $0.occurredAt,
+                    createdAt: $0.createdAt, knownStatus: $0.knownStatusRawValue
                 )
             }.sorted { sortUUID($0.id, $1.id) }
         )

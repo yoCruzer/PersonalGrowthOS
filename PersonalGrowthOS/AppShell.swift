@@ -96,7 +96,9 @@ private struct TodayView: View {
         SortDescriptor(\Goal.id, order: .forward)
     ]) private var goals: [Goal]
     @Query private var habitLogs: [HabitLog]
+    @Query private var habitLogDayMetadata: [HabitLogDayMetadata]
     @Query private var habitConfigurations: [HabitConfiguration]
+    @Query private var habitPlanRevisions: [HabitPlanRevision]
     @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
     private var queriedWeightRecords: [WeightRecord]
     @Query private var weeklyReviews: [WeeklyReview]
@@ -107,6 +109,18 @@ private struct TodayView: View {
 
     private var activeHabits: [Habit] {
         habits.filter { $0.status == .active }
+    }
+
+    private var todayHabits: [Habit] {
+        activeHabits.filter { habit in
+            guard let plan = HabitPlanResolver.currentPlan(
+                for: habit.id,
+                plans: habitPlanRevisions
+            ) else { return true }
+            guard plan.period == .day else { return false }
+            guard plan.goal == .selectedWeekdays else { return true }
+            return plan.weekdays.contains(Calendar.current.component(.weekday, from: Date()))
+        }
     }
 
     private var activeGoals: [Goal] {
@@ -163,15 +177,17 @@ private struct TodayView: View {
                     .padding(.vertical, 4)
                 }
             }
-            if !activeHabits.isEmpty {
+            if !todayHabits.isEmpty {
                 Section {
-                    ForEach(activeHabits) { habit in
+                    ForEach(todayHabits) { habit in
                         let progress = HabitTodayProgress(
                             habitID: habit.id,
                             logs: habitLogs,
-                            settings: HabitSettingsResolver.settings(
+                            dayMetadata: habitLogDayMetadata,
+                            settings: HabitRuntimeResolver.settings(
                                 for: habit.id,
-                                configurations: habitConfigurations
+                                plans: habitPlanRevisions,
+                                legacyConfigurations: habitConfigurations
                             )
                         )
                         if progress.settings.recordingMode == .multiplePerDay {
@@ -204,6 +220,7 @@ private struct TodayView: View {
                             )
                             .accessibilityLabel("Check in \(habit.name)")
                             .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
+                            .frame(minHeight: 52)
                         }
                     }
                 } header: {
@@ -248,9 +265,10 @@ private struct TodayView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if let recentCheckIn,
-               HabitSettingsResolver.settings(
+               HabitRuntimeResolver.settings(
                 for: recentCheckIn.habitID,
-                configurations: habitConfigurations
+                plans: habitPlanRevisions,
+                legacyConfigurations: habitConfigurations
                ).recordingMode == .oncePerDay {
                 HabitCheckInUndoBar {
                     undo(recentCheckIn)
@@ -398,13 +416,21 @@ struct HabitTodayProgress: Equatable {
     init(
         habitID: UUID,
         logs: [HabitLog],
+        dayMetadata: [HabitLogDayMetadata] = [],
         settings: HabitSettings,
         now: Date = Date(),
         calendar: Calendar = .current
     ) {
+        let currentDay = HabitLocalDay(date: now, timeZone: calendar.timeZone).description
+        let metadataByLogID = HabitLogDayResolver.metadataByLogID(dayMetadata)
         count = logs.filter {
             $0.habitID == habitID
-                && calendar.isDate($0.occurredAt, inSameDayAs: now)
+                && $0.isCompleted
+                && HabitLogDayResolver.localDay(
+                    for: $0,
+                    metadataByLogID: metadataByLogID,
+                    fallbackTimeZone: calendar.timeZone
+                ).description == currentDay
         }.count
         self.settings = settings
     }

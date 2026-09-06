@@ -58,7 +58,19 @@ final class ImportExportRecoveryTests: XCTestCase {
                     tags: data.tags,
                     links: data.links,
                     habits: data.habits,
-                    habitLogs: data.habitLogs,
+                    habitLogs: data.habitLogs.map {
+                        HabitLogTransfer(
+                            id: $0.id,
+                            habitID: $0.habitID,
+                            occurredAt: $0.occurredAt,
+                            isCompleted: $0.isCompleted,
+                            quantity: $0.quantity,
+                            unit: $0.unit,
+                            result: $0.result,
+                            linkedEntryID: $0.linkedEntryID,
+                            createdAt: $0.createdAt
+                        )
+                    },
                     goals: data.goals,
                     goalEvents: data.goalEvents
                 )
@@ -82,11 +94,20 @@ final class ImportExportRecoveryTests: XCTestCase {
         var expectedCounts = source.expectedCounts
         expectedCounts["weightRecords"] = 0
         expectedCounts["weeklyReviews"] = 0
+        expectedCounts["habitPlanRevisions"] = 0
+        expectedCounts["habitLifecycleEvents"] = 0
         var expectedIDs = source.expectedIDs
         expectedIDs["weightRecords"] = []
         expectedIDs["weeklyReviews"] = []
         XCTAssertEqual(result.objectCounts, expectedCounts)
-        XCTAssertEqual(try ids(in: target.container.mainContext), expectedIDs)
+        var importedIDs = try ids(in: target.container.mainContext)
+        importedIDs["habitPlanRevisions"] = []
+        importedIDs["habitLifecycleEvents"] = []
+        expectedIDs["habitPlanRevisions"] = []
+        expectedIDs["habitLifecycleEvents"] = []
+        XCTAssertEqual(importedIDs, expectedIDs)
+        XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<HabitPlanRevision>()), 1)
+        XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<HabitLifecycleEvent>()), 1)
         XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<WeightRecord>()), 0)
         XCTAssertNoThrow(try LinkIntegrityService.validate(context: target.container.mainContext))
     }
@@ -211,6 +232,270 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
     }
 
+    func testSchemaV4RejectsMissingOrInvalidPlanRecordingMode() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Run",
+            normalizedName: "run",
+            status: HabitStatus.active.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+
+        for rawMode in [nil, "not-a-mode"] {
+            let plan = HabitPlanRevisionTransfer(
+                id: UUID(),
+                habitID: habitID,
+                effectiveLocalDay: "2026-09-07",
+                period: HabitPlanPeriod.week.rawValue,
+                goal: HabitPlanGoal.count.rawValue,
+                targetCount: 3,
+                weekdays: "",
+                recordingMode: rawMode,
+                trustCoverageStartLocalDay: "2026-09-07",
+                createdAt: timestamp
+            )
+            let data = makeTransferData(habits: [habit], habitPlanRevisions: [plan])
+            XCTAssertThrowsError(try TransferValidator.validate(
+                manifest: makeManifest(schemaVersion: 4, data: data),
+                data: data,
+                limits: .production
+            )) {
+                XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitPlanRevision"))
+            }
+        }
+    }
+
+    func testOlderSchemasRejectV4HabitPlanAndLifecyclePayloads() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Run",
+            normalizedName: "run",
+            status: HabitStatus.active.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        let planData = makeTransferData(
+            habits: [habit],
+            habitPlanRevisions: [HabitPlanRevisionTransfer(
+                id: UUID(),
+                habitID: habitID,
+                effectiveLocalDay: "2026-09-07",
+                period: HabitPlanPeriod.week.rawValue,
+                goal: HabitPlanGoal.count.rawValue,
+                targetCount: 3,
+                weekdays: "",
+                recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+                trustCoverageStartLocalDay: "2026-09-07",
+                createdAt: timestamp
+            )]
+        )
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 3, data: planData),
+            data: planData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitPlanRevision"))
+        }
+
+        let lifecycleData = makeTransferData(
+            habits: [habit],
+            habitLifecycleEvents: [HabitLifecycleEventTransfer(
+                id: UUID(),
+                habitID: habitID,
+                kind: HabitLifecycleEventKind.created.rawValue,
+                occurredLocalDay: "2026-09-07",
+                occurredAt: timestamp,
+                createdAt: timestamp
+            )]
+        )
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 3, data: lifecycleData),
+            data: lifecycleData,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitLifecycleEvent"))
+        }
+    }
+
+    func testSchemaV4ValidatesMigrationBaselineKnownStatus() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Legacy Habit",
+            normalizedName: "legacy habit",
+            status: HabitStatus.paused.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+
+        func data(knownStatus: String?, kind: HabitLifecycleEventKind = .migrationBaseline) -> TransferData {
+            makeTransferData(
+                habits: [habit],
+                habitLifecycleEvents: [HabitLifecycleEventTransfer(
+                    id: UUID(),
+                    habitID: habitID,
+                    kind: kind.rawValue,
+                    occurredLocalDay: "2026-09-07",
+                    occurredAt: timestamp,
+                    createdAt: timestamp,
+                    knownStatus: knownStatus
+                )]
+            )
+        }
+
+        let valid = data(knownStatus: HabitStatus.paused.rawValue)
+        XCTAssertNoThrow(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 4, data: valid),
+            data: valid,
+            limits: .production
+        ))
+        for invalid in [
+            data(knownStatus: nil),
+            data(knownStatus: "unknown"),
+            data(knownStatus: HabitStatus.active.rawValue, kind: .created)
+        ] {
+            XCTAssertThrowsError(try TransferValidator.validate(
+                manifest: makeManifest(schemaVersion: 4, data: invalid),
+                data: invalid,
+                limits: .production
+            )) {
+                XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitLifecycleEvent"))
+            }
+        }
+    }
+
+    func testSchemaV4RejectsImpossibleOncePerDayPlanTargets() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Bounded",
+            normalizedName: "bounded",
+            status: HabitStatus.active.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        let invalidPlans: [(HabitPlanPeriod, HabitPlanGoal, Int, String)] = [
+            (.day, .everyDay, 2, ""),
+            (.day, .selectedWeekdays, 2, "2"),
+            (.week, .count, 8, ""),
+            (.month, .count, 29, "")
+        ]
+
+        for (period, goal, target, weekdays) in invalidPlans {
+            let data = makeTransferData(
+                habits: [habit],
+                habitPlanRevisions: [HabitPlanRevisionTransfer(
+                    id: UUID(),
+                    habitID: habitID,
+                    effectiveLocalDay: "2026-09-07",
+                    period: period.rawValue,
+                    goal: goal.rawValue,
+                    targetCount: target,
+                    weekdays: weekdays,
+                    recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+                    trustCoverageStartLocalDay: "2026-09-07",
+                    createdAt: timestamp
+                )]
+            )
+            XCTAssertThrowsError(try TransferValidator.validate(
+                manifest: makeManifest(schemaVersion: 4, data: data),
+                data: data,
+                limits: .production
+            )) {
+                XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitPlanRevision"))
+            }
+        }
+    }
+
+    func testSchemaV4RejectsDuplicatePlanEffectiveDayForHabit() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Unique Plan",
+            normalizedName: "unique plan",
+            status: HabitStatus.active.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        func revision(id: UUID) -> HabitPlanRevisionTransfer {
+            HabitPlanRevisionTransfer(
+                id: id,
+                habitID: habitID,
+                effectiveLocalDay: "2026-09-07",
+                period: HabitPlanPeriod.day.rawValue,
+                goal: HabitPlanGoal.everyDay.rawValue,
+                targetCount: 1,
+                weekdays: "",
+                recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+                trustCoverageStartLocalDay: "2026-09-07",
+                createdAt: timestamp
+            )
+        }
+        let data = makeTransferData(
+            habits: [habit],
+            habitPlanRevisions: [revision(id: UUID()), revision(id: UUID())]
+        )
+
+        XCTAssertThrowsError(try TransferValidator.validate(
+            manifest: makeManifest(schemaVersion: 4, data: data),
+            data: data,
+            limits: .production
+        )) {
+            XCTAssertEqual($0 as? TransferPackageError, .duplicateID("habitPlanRevisionEffectiveDay"))
+        }
+    }
+
+    func testSchemasBeforeV4RejectHabitLogLocalDayMetadata() throws {
+        let habitID = UUID()
+        let timestamp = Date(timeIntervalSince1970: 1_000)
+        let habit = HabitTransfer(
+            id: habitID,
+            name: "Legacy",
+            normalizedName: "legacy",
+            status: HabitStatus.active.rawValue,
+            recordingMode: HabitRecordingMode.oncePerDay.rawValue,
+            dailyTargetCount: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        let v4Log = HabitLogTransfer(
+            id: UUID(), habitID: habitID, occurredAt: timestamp, isCompleted: true,
+            quantity: nil, unit: nil, result: nil, linkedEntryID: nil, createdAt: timestamp,
+            localDayIdentifier: "2026-09-07",
+            localTimeZoneIdentifier: "UTC",
+            localDayProvenance: HabitLogDayProvenance.legacyBootstrap.rawValue
+        )
+
+        for schemaVersion in 1...3 {
+            let data = makeTransferData(habits: [habit], habitLogs: [v4Log])
+            XCTAssertThrowsError(try TransferValidator.validate(
+                manifest: makeManifest(schemaVersion: schemaVersion, data: data),
+                data: data,
+                limits: .production
+            )) {
+                XCTAssertEqual($0 as? TransferPackageError, .invalidObject("habitLog"))
+            }
+        }
+    }
+
     func testFullRoundTripPreservesEveryObjectIdentityRelationshipAndOriginal() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -253,6 +538,26 @@ final class ImportExportRecoveryTests: XCTestCase {
         XCTAssertEqual(restoredWeeklyReview.rememberedText, sourceWeeklyReview.rememberedText)
         XCTAssertEqual(restoredWeeklyReview.focusText, sourceWeeklyReview.focusText)
         XCTAssertEqual(restoredWeeklyReview.isCompleted, sourceWeeklyReview.isCompleted)
+        let sourcePlan = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitPlanRevision>()).first)
+        let restoredPlan = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitPlanRevision>()).first)
+        XCTAssertEqual(restoredPlan.id, sourcePlan.id)
+        XCTAssertEqual(restoredPlan.effectiveLocalDay, sourcePlan.effectiveLocalDay)
+        XCTAssertEqual(restoredPlan.plan, sourcePlan.plan)
+        XCTAssertEqual(restoredPlan.origin, sourcePlan.origin)
+        let sourceDayMetadata = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitLogDayMetadata>()).first)
+        let restoredDayMetadata = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitLogDayMetadata>()).first)
+        XCTAssertEqual(restoredDayMetadata.habitLogID, sourceDayMetadata.habitLogID)
+        XCTAssertEqual(restoredDayMetadata.localDayIdentifier, sourceDayMetadata.localDayIdentifier)
+        XCTAssertEqual(restoredDayMetadata.localTimeZoneIdentifier, sourceDayMetadata.localTimeZoneIdentifier)
+        XCTAssertEqual(restoredDayMetadata.provenance, sourceDayMetadata.provenance)
+        XCTAssertEqual(
+            try target.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id),
+            try source.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id)
+        )
+        let sourceHabitEvent = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).first)
+        let restoredHabitEvent = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>()).first)
+        XCTAssertEqual(restoredHabitEvent.kind, sourceHabitEvent.kind)
+        XCTAssertEqual(restoredHabitEvent.knownStatus, sourceHabitEvent.knownStatus)
         let joinedLogs = logs.values.joined(separator: "|")
         XCTAssertFalse(joinedLogs.contains(TransferTestFixture.secretBody))
         XCTAssertFalse(joinedLogs.contains(fixture.root.path))
@@ -495,7 +800,7 @@ final class ImportExportRecoveryTests: XCTestCase {
             rewriteJSON: { manifest, data in
                 (ExportManifest(
                     formatIdentifier: manifest.formatIdentifier,
-                    packageSchemaVersion: 4,
+                    packageSchemaVersion: 5,
                     appVersion: manifest.appVersion,
                     appBuild: manifest.appBuild,
                     exportID: manifest.exportID,
@@ -514,7 +819,7 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
         let schemaTarget = try fixture.makeEmptyStore(named: "SchemaTarget")
         await assertThrows({ try await schemaTarget.service.importPackage(from: unsupported) }) {
-            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(4))
+            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(5))
         }
     }
 
@@ -821,8 +1126,11 @@ private struct TransferStore {
 
 private func makeTransferData(
     habits: [HabitTransfer] = [],
+    habitLogs: [HabitLogTransfer] = [],
     weightRecords: [WeightRecordTransfer] = [],
-    weeklyReviews: [WeeklyReviewTransfer] = []
+    weeklyReviews: [WeeklyReviewTransfer] = [],
+    habitPlanRevisions: [HabitPlanRevisionTransfer] = [],
+    habitLifecycleEvents: [HabitLifecycleEventTransfer] = []
 ) -> TransferData {
     TransferData(
         entries: [],
@@ -830,11 +1138,13 @@ private func makeTransferData(
         tags: [],
         links: [],
         habits: habits,
-        habitLogs: [],
+        habitLogs: habitLogs,
         goals: [],
         goalEvents: [],
         weightRecords: weightRecords,
-        weeklyReviews: weeklyReviews
+        weeklyReviews: weeklyReviews,
+        habitPlanRevisions: habitPlanRevisions,
+        habitLifecycleEvents: habitLifecycleEvents
     )
 }
 
@@ -928,6 +1238,26 @@ private final class TransferTestFixture {
             linkedEntryID: entry.id,
             createdAt: Date(timeIntervalSince1970: 1_100)
         )
+        let logDayMetadata = HabitLogDayMetadata(
+            habitLogID: log.id,
+            localDayIdentifier: HabitLocalDay(date: Date(timeIntervalSince1970: 1_100)).description,
+            localTimeZoneIdentifier: TimeZone.current.identifier,
+            provenance: .capturedAtWrite
+        )
+        let plan = HabitPlanRevision(
+            habitID: habit.id,
+            effectiveLocalDay: HabitLocalDay(date: base).description,
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .week, goal: .count, targetCount: 3, weekdays: []),
+            trustCoverageStartLocalDay: HabitLocalDay(date: base).description,
+            createdAt: base
+        )
+        let habitEvent = HabitLifecycleEvent(
+            habitID: habit.id,
+            kind: .migrationBaseline,
+            occurredLocalDay: HabitLocalDay(date: base).description,
+            occurredAt: base,
+            knownStatus: .active
+        )
         let event = GoalLifecycleEvent(
             goalID: goal.id,
             kind: .created,
@@ -966,6 +1296,9 @@ private final class TransferTestFixture {
         context.insert(habit)
         context.insert(goal)
         context.insert(log)
+        context.insert(logDayMetadata)
+        context.insert(plan)
+        context.insert(habitEvent)
         context.insert(event)
         context.insert(weightRecord)
         context.insert(weeklyReview)
@@ -980,7 +1313,8 @@ private final class TransferTestFixture {
             expectedCounts: [
                 "entries": 2, "images": 1, "tags": 1, "links": 5,
                 "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
-                "weightRecords": 1, "weeklyReviews": 1
+                "weightRecords": 1, "weeklyReviews": 1,
+                "habitPlanRevisions": 1, "habitLifecycleEvents": 1
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1037,7 +1371,9 @@ private func ids(in context: ModelContext) throws -> [String: Set<UUID>] {
         "goals": Set(try context.fetch(FetchDescriptor<Goal>()).map(\.id)),
         "goalEvents": Set(try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).map(\.id)),
         "weightRecords": Set(try context.fetch(FetchDescriptor<WeightRecord>()).map(\.id)),
-        "weeklyReviews": Set(try context.fetch(FetchDescriptor<WeeklyReview>()).map(\.id))
+        "weeklyReviews": Set(try context.fetch(FetchDescriptor<WeeklyReview>()).map(\.id)),
+        "habitPlanRevisions": Set(try context.fetch(FetchDescriptor<HabitPlanRevision>()).map(\.id)),
+        "habitLifecycleEvents": Set(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id))
     ]
 }
 
@@ -1049,7 +1385,10 @@ private func totalObjectCount(in context: ModelContext) throws -> Int {
 @MainActor
 private func deleteAllFixtureData(_ context: ModelContext) throws {
     try context.fetch(FetchDescriptor<ObjectLink>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<HabitLog>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<HabitPlanRevision>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<GoalLifecycleEvent>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<ImageMetadata>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<Entry>()).forEach(context.delete)

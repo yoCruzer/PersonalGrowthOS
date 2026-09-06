@@ -81,27 +81,31 @@ struct RepeatableHabitCounter: View {
     let habitName: String
     let progress: HabitTodayProgress
     let accessibilityIdentifierPrefix: String
+    var showsHabitName = true
     let decrease: () -> Void
     let increase: () -> Void
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(habitName)
-                .lineLimit(2)
-                .layoutPriority(1)
+            if showsHabitName {
+                Text(habitName)
+                    .lineLimit(2)
+                    .layoutPriority(1)
+            }
             Spacer(minLength: 4)
             controls
         }
+        .frame(minHeight: 52)
     }
 
     private var controls: some View {
         ZStack {
             Capsule()
                 .fill(.quaternary)
-                .frame(height: 34)
+                .frame(height: 30)
             Capsule()
                 .stroke(.separator.opacity(0.35), lineWidth: 0.5)
-                .frame(height: 34)
+                .frame(height: 30)
             HStack(spacing: 0) {
                 Button(action: decrease) {
                     Image(systemName: "minus")
@@ -142,7 +146,7 @@ struct RepeatableHabitCounter: View {
 
     private var countText: String {
         if let target = progress.settings.dailyTargetCount {
-            return "\(progress.count) / \(target)"
+            return "\(progress.count)/\(target)"
         }
         return "\(progress.count)"
     }
@@ -156,25 +160,53 @@ struct HabitsView: View {
         SortDescriptor(\Habit.normalizedName, order: .forward),
         SortDescriptor(\Habit.id, order: .forward)
     ]) private var habits: [Habit]
+    @Query private var planRevisions: [HabitPlanRevision]
+    @Query private var configurations: [HabitConfiguration]
+    @Query private var allLogs: [HabitLog]
+    @Query private var allLogDayMetadata: [HabitLogDayMetadata]
+    @Query private var lifecycleEvents: [HabitLifecycleEvent]
     @State private var isCreatingHabit = false
 
-    private var mainHabits: [Habit] {
-        habits.filter { $0.status != .archived }
+    private var activeHabits: [Habit] {
+        habits.filter { $0.status == .active }
+    }
+
+    private var inactiveHabits: [Habit] {
+        habits.filter { $0.status == .paused || $0.status == .completed }
     }
 
     private var archivedHabits: [Habit] {
         habits.filter { $0.status == .archived }
     }
 
+    private func section(for habit: Habit) -> HabitPlanPeriod {
+        let plan = HabitPlanResolver.currentPlan(for: habit.id, plans: planRevisions)
+        return switch plan?.period {
+        case .week: .week
+        case .month: .month
+        case .trackingOnly: .trackingOnly
+        default: .day
+        }
+    }
+
+    private func sectionTitle(_ period: HabitPlanPeriod) -> String {
+        switch period {
+        case .day: String(localized: "Today")
+        case .week: String(localized: "This Week")
+        case .month: String(localized: "This Month")
+        case .trackingOnly: String(localized: "Tracking Only")
+        }
+    }
+
     var body: some View {
         List {
-            if mainHabits.isEmpty {
+            if activeHabits.isEmpty {
                 Section {
                     VStack(spacing: 16) {
                         ContentUnavailableView {
-                            Label("No Habits", systemImage: "repeat")
+                            Label("No Active Habits", systemImage: "repeat")
                         } description: {
-                            Text("Add a habit you want to practice. Pauses and restarts are part of growth.")
+                            Text("Add a habit to practice, or reopen a paused or completed habit below.")
                         }
                         GrowthEmptyStateAddButton(
                             title: "Add Habit",
@@ -187,21 +219,51 @@ struct HabitsView: View {
                     Text("Use a specific, actionable name. You can change it later without losing check-ins.")
                 }
             } else {
-                Section("Habits") {
-                    ForEach(mainHabits) { habit in
-                        NavigationLink {
-                            HabitDetailView(
+                ForEach(
+                    [HabitPlanPeriod.day, .week, .month, .trackingOnly],
+                    id: \.rawValue
+                ) { period in
+                    let grouped = activeHabits.filter { section(for: $0) == period }
+                    if !grouped.isEmpty {
+                        Section(sectionTitle(period)) {
+                            ForEach(grouped) { habit in
+                                HabitOverviewRow(
+                                    habit: habit,
+                                    plan: HabitPlanResolver.currentPlan(for: habit.id, plans: planRevisions),
+                                    settings: HabitRuntimeResolver.settings(
+                                        for: habit.id,
+                                        plans: planRevisions,
+                                        legacyConfigurations: configurations
+                                    ),
+                                    logs: allLogs.filter { $0.habitID == habit.id },
+                                    dayMetadata: allLogDayMetadata,
+                                    analytics: HabitAnalyticsSnapshotBuilder.summary(
+                                        habit: habit,
+                                        logs: allLogs,
+                                        dayMetadata: allLogDayMetadata,
+                                        plans: planRevisions,
+                                        lifecycleEvents: lifecycleEvents,
+                                        legacyConfigurations: configurations
+                                    ),
+                                    mediaStore: mediaStore,
+                                    thumbnailStore: thumbnailStore
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            ForEach([HabitStatus.paused, .completed], id: \.rawValue) { status in
+                let grouped = inactiveHabits.filter { $0.status == status }
+                if !grouped.isEmpty {
+                    Section(status.localizedName) {
+                        ForEach(grouped) { habit in
+                            InactiveHabitRow(
                                 habit: habit,
                                 mediaStore: mediaStore,
                                 thumbnailStore: thumbnailStore
                             )
-                        } label: {
-                            LabeledContent(
-                                habit.name,
-                                value: habit.status.localizedName
-                            )
                         }
-                        .accessibilityIdentifier("habit-\(habit.normalizedName)")
                     }
                 }
             }
@@ -221,7 +283,7 @@ struct HabitsView: View {
         }
         .navigationTitle("Habits")
         .toolbar {
-            if !mainHabits.isEmpty {
+            if !activeHabits.isEmpty {
                 Button {
                     isCreatingHabit = true
                 } label: {
@@ -234,9 +296,215 @@ struct HabitsView: View {
             HabitEditorView(
                 habit: nil,
                 settings: HabitSettings(recordingMode: .oncePerDay, dailyTargetCount: nil),
+                plan: nil,
+                pendingEffectiveDay: nil,
                 didSave: { isCreatingHabit = false }
             )
         }
+    }
+}
+
+private struct HabitOverviewRow: View {
+    let habit: Habit
+    let plan: HabitPlan?
+    let settings: HabitSettings
+    let logs: [HabitLog]
+    let dayMetadata: [HabitLogDayMetadata]
+    let analytics: HabitAnalyticsSummary
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var errorMessage: String?
+
+    private var isScheduledToday: Bool {
+        plan.map { HabitPlanResolver.isScheduled($0, on: Date()) } ?? true
+    }
+
+    private var checkedInToday: Bool {
+        progress.isCompletedForOncePerDay
+    }
+
+    private var progress: HabitTodayProgress {
+        HabitTodayProgress(
+            habitID: habit.id,
+            logs: logs,
+            dayMetadata: dayMetadata,
+            settings: settings
+        )
+    }
+
+    var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize && showsCheckInControl {
+                VStack(alignment: .leading, spacing: 8) {
+                    habitLink
+                    HStack {
+                        Spacer(minLength: 0)
+                        checkInControl
+                    }
+                }
+            } else {
+                HStack(spacing: 12) {
+                    habitLink
+                    if showsCheckInControl {
+                        checkInControl
+                    }
+                }
+            }
+        }
+        .alert("Could Not Check In", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? String(localized: "Please try again."))
+        }
+    }
+
+    private var showsCheckInControl: Bool {
+        habit.status == .active && isScheduledToday
+    }
+
+    private var habitLink: some View {
+        NavigationLink {
+            HabitDetailView(
+                habit: habit,
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
+        } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(habit.name)
+                Text(periodProgressText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityIdentifier("habit-\(habit.normalizedName)")
+    }
+
+    @ViewBuilder
+    private var checkInControl: some View {
+        if settings.recordingMode == .multiplePerDay {
+            RepeatableHabitCounter(
+                habitName: habit.name,
+                progress: progress,
+                accessibilityIdentifierPrefix: "habit-overview-\(habit.normalizedName)-counter",
+                showsHabitName: false,
+                decrease: decrement,
+                increase: increment
+            )
+        } else {
+            Button(action: checkIn) {
+                Image(systemName: checkedInToday ? "checkmark.circle.fill" : "checkmark.circle")
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.borderless)
+            .disabled(checkedInToday)
+            .accessibilityLabel("Check in \(habit.name)")
+            .accessibilityIdentifier("habit-overview-check-in")
+        }
+    }
+
+    private var periodProgressText: String {
+        guard let current = analytics.current else { return habit.status.localizedName }
+        if current.period == .trackingOnly || current.target == nil {
+            return recordedText(current.actual)
+        }
+        let remaining = max((current.target ?? 0) - current.actual, 0)
+        let scope: String = switch current.period {
+        case .day: String(localized: "today")
+        case .week: String(localized: "this week")
+        case .month: String(localized: "this month")
+        case .trackingOnly: ""
+        }
+        if current.outcome == .notEvaluated(.notScheduled) {
+            return current.actual > 0
+                ? String.localizedStringWithFormat(
+                    String(localized: "%lld recorded · Rest day"), current.actual
+                )
+                : String(localized: "Rest day")
+        }
+        return remaining > 0
+            ? String.localizedStringWithFormat(
+                String(localized: "%lld/%lld %@ · %lld remaining"),
+                current.actual, current.target ?? 0, scope, remaining
+            )
+            : String.localizedStringWithFormat(
+                String(localized: "%lld/%lld %@"),
+                current.actual, current.target ?? 0, scope
+            )
+    }
+
+    private func recordedText(_ count: Int) -> String {
+        count == 1
+            ? String(localized: "1 recorded")
+            : String.localizedStringWithFormat(String(localized: "%lld recorded"), count)
+    }
+
+    private func checkIn() {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).checkIn(habit)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func increment() {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).incrementCount(habit)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
+    }
+
+    private func decrement() {
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).removeLatestStructuredCheckIn(habitID: habit.id)
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
+        }
+    }
+}
+
+private struct InactiveHabitRow: View {
+    let habit: Habit
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    var body: some View {
+        NavigationLink {
+            HabitDetailView(
+                habit: habit,
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
+        } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(habit.name)
+                Text(habit.status.localizedName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityValue(habit.status.localizedName)
+                    .accessibilityIdentifier(
+                        "habit-\(habit.status.rawValue)-\(habit.normalizedName)-status"
+                    )
+            }
+        }
+        .accessibilityIdentifier("habit-\(habit.status.rawValue)-\(habit.normalizedName)")
     }
 }
 
@@ -290,6 +558,31 @@ private struct ArchivedHabitsView: View {
     }
 }
 
+struct HabitDetailNowPresentation: Equatable {
+    let currentProgress: HabitPeriodEvaluation?
+    let adherence: Double?
+    let currentStreak: Int?
+    let bestStreak: Int?
+    let streakUnit: String?
+    let showsCurrentExpectation: Bool
+
+    init(status: HabitStatus, analytics: HabitAnalyticsSummary) {
+        showsCurrentExpectation = status == .active
+        if showsCurrentExpectation {
+            currentProgress = analytics.current
+            adherence = analytics.adherence
+            currentStreak = analytics.currentStreak
+            bestStreak = analytics.currentStreak == nil ? nil : analytics.bestStreak ?? 0
+        } else {
+            currentProgress = nil
+            adherence = nil
+            currentStreak = nil
+            bestStreak = (analytics.bestStreak ?? 0) > 0 ? analytics.bestStreak : nil
+        }
+        streakUnit = analytics.streakUnit
+    }
+}
+
 struct HabitDetailView: View {
     let habit: Habit
     let mediaStore: MediaStore
@@ -302,8 +595,13 @@ struct HabitDetailView: View {
         SortDescriptor(\HabitLog.createdAt, order: .reverse),
         SortDescriptor(\HabitLog.id, order: .forward)
     ]) private var allLogs: [HabitLog]
+    @Query private var allLogDayMetadata: [HabitLogDayMetadata]
     @Query private var configurations: [HabitConfiguration]
+    @Query private var planRevisions: [HabitPlanRevision]
+    @Query private var lifecycleEvents: [HabitLifecycleEvent]
     @Query private var entries: [Entry]
+    @Query private var links: [ObjectLink]
+    @Query private var goals: [Goal]
     @State private var isAddingInsight = false
     @State private var isLoggingDetails = false
     @State private var isEditing = false
@@ -322,32 +620,81 @@ struct HabitDetailView: View {
     }
 
     private var settings: HabitSettings {
-        HabitSettingsResolver.settings(for: habit.id, configurations: configurations)
+        HabitRuntimeResolver.settings(
+            for: habit.id,
+            plans: planRevisions,
+            legacyConfigurations: configurations
+        )
+    }
+
+    private var currentPlan: HabitPlan? {
+        HabitPlanResolver.currentPlan(
+            for: habit.id,
+            plans: planRevisions
+        )
+    }
+
+    private var pendingPlanRevision: HabitPlanRevision? {
+        HabitPlanResolver.pendingPlanRevision(
+            for: habit.id,
+            plans: planRevisions
+        )
     }
 
     private var checkedInToday: Bool {
-        logs.contains { Calendar.current.isDateInToday($0.occurredAt) }
+        todayProgress.isCompletedForOncePerDay
     }
 
     private var todayProgress: HabitTodayProgress {
         HabitTodayProgress(
             habitID: habit.id,
             logs: logs,
+            dayMetadata: allLogDayMetadata,
             settings: settings
         )
     }
 
+    private var analytics: HabitAnalyticsSummary {
+        HabitAnalyticsSnapshotBuilder.summary(
+            habit: habit,
+            logs: logs,
+            dayMetadata: allLogDayMetadata,
+            plans: planRevisions,
+            lifecycleEvents: lifecycleEvents,
+            legacyConfigurations: configurations
+        )
+    }
+
+    private var nowPresentation: HabitDetailNowPresentation {
+        HabitDetailNowPresentation(status: habit.status, analytics: analytics)
+    }
+
+    private var relatedInsights: [Entry] {
+        let entryIDs = Set(links.compactMap { link -> UUID? in
+            link.targetTypeRawValue == LinkObjectType.habit.rawValue && link.targetID == habit.id
+                && link.sourceTypeRawValue == LinkObjectType.entry.rawValue ? link.sourceID : nil
+        })
+        return entries.filter { entryIDs.contains($0.id) }
+    }
+
+    private var relatedGoals: [Goal] {
+        let goalIDs = Set(links.compactMap { link -> UUID? in
+            link.sourceTypeRawValue == LinkObjectType.habit.rawValue && link.sourceID == habit.id
+                && link.targetTypeRawValue == LinkObjectType.goal.rawValue ? link.targetID : nil
+        })
+        return goals.filter { goalIDs.contains($0.id) }
+    }
+
     var body: some View {
         List {
-            Section("Status") {
-                LabeledContent("Status", value: habit.status.localizedName)
-                LabeledContent("Recording Mode", value: settings.recordingMode.localizedName)
-                if let target = settings.dailyTargetCount {
-                    LabeledContent("Daily Target", value: "\(target)")
+            Section {
+                if let current = nowPresentation.currentProgress {
+                    LabeledContent("Progress", value: progressText(current))
+                        .accessibilityIdentifier("habit-detail-current-progress")
                 }
-            }
-            if habit.status == .active {
-                Section {
+                LabeledContent("Status", value: habit.status.localizedName)
+                    .accessibilityIdentifier("habit-detail-status")
+                if nowPresentation.showsCurrentExpectation {
                     if settings.recordingMode == .multiplePerDay {
                         RepeatableHabitCounter(
                             habitName: habit.name,
@@ -386,32 +733,59 @@ struct HabitDetailView: View {
                     }
                     .disabled(isCoolingDown || (settings.recordingMode == .oncePerDay && checkedInToday))
                     .accessibilityIdentifier("habit-check-in-insight")
-                } header: {
-                    Text("Check In")
-                } footer: {
+                }
+                if let adherence = nowPresentation.adherence {
+                    LabeledContent("Adherence", value: adherence.formatted(.percent.precision(.fractionLength(0))))
+                        .accessibilityIdentifier("habit-detail-current-adherence")
+                }
+                if let currentStreak = nowPresentation.currentStreak,
+                   let unit = nowPresentation.streakUnit {
+                    LabeledContent("Current Streak", value: streakText(currentStreak, unit: unit))
+                        .accessibilityIdentifier("habit-detail-current-streak")
+                }
+                if let bestStreak = nowPresentation.bestStreak,
+                   let unit = nowPresentation.streakUnit {
+                    LabeledContent("Best Streak", value: streakText(bestStreak, unit: unit))
+                        .accessibilityIdentifier("habit-detail-best-streak")
+                }
+            } header: {
+                Text("Now")
+            } footer: {
+                if nowPresentation.showsCurrentExpectation {
                     Text("A simple check-in saves only a structured fact. Text and photos are saved in a linked Entry.")
                 }
             }
-            Section("History") {
+            HabitAnalyticsDashboard(
+                summary: analytics,
+                habitName: habit.name,
+                plans: planRevisions.filter { $0.habitID == habit.id },
+                lifecycleEvents: lifecycleEvents.filter { $0.habitID == habit.id },
+                insights: relatedInsights,
+                goals: relatedGoals,
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
+            Section("Recent Activity") {
                 if logs.isEmpty {
                     Text("No check-ins yet.")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(logs) { log in
-                        if let linkedEntryID = log.linkedEntryID,
-                           let entry = entriesByID[linkedEntryID] {
-                            NavigationLink {
-                                EntryDetailView(
-                                    entry: entry,
-                                    mediaStore: mediaStore,
-                                    thumbnailStore: thumbnailStore
-                                )
-                            } label: {
-                                HabitLogRow(log: log, hasInsight: true)
-                            }
-                        } else {
-                            HabitLogRow(log: log, hasInsight: false)
-                        }
+                    ForEach(logs.prefix(5)) { log in
+                        HabitActivityRow(
+                            log: log,
+                            entry: log.linkedEntryID.flatMap { entriesByID[$0] },
+                            mediaStore: mediaStore,
+                            thumbnailStore: thumbnailStore
+                        )
+                    }
+                    NavigationLink("View All Activity") {
+                        HabitHistoryView(
+                            habitName: habit.name,
+                            logs: logs,
+                            entriesByID: entriesByID,
+                            mediaStore: mediaStore,
+                            thumbnailStore: thumbnailStore
+                        )
                     }
                 }
             }
@@ -461,6 +835,10 @@ struct HabitDetailView: View {
             HabitEditorView(
                 habit: habit,
                 settings: settings,
+                plan: pendingPlanRevision?.plan ?? currentPlan,
+                pendingEffectiveDay: pendingPlanRevision.flatMap {
+                    HabitLocalDay($0.effectiveLocalDay)
+                },
                 didSave: { isEditing = false }
             )
         }
@@ -490,6 +868,44 @@ struct HabitDetailView: View {
         } message: {
             Text(errorMessage ?? String(localized: "Please try again."))
         }
+    }
+
+    private func progressText(_ evaluation: HabitPeriodEvaluation) -> String {
+        if evaluation.outcome == .notEvaluated(.notScheduled) {
+            return evaluation.actual > 0
+                ? String.localizedStringWithFormat(
+                    String(localized: "Rest day · %lld recorded"), evaluation.actual
+                )
+                : String(localized: "Rest day")
+        }
+        guard let target = evaluation.target else {
+            return evaluation.actual == 1
+                ? String(localized: "1 recorded")
+                : String.localizedStringWithFormat(
+                    String(localized: "%lld recorded"), evaluation.actual
+                )
+        }
+        let scope: String = switch evaluation.period {
+        case .day: String(localized: "today")
+        case .week: String(localized: "this week")
+        case .month: String(localized: "this month")
+        case .trackingOnly: ""
+        }
+        return String.localizedStringWithFormat(
+            String(localized: "%lld/%lld %@"), evaluation.actual, target, scope
+        )
+    }
+
+    private func streakText(_ count: Int, unit: String) -> String {
+        let localizedUnit = switch unit {
+        case "days": count == 1 ? String(localized: "day") : String(localized: "days")
+        case "weeks": count == 1 ? String(localized: "week") : String(localized: "weeks")
+        case "months": count == 1 ? String(localized: "month") : String(localized: "months")
+        default: unit
+        }
+        return String.localizedStringWithFormat(
+            String(localized: "%lld %@"), count, localizedUnit
+        )
     }
 
     @ViewBuilder
@@ -619,8 +1035,55 @@ struct HabitDetailView: View {
     }
 }
 
+private struct HabitActivityRow: View {
+    let log: HabitLog
+    let entry: Entry?
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    var body: some View {
+        if let entry {
+            NavigationLink {
+                EntryDetailView(
+                    entry: entry,
+                    mediaStore: mediaStore,
+                    thumbnailStore: thumbnailStore
+                )
+            } label: {
+                HabitLogRow(log: log, hasInsight: true)
+            }
+        } else {
+            HabitLogRow(log: log, hasInsight: false)
+        }
+    }
+}
+
+private struct HabitHistoryView: View {
+    let habitName: String
+    let logs: [HabitLog]
+    let entriesByID: [UUID: Entry]
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    var body: some View {
+        List(logs) { log in
+            HabitActivityRow(
+                log: log,
+                entry: log.linkedEntryID.flatMap { entriesByID[$0] },
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
+        }
+        .navigationTitle(String.localizedStringWithFormat(
+            String(localized: "%@ Activity"), habitName
+        ))
+    }
+}
+
 private struct HabitEditorView: View {
     let habit: Habit?
+    let initialPlan: HabitPlan
+    let pendingEffectiveDay: HabitLocalDay?
     let didSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -628,19 +1091,36 @@ private struct HabitEditorView: View {
     @State private var name: String
     @State private var recordingMode: HabitRecordingMode
     @State private var dailyTarget = ""
+    @State private var goalChoice: HabitGoalChoice
+    @State private var selectedWeekdays: Set<Int> = [2, 3, 4, 5, 6]
     @State private var errorMessage: String?
 
     init(
         habit: Habit?,
         settings: HabitSettings,
+        plan: HabitPlan?,
+        pendingEffectiveDay: HabitLocalDay?,
         didSave: @escaping () -> Void
     ) {
         self.habit = habit
         self.didSave = didSave
         _name = State(initialValue: habit?.name ?? "")
-        _recordingMode = State(initialValue: settings.recordingMode)
-        _dailyTarget = State(initialValue: settings.dailyTargetCount.map(String.init)
-            ?? (settings.recordingMode == .multiplePerDay ? "2" : ""))
+        let initialPlan = plan ?? HabitPlan.legacy(
+            mode: settings.recordingMode,
+            target: settings.dailyTargetCount
+        )
+        self.initialPlan = initialPlan
+        self.pendingEffectiveDay = pendingEffectiveDay
+        let initialChoice = HabitGoalChoice(plan: initialPlan)
+        let initialMode = initialPlan.recordingMode
+        _recordingMode = State(initialValue: initialMode)
+        _dailyTarget = State(initialValue: initialChoice.requiresTarget(for: initialMode)
+            ? String(initialPlan.targetCount ?? 1)
+            : "")
+        _goalChoice = State(initialValue: initialChoice)
+        _selectedWeekdays = State(initialValue: initialPlan.weekdays.isEmpty
+            ? [2, 3, 4, 5, 6]
+            : initialPlan.weekdays)
     }
 
     var body: some View {
@@ -664,23 +1144,53 @@ private struct HabitEditorView: View {
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("habit-recording-mode")
 
-                    if recordingMode == .multiplePerDay {
-                        TextField("Daily Target", text: $dailyTarget)
+                    if needsTarget {
+                        TextField(targetFieldLabel, text: $dailyTarget)
                             .keyboardType(.numberPad)
                             .accessibilityIdentifier("habit-daily-target")
+                            .accessibilityLabel(targetFieldLabel)
+                    }
+                    Picker("Goal", selection: $goalChoice) {
+                        ForEach(HabitGoalChoice.allCases, id: \.self) { choice in
+                            Text(choice.title).tag(choice)
+                        }
+                    }
+                    .accessibilityIdentifier("habit-goal")
+
+                    if goalChoice == .selectedDays {
+                        ForEach(1...7, id: \.self) { weekday in
+                            Toggle(weekdayName(weekday), isOn: Binding(
+                                get: { selectedWeekdays.contains(weekday) },
+                                set: { enabled in
+                                    if enabled { selectedWeekdays.insert(weekday) }
+                                    else { selectedWeekdays.remove(weekday) }
+                                }
+                            ))
+                        }
                     }
                 } header: {
                     Text("Check-In Frequency")
                 } footer: {
-                    Text(recordingMode == .oncePerDay
+                    Text(goalChoice == .noGoal
+                        ? String(localized: "Tracking Only records activity without a target or missed days.")
+                        : (recordingMode == .oncePerDay
                         ? String(localized: "Choose this when completing the Habit once is enough for the day.")
-                        : String(localized: "Choose this for Habits you may record several times each day. Set a daily target you can exceed."))
+                        : String(localized: "Choose this for Habits you may record several times each day. Set a target you can exceed.")))
                 }
 
                 if habit != nil {
                     Section {
                         Text("Changing the name does not affect history. If the Habit itself has changed, consider archiving it and creating a new one.")
                             .foregroundStyle(.secondary)
+                        if let pendingEffectiveDay {
+                            LabeledContent(
+                                "Pending Plan",
+                                value: String.localizedStringWithFormat(
+                                    String(localized: "Starts %@"),
+                                    pendingEffectiveDay.description
+                                )
+                            )
+                        }
                     }
                 }
 
@@ -702,6 +1212,12 @@ private struct HabitEditorView: View {
                     dailyTarget = "2"
                 }
             }
+            .onChange(of: goalChoice) { _, _ in
+                if needsTarget,
+                   dailyTarget.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    dailyTarget = recordingMode == .multiplePerDay ? "2" : "1"
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -719,9 +1235,16 @@ private struct HabitEditorView: View {
     private func save() {
         let target: Int?
         let trimmedTarget = dailyTarget.trimmingCharacters(in: .whitespacesAndNewlines)
-        if recordingMode == .multiplePerDay {
+        if needsTarget {
             guard let value = Int(trimmedTarget), value > 0 else {
                 errorMessage = String(localized: "Daily target must be a positive whole number.")
+                return
+            }
+            if let maximum = maximumOncePerDayTarget, value > maximum {
+                errorMessage = String.localizedStringWithFormat(
+                    String(localized: "Target must be between 1 and %lld."),
+                    maximum
+                )
                 return
             }
             target = value
@@ -731,19 +1254,15 @@ private struct HabitEditorView: View {
 
         do {
             let service = HabitService(context: modelContext)
+            let plan = makePlan(target: target)
             if let habit {
                 try service.update(
                     habit,
                     name: name,
-                    recordingMode: recordingMode,
-                    dailyTargetCount: target
+                    planChange: plan == initialPlan ? nil : plan
                 )
             } else {
-                _ = try service.create(
-                    name: name,
-                    recordingMode: recordingMode,
-                    dailyTargetCount: target
-                )
+                _ = try service.create(name: name, plan: plan)
             }
             didSave()
             dismiss()
@@ -751,8 +1270,80 @@ private struct HabitEditorView: View {
             errorMessage = String(localized: "Habit name cannot be empty.")
         } catch HabitValidationError.invalidDailyTarget {
             errorMessage = String(localized: "Daily target must be a positive whole number.")
+        } catch HabitValidationError.invalidPlan {
+            errorMessage = String(localized: "The Habit plan is invalid.")
         } catch {
             errorMessage = String(localized: "The Habit was not saved.")
+        }
+    }
+
+    private func makePlan(target: Int?) -> HabitPlan {
+        switch goalChoice {
+        case .noGoal: .trackingOnly(recordingMode: recordingMode)
+        case .everyDay: HabitPlan(recordingMode: recordingMode, period: .day, goal: .everyDay, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: [])
+        case .selectedDays: HabitPlan(recordingMode: recordingMode, period: .day, goal: .selectedWeekdays, targetCount: recordingMode == .oncePerDay ? 1 : target, weekdays: selectedWeekdays)
+        case .perWeek: HabitPlan(recordingMode: recordingMode, period: .week, goal: .count, targetCount: target ?? 1, weekdays: [])
+        case .perMonth: HabitPlan(recordingMode: recordingMode, period: .month, goal: .count, targetCount: target ?? 1, weekdays: [])
+        }
+    }
+
+    private var needsTarget: Bool {
+        goalChoice.requiresTarget(for: recordingMode)
+    }
+
+    private var targetFieldLabel: String {
+        switch goalChoice {
+        case .everyDay, .selectedDays: String(localized: "Daily Target")
+        case .perWeek: String(localized: "Weekly Target")
+        case .perMonth: String(localized: "Monthly Target")
+        case .noGoal: String(localized: "Target")
+        }
+    }
+
+    private var maximumOncePerDayTarget: Int? {
+        guard recordingMode == .oncePerDay else { return nil }
+        return switch goalChoice {
+        case .perWeek: 7
+        case .perMonth: 28
+        case .noGoal, .everyDay, .selectedDays: nil
+        }
+    }
+
+    private func weekdayName(_ weekday: Int) -> String {
+        let calendar = Calendar.current
+        return calendar.weekdaySymbols[weekday - 1]
+    }
+}
+
+private enum HabitGoalChoice: String, CaseIterable {
+    case noGoal, everyDay, selectedDays, perWeek, perMonth
+    var title: String {
+        switch self {
+        case .noGoal: String(localized: "No Goal")
+        case .everyDay: String(localized: "Every Day")
+        case .selectedDays: String(localized: "Selected Days")
+        case .perWeek: String(localized: "Times per Week")
+        case .perMonth: String(localized: "Times per Month")
+        }
+    }
+
+    init(plan: HabitPlan) {
+        switch plan.period {
+        case .trackingOnly: self = .noGoal
+        case .week: self = .perWeek
+        case .month: self = .perMonth
+        case .day: self = plan.goal == .selectedWeekdays ? .selectedDays : .everyDay
+        }
+    }
+
+    func requiresTarget(for recordingMode: HabitRecordingMode) -> Bool {
+        switch self {
+        case .noGoal:
+            false
+        case .everyDay, .selectedDays:
+            recordingMode == .multiplePerDay
+        case .perWeek, .perMonth:
+            true
         }
     }
 }
@@ -760,6 +1351,398 @@ private struct HabitEditorView: View {
 struct RecentHabitCheckIn: Equatable {
     let habitID: UUID
     let logID: UUID
+}
+
+private struct HabitAnalyticsDashboard: View {
+    let summary: HabitAnalyticsSummary
+    let habitName: String
+    let plans: [HabitPlanRevision]
+    let lifecycleEvents: [HabitLifecycleEvent]
+    let insights: [Entry]
+    let goals: [Goal]
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    var body: some View {
+        if let current = summary.current {
+            Section("Progress") {
+                if current.period == .day {
+                    HabitMonthCalendar(
+                        summary: summary,
+                        asOf: HabitLocalDay(date: Date())
+                    )
+                } else {
+                    PeriodActivityGrid(evaluation: current, activity: summary.activityByDay)
+                }
+                if let consistency = summary.consistency {
+                    LabeledContent("Consistency", value: consistency.formatted(.percent.precision(.fractionLength(0))))
+                }
+            }
+            Section("Year Activity") {
+                let total = summary.activityByDay.values.reduce(0, +)
+                LabeledContent("Completed check-ins", value: "\(total)")
+                ActivityHeatmap(activity: summary.activityByDay)
+                    .accessibilityLabel(String.localizedStringWithFormat(
+                        String(localized: "Year activity for %@"), habitName
+                    ))
+            }
+            Section("Trend") {
+                let recent = summary.evaluations.suffix(6)
+                ForEach(recent) { evaluation in
+                    LabeledContent(evaluation.start.description, value: progressText(evaluation))
+                }
+            }
+            Section("Weekday Pattern") {
+                let pattern = HabitWeekdayPatternBuilder.make(
+                    period: current.period,
+                    evaluations: summary.evaluations,
+                    activityByDay: summary.activityByDay
+                )
+                Text(pattern.metric == .scheduledDaySuccessRate
+                    ? String(localized: "Success rate on scheduled days")
+                    : String(localized: "Activity distribution by weekday"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                WeekdayPatternView(pattern: pattern)
+            }
+            Section("Journey") {
+                let items = HabitJourneyBuilder.items(
+                    plans: plans,
+                    lifecycleEvents: lifecycleEvents
+                )
+                if items.isEmpty {
+                    Text("No changes yet.").foregroundStyle(.secondary)
+                } else {
+                    ForEach(items) { item in
+                        switch item.kind {
+                        case .plan(let plan):
+                            LabeledContent(item.day.description, value: planDescription(plan))
+                        case .lifecycle(let kind):
+                            LabeledContent(item.day.description, value: lifecycleDescription(kind))
+                        }
+                    }
+                }
+            }
+            if !insights.isEmpty || !goals.isEmpty {
+                Section("Context") {
+                    ForEach(insights) { entry in
+                        NavigationLink {
+                            EntryDetailView(entry: entry, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+                        } label: {
+                            Label(
+                                entry.title ?? entry.body ?? String(localized: "Insight"),
+                                systemImage: "doc.text"
+                            )
+                        }
+                    }
+                    ForEach(goals) { goal in
+                        NavigationLink {
+                            GoalDetailView(goal: goal, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+                        } label: {
+                            Label(goal.title, systemImage: "target")
+                        }
+                    }
+                }
+            }
+            if summary.hasIncompleteHistoricalCoverage {
+                Section {
+                    Text("Earlier activity remains visible. Strict adherence begins with trusted plan coverage.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func planDescription(_ plan: HabitPlan) -> String {
+        if plan.isTrackingOnly { return String(localized: "Tracking Only") }
+        switch plan.period {
+        case .day:
+            return plan.goal == .selectedWeekdays
+                ? String(localized: "Selected Days")
+                : String.localizedStringWithFormat(
+                    String(localized: "Daily %lld"), plan.targetCount ?? 1
+                )
+        case .week:
+            return String.localizedStringWithFormat(
+                String(localized: "%lld per week"), plan.targetCount ?? 0
+            )
+        case .month:
+            return String.localizedStringWithFormat(
+                String(localized: "%lld per month"), plan.targetCount ?? 0
+            )
+        case .trackingOnly:
+            return String(localized: "Tracking Only")
+        }
+    }
+
+    private func progressText(_ evaluation: HabitPeriodEvaluation) -> String {
+        guard let target = evaluation.target else {
+            return evaluation.actual == 1
+                ? String(localized: "1 recorded")
+                : String.localizedStringWithFormat(
+                    String(localized: "%lld recorded"), evaluation.actual
+                )
+        }
+        return "\(evaluation.actual)/\(target)"
+    }
+
+    private func lifecycleDescription(_ kind: HabitLifecycleEventKind) -> String {
+        switch kind {
+        case .migrationBaseline: return String(localized: "Migration Baseline")
+        case .created: return String(localized: "Created")
+        case .paused: return String(localized: "Paused")
+        case .resumed: return String(localized: "Resumed")
+        case .completed: return String(localized: "Completed")
+        case .archived: return String(localized: "Archived")
+        case .restarted: return String(localized: "Restarted")
+        case .restored: return String(localized: "Restored")
+        }
+    }
+}
+
+private struct HabitMonthCalendar: View {
+    let summary: HabitAnalyticsSummary
+    let asOf: HabitLocalDay
+
+    private var cells: [HabitCalendarDayCell] {
+        HabitMonthCalendarBuilder.cells(
+            containing: asOf,
+            evaluations: summary.evaluations,
+            activityByDay: summary.activityByDay
+        )
+    }
+
+    private var leadingPlaceholders: Int {
+        guard let first = cells.first?.day else { return 0 }
+        return HabitMonthCalendarPresentation.leadingPlaceholderCount(firstDay: first)
+    }
+
+    var body: some View {
+        let calendar = WeeklyReviewCalendarPolicy.calendar()
+        let weekdaySymbols = HabitMonthCalendarPresentation.veryShortWeekdaySymbols(
+            calendar: calendar
+        )
+        VStack(spacing: 8) {
+            HStack(spacing: 4) {
+                ForEach(weekdaySymbols.indices, id: \.self) { index in
+                    Text(weekdaySymbols[index])
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7),
+                spacing: 6
+            ) {
+                ForEach(0..<leadingPlaceholders, id: \.self) { _ in
+                    Color.clear.frame(height: 28)
+                }
+                ForEach(cells) { cell in
+                    VStack(spacing: 2) {
+                        Text("\(cell.day.day)")
+                        ZStack {
+                            Circle()
+                                .fill(color(for: cell.state))
+                                .frame(width: 9, height: 9)
+                            if cell.activityCount > 0 && cell.state != .achieved {
+                                Circle()
+                                    .stroke(Color.primary, lineWidth: 1.5)
+                                    .frame(width: 13, height: 13)
+                            }
+                        }
+                    }
+                    .font(.caption2)
+                    .frame(maxWidth: .infinity, minHeight: 28)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(accessibilityLabel(for: cell))
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(String(localized: "Month calendar"))
+    }
+
+    private func color(for state: HabitCalendarDayState) -> Color {
+        switch state {
+        case .achieved: .green
+        case .missed: .red
+        case .open: .accentColor
+        case .rest: .secondary.opacity(0.2)
+        case .neutral: .orange.opacity(0.35)
+        case .beforeCoverage: .secondary.opacity(0.35)
+        case .future: .secondary.opacity(0.1)
+        }
+    }
+
+    private func accessibilityLabel(for cell: HabitCalendarDayCell) -> String {
+        let state: String = switch cell.state {
+        case .achieved: String(localized: "achieved")
+        case .missed: String(localized: "missed")
+        case .open: String(localized: "open")
+        case .rest: String(localized: "rest day")
+        case .neutral: String(localized: "neutral")
+        case .beforeCoverage: String(localized: "before trusted coverage")
+        case .future: String(localized: "future")
+        }
+        let format = cell.activityCount == 1
+            ? String(localized: "%@, %@, %lld activity")
+            : String(localized: "%@, %@, %lld activities")
+        return String.localizedStringWithFormat(
+            format, cell.day.description, state, cell.activityCount
+        )
+    }
+}
+
+private struct WeekdayPatternView: View {
+    let pattern: HabitWeekdayPattern
+
+    var body: some View {
+        let calendar = WeeklyReviewCalendarPolicy.calendar()
+        HStack(spacing: 8) {
+            ForEach(pattern.buckets) { bucket in
+                VStack(spacing: 2) {
+                    Text(calendar.veryShortWeekdaySymbols[bucket.weekday - 1])
+                    Text(valueText(bucket)).monospacedDigit()
+                }
+                .font(.caption)
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(accessibilityLabel(bucket, calendar: calendar))
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(pattern.metric == .scheduledDaySuccessRate
+            ? String(localized: "Weekday scheduled success rate")
+            : String(localized: "Weekday activity distribution"))
+    }
+
+    private func valueText(_ bucket: HabitWeekdayPatternBucket) -> String {
+        switch pattern.metric {
+        case .scheduledDaySuccessRate:
+            return bucket.successRate?.formatted(.percent.precision(.fractionLength(0))) ?? "—"
+        case .activityDistribution:
+            return "\(bucket.activityCount)"
+        }
+    }
+
+    private func accessibilityLabel(_ bucket: HabitWeekdayPatternBucket, calendar: Calendar) -> String {
+        let weekday = calendar.weekdaySymbols[bucket.weekday - 1]
+        switch pattern.metric {
+        case .scheduledDaySuccessRate:
+            guard let rate = bucket.successRate else {
+                return String.localizedStringWithFormat(
+                    String(localized: "%@, no eligible days"), weekday
+                )
+            }
+            let format = bucket.eligibleCount == 1
+                ? String(localized: "%@, %@, %lld of %lld eligible day")
+                : String(localized: "%@, %@, %lld of %lld eligible days")
+            return String.localizedStringWithFormat(
+                format,
+                weekday,
+                rate.formatted(.percent.precision(.fractionLength(0))),
+                bucket.achievedCount,
+                bucket.eligibleCount
+            )
+        case .activityDistribution:
+            let format = bucket.activityCount == 1
+                ? String(localized: "%@, %lld activity")
+                : String(localized: "%@, %lld activities")
+            return String.localizedStringWithFormat(format, weekday, bucket.activityCount)
+        }
+    }
+}
+
+private struct ActivityHeatmap: View {
+    let activity: [HabitLocalDay: Int]
+
+    private var days: [HabitLocalDay] {
+        let end = HabitLocalDay(date: Date())
+        return (-364...0).compactMap { end.adding(days: $0) }
+    }
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHGrid(
+                rows: Array(repeating: GridItem(.fixed(10), spacing: 3), count: 7),
+                spacing: 3
+            ) {
+                ForEach(days) { day in
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill((activity[day, default: 0] > 0 ? Color.accentColor : Color.secondary.opacity(0.15)))
+                        .frame(width: 10, height: 10)
+                        .accessibilityLabel(activityLabel(day))
+                }
+            }
+        }
+        .frame(height: 88)
+    }
+
+    private func activityLabel(_ day: HabitLocalDay) -> String {
+        String.localizedStringWithFormat(
+            String(localized: "%@: %lld"), day.description, activity[day, default: 0]
+        )
+    }
+}
+
+private struct PeriodActivityGrid: View {
+    let evaluation: HabitPeriodEvaluation
+    let activity: [HabitLocalDay: Int]
+
+    private var days: [HabitLocalDay] {
+        var result: [HabitLocalDay] = []
+        var day: HabitLocalDay? = evaluation.start
+        while let current = day, current <= evaluation.end {
+            result.append(current)
+            day = current.adding(days: 1)
+        }
+        return result
+    }
+
+    var body: some View {
+        if evaluation.period == .trackingOnly {
+            Text("Activity is recorded without a goal.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        } else {
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: evaluation.period == .month ? 7 : days.count),
+                spacing: 4
+            ) {
+                ForEach(days) { day in
+                    VStack(spacing: 2) {
+                        Text(dayLabel(day))
+                        Circle()
+                            .fill(activity[day, default: 0] > 0 ? Color.accentColor : Color.secondary.opacity(0.15))
+                            .frame(width: 8, height: 8)
+                    }
+                    .font(.caption2)
+                    .accessibilityLabel(activityLabel(day))
+                }
+            }
+            .accessibilityLabel(String(localized: "Current period activity"))
+        }
+    }
+
+    private func activityLabel(_ day: HabitLocalDay) -> String {
+        String.localizedStringWithFormat(
+            String(localized: "%@: %lld"), day.description, activity[day, default: 0]
+        )
+    }
+
+    private func dayLabel(_ day: HabitLocalDay) -> String {
+        switch evaluation.period {
+        case .day: return "Today"
+        case .week:
+            guard let date = day.date() else { return day.description }
+            return WeeklyReviewCalendarPolicy.calendar().veryShortWeekdaySymbols[
+                WeeklyReviewCalendarPolicy.calendar().component(.weekday, from: date) - 1
+            ]
+        case .month: return "\(day.day)"
+        case .trackingOnly: return ""
+        }
+    }
 }
 
 struct HabitCheckInUndoBar: View {

@@ -12,9 +12,147 @@ enum HabitRecordingMode: String, Codable, CaseIterable, Sendable {
     case multiplePerDay
 }
 
+enum HabitLogDayProvenance: String, Codable, CaseIterable, Sendable {
+    case capturedAtWrite
+    case legacyBootstrap
+}
+
+enum HabitPlanRevisionOrigin: String, Codable, CaseIterable, Sendable {
+    case user
+    case migrationBootstrap
+}
+
+/// A persisted civil date. It intentionally has no time-zone offset: once written,
+/// activity keeps belonging to this day even when the device later changes zones.
+struct HabitLocalDay: Hashable, Comparable, Codable, Sendable, Identifiable {
+    let year: Int
+    let month: Int
+    let day: Int
+
+    var id: String { description }
+
+    init(year: Int, month: Int, day: Int) {
+        self.year = year
+        self.month = month
+        self.day = day
+    }
+
+    init(date: Date, timeZone: TimeZone = .current) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        year = components.year ?? 1970
+        month = components.month ?? 1
+        day = components.day ?? 1
+    }
+
+    init?(_ value: String) {
+        let parts = value.split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count == 3,
+              parts[0].count == 4,
+              parts[1].count == 2,
+              parts[2].count == 2,
+              let year = Int(parts[0]),
+              let month = Int(parts[1]),
+              let day = Int(parts[2]),
+              year > 0 else {
+            return nil
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let date = calendar.date(from: DateComponents(year: year, month: month, day: day)) else {
+            return nil
+        }
+        let validated = calendar.dateComponents([.year, .month, .day], from: date)
+        guard validated.year == year, validated.month == month, validated.day == day else {
+            return nil
+        }
+        self.year = year
+        self.month = month
+        self.day = day
+    }
+
+    var description: String { String(format: "%04d-%02d-%02d", year, month, day) }
+
+    static func < (lhs: Self, rhs: Self) -> Bool {
+        (lhs.year, lhs.month, lhs.day) < (rhs.year, rhs.month, rhs.day)
+    }
+
+    func date(timeZone: TimeZone = .current) -> Date? {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        return calendar.date(from: DateComponents(year: year, month: month, day: day))
+    }
+
+    func adding(days: Int, timeZone: TimeZone = .current) -> Self? {
+        guard let date = date(timeZone: timeZone),
+              let result = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+                .date(byAdding: .day, value: days, to: date) else { return nil }
+        return Self(date: result, timeZone: timeZone)
+    }
+}
+
+enum HabitPlanPeriod: String, Codable, CaseIterable, Sendable {
+    case trackingOnly
+    case day
+    case week
+    case month
+}
+
+enum HabitPlanGoal: String, Codable, CaseIterable, Sendable {
+    case none
+    case everyDay
+    case selectedWeekdays
+    case count
+}
+
+enum HabitLifecycleEventKind: String, Codable, CaseIterable, Sendable {
+    case migrationBaseline
+    case created
+    case paused
+    case resumed
+    case completed
+    case archived
+    case restarted
+    case restored
+}
+
+struct HabitPlan: Equatable, Sendable {
+    let recordingMode: HabitRecordingMode
+    let period: HabitPlanPeriod
+    let goal: HabitPlanGoal
+    let targetCount: Int?
+    /// Foundation/Gregorian weekday values (1 is Sunday, 7 is Saturday), empty for every-day/count schedules.
+    let weekdays: Set<Int>
+
+    static func trackingOnly(recordingMode: HabitRecordingMode) -> Self {
+        HabitPlan(
+            recordingMode: recordingMode,
+            period: .trackingOnly,
+            goal: .none,
+            targetCount: nil,
+            weekdays: []
+        )
+    }
+
+    var isTrackingOnly: Bool { period == .trackingOnly || goal == .none }
+    var supportsStrictMetrics: Bool { !isTrackingOnly && (targetCount ?? 0) > 0 }
+
+    static func legacy(mode: HabitRecordingMode, target: Int?) -> Self {
+        switch mode {
+        case .oncePerDay:
+            return HabitPlan(recordingMode: mode, period: .day, goal: .everyDay, targetCount: 1, weekdays: [])
+        case .multiplePerDay:
+            guard let target, target > 0 else { return .trackingOnly(recordingMode: mode) }
+            return HabitPlan(recordingMode: mode, period: .day, goal: .everyDay, targetCount: target, weekdays: [])
+        }
+    }
+}
+
 enum HabitValidationError: Error, Equatable {
     case emptyName
     case invalidDailyTarget
+    case invalidPlan
 }
 
 enum HabitCheckInError: Error, Equatable {
@@ -23,6 +161,8 @@ enum HabitCheckInError: Error, Equatable {
     case alreadyCheckedInToday
     case recentlyCheckedIn
     case checkInIsNotLatest
+    case futureOccurrence
+    case notScheduled
 }
 
 enum HabitRules {
@@ -30,6 +170,40 @@ enum HabitRules {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw HabitValidationError.emptyName }
         return trimmed
+    }
+
+    static func validatedPlan(_ plan: HabitPlan) throws -> HabitPlan {
+        guard !plan.isTrackingOnly else { return .trackingOnly(recordingMode: plan.recordingMode) }
+        guard let target = plan.targetCount, target > 0 else { throw HabitValidationError.invalidPlan }
+        if plan.goal == .selectedWeekdays {
+            guard plan.period == .day, !plan.weekdays.isEmpty,
+                  plan.weekdays.allSatisfy({ (1...7).contains($0) }) else {
+                throw HabitValidationError.invalidPlan
+            }
+        }
+        guard (plan.period == .day && (plan.goal == .everyDay || plan.goal == .selectedWeekdays))
+                || ((plan.period == .week || plan.period == .month) && plan.goal == .count) else {
+            throw HabitValidationError.invalidPlan
+        }
+        if plan.recordingMode == .oncePerDay {
+            switch plan.period {
+            case .day:
+                guard target == 1 else { throw HabitValidationError.invalidPlan }
+            case .week:
+                guard target <= 7 else { throw HabitValidationError.invalidPlan }
+            case .month:
+                guard target <= 28 else { throw HabitValidationError.invalidPlan }
+            case .trackingOnly:
+                break
+            }
+        }
+        return HabitPlan(
+            recordingMode: plan.recordingMode,
+            period: plan.period,
+            goal: plan.goal,
+            targetCount: target,
+            weekdays: plan.weekdays
+        )
     }
 
     static func validatedDailyTarget(
@@ -40,6 +214,504 @@ enum HabitRules {
         guard let value else { throw HabitValidationError.invalidDailyTarget }
         guard value > 0 else { throw HabitValidationError.invalidDailyTarget }
         return value
+    }
+}
+
+struct HabitAnalyticsLog: Equatable, Sendable {
+    let id: UUID
+    let localDay: HabitLocalDay
+    let isCompleted: Bool
+    let occurredAt: Date
+}
+
+struct HabitPlanSnapshot: Equatable, Sendable {
+    let effectiveDay: HabitLocalDay
+    let plan: HabitPlan
+    let trustStartDay: HabitLocalDay
+    let origin: HabitPlanRevisionOrigin
+
+    init(
+        effectiveDay: HabitLocalDay,
+        plan: HabitPlan,
+        trustStartDay: HabitLocalDay,
+        origin: HabitPlanRevisionOrigin = .user
+    ) {
+        self.effectiveDay = effectiveDay
+        self.plan = plan
+        self.trustStartDay = trustStartDay
+        self.origin = origin
+    }
+}
+
+struct HabitLifecycleSnapshot: Equatable, Sendable {
+    let id: UUID
+    let day: HabitLocalDay
+    let kind: HabitLifecycleEventKind
+    let knownStatus: HabitStatus?
+    let occurredAt: Date
+
+    init(
+        id: UUID = UUID(),
+        day: HabitLocalDay,
+        kind: HabitLifecycleEventKind,
+        knownStatus: HabitStatus? = nil,
+        occurredAt: Date? = nil
+    ) {
+        self.id = id
+        self.day = day
+        self.kind = kind
+        self.knownStatus = knownStatus
+        self.occurredAt = occurredAt ?? day.date(timeZone: TimeZone(secondsFromGMT: 0)!) ?? .distantPast
+    }
+}
+
+enum HabitPeriodOutcome: Equatable, Sendable {
+    case open
+    case achieved
+    case missed
+    case notEvaluated(HabitPeriodNotEvaluatedReason)
+}
+
+enum HabitPeriodNotEvaluatedReason: String, Equatable, Sendable {
+    case trackingOnly, notScheduled, inactive, lifecycleTransition, partialCoverage, beforeTrustedCoverage, missingPlan, future
+}
+
+struct HabitPeriodEvaluation: Identifiable, Equatable, Sendable {
+    let id: String
+    let start: HabitLocalDay
+    let end: HabitLocalDay
+    let period: HabitPlanPeriod
+    let actual: Int
+    let target: Int?
+    let progress: Double?
+    let outcome: HabitPeriodOutcome
+    let plan: HabitPlan?
+}
+
+struct HabitAnalyticsSummary: Equatable, Sendable {
+    let current: HabitPeriodEvaluation?
+    let evaluations: [HabitPeriodEvaluation]
+    let adherence: Double?
+    let consistency: Double?
+    let currentStreak: Int?
+    let bestStreak: Int?
+    let streakUnit: String?
+    let activityByDay: [HabitLocalDay: Int]
+    let coverageStart: HabitLocalDay?
+    let hasIncompleteHistoricalCoverage: Bool
+}
+
+enum HabitCalendarDayState: String, Equatable, Sendable {
+    case achieved
+    case missed
+    case open
+    case rest
+    case neutral
+    case beforeCoverage
+    case future
+}
+
+struct HabitCalendarDayCell: Identifiable, Equatable, Sendable {
+    let day: HabitLocalDay
+    let state: HabitCalendarDayState
+    let activityCount: Int
+
+    var id: String { day.description }
+}
+
+enum HabitMonthCalendarBuilder {
+    static func cells(
+        containing asOf: HabitLocalDay,
+        evaluations: [HabitPeriodEvaluation],
+        activityByDay: [HabitLocalDay: Int],
+        timeZone: TimeZone = .current
+    ) -> [HabitCalendarDayCell] {
+        guard let date = asOf.date(timeZone: timeZone),
+              let interval = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+                .dateInterval(of: .month, for: date) else { return [] }
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        let start = HabitLocalDay(date: interval.start, timeZone: timeZone)
+        let endDate = calendar.date(byAdding: .day, value: -1, to: interval.end) ?? interval.start
+        let end = HabitLocalDay(date: endDate, timeZone: timeZone)
+        let evaluationsByDay = Dictionary(
+            evaluations.filter { $0.period == .day }.map { ($0.start, $0) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+        var result: [HabitCalendarDayCell] = []
+        var day: HabitLocalDay? = start
+        while let current = day, current <= end {
+            let dayState: HabitCalendarDayState
+            if current > asOf {
+                dayState = .future
+            } else if let evaluation = evaluationsByDay[current] {
+                dayState = calendarState(for: evaluation.outcome)
+            } else {
+                dayState = .neutral
+            }
+            result.append(HabitCalendarDayCell(
+                day: current,
+                state: dayState,
+                activityCount: activityByDay[current, default: 0]
+            ))
+            day = current.adding(days: 1, timeZone: timeZone)
+        }
+        return result
+    }
+
+    private static func calendarState(for outcome: HabitPeriodOutcome) -> HabitCalendarDayState {
+        switch outcome {
+        case .achieved: .achieved
+        case .missed: .missed
+        case .open: .open
+        case .notEvaluated(.notScheduled): .rest
+        case .notEvaluated(.beforeTrustedCoverage): .beforeCoverage
+        case .notEvaluated(.future): .future
+        case .notEvaluated: .neutral
+        }
+    }
+}
+
+enum HabitMonthCalendarPresentation {
+    static let weekdayOrder = [2, 3, 4, 5, 6, 7, 1]
+
+    static func veryShortWeekdaySymbols(calendar: Calendar) -> [String] {
+        weekdayOrder.map { calendar.veryShortWeekdaySymbols[$0 - 1] }
+    }
+
+    static func leadingPlaceholderCount(
+        firstDay: HabitLocalDay,
+        timeZone: TimeZone = .current
+    ) -> Int {
+        guard let date = firstDay.date(timeZone: timeZone) else { return 0 }
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        let weekday = calendar.component(.weekday, from: date)
+        return (weekday - calendar.firstWeekday + 7) % 7
+    }
+}
+
+enum HabitWeekdayPatternMetric: Equatable, Sendable {
+    case scheduledDaySuccessRate
+    case activityDistribution
+}
+
+struct HabitWeekdayPatternBucket: Identifiable, Equatable, Sendable {
+    let weekday: Int
+    let achievedCount: Int
+    let eligibleCount: Int
+    let activityCount: Int
+
+    var id: Int { weekday }
+    var successRate: Double? {
+        guard eligibleCount > 0 else { return nil }
+        return Double(achievedCount) / Double(eligibleCount)
+    }
+}
+
+struct HabitWeekdayPattern: Equatable, Sendable {
+    let metric: HabitWeekdayPatternMetric
+    let buckets: [HabitWeekdayPatternBucket]
+}
+
+enum HabitWeekdayPatternBuilder {
+    static func make(
+        period: HabitPlanPeriod,
+        evaluations: [HabitPeriodEvaluation],
+        activityByDay: [HabitLocalDay: Int],
+        timeZone: TimeZone = .current
+    ) -> HabitWeekdayPattern {
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        if period == .day {
+            var achievedByWeekday: [Int: Int] = [:]
+            var eligibleByWeekday: [Int: Int] = [:]
+            for evaluation in evaluations where evaluation.period == .day {
+                let achieved: Bool
+                switch evaluation.outcome {
+                case .achieved: achieved = true
+                case .missed: achieved = false
+                case .open, .notEvaluated: continue
+                }
+                guard let date = evaluation.start.date(timeZone: timeZone) else { continue }
+                let weekday = calendar.component(.weekday, from: date)
+                eligibleByWeekday[weekday, default: 0] += 1
+                if achieved { achievedByWeekday[weekday, default: 0] += 1 }
+            }
+            return HabitWeekdayPattern(
+                metric: .scheduledDaySuccessRate,
+                buckets: (1...7).map { weekday in
+                    HabitWeekdayPatternBucket(
+                        weekday: weekday,
+                        achievedCount: achievedByWeekday[weekday, default: 0],
+                        eligibleCount: eligibleByWeekday[weekday, default: 0],
+                        activityCount: 0
+                    )
+                }
+            )
+        }
+
+        var activityByWeekday: [Int: Int] = [:]
+        for (day, count) in activityByDay {
+            guard let date = day.date(timeZone: timeZone) else { continue }
+            let weekday = calendar.component(.weekday, from: date)
+            activityByWeekday[weekday, default: 0] += count
+        }
+        return HabitWeekdayPattern(
+            metric: .activityDistribution,
+            buckets: (1...7).map { weekday in
+                HabitWeekdayPatternBucket(
+                    weekday: weekday,
+                    achievedCount: 0,
+                    eligibleCount: 0,
+                    activityCount: activityByWeekday[weekday, default: 0]
+                )
+            }
+        )
+    }
+}
+
+/// The single source of derived Habit mathematics. It receives immutable value
+/// snapshots so ordering of SwiftData fetches cannot change results.
+enum HabitAnalyticsEngine {
+    static func evaluate(
+        createdAt: HabitLocalDay,
+        logs: [HabitAnalyticsLog],
+        plans: [HabitPlanSnapshot],
+        lifecycle: [HabitLifecycleSnapshot],
+        asOf: HabitLocalDay = HabitLocalDay(date: Date()),
+        timeZone: TimeZone = .current
+    ) -> HabitAnalyticsSummary {
+        let sortedPlans = plans.sorted { $0.effectiveDay < $1.effectiveDay }
+        let sortedEvents = lifecycle.sorted {
+            if $0.day != $1.day { return $0.day < $1.day }
+            if $0.occurredAt != $1.occurredAt { return $0.occurredAt < $1.occurredAt }
+            return $0.id.uuidString < $1.id.uuidString
+        }
+        let activity = Dictionary(grouping: logs.filter(\.isCompleted), by: \.localDay)
+            .mapValues { $0.count }
+        guard let first = ([createdAt] + activity.keys + sortedPlans.map(\.effectiveDay)).min() else {
+            return HabitAnalyticsSummary(current: nil, evaluations: [], adherence: nil, consistency: nil, currentStreak: nil, bestStreak: nil, streakUnit: nil, activityByDay: activity, coverageStart: nil, hasIncompleteHistoricalCoverage: false)
+        }
+        let days = sequence(from: first, through: asOf, timeZone: timeZone)
+        let evaluations = makeEvaluations(
+            days: days, activity: activity, plans: sortedPlans, lifecycle: sortedEvents,
+            asOf: asOf, timeZone: timeZone
+        )
+        let currentPlan = plan(on: asOf, plans: sortedPlans)
+        let comparable = currentComparableSegment(
+            evaluations: evaluations,
+            currentPlan: currentPlan,
+            plans: sortedPlans,
+            lifecycle: sortedEvents,
+            asOf: asOf
+        )
+        let evaluated = comparable.filter {
+            $0.end < asOf && ($0.outcome == .achieved || $0.outcome == .missed)
+        }
+        let adherence = evaluated.isEmpty ? nil : Double(evaluated.filter { $0.outcome == .achieved }.count) / Double(evaluated.count)
+        let consistencyValues = evaluated.compactMap(\.progress)
+        let consistency = consistencyValues.isEmpty ? nil : consistencyValues.reduce(0, +) / Double(consistencyValues.count)
+        let currentStreak = streaks(evaluations: comparable, currentPlan: currentPlan?.plan).current
+        let historicalBest = currentPlan.map { planSnapshot in
+            historicalBestStreak(evaluations: evaluations, compatibleWith: planSnapshot.plan)
+        }
+        let current = evaluations.last(where: { $0.start <= asOf && $0.end >= asOf })
+        let migrationBoundary = sortedPlans
+            .filter { $0.origin == .migrationBootstrap }
+            .map(\.trustStartDay)
+            .min()
+        let hasIncompleteHistoricalCoverage = migrationBoundary.map { boundary in
+            createdAt < boundary || activity.keys.contains { $0 < boundary }
+        } ?? false
+        return HabitAnalyticsSummary(
+            current: current,
+            evaluations: evaluations,
+            adherence: adherence,
+            consistency: consistency,
+            currentStreak: currentPlan?.plan.isTrackingOnly == true ? nil : currentStreak,
+            bestStreak: currentPlan?.plan.isTrackingOnly == true ? nil : historicalBest,
+            streakUnit: currentPlan.map { streakUnit($0.plan) },
+            activityByDay: activity,
+            coverageStart: currentPlan.map(\.trustStartDay),
+            hasIncompleteHistoricalCoverage: hasIncompleteHistoricalCoverage
+        )
+    }
+
+    private static func makeEvaluations(
+        days: [HabitLocalDay], activity: [HabitLocalDay: Int], plans: [HabitPlanSnapshot],
+        lifecycle: [HabitLifecycleSnapshot], asOf: HabitLocalDay, timeZone: TimeZone
+    ) -> [HabitPeriodEvaluation] {
+        var emitted = Set<String>()
+        return days.compactMap { day in
+            guard let plan = plan(on: day, plans: plans) else {
+                return period(start: day, end: day, plan: nil, activity: activity, outcome: .notEvaluated(.missingPlan))
+            }
+            let bounds = periodBounds(for: day, period: plan.plan.period, timeZone: timeZone)
+            let key = "\(plan.plan.period.rawValue)-\(bounds.start.description)"
+            guard emitted.insert(key).inserted else { return nil }
+            let periodDays = sequence(from: bounds.start, through: bounds.end, timeZone: timeZone)
+            let eventsInPeriod = lifecycle.filter { bounds.start <= $0.day && $0.day <= bounds.end }
+            let transition = eventsInPeriod.contains { $0.kind != .created }
+            let active = isActive(on: day, events: lifecycle)
+            let isFuture = bounds.start > asOf
+            let isOpen = bounds.end >= asOf
+            let coverage = plan.trustStartDay <= bounds.start
+            let actual = periodDays.reduce(0) { total, currentDay in
+                let raw = activity[currentDay] ?? 0
+                let credit = plan.plan.recordingMode == .oncePerDay
+                    ? min(raw, 1)
+                    : raw
+                return total + credit
+            }
+            let outcome: HabitPeriodOutcome
+            if isFuture { outcome = .notEvaluated(.future) }
+            else if plan.plan.isTrackingOnly { outcome = .notEvaluated(.trackingOnly) }
+            else if transition { outcome = .notEvaluated(.lifecycleTransition) }
+            else if !active { outcome = .notEvaluated(.inactive) }
+            else if plan.plan.period != .day && (
+                plan.effectiveDay > bounds.start
+                || plans.contains(where: { bounds.start < $0.effectiveDay && $0.effectiveDay <= bounds.end })
+            ) { outcome = .notEvaluated(.partialCoverage) }
+            else if !coverage { outcome = .notEvaluated(.beforeTrustedCoverage) }
+            else if plan.plan.period == .day && plan.plan.goal == .selectedWeekdays && !isScheduled(day, plan: plan.plan, timeZone: timeZone) { outcome = .notEvaluated(.notScheduled) }
+            else if let target = plan.plan.targetCount, actual >= target { outcome = .achieved }
+            else if isOpen { outcome = .open }
+            else { outcome = .missed }
+            return period(start: bounds.start, end: bounds.end, plan: plan.plan, activity: activity, outcome: outcome, actual: actual)
+        }
+    }
+
+    private static func period(
+        start: HabitLocalDay, end: HabitLocalDay, plan: HabitPlan?, activity: [HabitLocalDay: Int],
+        outcome: HabitPeriodOutcome, actual: Int? = nil
+    ) -> HabitPeriodEvaluation {
+        let total = actual ?? activity[start, default: 0]
+        let target = plan?.targetCount
+        return HabitPeriodEvaluation(
+            id: "\(plan?.period.rawValue ?? "none")-\(start.description)", start: start, end: end,
+            period: plan?.period ?? .trackingOnly, actual: total, target: target,
+            progress: target.map { min(Double(total) / Double($0), 1) }, outcome: outcome, plan: plan
+        )
+    }
+
+    private static func plan(on day: HabitLocalDay, plans: [HabitPlanSnapshot]) -> HabitPlanSnapshot? {
+        plans.last { $0.effectiveDay <= day }
+    }
+
+    private static func currentComparableSegment(
+        evaluations: [HabitPeriodEvaluation],
+        currentPlan: HabitPlanSnapshot?,
+        plans: [HabitPlanSnapshot],
+        lifecycle: [HabitLifecycleSnapshot],
+        asOf: HabitLocalDay
+    ) -> [HabitPeriodEvaluation] {
+        guard let currentPlan, !currentPlan.plan.isTrackingOnly else { return [] }
+        let applicablePlans = plans.filter { $0.effectiveDay <= asOf }
+        var compatiblePlanStart = currentPlan.effectiveDay
+        for revision in applicablePlans.reversed() {
+            guard revision.plan.period == currentPlan.plan.period,
+                  !revision.plan.isTrackingOnly else { break }
+            compatiblePlanStart = revision.effectiveDay
+        }
+        let lifecycleBoundary = lifecycle.last {
+            $0.day <= asOf && $0.kind != .created
+        }?.day
+        let segmentStart = max(
+            compatiblePlanStart,
+            lifecycleBoundary ?? compatiblePlanStart
+        )
+        return evaluations.filter {
+            $0.end >= segmentStart && $0.period == currentPlan.plan.period
+        }
+    }
+
+    private static func isActive(on day: HabitLocalDay, events: [HabitLifecycleSnapshot]) -> Bool {
+        guard let last = events.last(where: { $0.day <= day }) else { return true }
+        switch last.kind {
+        case .migrationBaseline:
+            return last.knownStatus == .active
+        case .created, .resumed, .restarted, .restored:
+            return true
+        case .paused, .completed, .archived:
+            return false
+        }
+    }
+
+    private static func isScheduled(_ day: HabitLocalDay, plan: HabitPlan, timeZone: TimeZone) -> Bool {
+        guard plan.goal == .selectedWeekdays, let date = day.date(timeZone: timeZone) else { return true }
+        return plan.weekdays.contains(WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone).component(.weekday, from: date))
+    }
+
+    private static func periodBounds(
+        for day: HabitLocalDay, period: HabitPlanPeriod, timeZone: TimeZone
+    ) -> (start: HabitLocalDay, end: HabitLocalDay) {
+        guard let date = day.date(timeZone: timeZone) else { return (day, day) }
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        switch period {
+        case .trackingOnly, .day: return (day, day)
+        case .week:
+            let interval = calendar.dateInterval(of: .weekOfYear, for: date)!
+            return (HabitLocalDay(date: interval.start, timeZone: timeZone), HabitLocalDay(date: calendar.date(byAdding: .day, value: -1, to: interval.end)!, timeZone: timeZone))
+        case .month:
+            let interval = calendar.dateInterval(of: .month, for: date)!
+            return (HabitLocalDay(date: interval.start, timeZone: timeZone), HabitLocalDay(date: calendar.date(byAdding: .day, value: -1, to: interval.end)!, timeZone: timeZone))
+        }
+    }
+
+    private static func sequence(from first: HabitLocalDay, through last: HabitLocalDay, timeZone: TimeZone) -> [HabitLocalDay] {
+        var result: [HabitLocalDay] = []
+        var current: HabitLocalDay? = first
+        while let day = current, day <= last {
+            result.append(day)
+            current = day.adding(days: 1, timeZone: timeZone)
+        }
+        return result
+    }
+
+    private static func streaks(evaluations: [HabitPeriodEvaluation], currentPlan: HabitPlan?) -> (current: Int, best: Int) {
+        guard currentPlan?.isTrackingOnly == false else { return (0, 0) }
+        var best = 0, running = 0, current = 0
+        for evaluation in evaluations {
+            switch evaluation.outcome {
+            case .achieved:
+                running += 1; best = max(best, running); current = running
+            case .missed:
+                running = 0; current = 0
+            case .open, .notEvaluated(.notScheduled), .notEvaluated(.future): break
+            case .notEvaluated:
+                running = 0; current = 0
+            }
+        }
+        return (current, best)
+    }
+
+    private static func historicalBestStreak(
+        evaluations: [HabitPeriodEvaluation],
+        compatibleWith currentPlan: HabitPlan
+    ) -> Int {
+        guard !currentPlan.isTrackingOnly else { return 0 }
+        var best = 0
+        var running = 0
+        for evaluation in evaluations {
+            guard evaluation.period == currentPlan.period else {
+                running = 0
+                continue
+            }
+            switch evaluation.outcome {
+            case .achieved:
+                running += 1
+                best = max(best, running)
+            case .missed:
+                running = 0
+            case .open, .notEvaluated(.notScheduled), .notEvaluated(.future):
+                break
+            case .notEvaluated:
+                running = 0
+            }
+        }
+        return best
+    }
+
+    private static func streakUnit(_ plan: HabitPlan) -> String {
+        switch plan.period { case .day: "days"; case .week: "weeks"; case .month: "months"; case .trackingOnly: "" }
     }
 }
 
