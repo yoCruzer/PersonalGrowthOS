@@ -617,6 +617,84 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["最近活动"].exists)
     }
 
+    func testMixedHabitRowsRemainAccessibleAcrossAppearanceAndTextSize() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+
+        func addHabit(_ name: String, multiple: Bool = false, trackingOnly: Bool = false) {
+            app.buttons["add-habit"].tap()
+            let field = app.textFields["habit-editor-name"]
+            XCTAssertTrue(field.waitForExistence(timeout: 5))
+            field.tap()
+            field.typeText(name)
+            if multiple {
+                app.segmentedControls.buttons["Multiple times per day"].tap()
+            }
+            if trackingOnly {
+                app.buttons["habit-goal"].tap()
+                app.buttons["No Goal"].tap()
+            }
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        }
+
+        addHabit("Anchor Read")
+        addHabit("Water", multiple: true)
+        addHabit("Breathe", multiple: true)
+        addHabit(
+            "Observe one small detail with a deliberately long habit name",
+            multiple: true,
+            trackingOnly: true
+        )
+
+        let waterMinus = app.buttons["habit-overview-water-counter-decrease"]
+        let waterPlus = app.buttons["habit-overview-water-counter-increase"]
+        let waterCount = app.staticTexts["habit-overview-water-counter-count"]
+        let breathePlus = app.buttons["habit-overview-breathe-counter-increase"]
+        let trackingCount = app.staticTexts[
+            "habit-overview-observe one small detail with a deliberately long habit name-counter-count"
+        ]
+        let longNameIncrease = app.buttons[
+            "habit-overview-observe one small detail with a deliberately long habit name-counter-increase"
+        ]
+        XCTAssertTrue(waterPlus.waitForExistence(timeout: 5))
+        XCTAssertTrue(breathePlus.exists)
+        XCTAssertGreaterThanOrEqual(waterMinus.frame.width, 44)
+        XCTAssertGreaterThanOrEqual(waterMinus.frame.height, 44)
+        XCTAssertGreaterThanOrEqual(waterPlus.frame.width, 44)
+        XCTAssertGreaterThanOrEqual(waterPlus.frame.height, 44)
+        XCTAssertFalse(waterPlus.frame.intersects(breathePlus.frame))
+        XCTAssertEqual(waterCount.value as? String, "0")
+
+        waterPlus.tap()
+        waterPlus.tap()
+        waterPlus.tap()
+        XCTAssertEqual(waterCount.value as? String, "3")
+        try performSemanticAccessibilityAudit(app)
+        if !trackingCount.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(trackingCount.waitForExistence(timeout: 5))
+        XCTAssertEqual(trackingCount.value as? String, "0")
+        if !longNameIncrease.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(longNameIncrease.waitForExistence(timeout: 5))
+        XCTAssertTrue(longNameIncrease.isHittable)
+        try performSemanticAccessibilityAudit(app)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Build 8 mixed Habit rows"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     func testTodayAndTagEmptyStatesOfferClearStartingActions() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

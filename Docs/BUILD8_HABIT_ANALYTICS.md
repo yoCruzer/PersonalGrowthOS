@@ -31,6 +31,7 @@
 - Habit Detail starts with a Now section containing current-period progress, lifecycle status, the primary structured check-in, Insight/Details routes, adherence and streaks. The dashboard follows rather than displacing the action surface.
 - Daily Progress is a full current civil-month calendar that distinguishes achieved, missed, open, rest, lifecycle-neutral, pre-coverage and future dates while retaining factual rest-day activity. Weekly/monthly/tracking-only Progress remains scoped to the current evaluation; Year Activity is a separate 365-day view.
 - Recent Activity is bounded to five facts and links to full history. The remaining dashboard includes Consistency, Trend, effective Journey and linked Context. Daily weekday pattern values are achieved/eligible success rates over strict scheduled outcomes; rest/open/neutral days are excluded. Weekly/monthly/tracking-only values are explicitly labeled factual activity distributions.
+- Overview repeatable controls have unique Habit-scoped accessibility identities. At accessibility Dynamic Type sizes, the action moves below full-width name/progress content; normal sizes retain the compact aligned row. Target and Tracking Only counters share rhythm without inventing a denominator.
 
 ## Stage 0 recovery checkpoint
 
@@ -47,7 +48,7 @@
 
 ## Known gaps before Build 8 can be reviewed
 
-- The complete acceptance matrix has not yet been exercised end-to-end. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments, lifecycle history, period-aware P0/P1 dashboard, backup schema boundaries and Dashboard localization are covered; final visual/a11y polish and all-package regression remain.
+- The complete acceptance matrix has not yet been exercised end-to-end. Real V7→V8 migration/bootstrap, Local Day credit/validation, historical `recordingMode`, runtime/pending Plan correctness, contiguous segments, lifecycle history, period-aware P0/P1 dashboard, backup schema boundaries, Dashboard localization and frozen visual/a11y carryover are covered; the final all-package regression remains.
 - Remote head is `bdb17449af6db016b70fd404712b2342e27e8504`; recovered staged checkpoints remain local until the final Build 8 gate. No Draft PR, archive, TestFlight action or merge has occurred.
 - Physical-device validation is entirely outstanding.
 
@@ -69,3 +70,4 @@
 - Stage 8 P0 dashboard regression: Habit Foundation 60/60 PASS (`/tmp/PersonalGrowthOS-Build8-Stage8-P0Dashboard-Final.xcresult`) on iPhone 17 Pro Simulator, plus focused create/check-in/detail UI 1/1 PASS (`/tmp/PersonalGrowthOS-Build8-Stage8-P0UI.xcresult`) and visual inspection of the Now/month-calendar hierarchy on a clean iPhone 16 Simulator, iOS 26.5.
 - Stage 9 weekday-pattern regression: Habit Foundation 62/62 PASS (`/tmp/PersonalGrowthOS-Build8-Stage9-WeekdayPattern.xcresult`) on iPhone 17 Pro Simulator, iOS 26.5, including daily scheduled-denominator exclusions and weekly/monthly/tracking-only activity distribution.
 - Stage 10 backup/localization regression: Habit Foundation plus Import/Export Recovery 88/88 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-BackupLocalizationFinal.xcresult`) on iPhone 16 Simulator, iOS 26.5. Focused English/system-language UI 2/2 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-EnDashboardUI.xcresult`) and Simplified Chinese Dashboard UI 1/1 PASS (`/tmp/PersonalGrowthOS-Build8-Stage10-ZhDashboardUI2.xcresult`). The 423-entry catalog parses with complete English and Simplified Chinese values; all 85 explicit `HabitViews` localization keys resolve, and both language catalogs compile independently.
+- Stage 11 visual/accessibility closure: mixed once/day, adjacent multiple/day, over-target, Tracking Only and long-name rows pass enabled semantic accessibility audits with measured >=44-point +/- targets and non-intersecting adjacent controls in both Light/default text (`/tmp/PersonalGrowthOS-Build8-Stage11-LightFinal.xcresult`) and Dark/system accessibility-extra-large (`/tmp/PersonalGrowthOS-Build8-Stage11-DarkLargeFinal.xcresult`). Exported screenshots were visually inspected; accessibility-size actions retain full-width text above compact controls.

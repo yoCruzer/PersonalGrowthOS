@@ -297,6 +297,7 @@ private struct HabitOverviewRow: View {
     let thumbnailStore: ThumbnailStore
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var isScheduledToday: Bool {
         plan.map { HabitPlanResolver.isScheduled($0, on: Date()) } ?? true
@@ -316,45 +317,69 @@ private struct HabitOverviewRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            NavigationLink {
-                HabitDetailView(
-                    habit: habit,
-                    mediaStore: mediaStore,
-                    thumbnailStore: thumbnailStore
-                )
-            } label: {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(habit.name)
-                    Text(periodProgressText)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .accessibilityIdentifier("habit-\(habit.normalizedName)")
-
-            if habit.status == .active && isScheduledToday {
-                if settings.recordingMode == .multiplePerDay {
-                    RepeatableHabitCounter(
-                        habitName: habit.name,
-                        progress: progress,
-                        accessibilityIdentifierPrefix: "habit-overview-counter",
-                        showsHabitName: false,
-                        decrease: decrement,
-                        increase: increment
-                    )
-                } else {
-                    Button(action: checkIn) {
-                        Image(systemName: checkedInToday ? "checkmark.circle.fill" : "checkmark.circle")
-                            .frame(width: 44, height: 44)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize && showsCheckInControl {
+                VStack(alignment: .leading, spacing: 8) {
+                    habitLink
+                    HStack {
+                        Spacer(minLength: 0)
+                        checkInControl
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(checkedInToday)
-                    .accessibilityLabel("Check in \(habit.name)")
-                    .accessibilityIdentifier("habit-overview-check-in")
+                }
+            } else {
+                HStack(spacing: 12) {
+                    habitLink
+                    if showsCheckInControl {
+                        checkInControl
+                    }
                 }
             }
+        }
+    }
+
+    private var showsCheckInControl: Bool {
+        habit.status == .active && isScheduledToday
+    }
+
+    private var habitLink: some View {
+        NavigationLink {
+            HabitDetailView(
+                habit: habit,
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
+        } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(habit.name)
+                Text(periodProgressText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityIdentifier("habit-\(habit.normalizedName)")
+    }
+
+    @ViewBuilder
+    private var checkInControl: some View {
+        if settings.recordingMode == .multiplePerDay {
+            RepeatableHabitCounter(
+                habitName: habit.name,
+                progress: progress,
+                accessibilityIdentifierPrefix: "habit-overview-\(habit.normalizedName)-counter",
+                showsHabitName: false,
+                decrease: decrement,
+                increase: increment
+            )
+        } else {
+            Button(action: checkIn) {
+                Image(systemName: checkedInToday ? "checkmark.circle.fill" : "checkmark.circle")
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.borderless)
+            .disabled(checkedInToday)
+            .accessibilityLabel("Check in \(habit.name)")
+            .accessibilityIdentifier("habit-overview-check-in")
         }
     }
 

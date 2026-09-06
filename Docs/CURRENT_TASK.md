@@ -6,8 +6,8 @@
 | Status | NOT READY FOR REVIEW |
 | Execution branch | `feature/build8-habit-analytics-dashboard` |
 | Base | `95076bf5c2a86122fbd327903d80bccdfb8c768d` |
-| Implementation tip | Backup boundary and bilingual Dashboard are verified; next batch is final Habit-row UI/accessibility closure |
-| Automated gate | Stage 10 backup/Habit regression 88/88 and focused localized UI 3/3 PASS; complete Build 8 gate not run |
+| Implementation tip | Frozen implementation and UI/a11y scope are locally verified; next batch is the complete final gate |
+| Automated gate | Stage 11 mixed Habit-row UI/a11y passes in Light/default text and Dark/system accessibility-extra-large; complete Build 8 gate not run |
 | External status | No Build 8 PR, merge, archive or TestFlight action |
 
 ## Superseded Build 7 Boundary
@@ -34,8 +34,9 @@
 - Daily Progress uses a full civil-month calendar with scheduled success/miss/open/rest, lifecycle-neutral, pre-coverage and future states. Weekly/monthly current activity remains period-scoped and Year Activity remains a separate 365-day view.
 - Daily weekday patterns display achieved/eligible success rates using only strict scheduled outcomes. Weekly, monthly and Tracking Only patterns display factual activity counts by weekday and are explicitly labeled as a distribution.
 - Backup validation rejects schema-v1/v2/v3 packages carrying v4-only Plan/lifecycle payloads, while supported old packages remain compatible and v4 recording modes remain validated. Dashboard strings, streak units and Journey events now have English and Simplified Chinese coverage verified in compiled catalogs and live UI.
+- Overview counters use Habit-scoped accessibility identities. Normal rows retain compact side-by-side rhythm; accessibility sizes place the action below full-width content. Mixed once/day, target-based multiple, Tracking Only, adjacent multiple rows, over-target values and a long name pass enabled semantic accessibility audits with >=44-point +/- targets in Light and Dark.
 - The exact Build 8 implementation state and remaining work are recorded in `Docs/BUILD8_HABIT_ANALYTICS.md`.
-- This is not a candidate: final UI/a11y polish, complete regression, documentation closure and remote review handoff remain incomplete.
+- This is not a candidate: complete regression, documentation closure and remote review handoff remain incomplete.
 
 ## Historical Build 7 Validation Evidence
 
@@ -57,4 +58,4 @@
 
 ## Next Action
 
-Close the frozen Habit-row visual/accessibility carryover in light/dark and Dynamic Type, inspect the enabled accessibility audit evidence, then run the complete Build 8 gate. Do not open a Draft PR until that gate passes. Do not merge, archive or publish TestFlight.
+Run the complete Unit and UI suites, Simulator Debug and bilingual build checks, focused v4 backup and exact-V7 overlay/reopen proofs, then close documentation and push only if every gate passes. Do not merge, archive or publish TestFlight.
