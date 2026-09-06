@@ -2039,6 +2039,72 @@ final class HabitFoundationTests: XCTestCase {
         XCTAssertEqual(cells.first { $0.day == HabitLocalDay(year: 2026, month: 9, day: 30) }?.state, .future)
     }
 
+    func testDailyWeekdayPatternUsesScheduledEligibleSuccessRate() {
+        let sunday = HabitLocalDay(year: 2026, month: 9, day: 6)
+        let monday = HabitLocalDay(year: 2026, month: 9, day: 7)
+        let tuesday = HabitLocalDay(year: 2026, month: 9, day: 8)
+        let wednesday = HabitLocalDay(year: 2026, month: 9, day: 9)
+        let thursday = HabitLocalDay(year: 2026, month: 9, day: 10)
+        let plan = HabitPlan(
+            recordingMode: .oncePerDay,
+            period: .day,
+            goal: .selectedWeekdays,
+            targetCount: 1,
+            weekdays: [2, 3]
+        )
+        func evaluation(_ day: HabitLocalDay, _ outcome: HabitPeriodOutcome) -> HabitPeriodEvaluation {
+            HabitPeriodEvaluation(
+                id: day.description,
+                start: day,
+                end: day,
+                period: .day,
+                actual: outcome == .achieved ? 1 : 0,
+                target: 1,
+                progress: outcome == .achieved ? 1 : 0,
+                outcome: outcome,
+                plan: plan
+            )
+        }
+        let pattern = HabitWeekdayPatternBuilder.make(
+            period: .day,
+            evaluations: [
+                evaluation(sunday, .notEvaluated(.notScheduled)),
+                evaluation(monday, .achieved),
+                evaluation(tuesday, .missed),
+                evaluation(wednesday, .open),
+                evaluation(thursday, .notEvaluated(.lifecycleTransition))
+            ],
+            activityByDay: [sunday: 3],
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        XCTAssertEqual(pattern.metric, .scheduledDaySuccessRate)
+        XCTAssertEqual(pattern.buckets.first { $0.weekday == 1 }?.eligibleCount, 0)
+        XCTAssertNil(pattern.buckets.first { $0.weekday == 1 }?.successRate)
+        XCTAssertEqual(pattern.buckets.first { $0.weekday == 2 }?.successRate, 1)
+        XCTAssertEqual(pattern.buckets.first { $0.weekday == 3 }?.successRate, 0)
+        XCTAssertNil(pattern.buckets.first { $0.weekday == 4 }?.successRate)
+        XCTAssertNil(pattern.buckets.first { $0.weekday == 5 }?.successRate)
+    }
+
+    func testNonDailyWeekdayPatternUsesActivityDistribution() {
+        let sunday = HabitLocalDay(year: 2026, month: 9, day: 6)
+        let monday = HabitLocalDay(year: 2026, month: 9, day: 7)
+
+        for period in [HabitPlanPeriod.week, .month, .trackingOnly] {
+            let pattern = HabitWeekdayPatternBuilder.make(
+                period: period,
+                evaluations: [],
+                activityByDay: [sunday: 2, monday: 1],
+                timeZone: TimeZone(secondsFromGMT: 0)!
+            )
+            XCTAssertEqual(pattern.metric, .activityDistribution)
+            XCTAssertEqual(pattern.buckets.first { $0.weekday == 1 }?.activityCount, 2)
+            XCTAssertEqual(pattern.buckets.first { $0.weekday == 2 }?.activityCount, 1)
+            XCTAssertTrue(pattern.buckets.allSatisfy { $0.eligibleCount == 0 && $0.successRate == nil })
+        }
+    }
+
     func testLocalDayUsesCivilCalendarAcrossDSTChanges() {
         let timeZone = TimeZone(identifier: "America/New_York")!
         var calendar = Calendar(identifier: .gregorian)

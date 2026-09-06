@@ -1163,7 +1163,17 @@ private struct HabitAnalyticsDashboard: View {
                 }
             }
             Section("Weekday Pattern") {
-                WeekdayActivityPattern(activity: summary.activityByDay)
+                let pattern = HabitWeekdayPatternBuilder.make(
+                    period: current.period,
+                    evaluations: summary.evaluations,
+                    activityByDay: summary.activityByDay
+                )
+                Text(pattern.metric == .scheduledDaySuccessRate
+                    ? "Success rate on scheduled days"
+                    : "Activity distribution by weekday")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                WeekdayPatternView(pattern: pattern)
             }
             Section("Journey") {
                 let items = HabitJourneyBuilder.items(
@@ -1325,28 +1335,48 @@ private struct HabitMonthCalendar: View {
     }
 }
 
-private struct WeekdayActivityPattern: View {
-    let activity: [HabitLocalDay: Int]
+private struct WeekdayPatternView: View {
+    let pattern: HabitWeekdayPattern
+
     var body: some View {
         let calendar = WeeklyReviewCalendarPolicy.calendar()
-        let values = weekdayValues(calendar: calendar)
         HStack(spacing: 8) {
-            ForEach(1...7, id: \.self) { weekday in
+            ForEach(pattern.buckets) { bucket in
                 VStack(spacing: 2) {
-                    Text(calendar.veryShortWeekdaySymbols[weekday - 1])
-                    Text("\(values[weekday, default: 0])").monospacedDigit()
+                    Text(calendar.veryShortWeekdaySymbols[bucket.weekday - 1])
+                    Text(valueText(bucket)).monospacedDigit()
                 }
                 .font(.caption)
                 .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(accessibilityLabel(bucket, calendar: calendar))
             }
         }
-        .accessibilityLabel("Weekday activity pattern")
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(pattern.metric == .scheduledDaySuccessRate
+            ? "Weekday scheduled success rate"
+            : "Weekday activity distribution")
     }
 
-    private func weekdayValues(calendar: Calendar) -> [Int: Int] {
-        activity.reduce(into: [:]) { result, item in
-            let weekday = calendar.component(.weekday, from: item.key.date() ?? Date())
-            result[weekday, default: 0] += item.value
+    private func valueText(_ bucket: HabitWeekdayPatternBucket) -> String {
+        switch pattern.metric {
+        case .scheduledDaySuccessRate:
+            return bucket.successRate?.formatted(.percent.precision(.fractionLength(0))) ?? "—"
+        case .activityDistribution:
+            return "\(bucket.activityCount)"
+        }
+    }
+
+    private func accessibilityLabel(_ bucket: HabitWeekdayPatternBucket, calendar: Calendar) -> String {
+        let weekday = calendar.weekdaySymbols[bucket.weekday - 1]
+        switch pattern.metric {
+        case .scheduledDaySuccessRate:
+            guard let rate = bucket.successRate else { return "\(weekday), no eligible days" }
+            let unit = bucket.eligibleCount == 1 ? "day" : "days"
+            return "\(weekday), \(rate.formatted(.percent.precision(.fractionLength(0)))), \(bucket.achievedCount) of \(bucket.eligibleCount) eligible \(unit)"
+        case .activityDistribution:
+            let unit = bucket.activityCount == 1 ? "activity" : "activities"
+            return "\(weekday), \(bucket.activityCount) \(unit)"
         }
     }
 }

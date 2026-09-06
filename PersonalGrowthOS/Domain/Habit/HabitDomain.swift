@@ -340,6 +340,85 @@ enum HabitMonthCalendarBuilder {
     }
 }
 
+enum HabitWeekdayPatternMetric: Equatable, Sendable {
+    case scheduledDaySuccessRate
+    case activityDistribution
+}
+
+struct HabitWeekdayPatternBucket: Identifiable, Equatable, Sendable {
+    let weekday: Int
+    let achievedCount: Int
+    let eligibleCount: Int
+    let activityCount: Int
+
+    var id: Int { weekday }
+    var successRate: Double? {
+        guard eligibleCount > 0 else { return nil }
+        return Double(achievedCount) / Double(eligibleCount)
+    }
+}
+
+struct HabitWeekdayPattern: Equatable, Sendable {
+    let metric: HabitWeekdayPatternMetric
+    let buckets: [HabitWeekdayPatternBucket]
+}
+
+enum HabitWeekdayPatternBuilder {
+    static func make(
+        period: HabitPlanPeriod,
+        evaluations: [HabitPeriodEvaluation],
+        activityByDay: [HabitLocalDay: Int],
+        timeZone: TimeZone = .current
+    ) -> HabitWeekdayPattern {
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        if period == .day {
+            var achievedByWeekday: [Int: Int] = [:]
+            var eligibleByWeekday: [Int: Int] = [:]
+            for evaluation in evaluations where evaluation.period == .day {
+                let achieved: Bool
+                switch evaluation.outcome {
+                case .achieved: achieved = true
+                case .missed: achieved = false
+                case .open, .notEvaluated: continue
+                }
+                guard let date = evaluation.start.date(timeZone: timeZone) else { continue }
+                let weekday = calendar.component(.weekday, from: date)
+                eligibleByWeekday[weekday, default: 0] += 1
+                if achieved { achievedByWeekday[weekday, default: 0] += 1 }
+            }
+            return HabitWeekdayPattern(
+                metric: .scheduledDaySuccessRate,
+                buckets: (1...7).map { weekday in
+                    HabitWeekdayPatternBucket(
+                        weekday: weekday,
+                        achievedCount: achievedByWeekday[weekday, default: 0],
+                        eligibleCount: eligibleByWeekday[weekday, default: 0],
+                        activityCount: 0
+                    )
+                }
+            )
+        }
+
+        var activityByWeekday: [Int: Int] = [:]
+        for (day, count) in activityByDay {
+            guard let date = day.date(timeZone: timeZone) else { continue }
+            let weekday = calendar.component(.weekday, from: date)
+            activityByWeekday[weekday, default: 0] += count
+        }
+        return HabitWeekdayPattern(
+            metric: .activityDistribution,
+            buckets: (1...7).map { weekday in
+                HabitWeekdayPatternBucket(
+                    weekday: weekday,
+                    achievedCount: 0,
+                    eligibleCount: 0,
+                    activityCount: activityByWeekday[weekday, default: 0]
+                )
+            }
+        )
+    }
+}
+
 /// The single source of derived Habit mathematics. It receives immutable value
 /// snapshots so ordering of SwiftData fetches cannot change results.
 enum HabitAnalyticsEngine {
