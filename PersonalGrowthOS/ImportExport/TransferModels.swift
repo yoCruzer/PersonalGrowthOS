@@ -234,11 +234,13 @@ struct HabitPlanRevisionTransfer: Codable, Equatable {
     let id: UUID; let habitID: UUID; let effectiveLocalDay: String; let period: String; let goal: String
     let targetCount: Int?; let weekdays: String; let recordingMode: String?
     let trustCoverageStartLocalDay: String; let createdAt: Date
+    let origin: String?
 
     init(
         id: UUID, habitID: UUID, effectiveLocalDay: String, period: String, goal: String,
         targetCount: Int?, weekdays: String, recordingMode: String?,
-        trustCoverageStartLocalDay: String, createdAt: Date
+        trustCoverageStartLocalDay: String, createdAt: Date,
+        origin: String? = nil
     ) {
         self.id = id
         self.habitID = habitID
@@ -250,6 +252,7 @@ struct HabitPlanRevisionTransfer: Codable, Equatable {
         self.recordingMode = recordingMode
         self.trustCoverageStartLocalDay = trustCoverageStartLocalDay
         self.createdAt = createdAt
+        self.origin = origin
     }
 }
 
@@ -356,6 +359,13 @@ enum TransferValidator {
         guard manifest.packageSchemaVersion >= 4 || data.habitLifecycleEvents.isEmpty else {
             throw TransferPackageError.invalidObject("habitLifecycleEvent")
         }
+        guard manifest.packageSchemaVersion >= 4 || data.habitLogs.allSatisfy({
+            $0.localDayIdentifier == nil
+                && $0.localTimeZoneIdentifier == nil
+                && $0.localDayProvenance == nil
+        }) else {
+            throw TransferPackageError.invalidObject("habitLog")
+        }
         guard data.totalObjectCount <= limits.maximumObjectCount else {
             throw TransferPackageError.objectLimitExceeded
         }
@@ -378,6 +388,12 @@ enum TransferValidator {
         try unique(data.weeklyReviews.map(\.id), type: "weeklyReview")
         try unique(data.habitPlanRevisions.map(\.id), type: "habitPlanRevision")
         try unique(data.habitLifecycleEvents.map(\.id), type: "habitLifecycleEvent")
+        let planEffectiveDays = data.habitPlanRevisions.map {
+            "\($0.habitID.uuidString)-\($0.effectiveLocalDay)"
+        }
+        guard Set(planEffectiveDays).count == planEffectiveDays.count else {
+            throw TransferPackageError.duplicateID("habitPlanRevisionEffectiveDay")
+        }
         guard Set(data.weeklyReviews.map(\.weekIdentifier)).count == data.weeklyReviews.count else {
             throw TransferPackageError.duplicateID("weeklyReviewIdentifier")
         }
@@ -464,7 +480,8 @@ enum TransferValidator {
                   let period = HabitPlanPeriod(rawValue: plan.period),
                   let goal = HabitPlanGoal(rawValue: plan.goal),
                   let rawMode = plan.recordingMode,
-                  let recordingMode = HabitRecordingMode(rawValue: rawMode) else {
+                  let recordingMode = HabitRecordingMode(rawValue: rawMode),
+                  plan.origin.map({ HabitPlanRevisionOrigin(rawValue: $0) != nil }) ?? true else {
                 throw TransferPackageError.invalidObject("habitPlanRevision")
             }
             let weekdays = Set(plan.weekdays.split(separator: ",").compactMap { Int($0) })

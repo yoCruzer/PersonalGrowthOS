@@ -17,6 +17,11 @@ enum HabitLogDayProvenance: String, Codable, CaseIterable, Sendable {
     case legacyBootstrap
 }
 
+enum HabitPlanRevisionOrigin: String, Codable, CaseIterable, Sendable {
+    case user
+    case migrationBootstrap
+}
+
 /// A persisted civil date. It intentionally has no time-zone offset: once written,
 /// activity keeps belonging to this day even when the device later changes zones.
 struct HabitLocalDay: Hashable, Comparable, Codable, Sendable, Identifiable {
@@ -117,7 +122,7 @@ struct HabitPlan: Equatable, Sendable {
     let period: HabitPlanPeriod
     let goal: HabitPlanGoal
     let targetCount: Int?
-    /// ISO weekday values (1 is Sunday, 7 is Saturday), empty for every-day/count schedules.
+    /// Foundation/Gregorian weekday values (1 is Sunday, 7 is Saturday), empty for every-day/count schedules.
     let weekdays: Set<Int>
 
     static func trackingOnly(recordingMode: HabitRecordingMode) -> Self {
@@ -180,6 +185,18 @@ enum HabitRules {
                 || ((plan.period == .week || plan.period == .month) && plan.goal == .count) else {
             throw HabitValidationError.invalidPlan
         }
+        if plan.recordingMode == .oncePerDay {
+            switch plan.period {
+            case .day:
+                guard target == 1 else { throw HabitValidationError.invalidPlan }
+            case .week:
+                guard target <= 7 else { throw HabitValidationError.invalidPlan }
+            case .month:
+                guard target <= 28 else { throw HabitValidationError.invalidPlan }
+            case .trackingOnly:
+                break
+            }
+        }
         return HabitPlan(
             recordingMode: plan.recordingMode,
             period: plan.period,
@@ -211,6 +228,19 @@ struct HabitPlanSnapshot: Equatable, Sendable {
     let effectiveDay: HabitLocalDay
     let plan: HabitPlan
     let trustStartDay: HabitLocalDay
+    let origin: HabitPlanRevisionOrigin
+
+    init(
+        effectiveDay: HabitLocalDay,
+        plan: HabitPlan,
+        trustStartDay: HabitLocalDay,
+        origin: HabitPlanRevisionOrigin = .user
+    ) {
+        self.effectiveDay = effectiveDay
+        self.plan = plan
+        self.trustStartDay = trustStartDay
+        self.origin = origin
+    }
 }
 
 struct HabitLifecycleSnapshot: Equatable, Sendable {
@@ -268,6 +298,7 @@ struct HabitAnalyticsSummary: Equatable, Sendable {
     let streakUnit: String?
     let activityByDay: [HabitLocalDay: Int]
     let coverageStart: HabitLocalDay?
+    let hasIncompleteHistoricalCoverage: Bool
 }
 
 enum HabitCalendarDayState: String, Equatable, Sendable {
@@ -337,6 +368,24 @@ enum HabitMonthCalendarBuilder {
         case .notEvaluated(.future): .future
         case .notEvaluated: .neutral
         }
+    }
+}
+
+enum HabitMonthCalendarPresentation {
+    static let weekdayOrder = [2, 3, 4, 5, 6, 7, 1]
+
+    static func veryShortWeekdaySymbols(calendar: Calendar) -> [String] {
+        weekdayOrder.map { calendar.veryShortWeekdaySymbols[$0 - 1] }
+    }
+
+    static func leadingPlaceholderCount(
+        firstDay: HabitLocalDay,
+        timeZone: TimeZone = .current
+    ) -> Int {
+        guard let date = firstDay.date(timeZone: timeZone) else { return 0 }
+        let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        let weekday = calendar.component(.weekday, from: date)
+        return (weekday - calendar.firstWeekday + 7) % 7
     }
 }
 
@@ -439,7 +488,7 @@ enum HabitAnalyticsEngine {
         let activity = Dictionary(grouping: logs.filter(\.isCompleted), by: \.localDay)
             .mapValues { $0.count }
         guard let first = ([createdAt] + activity.keys + sortedPlans.map(\.effectiveDay)).min() else {
-            return HabitAnalyticsSummary(current: nil, evaluations: [], adherence: nil, consistency: nil, currentStreak: nil, bestStreak: nil, streakUnit: nil, activityByDay: activity, coverageStart: nil)
+            return HabitAnalyticsSummary(current: nil, evaluations: [], adherence: nil, consistency: nil, currentStreak: nil, bestStreak: nil, streakUnit: nil, activityByDay: activity, coverageStart: nil, hasIncompleteHistoricalCoverage: false)
         }
         let days = sequence(from: first, through: asOf, timeZone: timeZone)
         let evaluations = makeEvaluations(
@@ -450,6 +499,7 @@ enum HabitAnalyticsEngine {
         let comparable = currentComparableSegment(
             evaluations: evaluations,
             currentPlan: currentPlan,
+            plans: sortedPlans,
             lifecycle: sortedEvents,
             asOf: asOf
         )
@@ -459,18 +509,29 @@ enum HabitAnalyticsEngine {
         let adherence = evaluated.isEmpty ? nil : Double(evaluated.filter { $0.outcome == .achieved }.count) / Double(evaluated.count)
         let consistencyValues = evaluated.compactMap(\.progress)
         let consistency = consistencyValues.isEmpty ? nil : consistencyValues.reduce(0, +) / Double(consistencyValues.count)
-        let streak = streaks(evaluations: comparable, currentPlan: currentPlan?.plan)
+        let currentStreak = streaks(evaluations: comparable, currentPlan: currentPlan?.plan).current
+        let historicalBest = currentPlan.map { planSnapshot in
+            historicalBestStreak(evaluations: evaluations, compatibleWith: planSnapshot.plan)
+        }
         let current = evaluations.last(where: { $0.start <= asOf && $0.end >= asOf })
+        let migrationBoundary = sortedPlans
+            .filter { $0.origin == .migrationBootstrap }
+            .map(\.trustStartDay)
+            .min()
+        let hasIncompleteHistoricalCoverage = migrationBoundary.map { boundary in
+            createdAt < boundary || activity.keys.contains { $0 < boundary }
+        } ?? false
         return HabitAnalyticsSummary(
             current: current,
             evaluations: evaluations,
             adherence: adherence,
             consistency: consistency,
-            currentStreak: currentPlan?.plan.isTrackingOnly == true ? nil : streak.current,
-            bestStreak: currentPlan?.plan.isTrackingOnly == true ? nil : streak.best,
+            currentStreak: currentPlan?.plan.isTrackingOnly == true ? nil : currentStreak,
+            bestStreak: currentPlan?.plan.isTrackingOnly == true ? nil : historicalBest,
             streakUnit: currentPlan.map { streakUnit($0.plan) },
             activityByDay: activity,
-            coverageStart: currentPlan.map(\.trustStartDay)
+            coverageStart: currentPlan.map(\.trustStartDay),
+            hasIncompleteHistoricalCoverage: hasIncompleteHistoricalCoverage
         )
     }
 
@@ -538,16 +599,27 @@ enum HabitAnalyticsEngine {
     private static func currentComparableSegment(
         evaluations: [HabitPeriodEvaluation],
         currentPlan: HabitPlanSnapshot?,
+        plans: [HabitPlanSnapshot],
         lifecycle: [HabitLifecycleSnapshot],
         asOf: HabitLocalDay
     ) -> [HabitPeriodEvaluation] {
         guard let currentPlan, !currentPlan.plan.isTrackingOnly else { return [] }
+        let applicablePlans = plans.filter { $0.effectiveDay <= asOf }
+        var compatiblePlanStart = currentPlan.effectiveDay
+        for revision in applicablePlans.reversed() {
+            guard revision.plan.period == currentPlan.plan.period,
+                  !revision.plan.isTrackingOnly else { break }
+            compatiblePlanStart = revision.effectiveDay
+        }
         let lifecycleBoundary = lifecycle.last {
             $0.day <= asOf && $0.kind != .created
         }?.day
-        let segmentStart = max(currentPlan.effectiveDay, lifecycleBoundary ?? currentPlan.effectiveDay)
+        let segmentStart = max(
+            compatiblePlanStart,
+            lifecycleBoundary ?? compatiblePlanStart
+        )
         return evaluations.filter {
-            $0.end >= segmentStart && $0.plan == currentPlan.plan
+            $0.end >= segmentStart && $0.period == currentPlan.plan.period
         }
     }
 
@@ -603,14 +675,39 @@ enum HabitAnalyticsEngine {
                 running += 1; best = max(best, running); current = running
             case .missed:
                 running = 0; current = 0
-            case .notEvaluated(.lifecycleTransition):
-                running = 0
-                current = 0
-            case .open, .notEvaluated:
-                break
+            case .open, .notEvaluated(.notScheduled), .notEvaluated(.future): break
+            case .notEvaluated:
+                running = 0; current = 0
             }
         }
         return (current, best)
+    }
+
+    private static func historicalBestStreak(
+        evaluations: [HabitPeriodEvaluation],
+        compatibleWith currentPlan: HabitPlan
+    ) -> Int {
+        guard !currentPlan.isTrackingOnly else { return 0 }
+        var best = 0
+        var running = 0
+        for evaluation in evaluations {
+            guard evaluation.period == currentPlan.period else {
+                running = 0
+                continue
+            }
+            switch evaluation.outcome {
+            case .achieved:
+                running += 1
+                best = max(best, running)
+            case .missed:
+                running = 0
+            case .open, .notEvaluated(.notScheduled), .notEvaluated(.future):
+                break
+            case .notEvaluated:
+                running = 0
+            }
+        }
+        return best
     }
 
     private static func streakUnit(_ plan: HabitPlan) -> String {

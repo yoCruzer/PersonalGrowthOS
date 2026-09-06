@@ -769,6 +769,22 @@
         }
       }
     },
+    "Target must be between 1 and %lld.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target must be between 1 and %lld."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标必须在 1 到 %lld 之间。"
+          }
+        }
+      }
+    },
     "This Month": {
       "localizations": {
         "en": {
@@ -1501,6 +1517,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "添加习惯"
+          }
+        }
+      }
+    },
+    "Add a habit to practice, or reopen a paused or completed habit below.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a habit to practice, or reopen a paused or completed habit below."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加一个想坚持的习惯，或在下方重新打开已暂停或已完成的习惯。"
           }
         }
       }
@@ -3521,6 +3553,28 @@
         }
       }
     },
+    "Monthly Target": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Monthly Target" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每月目标" } }
+      }
+    },
+    "No Active Habits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Active Habits"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无活跃习惯"
+          }
+        }
+      }
+    },
     "No Tags Yet": {
       "localizations": {
         "en": {
@@ -4765,6 +4819,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "习惯状态未更改。"
+          }
+        }
+      }
+    },
+    "The Habit plan is invalid.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Habit plan is invalid."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "习惯计划无效。"
           }
         }
       }
@@ -6031,6 +6101,12 @@
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Weekly Review" } },
         "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾" } }
+      }
+    },
+    "Weekly Target": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Weekly Target" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周目标" } }
       }
     },
     "Weekly Review Unavailable": {

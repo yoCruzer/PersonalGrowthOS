@@ -793,7 +793,9 @@ final class ImportExportService {
                     id: record.id, habitID: record.habitID, effectiveLocalDay: record.effectiveLocalDay,
                     plan: HabitPlan(recordingMode: recordingMode, period: period, goal: goal, targetCount: record.targetCount,
                                     weekdays: Set(record.weekdays.split(separator: ",").compactMap { Int($0) })),
-                    trustCoverageStartLocalDay: record.trustCoverageStartLocalDay, createdAt: record.createdAt
+                    trustCoverageStartLocalDay: record.trustCoverageStartLocalDay,
+                    createdAt: record.createdAt,
+                    origin: record.origin.flatMap(HabitPlanRevisionOrigin.init(rawValue:)) ?? .user
                 ))
             }
             for record in package.data.habitLifecycleEvents {
@@ -1112,7 +1114,8 @@ private enum TransferSnapshot {
                     period: $0.periodRawValue, goal: $0.goalRawValue, targetCount: $0.targetCount,
                     weekdays: $0.weekdaysRawValue, recordingMode: $0.recordingModeRawValue,
                     trustCoverageStartLocalDay: $0.trustCoverageStartLocalDay,
-                    createdAt: $0.createdAt
+                    createdAt: $0.createdAt,
+                    origin: $0.originRawValue
                 )
             }.sorted { sortUUID($0.id, $1.id) },
             habitLifecycleEvents: try cancellableMap(habitLifecycleEvents) {

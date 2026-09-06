@@ -167,8 +167,12 @@ struct HabitsView: View {
     @Query private var lifecycleEvents: [HabitLifecycleEvent]
     @State private var isCreatingHabit = false
 
-    private var mainHabits: [Habit] {
-        habits.filter { $0.status != .archived }
+    private var activeHabits: [Habit] {
+        habits.filter { $0.status == .active }
+    }
+
+    private var inactiveHabits: [Habit] {
+        habits.filter { $0.status == .paused || $0.status == .completed }
     }
 
     private var archivedHabits: [Habit] {
@@ -196,13 +200,13 @@ struct HabitsView: View {
 
     var body: some View {
         List {
-            if mainHabits.isEmpty {
+            if activeHabits.isEmpty {
                 Section {
                     VStack(spacing: 16) {
                         ContentUnavailableView {
-                            Label("No Habits", systemImage: "repeat")
+                            Label("No Active Habits", systemImage: "repeat")
                         } description: {
-                            Text("Add a habit you want to practice. Pauses and restarts are part of growth.")
+                            Text("Add a habit to practice, or reopen a paused or completed habit below.")
                         }
                         GrowthEmptyStateAddButton(
                             title: "Add Habit",
@@ -219,7 +223,7 @@ struct HabitsView: View {
                     [HabitPlanPeriod.day, .week, .month, .trackingOnly],
                     id: \.rawValue
                 ) { period in
-                    let grouped = mainHabits.filter { section(for: $0) == period }
+                    let grouped = activeHabits.filter { section(for: $0) == period }
                     if !grouped.isEmpty {
                         Section(sectionTitle(period)) {
                             ForEach(grouped) { habit in
@@ -249,6 +253,20 @@ struct HabitsView: View {
                     }
                 }
             }
+            ForEach([HabitStatus.paused, .completed], id: \.rawValue) { status in
+                let grouped = inactiveHabits.filter { $0.status == status }
+                if !grouped.isEmpty {
+                    Section(status.localizedName) {
+                        ForEach(grouped) { habit in
+                            InactiveHabitRow(
+                                habit: habit,
+                                mediaStore: mediaStore,
+                                thumbnailStore: thumbnailStore
+                            )
+                        }
+                    }
+                }
+            }
             if !archivedHabits.isEmpty {
                 Section {
                     NavigationLink {
@@ -265,7 +283,7 @@ struct HabitsView: View {
         }
         .navigationTitle("Habits")
         .toolbar {
-            if !mainHabits.isEmpty {
+            if !activeHabits.isEmpty {
                 Button {
                     isCreatingHabit = true
                 } label: {
@@ -298,6 +316,7 @@ private struct HabitOverviewRow: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var errorMessage: String?
 
     private var isScheduledToday: Bool {
         plan.map { HabitPlanResolver.isScheduled($0, on: Date()) } ?? true
@@ -334,6 +353,14 @@ private struct HabitOverviewRow: View {
                     }
                 }
             }
+        }
+        .alert("Could Not Check In", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? String(localized: "Please try again."))
         }
     }
 
@@ -420,16 +447,64 @@ private struct HabitOverviewRow: View {
     }
 
     private func checkIn() {
-        _ = try? HabitCheckInService(context: modelContext, mediaStore: mediaStore).checkIn(habit)
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).checkIn(habit)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
     }
 
     private func increment() {
-        _ = try? HabitCheckInService(context: modelContext, mediaStore: mediaStore).incrementCount(habit)
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).incrementCount(habit)
+        } catch {
+            errorMessage = String(localized: "The check-in was not saved.")
+        }
     }
 
     private func decrement() {
-        _ = try? HabitCheckInService(context: modelContext, mediaStore: mediaStore)
-            .removeLatestStructuredCheckIn(habitID: habit.id)
+        do {
+            _ = try HabitCheckInService(
+                context: modelContext,
+                mediaStore: mediaStore
+            ).removeLatestStructuredCheckIn(habitID: habit.id)
+        } catch {
+            errorMessage = String(localized: "The latest check-in could not be undone.")
+        }
+    }
+}
+
+private struct InactiveHabitRow: View {
+    let habit: Habit
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+
+    var body: some View {
+        NavigationLink {
+            HabitDetailView(
+                habit: habit,
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore
+            )
+        } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(habit.name)
+                Text(habit.status.localizedName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityValue(habit.status.localizedName)
+                    .accessibilityIdentifier(
+                        "habit-\(habit.status.rawValue)-\(habit.normalizedName)-status"
+                    )
+            }
+        }
+        .accessibilityIdentifier("habit-\(habit.status.rawValue)-\(habit.normalizedName)")
     }
 }
 
@@ -1034,6 +1109,7 @@ private struct HabitEditorView: View {
                         TextField(targetFieldLabel, text: $dailyTarget)
                             .keyboardType(.numberPad)
                             .accessibilityIdentifier("habit-daily-target")
+                            .accessibilityLabel(targetFieldLabel)
                     }
                     Picker("Goal", selection: $goalChoice) {
                         ForEach(HabitGoalChoice.allCases, id: \.self) { choice in
@@ -1097,6 +1173,12 @@ private struct HabitEditorView: View {
                     dailyTarget = "2"
                 }
             }
+            .onChange(of: goalChoice) { _, _ in
+                if needsTarget,
+                   dailyTarget.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    dailyTarget = recordingMode == .multiplePerDay ? "2" : "1"
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -1117,6 +1199,13 @@ private struct HabitEditorView: View {
         if needsTarget {
             guard let value = Int(trimmedTarget), value > 0 else {
                 errorMessage = String(localized: "Daily target must be a positive whole number.")
+                return
+            }
+            if let maximum = maximumOncePerDayTarget, value > maximum {
+                errorMessage = String.localizedStringWithFormat(
+                    String(localized: "Target must be between 1 and %lld."),
+                    maximum
+                )
                 return
             }
             target = value
@@ -1142,6 +1231,8 @@ private struct HabitEditorView: View {
             errorMessage = String(localized: "Habit name cannot be empty.")
         } catch HabitValidationError.invalidDailyTarget {
             errorMessage = String(localized: "Daily target must be a positive whole number.")
+        } catch HabitValidationError.invalidPlan {
+            errorMessage = String(localized: "The Habit plan is invalid.")
         } catch {
             errorMessage = String(localized: "The Habit was not saved.")
         }
@@ -1162,9 +1253,21 @@ private struct HabitEditorView: View {
     }
 
     private var targetFieldLabel: String {
-        goalChoice == .everyDay
-            ? String(localized: "Daily Target")
-            : String(localized: "Target")
+        switch goalChoice {
+        case .everyDay, .selectedDays: String(localized: "Daily Target")
+        case .perWeek: String(localized: "Weekly Target")
+        case .perMonth: String(localized: "Monthly Target")
+        case .noGoal: String(localized: "Target")
+        }
+    }
+
+    private var maximumOncePerDayTarget: Int? {
+        guard recordingMode == .oncePerDay else { return nil }
+        return switch goalChoice {
+        case .perWeek: 7
+        case .perMonth: 28
+        case .noGoal, .everyDay, .selectedDays: nil
+        }
     }
 
     private func weekdayName(_ weekday: Int) -> String {
@@ -1195,7 +1298,14 @@ private enum HabitGoalChoice: String, CaseIterable {
     }
 
     func requiresTarget(for recordingMode: HabitRecordingMode) -> Bool {
-        self != .noGoal && !(self == .everyDay && recordingMode == .oncePerDay)
+        switch self {
+        case .noGoal:
+            false
+        case .everyDay, .selectedDays:
+            recordingMode == .multiplePerDay
+        case .perWeek, .perMonth:
+            true
+        }
     }
 }
 
@@ -1295,7 +1405,7 @@ private struct HabitAnalyticsDashboard: View {
                     }
                 }
             }
-            if summary.coverageStart != nil {
+            if summary.hasIncompleteHistoricalCoverage {
                 Section {
                     Text("Earlier activity remains visible. Strict adherence begins with trusted plan coverage.")
                         .font(.footnote).foregroundStyle(.secondary)
@@ -1364,16 +1474,19 @@ private struct HabitMonthCalendar: View {
     }
 
     private var leadingPlaceholders: Int {
-        guard let first = cells.first?.day.date() else { return 0 }
-        return WeeklyReviewCalendarPolicy.calendar().component(.weekday, from: first) - 1
+        guard let first = cells.first?.day else { return 0 }
+        return HabitMonthCalendarPresentation.leadingPlaceholderCount(firstDay: first)
     }
 
     var body: some View {
         let calendar = WeeklyReviewCalendarPolicy.calendar()
+        let weekdaySymbols = HabitMonthCalendarPresentation.veryShortWeekdaySymbols(
+            calendar: calendar
+        )
         VStack(spacing: 8) {
             HStack(spacing: 4) {
-                ForEach(calendar.veryShortWeekdaySymbols.indices, id: \.self) { index in
-                    Text(calendar.veryShortWeekdaySymbols[index])
+                ForEach(weekdaySymbols.indices, id: \.self) { index in
+                    Text(weekdaySymbols[index])
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)

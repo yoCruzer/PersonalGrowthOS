@@ -104,14 +104,16 @@ final class HabitPlanRevision {
     var periodRawValue: String
     var goalRawValue: String
     var targetCount: Int?
-    /// Comma-separated ISO weekday values. Kept scalar for safe SwiftData migration.
+    /// Comma-separated Foundation/Gregorian weekday values. Kept scalar for safe SwiftData migration.
     var weekdaysRawValue: String
     var trustCoverageStartLocalDay: String
     var createdAt: Date
+    var originRawValue: String
 
     init(
         id: UUID = UUID(), habitID: UUID, effectiveLocalDay: String,
-        plan: HabitPlan, trustCoverageStartLocalDay: String, createdAt: Date
+        plan: HabitPlan, trustCoverageStartLocalDay: String, createdAt: Date,
+        origin: HabitPlanRevisionOrigin = .user
     ) {
         self.id = id
         self.habitID = habitID
@@ -123,6 +125,7 @@ final class HabitPlanRevision {
         weekdaysRawValue = plan.weekdays.sorted().map(String.init).joined(separator: ",")
         self.trustCoverageStartLocalDay = trustCoverageStartLocalDay
         self.createdAt = createdAt
+        originRawValue = origin.rawValue
     }
 
     var plan: HabitPlan {
@@ -133,6 +136,10 @@ final class HabitPlanRevision {
             targetCount: targetCount,
             weekdays: Set(weekdaysRawValue.split(separator: ",").compactMap { Int($0) })
         )
+    }
+
+    var origin: HabitPlanRevisionOrigin {
+        HabitPlanRevisionOrigin(rawValue: originRawValue) ?? .user
     }
 }
 
@@ -190,7 +197,9 @@ enum HabitJourneyBuilder {
     ) -> [HabitJourneyItem] {
         let today = HabitLocalDay(date: asOf, timeZone: timeZone)
         let planItems = plans.compactMap { revision -> HabitJourneyItem? in
-            guard let day = HabitLocalDay(revision.effectiveLocalDay), day <= today else { return nil }
+            guard revision.origin != .migrationBootstrap,
+                  let day = HabitLocalDay(revision.effectiveLocalDay),
+                  day <= today else { return nil }
             return HabitJourneyItem(
                 id: "plan-\(revision.id.uuidString)",
                 day: day,
@@ -250,7 +259,8 @@ enum HabitAnalyticsSnapshotBuilder {
                 return HabitPlanSnapshot(
                     effectiveDay: effectiveDay,
                     plan: $0.plan,
-                    trustStartDay: trustStartDay
+                    trustStartDay: trustStartDay,
+                    origin: $0.origin
                 )
             }
         }
@@ -353,12 +363,16 @@ enum HabitPlanResolver {
         let day = HabitLocalDay(date: date, timeZone: timeZone)
         return plans
             .filter { $0.habitID == habitID }
-            .compactMap { revision -> (HabitLocalDay, HabitPlan)? in
-                HabitLocalDay(revision.effectiveLocalDay).map { ($0, revision.plan) }
+            .compactMap { revision -> (HabitLocalDay, HabitPlanRevision)? in
+                HabitLocalDay(revision.effectiveLocalDay).map { ($0, revision) }
             }
             .filter { $0.0 <= day }
-            .sorted { $0.0 < $1.0 }
-            .last?.1
+            .sorted {
+                if $0.0 != $1.0 { return $0.0 < $1.0 }
+                if $0.1.createdAt != $1.1.createdAt { return $0.1.createdAt < $1.1.createdAt }
+                return $0.1.id.uuidString < $1.1.id.uuidString
+            }
+            .last?.1.plan
     }
 
     static func pendingPlanRevision(
@@ -488,7 +502,8 @@ enum HabitAnalyticsMigrationBootstrap {
                     effectiveLocalDay: boundary.description,
                     plan: HabitPlan.legacy(mode: settings.recordingMode, target: settings.dailyTargetCount),
                     trustCoverageStartLocalDay: boundary.description,
-                    createdAt: now
+                    createdAt: now,
+                    origin: .migrationBootstrap
                 ))
                 changed = true
             }

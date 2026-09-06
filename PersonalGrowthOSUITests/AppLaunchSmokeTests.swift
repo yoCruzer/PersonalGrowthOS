@@ -706,6 +706,81 @@ final class AppLaunchSmokeTests: XCTestCase {
         add(screenshot)
     }
 
+    func testPausedAndCompletedHabitsStayOutOfActiveScheduleSections() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+
+        func addHabit(named habitName: String) {
+            app.buttons["add-habit"].tap()
+            let name = app.textFields["habit-editor-name"]
+            XCTAssertTrue(name.waitForExistence(timeout: 5))
+            name.tap()
+            name.typeText(habitName)
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(app.buttons["add-habit"].waitForExistence(timeout: 5))
+        }
+
+        addHabit(named: "Pause Me")
+        app.buttons["habit-pause me"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Pause"].tap()
+        app.navigationBars.buttons["Habits"].tap()
+
+        addHabit(named: "Complete Me")
+        app.buttons["habit-complete me"].tap()
+        app.buttons["habit-actions"].tap()
+        app.buttons["Complete"].tap()
+        app.navigationBars.buttons["Habits"].tap()
+
+        XCTAssertTrue(app.staticTexts["No Active Habits"].waitForExistence(timeout: 5))
+        XCTAssertEqual(
+            app.staticTexts["habit-paused-pause me-status"].value as? String,
+            "Paused"
+        )
+        XCTAssertEqual(
+            app.staticTexts["habit-completed-complete me-status"].value as? String,
+            "Completed"
+        )
+        XCTAssertFalse(app.staticTexts["0/1 today · 1 remaining"].exists)
+        XCTAssertFalse(app.buttons["habit-overview-check-in"].exists)
+    }
+
+    func testOncePerDayEditorHidesSelectedDayTargetAndValidatesPeriodMaximum() {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "-PGOSUITesting", "-PGOSResetData",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"
+        ]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        app.buttons["add-habit"].tap()
+
+        let name = app.textFields["habit-editor-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Bounded Plan")
+        app.buttons["habit-goal"].tap()
+        app.buttons["Selected Days"].tap()
+        XCTAssertFalse(app.textFields["habit-daily-target"].exists)
+
+        app.buttons["habit-goal"].tap()
+        app.buttons["Times per Week"].tap()
+        let target = app.textFields["habit-daily-target"]
+        XCTAssertTrue(target.waitForExistence(timeout: 5))
+        XCTAssertEqual(target.label, "Weekly Target")
+        target.tap()
+        target.typeText("8")
+        app.buttons["habit-editor-save"].tap()
+        XCTAssertTrue(app.staticTexts["Target must be between 1 and 7."].waitForExistence(timeout: 5))
+    }
+
     func testTodayAndTagEmptyStatesOfferClearStartingActions() {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -823,7 +898,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         let keyboardDone = app.buttons["weekly-review-keyboard-done"]
         XCTAssertTrue(keyboardDone.waitForExistence(timeout: 5))
         keyboardDone.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["weekly-review-unsaved"].exists)
+        XCTAssertTrue(
+            app.descendants(matching: .any)["weekly-review-unsaved"]
+                .waitForExistence(timeout: 5)
+        )
         app.buttons["save-weekly-review"].tap()
         let saveConfirmation = app.descendants(matching: .any)["weekly-review-save-confirmation"]
         XCTAssertTrue(saveConfirmation.waitForExistence(timeout: 5))
