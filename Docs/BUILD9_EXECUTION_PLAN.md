@@ -48,11 +48,11 @@ Owner 于 2026-09-16 批准完整 Build 9 Goal（`PersonalGrowthOS_Build9_Codex_
 
 ## Checkpoint / resume
 
-六项功能已实现，产品源码未再改变。候选全量 Unit 已执行一次，208/209 通过；唯一失败为新测试在相同创建时间下错误假定 UUID 顺序，已固定测试 UUID，待定向重测。中文退出按钮重复无障碍节点的查询已修正，待重测。真实深色大字号、多置顶 UI 尚未执行。模拟器命令自动审批因服务容量拒绝，等待 Owner 对受限操作回应；不得绕过。实现已提交为 `7c65413`；尚未推送/创建本轮 PR。
+六项功能已实现，产品源码未再改变。候选全量 Unit 已执行一次，208/209 通过；唯一失败为新测试在相同创建时间下错误假定 UUID 顺序，已固定测试 UUID，待定向重测。中文退出按钮重复无障碍节点的查询已修正，待重测。真实深色大字号、多置顶 UI 尚未执行。模拟器命令自动审批因服务容量拒绝，等待 Owner 对受限操作回应；不得绕过。实现已提交为 `7c65413`，普通推送成功，独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) 已创建；base 为 Build8 分支。
 
 ## Final result
 
-PARTIAL checkpoint：实现完成；必要自动验证尚有未确认项；本地实现提交已完成，普通推送/Draft PR 未完成；真机及发布未执行。此状态不能视为完成 Goal 或进入发布。
+PARTIAL checkpoint：实现完成；必要自动验证尚有未确认项；本地实现提交、普通推送、Draft PR #6 已完成；真机及发布未执行。此状态不能视为完成 Goal 或进入发布。
 
 ## Checkpoint evidence — data foundation
 
@@ -85,7 +85,7 @@ PARTIAL checkpoint：实现完成；必要自动验证尚有未确认项；本�
 - UI 失败点：中文 Alert 已正确显示“继续编辑”，XCTest 将父子无障碍按钮都匹配到同一 identifier。查询限定到 Alert 的 firstMatch；完整正文保持与后续编辑/删除断言不变。
 - 待执行命令：`xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=5F04DE28-8329-4774-9488-076D6DDC5230' -derivedDataPath /tmp/PGOS-Build9-Derived -only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests/testBuild9ContinuationFailureRollbackSearchAndParentStatistics -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBuild9ChineseThoughtEditingDiscardDeletionAndVersion -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBuild9ManyHabitsExpandAndScroll -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBuild9PinnedPreviewAndAllPinnedList -resultBundlePath /tmp/PGOS-Build9-Accessibility.xcresult`。
 - 在上述命令前读取系统原值为 `appearance light` / `content_size large`；计划设置 dark / accessibility-extra-large 并在验证后恢复。设置及测试组合命令尚未启动：自动审批明确拒绝，原因 `Automatic approval review failed: Selected model is at capacity. Please try a different model.` 已向 Owner 说明并请求继续批准，未换工具/协议绕过，未循环重试。
-- 产品工作树内容 SHA256：`0353355b47cfd2e55644953577ed163465d1606f19edd3742a0ddba0ff97bf34`。算法：按路径排序全部 `PersonalGrowthOS/**/*.swift`，再 catalog 与 pbxproj，依次散列路径及文件字节。FinalCandidate 后只改测试和文档，产品代码相同。最终需补充提交 SHA。
+- 产品工作树内容 SHA256：`0353355b47cfd2e55644953577ed163465d1606f19edd3742a0ddba0ff97bf34`。算法：按路径排序全部 `PersonalGrowthOS/**/*.swift`，再 catalog 与 pbxproj，依次散列路径及文件字节。FinalCandidate 后只改测试和文档，产品代码相同。产品实现提交为 `7c65413`，其后仅文档提交。
 - 静态检查：`git diff --check` PASS；461 个本地化键均有 en / zh-Hans；Debug/Release 均仍 1.0 (7)；新增 fixture 文件仅合成 store、图片、来源说明与生成测试，未包含真实私人数据。
 
 ## Independent Review focus and Owner iPhone 16 checklist
@@ -95,3 +95,7 @@ Review 重点：`AppShell.swift` 与共享 HabitOverviewRow 的周/月 snapshot 
 Owner 真机待验：3 个习惯+2 个目标首屏；体重空值/参考/小数键盘/收起/取消重入；日/周/月打卡及当天撤销；置顶3条预览和全部列表；中文补充新增/编辑/放弃/删除；搜索定位与重启保持。恢复与破坏性场景仅用隔离测试数据，不清空手机真实库。
 
 未增加 build number、未合并、未 Archive、未上传 TestFlight。补齐受限验收与独立 Draft PR 后，唯一下一边界是独立 Review。
+
+### Remote delivery checkpoint
+
+本地实现提交 `7c65413`，普通推送成功；独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)，base `feature/build8-habit-analytics-dashboard`，head `feature/build9-today-entry-followups`。未修改 PR #5 范围。正文明确必要验收待补齐，不将远端交付成功当作 Goal COMPLETE。自动审批问题仅剩模拟器验收，提交/推送/创建 Draft 均通过各自正式环境审批。
