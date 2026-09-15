@@ -397,3 +397,7 @@ Foundation Documents：
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
 | v0.2    | 2026-07-15 | Reconciled target-user and document-status decisions. |
+
+## Build 9 Approved Scope — 2026-09-16
+
+Build 9 范围说明：私人“后续补充”是本人对旧 Entry 的单层文字延续，不属于此处排除的社交评论；没有他人参与、回复、点赞或通知。

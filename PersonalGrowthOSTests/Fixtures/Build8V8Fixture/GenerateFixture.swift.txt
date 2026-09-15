@@ -1,0 +1,20 @@
+
+extension HabitFoundationTests {
+    func testGenerateExactBuild8Fixture() throws {
+        let root = URL(fileURLWithPath: "/tmp/PGOS-Build9-V8Fixture")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: root.path))
+        let source = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build7V7Fixture", withExtension: nil))
+        try FileManager.default.copyItem(at: source, to: root)
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("PersonalGrowthOS.store"))
+            try HabitAnalyticsMigrationBootstrap.apply(context: container.mainContext, now: Date(timeIntervalSince1970: 1_730_000_000), timeZone: TimeZone(identifier: "Asia/Tokyo")!)
+            try container.mainContext.save()
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<HabitPlanRevision>()), 4)
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 1)
+        }
+        try autoreleasepool {
+            let reopened = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("PersonalGrowthOS.store"))
+            XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<HabitLifecycleEvent>()), 4)
+        }
+    }
+}

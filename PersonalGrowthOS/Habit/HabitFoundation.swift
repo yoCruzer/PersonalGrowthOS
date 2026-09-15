@@ -1234,3 +1234,15 @@ extension HabitLog: Identifiable {}
 extension HabitConfiguration: Identifiable {}
 extension HabitPlanRevision: Identifiable {}
 extension HabitLifecycleEvent: Identifiable {}
+
+enum TodayHabitGrouping {
+    static func habits(_ habits: [Habit], period: HabitPlanPeriod, plans: [HabitPlanRevision], on date: Date, timeZone: TimeZone = .current) -> [Habit] {
+        habits.filter { habit in
+            guard habit.status == .active else { return false }
+            guard let plan = HabitPlanResolver.currentPlan(for: habit.id, on: date, plans: plans, timeZone: timeZone) else {
+                return period == .day && !plans.contains { $0.habitID == habit.id }
+            }
+            return plan.period == period && HabitPlanResolver.isScheduled(plan, on: date, timeZone: timeZone)
+        }
+    }
+}

@@ -800,7 +800,7 @@ final class ImportExportRecoveryTests: XCTestCase {
             rewriteJSON: { manifest, data in
                 (ExportManifest(
                     formatIdentifier: manifest.formatIdentifier,
-                    packageSchemaVersion: 5,
+                    packageSchemaVersion: ExportManifest.currentPackageSchemaVersion + 1,
                     appVersion: manifest.appVersion,
                     appBuild: manifest.appBuild,
                     exportID: manifest.exportID,
@@ -819,7 +819,7 @@ final class ImportExportRecoveryTests: XCTestCase {
         }
         let schemaTarget = try fixture.makeEmptyStore(named: "SchemaTarget")
         await assertThrows({ try await schemaTarget.service.importPackage(from: unsupported) }) {
-            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(5))
+            XCTAssertEqual($0 as? TransferPackageError, .unsupportedSchema(ExportManifest.currentPackageSchemaVersion + 1))
         }
     }
 
@@ -1314,7 +1314,8 @@ private final class TransferTestFixture {
                 "entries": 2, "images": 1, "tags": 1, "links": 5,
                 "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
                 "weightRecords": 1, "weeklyReviews": 1,
-                "habitPlanRevisions": 1, "habitLifecycleEvents": 1
+                "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
+                "entryPins": 0, "entryFollowUps": 0
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1373,7 +1374,9 @@ private func ids(in context: ModelContext) throws -> [String: Set<UUID>] {
         "weightRecords": Set(try context.fetch(FetchDescriptor<WeightRecord>()).map(\.id)),
         "weeklyReviews": Set(try context.fetch(FetchDescriptor<WeeklyReview>()).map(\.id)),
         "habitPlanRevisions": Set(try context.fetch(FetchDescriptor<HabitPlanRevision>()).map(\.id)),
-        "habitLifecycleEvents": Set(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id))
+        "habitLifecycleEvents": Set(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id)),
+        "entryPins": Set(try context.fetch(FetchDescriptor<EntryPin>()).map(\.id)),
+        "entryFollowUps": Set(try context.fetch(FetchDescriptor<EntryFollowUp>()).map(\.id))
     ]
 }
 
@@ -1384,6 +1387,8 @@ private func totalObjectCount(in context: ModelContext) throws -> Int {
 
 @MainActor
 private func deleteAllFixtureData(_ context: ModelContext) throws {
+    try context.fetch(FetchDescriptor<EntryPin>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<EntryFollowUp>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<ObjectLink>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<HabitLogDayMetadata>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<HabitLog>()).forEach(context.delete)
@@ -1509,4 +1514,125 @@ private func writeUInt32(_ value: UInt32, to data: inout Data, at offset: Int) {
     data[offset + 1] = UInt8((value >> 8) & 0xff)
     data[offset + 2] = UInt8((value >> 16) & 0xff)
     data[offset + 3] = UInt8((value >> 24) & 0xff)
+}
+
+extension ImportExportRecoveryTests {
+    func testBuild9V5ContinuationRoundTripAndLegacyRejection() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let context = source.container.mainContext
+        let entry = try XCTUnwrap(context.fetch(FetchDescriptor<Entry>()).first)
+        let service = EntryContinuationService(context: context, now: { Date(timeIntervalSince1970: 1_730_000_000) })
+        try service.setPinned(true, entryID: entry.id)
+        let thought = try service.add(entryID: entry.id, body: "后续认识\n第二行")
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "V5Target", onDisk: true)
+        let preview = try await target.service.previewPackage(from: lease.url)
+        XCTAssertEqual(preview.objectCounts["entryFollowUps"], 1)
+        XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+        let result = try await target.service.importPackage(from: lease.url)
+        XCTAssertEqual(result.objectCounts["entryPins"], 1)
+        XCTAssertEqual(result.objectCounts["entryFollowUps"], 1)
+        let imported = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<EntryFollowUp>()).first)
+        XCTAssertEqual(imported.id, thought.id)
+        XCTAssertEqual(imported.entryID, thought.entryID)
+        XCTAssertEqual(imported.body, thought.body)
+        XCTAssertEqual(imported.createdAt, thought.createdAt)
+        XCTAssertEqual(imported.updatedAt, thought.updatedAt)
+        XCTAssertEqual(try ids(in: target.container.mainContext), try ids(in: context))
+        let failing = try fixture.makeEmptyStore(named: "V5Rollback", publicationCheckpoint: { checkpoint in
+            if checkpoint == .beforeSave { throw TransferPackageError.interrupted }
+        })
+        do { _ = try await failing.service.importPackage(from: lease.url); XCTFail("Injected save must fail") }
+        catch { XCTAssertEqual(try totalObjectCount(in: failing.container.mainContext), 0) }
+        let orphan = try fixture.makeEmptyStore(named: "V5Orphan")
+        orphan.container.mainContext.insert(EntryPin(entryID: UUID(), pinnedAt: Date()))
+        try orphan.container.mainContext.save()
+        do { _ = try await orphan.service.importPackage(from: lease.url); XCTFail("Auxiliary records make the store nonempty") }
+        catch { XCTAssertEqual(error as? TransferPackageError, .targetNotEmpty) }
+        for version in 1...4 {
+            let package = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("OldClaim\(version)"), rewriteJSON: { manifest, data in
+                (ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
+                                appVersion: manifest.appVersion, appBuild: manifest.appBuild,
+                                exportID: manifest.exportID, exportedAt: manifest.exportedAt,
+                                objectCounts: data.objectCounts(forPackageSchemaVersion: version),
+                                dataFile: manifest.dataFile, mediaFiles: manifest.mediaFiles), data)
+            })
+            let empty = try fixture.makeEmptyStore(named: "Rejected\(version)")
+            do {
+                _ = try await empty.service.importPackage(from: package)
+                XCTFail("Old format must reject new payload")
+            } catch { XCTAssertEqual(try totalObjectCount(in: empty.container.mainContext), 0) }
+        }
+    }
+
+    func testBuild9InvalidContinuationPayloadsRejectedBeforeWriting() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        for variant in 0..<6 {
+            let package = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("Invalid\(variant)"), rewriteJSON: { manifest, data in
+                let id = data.entries[0].id
+                let date = Date(timeIntervalSince1970: 1000)
+                let pin = EntryPinTransfer(id: UUID(), entryID: variant == 0 ? UUID() : id, pinnedAt: date)
+                let thought = EntryFollowUpTransfer(id: UUID(), entryID: variant == 1 ? UUID() : id,
+                                                   body: variant == 2 ? " \n" : "想法", createdAt: date,
+                                                   updatedAt: variant == 3 ? date.addingTimeInterval(-1) : date)
+                let changed = TransferData(entries: data.entries, images: data.images, tags: data.tags,
+                    links: data.links, habits: data.habits, habitLogs: data.habitLogs, goals: data.goals,
+                    goalEvents: data.goalEvents, weightRecords: data.weightRecords, weeklyReviews: data.weeklyReviews,
+                    habitPlanRevisions: data.habitPlanRevisions, habitLifecycleEvents: data.habitLifecycleEvents,
+                    entryPins: variant == 5 ? [pin, EntryPinTransfer(id: UUID(), entryID: pin.entryID, pinnedAt: pin.pinnedAt)] : [pin], entryFollowUps: variant == 4 ? [thought, thought] : [thought])
+                return (ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: 5,
+                    appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID,
+                    exportedAt: manifest.exportedAt, objectCounts: changed.objectCounts,
+                    dataFile: manifest.dataFile, mediaFiles: manifest.mediaFiles), changed)
+            })
+            let target = try fixture.makeEmptyStore(named: "InvalidTarget\(variant)")
+            do { _ = try await target.service.importPackage(from: package); XCTFail("Invalid package accepted") }
+            catch { XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0) }
+        }
+    }
+}
+
+extension ImportExportRecoveryTests {
+    func testBuild9V5RequiresNewArraysWhileV4AllowsThemMissing() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        for version in [4, 5] {
+            let package = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("MissingArrays\(version)"), mutation: { root, manifest, data in
+                let dataURL = root.appendingPathComponent("data.json")
+                var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: dataURL)) as? [String: Any])
+                payload.removeValue(forKey: "entryPins")
+                payload.removeValue(forKey: "entryFollowUps")
+                let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys)
+                try bytes.write(to: dataURL)
+                let changedManifest = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
+                    appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID,
+                    exportedAt: manifest.exportedAt, objectCounts: data.objectCounts(forPackageSchemaVersion: version),
+                    dataFile: ExportFileRecord(path: "data.json", byteCount: Int64(bytes.count),
+                        sha256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()), mediaFiles: manifest.mediaFiles)
+                let encoder = JSONEncoder()
+                encoder.dateEncodingStrategy = .secondsSince1970
+                try encoder.encode(changedManifest).write(to: root.appendingPathComponent("manifest.json"))
+            })
+            let target = try fixture.makeEmptyStore(named: "MissingArraysTarget\(version)")
+            if version == 4 {
+                _ = try await target.service.importPackage(from: package)
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<EntryFollowUp>()), 0)
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+            } else {
+                do { _ = try await target.service.importPackage(from: package); XCTFail("V5 missing payload accepted") }
+                catch { XCTAssertEqual(error as? TransferPackageError, .corruptData) }
+                XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+            }
+        }
+    }
 }

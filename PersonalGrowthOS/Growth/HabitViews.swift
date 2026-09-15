@@ -304,7 +304,7 @@ struct HabitsView: View {
     }
 }
 
-private struct HabitOverviewRow: View {
+struct HabitOverviewRow: View {
     let habit: Habit
     let plan: HabitPlan?
     let settings: HabitSettings

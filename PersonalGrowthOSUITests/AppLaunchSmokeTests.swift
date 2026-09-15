@@ -28,8 +28,8 @@ final class AppLaunchSmokeTests: XCTestCase {
         ]
         app.launch()
 
-        XCTAssertTrue(app.buttons["quick-capture-button"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["quick-capture-button"].isHittable)
+        XCTAssertTrue(app.tabBars.buttons["Record"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.tabBars.buttons["Record"].isHittable)
         app.tabBars.buttons["Growth"].tap()
         XCTAssertTrue(app.buttons["growth-goals"].isHittable)
         app.tabBars.buttons["Library"].tap()
@@ -54,7 +54,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        app.buttons["quick-capture-button"].tap()
+        app.tabBars.buttons["Record"].tap()
         let body = app.textViews["capture-body"]
         XCTAssertTrue(body.waitForExistence(timeout: 5))
         body.tap()
@@ -93,7 +93,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        app.buttons["quick-capture-button"].tap()
+        app.tabBars.buttons["Record"].tap()
         let body = app.textViews["capture-body"]
         XCTAssertTrue(body.waitForExistence(timeout: 5))
         body.tap()
@@ -160,7 +160,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        app.buttons["quick-capture-button"].tap()
+        app.tabBars.buttons["Record"].tap()
         let body = app.textViews["capture-body"]
         XCTAssertTrue(body.waitForExistence(timeout: 5))
         body.tap()
@@ -186,7 +186,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        app.buttons["quick-capture-button"].tap()
+        app.tabBars.buttons["Record"].tap()
         let body = app.textViews["capture-body"]
         XCTAssertTrue(body.waitForExistence(timeout: 5))
         body.tap()
@@ -209,7 +209,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        app.buttons["quick-capture-button"].tap()
+        app.tabBars.buttons["Record"].tap()
         let body = app.textViews["capture-body"]
         XCTAssertTrue(body.waitForExistence(timeout: 5))
         body.tap()
@@ -560,7 +560,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         for tab in ["今天", "时间线", "记录", "成长", "资料库"] {
             XCTAssertTrue(app.tabBars.buttons[tab].waitForExistence(timeout: 5))
         }
-        XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("快速记录"))
+        XCTAssertTrue(app.tabBars.buttons["记录"].exists)
         app.buttons["settings-button"].tap()
         XCTAssertTrue(app.navigationBars["设置"].waitForExistence(timeout: 5))
 
@@ -575,7 +575,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         for tab in ["Today", "Timeline", "Record", "Growth", "Library"] {
             XCTAssertTrue(app.tabBars.buttons[tab].waitForExistence(timeout: 5))
         }
-        XCTAssertTrue(app.buttons["quick-capture-button"].label.contains("Quick Capture"))
+        XCTAssertTrue(app.tabBars.buttons["Record"].exists)
     }
 
     func testHabitDashboardLocalizesInSimplifiedChinese() {
@@ -847,7 +847,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["Record Today"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["today-open-growth"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["today-open-growth"].isHittable)
 
         app.tabBars.buttons["Library"].tap()
@@ -1099,5 +1099,269 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["weight-editor-save"].tap()
         XCTAssertTrue(app.buttons["add-weight"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["add-weight"].isHittable)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testBuild9DirectWeightFocusAndContinuationSearchRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertFalse(app.buttons["quick-capture-button"].exists)
+        app.buttons["today-add-weight"].tap()
+        let weight = app.textFields["weight-editor-value"]
+        XCTAssertTrue(weight.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(weight.value as? String, "Weight (kg)")
+        weight.typeText("72.5")
+        let keyboard = XCTAttachment(screenshot: app.screenshot())
+        keyboard.name = "Build9 Weight keyboard"
+        keyboard.lifetime = .keepAlways
+        add(keyboard)
+        app.buttons["weight-editor-save"].tap()
+        XCTAssertTrue(app.staticTexts["today-latest-weight"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Record"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("Original Build9 memory")
+        app.buttons["capture-save"].tap()
+        app.staticTexts["Original Build9 memory"].firstMatch.tap()
+        app.buttons["entry-actions"].tap()
+        app.buttons["entry-toggle-pin"].tap()
+        app.buttons["entry-add-thought"].tap()
+        let thought = app.textViews["follow-up-editor-body"]
+        XCTAssertTrue(thought.waitForExistence(timeout: 5))
+        thought.tap()
+        thought.typeText("A later insight\nSearchable continuation")
+        app.buttons["follow-up-editor-save"].tap()
+        XCTAssertTrue(app.staticTexts["A later insight\nSearchable continuation"].waitForExistence(timeout: 5))
+        let detail = XCTAttachment(screenshot: app.screenshot())
+        detail.name = "Build9 Follow-up detail"
+        detail.lifetime = .keepAlways
+        add(detail)
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Pinned Entries"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("Searchable continuation")
+        XCTAssertTrue(app.staticTexts["Matched Follow-up"].waitForExistence(timeout: 5))
+        app.staticTexts["Matched Follow-up"].tap()
+        XCTAssertTrue(app.staticTexts["A later insight\nSearchable continuation"].waitForExistence(timeout: 5))
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testBuild9TodayFirstScreenAndPeriodActions() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        func addHabit(_ title: String, period: String? = nil) {
+            app.buttons["add-habit"].tap()
+            let name = app.textFields["habit-editor-name"]
+            XCTAssertTrue(name.waitForExistence(timeout: 5))
+            name.tap()
+            name.typeText(title)
+            if let period {
+                app.buttons["habit-goal"].tap()
+                app.buttons[period].tap()
+                let target = app.textFields["habit-daily-target"]
+                XCTAssertTrue(target.waitForExistence(timeout: 5))
+                target.tap()
+                let currentValue = target.value as? String ?? ""
+                target.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: currentValue.count) + "2")
+            }
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(name.waitForNonExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["add-habit"].isHittable)
+        }
+        for title in ["Read", "Walk", "Write"] { addHabit(title) }
+        app.navigationBars.buttons["Growth"].tap()
+        app.buttons["growth-goals"].tap()
+        for title in ["Learn something", "Make time outdoors"] {
+            let field = app.textFields["new-goal-title"]
+            XCTAssertTrue(field.waitForExistence(timeout: 5))
+            field.tap()
+            field.typeText(title)
+            app.buttons["add-goal"].tap()
+        }
+        app.keyboards.buttons.matching(NSPredicate(format: "identifier ==[c] %@", "return")).firstMatch.tap()
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.buttons["today-add-weight"].waitForExistence(timeout: 5))
+        for title in ["read", "walk", "write"] {
+            XCTAssertTrue(app.buttons["today-habit-\(title)"].isHittable)
+        }
+        XCTAssertTrue(app.buttons["today-add-weight"].isHittable)
+        XCTAssertTrue(app.buttons["today-goal-learn something"].isHittable)
+        XCTAssertTrue(app.buttons["today-goal-make time outdoors"].isHittable)
+        let first = XCTAttachment(screenshot: app.screenshot())
+        first.name = "Build9 Today iPhone16 3 habits 2 goals"
+        first.lifetime = .keepAlways
+        add(first)
+        app.tabBars.buttons["Growth"].tap()
+        app.navigationBars.buttons["Growth"].tap()
+        app.buttons["growth-habits"].tap()
+        addHabit("Weekly reading", period: "Times per Week")
+        addHabit("Monthly outdoors", period: "Times per Month")
+        app.tabBars.buttons["Today"].tap()
+        app.swipeUp()
+        let weeklyRow = app.buttons["habit-weekly reading"]
+        XCTAssertTrue(weeklyRow.waitForExistence(timeout: 5))
+        let periodShot = XCTAttachment(screenshot: app.screenshot())
+        periodShot.name = "Build9 Today weekly monthly shared actions"
+        periodShot.lifetime = .keepAlways
+        add(periodShot)
+        let weeklyCell = app.cells.containing(.button, identifier: "habit-weekly reading").firstMatch
+        let weeklyAction = weeklyCell.buttons["habit-overview-check-in"]
+        XCTAssertTrue(weeklyAction.isHittable)
+        weeklyAction.tap()
+        XCTAssertFalse(weeklyAction.isEnabled)
+        let monthlyCell = app.cells.containing(.button, identifier: "habit-monthly outdoors").firstMatch
+        let monthlyAction = monthlyCell.buttons["habit-overview-check-in"]
+        if !monthlyAction.isHittable { app.swipeUp() }
+        XCTAssertTrue(monthlyAction.isHittable)
+        monthlyAction.tap()
+        XCTAssertFalse(monthlyAction.isEnabled)
+
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testBuild9ChineseThoughtEditingDiscardDeletionAndVersion() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
+        app.launch()
+        app.buttons["settings-button"].tap()
+        let version = app.buttons["settings-version"]
+        for _ in 0..<3 where !version.isHittable { app.swipeUp() }
+        XCTAssertTrue(version.isHittable)
+        version.tap()
+        XCTAssertTrue(app.staticTexts["已复制"].waitForExistence(timeout: 5))
+        let settingsShot = XCTAttachment(screenshot: app.screenshot())
+        settingsShot.name = "Build9 Chinese actual version copied"
+        settingsShot.lifetime = .keepAlways
+        add(settingsShot)
+        app.navigationBars.buttons["完成"].tap()
+        app.tabBars.buttons["记录"].tap()
+        let original = "保留原来的想法。" + String(repeating: "今天记下一段经历，未来可以再回来补充。\n", count: 12)
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText(original)
+        app.buttons["capture-save"].tap()
+        app.staticTexts.matching(NSPredicate(format: "label == %@", original)).firstMatch.tap()
+        let addThought = app.buttons["entry-add-thought"]
+        for _ in 0..<5 where !addThought.isHittable { app.swipeUp() }
+        XCTAssertTrue(addThought.isHittable)
+        addThought.tap()
+        let thought = app.textViews["follow-up-editor-body"]
+        XCTAssertTrue(thought.waitForExistence(timeout: 5))
+        thought.tap()
+        thought.typeText("新的认识\n保留变化的过程")
+        app.navigationBars.buttons["取消"].tap()
+        app.alerts.buttons["follow-up-keep-editing"].firstMatch.tap()
+        XCTAssertEqual(thought.value as? String, "新的认识\n保留变化的过程")
+        app.buttons["follow-up-editor-save"].tap()
+        let edit = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "edit-follow-up-")).firstMatch
+        XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        edit.tap()
+        XCTAssertFalse(app.buttons["follow-up-editor-save"].isEnabled)
+        thought.tap()
+        thought.typeText("\n今天有了进展")
+        app.buttons["follow-up-editor-save"].tap()
+        XCTAssertTrue(app.staticTexts["已编辑"].waitForExistence(timeout: 5))
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Build9 Chinese long entry follow-up edited"
+        shot.lifetime = .keepAlways
+        add(shot)
+        let delete = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "delete-follow-up-")).firstMatch
+        delete.tap()
+        app.buttons["删除"].firstMatch.tap()
+        XCTAssertTrue(addThought.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["新的认识\n保留变化的过程\n今天有了进展"].exists)
+        app.swipeDown()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", original)).firstMatch.exists)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    /// Run with simctl appearance dark and content_size accessibility-extra-large for visual acceptance.
+    func testBuild9ManyHabitsExpandAndScroll() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
+        app.launch()
+        app.tabBars.buttons["成长"].tap()
+        app.buttons["growth-habits"].tap()
+        for index in 1...9 {
+            app.buttons["add-habit"].tap()
+            let name = app.textFields["habit-editor-name"]
+            XCTAssertTrue(name.waitForExistence(timeout: 5))
+            name.tap()
+            name.typeText("习惯\(index)：留一点时间阅读和整理今天的新认识")
+            app.buttons["habit-editor-save"].tap()
+            XCTAssertTrue(name.waitForNonExistence(timeout: 5))
+        }
+        app.tabBars.buttons["今天"].tap()
+        let top = XCTAttachment(screenshot: app.screenshot())
+        top.name = "Build9 system dark accessibility extra large Today"
+        top.lifetime = .keepAlways
+        add(top)
+        let expand = app.buttons["today-expand-habits"]
+        for _ in 0..<8 where !expand.isHittable { app.swipeUp() }
+        XCTAssertTrue(expand.isHittable)
+        expand.tap()
+        let last = app.buttons["today-habit-习惯9:留一点时间阅读和整理今天的新认识"]
+        for _ in 0..<12 where !last.isHittable { app.swipeUp() }
+        XCTAssertTrue(last.isHittable)
+        let expanded = XCTAttachment(screenshot: app.screenshot())
+        expanded.name = "Build9 expanded ninth habit large text"
+        expanded.lifetime = .keepAlways
+        add(expanded)
+        for _ in 0..<5 where !app.buttons["today-add-weight"].isHittable { app.swipeUp() }
+        XCTAssertTrue(app.buttons["today-add-weight"].isHittable)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testBuild9PinnedPreviewAndAllPinnedList() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        for index in 1...4 {
+            app.tabBars.buttons["Record"].tap()
+            let body = app.textViews["capture-body"]
+            XCTAssertTrue(body.waitForExistence(timeout: 5))
+            body.tap()
+            body.typeText("Pinned memory \(index)")
+            app.buttons["capture-save"].tap()
+            let row = app.staticTexts["Pinned memory \(index)"].firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 5))
+            row.tap()
+            app.buttons["entry-actions"].tap()
+            app.buttons["entry-toggle-pin"].tap()
+            app.navigationBars.buttons["Timeline"].tap()
+        }
+        let all = app.buttons["View All Pinned"]
+        for _ in 0..<3 where !all.isHittable { app.swipeUp() }
+        XCTAssertTrue(all.isHittable)
+        let preview = XCTAttachment(screenshot: app.screenshot())
+        preview.name = "Build9 three pinned shortcuts and all route"
+        preview.lifetime = .keepAlways
+        add(preview)
+        all.tap()
+        XCTAssertTrue(app.navigationBars["Pinned Entries"].waitForExistence(timeout: 5))
+        for index in 1...4 { XCTAssertTrue(app.staticTexts["Pinned memory \(index)"].exists) }
+        let complete = XCTAttachment(screenshot: app.screenshot())
+        complete.name = "Build9 all four pinned entries"
+        complete.lifetime = .keepAlways
+        add(complete)
     }
 }

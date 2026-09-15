@@ -179,12 +179,15 @@ struct WeightHistoryView: View {
     }
 }
 
-private struct WeightEditorView: View {
+struct WeightEditorView: View {
     let record: WeightRecord?
     let didSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @FocusState private var isWeightFocused: Bool
+    @State private var didRequestFocus = false
+    @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors) private var previousRecords: [WeightRecord]
     @State private var weightText: String
     @State private var recordedAt: Date
     @State private var errorMessage: String?
@@ -204,7 +207,17 @@ private struct WeightEditorView: View {
                 Section {
                     TextField("Weight (kg)", text: $weightText)
                         .keyboardType(.decimalPad)
+                        .focused($isWeightFocused)
                         .accessibilityIdentifier("weight-editor-value")
+                    if record == nil, let previous = WeightRecordOrdering.newestFirst(previousRecords).first(where: { $0.recordedAt <= Date() }) {
+                        LabeledContent("Previous Weight") {
+                            VStack(alignment: .trailing) {
+                                Text(verbatim: WeightFormatting.kilograms(previous.weightKilograms))
+                                Text(previous.recordedAt, format: .dateTime.year().month().day())
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
                     DatePicker("Date", selection: $recordedAt, displayedComponents: .date)
                         .accessibilityIdentifier("weight-editor-date")
                 } footer: {
@@ -212,7 +225,17 @@ private struct WeightEditorView: View {
                 }
             }
             .navigationTitle(record == nil ? "Record Weight" : "Edit Weight")
+            .task {
+                guard record == nil, !didRequestFocus else { return }
+                didRequestFocus = true
+                await Task.yield()
+                isWeightFocused = true
+            }
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isWeightFocused = false }
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
@@ -233,12 +256,8 @@ private struct WeightEditorView: View {
     }
 
     private func save() {
-        let normalized = weightText.replacingOccurrences(of: ",", with: ".")
-        guard let kilograms = Double(normalized) else {
-            errorMessage = String(localized: "Enter a valid weight in kilograms.")
-            return
-        }
         do {
+            let kilograms = try WeightRules.kilograms(from: weightText)
             let service = WeightRecordService(context: modelContext)
             if let record {
                 try service.update(

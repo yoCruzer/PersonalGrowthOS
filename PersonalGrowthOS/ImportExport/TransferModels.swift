@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 4
+    static let currentPackageSchemaVersion = 5
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -42,6 +42,8 @@ struct TransferData: Codable, Equatable {
     let weeklyReviews: [WeeklyReviewTransfer]
     let habitPlanRevisions: [HabitPlanRevisionTransfer]
     let habitLifecycleEvents: [HabitLifecycleEventTransfer]
+    let entryPins: [EntryPinTransfer]
+    let entryFollowUps: [EntryFollowUpTransfer]
 
     init(
         entries: [EntryTransfer],
@@ -55,7 +57,9 @@ struct TransferData: Codable, Equatable {
         weightRecords: [WeightRecordTransfer] = [],
         weeklyReviews: [WeeklyReviewTransfer] = [],
         habitPlanRevisions: [HabitPlanRevisionTransfer] = [],
-        habitLifecycleEvents: [HabitLifecycleEventTransfer] = []
+        habitLifecycleEvents: [HabitLifecycleEventTransfer] = [],
+        entryPins: [EntryPinTransfer] = [],
+        entryFollowUps: [EntryFollowUpTransfer] = []
     ) {
         self.entries = entries
         self.images = images
@@ -69,6 +73,8 @@ struct TransferData: Codable, Equatable {
         self.weeklyReviews = weeklyReviews
         self.habitPlanRevisions = habitPlanRevisions
         self.habitLifecycleEvents = habitLifecycleEvents
+        self.entryPins = entryPins
+        self.entryFollowUps = entryFollowUps
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -84,6 +90,8 @@ struct TransferData: Codable, Equatable {
         case weeklyReviews
         case habitPlanRevisions
         case habitLifecycleEvents
+        case entryPins
+        case entryFollowUps
     }
 
     init(from decoder: Decoder) throws {
@@ -110,6 +118,8 @@ struct TransferData: Codable, Equatable {
         habitLifecycleEvents = try container.decodeIfPresent(
             [HabitLifecycleEventTransfer].self, forKey: .habitLifecycleEvents
         ) ?? []
+        entryPins = try container.decodeIfPresent([EntryPinTransfer].self, forKey: .entryPins) ?? []
+        entryFollowUps = try container.decodeIfPresent([EntryFollowUpTransfer].self, forKey: .entryFollowUps) ?? []
     }
 
     var objectCounts: [String: Int] {
@@ -125,7 +135,9 @@ struct TransferData: Codable, Equatable {
             "weightRecords": weightRecords.count,
             "weeklyReviews": weeklyReviews.count,
             "habitPlanRevisions": habitPlanRevisions.count,
-            "habitLifecycleEvents": habitLifecycleEvents.count
+            "habitLifecycleEvents": habitLifecycleEvents.count,
+            "entryPins": entryPins.count,
+            "entryFollowUps": entryFollowUps.count
         ]
     }
 
@@ -134,12 +146,27 @@ struct TransferData: Codable, Equatable {
             (version != 1 || key != "weightRecords")
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
+                && (version >= 5 || (key != "entryPins" && key != "entryFollowUps"))
         }
     }
 
     var totalObjectCount: Int {
         objectCounts.values.reduce(0, +)
     }
+}
+
+struct EntryPinTransfer: Codable, Equatable {
+    let id: UUID
+    let entryID: UUID
+    let pinnedAt: Date
+}
+
+struct EntryFollowUpTransfer: Codable, Equatable {
+    let id: UUID
+    let entryID: UUID
+    let body: String
+    let createdAt: Date
+    let updatedAt: Date
 }
 
 struct EntryTransfer: Codable, Equatable {
@@ -366,6 +393,9 @@ enum TransferValidator {
         }) else {
             throw TransferPackageError.invalidObject("habitLog")
         }
+        guard manifest.packageSchemaVersion >= 5 || (data.entryPins.isEmpty && data.entryFollowUps.isEmpty) else {
+            throw TransferPackageError.invalidObject("entryContinuation")
+        }
         guard data.totalObjectCount <= limits.maximumObjectCount else {
             throw TransferPackageError.objectLimitExceeded
         }
@@ -400,6 +430,23 @@ enum TransferValidator {
 
         let imageCounts = Dictionary(grouping: data.images, by: \.entryID).mapValues(\.count)
         let entryIDs = Set(data.entries.map(\.id))
+        try unique(data.entryPins.map(\.id), type: "entryPin")
+        try unique(data.entryPins.map(\.entryID), type: "entryPinEntry")
+        try unique(data.entryFollowUps.map(\.id), type: "entryFollowUp")
+        for pin in data.entryPins {
+            guard entryIDs.contains(pin.entryID), pin.pinnedAt.timeIntervalSince1970.isFinite else {
+                throw TransferPackageError.invalidObject("entryPin")
+            }
+        }
+        for followUp in data.entryFollowUps {
+            guard entryIDs.contains(followUp.entryID),
+                  !followUp.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  followUp.createdAt.timeIntervalSince1970.isFinite,
+                  followUp.updatedAt.timeIntervalSince1970.isFinite,
+                  followUp.updatedAt >= followUp.createdAt else {
+                throw TransferPackageError.invalidObject("entryFollowUp")
+            }
+        }
         let entryKinds = Dictionary(uniqueKeysWithValues: try data.entries.map { entry in
             guard let kind = EntryKind(rawValue: entry.kind),
                   EntryStatus(rawValue: entry.status) != nil,

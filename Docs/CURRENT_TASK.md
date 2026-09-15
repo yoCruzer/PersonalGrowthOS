@@ -1,3 +1,11 @@
+# Current Task — Build 9
+
+Owner 授权完整 Build9 Goal：六项实现、风险驱动验证、提交、普通推送、独立 Draft PR；停止于独立 Review。当前分支 `feature/build9-today-entry-followups`，基线 `ae8f7cb6577f2d1bc479471bcd98d6f437670210`；权威计划 [BUILD9_EXECUTION_PLAN.md](BUILD9_EXECUTION_PLAN.md)。
+
+当前 checkpoint：实现完成，候选验证尚未闭环，未提交。自动审批服务以容量错误拒绝模拟器定向验收，已请求 Owner 继续批准。下一步在正式权限恢复后执行计划中的 1 Unit + 3 UI 定向测试（真实深色大字号，结束恢复 light / large），检查截图，更新候选证据，提交/普通推送并创建以 `feature/build8-habit-analytics-dashboard` 为 base 的一个 Draft PR。不得扩展旧 PR #5，不能重跑全量基线或绕过审批。无发布授权。
+
+下列 Build8 内容仅为历史交接证据，冻结边界已被本轮 Owner 开发授权解除，真机未验收结论仍保留。
+
 # Current Task
 
 | Item | Value |

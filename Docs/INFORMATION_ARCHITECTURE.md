@@ -769,3 +769,7 @@ Foundation Documents：
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
 | v0.2    | 2026-07-15 | Reconciled review, capture, habit-log, flag, and data-transfer flows. |
+
+## Build 9 Approved Scope — 2026-09-16
+
+Build 9 调整：Today 顶部不再重复 Quick Capture，底部 Record 保留全局记录能力。Today 顺序为今日习惯、体重直接录入、目标/标记摘要、周/月习惯、本周关注与周回顾。正常 Timeline 顶部提供最多三条置顶快捷引用，原 Entry 留在原时间位置；私人补充位于详情原文/图片之后，搜索命中可定位补充。

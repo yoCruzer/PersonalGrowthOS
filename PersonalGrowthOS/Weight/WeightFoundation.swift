@@ -32,6 +32,13 @@ enum WeightValidationError: Error, Equatable {
 enum WeightRules {
     static let maximumKilograms = 1_000.0
 
+    static func kilograms(from input: String) throws -> Double {
+        guard let value = Double(input.replacingOccurrences(of: ",", with: ".")) else {
+            throw WeightValidationError.invalidWeight
+        }
+        return try validatedKilograms(value)
+    }
+
     static func validatedKilograms(_ value: Double) throws -> Double {
         guard value.isFinite, value > 0, value <= maximumKilograms else {
             throw WeightValidationError.invalidWeight
@@ -167,5 +174,16 @@ final class WeightRecordService {
         )
         descriptor.fetchLimit = 1
         return try context.fetch(descriptor).first
+    }
+}
+
+struct TodayWeightSnapshot {
+    let today: WeightRecord?
+    let previous: WeightRecord?
+
+    init(records: [WeightRecord], now: Date = Date(), calendar: Calendar = .current) {
+        let ordered = WeightRecordOrdering.newestFirst(records).filter { $0.recordedAt <= now }
+        today = ordered.first { calendar.isDate($0.recordedAt, inSameDayAs: now) }
+        previous = ordered.first { $0.recordedAt < calendar.startOfDay(for: now) }
     }
 }
