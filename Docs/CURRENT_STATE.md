@@ -1,6 +1,6 @@
 # Build 9 Current State
 
-2026-09-16：基于干净 Build8 `ae8f7cb6577f2d1bc479471bcd98d6f437670210`，当前分支 `feature/build9-today-entry-followups`；六项功能已实现，工作树未提交。实际 schema V9 / backup v5 / App 1.0 (7)。确切 Build8 V8 fixture 升级、重开与 v5 往返已通过。
+2026-09-16：基于干净 Build8 `ae8f7cb6577f2d1bc479471bcd98d6f437670210`，当前分支 `feature/build9-today-entry-followups`；六项功能已实现，实现提交 `7c65413`。实际 schema V9 / backup v5 / App 1.0 (7)。确切 Build8 V8 fixture 升级、重开与 v5 往返已通过。
 
 本轮全量 Unit 208/209 通过，唯一测试排序假设已修复待重测；中文补充 UI 查询修复、真实深色大字号、多置顶 UI 待验。自动审批服务容量错误拒绝最后模拟器命令，已请求 Owner 继续授权，未绕过。尚未普通 push 或创建本轮 Draft PR。完整证据与恢复命令见 [Execution Plan](BUILD9_EXECUTION_PLAN.md)。状态 **PARTIAL**，不得宣称候选自动验收或 Goal 完成。
 
