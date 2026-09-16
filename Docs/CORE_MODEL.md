@@ -494,3 +494,7 @@ Foundation Documents：
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
 | v0.2    | 2026-07-15 | Reconciled review, relationship, entry-state, and media-ownership semantics. |
+
+## Build 9 Approved Scope — 2026-09-16
+
+Build 9 增量：Entry 可拥有置顶元数据与单层纯文字后续补充。两者以稳定 Entry ID 关联；置顶及补充 CRUD 均不改变原 Entry 的 createdAt、occurredAt、updatedAt，也不增加 Entry/记录天数/周回顾统计。归档保留附属内容，永久删除一致清理。

@@ -1,3 +1,23 @@
+# PR #6 Review Closure — 再次独立 Review
+
+2026-09-16：R1/R2/R3 均核实成立并完成定向修复。起始 `7843641f6d977ffe13e6e78e837c561709e83f71`，产品/回归测试提交 `967dc01bc127d5dc27a4dfd1b1ebe8108b248237`，沿用 `feature/build9-today-entry-followups`，只更新 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)。
+
+R1：UI预览/正式导入各自获取与释放文件scope，失败/取消清除pending预览；R2：实际搜索列表重新出现时重查保留query，刷新成员/片段/定位；R3：更新时间取now、已有更新时间、createdAt+1秒最大值，不修改父Entry，不放宽v5校验。
+
+本轮5项定向Unit通过；搜索长原文多补充返回刷新UI通过；系统Files合成ZIP预览→取消仍空→再次选择恢复UI通过。详细命令/真实退出状态/截图和环境中断原因见 [Execution Plan](BUILD9_EXECUTION_PLAN.md) Review Closure 节。未重跑全量基线，旧Build9验证不作为新代码通过证据。
+
+App1.0(7) / schemaV9 / backupv5未变。仅模拟器本地Files提供者通过，真机与第三方提供者未验；未操作真实私人库。下一边界仅再次独立Review，不自动merge、Ready、Archive或TestFlight。以下Build9首轮及Build8内容保留为历史。
+
+# Build 9 Current State — 独立 Review
+
+2026-09-16：本轮六项功能、自动验证、提交/普通推送与独立 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) 完成。执行分支 `feature/build9-today-entry-followups`，base 为 `feature/build8-habit-analytics-dashboard` 的实际 `ae8f7cb`；没有追加旧 PR #5。
+
+实际 schema V9 / backup v5 / App 1.0 (7)。产品实现提交 `7c65413`，之后只收尾测试和文档。确切 V8 迁移/重开、v5 往返/非法包拒绝通过。候选全量 Unit 一次 208/209，测试排序假设修正后1/1通过；209项均有通过证据。新路径定向 UI 通过，包括中文 CRUD、真实深色大字号多习惯与全部置顶；最后强化删除断言1/1通过。命令、源码摘要和各次真实结果见 [Execution Plan](BUILD9_EXECUTION_PLAN.md)。
+
+此前审批容量阻塞经 Owner 再次确认和正式审批解除，未绕过限制。模拟器已恢复 light / large。**Goal COMPLETE，下一边界独立 Review；真机体验待 Owner 验证，不代表发布批准。** 未提升 build、合并、Archive 或 TestFlight。
+
+Owner 使用 Build8 的反馈与其历史真机待验结论分开记录。以下为 Build8 历史证据，不代表当前 Build9 验收。
+
 # Current State
 
 | Item | Verified value |

@@ -653,3 +653,7 @@ Foundation Documents：
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
 | v0.2    | 2026-07-15 | Reconciled V1 review, capture, habit-log, flag, and data-transfer scope. |
+
+## Build 9 Approved Scope — 2026-09-16
+
+Owner 批准 Build 9：真实安装包版本显示、体重直接录入与聚焦、紧凑 Today 与周/月习惯动作、Entry 置顶、私人单层文字后续补充。备份 v5 完整包含附属数据并兼容合法 v1–v4；仅允许空库恢复。无社交评论、完整编辑历史或云依赖。

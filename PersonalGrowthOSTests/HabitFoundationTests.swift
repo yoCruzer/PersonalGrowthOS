@@ -2677,3 +2677,61 @@ private struct HabitFixture {
         try? FileManager.default.removeItem(at: root)
     }
 }
+
+extension HabitFoundationTests {
+    func testBuild9WeeklyAndMonthlyActionsSharePeriodTruthAndOnlyUndoToday() throws {
+        let fixture = try HabitFixture()
+        defer { fixture.remove() }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 12))!
+        var now = start
+        for period in [HabitPlanPeriod.week, .month] {
+            now = start
+            let habit = try HabitService(context: context, now: { now }).create(name: period.rawValue, plan: HabitPlan(recordingMode: .multiplePerDay, period: period, goal: .count, targetCount: 2, weekdays: []))
+            let service = HabitCheckInService(context: context, mediaStore: MediaStore(rootURL: fixture.mediaRoot, availableCapacity: { .max }), now: { now }, calendar: calendar)
+            _ = try service.incrementCount(habit, occurredAt: now)
+            now = start.addingTimeInterval(86400)
+            _ = try service.incrementCount(habit, occurredAt: now)
+            _ = try service.incrementCount(habit, occurredAt: now)
+            func summary() throws -> HabitAnalyticsSummary {
+                HabitAnalyticsSnapshotBuilder.summary(habit: habit, logs: try context.fetch(FetchDescriptor<HabitLog>()), dayMetadata: try context.fetch(FetchDescriptor<HabitLogDayMetadata>()), plans: try context.fetch(FetchDescriptor<HabitPlanRevision>()), lifecycleEvents: try context.fetch(FetchDescriptor<HabitLifecycleEvent>()), legacyConfigurations: try context.fetch(FetchDescriptor<HabitConfiguration>()), asOf: now, timeZone: calendar.timeZone)
+            }
+            XCTAssertEqual(try summary().current?.actual, 3)
+            XCTAssertEqual(try summary().current?.target, 2)
+            XCTAssertNil(HabitRuntimeResolver.settings(for: HabitPlan(recordingMode: .multiplePerDay, period: period, goal: .count, targetCount: 2, weekdays: [])).dailyTargetCount)
+            _ = try service.removeLatestStructuredCheckIn(habitID: habit.id, on: now)
+            _ = try service.removeLatestStructuredCheckIn(habitID: habit.id, on: now)
+            XCTAssertEqual(try summary().current?.actual, 1)
+            _ = try service.removeLatestStructuredCheckIn(habitID: habit.id, on: now)
+            XCTAssertEqual(try summary().current?.actual, 1, "No earlier-day fact may be removed")
+        }
+    }
+}
+
+extension HabitFoundationTests {
+    func testBuild9TodayGroupingRefreshesAtPlanAndLocalDayBoundaries() throws {
+        let zone = TimeZone(secondsFromGMT: 0)!
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        let monday = calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 12))!
+        let habit = Habit(name: "Read", normalizedName: "read", createdAt: monday)
+        let daily = HabitPlanRevision(habitID: habit.id, effectiveLocalDay: "2026-09-07",
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .day, goal: .selectedWeekdays, targetCount: 1, weekdays: [2]),
+            trustCoverageStartLocalDay: "2026-09-07", createdAt: monday)
+        let weekly = HabitPlanRevision(habitID: habit.id, effectiveLocalDay: "2026-09-14",
+            plan: HabitPlan(recordingMode: .oncePerDay, period: .week, goal: .count, targetCount: 2, weekdays: []),
+            trustCoverageStartLocalDay: "2026-09-07", createdAt: monday)
+        let plans = [daily, weekly]
+        XCTAssertEqual(TodayHabitGrouping.habits([habit], period: .day, plans: plans, on: monday, timeZone: zone).map(\.id), [habit.id])
+        XCTAssertTrue(TodayHabitGrouping.habits([habit], period: .day, plans: plans, on: monday.addingTimeInterval(86400), timeZone: zone).isEmpty)
+        XCTAssertTrue(TodayHabitGrouping.habits([habit], period: .week, plans: plans, on: monday, timeZone: zone).isEmpty)
+        XCTAssertEqual(TodayHabitGrouping.habits([habit], period: .week, plans: plans, on: monday.addingTimeInterval(7 * 86400), timeZone: zone).map(\.id), [habit.id])
+        habit.status = .paused
+        XCTAssertTrue(TodayHabitGrouping.habits([habit], period: .week, plans: plans, on: monday.addingTimeInterval(7 * 86400), timeZone: zone).isEmpty)
+        habit.status = .active
+        XCTAssertTrue(TodayHabitGrouping.habits([habit], period: .day, plans: [weekly], on: monday, timeZone: zone).isEmpty)
+    }
+}

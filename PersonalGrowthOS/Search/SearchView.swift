@@ -47,6 +47,7 @@ struct GlobalSearchView: View {
                 mediaStore: mediaStore,
                 thumbnailStore: thumbnailStore
             )
+            .onAppear(perform: search)
         }
     }
 
@@ -82,10 +83,18 @@ private struct SearchResultsList: View {
                             EntryDetailView(
                                 entry: entry,
                                 mediaStore: mediaStore,
-                                thumbnailStore: thumbnailStore
+                                thumbnailStore: thumbnailStore,
+                                focusFollowUpID: results.followUpMatches[entry.id]?.id
                             )
                         } label: {
-                            TimelineRow(entry: entry, thumbnailStore: thumbnailStore)
+                            VStack(alignment: .leading, spacing: 6) {
+                                TimelineRow(entry: entry, thumbnailStore: thumbnailStore)
+                                if let thought = results.followUpMatches[entry.id] {
+                                    Label("Matched Follow-up", systemImage: "text.bubble")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                    Text(thought.snippet).lineLimit(4)
+                                }
+                            }
                         }
                     }
                 }

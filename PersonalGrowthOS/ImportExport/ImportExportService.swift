@@ -64,11 +64,8 @@ final class ImportExportService {
         availableCapacity: (() throws -> Int64)? = nil,
         now: @escaping () -> Date = Date.init,
         appVersion: @escaping () -> (version: String, build: String) = {
-            let info = Bundle.main.infoDictionary
-            return (
-                info?["CFBundleShortVersionString"] as? String ?? "unknown",
-                info?["CFBundleVersion"] as? String ?? "unknown"
-            )
+            let info = AppVersionInformation()
+            return (info.version, info.build)
         },
         log: @escaping Log = { _ in },
         publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil
@@ -318,6 +315,22 @@ final class ImportExportService {
         return candidate
     }
 
+    /// Read-only preflight. Import revalidates the selected package and empty target at publication.
+    func previewPackage(from selectedURL: URL) async throws -> ImportResult {
+        try Self.ensureTargetIsEmpty(context)
+        let operationRoot = workspaceRoot.appendingPathComponent("Import/\(UUID().uuidString)")
+        defer { try? fileManager.removeItem(at: operationRoot) }
+        let capacity = try availableCapacity()
+        let importLimits = limits
+        let worker = Task.detached {
+            try Self.prepareAndVerifyImport(selectedURL: selectedURL, operationRoot: operationRoot,
+                                            limits: importLimits, availableCapacity: capacity)
+        }
+        let package = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
+        try Task.checkCancellation()
+        return ImportResult(objectCounts: package.data.objectCounts, restoredMediaCount: package.data.images.count)
+    }
+
     func importPackage(from selectedURL: URL) async throws -> ImportResult {
         log("import.started")
         let operationRoot = workspaceRoot
@@ -450,7 +463,14 @@ final class ImportExportService {
         }
         let data: TransferData
         do {
-            data = try TransferCoding.decoder.decode(TransferData.self, from: Data(contentsOf: dataURL))
+            let bytes = try Data(contentsOf: dataURL)
+            if manifest.packageSchemaVersion >= 5 {
+                let payload = try JSONSerialization.jsonObject(with: bytes) as? [String: Any]
+                guard payload?["entryPins"] is [Any], payload?["entryFollowUps"] is [Any] else {
+                    throw TransferPackageError.corruptData
+                }
+            }
+            data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
             throw TransferPackageError.corruptData
         }
@@ -848,6 +868,15 @@ final class ImportExportService {
                     updatedAt: record.updatedAt
                 ))
             }
+            for record in package.data.entryPins {
+                try Task.checkCancellation()
+                context.insert(EntryPin(id: record.id, entryID: record.entryID, pinnedAt: record.pinnedAt))
+            }
+            for record in package.data.entryFollowUps {
+                try Task.checkCancellation()
+                context.insert(EntryFollowUp(id: record.id, entryID: record.entryID, body: record.body,
+                                            createdAt: record.createdAt, updatedAt: record.updatedAt))
+            }
             for record in package.data.links {
                 try Task.checkCancellation()
                 guard let sourceType = LinkObjectType(rawValue: record.sourceType),
@@ -901,6 +930,8 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<WeeklyReview>())
             + context.fetchCount(FetchDescriptor<HabitPlanRevision>())
             + context.fetchCount(FetchDescriptor<HabitLifecycleEvent>())
+            + context.fetchCount(FetchDescriptor<EntryPin>())
+            + context.fetchCount(FetchDescriptor<EntryFollowUp>())
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
 
@@ -966,6 +997,8 @@ private enum TransferSnapshot {
         let weightRecords = try context.fetch(FetchDescriptor<WeightRecord>())
         try Task.checkCancellation()
         let weeklyReviews = try context.fetch(FetchDescriptor<WeeklyReview>())
+        let entryPins = try context.fetch(FetchDescriptor<EntryPin>())
+        let entryFollowUps = try context.fetch(FetchDescriptor<EntryFollowUp>())
         try Task.checkCancellation()
         let habitPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
         try Task.checkCancellation()
@@ -1124,6 +1157,13 @@ private enum TransferSnapshot {
                     occurredLocalDay: $0.occurredLocalDay, occurredAt: $0.occurredAt,
                     createdAt: $0.createdAt, knownStatus: $0.knownStatusRawValue
                 )
+            }.sorted { sortUUID($0.id, $1.id) },
+            entryPins: try cancellableMap(entryPins) {
+                EntryPinTransfer(id: $0.id, entryID: $0.entryID, pinnedAt: $0.pinnedAt)
+            }.sorted { sortUUID($0.id, $1.id) },
+            entryFollowUps: try cancellableMap(entryFollowUps) {
+                EntryFollowUpTransfer(id: $0.id, entryID: $0.entryID, body: $0.body,
+                                      createdAt: $0.createdAt, updatedAt: $0.updatedAt)
             }.sorted { sortUUID($0.id, $1.id) }
         )
     }
@@ -1136,5 +1176,21 @@ private enum TransferSnapshot {
             try Task.checkCancellation()
             return try transform(value)
         }
+    }
+}
+
+/// UI preview and restore each hold access only for their own asynchronous operation.
+@MainActor
+enum SecurityScopedFileAccess {
+    static func perform<T>(
+        to url: URL,
+        start: (URL) -> Bool = { $0.startAccessingSecurityScopedResource() },
+        stop: (URL) -> Void = { $0.stopAccessingSecurityScopedResource() },
+        operation: () async throws -> T
+    ) async rethrows -> T {
+        let accessed = start(url)
+        defer { if accessed { stop(url) } }
+        // A sandbox URL can be readable even when no external scope was acquired.
+        return try await operation()
     }
 }

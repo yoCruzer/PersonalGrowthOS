@@ -173,3 +173,13 @@ final class AppCompositionTests: XCTestCase {
         )
     }
 }
+
+extension AppCompositionTests {
+    func testBuild9VersionUsesBundleFieldsAndHonestMissingValues() {
+        let info = AppVersionInformation(info: ["CFBundleDisplayName": "随心log", "CFBundleShortVersionString": "1.2", "CFBundleVersion": "42"], localizedInfo: [:])
+        XCTAssertEqual(info.displayText, "随心log 1.2 (Build 42)")
+        let missing = AppVersionInformation(info: [:], localizedInfo: [:])
+        XCTAssertEqual(missing.version, String(localized: "Unknown"))
+        XCTAssertEqual(missing.build, String(localized: "Unknown"))
+    }
+}

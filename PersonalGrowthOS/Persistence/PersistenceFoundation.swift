@@ -172,6 +172,44 @@ enum PersonalGrowthSchemaV8: VersionedSchema {
     }
 }
 
+// Additive entities preserve the checksums of every historical shared Entry schema.
+@Model
+final class EntryPin {
+    @Attribute(.unique) var id: UUID
+    @Attribute(.unique) var entryID: UUID
+    var pinnedAt: Date
+
+    init(id: UUID = UUID(), entryID: UUID, pinnedAt: Date) {
+        self.id = id
+        self.entryID = entryID
+        self.pinnedAt = pinnedAt
+    }
+}
+
+@Model
+final class EntryFollowUp {
+    @Attribute(.unique) var id: UUID
+    var entryID: UUID
+    var body: String
+    var createdAt: Date
+    var updatedAt: Date
+
+    init(id: UUID = UUID(), entryID: UUID, body: String, createdAt: Date, updatedAt: Date? = nil) {
+        self.id = id
+        self.entryID = entryID
+        self.body = body
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt ?? createdAt
+    }
+}
+
+enum PersonalGrowthSchemaV9: VersionedSchema {
+    static let versionIdentifier = Schema.Version(9, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        PersonalGrowthSchemaV8.models + [EntryPin.self, EntryFollowUp.self]
+    }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -182,7 +220,8 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             PersonalGrowthSchemaV5.self,
             PersonalGrowthSchemaV6.self,
             PersonalGrowthSchemaV7.self,
-            PersonalGrowthSchemaV8.self
+            PersonalGrowthSchemaV8.self,
+            PersonalGrowthSchemaV9.self
         ]
     }
 
@@ -215,6 +254,10 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             MigrationStage.lightweight(
                 fromVersion: PersonalGrowthSchemaV7.self,
                 toVersion: PersonalGrowthSchemaV8.self
+            ),
+            MigrationStage.lightweight(
+                fromVersion: PersonalGrowthSchemaV8.self,
+                toVersion: PersonalGrowthSchemaV9.self
             )
         ]
     }
@@ -224,7 +267,7 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV8.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV9.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
@@ -233,7 +276,7 @@ enum PersistenceContainerFactory {
     static func makeOnDisk(at storeURL: URL) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV8.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV9.self),
             url: storeURL,
             cloudKitDatabase: .none
         ))
@@ -241,7 +284,7 @@ enum PersistenceContainerFactory {
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV8.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV9.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )
@@ -566,6 +609,7 @@ final class ReviewCreationService {
 protocol EntryDeletingPersistence: AnyObject {
     func deleteLinks(involving objectID: UUID) throws
     func clearHabitLogEntryReferences(linkedTo entryID: UUID) throws
+    func deleteContinuations(entryID: UUID) throws
     func delete(_ entry: Entry)
     func save() throws
     func rollback()
@@ -574,9 +618,17 @@ protocol EntryDeletingPersistence: AnyObject {
 extension EntryDeletingPersistence {
     func deleteLinks(involving objectID: UUID) throws {}
     func clearHabitLogEntryReferences(linkedTo entryID: UUID) throws {}
+    func deleteContinuations(entryID: UUID) throws {}
 }
 
 extension ModelContextEntryPersistence: EntryDeletingPersistence {
+    func deleteContinuations(entryID: UUID) throws {
+        try context.fetch(FetchDescriptor<EntryPin>(predicate: #Predicate { $0.entryID == entryID }))
+            .forEach(context.delete)
+        try context.fetch(FetchDescriptor<EntryFollowUp>(predicate: #Predicate { $0.entryID == entryID }))
+            .forEach(context.delete)
+    }
+
     func deleteLinks(involving objectID: UUID) throws {
         let entryType = LinkObjectType.entry.rawValue
         let descriptor = FetchDescriptor<ObjectLink>(
@@ -846,6 +898,7 @@ final class EntryDeletionService {
             }
             try persistence.clearHabitLogEntryReferences(linkedTo: entry.id)
             try persistence.deleteLinks(involving: entry.id)
+            try persistence.deleteContinuations(entryID: entry.id)
             persistence.delete(entry)
             try persistence.save()
         } catch let operationError {
@@ -871,5 +924,83 @@ final class EntryDeletionService {
             }
         }
         imageIDs.forEach(thumbnailCleanup)
+    }
+}
+
+/// These operations never mutate the parent Entry's content or timestamps.
+@MainActor
+final class EntryContinuationService {
+    enum Failure: Error { case missingEntry, archivedEntry, blankBody, missingFollowUp }
+    private let context: ModelContext
+    private let now: () -> Date
+    private let save: () throws -> Void
+
+    init(context: ModelContext, now: @escaping () -> Date = Date.init, save: (() throws -> Void)? = nil) {
+        self.context = context
+        self.now = now
+        self.save = save ?? { try context.save() }
+    }
+
+    private func requireEditable(_ entryID: UUID) throws {
+        guard let entry = try EntryRepository(context: context).fetch(id: entryID) else {
+            throw Failure.missingEntry
+        }
+        guard entry.status != .archived else { throw Failure.archivedEntry }
+    }
+
+    func setPinned(_ pinned: Bool, entryID: UUID) throws {
+        try requireEditable(entryID)
+        let existing = try context.fetch(FetchDescriptor<EntryPin>(predicate: #Predicate { $0.entryID == entryID }))
+        if pinned && !existing.isEmpty || !pinned && existing.isEmpty { return }
+        do {
+            if pinned { context.insert(EntryPin(entryID: entryID, pinnedAt: now())) }
+            else { existing.forEach { context.delete($0) } }
+            try save()
+        } catch { context.rollback(); throw error }
+    }
+
+    @discardableResult
+    func add(entryID: UUID, body: String, id: UUID = UUID()) throws -> EntryFollowUp {
+        try requireEditable(entryID)
+        guard !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw Failure.blankBody }
+        if let existing = try context.fetch(FetchDescriptor<EntryFollowUp>(predicate: #Predicate { $0.id == id })).first {
+            guard existing.entryID == entryID else { throw Failure.missingFollowUp }
+            return existing
+        }
+        let followUp = EntryFollowUp(id: id, entryID: entryID, body: body, createdAt: now())
+        do {
+            context.insert(followUp)
+            try save()
+            return followUp
+        } catch { context.rollback(); throw error }
+    }
+
+    func edit(_ followUp: EntryFollowUp, body: String) throws {
+        try requireEditable(followUp.entryID)
+        guard !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw Failure.blankBody }
+        guard body != followUp.body else { return }
+        do {
+            followUp.body = body
+            // Preserve monotonic edits and an Edited marker after v5 date encoding.
+            followUp.updatedAt = max(now(), followUp.updatedAt, followUp.createdAt.addingTimeInterval(1))
+            try save()
+        } catch { context.rollback(); throw error }
+    }
+
+    func delete(_ followUp: EntryFollowUp) throws {
+        try requireEditable(followUp.entryID)
+        do {
+            context.delete(followUp)
+            try save()
+        } catch { context.rollback(); throw error }
+    }
+}
+
+enum EntryPinOrdering {
+    static func entries(pins: [EntryPin], entries: [Entry]) -> [Entry] {
+        let byID = Dictionary(entries.filter { $0.status != .archived }.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return pins.sorted {
+            $0.pinnedAt == $1.pinnedAt ? $0.id.uuidString < $1.id.uuidString : $0.pinnedAt > $1.pinnedAt
+        }.compactMap { byID[$0.entryID] }
     }
 }

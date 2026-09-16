@@ -1256,3 +1256,170 @@ private struct TemporaryFixture {
         try? FileManager.default.removeItem(at: root)
     }
 }
+
+extension PersistenceMediaFoundationTests {
+    func testBuild9ExactV8MigrationAndContinuationReopen() throws {
+        let source = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build8V8Fixture", withExtension: nil))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.copyItem(at: source, to: root)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("PersonalGrowthOS.store")
+        let entryID = UUID(uuidString: "11111111-1111-4111-8111-111111111111")!
+        let followUpID = UUID()
+        var originalTimes: [Date] = []
+        var planIDs: Set<UUID> = []
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: url)
+            let context = container.mainContext
+            let entry = try XCTUnwrap(EntryRepository(context: context).fetch(id: entryID))
+            originalTimes = [entry.createdAt, entry.occurredAt, entry.updatedAt]
+            XCTAssertEqual(entry.body, "Exact 95076bf source fact")
+            XCTAssertEqual(entry.images.count, 1)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: root.appendingPathComponent("Media/" + entry.images[0].relativePath).path))
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<Habit>()), 4)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<HabitLog>()), 6)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<HabitLogDayMetadata>()), 6)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<HabitLifecycleEvent>()), 4)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<ObjectLink>()), 3)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<Goal>()), 1)
+            XCTAssertEqual(try context.fetch(FetchDescriptor<WeightRecord>()).first?.weightKilograms, 72.5)
+            XCTAssertEqual(try context.fetch(FetchDescriptor<WeeklyReview>()).first?.rememberedText, "Build 7 memory")
+            planIDs = Set(try context.fetch(FetchDescriptor<HabitPlanRevision>()).map(\.id))
+            XCTAssertEqual(planIDs.count, 4)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryPin>()), 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryFollowUp>()), 0)
+            let service = EntryContinuationService(context: context)
+            try service.setPinned(true, entryID: entryID)
+            let pinDate = try XCTUnwrap(context.fetch(FetchDescriptor<EntryPin>()).first?.pinnedAt)
+            try service.setPinned(true, entryID: entryID)
+            XCTAssertEqual(try context.fetch(FetchDescriptor<EntryPin>()).first?.pinnedAt, pinDate)
+            try service.add(entryID: entryID, body: "新的认识\n第二行", id: followUpID)
+            try service.add(entryID: entryID, body: "新的认识\n第二行", id: followUpID)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryFollowUp>()), 1)
+        }
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: url)
+            let context = container.mainContext
+            let entry = try XCTUnwrap(EntryRepository(context: context).fetch(id: entryID))
+            XCTAssertEqual([entry.createdAt, entry.occurredAt, entry.updatedAt], originalTimes)
+            XCTAssertEqual(Set(try context.fetch(FetchDescriptor<HabitPlanRevision>()).map(\.id)), planIDs)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryPin>()), 1)
+            let followUp = try XCTUnwrap(context.fetch(FetchDescriptor<EntryFollowUp>()).first)
+            XCTAssertEqual(followUp.id, followUpID)
+            XCTAssertEqual(followUp.body, "新的认识\n第二行")
+            let created = followUp.createdAt
+            let service = EntryContinuationService(context: context, now: { created.addingTimeInterval(60) })
+            try service.edit(followUp, body: followUp.body)
+            XCTAssertEqual(followUp.updatedAt, created)
+            try service.edit(followUp, body: "更新认识")
+            XCTAssertEqual(followUp.createdAt, created)
+            XCTAssertEqual(followUp.updatedAt, created.addingTimeInterval(60))
+            XCTAssertEqual([entry.createdAt, entry.occurredAt, entry.updatedAt], originalTimes)
+            let deletion = EntryDeletionService(persistence: ModelContextEntryPersistence(context: context), mediaStore: MediaStore(rootURL: root.appendingPathComponent("Media")))
+            try deletion.archive(entry)
+            XCTAssertThrowsError(try service.add(entryID: entryID, body: "归档不可编辑"))
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryFollowUp>()), 1)
+            try deletion.restore(entry)
+            try deletion.permanentlyDelete(entry)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryFollowUp>()), 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryPin>()), 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<Entry>()), 0)
+        }
+    }
+}
+
+extension PersistenceMediaFoundationTests {
+    func testBuild9ContinuationFailureRollbackSearchAndParentStatistics() throws {
+        enum Injected: Error { case save }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let date = Date(timeIntervalSince1970: 1000)
+        let entry = Entry(body: "原文", createdAt: date)
+        context.insert(entry)
+        try context.save()
+        let service = EntryContinuationService(context: context, now: { date.addingTimeInterval(60) })
+        let thought = try service.add(entryID: entry.id, body: String(repeating: "过去的想法。", count: 100) + "独特认识", id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+        try service.add(entryID: entry.id, body: "独特认识，再次补充", id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!)
+        let failed = EntryContinuationService(context: context, save: { throw Injected.save })
+        XCTAssertThrowsError(try failed.add(entryID: entry.id, body: "失败不落盘"))
+        XCTAssertThrowsError(try failed.edit(thought, body: "失败编辑"))
+        XCTAssertThrowsError(try failed.setPinned(true, entryID: entry.id))
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryPin>()), 0)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryFollowUp>()), 2)
+        let results = try LocalSearchService(context: context).search("独特认识")
+        XCTAssertEqual(results.entries.map(\.id), [entry.id])
+        XCTAssertEqual(results.followUpMatches[entry.id]?.id, thought.id)
+        XCTAssertTrue(results.followUpMatches[entry.id]?.snippet.contains("独特认识") == true)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<Entry>()), 1)
+        XCTAssertEqual([entry.createdAt, entry.occurredAt, entry.updatedAt], [date, date, date])
+        XCTAssertEqual(entry.body, "原文")
+        XCTAssertThrowsError(try service.add(entryID: entry.id, body: " \n"))
+        try service.delete(thought)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryFollowUp>()), 1)
+    }
+}
+
+extension PersistenceMediaFoundationTests {
+    func testBuild9PinOrderingArchiveRestoreAndRepin() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let date = Date(timeIntervalSince1970: 1000)
+        let first = Entry(body: "First", createdAt: date)
+        let second = Entry(body: "Second", createdAt: date)
+        context.insert(first)
+        context.insert(second)
+        try context.save()
+        var now = date
+        let service = EntryContinuationService(context: context, now: { now })
+        try service.setPinned(true, entryID: first.id)
+        now = date.addingTimeInterval(10)
+        try service.setPinned(true, entryID: second.id)
+        func pins() throws -> [EntryPin] { try context.fetch(FetchDescriptor<EntryPin>()) }
+        XCTAssertEqual(EntryPinOrdering.entries(pins: try pins(), entries: [first, second]).map(\.id), [second.id, first.id])
+        first.status = .archived
+        try context.save()
+        XCTAssertEqual(EntryPinOrdering.entries(pins: try pins(), entries: [first, second]).map(\.id), [second.id])
+        first.status = .organized
+        try context.save()
+        XCTAssertEqual(try pins().first { $0.entryID == first.id }?.pinnedAt, date)
+        try service.setPinned(false, entryID: first.id)
+        now = date.addingTimeInterval(20)
+        try service.setPinned(true, entryID: first.id)
+        XCTAssertEqual(EntryPinOrdering.entries(pins: try pins(), entries: [first, second]).map(\.id), [first.id, second.id])
+        XCTAssertEqual(first.updatedAt, date)
+        let tied = try pins()
+        tied.forEach { $0.pinnedAt = date }
+        let expected = tied.sorted { $0.id.uuidString < $1.id.uuidString }.map(\.entryID)
+        XCTAssertEqual(EntryPinOrdering.entries(pins: tied.reversed(), entries: [first, second]).map(\.id), expected)
+    }
+}
+
+extension PersistenceMediaFoundationTests {
+    func testPR6SearchRecomputesMembershipSnippetAndTargetAfterFollowUpChanges() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let original = Entry(body: "Original", createdAt: Date(timeIntervalSince1970: 1000))
+        let bodyMatch = Entry(body: "needle in original", createdAt: Date(timeIntervalSince1970: 900))
+        context.insert(original)
+        context.insert(bodyMatch)
+        try context.save()
+        var now = Date(timeIntervalSince1970: 1000)
+        let service = EntryContinuationService(context: context, now: { now })
+        let first = try service.add(entryID: original.id, body: "needle alpha")
+        now = now.addingTimeInterval(10)
+        let second = try service.add(entryID: original.id, body: "needle beta")
+        let bodyThought = try service.add(entryID: bodyMatch.id, body: "needle extra")
+        let search = LocalSearchService(context: context)
+        XCTAssertEqual(try search.search("needle").followUpMatches[original.id]?.id, first.id)
+        try service.edit(first, body: "no longer matches")
+        let next = try search.search("needle")
+        XCTAssertEqual(next.entries.map(\.id), [original.id, bodyMatch.id])
+        XCTAssertEqual(next.followUpMatches[original.id]?.id, second.id)
+        XCTAssertEqual(next.followUpMatches[original.id]?.snippet, "needle beta")
+        try service.delete(second)
+        try service.delete(bodyThought)
+        let final = try search.search("needle")
+        XCTAssertEqual(final.entries.map(\.id), [bodyMatch.id])
+        XCTAssertTrue(final.followUpMatches.isEmpty)
+    }
+}

@@ -402,25 +402,43 @@ final class TagLinkService {
     }
 }
 
+struct EntryFollowUpMatch {
+    let id: UUID
+    let snippet: String
+
+    init(followUp: EntryFollowUp, query: String) {
+        id = followUp.id
+        let text = followUp.body
+        let range = text.range(of: query.trimmingCharacters(in: .whitespacesAndNewlines), options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive])
+        let hit = range?.lowerBound ?? text.startIndex
+        let start = text.index(hit, offsetBy: -45, limitedBy: text.startIndex) ?? text.startIndex
+        let end = text.index(range?.upperBound ?? hit, offsetBy: 100, limitedBy: text.endIndex) ?? text.endIndex
+        snippet = (start > text.startIndex ? "…" : "") + String(text[start..<end]) + (end < text.endIndex ? "…" : "")
+    }
+}
+
 struct LocalSearchResults {
     let entries: [Entry]
     let tags: [Tag]
     let habits: [Habit]
     let goals: [Goal]
     let weeklyReviews: [WeeklyReview]
+    let followUpMatches: [UUID: EntryFollowUpMatch]
 
     init(
         entries: [Entry] = [],
         tags: [Tag] = [],
         habits: [Habit] = [],
         goals: [Goal] = [],
-        weeklyReviews: [WeeklyReview] = []
+        weeklyReviews: [WeeklyReview] = [],
+        followUpMatches: [UUID: EntryFollowUpMatch] = [:]
     ) {
         self.entries = entries
         self.tags = tags
         self.habits = habits
         self.goals = goals
         self.weeklyReviews = weeklyReviews
+        self.followUpMatches = followUpMatches
     }
 }
 
@@ -437,6 +455,10 @@ final class LocalSearchService {
         guard !normalizedQuery.isEmpty else {
             return LocalSearchResults(entries: [], tags: [])
         }
+        let matchingThoughts = try context.fetch(FetchDescriptor<EntryFollowUp>(sortBy: [
+            SortDescriptor(\EntryFollowUp.createdAt), SortDescriptor(\EntryFollowUp.id)
+        ])).filter { TextSearchNormalizer.normalize($0.body).contains(normalizedQuery) }
+        let matches = Dictionary(matchingThoughts.map { ($0.entryID, EntryFollowUpMatch(followUp: $0, query: query)) }, uniquingKeysWith: { first, _ in first })
         let entries = try context.fetch(FetchDescriptor<Entry>(sortBy: [
             SortDescriptor(\Entry.occurredAt, order: .reverse),
             SortDescriptor(\Entry.createdAt, order: .reverse),
@@ -445,6 +467,7 @@ final class LocalSearchService {
             [entry.title, entry.body]
                 .compactMap { $0 }
                 .contains { TextSearchNormalizer.normalize($0).contains(normalizedQuery) }
+                || matches[entry.id] != nil
         }
         let tags = try context.fetch(FetchDescriptor<Tag>(sortBy: [
             SortDescriptor(\Tag.normalizedName, order: .forward),
@@ -485,7 +508,8 @@ final class LocalSearchService {
             tags: tags,
             habits: habits,
             goals: goals,
-            weeklyReviews: weeklyReviews
+            weeklyReviews: weeklyReviews,
+            followUpMatches: matches
         )
     }
 }

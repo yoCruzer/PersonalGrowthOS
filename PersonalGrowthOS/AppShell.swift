@@ -21,7 +21,6 @@ struct AppShell: View {
         TabView(selection: $selectedTab) {
             NavigationStack {
                 TodayView(
-                    openCapture: { selectedTab = .record },
                     openStorage: { isShowingStorage = true },
                     openGrowth: { selectedTab = .growth },
                     mediaStore: container.mediaStore,
@@ -80,13 +79,18 @@ struct AppShell: View {
 }
 
 private struct TodayView: View {
-    let openCapture: () -> Void
     let openStorage: () -> Void
     let openGrowth: () -> Void
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var referenceDate = Date()
+    @State private var showsAllHabits = false
+    @State private var showsAllGoals = false
+    @State private var isAddingWeight = false
+    @Query private var lifecycleEvents: [HabitLifecycleEvent]
     @Query(sort: [
         SortDescriptor(\Habit.normalizedName, order: .forward),
         SortDescriptor(\Habit.id, order: .forward)
@@ -107,20 +111,8 @@ private struct TodayView: View {
     @State private var transientMessage: String?
     @State private var errorMessage: String?
 
-    private var activeHabits: [Habit] {
-        habits.filter { $0.status == .active }
-    }
-
     private var todayHabits: [Habit] {
-        activeHabits.filter { habit in
-            guard let plan = HabitPlanResolver.currentPlan(
-                for: habit.id,
-                plans: habitPlanRevisions
-            ) else { return true }
-            guard plan.period == .day else { return false }
-            guard plan.goal == .selectedWeekdays else { return true }
-            return plan.weekdays.contains(Calendar.current.component(.weekday, from: Date()))
-        }
+        TodayHabitGrouping.habits(habits, period: .day, plans: habitPlanRevisions, on: referenceDate)
     }
 
     private var activeGoals: [Goal] {
@@ -132,7 +124,7 @@ private struct TodayView: View {
     }
 
     private var thisWeeksFocus: String? {
-        guard let period = try? WeeklyReviewPeriod(containing: Date()),
+        guard let period = try? WeeklyReviewPeriod(containing: referenceDate),
               let previousPeriod = try? period.previous(),
               let focus = weeklyReviews.first(where: {
                 $0.weekIdentifier == previousPeriod.identifier
@@ -145,50 +137,20 @@ private struct TodayView: View {
 
     var body: some View {
         List {
-            Section {
-                Button(action: openCapture) {
-                    Label("Quick Capture", systemImage: "square.and.pencil")
-                        .font(.headline)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .accessibilityIdentifier("quick-capture-button")
-            } footer: {
-                Text("Save a thought or photo now. Organize it later if you want.")
-            }
-            if let thisWeeksFocus {
-                Section("This Week’s Focus") {
-                    Label(thisWeeksFocus, systemImage: "scope")
-                        .accessibilityIdentifier("today-weekly-focus")
-                }
-            }
-            if activeHabits.isEmpty && activeGoals.isEmpty {
-                Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label("Record Today", systemImage: "sun.max")
-                            .font(.headline)
-                        Text("Today keeps your active Habits, Goals, and Flags close at hand. Start by creating one in Growth or use Quick Capture above.")
-                            .foregroundStyle(.secondary)
-                        Button(action: openGrowth) {
-                            Label("Create a Habit, Goal, or Flag", systemImage: "leaf")
-                        }
-                        .buttonStyle(.bordered)
-                        .accessibilityIdentifier("today-open-growth")
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
             if !todayHabits.isEmpty {
                 Section {
-                    ForEach(todayHabits) { habit in
+                    ForEach(showsAllHabits ? todayHabits : Array(todayHabits.prefix(4))) { habit in
                         let progress = HabitTodayProgress(
                             habitID: habit.id,
                             logs: habitLogs,
                             dayMetadata: habitLogDayMetadata,
                             settings: HabitRuntimeResolver.settings(
                                 for: habit.id,
+                                on: referenceDate,
                                 plans: habitPlanRevisions,
                                 legacyConfigurations: habitConfigurations
-                            )
+                            ),
+                            now: referenceDate
                         )
                         if progress.settings.recordingMode == .multiplePerDay {
                             RepeatableHabitCounter(
@@ -223,15 +185,25 @@ private struct TodayView: View {
                             .frame(minHeight: 52)
                         }
                     }
+                    if todayHabits.count > 4 {
+                        Button(showsAllHabits ? "Show Less" : "Show All Habits") { showsAllHabits.toggle() }
+                            .accessibilityIdentifier("today-expand-habits")
+                    }
                 } header: {
                     Text("Today's Habits")
-                } footer: {
-                    Text("Missing a day is not failure. Check in when the habit happens.")
+                }
+            } else {
+                Section("Today's Habits") {
+                    Button(action: openGrowth) {
+                        Label("Find or create a habit in Growth", systemImage: "leaf")
+                    }
+                    .accessibilityIdentifier("today-open-growth")
                 }
             }
+            weightSection
             if !activeGoals.isEmpty {
                 Section {
-                    ForEach(activeGoals) { goal in
+                    ForEach(showsAllGoals ? activeGoals : Array(activeGoals.prefix(2))) { goal in
                         NavigationLink {
                             GoalDetailView(
                                 goal: goal,
@@ -247,15 +219,39 @@ private struct TodayView: View {
                         .accessibilityLabel("\(goal.kind.localizedName): \(goal.title)")
                         .accessibilityIdentifier("today-goal-\(goal.normalizedTitle)")
                     }
+                    if activeGoals.count > 2 {
+                        Button(showsAllGoals ? "Show Less" : "Show All Goals") { showsAllGoals.toggle() }
+                    }
                 } header: {
                     Text("Active Goals and Flags")
-                } footer: {
-                    Text("Context for today, not a list of tasks you must update.")
                 }
             }
-            weightAndReviewSections
+            periodSection(.week, title: "This Week")
+            periodSection(.month, title: "This Month")
+            if let thisWeeksFocus {
+                Section("This Week’s Focus") {
+                    Label(thisWeeksFocus, systemImage: "scope")
+                        .accessibilityIdentifier("today-weekly-focus")
+                }
+            }
+            reviewSection
         }
+        .listSectionSpacing(.compact)
         .navigationTitle("Today")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 0) {
+                    Text("Today").font(.headline)
+                    Text(referenceDate, format: .dateTime.month().day().weekday()).font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { referenceDate = Date() } }
+        .sheet(isPresented: $isAddingWeight) {
+            WeightEditorView(record: nil) { isAddingWeight = false }
+        }
         .toolbar {
             Button(action: openStorage) {
                 Image(systemName: "gear")
@@ -291,25 +287,58 @@ private struct TodayView: View {
         }
     }
 
-    @ViewBuilder
-    private var weightAndReviewSections: some View {
-        Section("Weight") {
-            NavigationLink {
-                WeightHistoryView()
-            } label: {
-                if let latest = weightRecords.first {
-                    LabeledContent {
-                        Text(verbatim: WeightFormatting.kilograms(latest.weightKilograms))
-                            .accessibilityIdentifier("today-latest-weight")
-                    } label: {
-                        Label("Latest Weight", systemImage: "scalemass")
+    private func periodSection(_ period: HabitPlanPeriod, title: LocalizedStringKey) -> some View {
+        let grouped = TodayHabitGrouping.habits(habits, period: period, plans: habitPlanRevisions, on: referenceDate)
+        return Group {
+            if !grouped.isEmpty {
+                Section(title) {
+                    ForEach(grouped) { habit in
+                        HabitOverviewRow(
+                            habit: habit,
+                            plan: HabitPlanResolver.currentPlan(for: habit.id, on: referenceDate, plans: habitPlanRevisions),
+                            settings: HabitRuntimeResolver.settings(for: habit.id, on: referenceDate, plans: habitPlanRevisions, legacyConfigurations: habitConfigurations),
+                            logs: habitLogs.filter { $0.habitID == habit.id },
+                            dayMetadata: habitLogDayMetadata,
+                            analytics: HabitAnalyticsSnapshotBuilder.summary(habit: habit, logs: habitLogs, dayMetadata: habitLogDayMetadata, plans: habitPlanRevisions, lifecycleEvents: lifecycleEvents, legacyConfigurations: habitConfigurations, asOf: referenceDate),
+                            mediaStore: mediaStore,
+                            thumbnailStore: thumbnailStore
+                        )
                     }
-                } else {
-                    Label("Record Weight", systemImage: "scalemass")
                 }
             }
-            .accessibilityIdentifier("today-weight")
         }
+    }
+
+    private var weightSection: some View {
+        Section("Weight") {
+            HStack {
+                NavigationLink {
+                    WeightHistoryView()
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let today = TodayWeightSnapshot(records: weightRecords).today {
+                            Text("Recorded Today").font(.caption).foregroundStyle(.secondary)
+                            Text(verbatim: WeightFormatting.kilograms(today.weightKilograms))
+                                .accessibilityIdentifier("today-latest-weight")
+                        } else {
+                            Text("No Weight Recorded Today")
+                            if let previous = TodayWeightSnapshot(records: weightRecords).previous {
+                                Text("\(previous.recordedAt.formatted(date: .abbreviated, time: .omitted)) · \(WeightFormatting.kilograms(previous.weightKilograms))")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                .accessibilityIdentifier("today-weight")
+                Button("Record Weight") { isAddingWeight = true }
+                    .buttonStyle(.borderless)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityIdentifier("today-add-weight")
+            }
+        }
+    }
+
+    private var reviewSection: some View {
         Section {
             NavigationLink {
                 WeeklyReviewView()
@@ -508,7 +537,12 @@ private struct TimelineView: View {
         SortDescriptor(\GoalLifecycleEvent.id, order: .forward)
     ]) private var goalEvents: [GoalLifecycleEvent]
     @Query private var goals: [Goal]
+    @Query private var entryPins: [EntryPin]
     @State private var showsArchived = false
+
+    private var pinnedEntries: [Entry] {
+        EntryPinOrdering.entries(pins: entryPins, entries: entries)
+    }
 
     private var displayedEntries: [Entry] {
         entries.filter { showsArchived ? $0.status == .archived : $0.status != .archived }
@@ -551,6 +585,22 @@ private struct TimelineView: View {
                 )
             } else {
                 List {
+                    if !showsArchived && !pinnedEntries.isEmpty {
+                        Section("Pinned Entries") {
+                            ForEach(Array(pinnedEntries.prefix(3))) { entry in
+                                NavigationLink {
+                                    EntryDetailView(entry: entry, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+                                } label: {
+                                    PinnedEntrySummary(entry: entry)
+                                }
+                            }
+                            if pinnedEntries.count > 3 {
+                                NavigationLink("View All Pinned") {
+                                    PinnedEntriesView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+                                }
+                            }
+                        }
+                    }
                     Section("History") {
                         ForEach(timelineItems) { item in
                             switch item {
@@ -621,6 +671,9 @@ private struct MediaStorageView: View {
     let integrityReport: MediaIntegrityReport
 
     @Environment(\.dismiss) private var dismiss
+    @State private var pendingImportURL: URL?
+    @State private var importPreview: ImportResult?
+    @State private var versionCopied = false
     @State private var byteCount: Int64?
     @State private var isCapturing = false
     @State private var isConfirmingExport = false
@@ -755,6 +808,19 @@ private struct MediaStorageView: View {
                 } footer: {
                     Text("Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
                 }
+                Section("About") {
+                    Button {
+                        UIPasteboard.general.string = AppVersionInformation().displayText
+                        versionCopied = true
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(verbatim: AppVersionInformation().displayText)
+                            Text(versionCopied ? "Copied" : "Tap to copy version information")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .accessibilityIdentifier("settings-version")
+                }
             }
             .navigationTitle("Settings")
             .toolbar {
@@ -829,9 +895,24 @@ private struct MediaStorageView: View {
             ) { result in
                 do {
                     guard let selectedURL = try result.get().first else { return }
-                    startImport(selectedURL)
+                    previewImport(selectedURL)
                 } catch {
                     transferMessage = transferErrorMessage(error)
+                }
+            }
+            .confirmationDialog("Restore this backup?", isPresented: Binding(
+                get: { pendingImportURL != nil }, set: { if !$0 { pendingImportURL = nil; importPreview = nil } }
+            ), titleVisibility: .visible) {
+                Button("Restore Backup") {
+                    guard let url = pendingImportURL else { return }
+                    pendingImportURL = nil
+                    importPreview = nil
+                    startImport(url)
+                }
+                Button("Cancel", role: .cancel) { pendingImportURL = nil; importPreview = nil }
+            } message: {
+                if let importPreview {
+                    Text("\(importPreview.objectCounts.values.reduce(0, +)) objects, \(importPreview.objectCounts["entryPins", default: 0]) pins, \(importPreview.objectCounts["entryFollowUps", default: 0]) follow-ups")
                 }
             }
             .alert("Data Transfer", isPresented: Binding(
@@ -979,18 +1060,39 @@ private struct MediaStorageView: View {
         }
     }
 
+    private func previewImport(_ url: URL) {
+        isTransferring = true
+        pendingImportURL = nil
+        importPreview = nil
+        transferTask = Task {
+            defer { isTransferring = false; transferTask = nil }
+            do {
+                let preview = try await SecurityScopedFileAccess.perform(to: url) {
+                    try await importExportService.previewPackage(from: url)
+                }
+                try Task.checkCancellation()
+                importPreview = preview
+                pendingImportURL = url
+            } catch {
+                pendingImportURL = nil
+                importPreview = nil
+                transferMessage = transferErrorMessage(error)
+            }
+        }
+    }
+
     private func startImport(_ selectedURL: URL) {
         transferTask?.cancel()
         isTransferring = true
         transferTask = Task {
-            let accessed = selectedURL.startAccessingSecurityScopedResource()
             defer {
-                if accessed { selectedURL.stopAccessingSecurityScopedResource() }
                 isTransferring = false
                 transferTask = nil
             }
             do {
-                let restored = try await importExportService.importPackage(from: selectedURL)
+                let restored = try await SecurityScopedFileAccess.perform(to: selectedURL) {
+                    try await importExportService.importPackage(from: selectedURL)
+                }
                 byteCount = try? mediaStore.originalsByteCount()
                 transferMessage = String(
                     localized: "Restore completed: \(restored.objectCounts.values.reduce(0, +)) objects and \(restored.restoredMediaCount) original photo(s)."
@@ -1199,3 +1301,30 @@ extension GoalLifecycleEventKind {
 }
 
 extension Entry: Identifiable {}
+
+struct PinnedEntrySummary: View {
+    let entry: Entry
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(entry.title ?? entry.body ?? String(localized: "Entry")).lineLimit(2)
+            Text(entry.occurredAt, style: .date).font(.caption).foregroundStyle(.secondary)
+        }
+        .accessibilityIdentifier("pinned-entry-\(entry.id)")
+    }
+}
+
+private struct PinnedEntriesView: View {
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+    @Query private var pins: [EntryPin]
+    @Query private var entries: [Entry]
+
+    var body: some View {
+        List(EntryPinOrdering.entries(pins: pins, entries: entries)) { entry in
+            NavigationLink {
+                EntryDetailView(entry: entry, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+            } label: { PinnedEntrySummary(entry: entry) }
+        }
+        .navigationTitle("Pinned Entries")
+    }
+}

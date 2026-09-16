@@ -173,3 +173,31 @@ private struct WeightFixture {
         try? FileManager.default.removeItem(at: root)
     }
 }
+
+extension WeightFoundationTests {
+    func testBuild9TodayWeightExcludesFutureAndSelectsLatestSameDay() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let now = Date(timeIntervalSince1970: 1_730_030_000)
+        let start = calendar.startOfDay(for: now)
+        let old = WeightRecord(weightKilograms: 72, recordedAt: start.addingTimeInterval(-1), createdAt: now)
+        let today = WeightRecord(weightKilograms: 71.5, recordedAt: start, createdAt: now)
+        let latest = WeightRecord(weightKilograms: 71.4, recordedAt: now, createdAt: now)
+        let future = WeightRecord(weightKilograms: 70, recordedAt: now.addingTimeInterval(86400), createdAt: now)
+        let snapshot = TodayWeightSnapshot(records: [future, today, old, latest], now: now, calendar: calendar)
+        XCTAssertEqual(snapshot.today?.id, latest.id)
+        XCTAssertEqual(snapshot.previous?.id, old.id)
+        XCTAssertNil(TodayWeightSnapshot(records: [old, future], now: now, calendar: calendar).today)
+        XCTAssertEqual(TodayWeightSnapshot(records: [latest], now: now.addingTimeInterval(86400), calendar: calendar).previous?.id, latest.id)
+    }
+}
+
+extension WeightFoundationTests {
+    func testBuild9WeightInputPreservesDecimalCommaAndRejectsInvalidValues() throws {
+        XCTAssertEqual(try WeightRules.kilograms(from: "72.5"), 72.5)
+        XCTAssertEqual(try WeightRules.kilograms(from: "72,5"), 72.5)
+        for text in ["", "abc", "72,5.1", "0", "-1", "1001", "nan", "inf"] {
+            XCTAssertThrowsError(try WeightRules.kilograms(from: text))
+        }
+    }
+}
