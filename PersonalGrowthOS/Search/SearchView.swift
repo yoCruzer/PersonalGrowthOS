@@ -47,6 +47,7 @@ struct GlobalSearchView: View {
                 mediaStore: mediaStore,
                 thumbnailStore: thumbnailStore
             )
+            .onAppear(perform: search)
         }
     }
 

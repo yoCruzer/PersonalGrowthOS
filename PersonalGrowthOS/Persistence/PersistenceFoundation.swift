@@ -981,7 +981,8 @@ final class EntryContinuationService {
         guard body != followUp.body else { return }
         do {
             followUp.body = body
-            followUp.updatedAt = now()
+            // Preserve monotonic edits and an Edited marker after v5 date encoding.
+            followUp.updatedAt = max(now(), followUp.updatedAt, followUp.createdAt.addingTimeInterval(1))
             try save()
         } catch { context.rollback(); throw error }
     }

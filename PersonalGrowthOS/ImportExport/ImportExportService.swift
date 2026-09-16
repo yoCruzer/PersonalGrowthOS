@@ -1178,3 +1178,19 @@ private enum TransferSnapshot {
         }
     }
 }
+
+/// UI preview and restore each hold access only for their own asynchronous operation.
+@MainActor
+enum SecurityScopedFileAccess {
+    static func perform<T>(
+        to url: URL,
+        start: (URL) -> Bool = { $0.startAccessingSecurityScopedResource() },
+        stop: (URL) -> Void = { $0.stopAccessingSecurityScopedResource() },
+        operation: () async throws -> T
+    ) async rethrows -> T {
+        let accessed = start(url)
+        defer { if accessed { stop(url) } }
+        // A sandbox URL can be readable even when no external scope was acquired.
+        return try await operation()
+    }
+}

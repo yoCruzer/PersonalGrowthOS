@@ -1062,13 +1062,22 @@ private struct MediaStorageView: View {
 
     private func previewImport(_ url: URL) {
         isTransferring = true
+        pendingImportURL = nil
+        importPreview = nil
         transferTask = Task {
             defer { isTransferring = false; transferTask = nil }
             do {
-                importPreview = try await importExportService.previewPackage(from: url)
+                let preview = try await SecurityScopedFileAccess.perform(to: url) {
+                    try await importExportService.previewPackage(from: url)
+                }
                 try Task.checkCancellation()
+                importPreview = preview
                 pendingImportURL = url
-            } catch { transferMessage = transferErrorMessage(error) }
+            } catch {
+                pendingImportURL = nil
+                importPreview = nil
+                transferMessage = transferErrorMessage(error)
+            }
         }
     }
 
@@ -1076,14 +1085,14 @@ private struct MediaStorageView: View {
         transferTask?.cancel()
         isTransferring = true
         transferTask = Task {
-            let accessed = selectedURL.startAccessingSecurityScopedResource()
             defer {
-                if accessed { selectedURL.stopAccessingSecurityScopedResource() }
                 isTransferring = false
                 transferTask = nil
             }
             do {
-                let restored = try await importExportService.importPackage(from: selectedURL)
+                let restored = try await SecurityScopedFileAccess.perform(to: selectedURL) {
+                    try await importExportService.importPackage(from: selectedURL)
+                }
                 byteCount = try? mediaStore.originalsByteCount()
                 transferMessage = String(
                     localized: "Restore completed: \(restored.objectCounts.values.reduce(0, +)) objects and \(restored.restoredMediaCount) original photo(s)."

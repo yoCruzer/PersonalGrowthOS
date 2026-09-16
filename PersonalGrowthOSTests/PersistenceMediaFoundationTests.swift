@@ -1393,3 +1393,33 @@ extension PersistenceMediaFoundationTests {
         XCTAssertEqual(EntryPinOrdering.entries(pins: tied.reversed(), entries: [first, second]).map(\.id), expected)
     }
 }
+
+extension PersistenceMediaFoundationTests {
+    func testPR6SearchRecomputesMembershipSnippetAndTargetAfterFollowUpChanges() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let original = Entry(body: "Original", createdAt: Date(timeIntervalSince1970: 1000))
+        let bodyMatch = Entry(body: "needle in original", createdAt: Date(timeIntervalSince1970: 900))
+        context.insert(original)
+        context.insert(bodyMatch)
+        try context.save()
+        var now = Date(timeIntervalSince1970: 1000)
+        let service = EntryContinuationService(context: context, now: { now })
+        let first = try service.add(entryID: original.id, body: "needle alpha")
+        now = now.addingTimeInterval(10)
+        let second = try service.add(entryID: original.id, body: "needle beta")
+        let bodyThought = try service.add(entryID: bodyMatch.id, body: "needle extra")
+        let search = LocalSearchService(context: context)
+        XCTAssertEqual(try search.search("needle").followUpMatches[original.id]?.id, first.id)
+        try service.edit(first, body: "no longer matches")
+        let next = try search.search("needle")
+        XCTAssertEqual(next.entries.map(\.id), [original.id, bodyMatch.id])
+        XCTAssertEqual(next.followUpMatches[original.id]?.id, second.id)
+        XCTAssertEqual(next.followUpMatches[original.id]?.snippet, "needle beta")
+        try service.delete(second)
+        try service.delete(bodyThought)
+        let final = try search.search("needle")
+        XCTAssertEqual(final.entries.map(\.id), [bodyMatch.id])
+        XCTAssertTrue(final.followUpMatches.isEmpty)
+    }
+}

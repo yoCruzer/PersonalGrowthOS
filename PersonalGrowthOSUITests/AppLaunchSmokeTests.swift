@@ -1369,3 +1369,121 @@ extension AppLaunchSmokeTests {
         add(complete)
     }
 }
+
+extension AppLaunchSmokeTests {
+    func testPR6SearchRefreshesAfterDeletingMatchedFollowUps() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.tabBars.buttons["Record"].tap()
+        let original = "A long original memory.\n" + String(repeating: "Keep this original paragraph in its historical place.\n", count: 16)
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText(original)
+        app.buttons["capture-save"].tap()
+        app.staticTexts.matching(NSPredicate(format: "label == %@", original)).firstMatch.tap()
+        for text in [String(repeating: "Earlier context without the query.\n", count: 14), "Needle alpha", "Needle beta"] {
+            let add = app.buttons["entry-add-thought"]
+            for _ in 0..<12 where !add.isHittable { app.swipeUp() }
+            XCTAssertTrue(add.isHittable)
+            add.tap()
+            let editor = app.textViews["follow-up-editor-body"]
+            XCTAssertTrue(editor.waitForExistence(timeout: 5))
+            editor.tap()
+            editor.typeText(text)
+            app.buttons["follow-up-editor-save"].tap()
+            XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
+        }
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("Needle")
+        app.keyboards.buttons["Search"].tap()
+        for text in ["Needle alpha", "Needle beta"] {
+            XCTAssertTrue(app.staticTexts[text].waitForExistence(timeout: 5))
+            app.staticTexts[text].tap()
+            let target = app.staticTexts[text]
+            XCTAssertTrue(target.waitForExistence(timeout: 5))
+            XCTAssertTrue(target.isHittable, "Search must scroll to the matching follow-up")
+            let identifier = target.identifier
+            let delete = app.buttons.matching(NSPredicate(format: "identifier == %@ AND label == %@", identifier, "Delete")).firstMatch
+            for _ in 0..<3 where !delete.isHittable { app.swipeUp() }
+            delete.tap()
+            app.buttons["Delete"].firstMatch.tap()
+            XCTAssertTrue(delete.waitForNonExistence(timeout: 5))
+            app.navigationBars.buttons["Search"].firstMatch.tap()
+            XCTAssertEqual(search.value as? String, "Needle")
+            XCTAssertFalse(app.staticTexts[text].exists)
+        }
+        XCTAssertFalse(app.staticTexts["Matched Follow-up"].exists)
+        XCTAssertTrue(app.staticTexts["No Results for “Needle”"].waitForExistence(timeout: 5))
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testPR6FilesPreviewCancelAndRestore() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.tabBars.buttons["Record"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap()
+        body.typeText("PR6 synthetic restore memory")
+        app.buttons["capture-save"].tap()
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["settings-button"].tap()
+        let export = app.buttons["settings-export-button"]
+        for _ in 0..<4 where !export.isHittable { app.swipeUp() }
+        export.tap()
+        app.buttons["Export and Share"].tap()
+        let files = app.cells.matching(NSPredicate(format: "label == %@ OR label == %@", "Save to Files", "保存到“文件”")).firstMatch
+        for _ in 0..<4 where !files.isHittable { app.swipeUp() }
+        XCTAssertTrue(files.waitForExistence(timeout: 10))
+        let exportedName = app.otherElements["LP.CaptionBar.TopCaption"].label
+        files.tap()
+        let filename = app.textFields["DOCPicker.filenameTextField"]
+        XCTAssertTrue(filename.waitForExistence(timeout: 20))
+        app.navigationBars.buttons["Save"].tap()
+        app.terminate()
+        app.launch() // Resets only the dedicated UITesting database, preserving the Files copy.
+        func selectBackup() {
+            app.buttons["settings-button"].tap()
+            let restore = app.buttons["settings-import-button"]
+            for _ in 0..<4 where !restore.isHittable { app.swipeUp() }
+            restore.tap()
+            let file = app.cells.matching(NSPredicate(format: "label CONTAINS %@", exportedName)).firstMatch
+            XCTAssertTrue(file.waitForExistence(timeout: 15), app.debugDescription)
+            file.tap()
+            XCTAssertTrue(app.buttons["Restore Backup"].waitForExistence(timeout: 15))
+            XCTAssertTrue(app.staticTexts["1 objects, 0 pins, 0 follow-ups"].exists)
+        }
+        selectBackup()
+        if app.buttons["Cancel"].exists {
+            app.buttons["Cancel"].firstMatch.tap()
+        } else {
+            app.otherElements["PopoverDismissRegion"].tap()
+        }
+        XCTAssertTrue(app.buttons["Restore Backup"].waitForNonExistence(timeout: 5))
+        app.navigationBars.buttons["Done"].tap()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["No Entries Yet"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["PR6 synthetic restore memory"].exists)
+        app.tabBars.buttons["Today"].tap()
+        selectBackup() // Empty-target preflight must still succeed after cancelling the preview.
+        app.buttons["Restore Backup"].tap()
+        let completed = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Restore completed:")).firstMatch
+        XCTAssertTrue(completed.waitForExistence(timeout: 15))
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "PR6 Files restore completed after preview cancellation"
+        shot.lifetime = .keepAlways
+        add(shot)
+        app.buttons["OK"].tap()
+        app.navigationBars.buttons["Done"].tap()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["PR6 synthetic restore memory"].waitForExistence(timeout: 5))
+    }
+}

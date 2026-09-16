@@ -1636,3 +1636,93 @@ extension ImportExportRecoveryTests {
         }
     }
 }
+
+extension ImportExportRecoveryTests {
+    func testPR6SecurityScopeBoundaryPairsSuccessFailureAndCancellation() async throws {
+        enum Expected: Error { case read }
+        let url = URL(fileURLWithPath: "/synthetic-selected-backup.zip")
+        for outcome in ["success", "error", "cancel"] {
+            var events: [String] = []
+            let task = Task { @MainActor in
+                try await SecurityScopedFileAccess.perform(to: url, start: { selected in
+                    XCTAssertEqual(selected, url)
+                    events.append("start")
+                    return true
+                }, stop: { _ in events.append("stop") }) {
+                    events.append("read")
+                    await Task.yield()
+                    XCTAssertEqual(events, ["start", "read"])
+                    if outcome == "error" { throw Expected.read }
+                    try Task.checkCancellation()
+                    events.append("finished")
+                }
+            }
+            if outcome == "cancel" { task.cancel() }
+            do {
+                try await task.value
+                XCTAssertEqual(outcome, "success")
+            } catch {
+                if outcome == "cancel" { XCTAssertTrue(error is CancellationError) }
+                else { XCTAssertTrue(error is Expected) }
+            }
+            XCTAssertEqual(events, outcome == "success" ? ["start", "read", "finished", "stop"] : ["start", "read", "stop"])
+        }
+        var events: [String] = []
+        await SecurityScopedFileAccess.perform(to: url, start: { _ in events.append("start"); return false },
+                                               stop: { _ in events.append("stop") }) {
+            events.append("sandbox read")
+        }
+        XCTAssertEqual(events, ["start", "sandbox read"])
+    }
+
+    func testPR6RollbackClockEditSurvivesV5RestoreAndReopen() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makeEmptyStore(named: "ClockSource", onDisk: true)
+        let context = source.container.mainContext
+        let created = Date(timeIntervalSince1970: 1_730_000_000)
+        let entry = Entry(body: "Original remains untouched", createdAt: created)
+        context.insert(entry)
+        try context.save()
+        var now = created
+        let service = EntryContinuationService(context: context, now: { now })
+        let thought = try service.add(entryID: entry.id, body: "Initial")
+        for (offset, text, expectedOffset) in [(0.0, "Equal clock", 1.0), (-100, "Backwards", 1), (60, "Forward", 60), (30, "Back before previous edit", 60)] {
+            now = created.addingTimeInterval(offset)
+            try service.edit(thought, body: text)
+            XCTAssertEqual(thought.updatedAt, created.addingTimeInterval(expectedOffset))
+            XCTAssertEqual(thought.createdAt, created)
+            XCTAssertGreaterThan(thought.updatedAt, thought.createdAt)
+        }
+        now = created.addingTimeInterval(90)
+        try service.edit(thought, body: thought.body)
+        XCTAssertEqual(thought.updatedAt, created.addingTimeInterval(60))
+        // A first edit under a backwards clock must retain an Edited marker through encoding.
+        let equalTime = try service.add(entryID: entry.id, body: "Another")
+        now = created
+        try service.edit(equalTime, body: "Another edited")
+        XCTAssertEqual(equalTime.updatedAt, equalTime.createdAt.addingTimeInterval(1))
+        let parentTimes = [entry.createdAt, entry.occurredAt, entry.updatedAt]
+        XCTAssertEqual(parentTimes, [created, created, created])
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let targetURL = fixture.root.appendingPathComponent("ClockTarget.sqlite")
+        do {
+            let target = try fixture.makeEmptyStore(named: "ClockTarget", onDisk: true)
+            _ = try await target.service.importPackage(from: lease.url)
+        }
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: targetURL)
+        let restoredParent = try XCTUnwrap(EntryRepository(context: reopened.mainContext).fetch(id: entry.id))
+        XCTAssertEqual(restoredParent.body, entry.body)
+        XCTAssertEqual([restoredParent.createdAt, restoredParent.occurredAt, restoredParent.updatedAt], parentTimes)
+        let restored = try reopened.mainContext.fetch(FetchDescriptor<EntryFollowUp>())
+        XCTAssertEqual(restored.count, 2)
+        for original in [thought, equalTime] {
+            let item = try XCTUnwrap(restored.first { $0.id == original.id })
+            XCTAssertEqual(item.body, original.body)
+            XCTAssertEqual(item.createdAt, original.createdAt)
+            XCTAssertEqual(item.updatedAt, original.updatedAt)
+            XCTAssertGreaterThan(item.updatedAt, item.createdAt)
+        }
+    }
+}
