@@ -1,10 +1,12 @@
-# Current Task — Build 9
+# Current Task — Build 9 独立 Review 交接
 
-Owner 授权完整 Build9 Goal：六项实现、风险驱动验证、提交、普通推送、独立 Draft PR；停止于独立 Review。当前分支 `feature/build9-today-entry-followups`，基线 `ae8f7cb6577f2d1bc479471bcd98d6f437670210`；权威计划 [BUILD9_EXECUTION_PLAN.md](BUILD9_EXECUTION_PLAN.md)。
+**本轮 Goal 完成，停止实现。** 六项交付、风险驱动测试、提交、普通推送及独立 Draft PR 均完成。当前分支 `feature/build9-today-entry-followups`；[Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) base `feature/build8-habit-analytics-dashboard`，起始 SHA `ae8f7cb6577f2d1bc479471bcd98d6f437670210`。
 
-当前 checkpoint：实现完成，候选验证尚未闭环；实现已提交 `7c65413`。自动审批服务以容量错误拒绝模拟器定向验收，已请求 Owner 继续批准。下一步在正式权限恢复后执行计划中的 1 Unit + 3 UI 定向测试（真实深色大字号，结束恢复 light / large），检查截图，更新候选证据并普通推送至已创建的独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)（base `feature/build8-habit-analytics-dashboard`）。本地提交与初次普通推送/Draft 创建已完成。不得扩展旧 PR #5，不能重跑全量基线或绕过审批。无发布授权。
+权威计划：[BUILD9_EXECUTION_PLAN.md](BUILD9_EXECUTION_PLAN.md)。候选全量 Unit 208/209 + 失败点修正后1/1通过；定向 UI、双语、真实深色大字号截图与强化删除断言完成。产品源码仍为实现提交 `7c65413`，后续只有测试/文档变化。此前审批阻塞已通过 Owner 明确确认及正式审批解除。
 
-下列 Build8 内容仅为历史交接证据，冻结边界已被本轮 Owner 开发授权解除，真机未验收结论仍保留。
+下一步仅独立 Review：重点 Today 周/月共享规则、附属模型删除事务、搜索定位、V9/v5 兼容与恢复边界。Owner iPhone16 清单见计划。真机未执行，无合并、build number 提升、Archive 或 TestFlight 授权。
+
+下列 Build8 内容仅为历史交接证据，不是当前任务；其真机未验收结论仍保留。
 
 # Current Task
 

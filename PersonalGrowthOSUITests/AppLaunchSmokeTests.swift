@@ -1270,21 +1270,25 @@ extension AppLaunchSmokeTests {
         app.alerts.buttons["follow-up-keep-editing"].firstMatch.tap()
         XCTAssertEqual(thought.value as? String, "新的认识\n保留变化的过程")
         app.buttons["follow-up-editor-save"].tap()
-        let edit = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "edit-follow-up-")).firstMatch
-        XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        let edit = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label == %@", "follow-up-", "编辑")).firstMatch
+        for _ in 0..<8 where !edit.isHittable { app.swipeUp() }
+        XCTAssertTrue(edit.isHittable)
         edit.tap()
         XCTAssertFalse(app.buttons["follow-up-editor-save"].isEnabled)
         thought.tap()
         thought.typeText("\n今天有了进展")
         app.buttons["follow-up-editor-save"].tap()
-        XCTAssertTrue(app.staticTexts["已编辑"].waitForExistence(timeout: 5))
+        for _ in 0..<8 where !app.staticTexts["已编辑"].isHittable { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["已编辑"].isHittable)
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "Build9 Chinese long entry follow-up edited"
         shot.lifetime = .keepAlways
         add(shot)
-        let delete = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "delete-follow-up-")).firstMatch
+        let delete = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label == %@", "follow-up-", "删除")).firstMatch
+        for _ in 0..<3 where !delete.isHittable { app.swipeUp() }
         delete.tap()
         app.buttons["删除"].firstMatch.tap()
+        XCTAssertTrue(delete.waitForNonExistence(timeout: 5))
         XCTAssertTrue(addThought.waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["新的认识\n保留变化的过程\n今天有了进展"].exists)
         app.swipeDown()

@@ -29,9 +29,9 @@ Owner 于 2026-09-16 批准完整 Build 9 Goal（`PersonalGrowthOS_Build9_Codex_
 - [x] 基于当前代码建立本执行计划。
 - [x] 从确切未修改 Build 8 源码生成合成 V8 fixture，最小 V9 增量迁移/重开证明。
 - [x] Today/版本/体重及共享周/月动作实现与定向验证。
-- [x] Entry 置顶/补充 CRUD、搜索定位、清理与 v5 备份闭环实现；中文编辑/删除 UI 收尾待重测。
-- [ ] 定向 UI、双语/首屏/大字号/深浅色检查；一次最终全量 Unit 与可追溯 Debug 候选。
-- [ ] 收尾文档、diff 审查、提交、普通 push、一个 Draft PR；独立 Review 交接。
+- [x] Entry 置顶/补充 CRUD、搜索定位、清理与 v5 备份闭环实现和验证。
+- [x] 定向 UI、双语/首屏/大字号/深浅色检查；一次最终全量 Unit 与失败点定向闭环，可追溯 Debug 候选。
+- [x] 收尾文档、diff 审查、提交、普通 push、一个 Draft PR；独立 Review 交接。
 
 ## Decisions
 
@@ -48,11 +48,11 @@ Owner 于 2026-09-16 批准完整 Build 9 Goal（`PersonalGrowthOS_Build9_Codex_
 
 ## Checkpoint / resume
 
-六项功能已实现，产品源码未再改变。候选全量 Unit 已执行一次，208/209 通过；唯一失败为新测试在相同创建时间下错误假定 UUID 顺序，已固定测试 UUID，待定向重测。中文退出按钮重复无障碍节点的查询已修正，待重测。真实深色大字号、多置顶 UI 尚未执行。模拟器命令自动审批因服务容量拒绝，等待 Owner 对受限操作回应；不得绕过。实现已提交为 `7c65413`，普通推送成功，独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) 已创建；base 为 Build8 分支。
+六项功能实现、自动验证和独立 Draft PR #6 交付完成，停止于独立 Review。全量 Unit 一次 208/209 通过，唯一新测试的同时间 UUID 排序假设修正后定向 1/1 通过，209 项均有对应通过证据；未将有失败的初次运行描述为全绿。所有本轮 UI 场景均取得通过证据。产品实现提交 `7c65413`，其后只有测试与文档收尾，产品摘要保持不变。
 
 ## Final result
 
-PARTIAL checkpoint：实现完成；必要自动验证尚有未确认项；本地实现提交、普通推送、Draft PR #6 已完成；真机及发布未执行。此状态不能视为完成 Goal 或进入发布。
+COMPLETE：本轮实现、必要自动验证、普通推送和独立 Draft PR 已交付。真机验收未执行；版本仍1.0 (7)，不表示可以发布。下一动作仅为独立 Review，随后由 Owner 决定真机验证/修复/发布准备。
 
 ## Checkpoint evidence — data foundation
 
@@ -99,3 +99,29 @@ Owner 真机待验：3 个习惯+2 个目标首屏；体重空值/参考/小数�
 ### Remote delivery checkpoint
 
 本地实现提交 `7c65413`，普通推送成功；独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)，base `feature/build8-habit-analytics-dashboard`，head `feature/build9-today-entry-followups`。未修改 PR #5 范围。正文明确必要验收待补齐，不将远端交付成功当作 Goal COMPLETE。自动审批问题仅剩模拟器验收，提交/推送/创建 Draft 均通过各自正式环境审批。
+
+### Permission recovery and final targeted closure
+
+Owner 明确回复“确认允许”后，重新走正式审批并成功运行；未绕过原拒绝。产品源码摘要仍为 `0353355b47cfd2e55644953577ed163465d1606f19edd3742a0ddba0ff97bf34`，只改 UI 测试定位与断言。
+
+- `/tmp/PGOS-Build9-Accessibility.xcresult`：排序/回滚/父统计 Unit 1/1 PASS，九个长名称习惯展开滚动与四条置顶 UI 2/2 PASS；中文流程最初因无障碍标识查询失败，整组 exit 65，不能称整组通过。
+- 深色大字号由真实 `simctl ui appearance dark` / `content_size accessibility-extra-large` 设置；已视觉检查截图目录 `/tmp/PGOS-Build9-Accessibility-Shots`。Today 长名称换行自然、动作不重叠，展开后第九项与体重可达；全部置顶列表可滚动，时间轴仍保留原记录。
+- `/tmp/PGOS-Build9-ChineseClosure.xcresult`：只补滚动仍失败，随后检查导出的实际 UI 层级确认 SwiftUI 将补充行 identifier 传给内部按钮。测试改为行 identifier + 本地化按钮名，不改产品或弱化 CRUD 断言。
+- `/tmp/PGOS-Build9-ChineseVerified.xcresult`：中文完整流程 1/1 PASS（exit 0），包括版本复制、长原文、换行补充、退出保留、未改动 Save 禁用、编辑标记、删除与原文保留。截图 `/tmp/PGOS-Build9-ChineseVerified-Shots` 已视觉检查。最终审查补强删除断言为操作按钮消失，避免依赖输入光标位置；最终 `/tmp/PGOS-Build9-DeletionClosure.xcresult` 1/1 PASS（exit 0），补强断言通过。
+- 原模拟器设置已恢复并读回确认 `light` / `large`。没有 clean build、重跑全量基线或全量 UI，也没有发布构建。
+
+## Final acceptance map
+
+| 范围 | 当前证据 |
+| --- | --- |
+| Bundle 版本/未知值/复制 | AppComposition 定向及全量 Unit；中文版本复制 UI |
+| 体重空值/键盘/解析/日期 | Weight Unit；FinalTargetedUI 直接入口/重启；FinalCandidate 既有体重 UI |
+| Today 3习惯+2目标/多习惯 | FinalTargetedUI 正常首屏截图；Accessibility 9长名称深色大字号 UI/截图 |
+| 日/周/月共享规则 | HabitFoundation 新周期/边界测试与既有全量；Today 周/月打卡 UI |
+| 置顶与补充 | Persistence 迁移/回滚/幂等/排序/归档恢复/删除；Accessibility 全部置顶；ChineseVerified 与 DeletionClosure CRUD |
+| 搜索/重启/父时间统计 | FinalTargetedUI 命中定位重启；Persistence Unit |
+| V9/v5/历史兼容/拒绝回滚 | 确切 V8 fixture 迁移重开；FinalCandidate 中 ImportExport 32项通过 |
+| 语言与构建 | 461键 en/zh-Hans 完整；上述 test 命令包含成功 Debug 编译；无重复 Archive/build |
+| Git/交付 | 从 ae8f7cb 独立分支；Draft #6 base Build8；普通推送，无强推/合并/发布 |
+
+Review 应重点核对本表映射代码、执行证据及历史默认库警告的来源说明。测试/文档收尾未更改产品、模型或工程配置，因此不机械重跑全量 Unit。此前 PARTIAL/审批拒绝条目为历史过程，已由 Owner 重新确认与成功正式审批解除。

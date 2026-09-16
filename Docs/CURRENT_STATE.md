@@ -1,10 +1,12 @@
-# Build 9 Current State
+# Build 9 Current State — 独立 Review
 
-2026-09-16：基于干净 Build8 `ae8f7cb6577f2d1bc479471bcd98d6f437670210`，当前分支 `feature/build9-today-entry-followups`；六项功能已实现，实现提交 `7c65413`。实际 schema V9 / backup v5 / App 1.0 (7)。确切 Build8 V8 fixture 升级、重开与 v5 往返已通过。
+2026-09-16：本轮六项功能、自动验证、提交/普通推送与独立 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) 完成。执行分支 `feature/build9-today-entry-followups`，base 为 `feature/build8-habit-analytics-dashboard` 的实际 `ae8f7cb`；没有追加旧 PR #5。
 
-本轮全量 Unit 208/209 通过，唯一测试排序假设已修复待重测；中文补充 UI 查询修复、真实深色大字号、多置顶 UI 待验。自动审批服务容量错误拒绝最后模拟器命令，已请求 Owner 继续授权，未绕过。普通 push 与独立 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) 已完成，base 为 Build8 分支；后续仅文档收尾。完整证据与恢复命令见 [Execution Plan](BUILD9_EXECUTION_PLAN.md)。状态 **PARTIAL**，不得宣称候选自动验收或 Goal 完成。
+实际 schema V9 / backup v5 / App 1.0 (7)。产品实现提交 `7c65413`，之后只收尾测试和文档。确切 V8 迁移/重开、v5 往返/非法包拒绝通过。候选全量 Unit 一次 208/209，测试排序假设修正后1/1通过；209项均有通过证据。新路径定向 UI 通过，包括中文 CRUD、真实深色大字号多习惯与全部置顶；最后强化删除断言1/1通过。命令、源码摘要和各次真实结果见 [Execution Plan](BUILD9_EXECUTION_PLAN.md)。
 
-Owner 反馈已使用 Build8，与其历史真机待验结论分开记录。以下为 Build8 历史证据，不代表当前 Build9 验收。
+此前审批容量阻塞经 Owner 再次确认和正式审批解除，未绕过限制。模拟器已恢复 light / large。**Goal COMPLETE，下一边界独立 Review；真机体验待 Owner 验证，不代表发布批准。** 未提升 build、合并、Archive 或 TestFlight。
+
+Owner 使用 Build8 的反馈与其历史真机待验结论分开记录。以下为 Build8 历史证据，不代表当前 Build9 验收。
 
 # Current State
 
