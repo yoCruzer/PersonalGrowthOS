@@ -125,3 +125,62 @@ Owner 明确回复“确认允许”后，重新走正式审批并成功运行�
 | Git/交付 | 从 ae8f7cb 独立分支；Draft #6 base Build8；普通推送，无强推/合并/发布 |
 
 Review 应重点核对本表映射代码、执行证据及历史默认库警告的来源说明。测试/文档收尾未更改产品、模型或工程配置，因此不机械重跑全量 Unit。此前 PARTIAL/审批拒绝条目为历史过程，已由 Owner 重新确认与成功正式审批解除。
+
+## PR #6 Review Closure — R1 / R2 / R3 (2026-09-16)
+
+当前批次从干净 `7843641f6d977ffe13e6e78e837c561709e83f71` 接续同一 Build9 分支。已完整读取 `/Users/hanghang/Documents/PersonalGrowthOS_PR6_Review_Closure_Codex_Goal.md`。上文 COMPLETE 仅表示前轮交付，不代表 Review/发布通过。
+
+核实三项均成立：预览由 fileImporter 直达 service 外部读取，只有正式导入获取 scope；搜索值快照仅随 query 刷新；补充编辑写 now() 可低于 createdAt，与 v5 validator 冲突。
+
+计划：
+1. R1：给 UI 实际调用的预览/恢复共享轻量异步 scope 边界，各自获取/释放，确认等待期间不持有；验证成功/错误/取消/沙盒 false 返回，并走系统 Files 合成包预览/取消/空库恢复。
+2. R2：在实际搜索结果列表重新出现时用保留 query 刷新；验证唯一命中删除、多补充切换、原文仍匹配，长原文 UI 验证返回刷新与再次定位可见。
+3. R3：更新时间取 now、原 updatedAt、createdAt+1秒的最大值。保证不倒退且真正编辑始终可显示 Edited，1秒不会被 v5 时间往返舍掉；不变正文仍不改时间。注入回拨时钟，验证真实导出/导入/重开及父时间不变。
+4. 仅相关 Unit/UI 与编译，保留旧测试历史；更新本计划和两份当前上下文、提交普通推送并更新同一 Draft PR #6，再次独立 Review。不改变 App/schema/backup 版本。
+
+进度：R1/R2/R3 均核实成立并修复；定向验证完成，普通推送更新同一 Draft PR #6，停止于再次独立 Review。
+
+### Review Closure evidence checkpoint
+
+- 当前远端只读核验：PR #6 OPEN/Draft，base/head 与附件一致，起始 SHA `7843641f6d977ffe13e6e78e837c561709e83f71`；初始工作树干净。
+- 产品修复：`AppShell.swift` 的预览/正式恢复都调用 `SecurityScopedFileAccess.perform`，异步操作结束即释放，UI 只在成功且未取消时发布 pending URL/preview；`SearchView.swift` 的实际 SearchResultsList.onAppear 重算保留查询；`EntryContinuationService.edit` 使用 `max(now, updatedAt, createdAt+1秒)`。
+- `/tmp/PGOS-PR6-Targeted.xcresult`：5/5 定向 Unit PASS（scope配对/取消/沙盒false、回拨真实服务/导出/隔离恢复重开、搜索三种结果语义、非法载荷拒绝、非空库拒绝）。该组 UI 最初因重复系统返回节点失败，整组 exit65；未描述成全绿。
+- `/tmp/PGOS-PR6-UI2.xcresult`：R2 长原文+三条补充 UI PASS（固定查询、目标实际可见、删除后片段/ID切换、再次定位、最后结果移除）；Files 部分当时仅探索保存入口，虽 XCTest 报通过，不计为完整 Files 验收。
+- UI 测试按实际层级修正系统重复返回按钮与 `No Results for “Needle”` 文案；不更改产品规则或弱化成员/片段/可见定位断言。
+- 系统 Files 保存入口为中文 actionGroupCell，保存选择器为英文 On My iPhone。`FilesRestore.xcresult` 已实证系统选择器返回的外部 ZIP 可进入1对象预览，但因系统旧选择器节点滞留和 popover 无显式Cancel造成测试失败。最终用“外部文件再次选中及恢复内容”证明保存，用实际 PopoverDismissRegion 取消，并保留空时间轴+再次空库预检+恢复内容断言。
+- 仅复用 `/tmp/PGOS-Build9-Derived`、iPhone16 iOS26.5 指定 UDID 运行相关 test；本轮无全量基线、全量Unit/UI、clean或Archive。旧默认模拟器库的既有未知版本警告继续保留，未清理标准库；所有写操作在专用 UITesting 或独立临时存储。
+
+### Review Closure final result
+
+**R1/R2/R3：已修复。** 产品与回归测试提交 `967dc01bc127d5dc27a4dfd1b1ebe8108b248237`；之后只更新文档。原 Build9 自动验证记录保留为历史，不充作本轮证明。
+
+| 检查 | 结果与证据 |
+| --- | --- |
+| 访问生命周期及相关数据保护 | Targeted 的5项 Unit 全通过；UI/编排实际使用同一 SecurityScopedFileAccess 边界，获取→异步读取→释放，错误/取消均配对，未获取scope时仍允许合法沙盒读取 |
+| 搜索返回刷新 | UI2 的 `testPR6SearchRefreshesAfterDeletingMatchedFollowUps` PASS；长原文+多个补充、同一查询、目标实际可见、切换至下一补充、最后移除；Unit 另覆盖编辑移除匹配与原文仍匹配 |
+| 回拨时钟 | `testPR6RollbackClockEditSurvivesV5RestoreAndReopen` PASS；正常/相等/回拨/早于已有更新时间/无正文变化、创建时间和父时间保持、真实v5导出→空库恢复→重开、“已编辑”往返成立 |
+| 系统 Files | `/tmp/PGOS-PR6-FilesFinal.xcresult` 1/1 PASS，exit0；通过系统保存选择器及 Files 本地提供者重新选中合成ZIP，正确数量预览，popover取消后空时间轴和再次空库预检成功，确认恢复后合成Entry可见 |
+| 可追溯 Debug | Targeted / UI2 / FilesVerified 的 test 已编译同一产品源码；最终 FilesFinal 复用相同产物 test-without-building，没有重复 clean/build |
+| 静态与版本 | diff whitespace检查通过；461键en/zh-Hans完整，本轮没有新文案；App1.0(7)、schemaV9、backupv5均未变 |
+
+`/tmp/PGOS-PR6-FilesVerified.xcresult` 为明确中断的环境异常运行（exit73），不算通过：XCTest 连续收不到动画空闲通知。截图证明应用界面稳定后对特定 xcodebuild 发 SIGINT，确认进程退出，再 shutdown/boot 同一模拟器（不erase），随后 FilesFinal 通过。没有并行启动重复测试，没有清理标准存储。
+
+系统 Files 成功截图：`/tmp/PGOS-PR6-FilesFinal-Shots/4B3A1ABD-C15B-44C8-AF84-BDB312CA0D17.png`。早期分享入口探索、系统控件定位失败和中断记录仍在各 xcresult，未删除或冒充完整通过。后续测试改动只修正系统实际控件定位，不放宽恢复、空库、搜索定位或时间约束。
+
+**未执行：**真实 iPhone 恢复、iCloud/第三方文件提供者矩阵。已完成的系统选择器证据仅为 iPhone16 模拟器本地 Files 提供者；不宣称真机恢复通过。所有测试记录均合成，未操作真实私人数据库。无merge/Ready/Archive/TestFlight/发布tag/版本提升。
+
+### Review Closure actual commands
+
+以下是本轮关键运行日志中的实际命令（日志同名 `.log`，具体子测试结果见上表；Targeted整组因初次UI定位失败exit65，UI2及FilesFinal exit0）：
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination "platform=iOS Simulator,id=5F04DE28-8329-4774-9488-076D6DDC5230" -derivedDataPath /tmp/PGOS-Build9-Derived "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testPR6SecurityScopeBoundaryPairsSuccessFailureAndCancellation" "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testPR6RollbackClockEditSurvivesV5RestoreAndReopen" "-only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests/testPR6SearchRecomputesMembershipSnippetAndTargetAfterFollowUpChanges" "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testNonEmptyTargetRejectsImportWithoutMutation" "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testBuild9InvalidContinuationPayloadsRejectedBeforeWriting" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6SearchRefreshesAfterDeletingMatchedFollowUps" -resultBundlePath /tmp/PGOS-PR6-Targeted.xcresult
+```
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination "platform=iOS Simulator,id=5F04DE28-8329-4774-9488-076D6DDC5230" -derivedDataPath /tmp/PGOS-Build9-Derived "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6SearchRefreshesAfterDeletingMatchedFollowUps" -resultBundlePath /tmp/PGOS-PR6-UI2.xcresult
+```
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination "platform=iOS Simulator,id=5F04DE28-8329-4774-9488-076D6DDC5230" -derivedDataPath /tmp/PGOS-Build9-Derived "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore" -resultBundlePath /tmp/PGOS-PR6-FilesFinal.xcresult
+```
