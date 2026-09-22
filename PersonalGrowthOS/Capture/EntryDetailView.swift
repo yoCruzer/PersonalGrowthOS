@@ -11,6 +11,7 @@ struct EntryDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query private var sources: [EntryExternalSource]
     @Query private var pins: [EntryPin]
     @Query private var followUps: [EntryFollowUp]
     @State private var isAddingThought = false
@@ -37,6 +38,7 @@ struct EntryDetailView: View {
         self.thumbnailStore = thumbnailStore
         self.focusFollowUpID = focusFollowUpID
         let entryID = entry.id
+        _sources = Query(filter: #Predicate<EntryExternalSource> { $0.entryID == entryID })
         _pins = Query(filter: #Predicate<EntryPin> { $0.entryID == entryID })
         _followUps = Query(filter: #Predicate<EntryFollowUp> { $0.entryID == entryID })
     }
@@ -120,6 +122,15 @@ struct EntryDetailView: View {
                             mediaStore: mediaStore,
                             accessibilityLabel: "Photo \(index + 1) of \(images.count)"
                         )
+                    }
+                }
+            }
+            if let source = sources.first?.source, let url = CaptureSource.webURL(source.url) {
+                Section("Source") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let title = source.title, !title.isEmpty { Text(title).font(.subheadline) }
+                        Text([source.siteName, url.host].compactMap { $0 }.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary)
+                        Link("View Original", destination: url).accessibilityIdentifier("entry-source-link")
                     }
                 }
             }

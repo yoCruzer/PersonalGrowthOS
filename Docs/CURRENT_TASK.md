@@ -1,3 +1,15 @@
+# External Capture v1 — automated gate passed
+
+2026-09-22: Owner authorized External Capture v1 and explicitly selected Build 9 `ae14f107f7eebb89a1549e00de3d941e6a996281` as its baseline. Active branch: `codex/external-capture-v1`; Draft PR base: `feature/build9-today-entry-followups`. The previous PR #6 handoff below is historical.
+
+Implemented: public Share Extension + App Group atomic inbox, ordinary Entry import with optional source and durable receipt, Safari selected text/title/URL, nonblocking metadata, source reopening, privacy-safe diagnostics, additive schema V10 and backup v6 (v1–v5 readable). App and extension remain 1.0 (7).
+
+Verified: full Unit 218/218 and key UI 3/3; bounded closure 6 Unit + 1 Safari UI; final unsigned Release app/extension build, all PASS. The closure covers partial post-commit cleanup and JSON publication-size bounds. See [EXTERNAL_CAPTURE_EXECUTION_PLAN.md](EXTERNAL_CAPTURE_EXECUTION_PLAN.md) for exact evidence, limitations and device checks. Historical default simulator-store warnings remain documented; no destructive fallback or private-data reset.
+
+Current action: commit/push and publish the authorized Draft PR, then stop at **READY_FOR_INDEPENDENT_REVIEW**. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture.
+
+---
+
 # PR #6 Review Closure — 再次独立 Review
 
 2026-09-16：R1/R2/R3 均核实成立并完成定向修复。起始 `7843641f6d977ffe13e6e78e837c561709e83f71`，产品/回归测试提交 `967dc01bc127d5dc27a4dfd1b1ebe8108b248237`，沿用 `feature/build9-today-entry-followups`，只更新 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)。

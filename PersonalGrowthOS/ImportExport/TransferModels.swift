@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 5
+    static let currentPackageSchemaVersion = 6
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -43,6 +43,7 @@ struct TransferData: Codable, Equatable {
     let habitPlanRevisions: [HabitPlanRevisionTransfer]
     let habitLifecycleEvents: [HabitLifecycleEventTransfer]
     let entryPins: [EntryPinTransfer]
+    let entrySources: [EntrySourceTransfer]
     let entryFollowUps: [EntryFollowUpTransfer]
 
     init(
@@ -58,6 +59,7 @@ struct TransferData: Codable, Equatable {
         weeklyReviews: [WeeklyReviewTransfer] = [],
         habitPlanRevisions: [HabitPlanRevisionTransfer] = [],
         habitLifecycleEvents: [HabitLifecycleEventTransfer] = [],
+        entrySources: [EntrySourceTransfer] = [],
         entryPins: [EntryPinTransfer] = [],
         entryFollowUps: [EntryFollowUpTransfer] = []
     ) {
@@ -74,6 +76,7 @@ struct TransferData: Codable, Equatable {
         self.habitPlanRevisions = habitPlanRevisions
         self.habitLifecycleEvents = habitLifecycleEvents
         self.entryPins = entryPins
+        self.entrySources = entrySources
         self.entryFollowUps = entryFollowUps
     }
 
@@ -91,6 +94,7 @@ struct TransferData: Codable, Equatable {
         case habitPlanRevisions
         case habitLifecycleEvents
         case entryPins
+        case entrySources
         case entryFollowUps
     }
 
@@ -119,6 +123,7 @@ struct TransferData: Codable, Equatable {
             [HabitLifecycleEventTransfer].self, forKey: .habitLifecycleEvents
         ) ?? []
         entryPins = try container.decodeIfPresent([EntryPinTransfer].self, forKey: .entryPins) ?? []
+        entrySources = try container.decodeIfPresent([EntrySourceTransfer].self, forKey: .entrySources) ?? []
         entryFollowUps = try container.decodeIfPresent([EntryFollowUpTransfer].self, forKey: .entryFollowUps) ?? []
     }
 
@@ -137,6 +142,7 @@ struct TransferData: Codable, Equatable {
             "habitPlanRevisions": habitPlanRevisions.count,
             "habitLifecycleEvents": habitLifecycleEvents.count,
             "entryPins": entryPins.count,
+            "entrySources": entrySources.count,
             "entryFollowUps": entryFollowUps.count
         ]
     }
@@ -146,6 +152,7 @@ struct TransferData: Codable, Equatable {
             (version != 1 || key != "weightRecords")
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
+                && (version >= 6 || key != "entrySources")
                 && (version >= 5 || (key != "entryPins" && key != "entryFollowUps"))
         }
     }
@@ -153,6 +160,11 @@ struct TransferData: Codable, Equatable {
     var totalObjectCount: Int {
         objectCounts.values.reduce(0, +)
     }
+}
+
+struct EntrySourceTransfer: Codable, Equatable {
+    let entryID: UUID
+    let source: CaptureSource
 }
 
 struct EntryPinTransfer: Codable, Equatable {
@@ -430,6 +442,15 @@ enum TransferValidator {
 
         let imageCounts = Dictionary(grouping: data.images, by: \.entryID).mapValues(\.count)
         let entryIDs = Set(data.entries.map(\.id))
+        guard manifest.packageSchemaVersion >= 6 || data.entrySources.isEmpty else {
+            throw TransferPackageError.invalidObject("entrySource")
+        }
+        try unique(data.entrySources.map(\.entryID), type: "entrySource")
+        for record in data.entrySources {
+            guard entryIDs.contains(record.entryID) else { throw TransferPackageError.missingEndpoint }
+            do { try record.source.validate() }
+            catch { throw TransferPackageError.invalidObject("entrySource") }
+        }
         try unique(data.entryPins.map(\.id), type: "entryPin")
         try unique(data.entryPins.map(\.entryID), type: "entryPinEntry")
         try unique(data.entryFollowUps.map(\.id), type: "entryFollowUp")

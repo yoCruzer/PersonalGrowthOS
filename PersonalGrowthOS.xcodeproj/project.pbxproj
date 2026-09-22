@@ -49,6 +49,13 @@
 		B00000000000000000000040 /* ReminderFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000043 /* ReminderFoundation.swift */; };
 		B00000000000000000000041 /* Build7V7Fixture in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000044 /* Build7V7Fixture */; };
 		B00000000000000000000042 /* Build8V8Fixture in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000045 /* Build8V8Fixture */; };
+CA0000000000000000000101 = {isa = PBXBuildFile; fileRef = CA0000000000000000000001; };
+CA0000000000000000000102 = {isa = PBXBuildFile; fileRef = CA0000000000000000000002; };
+CA0000000000000000000103 = {isa = PBXBuildFile; fileRef = CA0000000000000000000003; };
+CA0000000000000000000104 = {isa = PBXBuildFile; fileRef = CA0000000000000000000004; };
+CA0000000000000000000105 = {isa = PBXBuildFile; fileRef = CA0000000000000000000001; };
+CA0000000000000000000106 = {isa = PBXBuildFile; fileRef = CA0000000000000000000005; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+CA0000000000000000000107 = {isa = PBXBuildFile; fileRef = A00000000000000000000036; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +73,7 @@
 			remoteGlobalIDString = F00000000000000000000001;
 			remoteInfo = PersonalGrowthOS;
 		};
+CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H00000000000000000000001; proxyType = 1; remoteGlobalIDString = CA0000000000000000000020; remoteInfo = ShareExtension; };
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -114,6 +122,11 @@
 		A00000000000000000000043 /* ReminderFoundation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderFoundation.swift; sourceTree = "<group>"; };
 		A00000000000000000000044 /* Build7V7Fixture */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fixtures/Build7V7Fixture; sourceTree = "<group>"; };
 		A00000000000000000000045 /* Build8V8Fixture */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fixtures/Build8V8Fixture; sourceTree = "<group>"; };
+CA0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedCapture/ShareInbox.swift"; sourceTree = SOURCE_ROOT; };
+CA0000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift"; sourceTree = SOURCE_ROOT; };
+CA0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExtension/ShareViewController.swift; sourceTree = SOURCE_ROOT; };
+CA0000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ShareExtension/Preprocessing.js; sourceTree = SOURCE_ROOT; };
+CA0000000000000000000005 = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,12 +151,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+CA0000000000000000000012 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (CA0000000000000000000106, ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXCopyFilesBuildPhase section */
 /* Begin PBXGroup section */
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+CA0000000000000000000005,
+CA0000000000000000000004,
+CA0000000000000000000003,
+CA0000000000000000000002,
+CA0000000000000000000001,
 				C00000000000000000000002 /* PersonalGrowthOS */,
 				C00000000000000000000003 /* PersonalGrowthOSTests */,
 				C00000000000000000000004 /* PersonalGrowthOSUITests */,
@@ -346,10 +368,11 @@
 				D00000000000000000000001 /* Sources */,
 				D00000000000000000000002 /* Frameworks */,
 				D00000000000000000000003 /* Resources */,
+CA0000000000000000000013,
 			);
 			buildRules = (
 			);
-			dependencies = (
+			dependencies = (CA0000000000000000000025,
 			);
 			name = PersonalGrowthOS;
 			productName = PersonalGrowthOS;
@@ -392,6 +415,7 @@
 			productReference = A00000000000000000000008 /* PersonalGrowthOSUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+CA0000000000000000000020 = {isa = PBXNativeTarget; buildConfigurationList = CA0000000000000000000021; buildPhases = (CA0000000000000000000010, CA0000000000000000000012, CA0000000000000000000011, ); buildRules = (); dependencies = (); name = ShareExtension; productName = ShareExtension; productReference = CA0000000000000000000005; productType = "com.apple.product-type.app-extension"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -429,6 +453,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+CA0000000000000000000020,
 				F00000000000000000000001 /* PersonalGrowthOS */,
 				F00000000000000000000002 /* PersonalGrowthOSTests */,
 				F00000000000000000000003 /* PersonalGrowthOSUITests */,
@@ -462,6 +487,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+CA0000000000000000000011 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (CA0000000000000000000104, CA0000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -469,6 +495,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+CA0000000000000000000102,
+CA0000000000000000000101,
 				B00000000000000000000001 /* PersonalGrowthOSApp.swift in Sources */,
 				B00000000000000000000002 /* AppShell.swift in Sources */,
 				B00000000000000000000006 /* AppConfiguration.swift in Sources */,
@@ -524,6 +552,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+CA0000000000000000000010 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (CA0000000000000000000103, CA0000000000000000000105, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -537,6 +566,7 @@
 			target = F00000000000000000000001 /* PersonalGrowthOS */;
 			targetProxy = E00000000000000000000003 /* PBXContainerItemProxy */;
 		};
+CA0000000000000000000025 = {isa = PBXTargetDependency; target = CA0000000000000000000020; targetProxy = CA0000000000000000000024; };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -571,6 +601,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
@@ -599,6 +630,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
@@ -701,6 +733,8 @@
 			};
 			name = Release;
 		};
+CA0000000000000000000022 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+CA0000000000000000000023 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -740,6 +774,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+CA0000000000000000000021 = {isa = XCConfigurationList; buildConfigurations = (CA0000000000000000000022, CA0000000000000000000023, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 	};
 	rootObject = H00000000000000000000001 /* Project object */;

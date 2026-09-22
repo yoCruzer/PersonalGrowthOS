@@ -470,6 +470,10 @@ final class ImportExportService {
                     throw TransferPackageError.corruptData
                 }
             }
+            if manifest.packageSchemaVersion >= 6 {
+                let payload = try JSONSerialization.jsonObject(with: bytes) as? [String: Any]
+                guard payload?["entrySources"] is [Any] else { throw TransferPackageError.corruptData }
+            }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
             throw TransferPackageError.corruptData
@@ -868,6 +872,9 @@ final class ImportExportService {
                     updatedAt: record.updatedAt
                 ))
             }
+            for record in package.data.entrySources {
+                context.insert(try EntryExternalSource(entryID: record.entryID, source: record.source))
+            }
             for record in package.data.entryPins {
                 try Task.checkCancellation()
                 context.insert(EntryPin(id: record.id, entryID: record.entryID, pinnedAt: record.pinnedAt))
@@ -930,6 +937,7 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<WeeklyReview>())
             + context.fetchCount(FetchDescriptor<HabitPlanRevision>())
             + context.fetchCount(FetchDescriptor<HabitLifecycleEvent>())
+            + context.fetchCount(FetchDescriptor<EntryExternalSource>())
             + context.fetchCount(FetchDescriptor<EntryPin>())
             + context.fetchCount(FetchDescriptor<EntryFollowUp>())
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
@@ -997,6 +1005,7 @@ private enum TransferSnapshot {
         let weightRecords = try context.fetch(FetchDescriptor<WeightRecord>())
         try Task.checkCancellation()
         let weeklyReviews = try context.fetch(FetchDescriptor<WeeklyReview>())
+        let entrySources = try context.fetch(FetchDescriptor<EntryExternalSource>())
         let entryPins = try context.fetch(FetchDescriptor<EntryPin>())
         let entryFollowUps = try context.fetch(FetchDescriptor<EntryFollowUp>())
         try Task.checkCancellation()
@@ -1158,6 +1167,10 @@ private enum TransferSnapshot {
                     createdAt: $0.createdAt, knownStatus: $0.knownStatusRawValue
                 )
             }.sorted { sortUUID($0.id, $1.id) },
+            entrySources: try cancellableMap(entrySources) {
+                guard let source = $0.source else { throw TransferPackageError.invalidObject("entrySource") }
+                return EntrySourceTransfer(entryID: $0.entryID, source: source)
+            }.sorted { sortUUID($0.entryID, $1.entryID) },
             entryPins: try cancellableMap(entryPins) {
                 EntryPinTransfer(id: $0.id, entryID: $0.entryID, pinnedAt: $0.pinnedAt)
             }.sorted { sortUUID($0.id, $1.id) },

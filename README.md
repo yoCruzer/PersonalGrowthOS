@@ -14,3 +14,7 @@ PersonalGrowthOS is a local-first iPhone life log for capturing text and photos,
 - TestFlight upload: blocked until the Owner signs in to Xcode with the App Store Connect account and distribution signing access
 
 Start with [Docs/INDEX.md](Docs/INDEX.md). Current handoff details are in [Docs/CURRENT_STATE.md](Docs/CURRENT_STATE.md), [Docs/CURRENT_TASK.md](Docs/CURRENT_TASK.md), and [Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md](Docs/OWNER_MANUAL_VALIDATION_CHECKLIST.md).
+
+## External Capture review candidate
+
+The `codex/external-capture-v1` branch adds system Share Sheet capture for text, images and webpages, including Safari selected text and an original-source link. The extension queues files in an App Group; opening the app imports them as ordinary Entries. See [the architecture, validation and device checklist](Docs/EXTERNAL_CAPTURE_EXECUTION_PLAN.md). This candidate uses additive database schema V10 and backup v6; it is not a TestFlight release. Device signing must authorize the App Group for both targets.

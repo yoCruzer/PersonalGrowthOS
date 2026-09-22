@@ -1315,7 +1315,7 @@ private final class TransferTestFixture {
                 "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
                 "weightRecords": 1, "weeklyReviews": 1,
                 "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
-                "entryPins": 0, "entryFollowUps": 0
+                "entryPins": 0, "entryFollowUps": 0, "entrySources": 0
             ],
             expectedIDs: try ids(in: context)
         )

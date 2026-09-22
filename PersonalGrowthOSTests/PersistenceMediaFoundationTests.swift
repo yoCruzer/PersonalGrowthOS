@@ -1423,3 +1423,190 @@ extension PersistenceMediaFoundationTests {
         XCTAssertTrue(final.followUpMatches.isEmpty)
     }
 }
+
+@MainActor
+final class ExternalCaptureTests: XCTestCase {
+    private func temporaryRoot() throws -> URL {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        return root
+    }
+
+    func testPayloadValidationAndAtomicPublication() throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root)
+        var payload = ShareImportPayload()
+        XCTAssertThrowsError(try inbox.publish(payload, files: [:]))
+        payload.text = "Selected private text"
+        payload.source = CaptureSource(url: "https://example.com/article", title: "Article", capturedAt: payload.createdAt, captureMode: .selectedContent)
+        try inbox.publish(payload, files: [:])
+        XCTAssertEqual(try inbox.read(XCTUnwrap(inbox.pending().first)), payload)
+        payload.schemaVersion = 2
+        XCTAssertThrowsError(try payload.validate())
+        payload.schemaVersion = 1
+        payload.source?.url = "javascript:alert(1)"
+        XCTAssertThrowsError(try payload.validate())
+        payload.source = nil
+        payload.text = String(repeating: "\u{0001}", count: 400_000)
+        XCTAssertThrowsError(try inbox.publish(payload, files: [:]))
+        XCTAssertEqual(try inbox.pending().count, 1)
+    }
+
+    func testImportCommitInterruptionRetryDeletionAndReopen() throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let url = root.appendingPathComponent("store.sqlite")
+        let payload = ShareImportPayload(text: "A share awaiting app launch", source: CaptureSource(url: "https://example.com", capturedAt: Date(), captureMode: .metadataOnly))
+        try inbox.publish(payload, files: [:])
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: url)
+            let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+            importer.checkpoint = { if $0 == "beforeSave" { throw CaptureError.invalidPayload } }
+            XCTAssertEqual(try importer.scan(), 1)
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 0)
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
+            importer.checkpoint = { if $0 == "afterSave" { throw CaptureError.invalidPayload } }
+            XCTAssertEqual(try importer.scan(), 1)
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 1)
+            XCTAssertEqual(try inbox.pending().count, 1)
+            // Simulate process death after cleanup deleted the JSON but before removing its directory.
+            let pending = try XCTUnwrap(inbox.pending().first)
+            try FileManager.default.removeItem(at: pending.appendingPathComponent("payload.json"))
+        }
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: url)
+            let context = container.mainContext
+            let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+            XCTAssertEqual(try importer.scan(), 0)
+            XCTAssertEqual(try importer.scan(), 0)
+            let entry = try XCTUnwrap(context.fetch(FetchDescriptor<Entry>()).first)
+            XCTAssertEqual(entry.id, payload.id)
+            XCTAssertEqual(entry.body, payload.text)
+            XCTAssertEqual(try context.fetch(FetchDescriptor<EntryExternalSource>()).first?.source, payload.source)
+            try EntryDeletionService(persistence: ModelContextEntryPersistence(context: context), mediaStore: MediaStore(rootURL: root)).permanentlyDelete(entry)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryExternalSource>()), 0)
+            try inbox.publish(payload, files: [:])
+            XCTAssertEqual(try importer.scan(), 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<Entry>()), 0)
+        }
+    }
+
+    func testAttachmentRollbackRetryAndMetadataFallback() throws {
+        let root = try temporaryRoot()
+        let image = root.appendingPathComponent("test.png")
+        let bytes = UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { context in
+            UIColor.blue.setFill(); context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+        }
+        try bytes.write(to: image)
+        let id = UUID()
+        let attachment = CaptureAttachment(id: id, filename: id.uuidString.lowercased(), contentType: "image/png", byteCount: Int64(bytes.count), checksum: try ShareInbox.checksum(image))
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let secondID = UUID()
+        let second = CaptureAttachment(id: secondID, filename: secondID.uuidString.lowercased(), contentType: "image/png", byteCount: Int64(bytes.count), checksum: attachment.checksum)
+        let payload = ShareImportPayload(source: CaptureSource(url: "https://example.com/unavailable", capturedAt: Date(), captureMode: .metadataOnly), images: [attachment, second])
+        try inbox.publish(payload, files: [id: image, secondID: image])
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let store = MediaStore(rootURL: root, availableCapacity: { .max })
+        let importer = ExternalCaptureImporter(container: container, mediaStore: store, inbox: inbox)
+        var copied = 0
+        importer.checkpoint = {
+            if $0 == "attachment" { copied += 1 }
+            if copied == 2 { throw CaptureError.invalidPayload }
+        }
+        XCTAssertEqual(try importer.scan(), 1)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 0)
+        XCTAssertEqual(try store.originalsByteCount(), 0)
+        importer.checkpoint = nil
+        XCTAssertEqual(try importer.scan(), 0)
+        let entry = try XCTUnwrap(container.mainContext.fetch(FetchDescriptor<Entry>()).first)
+        XCTAssertEqual(entry.body, payload.source?.url)
+        XCTAssertNil(entry.title)
+        XCTAssertEqual(entry.images.count, 2)
+        XCTAssertEqual(try Data(contentsOf: store.fileURL(for: entry.images[0].relativePath)), bytes)
+        let imageOnly = ShareImportPayload(images: [attachment])
+        try inbox.publish(imageOnly, files: [id: image])
+        XCTAssertEqual(try importer.scan(), 0)
+        let imageEntry = try XCTUnwrap(EntryRepository(context: container.mainContext).fetch(id: imageOnly.id))
+        XCTAssertNil(imageEntry.body)
+        XCTAssertEqual(imageEntry.images.count, 1)
+    }
+
+    func testCorruptAndUnsupportedPackagesRemainRecoverable() throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root)
+        let payload = ShareImportPayload(text: "Keep me")
+        try inbox.publish(payload, files: [:])
+        let directory = try XCTUnwrap(inbox.pending().first)
+        try Data("{broken".utf8).write(to: directory.appendingPathComponent("payload.json"))
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        XCTAssertEqual(try importer.scan(), 1)
+        XCTAssertEqual(try inbox.pending().count, 1)
+        var future = payload; future.schemaVersion = 99
+        try JSONEncoder().encode(future).write(to: directory.appendingPathComponent("payload.json"))
+        XCTAssertEqual(try importer.scan(), 1)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 0)
+        try JSONEncoder().encode(payload).write(to: directory.appendingPathComponent("payload.json"))
+        XCTAssertEqual(try importer.scan(), 0)
+    }
+
+    func testV9StoreMigrationPreservesEntryAndContinuations() throws {
+        let root = try temporaryRoot()
+        let url = root.appendingPathComponent("old.store")
+        let id = UUID()
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        try autoreleasepool {
+            let schema = Schema(versionedSchema: PersonalGrowthSchemaV9.self)
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+            let context = container.mainContext
+            context.insert(Entry(id: id, body: "Build 9 fact", createdAt: date))
+            context.insert(EntryPin(entryID: id, pinnedAt: date))
+            context.insert(EntryFollowUp(entryID: id, body: "Later thought", createdAt: date))
+            try context.save()
+        }
+        for _ in 0..<2 {
+            try autoreleasepool {
+                let container = try PersistenceContainerFactory.makeOnDisk(at: url)
+                let context = container.mainContext
+                let entry = try XCTUnwrap(EntryRepository(context: context).fetch(id: id))
+                XCTAssertEqual(entry.body, "Build 9 fact")
+                XCTAssertEqual(entry.createdAt, date)
+                XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryPin>()), 1)
+                XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryFollowUp>()), 1)
+                XCTAssertEqual(try context.fetchCount(FetchDescriptor<EntryExternalSource>()), 0)
+            }
+        }
+    }
+}
+
+extension ExternalCaptureTests {
+    func testSourceBackupRoundTrip() async throws {
+        let root = try temporaryRoot()
+        let sourceContainer = try PersistenceContainerFactory.makeInMemory()
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let entry = Entry(body: "Quote", createdAt: date)
+        let source = CaptureSource(url: "https://example.com/page", canonicalURL: "https://example.com/canonical", title: "Saved title", siteName: "Example", capturedAt: date, captureMode: .selectedContent)
+        sourceContainer.mainContext.insert(entry)
+        sourceContainer.mainContext.insert(try EntryExternalSource(entryID: entry.id, source: source))
+        try sourceContainer.mainContext.save()
+        let media = root.appendingPathComponent("Source")
+        try FileManager.default.createDirectory(at: media, withIntermediateDirectories: true)
+        let exporter = ImportExportService(context: sourceContainer.mainContext, mediaStore: MediaStore(rootURL: media), availableCapacity: { .max })
+        let lease = try await exporter.exportPackage()
+        defer { lease.cleanup() }
+        let targetURL = root.appendingPathComponent("target.sqlite")
+        try await restoreSourcePackage(lease.url, storeURL: targetURL, media: root.appendingPathComponent("Target"))
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: targetURL)
+        XCTAssertEqual(try reopened.mainContext.fetch(FetchDescriptor<EntryExternalSource>()).first?.source, source)
+        XCTAssertEqual(try reopened.mainContext.fetch(FetchDescriptor<Entry>()).first?.id, entry.id)
+    }
+
+    private func restoreSourcePackage(_ url: URL, storeURL: URL, media: URL) async throws {
+        let target = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+        try FileManager.default.createDirectory(at: media, withIntermediateDirectories: true)
+        let importer = ImportExportService(context: target.mainContext, mediaStore: MediaStore(rootURL: media), availableCapacity: { .max })
+        let result = try await importer.importPackage(from: url)
+        XCTAssertEqual(result.objectCounts["entrySources"], 1)
+    }
+}

@@ -1,4 +1,5 @@
 import XCTest
+import Network
 
 final class AppLaunchSmokeTests: XCTestCase {
     func testCoreShellPassesAccessibilityAudit() throws {
@@ -1485,5 +1486,76 @@ extension AppLaunchSmokeTests {
         app.navigationBars.buttons["Done"].tap()
         app.tabBars.buttons["Timeline"].tap()
         XCTAssertTrue(app.staticTexts["PR6 synthetic restore memory"].waitForExistence(timeout: 5))
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testExternalCaptureSafariShareAndImport() throws {
+        continueAfterFailure = false
+        let server = try NWListener(using: .tcp, on: 18763)
+        let ready = expectation(description: "Synthetic page server ready")
+        server.stateUpdateHandler = { if case .ready = $0 { ready.fulfill() } }
+        server.newConnectionHandler = { connection in
+            connection.start(queue: .global())
+            connection.receive(minimumIncompleteLength: 1, maximumLength: 16384) { _, _, _, _ in
+                let html = """
+                <!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><title>External Capture Fixture</title><meta property="og:site_name" content="Capture Test"><h1>External Capture Fixture</h1><p id="quote">A selected thought with its original source.</p><script>var r=document.createRange();r.selectNodeContents(document.getElementById('quote'));var s=window.getSelection();s.removeAllRanges();s.addRange(r);</script>
+                """
+                let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: \(html.utf8.count)\r\nConnection: close\r\n\r\n" + html
+                connection.send(content: Data(response.utf8), completion: .contentProcessed { _ in connection.cancel() })
+            }
+        }
+        server.start(queue: .global())
+        defer { server.cancel() }
+        wait(for: [ready], timeout: 5)
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        safari.terminate()
+        safari.launch()
+        let address = safari.textFields["TabBarItemTitle"]
+        XCTAssertTrue(address.waitForExistence(timeout: 10), safari.debugDescription)
+        address.tap()
+        // Safari selects the current URL when entering the address field.
+        let addressInput = safari.textFields.firstMatch
+        addressInput.typeText("http://127.0.0.1:18763/capture.html\n")
+        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
+        safari.buttons["MoreMenuButton"].tap()
+        let share = safari.buttons["ShareButton"]
+        XCTAssertTrue(share.waitForExistence(timeout: 5), safari.debugDescription)
+        share.tap()
+        let extensionButton = safari.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        if !extensionButton.waitForExistence(timeout: 5) {
+            let more = safari.cells.matching(NSPredicate(format: "label == 'More' OR label == '更多'"))
+            if more.firstMatch.exists { more.firstMatch.tap() }
+        }
+        XCTAssertTrue(extensionButton.waitForExistence(timeout: 10), safari.debugDescription)
+        extensionButton.tap()
+        let editor = safari.textViews["share-text"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 10), safari.debugDescription)
+        XCTAssertTrue(safari.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "External Capture Fixture")).firstMatch.waitForExistence(timeout: 10))
+        XCTAssertEqual(editor.value as? String, "A selected thought with its original source.")
+        let shot = XCTAttachment(screenshot: safari.screenshot()); shot.name = "External Capture Safari extension"; shot.lifetime = .keepAlways; add(shot)
+        let save = safari.buttons.matching(NSPredicate(format: "label == 'Save' OR label == '保存'")).firstMatch
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        app.activate()
+        app.tabBars.buttons["Timeline"].tap()
+        let title = app.staticTexts["External Capture Fixture"].firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 10), app.debugDescription)
+        title.tap()
+        XCTAssertTrue(app.staticTexts["A selected thought with its original source."].exists)
+        let sourceLink = app.buttons["entry-source-link"]
+        XCTAssertTrue(sourceLink.waitForExistence(timeout: 5))
+        sourceLink.tap()
+        XCTAssertTrue(safari.wait(for: .runningForeground, timeout: 10))
+        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
     }
 }

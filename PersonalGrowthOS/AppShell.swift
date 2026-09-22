@@ -16,6 +16,8 @@ struct AppShell: View {
 
     @State private var selectedTab: AppTab = .today
     @State private var isShowingStorage = false
+    @Environment(\.scenePhase) private var captureScenePhase
+    @State private var captureFailure = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -68,12 +70,51 @@ struct AppShell: View {
             .tag(AppTab.library)
         }
         .accessibilityIdentifier("app-shell")
+        .task { importShares() }
+        .onChange(of: captureScenePhase) { _, phase in
+            if phase == .active { importShares() }
+        }
+        .alert("Some shared content could not be imported", isPresented: $captureFailure) {
+            Button("Retry") { importShares() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("The shared files are retained. You can retry when storage is available or after updating the app.")
+        }
         .sheet(isPresented: $isShowingStorage) {
             MediaStorageView(
                 mediaStore: container.mediaStore,
                 importExportService: container.importExportService,
                 integrityReport: container.mediaIntegrityReport
             )
+        }
+    }
+
+    private func importShares() {
+        if container.configuration.launchMode == .uiTesting {
+            #if DEBUG
+            guard ProcessInfo.processInfo.arguments.contains("-PGOSCaptureShareTest") else { return }
+            do {
+                let inbox = try ShareInbox.shared()
+                let importer = ExternalCaptureImporter(container: container.modelContainer,
+                    mediaStore: container.mediaStore, inbox: inbox)
+                for directory in try inbox.pending() {
+                    let payload = try inbox.read(directory)
+                    // Only the explicit synthetic localhost test page may enter the isolated UI store.
+                    if payload.source?.url == "http://127.0.0.1:18763/capture.html" {
+                        try importer.consume(directory)
+                    }
+                }
+            } catch { captureFailure = true }
+            #endif
+            return
+        }
+        do {
+            let importer = ExternalCaptureImporter(container: container.modelContainer,
+                mediaStore: container.mediaStore, inbox: try ShareInbox.shared())
+            captureFailure = try importer.scan() > 0
+        } catch {
+            CaptureLog.event("inbox.unavailable type=\(String(describing: type(of: error)))")
+            captureFailure = true
         }
     }
 }
