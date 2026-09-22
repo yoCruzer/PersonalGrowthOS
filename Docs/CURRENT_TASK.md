@@ -1,4 +1,4 @@
-# External Capture v1 — automated gate passed
+# External Capture v1 — Independent Review handoff
 
 2026-09-22: Owner authorized External Capture v1 and explicitly selected Build 9 `ae14f107f7eebb89a1549e00de3d941e6a996281` as its baseline. Active branch: `codex/external-capture-v1`; Draft PR base: `feature/build9-today-entry-followups`. The previous PR #6 handoff below is historical.
 
@@ -6,7 +6,7 @@ Implemented: public Share Extension + App Group atomic inbox, ordinary Entry imp
 
 Verified: full Unit 218/218 and key UI 3/3; bounded closure 6 Unit + 1 Safari UI; final unsigned Release app/extension build, all PASS. The closure covers partial post-commit cleanup and JSON publication-size bounds. See [EXTERNAL_CAPTURE_EXECUTION_PLAN.md](EXTERNAL_CAPTURE_EXECUTION_PLAN.md) for exact evidence, limitations and device checks. Historical default simulator-store warnings remain documented; no destructive fallback or private-data reset.
 
-Current action: commit/push and publish the authorized Draft PR, then stop at **READY_FOR_INDEPENDENT_REVIEW**. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture.
+Delivery complete: implementation commit `068a27a` is pushed on `codex/external-capture-v1`; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets the Owner-selected Build 9 branch. **READY_FOR_INDEPENDENT_REVIEW** — stop implementation. Subsequent commits only record this handoff. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture.
 
 ---
 
