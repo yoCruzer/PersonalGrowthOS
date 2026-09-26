@@ -12,6 +12,8 @@ R1/R5 provider 语义化读取、30 秒 callback 边界、取消/generation、�
 
 R3 失败 Inbox 已实现，3 项定向 Unit + 1 项 UI 通过：持久稍后、版本重试、新故障/正常包不被屏蔽、receipt 区分、取消和逐条确认丢弃、重启不重复提醒；结果见执行计划。R3 提交 `c6b024656c8da28c97d4f8b6fcb244215b8754aa` 已推送，远端一致。R7 写前副本日志/逐文件补偿、真实测试进程 kill-before-save 恢复、低容量注入、导出先导入与 Pending 排除告知均定向通过；未知 Recovery 与用户 Pending 保留。第五组 `b0fbdc975cf8b26a02fbc79dc946d737e9d1ba61` 已推送且远端一致。R9 白名单诊断/安全重试已实现，2 Unit + 1 UI 定向通过，安全重试保留已有 Entry；历史默认模拟器主文件元数据与冻结 V8 仅 HabitPlanRevision hash 不同，根因/Owner 关联仍未验证，未修改该库。剩余 R4/R2/R1/R5、L2 与统一 final gate 继续推进。第三组 `a5cd018d23c9742f30280476761cb6b8cb83567a` 已推送且 PR #7 远端核实一致，仍为 OPEN Draft。
 
+第七组进行中：R4 导出 cutoff 1/1 与安装后二次空库检查/成功恢复排队分享 2/2 定向通过；真实 host 部分保存确认 UI 通过，取消后同进程立即重开仍因 host 不可交互失败，真实 Safari 对照亦复现空白系统面板；取消通知已到达系统 teardown，显式 dismiss 试验无效且已撤回，仍在定位，不记为已解决。九图响应性测试 NineLarge1 已实际执行 1/1 通过（总量 >180 MiB、九次 MainActor 响应、草稿保留）。L2 当前清单入口已归一，最终门禁未执行，仍 IN_PROGRESS。详见执行计划第七组。
+
 以下内容均为历史交接（superseded），其中旧状态及 Next Action 不再指挥当前工作；历史验证结果保留，不作为本轮修复通过证据。
 
 ---

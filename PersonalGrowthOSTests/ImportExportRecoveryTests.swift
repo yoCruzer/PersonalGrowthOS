@@ -7,6 +7,65 @@ import XCTest
 
 @MainActor
 final class ImportExportRecoveryTests: XCTestCase {
+    func testExportCutoffQueuesShareAndCancelledConsumerWithoutLosingDraft() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let originalIDs = Set(try ModelContext(source.container).fetch(FetchDescriptor<Entry>()).map(\.id))
+        source.container.mainContext.autosaveEnabled = false
+        let draft = Entry(body: "Unsaved during export", createdAt: Date())
+        source.container.mainContext.insert(draft)
+        let snapshot = expectation(description: "Export snapshot owns publication lease")
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        let exporter = ImportExportService(context: source.container.mainContext, mediaStore: source.mediaStore,
+            exportCheckpoint: {
+                snapshot.fulfill()
+                guard release.wait(timeout: .now() + 30) == .success else { throw TransferPackageError.interrupted }
+            })
+        let export = Task { try await exporter.exportPackage() }
+        await fulfillment(of: [snapshot], timeout: 30)
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("ExportQueuedInbox"))
+        let imageURL = fixture.root.appendingPathComponent("queued.png")
+        try fixture.imageData.write(to: imageURL)
+        let imageID = UUID()
+        let attachment = CaptureAttachment(id: imageID, filename: imageID.uuidString.lowercased(),
+            contentType: "image/png", byteCount: Int64(fixture.imageData.count), checksum: try ShareInbox.checksum(imageURL))
+        let payload = ShareImportPayload(text: "Arrived after cutoff", images: [attachment])
+        try inbox.publish(payload, files: [imageID: imageURL])
+        let requested = expectation(description: "Both share consumers are scheduled")
+        requested.expectedFulfillmentCount = 2
+        let first = ExternalCaptureImporter(container: source.container, mediaStore: source.mediaStore, inbox: inbox)
+        let second = ExternalCaptureImporter(container: source.container, mediaStore: source.mediaStore, inbox: inbox)
+        first.checkpoint = { if $0 == "scheduled" { requested.fulfill() } }
+        second.checkpoint = first.checkpoint
+        let cancelled = Task { try await first.scan() }
+        let queued = Task { try await second.scan() }
+        await fulfillment(of: [requested], timeout: 30)
+        cancelled.cancel()
+        XCTAssertEqual(try ModelContext(source.container).fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
+        XCTAssertEqual(try inbox.pending().count, 1)
+        release.signal()
+        let lease = try await export.value
+        defer { lease.cleanup() }
+        await assertThrows({ try await cancelled.value }) { XCTAssertTrue($0 is CancellationError) }
+        let failures = try await queued.value
+        XCTAssertEqual(failures, 0)
+        XCTAssertTrue(source.container.mainContext.hasChanges)
+        XCTAssertEqual(draft.body, "Unsaved during export")
+        let current = ModelContext(source.container)
+        XCTAssertEqual(try current.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        let imported = try XCTUnwrap(current.fetch(FetchDescriptor<Entry>()).first { $0.id == payload.id })
+        let image = try XCTUnwrap(imported.images.first)
+        XCTAssertEqual(try Data(contentsOf: source.mediaStore.fileURL(for: image.relativePath)), fixture.imageData)
+        let restored = try fixture.makeEmptyStore(named: "ExportCutoffRestore")
+        _ = try await restored.service.importPackage(from: lease.url)
+        XCTAssertEqual(Set(try restored.container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id)), originalIDs)
+        let restoredImages = try restored.container.mainContext.fetch(FetchDescriptor<ImageMetadata>())
+        XCTAssertEqual(restoredImages.count, 1)
+        XCTAssertEqual(try Data(contentsOf: restored.mediaStore.fileURL(for: XCTUnwrap(restoredImages.first).relativePath)), fixture.imageData)
+    }
+
     func testExportDrainsValidSharesAndDisclosesOnlyUnimportedPending() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -84,6 +143,53 @@ final class ImportExportRecoveryTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: image.relativePath)), fixture.imageData)
     }
 
+    func testRestoreEmptyRecheckPreservesConcurrentUserImageAndQueuedShare() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let installed = expectation(description: "Restore installed files before empty recheck")
+        let resume = DispatchSemaphore(value: 0)
+        defer { resume.signal() }
+        let target = try fixture.makeEmptyStore(named: "EmptyRecheck", publicationCheckpoint: {
+            if $0 == .afterInstall {
+                installed.fulfill()
+                guard resume.wait(timeout: .now() + 30) == .success else { throw TransferPackageError.interrupted }
+            }
+        })
+        let restore = Task { try await target.service.importPackage(from: lease.url) }
+        await fulfillment(of: [installed], timeout: 30)
+        let imageURL = fixture.root.appendingPathComponent("user-during-restore.png")
+        try fixture.imageData.write(to: imageURL)
+        let stored = try target.mediaStore.storeOriginal(MediaSource(url: imageURL, originalFilename: "user.png", contentType: "image/png"))
+        let image = ImageMetadata(id: stored.id, relativePath: stored.relativePath, originalFilename: "user.png",
+            contentType: "image/png", byteCount: stored.byteCount, pixelWidth: stored.pixelWidth,
+            pixelHeight: stored.pixelHeight, checksum: stored.checksum, createdAt: Date())
+        let entry = Entry(body: "Saved by user during restore", createdAt: Date(), images: [image])
+        image.entry = entry
+        target.container.mainContext.insert(entry)
+        try target.container.mainContext.save()
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("RecheckShare"))
+        let payload = ShareImportPayload(text: "Queued until restore rejects nonempty target")
+        try inbox.publish(payload, files: [:])
+        let importer = ExternalCaptureImporter(container: target.container, mediaStore: target.mediaStore, inbox: inbox)
+        let scheduled = expectation(description: "Share scheduled before empty recheck")
+        importer.checkpoint = { if $0 == "scheduled" { scheduled.fulfill() } }
+        let share = Task { try await importer.scan() }
+        await fulfillment(of: [scheduled], timeout: 30)
+        XCTAssertEqual(try inbox.pending().count, 1)
+        resume.signal()
+        await assertThrows({ try await restore.value }) { XCTAssertEqual($0 as? TransferPackageError, .targetNotEmpty) }
+        let failures = try await share.value
+        XCTAssertEqual(failures, 0)
+        let context = ModelContext(target.container)
+        XCTAssertEqual(Set(try context.fetch(FetchDescriptor<Entry>()).map(\.id)), [entry.id, payload.id])
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL).count, 1)
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: stored.relativePath)), fixture.imageData)
+    }
+
     func testRestoreCancellationAfterInstallReleasesShareAndPreservesDraft() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -148,8 +254,21 @@ final class ImportExportRecoveryTests: XCTestCase {
         target.container.mainContext.autosaveEnabled = false
         let draft = Entry(body: "Keep editing", createdAt: Date())
         target.container.mainContext.insert(draft)
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("QueuedAfterSuccessfulRestore"))
+        let payload = ShareImportPayload(text: "Queued during successful restore")
+        try inbox.publish(payload, files: [:])
+        let importer = ExternalCaptureImporter(container: target.container, mediaStore: target.mediaStore, inbox: inbox)
+        let scheduled = expectation(description: "Share waits for successful restore")
+        importer.checkpoint = { if $0 == "scheduled" { scheduled.fulfill() } }
+        let share = Task { try await importer.scan() }
+        await fulfillment(of: [scheduled], timeout: 30)
+        XCTAssertEqual(try ModelContext(target.container).fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
         resume.signal()
         _ = try await restore.value
+        let failures = try await share.value
+        XCTAssertEqual(failures, 0)
+        XCTAssertEqual(try ModelContext(target.container).fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        XCTAssertTrue(try inbox.pending().isEmpty)
         XCTAssertTrue(target.container.mainContext.hasChanges)
         XCTAssertEqual(draft.body, "Keep editing")
         XCTAssertFalse(try ModelContext(target.container).fetch(FetchDescriptor<Entry>()).contains { $0.id == draft.id })

@@ -1,3 +1,5 @@
+> 当前入口为下方“统一收口审计 2026-09-26”及其逐组证据，状态 IN_PROGRESS。其前的 2026-09-22 COMPLETE/Stop 指令属于历史 handoff（superseded），不指挥当前 Goal。Owner-only 验收统一使用 [当前候选清单](OWNER_MANUAL_VALIDATION_CHECKLIST.md)。
+
 # External Capture v1
 
 ## Authority and boundary
@@ -259,3 +261,19 @@ R7 备份新增行为：可消费分享先导入；随后在共享发布边界�
 历史模拟器只读证据：`/tmp/PGOS-Closure-HistoricalStoreMetadata.json`。通过 simctl 定位当前标准 App root（非 UITesting），只以 SQLite `mode=ro&immutable=1` 读取 Z_METADATA 模型元数据，不读取记录正文、不 replay WAL、不迁移或删除。主文件标识为 `8.0.0`，14 个模型，与仓库冻结 Build8V8Fixture 的模型集合相同，仅 `HabitPlanRevision` 模型 hash 不同；与 V7 fixture 也不完全相同。WAL/SHM 均存在，因此本证据只描述主文件元数据，不能冒充已完整分析当前 WAL 状态。这个历史库为何形成该 hash、是否对应任何 Owner 真机库仍 UNKNOWN/OWNER_REQUIRED；实际日志 Cocoa134504 不被抹除，不以测试库 PASS 宣称历史库已修复。
 
 第六组诊断由 App 自己生成的日志与复制报告遵循白名单；系统 CoreData 既有控制台错误不被改写或复制进报告，也未通过抑制日志掩盖历史故障。509 个字符串键双语完整，`git diff --check` 通过。下一步补齐 R4 剩余交错/导出 cutoff、R2 大图响应、R1/R5 部分保存/取消 UI，归一 L2 后执行统一 final gate。
+
+
+### 第七组进行中：R4 剩余交错、R2 九图与 R1/R5 host 边界
+
+- `/tmp/PGOS-Closure-ExportCutoff1.xcresult` exit 0，1/1：`testExportCutoffQueuesShareAndCancelledConsumerWithoutLosingDraft` 在共享发布锁内 snapshot 后暂停；排队分享及取消的第二消费者不越过 cutoff，导出恢复仅包含 cutoff 原始 Entry/图片，释放后分享恰好导入，主草稿保留。新增可选 exportCheckpoint 仅供确定性测试，生产默认 nil。
+- `/tmp/PGOS-Closure-RemainingEdges1.xcresult` 整体 exit 65；其中 `testRestoreEmptyRecheckPreservesConcurrentUserImageAndQueuedShare` 与 `testSuccessfulRestoreDoesNotRollbackDraftCreatedDuringPublication` 两项 Unit 通过：安装后二次空库检查保留并发用户 Entry/图片，恢复失败仅清自己拥有的文件；成功恢复时排队分享仅在锁释放后提交，主草稿保留。整体失败来自下述 UI，不记为整组通过。
+- `/tmp/PGOS-Closure-HostStates1.xcresult` exit 65：部分保存与取消重开 UI 均失败。第二次部分确认按钮需等待真实可交互状态；保留原产品确认语义后 `/tmp/PGOS-Closure-HostStates2.xcresult` 的部分保存 UI 通过，日志确认 saveRequested → partialConfirmed → publishStarted → committed/cleaned。取消确认保留原文，明确确认才发布。该运行整体仍 exit 65，取消重开失败。
+- 取消重开在 HostStates2、RemainingEdges1 及 `/tmp/PGOS-Closure-LargeCancel1.xcresult`（exit 65）均停在返回 host 后按钮不可点击。同一 host 进程 activate、Progress 完成及 completion 显式 dismiss 尚未解决；没有终止 host 来规避晚到 callback。当前新增 host 窗口/控制器诊断，责任边界未定，不能声称取消重开已通过。
+- LargeCancel1 的九图选择器误用了文件名对应类，九图未执行，不构成九图证据；修正为 `ExternalCaptureTests/testNineLargeImagesKeepMainActorAvailableAndDraftIntact` 后单独运行 NineLarge1。使用真实随机 PNG、九份附件，总量 >180 MiB，校验 worker 上执行、九次 MainActor 响应与未保存草稿。`/tmp/PGOS-Closure-NineLarge1.xcresult` exit 0，1/1 实际执行通过（5.099 秒）；该结果证明异步执行与草稿边界，不代表真机峰值内存或帧率验收。
+- L2 已将 Owner checklist、Known Limitations、V1 tracker、UX debt 的当前入口与历史记录明确分开，沿用 ZIP 03 的集中真机矩阵；仍待最终证据校核。当前仍 IN_PROGRESS，未执行 final gate。
+
+取消诊断续查：`CancelDiagnostic1/2.xcresult` 均 exit 65；第二次固定字段日志 `/tmp/PGOS-CancelDiagnostic2-HostFinal.log` 证明 host 主线程收到 late-provider 与 after-share，窗口 key/visible/interaction 正常，但 `presentedViewController` 仍为 UIActivityViewController，completion 回调未触发。`ReadyCancel1.xcresult` exit 65，读取完成后取消也无法恢复 host 按钮；问题不局限于慢 provider。正在用真实 Safari 取消→再分享作 host 对照。标准取消 API 未替换成成功完成 API；参考 [Apple cancelRequest](https://developer.apple.com/documentation/foundation/nsextensioncontext/cancelrequest(witherror:))，取消与成功仍保持语义区分。
+
+`/tmp/PGOS-Closure-SafariCancel1.xcresult` exit 65：真实 Safari 取消后 MoreMenuButton 同样不可点击；录屏 42 秒帧 `/tmp/PGOS-SafariCancel42.png` 明确显示空白系统分享面板仍在，不能归因于合成 host。已开始验证自定义扩展控制器 dismiss 完成后再调用标准 cancelRequest 的顺序修复，未改为 completeRequest，不发布取消内容。原始失败断言保留。
+
+`CancelDismiss1.xcresult` 两项取消 UI 均失败（整体 exit 65）：先 dismiss 后 cancelRequest 未改变结果，已撤销这一无效试验及 host 临时生命周期日志/强制 dismiss；标准 cancelRequest 保留。扩展系统日志 `/tmp/PGOS-CancelDismiss-System.log` 确认 cancelRequest 已送达 ExtensionFoundation 并执行 teardown，未出现取消内容发布。下一步需继续检查系统 host 的取消收尾/空白面板，不能把正确发送取消通知等同完整用户流程通过。新取消回归断言保留，当前已知失败，尚未 final gate 或 READY。

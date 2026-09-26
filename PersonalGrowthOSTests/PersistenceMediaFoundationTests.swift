@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import SwiftData
 import UIKit
 import UniformTypeIdentifiers
@@ -1438,6 +1439,68 @@ final class ExternalCaptureTests: XCTestCase {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
         return root
+    }
+
+    func testNineLargeImagesKeepMainActorAvailableAndDraftIntact() async throws {
+        let root = try temporaryRoot()
+        let imageURL = root.appendingPathComponent("large-noise.png")
+        try await Task.detached {
+            let width = 2816
+            var pixels = [UInt8](repeating: 255, count: width * width * 4)
+            var random: UInt32 = 0x12345678
+            for offset in stride(from: 0, to: pixels.count, by: 4) {
+                random ^= random << 13; random ^= random >> 17; random ^= random << 5
+                pixels[offset] = UInt8(truncatingIfNeeded: random)
+                pixels[offset + 1] = UInt8(truncatingIfNeeded: random >> 8)
+                pixels[offset + 2] = UInt8(truncatingIfNeeded: random >> 16)
+            }
+            let provider = try XCTUnwrap(CGDataProvider(data: Data(pixels) as CFData))
+            let image = try XCTUnwrap(CGImage(width: width, height: width, bitsPerComponent: 8, bitsPerPixel: 32,
+                bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue), provider: provider,
+                decode: nil, shouldInterpolate: false, intent: .defaultIntent))
+            let destination = try XCTUnwrap(CGImageDestinationCreateWithURL(imageURL as CFURL, UTType.png.identifier as CFString, 1, nil))
+            CGImageDestinationAddImage(destination, image, nil)
+            XCTAssertTrue(CGImageDestinationFinalize(destination))
+        }.value
+        let size = try XCTUnwrap(FileManager.default.attributesOfItem(atPath: imageURL.path)[.size] as? NSNumber).int64Value
+        XCTAssertGreaterThan(size, 20 * 1_024 * 1_024)
+        XCTAssertLessThanOrEqual(size, MediaStore.maximumOriginalByteCount)
+        let checksum = try await Task.detached { try ShareInbox.checksum(imageURL) }.value
+        let images = (0..<9).map { _ in
+            let id = UUID()
+            return CaptureAttachment(id: id, filename: id.uuidString.lowercased(), contentType: "image/png", byteCount: size, checksum: checksum)
+        }
+        let payload = ShareImportPayload(text: "Nine large photos", images: images)
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        try await Task.detached { try inbox.publish(payload, files: Dictionary(uniqueKeysWithValues: images.map { ($0.id, imageURL) })) }.value
+        let container = try PersistenceContainerFactory.makeInMemory()
+        container.mainContext.autosaveEnabled = false
+        let draft = Entry(body: "Keep this draft", createdAt: Date())
+        container.mainContext.insert(draft)
+        let media = MediaStore(rootURL: root)
+        let importer = ExternalCaptureImporter(container: container, mediaStore: media, inbox: inbox)
+        var mainActorTurns = 0
+        importer.checkpoint = { phase in
+            XCTAssertFalse(Thread.isMainThread)
+            if phase == "attachment" {
+                let mainResponded = DispatchSemaphore(value: 0)
+                Task { @MainActor in mainActorTurns += 1; mainResponded.signal() }
+                guard mainResponded.wait(timeout: .now() + 10) == .success else { throw CaptureError.providerTimedOut }
+            }
+        }
+        let failed = try await importer.scan()
+        XCTAssertEqual(failed, 0)
+        XCTAssertEqual(mainActorTurns, 9)
+        XCTAssertTrue(container.mainContext.hasChanges)
+        XCTAssertEqual(draft.body, "Keep this draft")
+        let verification = ModelContext(container)
+        let saved = try XCTUnwrap(verification.fetch(FetchDescriptor<Entry>()).first)
+        XCTAssertEqual(saved.id, payload.id)
+        XCTAssertEqual(saved.images.count, 9)
+        XCTAssertEqual(try media.originalsByteCount(), size * 9)
+        XCTAssertGreaterThan(size * 9, 180 * 1_024 * 1_024)
+        XCTAssertTrue(try inbox.pending().isEmpty)
     }
 
     func testDiagnosticsUseOnlyAllowlistedFieldsAndDistinguishFailures() throws {

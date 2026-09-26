@@ -1,3 +1,13 @@
+# 当前 V1 完成状态入口（2026-09-26）
+
+原 Foundation V1 核心功能、Weight 与后续 Build 6–9 能力已有交付记录，不是本轮待重新实现的功能。当前工作为 External Capture v1 与 R1–R9/L1–L2 统一收口，状态 **IN_PROGRESS**；准确代码/验证状态见 [CURRENT_STATE](CURRENT_STATE.md) 和 [执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。
+
+当前 schema V10 / 备份 v6（合法 v1–v6 可读）/ 工程 App 与 Extension 1.0(7)。UX-01/02 已解决；当前 Owner 真机验收统一到 [当前候选清单](OWNER_MANUAL_VALIDATION_CHECKLIST.md)。长期 Daily Driver 观察继续由 Owner 依据真实使用判断，不因这次收口重置计时。
+
+下方 2026-07-31 Completion Push 与 Build 3 状态、门禁及未勾选事项均为历史快照（superseded）；其中旧 BLOCKED、V6/v2、UX 待办和 Apple 账号状态不再描述当前候选。当前可见 Build 9 Xcode Cloud Archive success 不等同 TestFlight 可安装或真机验收；发布身份与未来 PR 集成顺序见执行计划，本轮不执行发布或合并。
+
+---
+
 # V1 Completion Tracker
 
 | Item | Value |

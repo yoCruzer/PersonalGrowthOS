@@ -187,17 +187,23 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
 
     @objc private func saveCapture() {
         guard loaded, !finished, !saving, saveButton.isEnabled else { return }
+        CaptureLog.event("capture.saveRequested", id: payload.id)
         if !issues.isEmpty {
             let alert = UIAlertController(title: NSLocalizedString("Save readable content only?", comment: ""),
                 message: issueMessage, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Save Shown Content", comment: ""), style: .default) { [weak self] _ in self?.publishCapture() })
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Save Shown Content", comment: ""), style: .default) { [weak self] _ in
+                guard let self else { return }
+                CaptureLog.event("capture.partialConfirmed", id: self.payload.id)
+                self.publishCapture()
+            })
             present(alert, animated: true)
         } else { publishCapture() }
     }
 
     private func publishCapture() {
         guard loaded, !finished, !saving else { return }
+        CaptureLog.event("capture.publishStarted", id: payload.id)
         payload.text = editor.text
         if !payload.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
            payload.text != payload.source?.url { payload.source?.captureMode = .selectedContent }
@@ -247,6 +253,7 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
 
     @objc private func cancelCapture() {
         guard !saving, !finished else { return }
+        CaptureLog.event("capture.cancelled", id: payload.id)
         finished = true
         generation = UUID()
         loadTask?.cancel()

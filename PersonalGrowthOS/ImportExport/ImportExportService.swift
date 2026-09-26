@@ -57,6 +57,7 @@ final class ImportExportService {
     private let appVersion: () -> (version: String, build: String)
     private let log: Log
     private let publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
+    private let exportCheckpoint: (() throws -> Void)?
 
     init(
         context: ModelContext,
@@ -71,7 +72,8 @@ final class ImportExportService {
             return (info.version, info.build)
         },
         log: @escaping Log = { _ in },
-        publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil
+        publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil,
+        exportCheckpoint: (() throws -> Void)? = nil
     ) {
         self.context = context
         self.container = context.container
@@ -84,6 +86,7 @@ final class ImportExportService {
         self.appVersion = appVersion
         self.log = log
         self.publicationCheckpoint = publicationCheckpoint
+        self.exportCheckpoint = exportCheckpoint
         self.availableCapacity = availableCapacity ?? {
             let values = try mediaStore.rootURL.resourceValues(forKeys: [
                 .volumeAvailableCapacityForImportantUsageKey,
@@ -117,6 +120,7 @@ final class ImportExportService {
         let mediaRoot = mediaStore.rootURL
         let exportWorkspaceRoot = workspaceRoot
         let exportLimits = limits
+        let snapshotCheckpoint = exportCheckpoint
         do {
             let worker = Task.detached {
                 return try StorePublication.perform(at: mediaRoot) {
@@ -127,6 +131,7 @@ final class ImportExportService {
                     }.count
                     try LinkIntegrityService.validate(context: snapshotContext)
                     let transfer = try TransferSnapshot.make(context: snapshotContext)
+                    try snapshotCheckpoint?()
                     let inputs = try transfer.images.map { record in
                         ExportMediaInput(
                             record: record,
