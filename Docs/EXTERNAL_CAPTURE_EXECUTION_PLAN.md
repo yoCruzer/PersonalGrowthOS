@@ -404,7 +404,7 @@ xcodebuild build -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -c
 
 实施：F1/F2 共享读取及 fixture UI → F3 辅助状态隔离 → F4 主 App 会话/临时文件 → F5 技术更新时间/完整导出恢复。每项针对性复现；稳定后统一受影响回归。不重跑完整 baseline，不重开原 R1–R9，不以探针替代门禁。
 
-当前五项实现已加入；定向复现与验证如下，统一受影响回归尚未完成，状态仍 IN_PROGRESS。
+以下记录定向阶段证据；当时统一受影响回归未完成。最终结果见本节末尾 F1–F5 最终交接。
 
 
 ### F1–F5 实现与针对性证据
@@ -445,4 +445,38 @@ xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -de
 
 F3 提交后辅助状态补充：scan 的最终状态写入失败单独报告 `auxiliaryStateWriteFailed` 并给出“已导入仍已保存”的提示；成功 retry 之后仅清理过时状态的失败写入脱敏诊断，下一次 scan 重试清理，不向用户宣称内容未保存。测试 checkpoint 生产默认 nil。原始导入错误不会被之后状态记录写入失败覆盖。Inbox 截图 `/tmp/PGOS-F1F5-InboxUI2-Attachments/1C2E15CC-B43B-458D-AECF-7CE91922DE32.png` 已核实提示完整且不包含正文/路径；第二条内容在滚动后验证。
 
-当前全部针对性门禁通过，准备固定实现 SHA 执行统一受影响回归；尚不 READY。静态 project/plist/scheme 检查通过；新增两条提示均 en/zh-Hans，当前 511 keys，最终版本/Release 再核对。
+定向阶段结束时全部针对性门禁通过，随后固定实现 SHA 执行统一受影响回归。静态 project/plist/scheme 检查通过；新增两条提示均 en/zh-Hans，共 511 keys。最终结果如下。
+
+
+### F1–F5 最终交接
+
+**READY_FOR_INDEPENDENT_REVIEW。** 产品/回归实现固定为 `404d1d939e7c49f000718939f71843fa3ba90cb3`；Safari UI 交互补验固定为 `1415a5b55b1870736275d546719b389b6c1a7e45`。后者仅改测试点击方式；后续交接仅文档，产品与 Unit 源码未变，无需重复整组门禁。实现已普通推送到原分支，PR #7 仍 OPEN Draft / Build9 base；最终仓库 HEAD 以 PR head 为准。
+
+| 门禁 / 对应代码 | 真实结果 | 证据（均 `/tmp/PGOS-F1F5-` 前缀） |
+| --- | --- | --- |
+| `AffectedGate1` / `404d1d9` | exit 65；234/234 Unit、8/9 UI PASS。唯一 Safari UI 失败于系统菜单，未进入扩展。 | `.xcresult`、`.log`、`AffectedGate1-Attachments/manifest.json` |
+| `SafariMenu2` / `1415a5b` | exit 0；1/1 UI PASS；原选中文字、取消重开、保存导入、来源链接、搜索刷新和重启断言全部保留。 | `.xcresult`、`.log` |
+| `Release1` / `404d1d9` | exit 0；App/唯一 ShareExtension 均 1.0(7)。仅未采用 AppIntents 的元数据提取提示，无 SwiftData import warning。 | `.log`；产物 `/tmp/PGOS-Capture-Release/Build/Products/Release-iphoneos/PersonalGrowthOS.app` |
+| 静态检查 / `1415a5b` | `git diff --check`、project/plist/scheme 通过；511 keys 均有 en/zh-Hans；TransferValidator/备份核心、工程版本、ShareInbox 原锁/发布代码未改。 | 工作区检查及前述定向阶段记录 |
+
+Unit 分布：AppComposition 15、EntryDomain 10、ExternalCapture 27、Goal 13、Habit 73、ImportExportRecovery 44、PersistenceMediaFoundation 33、WeeklyReview 12、Weight 7，共 234。包含完整受影响服务与备份 suite，而非只挑新增测试。9 条 UI 中 8 条在统一组通过，Safari 在后续单独通过；两次运行不能重写成一次全绿。旧全量 240 Unit + 48/49 UI exit65、早期复现及补验失败均维持原记录。
+
+Safari 失败诊断：合成页面与选中文字已经可见，日志 `MoreMenuButton` 的 AX 点击位置为 `{-1,-1}`；录像第 30 秒截图 `/tmp/PGOS-F1F5-SafariFailure.png` 确认按钮仍在屏幕内。仅将测试改为先断言按钮存在、frame 非空且位于屏幕内，然后点按钮中心；未改产品、超时、内容或保存断言。补验完整通过。第一次在 xcodebuild 结束前尝试导出附件时结果包尚无 Info.plist，未作为产品故障或额外门禁；终态 exit65 后成功导出。沙箱视频解码失败后通过正常审批完成只读帧提取，不影响测试结果。
+
+最终可复现命令（每次日志保留原始 Command line invocation）：
+
+```sh
+/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination "platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2" -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO "-only-testing:PersonalGrowthOSTests/ExternalCaptureTests" "-only-testing:PersonalGrowthOSTests/AppCompositionTests" "-only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests" "-only-testing:PersonalGrowthOSTests/EntryDomainTests" "-only-testing:PersonalGrowthOSTests/WeightFoundationTests" "-only-testing:PersonalGrowthOSTests/HabitFoundationTests" "-only-testing:PersonalGrowthOSTests/GoalFoundationTests" "-only-testing:PersonalGrowthOSTests/WeeklyReviewFoundationTests" "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testRetryAfterEditingPreservesNoteAndRecoveredTextInEntry" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testLoadingCancellationAndImmediateReopenRejectOldSession" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testDamagedInboxSettingsShowRecoveryNoticeAndRemainUsableAfterRelaunch" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPendingInboxDefersAndConfirmsOnlySelectedDiscard" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTextCaptureAppearsInTimelineAndSurvivesRelaunch" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testRecordTabIsTheNativeCaptureDestination" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBackupDisclosesPendingExclusionAndCancelKeepsShares" "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore" -resultBundlePath /tmp/PGOS-F1F5-AffectedGate1.xcresult > /tmp/PGOS-F1F5-AffectedGate1.log 2>&1
+xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2' -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport -resultBundlePath /tmp/PGOS-F1F5-SafariMenu2.xcresult > /tmp/PGOS-F1F5-SafariMenu2.log 2>&1
+xcodebuild build -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS' -derivedDataPath /tmp/PGOS-Capture-Release CODE_SIGNING_ALLOWED=NO > /tmp/PGOS-F1F5-Release1.log 2>&1
+```
+
+| 项目 | 核实、修复与最终证据 | 剩余边界 |
+| --- | --- | --- |
+| F1 | 原接收逻辑真实 UI 复现遗漏 B；`CaptureTextDraft` 保留编辑/删除，仅合并新逻辑项。Unit 未编辑/删除/再次 Retry，真实 host 备注+B、重复保存与重开 UI 均通过。 | 不引入通用文本合并；第三方 host 真机差异仍 Owner。 |
+| F2 | 原 reader 两顺序反例；明确 title/canonical/显式 siteName 优先级，无空值擦除或伪多来源。公开 NSItemProvider 双顺序/空值/image+webURL、多来源 Unit 与 Safari UI 通过。 | 原 URL/canonical、schema 不变；真实 LP 网络仍 Owner。 |
+| F3 | 坏 JSON、部分坏记录、真实 I/O 拒绝、原字节保留、有效 deferral、好包/future/receipt、新分享与重开、提交后状态写入故障均 Unit 通过；管理页 UI 与备份排除告知通过。 | 不删除未知内容；真实磁盘/权限故障仍明确报告。 |
+| F4 | 逆序 A/B、慢 A+新相机 C、Save/Reset/Cancel/重开、不可协作取消任务、spinner 身份、重复/迟到相机 callback、编辑追加、临时及最终图片字节 Unit 通过；Record 跨 tab UI 通过。 | 相机硬件、系统 Photos 云端资源与真机性能未验。 |
+| F5 | 原直接 now 赋值实际导出失败；公共单调策略仅覆盖同约束写路径。正常/两类回拨、归档、实际 ZIP 导出/恢复/重开及显式重存修复保留身份/内容/图片/事实日期；完整 44 项备份 suite 含 v1–v6/非法拒绝/冻结迁移/follow-up。 | 没有自动清洗私人库；真实 Owner 旧库覆盖升级单独验收。 |
+
+当前没有已确认而未闭环的 F1–F5 代码缺陷。包内探针仅控制流复现，未计入项目门禁。保留原 R4 稳定发布锁、rmdir/资源归属、独立 context、单次提交与 receipt 优先等不变量。签名/App Group、Photos/微信、实际离线/慢网络、Owner 私人库覆盖升级、相机硬件及真机交互/内存性能未执行；历史 V8 根因与云端分发状态不因本轮测试变为已知。下一步仅独立 Review，不自动进入 merge、改 base、tag、改号、Archive/TestFlight 或分发 CI。

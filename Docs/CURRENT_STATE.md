@@ -1,12 +1,20 @@
 # PR #7 F1–F5 统一修复（2026-09-26）
 
-**IN_PROGRESS — F1–F5 实现与针对性验证完成，统一受影响门禁待完成。**
+**READY_FOR_INDEPENDENT_REVIEW — F1–F5 修复与受影响回归完成，Owner 真机门禁独立保留。**
 
-本轮按 Owner 上传的 F1–F5 统一修复包连续执行，替代仅 F1–F3 的范围；不重开原 R1–R9 Goal。已依次阅读架构审查、先前独立审查与统一 Goal。当前本地与远端 HEAD 均为 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`，无后续修复，起始工作区干净。PR #7 经实时查询仍 OPEN Draft，base 为 `feature/build9-today-entry-followups`。
+沿用 `codex/external-capture-v1` / [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7)，base `feature/build9-today-entry-followups` 不变。起点 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`；产品与回归实现 `404d1d939e7c49f000718939f71843fa3ba90cb3` 已普通推送；Safari 测试交互补验提交 `1415a5b55b1870736275d546719b389b6c1a7e45`，后续交接仅文档，不改产品代码。最终仓库 HEAD 以 PR head 为准。
 
-执行顺序：F1/F2 共享读取 → F3 Inbox 辅助状态隔离 → F4 主 App 输入会话与文件归属 → F5 技术时间策略；先针对性复现及修复，稳定后统一受影响 Unit/代表性 UI、备份兼容与必要 Release 构建。包内探针不是项目门禁。保留原 R4 修复、所有失败记录与 Owner 真机独立门禁。
+- F1：按逻辑正文项合并 Retry 新恢复内容，保留用户编辑/删除；真实扩展验证备注与恢复正文进入同一 Entry、重开完整，重复保存不重复创建。
+- F2：同 URL 补齐 title/canonical/显式 siteName，空值不擦除；两个 provider 顺序、真正多来源与 image+webURL 通过。
+- F3：仅隔离解码损坏的辅助状态，保存原始字节并尽量保留正常 deferral；Pending/receipt 可用，未来包保留。I/O 错误不当坏 JSON；提交后的状态写入失败不误报内容未保存。
+- F4：主 App 输入具有可取消任务、操作身份与临时文件归属；过期/取消/重复相机回调不污染新草稿，编辑仍追加，Record 跨 tab 保留草稿；最终 Entry 与图片字节断言通过。
+- F5：相同技术字段采用 `max(now, createdAt, oldUpdatedAt)`；真实服务回拨后完整导出→空库恢复→重开通过，内容/图片/身份/业务日期保留，follow-up 规则及非法备份拒绝保持。
 
-目标停在 `READY_FOR_INDEPENDENT_REVIEW`；当前未达到。逐项新证据追加至 [执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md)。不清库、不弱化数据断言，不 merge、改 base、tag、改号或发布。
+固定产品提交上的 `AffectedGate1`：**234/234 Unit、8/9 UI PASS，整体 exit 65**；唯一失败为 Safari 可见菜单按钮的 XCTest 无效点击位置，未进入扩展。仅测试改为核对屏幕内按钮中心点击后，`SafariMenu2` **1/1 UI PASS，exit 0**，全部内容断言保留；不把原整组改标全绿。unsigned Release App/唯一 appex **exit 0**，均 1.0(7)；schema V10、备份 v6 不变；511 中英字符串完整。原全量 240 Unit + 48/49 UI 的 exit 65 与历次失败记录继续保留。
+
+完整命令、逐项复现/修复及未执行项见 [执行计划 F1–F5 最终交接](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#f1f5-最终交接)。没有重开 R1–R9、清库、放宽断言、merge/close/retarget、tag、改号、Archive/TestFlight 或主动触发分发 CI。
+
+下一步仅独立 Review。签名/App Group、Photos/微信、真实离线/慢网络、Owner 私人库覆盖升级、相机硬件及真机性能仍需 [Owner 验证](OWNER_MANUAL_VALIDATION_CHECKLIST.md)。历史 V8 hash 差异根因、云端实际 build/TestFlight 可用性仍 UNKNOWN/OWNER_REQUIRED。
 
 ---
 
