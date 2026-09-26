@@ -1,9 +1,7 @@
 import UIKit
-import UniformTypeIdentifiers
-import ImageIO
 import LinkPresentation
 
-final class ShareViewController: UIViewController {
+final class ShareViewController: UIViewController, UITextViewDelegate {
     private let editor = UITextView()
     private let sourceLabel = UILabel()
     private let statusLabel = UILabel()
@@ -13,19 +11,30 @@ final class ShareViewController: UIViewController {
     private var files: [UUID: URL] = [:]
     private var metadataProvider: LPMetadataProvider?
     private var finished = false
-    private let workspace = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    private var saving = false
+    private var loaded = false
+    private var editedText: String?
+    private var generation = UUID()
+    private var loadTask: Task<Void, Never>?
+    private let retryButton = UIButton(type: .system)
+    private let cancelButton = UIButton(type: .system)
+    private var issues: [CaptureReadIssue] = []
+    private var workspace = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        let cancel = UIButton(type: .system)
-        cancel.setTitle(NSLocalizedString("Cancel", comment: ""), for: .normal)
-        cancel.addTarget(self, action: #selector(cancelCapture), for: .touchUpInside)
+        cancelButton.setTitle(NSLocalizedString("Cancel", comment: ""), for: .normal)
+        cancelButton.addTarget(self, action: #selector(cancelCapture), for: .touchUpInside)
         saveButton.setTitle(NSLocalizedString("Save", comment: ""), for: .normal)
         saveButton.isEnabled = false
         saveButton.addTarget(self, action: #selector(saveCapture), for: .touchUpInside)
-        let toolbar = UIStackView(arrangedSubviews: [cancel, UIView(), saveButton])
+        retryButton.setTitle(NSLocalizedString("Retry", comment: ""), for: .normal)
+        retryButton.addTarget(self, action: #selector(beginLoad), for: .touchUpInside)
+        retryButton.isHidden = true
+        let toolbar = UIStackView(arrangedSubviews: [cancelButton, retryButton, UIView(), saveButton])
         toolbar.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        editor.delegate = self
         editor.font = .preferredFont(forTextStyle: .body)
         editor.accessibilityIdentifier = "share-text"
         sourceLabel.numberOfLines = 3
@@ -46,130 +55,99 @@ final class ShareViewController: UIViewController {
             stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             stack.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -12)
         ])
-        Task { await load() }
+        beginLoad()
     }
 
-    @MainActor private func load() async {
+    @objc private func beginLoad() {
+        guard !finished, !saving else { return }
+        loadTask?.cancel()
+        metadataProvider?.cancel()
+        let oldWorkspace = workspace
+        let previous = loadTask
+        Task { await previous?.value; try? FileManager.default.removeItem(at: oldWorkspace) }
+        workspace = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        generation = UUID()
+        let current = generation
+        let workingDirectory = workspace
+        payload = ShareImportPayload()
+        files = [:]
+        issues = []
+        loaded = false
+        editor.text = ""
+        editor.isEditable = false
+        preview.image = nil
+        preview.isHidden = true
+        sourceLabel.text = nil
+        saveButton.isEnabled = false
+        retryButton.isHidden = true
+        statusLabel.text = NSLocalizedString("Reading shared content…", comment: "")
+        let items = extensionContext?.inputItems as? [NSExtensionItem] ?? []
+        loadTask = Task { [weak self] in
+            do {
+                _ = try ShareInbox.shared()
+                let result = try await ShareProviderReader(workspace: workingDirectory).read(items)
+                try Task.checkCancellation()
+                guard let self, !self.finished, self.generation == current else { return }
+                self.payload = result.payload
+                self.files = result.files
+                self.issues = result.issues
+                self.loaded = true
+                self.editor.isEditable = true
+                self.editor.text = self.editedText ?? result.payload.text
+                if let data = result.thumbnail {
+                    self.preview.image = UIImage(data: data)
+                    self.preview.isHidden = false
+                }
+                self.updateSource()
+                self.updateReadStatus()
+                self.fetchMetadata()
+            } catch {
+                guard let self, !self.finished, self.generation == current else { return }
+                self.retryButton.isHidden = false
+                self.statusLabel.text = NSLocalizedString("Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each).", comment: "")
+                CaptureLog.event("provider.failed")
+            }
+        }
+    }
+
+    func textViewDidChange(_ textView: UITextView) {
+        editedText = textView.text
+        updateReadStatus()
+    }
+
+    private func updateReadStatus() {
+        guard loaded, !saving, !finished else { return }
+        payload.text = editor.text
+        retryButton.isHidden = issues.isEmpty
         do {
-            _ = try ShareInbox.shared()
-            try FileManager.default.createDirectory(at: workspace, withIntermediateDirectories: true)
-            let items = extensionContext?.inputItems as? [NSExtensionItem] ?? []
-            var texts: [String] = []
-            var selectedText: String?
-            for item in items {
-                for provider in item.attachments ?? [] {
-                    CaptureLog.event("provider.types=\(provider.registeredTypeIdentifiers.joined(separator: ","))")
-                    if provider.hasItemConformingToTypeIdentifier(UTType.propertyList.identifier) {
-                        CaptureLog.event("provider.selected propertyList")
-                        if let dictionary = try? await loadItem(provider, type: UTType.propertyList.identifier) as? [String: Any],
-                           let values = dictionary[NSExtensionJavaScriptPreprocessingResultsKey] as? [String: Any] {
-                            if let url = values["url"] as? String, CaptureSource.webURL(url) != nil {
-                                payload.source = CaptureSource(url: url,
-                                    canonicalURL: CaptureSource.webURL(values["canonicalURL"] as? String)?.absoluteString,
-                                    title: values["title"] as? String,
-                                    siteName: values["siteName"] as? String,
-                                    capturedAt: payload.createdAt, captureMode: .metadataOnly)
-                            }
-                            selectedText = values["selectedText"] as? String
-                        }
-                    } else if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
-                        CaptureLog.event("provider.selected image")
-                        try await loadImage(provider)
-                    } else if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
-                        CaptureLog.event("provider.selected url")
-                        let value = try await loadItem(provider, type: UTType.url.identifier)
-                        let raw = (value as? URL)?.absoluteString ?? (value as? String)
-                        if let url = CaptureSource.webURL(raw), payload.source == nil {
-                            payload.source = CaptureSource(url: url.absoluteString, siteName: url.host,
-                                capturedAt: payload.createdAt, captureMode: .metadataOnly)
-                        } else if let raw, CaptureSource.webURL(raw) == nil { texts.append(raw) }
-                    } else if provider.hasItemConformingToTypeIdentifier(UTType.text.identifier) {
-                        CaptureLog.event("provider.selected text")
-                        let value = try await loadItem(provider, type: UTType.text.identifier)
-                        if let text = value as? String { texts.append(text) }
-                        else if let text = value as? NSAttributedString { texts.append(text.string) }
-                        else { throw CaptureError.unsupportedProvider }
-                    } else {
-                        throw CaptureError.unsupportedProvider
-                    }
-                }
-                if (item.attachments ?? []).isEmpty, let text = item.attributedContentText?.string { texts.append(text) }
-                if payload.source?.title == nil, let title = item.attributedTitle?.string {
-                    payload.source?.title = title
-                }
-            }
-            guard !finished else { return }
-            payload.text = texts.reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }.joined(separator: "\n\n")
-            if let selectedText, !selectedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                payload.text = selectedText
-                payload.source?.captureMode = .selectedContent
-            }
-            if payload.source == nil, let url = CaptureSource.webURL(payload.text.trimmingCharacters(in: .whitespacesAndNewlines)) {
-                payload.source = CaptureSource(url: url.absoluteString, siteName: url.host,
-                    capturedAt: payload.createdAt, captureMode: .metadataOnly)
-            }
-            payload.source?.normalizeMetadata()
             try payload.validate()
-            editor.text = payload.text
-            updateSource()
-            statusLabel.text = NSLocalizedString("Saved shares appear when you next open 随心log.", comment: "")
             saveButton.isEnabled = true
-            fetchMetadata()
+            if issues.isEmpty {
+                statusLabel.text = NSLocalizedString("Saved shares appear when you next open 随心log.", comment: "")
+            } else {
+                statusLabel.text = issueMessage
+            }
         } catch {
-            guard !finished else { return }
-            CaptureLog.event("provider.failed type=\(String(describing: type(of: error)))")
-            statusLabel.text = NSLocalizedString("Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each).", comment: "")
+            saveButton.isEnabled = false
+            retryButton.isHidden = false
+            statusLabel.text = payload.text.utf8.count > 1_048_576
+                ? NSLocalizedString("Shared text is too long. Shorten it before saving; the original has not been truncated.", comment: "")
+                : NSLocalizedString("Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each).", comment: "")
         }
     }
 
-    private func loadItem(_ provider: NSItemProvider, type: String) async throws -> NSSecureCoding {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.loadItem(forTypeIdentifier: type, options: nil) { item, error in
-                if let error { continuation.resume(throwing: error) }
-                else if let item { continuation.resume(returning: item) }
-                else { continuation.resume(throwing: CaptureError.unsupportedProvider) }
+    private var issueMessage: String {
+        let details = issues.map { issue in
+            let reason: String
+            switch issue.reason {
+            case .providerTimedOut: reason = NSLocalizedString("Reading timed out", comment: "")
+            case .multipleSources: reason = NSLocalizedString("Additional source kept in text", comment: "")
+            case .tooLarge: reason = NSLocalizedString("Supported size or count exceeded", comment: "")
+            default: reason = NSLocalizedString("Content could not be read", comment: "")
             }
-        }
-    }
-
-    private func loadImage(_ provider: NSItemProvider) async throws {
-        guard payload.images.count < 9 else { throw CaptureError.tooLarge }
-        let id = UUID()
-        let target = workspace.appendingPathComponent(id.uuidString.lowercased())
-        // Copy inside the provider callback: its temporary URL expires when the callback returns.
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            provider.loadFileRepresentation(forTypeIdentifier: UTType.image.identifier) { url, error in
-                do {
-                    if let error { throw error }
-                    guard let url else { throw CaptureError.attachmentInvalid }
-                    let bytes = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-                    guard bytes > 0, bytes <= 25 * 1_024 * 1_024 else { throw CaptureError.tooLarge }
-                    try FileManager.default.copyItem(at: url, to: target)
-                    continuation.resume()
-                } catch { continuation.resume(throwing: error) }
-            }
-        }
-        guard !finished else { try? FileManager.default.removeItem(at: target); return }
-        guard let source = CGImageSourceCreateWithURL(target as CFURL, nil),
-              let type = CGImageSourceGetType(source) as String?,
-              let mime = UTType(type)?.preferredMIMEType,
-              ["image/jpeg", "image/png", "image/heic", "image/heif"].contains(mime),
-              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
-              let width = properties[kCGImagePropertyPixelWidth] as? Int,
-              let height = properties[kCGImagePropertyPixelHeight] as? Int,
-              height > 0, width > 0, width <= 80_000_000 / height else { throw CaptureError.attachmentInvalid }
-        let size = try target.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-        payload.images.append(CaptureAttachment(id: id, filename: target.lastPathComponent,
-            contentType: mime, byteCount: Int64(size), checksum: try ShareInbox.checksum(target)))
-        files[id] = target
-        if preview.image == nil, let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: 300
-        ] as CFDictionary) {
-            preview.image = UIImage(cgImage: thumbnail)
-            preview.isHidden = false
-        }
+            return "\(issue.item): \(reason)"
+        }.joined(separator: "\n")
+        return NSLocalizedString("Some shared items need attention. Retry, or confirm saving only the content shown below.", comment: "") + "\n" + details
     }
 
     private func updateSource() {
@@ -185,9 +163,10 @@ final class ShareViewController: UIViewController {
         provider.shouldFetchSubresources = false
         metadataProvider = provider
         CaptureLog.event("metadata.started", id: payload.id)
+        let current = generation
         provider.startFetchingMetadata(for: url) { [weak self] metadata, error in
             Task { @MainActor in
-                guard let self, !self.finished else { return }
+                guard let self, !self.finished, !self.saving, self.generation == current else { return }
                 if let metadata {
                     self.payload.source?.title = metadata.title
                     self.payload.source?.canonicalURL = CaptureSource.webURL(metadata.url?.absoluteString)?.absoluteString
@@ -199,30 +178,58 @@ final class ShareViewController: UIViewController {
     }
 
     @objc private func saveCapture() {
-        guard !finished else { return }
-        saveButton.isEnabled = false
+        guard loaded, !finished, !saving, saveButton.isEnabled else { return }
+        if !issues.isEmpty {
+            let alert = UIAlertController(title: NSLocalizedString("Save readable content only?", comment: ""),
+                message: issueMessage, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Save Shown Content", comment: ""), style: .default) { [weak self] _ in self?.publishCapture() })
+            present(alert, animated: true)
+        } else { publishCapture() }
+    }
+
+    private func publishCapture() {
+        guard loaded, !finished, !saving else { return }
         payload.text = editor.text
         if !payload.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-           payload.text != payload.source?.url {
-            payload.source?.captureMode = .selectedContent
-        }
-        do {
-            try ShareInbox.shared().publish(payload, files: files)
-            finished = true
-            metadataProvider?.cancel()
-            try? FileManager.default.removeItem(at: workspace)
-            extensionContext?.completeRequest(returningItems: nil)
-        } catch {
-            saveButton.isEnabled = true
-            CaptureLog.event("inbox.saveFailed type=\(String(describing: type(of: error)))", id: payload.id)
-            statusLabel.text = NSLocalizedString("Could not save. Your share is still here; please retry or cancel.", comment: "")
+           payload.text != payload.source?.url { payload.source?.captureMode = .selectedContent }
+        payload.source?.normalizeMetadata()
+        // A value snapshot freezes metadata and edits before leaving MainActor.
+        let snapshot = payload
+        let sourceFiles = files
+        saving = true
+        saveButton.isEnabled = false
+        cancelButton.isEnabled = false
+        retryButton.isHidden = true
+        editor.isEditable = false
+        metadataProvider?.cancel()
+        statusLabel.text = NSLocalizedString("Saving shared content…", comment: "")
+        Task {
+            do {
+                try await Task.detached { try ShareInbox.shared().publish(snapshot, files: sourceFiles) }.value
+                finished = true
+                try? FileManager.default.removeItem(at: workspace)
+                extensionContext?.completeRequest(returningItems: nil)
+            } catch {
+                saving = false
+                cancelButton.isEnabled = true
+                editor.isEditable = true
+                updateReadStatus()
+                CaptureLog.event("inbox.saveFailed", id: snapshot.id)
+                statusLabel.text = NSLocalizedString("Could not save. Your share is still here; please retry or cancel.", comment: "")
+            }
         }
     }
 
     @objc private func cancelCapture() {
+        guard !saving, !finished else { return }
         finished = true
+        generation = UUID()
+        loadTask?.cancel()
         metadataProvider?.cancel()
-        try? FileManager.default.removeItem(at: workspace)
+        let task = loadTask
+        let directory = workspace
+        Task { await task?.value; try? FileManager.default.removeItem(at: directory) }
         extensionContext?.cancelRequest(withError: NSError(domain: NSCocoaErrorDomain, code: NSUserCancelledError))
     }
 }

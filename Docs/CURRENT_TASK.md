@@ -8,6 +8,8 @@ R4 已在合成隔离库确定性复现图片丢失，并完成首组修复：�
 
 R6 UTF-8 可选 metadata 预算、R8 source 搜索/提交后刷新、L1 显式 SwiftData import 已实现；R6 2/2 Unit，R8 2 Unit + 2 UI（真实 Safari 保留空搜索刷新及 follow-up 删除返回）通过。首组修复完整提交 `b25c59d00726395622923cab9a9c11d0d1555ef5` 已推送并核实远端；第二组证据见计划。接下来继续 R1/R5 provider、R2 extension 重 I/O、R3/R7 生命周期、R9 诊断及 R4 剩余交错，不进入全文抓取或发布。
 
+R1/R5 provider 语义化读取、30 秒 callback 边界、取消/generation、部分保存确认与扩展 worker 发布已实现。真实 Safari 及独立公开 API 混合 host 系统面板→extension→主 App 导入均通过；version 2 默认匹配通过，strict 匹配失败已据实记录。R7 staging 内核租约在 Unit 与真实合成子进程 SIGKILL 后回收验证通过；Pending/无归属旧目录保留。仍待 R3、R7 导入副本/备份边界、R9、R4 剩余交错与完整 final gate，继续按同一 Goal 推进。
+
 以下内容均为历史交接（superseded），其中旧状态及 Next Action 不再指挥当前工作；历史验证结果保留，不作为本轮修复通过证据。
 
 ---

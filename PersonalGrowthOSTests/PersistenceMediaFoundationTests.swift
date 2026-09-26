@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 import XCTest
 @testable import PersonalGrowthOS
 
@@ -1437,6 +1438,191 @@ final class ExternalCaptureTests: XCTestCase {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
         return root
+    }
+
+    func testConcurrentExplicitConsumptionCommitsOnceAndCleansIdempotently() async throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let payload = ShareImportPayload(text: "One shared record")
+        try inbox.publish(payload, files: [:])
+        let directory = try XCTUnwrap(inbox.pending().first)
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        async let first: Void = importer.consume(directory)
+        async let second: Void = importer.consume(directory)
+        _ = try await (first, second)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 1)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        XCTAssertTrue(try inbox.pending().isEmpty)
+    }
+
+    func testSharedStagingReclaimsOnlyAbandonedOwnedSessions() throws {
+        let root = try temporaryRoot()
+        let active = try CaptureStagingSession(root: root)
+        var abandoned: CaptureStagingSession? = try CaptureStagingSession(root: root)
+        let abandonedDirectory = try XCTUnwrap(abandoned?.directory)
+        try Data("Unpublished copy".utf8).write(to: abandonedDirectory.appendingPathComponent("copy"))
+        let legacy = root.appendingPathComponent("Staging/\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: legacy, withIntermediateDirectories: true)
+        let inbox = ShareInbox(root: root)
+        try inbox.publish(ShareImportPayload(text: "User pending content"), files: [:])
+        XCTAssertEqual(try CaptureStagingSession.reclaimAbandoned(root: root), 0)
+        abandoned = nil // Models process termination releasing its kernel lease.
+        XCTAssertEqual(try CaptureStagingSession.reclaimAbandoned(root: root), 1)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: abandonedDirectory.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: active.directory.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: legacy.path))
+        XCTAssertEqual(try inbox.pending().count, 1)
+        try active.remove()
+    }
+
+    func testPublicProvidersPreserveMixedContentAndSkipUnknownAuxiliary() async throws {
+        let root = try temporaryRoot()
+        let reader = ShareProviderReader(workspace: root)
+        let unknown = NSItemProvider(item: "Auxiliary" as NSString, typeIdentifier: "com.example.unknown")
+        let text = NSItemProvider(item: "Quote" as NSString, typeIdentifier: UTType.text.identifier)
+        let url = NSItemProvider(object: NSURL(string: "https://example.com/shared")!)
+        let item = NSExtensionItem()
+        item.attachments = [text, unknown]
+        var result = try await reader.read([item])
+        XCTAssertEqual(result.payload.text, "Quote")
+        XCTAssertTrue(result.issues.isEmpty)
+        item.attachments = [url, unknown]
+        result = try await reader.read([item])
+        XCTAssertEqual(result.payload.source?.url, "https://example.com/shared")
+        XCTAssertTrue(result.issues.isEmpty)
+        item.attachments = [unknown]
+        result = try await reader.read([item])
+        XCTAssertThrowsError(try result.payload.validate())
+
+        let imageURL = root.appendingPathComponent("fixture.png")
+        let bytes = UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { _ in }
+        try bytes.write(to: imageURL)
+        let image = NSItemProvider(contentsOf: imageURL)!
+        item.attachments = [image, url]
+        item.attributedContentText = NSAttributedString(string: "Independent caption")
+        result = try await reader.read([item])
+        XCTAssertEqual(result.payload.text, "Independent caption")
+        XCTAssertEqual(result.payload.images.count, 1)
+        XCTAssertEqual(result.payload.source?.url, "https://example.com/shared")
+        XCTAssertTrue(result.issues.isEmpty)
+        XCTAssertNoThrow(try result.payload.validate())
+        let owned = try XCTUnwrap(result.files.values.first)
+        XCTAssertNotEqual(owned, imageURL)
+        XCTAssertEqual(try Data(contentsOf: owned), bytes)
+        XCTAssertNotNil(result.thumbnail)
+        item.attachments = [image]
+        result = try await reader.read([item])
+        XCTAssertNil(result.payload.source, "An image file URL must never become a webpage source")
+    }
+
+    func testProviderAlternativesPartialFailureAndMultipleSourcesAreExplicit() async throws {
+        let reader = ShareProviderReader(workspace: try temporaryRoot(), timeout: 0.1)
+        let fallback = NSItemProvider()
+        fallback.registerItem(forTypeIdentifier: UTType.propertyList.identifier) { completion, _, _ in
+            completion?(nil, CaptureError.unsupportedProvider)
+        }
+        fallback.registerItem(forTypeIdentifier: UTType.text.identifier) { completion, _, _ in
+            completion?("Fallback quote" as NSString, nil)
+        }
+        let item = NSExtensionItem()
+        item.attachments = [fallback]
+        item.attributedContentText = NSAttributedString(string: "Fallback quote")
+        var result = try await reader.read([item])
+        XCTAssertEqual(result.payload.text, "Fallback quote")
+        XCTAssertTrue(result.issues.isEmpty)
+        let brokenImage = NSItemProvider()
+        brokenImage.registerFileRepresentation(forTypeIdentifier: UTType.png.identifier, fileOptions: [], visibility: .all) { completion in
+            completion(nil, false, CaptureError.attachmentInvalid)
+            return nil
+        }
+        item.attachments = [fallback, brokenImage]
+        result = try await reader.read([item])
+        XCTAssertEqual(result.payload.text, "Fallback quote")
+        XCTAssertTrue(result.payload.images.isEmpty)
+        XCTAssertEqual(result.issues.count, 1)
+        XCTAssertEqual(result.issues.first?.item, 2)
+        let first = NSItemProvider(item: NSURL(string: "https://one.example")!, typeIdentifier: UTType.url.identifier)
+        let second = NSItemProvider(item: NSURL(string: "https://two.example")!, typeIdentifier: UTType.url.identifier)
+        item.attachments = [first, second]
+        result = try await reader.read([item])
+        XCTAssertEqual(result.payload.source?.url, "https://one.example")
+        XCTAssertTrue(result.payload.text.contains("https://two.example"))
+        XCTAssertEqual(result.issues.first?.reason, .multipleSources)
+    }
+
+    func testImageRepresentationFallbackWebSourceAndCountLimit() async throws {
+        let root = try temporaryRoot()
+        let imageURL = root.appendingPathComponent("alternate.jpg")
+        let bytes = UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).jpegData(withCompressionQuality: 0.8) { _ in }
+        try bytes.write(to: imageURL)
+        let image = NSItemProvider()
+        image.registerFileRepresentation(forTypeIdentifier: UTType.png.identifier, fileOptions: [], visibility: .all) { completion in
+            completion(nil, false, CaptureError.attachmentInvalid); return nil
+        }
+        image.registerFileRepresentation(forTypeIdentifier: UTType.jpeg.identifier, fileOptions: [], visibility: .all) { completion in
+            completion(imageURL, false, nil); return nil
+        }
+        image.registerItem(forTypeIdentifier: UTType.url.identifier) { completion, _, _ in
+            completion?(NSURL(string: "https://image.example/source")!, nil)
+        }
+        let item = NSExtensionItem()
+        item.attachments = [image]
+        let reader = ShareProviderReader(workspace: root)
+        var result = try await reader.read([item])
+        XCTAssertEqual(result.payload.images.count, 1)
+        XCTAssertEqual(result.payload.source?.url, "https://image.example/source")
+        XCTAssertTrue(result.issues.isEmpty)
+        let owned = try XCTUnwrap(result.files.values.first)
+        XCTAssertEqual(try Data(contentsOf: owned), bytes)
+        item.attachments = Array(repeating: image, count: 10)
+        result = try await reader.read([item])
+        XCTAssertEqual(result.payload.images.count, 9)
+        XCTAssertFalse(result.issues.isEmpty, "The tenth selected attachment cannot silently disappear")
+        try FileManager.default.removeItem(at: imageURL)
+        XCTAssertEqual(try Data(contentsOf: owned), bytes, "Owned callback copies outlive the provider file")
+
+        let binaryText = NSItemProvider()
+        binaryText.registerDataRepresentation(forTypeIdentifier: UTType.utf8PlainText.identifier, visibility: .all) { completion in
+            completion(Data("UTF8 quote".utf8), nil); return nil
+        }
+        item.attachments = [binaryText]
+        result = try await reader.read([item])
+        XCTAssertEqual(result.payload.text, "UTF8 quote")
+        XCTAssertTrue(result.issues.isEmpty)
+    }
+
+    func testProviderTimeoutCancellationAndLateCompletionAreOnceOnly() async throws {
+        let gate = CaptureLoadGate<String>()
+        let progress = Progress(totalUnitCount: 1)
+        do {
+            _ = try await gate.wait(timeout: 0.01) { _ in progress }
+            XCTFail("An uncooperative callback must time out")
+        } catch { XCTAssertEqual(error as? CaptureError, .providerTimedOut) }
+        XCTAssertTrue(progress.isCancelled)
+        XCTAssertFalse(gate.finish(.success("Late value")))
+        XCTAssertFalse(gate.finish(.failure(CaptureError.invalidPayload)))
+
+        let cancelled = CaptureLoadGate<String>()
+        let started = expectation(description: "Provider began")
+        let task = Task { try await cancelled.wait(timeout: 30) { _ in started.fulfill(); return nil } }
+        await fulfillment(of: [started], timeout: 2)
+        task.cancel()
+        do { _ = try await task.value; XCTFail("Cancelled read must not deliver a value") }
+        catch { XCTAssertTrue(error is CancellationError) }
+        XCTAssertFalse(cancelled.finish(.success("Old session")))
+        let fresh = CaptureLoadGate<String>()
+        let value = try await fresh.wait(timeout: 1) { gate in gate.finish(.success("New session")); return nil }
+        XCTAssertEqual(value, "New session")
+
+        let never = NSItemProvider()
+        never.registerItem(forTypeIdentifier: UTType.text.identifier) { _, _, _ in }
+        let item = NSExtensionItem()
+        item.attachments = [never]
+        item.attributedContentText = NSAttributedString(string: "Readable caption")
+        let result = try await ShareProviderReader(workspace: try temporaryRoot(), timeout: 0.01).read([item])
+        XCTAssertEqual(result.payload.text, "Readable caption")
+        XCTAssertEqual(result.issues.first?.reason, .providerTimedOut)
     }
 
     func testSourceOnlySearchMatchesAfterEntryRenameWithoutDuplicates() throws {

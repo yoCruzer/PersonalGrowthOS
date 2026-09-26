@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 import CryptoKit
 import OSLog
 
@@ -12,7 +13,7 @@ enum CaptureLog {
 
 enum CaptureError: String, Error {
     case groupUnavailable, emptyContent, invalidURL, unsupportedSchema, invalidPayload
-    case attachmentInvalid, tooLarge, unsupportedProvider
+    case attachmentInvalid, tooLarge, unsupportedProvider, providerTimedOut, multipleSources
 }
 
 enum CaptureMode: String, Codable { case metadataOnly, selectedContent }
@@ -110,12 +111,14 @@ struct ShareInbox {
     // Only a fully written directory is published. Incomplete staging is never consumed.
     func publish(_ payload: ShareImportPayload, files: [UUID: URL]) throws {
         try payload.validate()
-        let staging = root.appendingPathComponent("Staging/\(UUID().uuidString)", isDirectory: true)
+        _ = try CaptureStagingSession.reclaimAbandoned(root: root)
+        let session = try CaptureStagingSession(root: root)
+        let staging = session.directory
         let pending = root.appendingPathComponent("Pending", isDirectory: true)
-        try fm.createDirectory(at: staging, withIntermediateDirectories: true)
-        defer { try? fm.removeItem(at: staging) }
+        defer { try? session.remove() }
         try fm.createDirectory(at: pending, withIntermediateDirectories: true)
         for image in payload.images {
+            try Task.checkCancellation()
             guard let file = files[image.id] else { throw CaptureError.attachmentInvalid }
             let target = staging.appendingPathComponent(image.filename)
             try fm.copyItem(at: file, to: target)
@@ -125,6 +128,7 @@ struct ShareInbox {
         guard data.count <= 2_097_152 else { throw CaptureError.tooLarge }
         CaptureLog.event("payload.serialized bytes=\(data.count)", id: payload.id)
         try data.write(to: staging.appendingPathComponent("payload.json"), options: .atomic)
+        try Task.checkCancellation()
         try fm.moveItem(at: staging, to: pending.appendingPathComponent(payload.id.uuidString.lowercased()))
         CaptureLog.event("inbox.published", id: payload.id)
     }
@@ -147,7 +151,9 @@ struct ShareInbox {
         return payload
     }
 
-    func remove(_ directory: URL) throws { try fm.removeItem(at: directory) }
+    func remove(_ directory: URL) throws {
+        if fm.fileExists(atPath: directory.path) { try fm.removeItem(at: directory) }
+    }
 
     func verify(_ image: CaptureAttachment, at url: URL) throws {
         try regular(url)
@@ -169,5 +175,75 @@ struct ShareInbox {
         guard values.isSymbolicLink != true, directory ? values.isDirectory == true : values.isRegularFile == true else {
             throw CaptureError.invalidPayload
         }
+    }
+}
+
+// Kernel-held leases survive neither process death nor a crash. Age alone never proves
+// a staging directory is abandoned. Unmarked legacy directories are retained.
+final class CaptureFileLease {
+    private let descriptor: Int32
+
+    init?(url: URL, nonblocking: Bool = false) throws {
+        let descriptor = open(url.path, O_CREAT | O_RDWR | O_NOFOLLOW, S_IRUSR | S_IWUSR)
+        guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        if flock(descriptor, LOCK_EX | (nonblocking ? LOCK_NB : 0)) != 0 {
+            let code = errno
+            close(descriptor)
+            if nonblocking && code == EWOULDBLOCK { return nil }
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(code))
+        }
+        self.descriptor = descriptor
+    }
+
+    deinit { close(descriptor) }
+}
+
+final class CaptureStagingSession {
+    let directory: URL
+    private let lease: CaptureFileLease
+
+    init(root: URL) throws {
+        let staging = root.appendingPathComponent("Staging", isDirectory: true)
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        let registry = try CaptureFileLease(url: staging.appendingPathComponent(".registry"))
+        defer { withExtendedLifetime(registry) {} }
+        directory = staging.appendingPathComponent(UUID().uuidString.lowercased(), isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        do {
+            guard let lease = try CaptureFileLease(url: directory.appendingPathComponent(".lease")) else {
+                throw CaptureError.invalidPayload
+            }
+            self.lease = lease
+        } catch {
+            try? FileManager.default.removeItem(at: directory)
+            throw error
+        }
+    }
+
+    func remove() throws {
+        if FileManager.default.fileExists(atPath: directory.path) { try FileManager.default.removeItem(at: directory) }
+        withExtendedLifetime(lease) {}
+    }
+
+    static func reclaimAbandoned(root: URL) throws -> Int {
+        let staging = root.appendingPathComponent("Staging", isDirectory: true)
+        guard FileManager.default.fileExists(atPath: staging.path) else { return 0 }
+        let registry = try CaptureFileLease(url: staging.appendingPathComponent(".registry"))
+        defer { withExtendedLifetime(registry) {} }
+        var count = 0
+        for directory in try FileManager.default.contentsOfDirectory(at: staging, includingPropertiesForKeys: [.isSymbolicLinkKey, .isDirectoryKey]) {
+            guard UUID(uuidString: directory.lastPathComponent) != nil else { continue }
+            do {
+                let attributes = try directory.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
+                guard attributes.isDirectory == true, attributes.isSymbolicLink != true else { continue }
+                let marker = directory.appendingPathComponent(".lease")
+                guard FileManager.default.fileExists(atPath: marker.path),
+                      let lease = try CaptureFileLease(url: marker, nonblocking: true) else { continue }
+                defer { withExtendedLifetime(lease) {} }
+                try FileManager.default.removeItem(at: directory)
+                count += 1
+            } catch { CaptureLog.event("staging.cleanupRetained") }
+        }
+        return count
     }
 }

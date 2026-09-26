@@ -100,15 +100,15 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 | ID | 当前结论 | 证据 / 下一验证 |
 | --- | --- | --- |
 | R4 | CONFIRMED → 修复定向验证中 | restore worker 安装 Originals 后，catch 删除整个目录；MainActor importer 无共享互斥。新增 `testRestoreFailurePreservesInterleavedCommittedShareImage` 用 beforeSave checkpoint + semaphore 控制交错，断言已提交分享图片保持可读。 |
-| R2 | CONFIRMED（静态） | importer.scan/consume 同步 MainActor；将与 R4 共同修改并验证。 |
-| R1 | CONFIRMED（静态/官方规则） | Apple 激活字典 version 2 对混合 asset 匹配成立；实际 provider/系统面板补验待做。 |
+| R2 | 修复实现 / 继续验证 | 主 App importer 与 Extension 发布/图片校验/hash/缩略图移至 worker；同包并发消费幂等通过。大图响应性和最终 UI 门禁仍待做。 |
+| R1 | 修复实现 / 公共 host 验证通过 | version 2 默认匹配；真实独立混合 host 与 Safari 均出现并完整导入。语义化选择、caption、替代表现、部分失败及多来源提示已实现；真机/部分保存 UI 门禁待做。 |
 | R3 | CONFIRMED（静态） | 前台仅 Retry/Cancel，无持久稍后或按条处理入口；待修复。 |
-| R5 | CONFIRMED（静态） | loadItem/loadFileRepresentation continuation 无超时/取消管理；待修复。 |
+| R5 | 修复实现 / 定向通过 | 一次性 callback bridge、每次读取 30 秒边界、Progress/Task 与 generation；超时/取消/迟到 callback 拒收通过。补充 UI 取消/部分保存验证待做。 |
 | R6 | 修复验证中 | 外部可选 metadata 统一按 UTF-8 预算截断完整 Character，严格 payload/backup 验证不放宽；2 项定向测试通过，结合后续 UI 继续验证。 |
-| R7 | CONFIRMED（静态/生命周期待验） | App Group staging 无独立回收；导出 Pending 告知与 owned recovery 补偿待做。 |
+| R7 | 部分修复 | App Group staging 内核租约与独立进程终止回收已通过；无标记旧 staging 保留。导入副本补偿、单文件失败重试、备份 Pending 告知仍待做。 |
 | R8 | 修复验证中 | source 字段合并去重与真实提交后刷新已实现，来源仅字段 Unit 通过；Safari 空结果刷新和 follow-up UI 均通过（R8 运行 exit 0）；final gate 待做。 |
 | R9 | CONFIRMED（静态） | startup 丢弃 Error，缺可复制脱敏报告与非破坏重试；待修复。 |
-| L1 | 待核实 | 显式 SwiftData import / Release warning。 |
+| L1 | FIXED（Release gate 待做） | 显式 SwiftData import 已补，最终 Release warning 核查尚待统一门禁。 |
 | L2 | 进行中 | 起始本地/远端 ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b；PR #7 OPEN Draft，base 未变。当前上下文已标旧 handoff superseded。 |
 
 首次沙箱内 R4 测试无法访问 CoreSimulator，日志 `/tmp/PGOS-Closure-R4-Repro.log`；不属于产品失败。获准访问模拟器后的同一定向测试运行使用 `/tmp/PGOS-Closure-R4-Repro2.log` 与 `.xcresult`，复现退出码 65：Entry/receipt 已提交且 Pending 已清理，但读取分享图片抛出文件不存在（NSCocoaErrorDomain 260）。所有测试使用合成隔离库。
@@ -170,3 +170,42 @@ Cancellation2: -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/tes
 R6: -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testOptionalMetadataUsesUTF8BudgetWithoutChangingCoreContent -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testSourceBackupRoundTrip -resultBundlePath /tmp/PGOS-Closure-R6.xcresult
 R8: -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testSourceOnlySearchMatchesAfterEntryRenameWithoutDuplicates -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testOptionalMetadataUsesUTF8BudgetWithoutChangingCoreContent -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6SearchRefreshesAfterDeletingMatchedFollowUps -resultBundlePath /tmp/PGOS-Closure-R8.xcresult
 ```
+
+
+### R1/R2/R5 与 R7 staging 第三组
+
+当前实现：
+
+- `ShareProviderReader` 使用公开 NSItemProvider API。一个 provider 的表示按语义择优/失败回退；独立 caption 保留。Safari JS 返回的 title 与同一 item 的同值 caption 仅去除重复表示，不覆盖选中文字。未知辅助 provider 跳过并记录类型；已知图片缺失、数量超限、多个来源须显示问题并由用户重试或明确确认仅保存显示内容，其他 URL 保留为文字。文件 URL 不成为网页来源。
+- 真实跨进程 NSURL 读取使用 `loadObject(NSURL)`，保留 legacy `loadItem` 回退；文本同时支持 NSString/NSAttributedString/UTF-8、带 BOM 的 UTF-16 Data。回调 bridge 本地最多完成一次；超时/取消后拒收迟到结果，Progress.cancel 只是尽力通知提供方，不宣称其网络立即停止。
+- load Task、generation 与 metadata 回调有会话边界；重试保留用户已编辑正文。保存冻结值快照，worker 复制/校验/发布，保存中暂时禁用重复 Save/Cancel 并显示状态；metadata 不再修改保存快照。图像临时文件在 provider callback 内复制，之后 worker 执行校验/hash/缩略图。
+- `NSExtensionActivationDictionaryVersion = 2`，保留类型与数量声明，不使用 TRUEPREDICATE。没有启用 strict matching：真实混合 host 在 strict 模式未出现，在 version 2 默认匹配出现。参见 [Apple activation keys](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/AppExtensionKeys.html)。
+- 同包重复显式 consume 在同一 store 发布边界串行；第二次凭 receipt 只做幂等清理。Extension 不直接写数据库。
+- App Group staging 以目录 `.lease` 内核 flock 证明活跃所有权，创建/回收用短 registry lease 排除创建窗口；进程终止释放锁后可回收未发布副本。Pending 不过期、不参与回收；没有 lease 标记的旧目录保留，不能仅按年龄删除。
+
+证据及失败记录（均保留真实结果）：
+
+| 运行 | 结果 | 含义 |
+| --- | --- | --- |
+| `/tmp/PGOS-Closure-Providers.xcresult` | exit 0；3/3 Unit | 公开混合 provider、unknown、caption、失败回退/部分失败/多来源、once-only 超时/取消/迟到回调 |
+| `/tmp/PGOS-Closure-ProvidersUI.xcresult` | exit 65；12 Unit PASS，2 UI FAIL | Safari title caption 重复使原文精确断言失败；初始同 App host 无扩展。未弱化断言。 |
+| `/tmp/PGOS-Closure-ProvidersUI2.xcresult` | exit 65；Safari PASS，独立 host FAIL | Safari 语义去重修复通过；排除了仅“自身 host”解释，独立 host strict 匹配仍无扩展。 |
+| `/tmp/PGOS-Closure-HostModern.xcresult` | exit 65 | 独立 host 换标准 NSItemProviderWriting 后 strict 仍未显示扩展。 |
+| `/tmp/PGOS-Closure-Activation2.xcresult` | exit 65；13/13 Unit PASS，host 进入扩展但未完整保存 | 默认 version 2 匹配实际出现；跨进程 URL 读取失败触发部分保存确认，旧 UI 测试误将 editor 隐藏视为完成，最终入库断言正确失败。 |
+| `/tmp/PGOS-Closure-ModernURL.xcresult` | exit 0；1 Unit + 1 UI PASS | 公开 NSURL loadObject 修复后：独立混合 host→系统面板→extension，正文精确匹配、无部分确认、保存后主 App 导入。 |
+| `/tmp/PGOS-Closure-ProviderFinalTargeted.xcresult` | exit 0；3 Unit + 1 Safari UI PASS | 并发同包消费、图片首选失败替代成功/图片+网页 URL/10 图数量提示、旧 provider 回退/多来源、最终 Safari 全路径及空搜索提交刷新 |
+| `/tmp/PGOS-Closure-StagingTermination2.log` | exit 0 | 生产 staging 代码的独立 macOS 合成进程：FIFO readiness barrier 后活跃时 reclaimed=0；SIGKILL 本测试子进程后 reclaimed=1。不是 iPhone Extension 终止实测。 |
+
+测试 host 是独立临时模拟器 app `com.yocruzer.CaptureFixtureHost`，源码在 `PersonalGrowthOSUITests/Fixtures/CaptureHost/`，构建命令 `sh Scripts/build_capture_fixture_host.sh`（当前成功日志 `/tmp/PGOS-CaptureHost-Build3.log`）。用 `xcrun simctl install 5F04DE28-8329-4774-9488-076D6DDC5230 /tmp/PGOSCaptureFixtureHost.app` 安装。第一次安装时设备为 Shutdown，随后 boot/bootstatus 同一设备成功再安装；没有 erase 或删除用户数据。首次 host 编译因默认 ModuleCache 无权限失败，脚本改用显式 `/tmp` cache 成功。
+
+进程终止验证命令：`sh Scripts/verify_capture_staging_termination.sh`，证据 root `/tmp/PGOS-StagingTermination.dnMai4`。此前 readiness-file 版本也通过，最终用 FIFO barrier 无时间猜测。
+
+xcodebuild test 公共前缀同上。关键通过运行附加参数：
+
+```text
+ModernURL: -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testPublicProvidersPreserveMixedContentAndSkipUnknownAuxiliary -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPublicMixedProviderHostShowsExtensionAndImports -resultBundlePath /tmp/PGOS-Closure-ModernURL.xcresult
+ProviderFinalTargeted: -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testConcurrentExplicitConsumptionCommitsOnceAndCleansIdempotently -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testImageRepresentationFallbackWebSourceAndCountLimit -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testProviderAlternativesPartialFailureAndMultipleSourcesAreExplicit -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport -resultBundlePath /tmp/PGOS-Closure-ProviderFinalTargeted.xcresult
+Activation2 (13 Unit pass; UI fail as above): -only-testing:PersonalGrowthOSTests/ExternalCaptureTests -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPublicMixedProviderHostShowsExtensionAndImports -resultBundlePath /tmp/PGOS-Closure-Activation2.xcresult
+```
+
+后续仍须：R3 最小失败 Inbox；R7 owned-copy journal/Recovery 补偿、容量与逐文件清理、导出 Pending 边界；R9 脱敏诊断与安全重试；R4 剩余检查点/导出交错；R2 大图主线程响应；新 UI 部分保存/取消；L2 旧文档与 Owner 清单归一及统一 final gate。尚不 READY。

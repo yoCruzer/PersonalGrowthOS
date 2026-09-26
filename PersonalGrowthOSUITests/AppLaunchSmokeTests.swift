@@ -1490,6 +1490,38 @@ extension AppLaunchSmokeTests {
 }
 
 extension AppLaunchSmokeTests {
+    func testPublicMixedProviderHostShowsExtensionAndImports() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launch()
+        host.buttons["capture-provider-host"].tap()
+        let extensionButton = host.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        if !extensionButton.waitForExistence(timeout: 5) {
+            let more = host.cells.matching(NSPredicate(format: "label == 'More' OR label == '更多'"))
+            if more.firstMatch.exists { more.firstMatch.tap() }
+        }
+        XCTAssertTrue(extensionButton.waitForExistence(timeout: 10), host.debugDescription)
+        extensionButton.tap()
+        let editor = host.textViews["share-text"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 10), host.debugDescription)
+        let readable = NSPredicate(format: "value == %@", "Public host fixture quote")
+        expectation(for: readable, evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        let save = host.buttons.matching(NSPredicate(format: "label == 'Save' OR label == '保存'")).firstMatch
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        XCTAssertFalse(host.alerts.firstMatch.exists, "All fixture content must be read without a partial-save confirmation")
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Public host fixture quote"].firstMatch.waitForExistence(timeout: 10), app.debugDescription)
+    }
+
     func testExternalCaptureSafariShareAndImport() throws {
         continueAfterFailure = false
         let server = try NWListener(using: .tcp, on: 18763)

@@ -85,6 +85,7 @@ private struct CaptureImportWorker {
     let checkpoint: ((String) throws -> Void)?
 
     func scan() throws -> Int {
+        _ = try CaptureStagingSession.reclaimAbandoned(root: inbox.root)
         var failed = 0
         for directory in try inbox.pending() {
             try Task.checkCancellation()

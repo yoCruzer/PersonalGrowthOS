@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+CB0000000000000000000101 = {isa = PBXBuildFile; fileRef = CB0000000000000000000001; };
+CB0000000000000000000102 = {isa = PBXBuildFile; fileRef = CB0000000000000000000001; };
 		B00000000000000000000001 /* PersonalGrowthOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* PersonalGrowthOSApp.swift */; };
 		B00000000000000000000002 /* AppShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* AppShell.swift */; };
 		B00000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000003 /* Assets.xcassets */; };
@@ -77,6 +79,7 @@ CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H0000
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+CB0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedCapture/ShareProviderReader.swift"; sourceTree = SOURCE_ROOT; };
 		A00000000000000000000001 /* PersonalGrowthOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalGrowthOSApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000002 /* AppShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShell.swift; sourceTree = "<group>"; };
 		A00000000000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -166,6 +169,7 @@ CA0000000000000000000004,
 CA0000000000000000000003,
 CA0000000000000000000002,
 CA0000000000000000000001,
+CB0000000000000000000001,
 				C00000000000000000000002 /* PersonalGrowthOS */,
 				C00000000000000000000003 /* PersonalGrowthOSTests */,
 				C00000000000000000000004 /* PersonalGrowthOSUITests */,
@@ -497,6 +501,7 @@ CA0000000000000000000011 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147
 			files = (
 CA0000000000000000000102,
 CA0000000000000000000101,
+CB0000000000000000000101,
 				B00000000000000000000001 /* PersonalGrowthOSApp.swift in Sources */,
 				B00000000000000000000002 /* AppShell.swift in Sources */,
 				B00000000000000000000006 /* AppConfiguration.swift in Sources */,
@@ -552,7 +557,7 @@ CA0000000000000000000101,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-CA0000000000000000000010 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (CA0000000000000000000103, CA0000000000000000000105, ); runOnlyForDeploymentPostprocessing = 0; };
+CA0000000000000000000010 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (CB0000000000000000000102, CA0000000000000000000103, CA0000000000000000000105, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
