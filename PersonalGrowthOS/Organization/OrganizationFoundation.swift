@@ -459,6 +459,13 @@ final class LocalSearchService {
             SortDescriptor(\EntryFollowUp.createdAt), SortDescriptor(\EntryFollowUp.id)
         ])).filter { TextSearchNormalizer.normalize($0.body).contains(normalizedQuery) }
         let matches = Dictionary(matchingThoughts.map { ($0.entryID, EntryFollowUpMatch(followUp: $0, query: query)) }, uniquingKeysWith: { first, _ in first })
+        let sourceMatches = Set(try context.fetch(FetchDescriptor<EntryExternalSource>()).compactMap { record -> UUID? in
+            guard let source = record.source else { return nil }
+            return [source.url, source.canonicalURL, source.title, source.siteName,
+                    CaptureSource.webURL(source.url)?.host]
+                .compactMap { $0 }
+                .contains { TextSearchNormalizer.normalize($0).contains(normalizedQuery) } ? record.entryID : nil
+        })
         let entries = try context.fetch(FetchDescriptor<Entry>(sortBy: [
             SortDescriptor(\Entry.occurredAt, order: .reverse),
             SortDescriptor(\Entry.createdAt, order: .reverse),
@@ -468,6 +475,7 @@ final class LocalSearchService {
                 .compactMap { $0 }
                 .contains { TextSearchNormalizer.normalize($0).contains(normalizedQuery) }
                 || matches[entry.id] != nil
+                || sourceMatches.contains(entry.id)
         }
         let tags = try context.fetch(FetchDescriptor<Tag>(sortBy: [
             SortDescriptor(\Tag.normalizedName, order: .forward),

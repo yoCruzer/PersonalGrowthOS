@@ -16,6 +16,16 @@ struct AppShell: View {
 
     @State private var selectedTab: AppTab = .today
     @State private var isShowingStorage = false
+    @Environment(\.scenePhase) private var captureScenePhase
+    @State private var captureFailure = false
+    @State private var failedCaptureIDs: [String] = []
+    @State private var captureDiagnostic: FailureDiagnostic?
+    @State private var captureStateRecovered = false
+    @State private var captureStateWriteFailed = false
+    @State private var isShowingPendingShares = false
+    #if DEBUG
+    @State private var captureTestStatus: String?
+    #endif
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -68,12 +78,156 @@ struct AppShell: View {
             .tag(AppTab.library)
         }
         .accessibilityIdentifier("app-shell")
+        #if DEBUG
+        .overlay(alignment: .top) {
+            if let captureTestStatus {
+                Text(verbatim: captureTestStatus).accessibilityIdentifier("capture-test-status")
+            }
+        }
+        #endif
+        .task { await importShares() }
+        .onChange(of: captureScenePhase) { _, phase in
+            if phase == .active { Task { await importShares() } }
+        }
+        .alert("Some shared content could not be imported", isPresented: $captureFailure) {
+            Button("Review Pending Shares") { isShowingPendingShares = true }
+            if let captureDiagnostic {
+                Button("Copy Diagnostic Report") { UIPasteboard.general.string = captureDiagnostic.report }
+            }
+            Button("Keep for Later", role: .cancel) {
+                Task {
+                    do {
+                        let importer = ExternalCaptureImporter(container: container.modelContainer,
+                            mediaStore: container.mediaStore, inbox: try captureManagementInbox(mediaStore: container.mediaStore))
+                        try await importer.keepForLater(failedCaptureIDs)
+                    } catch { CaptureLog.event("inbox.deferFailed") }
+                }
+            }
+        } message: {
+            if captureStateWriteFailed { Text(CaptureInboxSnapshot.writeFailureMessage) }
+            else if captureStateRecovered { Text(CaptureInboxSnapshot.recoveryMessage) }
+            else if let captureDiagnostic { Text(captureDiagnostic.category.title) }
+            else { Text("The shared files are retained. You can retry when storage is available or after updating the app.") }
+        }
+        .sheet(isPresented: $isShowingPendingShares) {
+            NavigationStack {
+                CaptureInboxView(mediaStore: container.mediaStore)
+                    .toolbar { ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { isShowingPendingShares = false }
+                    } }
+            }
+        }
         .sheet(isPresented: $isShowingStorage) {
             MediaStorageView(
                 mediaStore: container.mediaStore,
                 importExportService: container.importExportService,
                 integrityReport: container.mediaIntegrityReport
             )
+        }
+    }
+
+    private func importShares() async {
+        if container.configuration.launchMode == .uiTesting {
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-PGOSOwnedCopyRecoveryTest") {
+                do {
+                    let inbox = try captureManagementInbox(mediaStore: container.mediaStore)
+                    let marker = container.mediaStore.rootURL.appendingPathComponent("CopyFixtureSeeded")
+                    if !FileManager.default.fileExists(atPath: marker.path) {
+                        let image = container.mediaStore.rootURL.appendingPathComponent("fixture.png")
+                        let data = UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { context in
+                            UIColor.blue.setFill(); context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+                        }
+                        try data.write(to: image)
+                        let imageID = UUID()
+                        let attachment = CaptureAttachment(id: imageID, filename: imageID.uuidString.lowercased(), contentType: "image/png",
+                            byteCount: Int64(data.count), checksum: try ShareInbox.checksum(image))
+                        try inbox.publish(ShareImportPayload(text: "Interrupted copy fixture", images: [attachment]), files: [attachment.id: image])
+                        try Data().write(to: marker)
+                    }
+                    let importer = ExternalCaptureImporter(container: container.modelContainer,
+                        mediaStore: container.mediaStore, inbox: inbox)
+                    if ProcessInfo.processInfo.arguments.contains("-PGOSKillAfterCopy") {
+                        importer.checkpoint = { phase in
+                            if phase == "attachment" {
+                                Task { @MainActor in captureTestStatus = "copy-durable-before-save" }
+                                // Test-only barrier: UI test terminates this process at the durable-copy boundary.
+                                DispatchSemaphore(value: 0).wait()
+                            }
+                        }
+                    }
+                    _ = try await importer.scanReport()
+                    let originals = container.mediaStore.rootURL.appendingPathComponent("Media/Originals")
+                    let files = (FileManager.default.enumerator(at: originals, includingPropertiesForKeys: [.isRegularFileKey])?.allObjects as? [URL] ?? [])
+                        .filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true }
+                    captureTestStatus = "originals=\(files.count);recovery=\(container.mediaIntegrityReport.recoveryFilePaths.count);pending=\(try inbox.pending().count)"
+                } catch { captureTestStatus = "fixture-failed" }
+                return
+            }
+            if ProcessInfo.processInfo.arguments.contains("-PGOSPendingInboxTest") {
+                do {
+                    let inbox = try captureManagementInbox(mediaStore: container.mediaStore)
+                    let importer = ExternalCaptureImporter(container: container.modelContainer,
+                        mediaStore: container.mediaStore, inbox: inbox)
+                    let marker = container.mediaStore.rootURL.appendingPathComponent("PendingFixtureSeeded")
+                    if !FileManager.default.fileExists(atPath: marker.path) {
+                        for suffix in ["1", "2"] {
+                            var payload = ShareImportPayload(text: "Synthetic pending fixture")
+                            payload.id = UUID(uuidString: "00000000-0000-0000-0000-00000000000\(suffix)")!
+                            try inbox.publish(payload, files: [:])
+                            payload.schemaVersion = 99
+                            let directory = try inbox.pending().first { $0.lastPathComponent == payload.id.uuidString }!
+                            try JSONEncoder().encode(payload).write(to: directory.appendingPathComponent("payload.json"))
+                        }
+                        if ProcessInfo.processInfo.arguments.contains("-PGOSPendingStateDamageTest") {
+                            try inbox.publish(ShareImportPayload(text: "Intact share after reminder damage"), files: [:])
+                            try Data("{damaged reminder fixture".utf8).write(to: container.mediaStore.rootURL.appendingPathComponent("CaptureInboxState.json"))
+                        }
+                        try Data().write(to: marker)
+                    }
+                    let report = try await importer.scanReport()
+                    captureStateRecovered = report.recoveredAuxiliaryState
+                    if !report.newFailureIDs.isEmpty || report.recoveredAuxiliaryState {
+                        failedCaptureIDs = report.newFailureIDs
+                        captureFailure = true
+                    }
+                } catch { captureFailure = true }
+                return
+            }
+            guard ProcessInfo.processInfo.arguments.contains("-PGOSCaptureShareTest") else { return }
+            do {
+                let inbox = try ShareInbox.shared()
+                let importer = ExternalCaptureImporter(container: container.modelContainer,
+                    mediaStore: container.mediaStore, inbox: inbox)
+                for directory in try inbox.pending() {
+                    let payload = try inbox.read(directory)
+                    // Only the explicit synthetic localhost test page may enter the isolated UI store.
+                    if payload.source?.url == "http://127.0.0.1:18763/capture.html" {
+                        try await importer.consume(directory)
+                    }
+                }
+            } catch { captureFailure = true }
+            #endif
+            return
+        }
+        var stage = FailureDiagnostic.Stage.appGroup
+        do {
+            let importer = ExternalCaptureImporter(container: container.modelContainer,
+                mediaStore: container.mediaStore, inbox: try ShareInbox.shared())
+            stage = .inboxState
+            let report = try await importer.scanReport()
+            captureDiagnostic = nil
+            captureStateRecovered = report.recoveredAuxiliaryState
+            captureStateWriteFailed = report.auxiliaryStateWriteFailed
+            if !report.newFailureIDs.isEmpty || report.recoveredAuxiliaryState || report.auxiliaryStateWriteFailed {
+                failedCaptureIDs = report.newFailureIDs
+                captureFailure = true
+            }
+        } catch {
+            let diagnostic = (error as? AppDiagnosticFailure)?.diagnostic ?? FailureDiagnostic(error: error, stage: stage)
+            diagnostic.log()
+            captureDiagnostic = diagnostic
+            captureFailure = true
         }
     }
 }
@@ -677,6 +831,7 @@ private struct MediaStorageView: View {
     @State private var byteCount: Int64?
     @State private var isCapturing = false
     @State private var isConfirmingExport = false
+    @State private var isConfirmingPendingExclusion = false
     @State private var isImporting = false
     @State private var isSharing = false
     @State private var exportLease: ExportPackageLease?
@@ -808,6 +963,14 @@ private struct MediaStorageView: View {
                 } footer: {
                     Text("Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
                 }
+                Section {
+                    NavigationLink {
+                        CaptureInboxView(mediaStore: mediaStore)
+                    } label: {
+                        Label("Pending Shares", systemImage: "tray")
+                    }
+                    .accessibilityIdentifier("settings-pending-shares")
+                }
                 Section("About") {
                     Button {
                         UIPasteboard.general.string = AppVersionInformation().displayText
@@ -880,6 +1043,12 @@ private struct MediaStorageView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data.")
+            }
+            .alert("Pending shares are not in this backup", isPresented: $isConfirmingPendingExclusion) {
+                Button("Share Backup") { isSharing = true }
+                Button("Cancel", role: .cancel) { cleanupExport() }
+            } message: {
+                Text("At backup start, \(exportLease?.pendingShareCount ?? 0) shares were still pending and are not included. They remain in Pending Shares. New shares are included only after import.")
             }
             .sheet(isPresented: $isSharing, onDismiss: cleanupExport) {
                 if let exportLease {
@@ -1048,9 +1217,10 @@ private struct MediaStorageView: View {
             }
             do {
                 exportLease?.cleanup()
-                exportLease = try await importExportService.exportPackage()
+                exportLease = try await importExportService.exportPackage(inbox: captureManagementInbox(mediaStore: mediaStore))
                 try Task.checkCancellation()
-                isSharing = true
+                if (exportLease?.pendingShareCount ?? 0) > 0 { isConfirmingPendingExclusion = true }
+                else { isSharing = true }
             } catch is CancellationError {
                 cleanupExport()
                 transferMessage = String(localized: "Export cancelled. Temporary files were removed.")
@@ -1326,5 +1496,112 @@ private struct PinnedEntriesView: View {
             } label: { PinnedEntrySummary(entry: entry) }
         }
         .navigationTitle("Pinned Entries")
+    }
+}
+
+
+@MainActor
+private func captureManagementInbox(mediaStore: MediaStore) throws -> ShareInbox {
+    if AppConfiguration.current().launchMode == .uiTesting {
+        return ShareInbox(root: mediaStore.rootURL.appendingPathComponent("UITestInbox"))
+    }
+    return try ShareInbox.shared()
+}
+
+private struct CaptureInboxView: View {
+    let mediaStore: MediaStore
+    @Environment(\.modelContext) private var context
+    @State private var items: [CaptureInboxItem] = []
+    @State private var hasStateRecoveryNotice = false
+    @State private var selectedDiscard: CaptureInboxItem?
+    @State private var busy = false
+    @State private var failure = false
+    @State private var diagnostic: FailureDiagnostic?
+
+    var body: some View {
+        List {
+            if hasStateRecoveryNotice {
+                Text(CaptureInboxSnapshot.recoveryMessage)
+                    .accessibilityIdentifier("pending-state-recovery-notice")
+            }
+            if items.isEmpty {
+                Text("No pending shares")
+            }
+            ForEach(items) { item in
+                Section {
+                    if let date = item.createdAt { Text(date, style: .date) }
+                    Text(verbatim: String(item.id.prefix(8))).font(.caption).foregroundStyle(.secondary)
+                    Text(item.reason.title)
+                    if let diagnostic = item.diagnostic {
+                        Button("Copy Diagnostic Report") { UIPasteboard.general.string = diagnostic.report }
+                    }
+                    if item.isDeferred { Text("Kept for later").foregroundStyle(.secondary) }
+                    if item.isCommitted {
+                        Text("The entry is already saved. These actions only remove the remaining Inbox copy.")
+                            .font(.caption)
+                    }
+                    Button("Retry") { perform { try await $0.retry(item.id) } }
+                    Button("Keep for Later") { perform { try await $0.keepForLater([item.id]) } }
+                    Button(item.isCommitted ? "Remove Pending Copy" : "Discard Share", role: .destructive) {
+                        selectedDiscard = item
+                    }
+                    .accessibilityIdentifier("pending-discard-\(item.id)")
+                }
+            }
+        }
+        .disabled(busy)
+        .overlay { if busy { ProgressView() } }
+        .navigationTitle("Pending Shares")
+        .task { await refresh() }
+        .alert("Remove this pending share?", isPresented: Binding(
+            get: { selectedDiscard != nil }, set: { if !$0 { selectedDiscard = nil } }
+        ), presenting: selectedDiscard) { item in
+            Button(item.isCommitted ? "Remove Pending Copy" : "Discard Share", role: .destructive) {
+                perform { try await $0.discardPending(item.id) }
+            }
+            Button("Cancel", role: .cancel) { selectedDiscard = nil }
+        } message: { item in
+            Text(item.isCommitted
+                ? "The saved entry will remain. Only this Inbox copy will be removed."
+                : "This share has not been imported. Its pending content will be permanently removed.")
+        }
+        .alert("Import needs attention", isPresented: $failure) {
+            Button("OK", role: .cancel) {}
+            if let diagnostic {
+                Button("Copy Diagnostic Report") { UIPasteboard.general.string = diagnostic.report }
+            }
+        } message: {
+            Text("The shared files are retained. You can retry when storage is available or after updating the app.")
+        }
+    }
+
+    private func importer() throws -> ExternalCaptureImporter {
+        ExternalCaptureImporter(container: context.container, mediaStore: mediaStore,
+            inbox: try captureManagementInbox(mediaStore: mediaStore))
+    }
+
+    private func recordFailure(_ error: Error) {
+        diagnostic = (error as? AppDiagnosticFailure)?.diagnostic ?? FailureDiagnostic(error: error, stage: .inboxState)
+        diagnostic?.log()
+        failure = true
+    }
+
+    private func refresh() async {
+        do {
+            let snapshot = try await importer().pendingSnapshot()
+            items = snapshot.items
+            hasStateRecoveryNotice = snapshot.hasStateRecoveryNotice
+        }
+        catch { recordFailure(error) }
+    }
+
+    private func perform(_ operation: @escaping (ExternalCaptureImporter) async throws -> Void) {
+        busy = true
+        Task {
+            defer { busy = false }
+            do { try await operation(importer()) }
+            catch { recordFailure(error) }
+            await refresh()
+        }
     }
 }

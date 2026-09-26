@@ -80,6 +80,12 @@ final class MediaStore {
         }
     }
 
+    func originalRelativePath(id: UUID, contentType: String) throws -> String {
+        let fileExtension = try validatedExtension(for: contentType)
+        let idString = id.uuidString.lowercased()
+        return "Media/Originals/\(idString.prefix(2))/\(idString).\(fileExtension)"
+    }
+
     func storeOriginal(_ source: MediaSource, id: UUID = UUID()) throws -> StoredMediaFile {
         guard fileManager.fileExists(atPath: source.url.path) else {
             throw MediaStoreError.sourceMissing
@@ -101,7 +107,7 @@ final class MediaStore {
 
         let fileExtension = try validatedExtension(for: source.contentType)
         let idString = id.uuidString.lowercased()
-        let relativePath = "Media/Originals/\(idString.prefix(2))/\(idString).\(fileExtension)"
+        let relativePath = try originalRelativePath(id: id, contentType: source.contentType)
         let finalURL = rootURL.appendingPathComponent(relativePath)
         let stagingDirectory = rootURL.appendingPathComponent("Staging", isDirectory: true)
         let stagingURL = stagingDirectory.appendingPathComponent("\(idString).\(fileExtension)")

@@ -1,15 +1,18 @@
 import CryptoKit
+import Darwin
 import Foundation
 import SwiftData
 
 final class ExportPackageLease: Identifiable {
     let id = UUID()
     let url: URL
+    let pendingShareCount: Int
     private let fileManager: FileManager
     private var isCleaned = false
 
-    init(url: URL, fileManager: FileManager = .default) {
+    init(url: URL, pendingShareCount: Int = 0, fileManager: FileManager = .default) {
         self.url = url
+        self.pendingShareCount = pendingShareCount
         self.fileManager = fileManager
     }
 
@@ -31,6 +34,8 @@ final class ExportPackageLease: Identifiable {
 enum ImportPublicationCheckpoint: Equatable {
     case afterPreflight
     case afterMediaCopy(Int)
+    case beforeInstall
+    case afterInstall
     case beforeSave
 }
 
@@ -54,6 +59,7 @@ final class ImportExportService {
     private let appVersion: () -> (version: String, build: String)
     private let log: Log
     private let publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
+    private let exportCheckpoint: (() throws -> Void)?
 
     init(
         context: ModelContext,
@@ -68,7 +74,8 @@ final class ImportExportService {
             return (info.version, info.build)
         },
         log: @escaping Log = { _ in },
-        publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil
+        publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil,
+        exportCheckpoint: (() throws -> Void)? = nil
     ) {
         self.context = context
         self.container = context.container
@@ -81,6 +88,7 @@ final class ImportExportService {
         self.appVersion = appVersion
         self.log = log
         self.publicationCheckpoint = publicationCheckpoint
+        self.exportCheckpoint = exportCheckpoint
         self.availableCapacity = availableCapacity ?? {
             let values = try mediaStore.rootURL.resourceValues(forKeys: [
                 .volumeAvailableCapacityForImportantUsageKey,
@@ -101,7 +109,10 @@ final class ImportExportService {
         }
     }
 
-    func exportPackage() async throws -> ExportPackageLease {
+    func exportPackage(inbox: ShareInbox? = nil) async throws -> ExportPackageLease {
+        if let inbox {
+            _ = try await ExternalCaptureImporter(container: container, mediaStore: mediaStore, inbox: inbox).scanReport()
+        }
         log("export.started")
         let operationID = UUID()
         let exportDate = now()
@@ -111,32 +122,41 @@ final class ImportExportService {
         let mediaRoot = mediaStore.rootURL
         let exportWorkspaceRoot = workspaceRoot
         let exportLimits = limits
+        let snapshotCheckpoint = exportCheckpoint
         do {
             let worker = Task.detached {
-                let snapshotContext = ModelContext(exportContainer)
-                try LinkIntegrityService.validate(context: snapshotContext)
-                let transfer = try TransferSnapshot.make(context: snapshotContext)
-                let inputs = try transfer.images.map { record in
-                    ExportMediaInput(
-                        record: record,
-                        sourceURL: try Self.mediaURL(root: mediaRoot, relativePath: record.relativePath)
+                return try StorePublication.perform(at: mediaRoot) {
+                    let snapshotContext = ModelContext(exportContainer)
+                    let receipts = Set(try snapshotContext.fetch(FetchDescriptor<CaptureImportReceipt>()).map(\.id))
+                    let pendingShareCount = try (inbox?.pending() ?? []).filter { directory in
+                        UUID(uuidString: directory.lastPathComponent).map { !receipts.contains($0) } ?? true
+                    }.count
+                    try LinkIntegrityService.validate(context: snapshotContext)
+                    let transfer = try TransferSnapshot.make(context: snapshotContext)
+                    try snapshotCheckpoint?()
+                    let inputs = try transfer.images.map { record in
+                        ExportMediaInput(
+                            record: record,
+                            sourceURL: try Self.mediaURL(root: mediaRoot, relativePath: record.relativePath)
+                        )
+                    }
+                    let destination = try Self.buildExportPackage(
+                        transfer: transfer,
+                        mediaInputs: inputs,
+                        operationID: operationID,
+                        exportedAt: exportDate,
+                        build: build,
+                        workspaceRoot: exportWorkspaceRoot,
+                        availableCapacity: capacity,
+                        limits: exportLimits
+                    )
+                    return ExportBuildResult(
+                        destination: destination,
+                        objectCount: transfer.totalObjectCount,
+                        mediaCount: transfer.images.count,
+                        pendingShareCount: pendingShareCount
                     )
                 }
-                let destination = try Self.buildExportPackage(
-                    transfer: transfer,
-                    mediaInputs: inputs,
-                    operationID: operationID,
-                    exportedAt: exportDate,
-                    build: build,
-                    workspaceRoot: exportWorkspaceRoot,
-                    availableCapacity: capacity,
-                    limits: exportLimits
-                )
-                return ExportBuildResult(
-                    destination: destination,
-                    objectCount: transfer.totalObjectCount,
-                    mediaCount: transfer.images.count
-                )
             }
             let result = try await withTaskCancellationHandler {
                 try await worker.value
@@ -150,7 +170,7 @@ final class ImportExportService {
                 throw error
             }
             log("export.completed objects=\(result.objectCount) media=\(result.mediaCount)")
-            return ExportPackageLease(url: result.destination, fileManager: fileManager)
+            return ExportPackageLease(url: result.destination, pendingShareCount: result.pendingShareCount, fileManager: fileManager)
         } catch {
             log("export.failed")
             throw error
@@ -166,6 +186,7 @@ final class ImportExportService {
         let destination: URL
         let objectCount: Int
         let mediaCount: Int
+        let pendingShareCount: Int
     }
 
     nonisolated private static func buildExportPackage(
@@ -470,6 +491,10 @@ final class ImportExportService {
                     throw TransferPackageError.corruptData
                 }
             }
+            if manifest.packageSchemaVersion >= 6 {
+                let payload = try JSONSerialization.jsonObject(with: bytes) as? [String: Any]
+                guard payload?["entrySources"] is [Any] else { throw TransferPackageError.corruptData }
+            }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
             throw TransferPackageError.corruptData
@@ -529,20 +554,21 @@ final class ImportExportService {
         let mediaRoot = mediaStore.rootURL
         let checkpoint = publicationCheckpoint
         let worker = Task.detached {
-            try Self.publishPreparedPackage(
-                package: package,
-                container: importContainer,
-                mediaRoot: mediaRoot,
-                importedAt: importedAt,
-                publicationCheckpoint: checkpoint
-            )
+            try StorePublication.perform(at: mediaRoot) {
+                try Self.publishPreparedPackage(
+                    package: package,
+                    container: importContainer,
+                    mediaRoot: mediaRoot,
+                    importedAt: importedAt,
+                    publicationCheckpoint: checkpoint
+                )
+            }
         }
         try await withTaskCancellationHandler {
             try await worker.value
         } onCancel: {
             worker.cancel()
         }
-        context.rollback()
     }
 
     nonisolated private static func publishPreparedPackage(
@@ -586,15 +612,26 @@ final class ImportExportService {
             guard try directoryIsEmptyOrAbsent(activeOriginals, fileManager: fileManager) else {
                 throw TransferPackageError.targetNotEmpty
             }
+            try publicationCheckpoint?(.beforeInstall)
             try fileManager.createDirectory(
                 at: activeOriginals.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            if fileManager.fileExists(atPath: activeOriginals.path) {
-                try fileManager.removeItem(at: activeOriginals)
+            // A regular capture can add a file after the empty check. Never recursively remove it.
+            let descendants = fileManager.enumerator(at: activeOriginals, includingPropertiesForKeys: [.isDirectoryKey])?
+                .allObjects.compactMap { $0 as? URL } ?? []
+            let directories = try descendants.filter { try $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true }
+                .sorted { $0.pathComponents.count > $1.pathComponents.count }
+            for directory in directories + [activeOriginals] {
+                if rmdir(directory.path) != 0 {
+                    let code = errno
+                    if code == ENOTEMPTY || code == EEXIST { throw TransferPackageError.targetNotEmpty }
+                    if code != ENOENT { throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO) }
+                }
             }
             try fileManager.moveItem(at: stagedOriginals, to: activeOriginals)
             installedOriginals = true
+            try publicationCheckpoint?(.afterInstall)
 
             try ensureTargetIsEmpty(publicationContext)
             _ = try materialize(
@@ -617,7 +654,9 @@ final class ImportExportService {
         } catch {
             publicationContext.rollback()
             if installedOriginals && !didSave {
-                try? fileManager.removeItem(at: activeOriginals)
+                for image in package.data.images {
+                    try? activeStore.removeOriginal(at: image.relativePath)
+                }
             }
             throw error
         }
@@ -868,6 +907,9 @@ final class ImportExportService {
                     updatedAt: record.updatedAt
                 ))
             }
+            for record in package.data.entrySources {
+                context.insert(try EntryExternalSource(entryID: record.entryID, source: record.source))
+            }
             for record in package.data.entryPins {
                 try Task.checkCancellation()
                 context.insert(EntryPin(id: record.id, entryID: record.entryID, pinnedAt: record.pinnedAt))
@@ -930,6 +972,7 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<WeeklyReview>())
             + context.fetchCount(FetchDescriptor<HabitPlanRevision>())
             + context.fetchCount(FetchDescriptor<HabitLifecycleEvent>())
+            + context.fetchCount(FetchDescriptor<EntryExternalSource>())
             + context.fetchCount(FetchDescriptor<EntryPin>())
             + context.fetchCount(FetchDescriptor<EntryFollowUp>())
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
@@ -997,6 +1040,7 @@ private enum TransferSnapshot {
         let weightRecords = try context.fetch(FetchDescriptor<WeightRecord>())
         try Task.checkCancellation()
         let weeklyReviews = try context.fetch(FetchDescriptor<WeeklyReview>())
+        let entrySources = try context.fetch(FetchDescriptor<EntryExternalSource>())
         let entryPins = try context.fetch(FetchDescriptor<EntryPin>())
         let entryFollowUps = try context.fetch(FetchDescriptor<EntryFollowUp>())
         try Task.checkCancellation()
@@ -1158,6 +1202,10 @@ private enum TransferSnapshot {
                     createdAt: $0.createdAt, knownStatus: $0.knownStatusRawValue
                 )
             }.sorted { sortUUID($0.id, $1.id) },
+            entrySources: try cancellableMap(entrySources) {
+                guard let source = $0.source else { throw TransferPackageError.invalidObject("entrySource") }
+                return EntrySourceTransfer(entryID: $0.entryID, source: source)
+            }.sorted { sortUUID($0.entryID, $1.entryID) },
             entryPins: try cancellableMap(entryPins) {
                 EntryPinTransfer(id: $0.id, entryID: $0.entryID, pinnedAt: $0.pinnedAt)
             }.sorted { sortUUID($0.id, $1.id) },

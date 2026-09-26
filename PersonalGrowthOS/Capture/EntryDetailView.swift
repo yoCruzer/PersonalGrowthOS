@@ -11,6 +11,7 @@ struct EntryDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query private var sources: [EntryExternalSource]
     @Query private var pins: [EntryPin]
     @Query private var followUps: [EntryFollowUp]
     @State private var isAddingThought = false
@@ -37,6 +38,7 @@ struct EntryDetailView: View {
         self.thumbnailStore = thumbnailStore
         self.focusFollowUpID = focusFollowUpID
         let entryID = entry.id
+        _sources = Query(filter: #Predicate<EntryExternalSource> { $0.entryID == entryID })
         _pins = Query(filter: #Predicate<EntryPin> { $0.entryID == entryID })
         _followUps = Query(filter: #Predicate<EntryFollowUp> { $0.entryID == entryID })
     }
@@ -120,6 +122,15 @@ struct EntryDetailView: View {
                             mediaStore: mediaStore,
                             accessibilityLabel: "Photo \(index + 1) of \(images.count)"
                         )
+                    }
+                }
+            }
+            if let source = sources.first?.source, let url = CaptureSource.webURL(source.url) {
+                Section("Source") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let title = source.title, !title.isEmpty { Text(title).font(.subheadline) }
+                        Text([source.siteName, url.host].compactMap { $0 }.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary)
+                        Link("View Original", destination: url).accessibilityIdentifier("entry-source-link")
                     }
                 }
             }
@@ -435,8 +446,7 @@ private struct EntryEditorView: View {
     @State private var occurredAt: Date
     @State private var imageItems: [EntryEditorImageItem]
     @State private var selectedItems: [PhotosPickerItem] = []
-    @State private var temporaryURLs: [URL] = []
-    @State private var isLoading = false
+    @StateObject private var inputSession = PhotoInputSession()
     @State private var isSaving = false
     @State private var errorMessage: String?
 
@@ -508,8 +518,8 @@ private struct EntryEditorView: View {
                     ) {
                         Label("Choose up to \(remainingSlots)", systemImage: "photo.on.rectangle")
                     }
-                    .disabled(remainingSlots == 0)
-                    if isLoading { ProgressView("Loading photos…") }
+                    .disabled(remainingSlots == 0 || inputSession.isLoading)
+                    if inputSession.isLoading { ProgressView("Loading photos…") }
                 }
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(.red) }
@@ -519,12 +529,12 @@ private struct EntryEditorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") { inputSession.end(); dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .disabled(
-                            isLoading
+                            inputSession.isLoading
                                 || isSaving
                                 || (bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                                     && imageItems.isEmpty)
@@ -536,18 +546,18 @@ private struct EntryEditorView: View {
                 guard !items.isEmpty else { return }
                 load(items)
             }
-            .onDisappear { removeTemporaryFiles() }
+            .onDisappear { inputSession.end() }
         }
     }
 
     private func load(_ items: [PhotosPickerItem]) {
-        isLoading = true
+        let operation = inputSession.begin()
         errorMessage = nil
         let existingAddedCount = imageItems.reduce(0) { count, item in
             if case .added = item { return count + 1 }
             return count
         }
-        Task {
+        let task = Task {
             var newURLs: [URL] = []
             do {
                 var sources: [MediaSource] = []
@@ -555,6 +565,7 @@ private struct EntryEditorView: View {
                     guard let data = try await item.loadTransferable(type: Data.self) else {
                         throw CaptureImageLoadError.noData
                     }
+                    try Task.checkCancellation()
                     guard let type = item.supportedContentTypes.first(where: { $0.conforms(to: .image) }),
                           let fileExtension = type.preferredFilenameExtension else {
                         throw CaptureImageLoadError.unsupportedType
@@ -569,16 +580,17 @@ private struct EntryEditorView: View {
                         contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
                     ))
                 }
-                temporaryURLs.append(contentsOf: newURLs)
+                guard inputSession.finish(operation, sources: sources, replacing: false) else { return }
                 imageItems.append(contentsOf: sources.map { .added(UUID(), $0) })
                 selectedItems = []
-                isLoading = false
             } catch {
                 for url in newURLs { try? FileManager.default.removeItem(at: url) }
-                isLoading = false
-                errorMessage = String(localized: "The new photos could not be loaded. Your edits are still here.")
+                if inputSession.finish(operation, sources: [], replacing: false) {
+                    errorMessage = String(localized: "The new photos could not be loaded. Your edits are still here.")
+                }
             }
         }
+        inputSession.track(task, for: operation)
     }
 
     private func save() {
@@ -600,7 +612,7 @@ private struct EntryEditorView: View {
                     }
                 }
             ))
-            removeTemporaryFiles()
+            inputSession.end()
             dismiss()
         } catch {
             isSaving = false
@@ -619,11 +631,6 @@ private struct EntryEditorView: View {
                 errorMessage = String(localized: "The entry could not be updated. Your original entry is unchanged.")
             }
         }
-    }
-
-    private func removeTemporaryFiles() {
-        for url in temporaryURLs { try? FileManager.default.removeItem(at: url) }
-        temporaryURLs = []
     }
 
     private func removeImageItem(at index: Int) {

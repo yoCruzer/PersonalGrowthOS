@@ -123,7 +123,7 @@ final class GoalService {
         persistedGoal.title = validatedTitle
         persistedGoal.normalizedTitle = TextSearchNormalizer.normalize(validatedTitle)
         persistedGoal.kind = kind
-        persistedGoal.updatedAt = now()
+        persistedGoal.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: persistedGoal.createdAt, previous: persistedGoal.updatedAt)
         do {
             try save()
         } catch {
@@ -146,7 +146,7 @@ final class GoalService {
         let originalCompletedAt = persistedGoal.completedAt
         let timestamp = now()
         persistedGoal.status = status
-        persistedGoal.updatedAt = timestamp
+        persistedGoal.updatedAt = TechnicalTimestamp.updated(now: timestamp, createdAt: persistedGoal.createdAt, previous: persistedGoal.updatedAt)
         persistedGoal.completedAt = status == .completed ? timestamp : nil
         context.insert(GoalLifecycleEvent(
             goalID: persistedGoal.id,

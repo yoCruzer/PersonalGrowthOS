@@ -7,6 +7,441 @@ import XCTest
 
 @MainActor
 final class ImportExportRecoveryTests: XCTestCase {
+    func testClockRollbackUpdatesExportRestoreAndReopenPreserveFacts() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makeEmptyStore(named: "ClockSource", onDisk: true)
+        let context = source.container.mainContext
+        let created = Date(timeIntervalSince1970: 5_000)
+        let occurred = Date(timeIntervalSince1970: 1_000)
+        var clock = created
+        let input = fixture.root.appendingPathComponent("clock.png")
+        try fixture.imageData.write(to: input)
+        let persistence = ModelContextEntryPersistence(context: context)
+        let entry = try EntryCreationService(persistence: persistence, mediaStore: source.mediaStore, now: { clock })
+            .create(EntryCreationDraft(body: "Original content", images: [MediaSource(url: input, originalFilename: "clock.png", contentType: "image/png")]))
+        let editor = EntryEditingService(persistence: persistence, mediaStore: source.mediaStore, now: { clock })
+        let transitions = EntryDeletionService(persistence: persistence, mediaStore: source.mediaStore, now: { clock })
+        let weights = WeightRecordService(context: context, now: { clock })
+        let weight = try weights.create(weightKilograms: 70, recordedAt: occurred)
+        let habits = HabitService(context: context, now: { clock })
+        let habit = try habits.create(name: "Preserved habit")
+        let goals = GoalService(context: context, now: { clock })
+        let goal = try goals.create(title: "Preserved goal", kind: .standard)
+        let reviews = WeeklyReviewService(context: context, now: { clock })
+        let review = try XCTUnwrap(reviews.review(containing: occurred))
+        let periodStart = review.periodStart
+        let periodEnd = review.periodEnd
+        let imageIDs = entry.images.map(\.id)
+        clock = created.addingTimeInterval(60)
+        for instant in [clock, created.addingTimeInterval(30), created.addingTimeInterval(-60)] {
+            clock = instant
+            try editor.update(entry, with: EntryEditingDraft(title: "Retained title", body: "Edited content",
+                occurredAt: occurred, retainedImageIDs: imageIDs, addedImages: []))
+            XCTAssertEqual(entry.updatedAt, created.addingTimeInterval(60))
+            try transitions.archive(entry)
+            XCTAssertEqual(entry.updatedAt, created.addingTimeInterval(60))
+            try weights.update(weight, weightKilograms: 69, recordedAt: occurred)
+            XCTAssertEqual(weight.updatedAt, created.addingTimeInterval(60))
+            try habits.update(habit, name: habit.name, recordingMode: .multiplePerDay, dailyTargetCount: 2)
+            try habits.updateName(habit, name: habit.name)
+            try habits.transition(habit, to: habit.status == .active ? .paused : .active)
+            XCTAssertEqual(habit.updatedAt, created.addingTimeInterval(60))
+            try goals.update(goal, title: goal.title, kind: goal.kind)
+            try goals.transition(goal, to: goal.status == .active ? .paused : .active)
+            XCTAssertEqual(goal.updatedAt, created.addingTimeInterval(60))
+            try reviews.update(review, draft: WeeklyReviewDraft(rememberedText: "Preserved review", improvementText: "", nextStepText: "", focusText: "", isCompleted: false))
+            XCTAssertEqual(review.updatedAt, created.addingTimeInterval(60))
+        }
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "ClockRestored", onDisk: true)
+        _ = try await target.service.importPackage(from: lease.url)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: target.storeURL)
+        let restored = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<Entry>()).first)
+        XCTAssertEqual(restored.id, entry.id)
+        XCTAssertEqual(restored.body, "Edited content")
+        XCTAssertEqual(restored.title, "Retained title")
+        XCTAssertEqual(restored.status, .archived)
+        XCTAssertEqual(restored.createdAt, created)
+        XCTAssertEqual(restored.updatedAt, created.addingTimeInterval(60))
+        XCTAssertEqual(restored.occurredAt, occurred)
+        XCTAssertEqual(restored.images.map(\.id), imageIDs)
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: XCTUnwrap(restored.images.first).relativePath)), fixture.imageData)
+        let restoredWeight = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<WeightRecord>()).first)
+        XCTAssertEqual(restoredWeight.id, weight.id)
+        XCTAssertEqual(restoredWeight.createdAt, created)
+        XCTAssertEqual(restoredWeight.updatedAt, created.addingTimeInterval(60))
+        XCTAssertEqual(restoredWeight.recordedAt, occurred)
+        XCTAssertEqual(restoredWeight.weightKilograms, 69)
+        let restoredHabit = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<Habit>()).first)
+        XCTAssertEqual(restoredHabit.id, habit.id)
+        XCTAssertEqual(restoredHabit.name, habit.name)
+        XCTAssertEqual(restoredHabit.updatedAt, created.addingTimeInterval(60))
+        let restoredGoal = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<Goal>()).first)
+        XCTAssertEqual(restoredGoal.id, goal.id)
+        XCTAssertEqual(restoredGoal.title, goal.title)
+        XCTAssertEqual(restoredGoal.updatedAt, created.addingTimeInterval(60))
+        let restoredReview = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<WeeklyReview>()).first)
+        XCTAssertEqual(restoredReview.id, review.id)
+        XCTAssertEqual(restoredReview.rememberedText, "Preserved review")
+        XCTAssertEqual(restoredReview.updatedAt, created.addingTimeInterval(60))
+        XCTAssertEqual(restoredReview.periodStart, periodStart)
+        XCTAssertEqual(restoredReview.periodEnd, periodEnd)
+        let habitEvents = try reopened.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>())
+        XCTAssertTrue(habitEvents.contains { $0.occurredAt == clock && $0.occurredLocalDay == HabitLocalDay(date: clock).description })
+        let goalEvents = try reopened.mainContext.fetch(FetchDescriptor<GoalLifecycleEvent>())
+        XCTAssertTrue(goalEvents.contains { $0.occurredAt == clock })
+    }
+
+    func testExplicitResaveRepairsInjectedLocalTimeWithoutChangingContentOrIdentity() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let entry = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<Entry>()).first)
+        let created = entry.createdAt
+        let occurred = entry.occurredAt
+        let originalBody = entry.body
+        let originalID = entry.id
+        let imageIDs = entry.images.map(\.id)
+        entry.updatedAt = created.addingTimeInterval(-60) // Synthetic preexisting local corruption.
+        try source.container.mainContext.save()
+        await assertThrows({ try await source.service.exportPackage() }) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("entry"))
+        }
+        try EntryEditingService(persistence: ModelContextEntryPersistence(context: source.container.mainContext),
+            mediaStore: source.mediaStore, now: { created.addingTimeInterval(-120) })
+            .update(entry, with: EntryEditingDraft(title: entry.title, body: entry.body, occurredAt: occurred,
+                retainedImageIDs: imageIDs, addedImages: []))
+        XCTAssertEqual(entry.createdAt, created)
+        XCTAssertEqual(entry.updatedAt, created)
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "ExplicitTimeRepair")
+        _ = try await target.service.importPackage(from: lease.url)
+        let restored = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<Entry>()).first { $0.id == originalID })
+        XCTAssertEqual(restored.body, originalBody)
+        XCTAssertEqual(restored.occurredAt, occurred)
+        XCTAssertEqual(Set(restored.images.map(\.id)), Set(imageIDs))
+        for image in restored.images {
+            XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: image.relativePath)), fixture.imageData)
+        }
+    }
+
+    func testPublicationIdentitySurvivesMediaRootCreation() throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let root = fixture.root.appendingPathComponent("NewMediaRoot", isDirectory: true)
+        let before = StorePublication.key(for: root)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        XCTAssertEqual(StorePublication.key(for: root), before)
+        XCTAssertEqual(StorePublication.key(for: URL(fileURLWithPath: root.path, isDirectory: false)), before)
+    }
+
+    func testRestoreEmptyDirectoryCheckCannotDeleteAConcurrentUserImage() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let checkedEmpty = expectation(description: "Restore checked Originals empty before installation")
+        let resume = DispatchSemaphore(value: 0)
+        defer { resume.signal() }
+        let target = try fixture.makeEmptyStore(named: "ConcurrentImageBeforeInstall", publicationCheckpoint: {
+            if $0 == .beforeInstall {
+                checkedEmpty.fulfill()
+                guard resume.wait(timeout: .now() + 30) == .success else { throw TransferPackageError.interrupted }
+            }
+        })
+        let restore = Task { try await target.service.importPackage(from: lease.url) }
+        await fulfillment(of: [checkedEmpty], timeout: 30)
+        let imageURL = fixture.root.appendingPathComponent("concurrent-user.png")
+        try fixture.imageData.write(to: imageURL)
+        let stored = try target.mediaStore.storeOriginal(MediaSource(url: imageURL, originalFilename: "user.png", contentType: "image/png"))
+        let image = ImageMetadata(id: stored.id, relativePath: stored.relativePath, originalFilename: "user.png",
+            contentType: "image/png", byteCount: stored.byteCount, pixelWidth: stored.pixelWidth,
+            pixelHeight: stored.pixelHeight, checksum: stored.checksum, createdAt: Date())
+        let entry = Entry(body: "User image saved before restore install", createdAt: Date(), images: [image])
+        image.entry = entry
+        target.container.mainContext.insert(entry)
+        try target.container.mainContext.save()
+        resume.signal()
+        await assertThrows({ try await restore.value }) { XCTAssertEqual($0 as? TransferPackageError, .targetNotEmpty) }
+        let context = ModelContext(target.container)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [entry.id])
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: stored.relativePath)), fixture.imageData)
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL).count, 1)
+    }
+
+    func testExportCutoffQueuesShareAndCancelledConsumerWithoutLosingDraft() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let originalIDs = Set(try ModelContext(source.container).fetch(FetchDescriptor<Entry>()).map(\.id))
+        source.container.mainContext.autosaveEnabled = false
+        let draft = Entry(body: "Unsaved during export", createdAt: Date())
+        source.container.mainContext.insert(draft)
+        let snapshot = expectation(description: "Export snapshot owns publication lease")
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        let exporter = ImportExportService(context: source.container.mainContext, mediaStore: source.mediaStore,
+            exportCheckpoint: {
+                snapshot.fulfill()
+                guard release.wait(timeout: .now() + 30) == .success else { throw TransferPackageError.interrupted }
+            })
+        let export = Task { try await exporter.exportPackage() }
+        await fulfillment(of: [snapshot], timeout: 30)
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("ExportQueuedInbox"))
+        let imageURL = fixture.root.appendingPathComponent("queued.png")
+        try fixture.imageData.write(to: imageURL)
+        let imageID = UUID()
+        let attachment = CaptureAttachment(id: imageID, filename: imageID.uuidString.lowercased(),
+            contentType: "image/png", byteCount: Int64(fixture.imageData.count), checksum: try ShareInbox.checksum(imageURL))
+        let payload = ShareImportPayload(text: "Arrived after cutoff", images: [attachment])
+        try inbox.publish(payload, files: [imageID: imageURL])
+        let requested = expectation(description: "Both share consumers are scheduled")
+        requested.expectedFulfillmentCount = 2
+        let first = ExternalCaptureImporter(container: source.container, mediaStore: source.mediaStore, inbox: inbox)
+        let second = ExternalCaptureImporter(container: source.container, mediaStore: source.mediaStore, inbox: inbox)
+        first.checkpoint = { if $0 == "scheduled" { requested.fulfill() } }
+        second.checkpoint = first.checkpoint
+        let cancelled = Task { try await first.scan() }
+        let queued = Task { try await second.scan() }
+        await fulfillment(of: [requested], timeout: 30)
+        cancelled.cancel()
+        XCTAssertEqual(try ModelContext(source.container).fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
+        XCTAssertEqual(try inbox.pending().count, 1)
+        release.signal()
+        let lease = try await export.value
+        defer { lease.cleanup() }
+        await assertThrows({ try await cancelled.value }) { XCTAssertTrue($0 is CancellationError) }
+        let failures = try await queued.value
+        XCTAssertEqual(failures, 0)
+        XCTAssertTrue(source.container.mainContext.hasChanges)
+        XCTAssertEqual(draft.body, "Unsaved during export")
+        let current = ModelContext(source.container)
+        XCTAssertEqual(try current.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        let imported = try XCTUnwrap(current.fetch(FetchDescriptor<Entry>()).first { $0.id == payload.id })
+        let image = try XCTUnwrap(imported.images.first)
+        XCTAssertEqual(try Data(contentsOf: source.mediaStore.fileURL(for: image.relativePath)), fixture.imageData)
+        let restored = try fixture.makeEmptyStore(named: "ExportCutoffRestore")
+        _ = try await restored.service.importPackage(from: lease.url)
+        XCTAssertEqual(Set(try restored.container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id)), originalIDs)
+        let restoredImages = try restored.container.mainContext.fetch(FetchDescriptor<ImageMetadata>())
+        XCTAssertEqual(restoredImages.count, 1)
+        XCTAssertEqual(try Data(contentsOf: restored.mediaStore.fileURL(for: XCTUnwrap(restoredImages.first).relativePath)), fixture.imageData)
+    }
+
+    func testExportDrainsValidSharesAndDisclosesOnlyUnimportedPending() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makeEmptyStore(named: "ExportPendingBoundary")
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("ShareInbox"))
+        let valid = ShareImportPayload(text: "Included by export drain")
+        let future = ShareImportPayload(text: "Future content remains pending")
+        try inbox.publish(future, files: [:])
+        let futureDirectory = try XCTUnwrap(inbox.pending().first)
+        var unsupported = future
+        unsupported.schemaVersion = 99
+        try JSONEncoder().encode(unsupported).write(to: futureDirectory.appendingPathComponent("payload.json"))
+        try inbox.publish(valid, files: [:])
+        try FileManager.default.createDirectory(at: source.mediaStore.rootURL, withIntermediateDirectories: true)
+        try Data("{damaged reminder state".utf8).write(to: source.mediaStore.rootURL.appendingPathComponent("CaptureInboxState.json"))
+        let lease = try await source.service.exportPackage(inbox: inbox)
+        defer { lease.cleanup() }
+        XCTAssertEqual(lease.pendingShareCount, 1)
+        XCTAssertEqual(try inbox.pending(), [futureDirectory])
+        let target = try fixture.makeEmptyStore(named: "ExportPendingRestored")
+        _ = try await target.service.importPackage(from: lease.url)
+        let entries = try target.container.mainContext.fetch(FetchDescriptor<Entry>())
+        XCTAssertEqual(entries.map(\.id), [valid.id])
+        XCTAssertEqual(entries.first?.body, valid.text)
+        XCTAssertEqual(try JSONDecoder().decode(ShareImportPayload.self, from: Data(contentsOf: futureDirectory.appendingPathComponent("payload.json"))), unsupported)
+    }
+
+    func testRestoreFailurePreservesInterleavedCommittedShareImage() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let installed = expectation(description: "Restore installed originals before database save")
+        let resume = DispatchSemaphore(value: 0)
+        let target = try fixture.makeEmptyStore(named: "InterleavedShare", publicationCheckpoint: {
+            if $0 == .beforeSave {
+                installed.fulfill()
+                guard resume.wait(timeout: .now() + 30) == .success else {
+                    throw TransferPackageError.interrupted
+                }
+                throw TransferPackageError.interrupted
+            }
+        })
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("ShareInbox"))
+        let imageURL = fixture.root.appendingPathComponent("shared.png")
+        try fixture.imageData.write(to: imageURL)
+        let imageID = UUID()
+        let attachment = CaptureAttachment(id: imageID, filename: imageID.uuidString.lowercased(),
+            contentType: "image/png", byteCount: Int64(fixture.imageData.count),
+            checksum: try ShareInbox.checksum(imageURL))
+        let payload = ShareImportPayload(images: [attachment])
+        try inbox.publish(payload, files: [imageID: imageURL])
+        let restore = Task { try await target.service.importPackage(from: lease.url) }
+        await fulfillment(of: [installed], timeout: 30)
+        let importer = ExternalCaptureImporter(container: target.container,
+            mediaStore: target.mediaStore, inbox: inbox)
+        defer { resume.signal() }
+        let requested = expectation(description: "Share worker requested publication")
+        importer.checkpoint = { if $0 == "scheduled" { requested.fulfill() } }
+        let share = Task { try await importer.scan() }
+        await fulfillment(of: [requested], timeout: 30)
+        XCTAssertEqual(try ModelContext(target.container).fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
+        XCTAssertEqual(try inbox.pending().count, 1)
+        resume.signal()
+        await assertThrows({ try await restore.value }) {
+            XCTAssertEqual($0 as? TransferPackageError, .interrupted)
+        }
+        let failures = try await share.value
+        XCTAssertEqual(failures, 0)
+        let context = ModelContext(target.container)
+        let entry = try XCTUnwrap(context.fetch(FetchDescriptor<Entry>()).first)
+        XCTAssertEqual(entry.id, payload.id)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        XCTAssertTrue(try inbox.pending().isEmpty)
+        let image = try XCTUnwrap(entry.images.first)
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: image.relativePath)), fixture.imageData)
+    }
+
+    func testRestoreEmptyRecheckPreservesConcurrentUserImageAndQueuedShare() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let installed = expectation(description: "Restore installed files before empty recheck")
+        let resume = DispatchSemaphore(value: 0)
+        defer { resume.signal() }
+        let target = try fixture.makeEmptyStore(named: "EmptyRecheck", publicationCheckpoint: {
+            if $0 == .afterInstall {
+                installed.fulfill()
+                guard resume.wait(timeout: .now() + 30) == .success else { throw TransferPackageError.interrupted }
+            }
+        })
+        let restore = Task { try await target.service.importPackage(from: lease.url) }
+        await fulfillment(of: [installed], timeout: 30)
+        let imageURL = fixture.root.appendingPathComponent("user-during-restore.png")
+        try fixture.imageData.write(to: imageURL)
+        let stored = try target.mediaStore.storeOriginal(MediaSource(url: imageURL, originalFilename: "user.png", contentType: "image/png"))
+        let image = ImageMetadata(id: stored.id, relativePath: stored.relativePath, originalFilename: "user.png",
+            contentType: "image/png", byteCount: stored.byteCount, pixelWidth: stored.pixelWidth,
+            pixelHeight: stored.pixelHeight, checksum: stored.checksum, createdAt: Date())
+        let entry = Entry(body: "Saved by user during restore", createdAt: Date(), images: [image])
+        image.entry = entry
+        target.container.mainContext.insert(entry)
+        try target.container.mainContext.save()
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("RecheckShare"))
+        let payload = ShareImportPayload(text: "Queued until restore rejects nonempty target")
+        try inbox.publish(payload, files: [:])
+        let importer = ExternalCaptureImporter(container: target.container, mediaStore: target.mediaStore, inbox: inbox)
+        let scheduled = expectation(description: "Share scheduled before empty recheck")
+        importer.checkpoint = { if $0 == "scheduled" { scheduled.fulfill() } }
+        let share = Task { try await importer.scan() }
+        await fulfillment(of: [scheduled], timeout: 30)
+        XCTAssertEqual(try inbox.pending().count, 1)
+        resume.signal()
+        await assertThrows({ try await restore.value }) { XCTAssertEqual($0 as? TransferPackageError, .targetNotEmpty) }
+        let failures = try await share.value
+        XCTAssertEqual(failures, 0)
+        let context = ModelContext(target.container)
+        XCTAssertEqual(Set(try context.fetch(FetchDescriptor<Entry>()).map(\.id)), [entry.id, payload.id])
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL).count, 1)
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: stored.relativePath)), fixture.imageData)
+    }
+
+    func testRestoreCancellationAfterInstallReleasesShareAndPreservesDraft() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let installed = expectation(description: "Restore installed media")
+        let resume = DispatchSemaphore(value: 0)
+        let target = try fixture.makeEmptyStore(named: "CancelledWithDraft", publicationCheckpoint: {
+            if $0 == .afterInstall {
+                installed.fulfill()
+                guard resume.wait(timeout: .now() + 30) == .success else {
+                    throw TransferPackageError.interrupted
+                }
+            }
+        })
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("PendingCancellation"))
+        let payload = ShareImportPayload(text: "Queued share")
+        try inbox.publish(payload, files: [:])
+        let restore = Task { try await target.service.importPackage(from: lease.url) }
+        defer { resume.signal() }
+        await fulfillment(of: [installed], timeout: 30)
+        let draft = Entry(body: "Unsaved draft", createdAt: Date())
+        target.container.mainContext.autosaveEnabled = false
+        target.container.mainContext.insert(draft)
+        let importer = ExternalCaptureImporter(container: target.container, mediaStore: target.mediaStore, inbox: inbox)
+        let scheduled = expectation(description: "Share scheduled during restore")
+        importer.checkpoint = { if $0 == "scheduled" { scheduled.fulfill() } }
+        let share = Task { try await importer.scan() }
+        await fulfillment(of: [scheduled], timeout: 30)
+        restore.cancel()
+        resume.signal()
+        await assertThrows({ try await restore.value }) { XCTAssertTrue($0 is CancellationError) }
+        let failures = try await share.value
+        XCTAssertEqual(failures, 0)
+        XCTAssertTrue(target.container.mainContext.hasChanges)
+        XCTAssertEqual(draft.body, "Unsaved draft")
+        let saved = try ModelContext(target.container).fetch(FetchDescriptor<Entry>())
+        XCTAssertEqual(saved.map(\.id), [payload.id])
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
+    }
+
+    func testSuccessfulRestoreDoesNotRollbackDraftCreatedDuringPublication() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let publishing = expectation(description: "Restore before save")
+        let resume = DispatchSemaphore(value: 0)
+        let target = try fixture.makeEmptyStore(named: "SuccessWithDraft", publicationCheckpoint: {
+            if $0 == .beforeSave {
+                publishing.fulfill()
+                guard resume.wait(timeout: .now() + 30) == .success else {
+                    throw TransferPackageError.interrupted
+                }
+            }
+        })
+        let restore = Task { try await target.service.importPackage(from: lease.url) }
+        defer { resume.signal() }
+        await fulfillment(of: [publishing], timeout: 30)
+        target.container.mainContext.autosaveEnabled = false
+        let draft = Entry(body: "Keep editing", createdAt: Date())
+        target.container.mainContext.insert(draft)
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("QueuedAfterSuccessfulRestore"))
+        let payload = ShareImportPayload(text: "Queued during successful restore")
+        try inbox.publish(payload, files: [:])
+        let importer = ExternalCaptureImporter(container: target.container, mediaStore: target.mediaStore, inbox: inbox)
+        let scheduled = expectation(description: "Share waits for successful restore")
+        importer.checkpoint = { if $0 == "scheduled" { scheduled.fulfill() } }
+        let share = Task { try await importer.scan() }
+        await fulfillment(of: [scheduled], timeout: 30)
+        XCTAssertEqual(try ModelContext(target.container).fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
+        resume.signal()
+        _ = try await restore.value
+        let failures = try await share.value
+        XCTAssertEqual(failures, 0)
+        XCTAssertEqual(try ModelContext(target.container).fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        XCTAssertTrue(try inbox.pending().isEmpty)
+        XCTAssertTrue(target.container.mainContext.hasChanges)
+        XCTAssertEqual(draft.body, "Keep editing")
+        XCTAssertFalse(try ModelContext(target.container).fetch(FetchDescriptor<Entry>()).contains { $0.id == draft.id })
+    }
+
     func testLegacyV1TransferDataDecodesWithoutWeightRecordsAndValidates() throws {
         let data = Data("""
         {
@@ -1315,7 +1750,7 @@ private final class TransferTestFixture {
                 "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
                 "weightRecords": 1, "weeklyReviews": 1,
                 "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
-                "entryPins": 0, "entryFollowUps": 0
+                "entryPins": 0, "entryFollowUps": 0, "entrySources": 0
             ],
             expectedIDs: try ids(in: context)
         )

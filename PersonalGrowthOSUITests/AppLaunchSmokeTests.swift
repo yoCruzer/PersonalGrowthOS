@@ -1,6 +1,145 @@
 import XCTest
+import Network
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSStartupFailureTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let diagnostic = app.staticTexts["startup-diagnostic"]
+        XCTAssertTrue(diagnostic.waitForExistence(timeout: 10))
+        XCTAssertTrue(diagnostic.label.contains("stage=storeOpen"))
+        XCTAssertTrue(diagnostic.label.contains("errorCode=134504"))
+        XCTAssertFalse(diagnostic.label.contains("PRIVATE-STARTUP-TOKEN"))
+        XCTAssertFalse(diagnostic.label.contains("/private/"))
+        app.buttons["startup-copy-diagnostic"].tap()
+        XCTAssertEqual(app.buttons["startup-copy-diagnostic"].label, "Copied")
+        app.buttons["startup-retry"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Timeline"].waitForExistence(timeout: 10))
+        XCTAssertFalse(diagnostic.exists)
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Preserved startup retry fixture"].waitForExistence(timeout: 5))
+    }
+
+    func testBackupDisclosesPendingExclusionAndCancelKeepsShares() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSPendingInboxTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let initial = app.alerts["Some shared content could not be imported"]
+        XCTAssertTrue(initial.waitForExistence(timeout: 10))
+        initial.buttons["Keep for Later"].tap()
+        app.buttons["settings-button"].tap()
+        app.buttons["settings-export-button"].tap()
+        app.buttons["Export and Share"].tap()
+        let warning = app.alerts["Pending shares are not in this backup"]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10))
+        XCTAssertTrue(warning.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "2 shares")).firstMatch.exists)
+        warning.buttons["Cancel"].tap()
+        let pending = app.buttons["settings-pending-shares"]
+        if !pending.isHittable { app.swipeUp() }
+        pending.tap()
+        XCTAssertTrue(app.buttons["pending-discard-00000000-0000-0000-0000-000000000001"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(app.buttons["pending-discard-00000000-0000-0000-0000-000000000002"].exists)
+    }
+
+    func testKilledImportBeforeSaveReclaimsOwnedCopyAndRetriesPending() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSOwnedCopyRecoveryTest", "-PGOSKillAfterCopy",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["copy-durable-before-save"].waitForExistence(timeout: 10))
+        // The file worker is blocked before DB save, while the actual app UI remains usable.
+        app.tabBars.buttons["Record"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Record"].isSelected)
+        app.terminate()
+        app.launchArguments.removeAll { ["-PGOSResetData", "-PGOSKillAfterCopy"].contains($0) }
+        app.launch()
+        XCTAssertTrue(app.staticTexts["originals=1;recovery=0;pending=0"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Interrupted copy fixture"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.staticTexts["originals=1;recovery=0;pending=0"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Interrupted copy fixture").count, 1)
+    }
+
+    func testPendingInboxDefersAndConfirmsOnlySelectedDiscard() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSPendingInboxTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let alert = app.alerts["Some shared content could not be imported"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 10))
+        alert.buttons["Keep for Later"].tap()
+        app.buttons["settings-button"].tap()
+        let pending = app.buttons["settings-pending-shares"]
+        if !pending.isHittable { app.swipeUp() }
+        XCTAssertTrue(pending.waitForExistence(timeout: 5))
+        pending.tap()
+        XCTAssertTrue(app.staticTexts["Kept for later"].firstMatch.waitForExistence(timeout: 5))
+        let first = app.buttons["pending-discard-00000000-0000-0000-0000-000000000001"]
+        let second = app.buttons["pending-discard-00000000-0000-0000-0000-000000000002"]
+        first.tap()
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(first.exists)
+        first.tap()
+        app.alerts["Remove this pending share?"].buttons["Discard Share"].tap()
+        XCTAssertTrue(first.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(second.exists)
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
+        XCTAssertFalse(alert.exists)
+        app.buttons["settings-button"].tap()
+        if !pending.isHittable { app.swipeUp() }
+        pending.tap()
+        XCTAssertTrue(second.waitForExistence(timeout: 5))
+        XCTAssertFalse(first.exists)
+        XCTAssertTrue(app.staticTexts["Kept for later"].exists)
+    }
+
+    func testDamagedInboxSettingsShowRecoveryNoticeAndRemainUsableAfterRelaunch() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSPendingInboxTest", "-PGOSPendingStateDamageTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let alert = app.alerts["Some shared content could not be imported"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 10))
+        XCTAssertTrue(alert.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "reminder settings were damaged")).firstMatch.exists)
+        alert.buttons["Keep for Later"].tap()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Intact share after reminder damage"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
+        XCTAssertFalse(alert.exists)
+        app.buttons["settings-button"].tap()
+        let pending = app.buttons["settings-pending-shares"]
+        if !pending.isHittable { app.swipeUp() }
+        pending.tap()
+        XCTAssertTrue(app.staticTexts["pending-state-recovery-notice"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["pending-discard-00000000-0000-0000-0000-000000000001"].exists)
+        let notice = XCTAttachment(screenshot: app.screenshot())
+        notice.name = "Recovered reminder settings with preserved pending shares"
+        notice.lifetime = .keepAlways
+        add(notice)
+        let second = app.buttons["pending-discard-00000000-0000-0000-0000-000000000002"]
+        if !second.exists { app.swipeUp() }
+        XCTAssertTrue(second.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Kept for later"].firstMatch.exists)
+    }
+
     func testCoreShellPassesAccessibilityAudit() throws {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -117,6 +256,16 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.tabBars.buttons["Record"].tap()
 
         XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
+        let body = app.textViews["capture-body"]
+        body.tap()
+        body.typeText("Record draft survives tab switch")
+        app.tabBars.buttons["Today"].tap()
+        app.tabBars.buttons["Record"].tap()
+        XCTAssertEqual(body.value as? String, "Record draft survives tab switch")
+        app.buttons["capture-save"].tap()
+        XCTAssertTrue(app.staticTexts["Record draft survives tab switch"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Record"].tap()
+        XCTAssertEqual(body.value as? String, "")
     }
 
     func testGlobalCaptureIsAvailableFromSettings() {
@@ -544,7 +693,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.staticTexts["Habit and Goal review"].tap()
         XCTAssertTrue(app.staticTexts["Meditate"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Stay Present"].waitForExistence(timeout: 5))
-        app.buttons["entry-manage-relationships"].tap()
+        let manageRelationships = app.buttons["entry-manage-relationships"]
+        if !manageRelationships.isHittable { app.swipeUp() }
+        XCTAssertTrue(manageRelationships.waitForExistence(timeout: 5))
+        manageRelationships.tap()
         XCTAssertTrue(app.navigationBars["Reviewed Objects"].waitForExistence(timeout: 5))
     }
 
@@ -1448,6 +1600,7 @@ extension AppLaunchSmokeTests {
         let filename = app.textFields["DOCPicker.filenameTextField"]
         XCTAssertTrue(filename.waitForExistence(timeout: 20))
         app.navigationBars.buttons["Save"].tap()
+        XCTAssertTrue(filename.waitForNonExistence(timeout: 20))
         app.terminate()
         app.launch() // Resets only the dedicated UITesting database, preserving the Files copy.
         func selectBackup() {
@@ -1485,5 +1638,298 @@ extension AppLaunchSmokeTests {
         app.navigationBars.buttons["Done"].tap()
         app.tabBars.buttons["Timeline"].tap()
         XCTAssertTrue(app.staticTexts["PR6 synthetic restore memory"].waitForExistence(timeout: 5))
+    }
+}
+
+extension AppLaunchSmokeTests {
+    private func waitForFixtureHostReady(_ host: XCUIApplication) {
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: host.buttons["capture-provider-host"])
+        waitForExpectations(timeout: 15)
+    }
+
+    private func openFixtureExtension(_ host: XCUIApplication, button: String) {
+        XCTAssertTrue(host.buttons[button].waitForExistence(timeout: 5), host.debugDescription)
+        waitForFixtureHostReady(host)
+        host.buttons[button].tap()
+        let entry = host.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        if !entry.waitForExistence(timeout: 5) {
+            let more = host.cells.matching(NSPredicate(format: "label == 'More' OR label == '更多'"))
+            if more.firstMatch.exists { more.firstMatch.tap() }
+        }
+        XCTAssertTrue(entry.waitForExistence(timeout: 10), host.debugDescription)
+        entry.tap()
+        XCTAssertTrue(host.textViews["share-text"].waitForExistence(timeout: 10), host.debugDescription)
+    }
+
+    func testRetryAfterEditingPreservesNoteAndRecoveredTextInEntry() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        host.launch()
+        openFixtureExtension(host, button: "capture-provider-retry")
+        let editor = host.textViews["share-text"]
+        expectation(for: NSPredicate(format: "value == %@", "Public host fixture quote"), evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        XCTAssertTrue(host.buttons["Retry"].exists)
+        editor.tap()
+        editor.typeText("\nPersonal retry note")
+        let edited = editor.value as? String ?? ""
+        XCTAssertTrue(edited.contains("Personal retry note"))
+        host.buttons["Retry"].tap()
+        let expected = edited + "\n\nRecovered second passage"
+        expectation(for: NSPredicate(format: "value == %@", expected), evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        XCTAssertFalse(host.buttons["Retry"].exists)
+        host.buttons["Save"].doubleTap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        XCTAssertFalse(host.alerts.firstMatch.exists)
+        waitForFixtureHostReady(host)
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        let row = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Public host fixture quote")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Public host fixture quote")).count, 1)
+        row.tap()
+        XCTAssertTrue(app.staticTexts[expected].waitForExistence(timeout: 5), app.debugDescription)
+    }
+
+    func testPartialHostRequiresExplicitReadableContentConfirmation() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        host.launch()
+        openFixtureExtension(host, button: "capture-provider-partial")
+        let editor = host.textViews["share-text"]
+        expectation(for: NSPredicate(format: "value == %@", "Public host fixture quote"), evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        XCTAssertTrue(host.buttons["Copy Diagnostic Report"].exists)
+        host.buttons["Save"].tap()
+        let confirmation = host.alerts["Save readable content only?"]
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
+        confirmation.buttons["Cancel"].tap()
+        XCTAssertEqual(editor.value as? String, "Public host fixture quote")
+        host.buttons["Save"].tap()
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: confirmation.buttons["Save Shown Content"])
+        waitForExpectations(timeout: 5)
+        confirmation.buttons["Save Shown Content"].tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        waitForFixtureHostReady(host)
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Public host fixture quote"].waitForExistence(timeout: 10))
+    }
+
+    func testReadyShareCancellationReturnsToSystemPicker() {
+        continueAfterFailure = false
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        host.launch()
+        openFixtureExtension(host, button: "capture-provider-host")
+        expectation(for: NSPredicate(format: "enabled == true"), evaluatedWith: host.buttons["Save"])
+        waitForExpectations(timeout: 10)
+        host.buttons["Cancel"].tap()
+        XCTAssertTrue(host.textViews["share-text"].waitForNonExistence(timeout: 5))
+        let entry = host.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: entry)
+        waitForExpectations(timeout: 10)
+        let pickerShot = XCTAttachment(screenshot: host.screenshot())
+        pickerShot.name = "System picker after capture cancellation"
+        pickerShot.lifetime = .keepAlways
+        add(pickerShot)
+        entry.tap()
+        XCTAssertTrue(host.textViews["share-text"].waitForExistence(timeout: 10))
+    }
+
+    func testStandardComposeCancellationHostControl() {
+        continueAfterFailure = false
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        host.launch()
+        host.buttons["capture-provider-host"].tap()
+        let entry = host.cells.matching(NSPredicate(format: "label == 'Cancel Control App'")).firstMatch
+        if !entry.waitForExistence(timeout: 5) {
+            let more = host.cells.matching(NSPredicate(format: "label == 'More' OR label == '更多'")).firstMatch
+            if more.exists { more.tap() }
+        }
+        XCTAssertTrue(entry.waitForExistence(timeout: 10), host.debugDescription)
+        entry.tap()
+        let cancel = host.buttons.matching(NSPredicate(format: "label == 'Cancel' OR label == '取消'")).firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 10), host.debugDescription)
+        cancel.tap()
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: entry)
+        waitForExpectations(timeout: 10)
+    }
+
+    func testLoadingCancellationAndImmediateReopenRejectOldSession() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        host.launch()
+        openFixtureExtension(host, button: "capture-provider-delayed")
+        XCTAssertFalse(host.buttons["Save"].isEnabled)
+        host.buttons["Cancel"].tap()
+        XCTAssertTrue(host.textViews["share-text"].waitForNonExistence(timeout: 5))
+        let entry = host.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: entry)
+        waitForExpectations(timeout: 10)
+        // Cancelling an activity returns to the system picker. Dismiss that picker as a user would.
+        host.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.60))
+            .press(forDuration: 0.1, thenDragTo: host.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)))
+        waitForFixtureHostReady(host)
+        XCTAssertFalse(host.staticTexts["delayed-provider-finished"].exists)
+        openFixtureExtension(host, button: "capture-provider-host")
+        let editor = host.textViews["share-text"]
+        expectation(for: NSPredicate(format: "value == %@", "Public host fixture quote"), evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        host.buttons["Save"].tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        waitForFixtureHostReady(host)
+        XCTAssertTrue(host.staticTexts["delayed-provider-finished"].waitForExistence(timeout: 20))
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Public host fixture quote"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["Cancelled session quote"].exists)
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Public host fixture quote").count, 1)
+    }
+
+    func testPublicMixedProviderHostShowsExtensionAndImports() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launch()
+        host.buttons["capture-provider-host"].tap()
+        let extensionButton = host.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        if !extensionButton.waitForExistence(timeout: 5) {
+            let more = host.cells.matching(NSPredicate(format: "label == 'More' OR label == '更多'"))
+            if more.firstMatch.exists { more.firstMatch.tap() }
+        }
+        XCTAssertTrue(extensionButton.waitForExistence(timeout: 10), host.debugDescription)
+        extensionButton.tap()
+        let editor = host.textViews["share-text"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 10), host.debugDescription)
+        let readable = NSPredicate(format: "value == %@", "Public host fixture quote")
+        expectation(for: readable, evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        let save = host.buttons.matching(NSPredicate(format: "label == 'Save' OR label == '保存'")).firstMatch
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        XCTAssertFalse(host.alerts.firstMatch.exists, "All fixture content must be read without a partial-save confirmation")
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Public host fixture quote"].firstMatch.waitForExistence(timeout: 10), app.debugDescription)
+    }
+
+    func testExternalCaptureSafariShareAndImport() throws {
+        continueAfterFailure = false
+        let server = try NWListener(using: .tcp, on: 18763)
+        let ready = expectation(description: "Synthetic page server ready")
+        server.stateUpdateHandler = { if case .ready = $0 { ready.fulfill() } }
+        server.newConnectionHandler = { connection in
+            connection.start(queue: .global())
+            connection.receive(minimumIncompleteLength: 1, maximumLength: 16384) { _, _, _, _ in
+                let html = """
+                <!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><title>External Capture Fixture</title><meta property="og:site_name" content="Capture Test"><h1>External Capture Fixture</h1><p id="quote">A selected thought with its original source.</p><script>var r=document.createRange();r.selectNodeContents(document.getElementById('quote'));var s=window.getSelection();s.removeAllRanges();s.addRange(r);</script>
+                """
+                let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: \(html.utf8.count)\r\nConnection: close\r\n\r\n" + html
+                connection.send(content: Data(response.utf8), completion: .contentProcessed { _ in connection.cancel() })
+            }
+        }
+        server.start(queue: .global())
+        defer { server.cancel() }
+        wait(for: [ready], timeout: 5)
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("127.0.0.1")
+        app.keyboards.buttons["Search"].tap()
+        XCTAssertFalse(app.staticTexts["External Capture Fixture"].exists)
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        safari.terminate()
+        safari.launch()
+        let address = safari.textFields["TabBarItemTitle"]
+        XCTAssertTrue(address.waitForExistence(timeout: 10), safari.debugDescription)
+        address.tap()
+        // Safari selects the current URL when entering the address field.
+        let addressInput = safari.textFields.firstMatch
+        addressInput.typeText("http://127.0.0.1:18763/capture.html\n")
+        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
+        let moreMenu = safari.buttons["MoreMenuButton"]
+        XCTAssertTrue(moreMenu.waitForExistence(timeout: 5))
+        XCTAssertFalse(moreMenu.frame.isEmpty)
+        XCTAssertTrue(safari.frame.contains(moreMenu.frame))
+        // Selected web text can give this visible Safari button an invalid AX hit point.
+        moreMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let share = safari.buttons["ShareButton"]
+        XCTAssertTrue(share.waitForExistence(timeout: 5), safari.debugDescription)
+        share.tap()
+        let extensionButton = safari.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        if !extensionButton.waitForExistence(timeout: 5) {
+            let more = safari.cells.matching(NSPredicate(format: "label == 'More' OR label == '更多'"))
+            if more.firstMatch.exists { more.firstMatch.tap() }
+        }
+        XCTAssertTrue(extensionButton.waitForExistence(timeout: 10), safari.debugDescription)
+        extensionButton.tap()
+        let editor = safari.textViews["share-text"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 10), safari.debugDescription)
+        XCTAssertTrue(safari.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "External Capture Fixture")).firstMatch.waitForExistence(timeout: 10))
+        XCTAssertEqual(editor.value as? String, "A selected thought with its original source.")
+        safari.buttons.matching(NSPredicate(format: "label == 'Cancel' OR label == '取消'")).firstMatch.tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: extensionButton)
+        waitForExpectations(timeout: 10)
+        let pickerShot = XCTAttachment(screenshot: safari.screenshot())
+        pickerShot.name = "Safari system picker after cancellation"
+        pickerShot.lifetime = .keepAlways
+        add(pickerShot)
+        extensionButton.tap()
+        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        XCTAssertEqual(editor.value as? String, "A selected thought with its original source.")
+        let shot = XCTAttachment(screenshot: safari.screenshot()); shot.name = "External Capture Safari extension"; shot.lifetime = .keepAlways; add(shot)
+        let save = safari.buttons.matching(NSPredicate(format: "label == 'Save' OR label == '保存'")).firstMatch
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        app.activate()
+        XCTAssertEqual(search.value as? String, "127.0.0.1")
+        let title = app.staticTexts["External Capture Fixture"].firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 10), app.debugDescription)
+        title.tap()
+        XCTAssertTrue(app.staticTexts["A selected thought with its original source."].exists)
+        let sourceLink = app.buttons["entry-source-link"]
+        XCTAssertTrue(sourceLink.waitForExistence(timeout: 5))
+        sourceLink.tap()
+        XCTAssertTrue(safari.wait(for: .runningForeground, timeout: 10))
+        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
     }
 }

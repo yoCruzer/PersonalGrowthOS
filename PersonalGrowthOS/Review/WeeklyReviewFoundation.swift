@@ -231,7 +231,7 @@ final class WeeklyReviewService {
         persisted.nextStepText = WeeklyReviewRules.optionalText(draft.nextStepText)
         persisted.focusText = WeeklyReviewRules.optionalText(draft.focusText)
         persisted.isCompleted = draft.isCompleted
-        persisted.updatedAt = now()
+        persisted.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: persisted.createdAt, previous: persisted.updatedAt)
         do {
             try save()
         } catch {

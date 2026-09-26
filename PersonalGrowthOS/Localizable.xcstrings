@@ -1,6 +1,38 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Reminder settings could not be saved. Entries already imported remain saved. Unimported shares remain in Pending Shares; reminder choices can be retried.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder settings could not be saved. Entries already imported remain saved. Unimported shares remain in Pending Shares; reminder choices can be retried."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提醒设置未能保存。已导入的记录仍已保存；尚未导入的分享仍在“待处理分享”中，可稍后重试提醒设置。"
+          }
+        }
+      }
+    },
+    "Pending-share reminder settings were damaged. The original file was preserved and readable settings were recovered. Some Keep for Later choices may need to be set again. Shared content and saved entries were not removed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending-share reminder settings were damaged. The original file was preserved and readable settings were recovered. Some Keep for Later choices may need to be set again. Shared content and saved entries were not removed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "待处理分享的提醒设置已损坏。原文件已保留，可读取的设置已恢复；部分“稍后处理”选择可能需要重新设置。分享内容和已保存记录未被移除。"
+          }
+        }
+      }
+    },
     "%@ Activity": {
       "localizations": {
         "en": {
@@ -6816,7 +6848,55 @@
           }
         }
       }
-    }
+    },
+    "Source": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Source"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "来源"}}}},
+    "View Original": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "View Original"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "查看原文"}}}},
+    "Some shared content could not be imported": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Some shared content could not be imported"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "部分分享内容暂未导入"}}}},
+    "The shared files are retained. You can retry when storage is available or after updating the app.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The shared files are retained. You can retry when storage is available or after updating the app."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享文件已保留。请在有足够存储空间或更新应用后重试。"}}}},
+    "Saved shares appear when you next open 随心log.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Saved shares appear when you next open 随心log."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保存的内容将在下次打开随心log时导入。"}}}},
+    "Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each).": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each)."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法读取此分享。请分享文字、网页或最多9张照片（每张25 MB以内）。"}}}},
+    "Could not save. Your share is still here; please retry or cancel.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Could not save. Your share is still here; please retry or cancel."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保存失败。分享内容仍在此处，请重试或取消。"}}}},
+    "Additional source kept in text": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Additional source kept in text"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "其他来源链接已保留在正文中"}}}},
+    "Content could not be read": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Content could not be read"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法读取内容"}}}},
+    "Reading shared content…": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Reading shared content…"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "正在读取分享内容…"}}}},
+    "Reading timed out": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Reading timed out"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "读取超时"}}}},
+    "Save Shown Content": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Save Shown Content"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保存显示的内容"}}}},
+    "Save readable content only?": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Save readable content only?"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "仅保存已读取的内容？"}}}},
+    "Saving shared content…": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Saving shared content…"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "正在保存分享内容…"}}}},
+    "Shared text is too long. Shorten it before saving; the original has not been truncated.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Shared text is too long. Shorten it before saving; the original has not been truncated."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享文字过长，请编辑缩短后保存；原文未被截断。"}}}},
+    "Some shared items need attention. Retry, or confirm saving only the content shown below.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Some shared items need attention. Retry, or confirm saving only the content shown below."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "部分分享项目需要处理。请重试，或确认仅保存下方显示的内容。"}}}},
+    "Supported size or count exceeded": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Supported size or count exceeded"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "超过支持的大小或数量"}}}},
+    "Waiting to import": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Waiting to import"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "等待导入"}}}},
+    "Requires a newer app version": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Requires a newer app version"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "需要更新版本的 App"}}}},
+    "Shared content or photo is invalid": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Shared content or photo is invalid"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享内容或照片无效"}}}},
+    "Not enough storage": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Not enough storage"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "存储空间不足"}}}},
+    "Imported; pending file cleanup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Imported; pending file cleanup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已导入，等待清理副本"}}}},
+    "Import needs attention": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Import needs attention"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "导入需要处理"}}}},
+    "Review Pending Shares": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Review Pending Shares"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "查看待处理分享"}}}},
+    "Keep for Later": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Keep for Later"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保留稍后处理"}}}},
+    "Pending Shares": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Pending Shares"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "待处理分享"}}}},
+    "No pending shares": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "No pending shares"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "没有待处理分享"}}}},
+    "Kept for later": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Kept for later"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保留稍后处理"}}}},
+    "The entry is already saved. These actions only remove the remaining Inbox copy.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The entry is already saved. These actions only remove the remaining Inbox copy."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "记录已保存。这些操作只会清理收件箱中的剩余副本。"}}}},
+    "Remove Pending Copy": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Remove Pending Copy"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "移除待清理副本"}}}},
+    "Discard Share": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Discard Share"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "丢弃分享"}}}},
+    "Remove this pending share?": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Remove this pending share?"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "移除此条待处理分享？"}}}},
+    "The saved entry will remain. Only this Inbox copy will be removed.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The saved entry will remain. Only this Inbox copy will be removed."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保存的记录将保留，只移除此条收件箱副本。"}}}},
+    "This share has not been imported. Its pending content will be permanently removed.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "This share has not been imported. Its pending content will be permanently removed."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "此分享尚未导入，待处理内容将被永久移除。"}}}},
+    "Pending shares are not in this backup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Pending shares are not in this backup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "待处理分享未包含在此备份中"}}}},
+    "Share Backup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Share Backup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享备份"}}}},
+    "At backup start, %lld shares were still pending and are not included. They remain in Pending Shares. New shares are included only after import.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "At backup start, %lld shares were still pending and are not included. They remain in Pending Shares. New shares are included only after import."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "备份开始时仍有 %lld 条分享尚未导入，因此未包含在备份中。它们仍保留在“待处理分享”。新分享只有导入后才会进入备份。"}}}},
+    "Not enough storage. Free some space, then retry. Your share has not been published.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Not enough storage. Free some space, then retry. Your share has not been published."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "存储空间不足，请释放一些空间后重试。此分享尚未发布到收件箱。"}}}},
+    "Copy Diagnostic Report": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Copy Diagnostic Report"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "复制诊断报告"}}}},
+    "Local data could not be opened": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Local data could not be opened"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法打开本地数据"}}}},
+    "The shared Inbox is unavailable": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The shared Inbox is unavailable"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "共享收件箱不可用"}}}},
+    "Shared content could not be verified": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Shared content could not be verified"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法验证分享内容"}}}},
+    "A shared photo could not be verified": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "A shared photo could not be verified"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法验证分享照片"}}}},
+    "The sharing app did not provide readable content": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The sharing app did not provide readable content"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享来源未提供可读取的内容"}}}},
+    "Saved content needs file cleanup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Saved content needs file cleanup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保存内容的副本需要清理"}}}},
+    "Local data needs an integrity check": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Local data needs an integrity check"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "本地数据需要完整性检查"}}}},
+    "The operation could not be completed": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The operation could not be completed"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "操作未能完成"}}}},
+    "Your data is retained. Retry safely, or copy this diagnostic report for support.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Your data is retained. Retry safely, or copy this diagnostic report for support."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "数据仍保留。可以安全重试，或复制此诊断报告以便排查。"}}}}
   },
   "version": "1.0"
 }

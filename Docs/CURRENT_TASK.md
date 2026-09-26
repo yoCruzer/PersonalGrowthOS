@@ -1,3 +1,60 @@
+# PR #7 F1–F5 统一修复（2026-09-26）
+
+**READY_FOR_INDEPENDENT_REVIEW — F1–F5 修复与受影响回归完成，Owner 真机门禁独立保留。**
+
+沿用 `codex/external-capture-v1` / [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7)，base `feature/build9-today-entry-followups` 不变。起点 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`；产品与回归实现 `404d1d939e7c49f000718939f71843fa3ba90cb3` 已普通推送；Safari 测试交互补验提交 `1415a5b55b1870736275d546719b389b6c1a7e45`，后续交接仅文档，不改产品代码。最终仓库 HEAD 以 PR head 为准。
+
+- F1：按逻辑正文项合并 Retry 新恢复内容，保留用户编辑/删除；真实扩展验证备注与恢复正文进入同一 Entry、重开完整，重复保存不重复创建。
+- F2：同 URL 补齐 title/canonical/显式 siteName，空值不擦除；两个 provider 顺序、真正多来源与 image+webURL 通过。
+- F3：仅隔离解码损坏的辅助状态，保存原始字节并尽量保留正常 deferral；Pending/receipt 可用，未来包保留。I/O 错误不当坏 JSON；提交后的状态写入失败不误报内容未保存。
+- F4：主 App 输入具有可取消任务、操作身份与临时文件归属；过期/取消/重复相机回调不污染新草稿，编辑仍追加，Record 跨 tab 保留草稿；最终 Entry 与图片字节断言通过。
+- F5：相同技术字段采用 `max(now, createdAt, oldUpdatedAt)`；真实服务回拨后完整导出→空库恢复→重开通过，内容/图片/身份/业务日期保留，follow-up 规则及非法备份拒绝保持。
+
+固定产品提交上的 `AffectedGate1`：**234/234 Unit、8/9 UI PASS，整体 exit 65**；唯一失败为 Safari 可见菜单按钮的 XCTest 无效点击位置，未进入扩展。仅测试改为核对屏幕内按钮中心点击后，`SafariMenu2` **1/1 UI PASS，exit 0**，全部内容断言保留；不把原整组改标全绿。unsigned Release App/唯一 appex **exit 0**，均 1.0(7)；schema V10、备份 v6 不变；511 中英字符串完整。原全量 240 Unit + 48/49 UI 的 exit 65 与历次失败记录继续保留。
+
+完整命令、逐项复现/修复及未执行项见 [执行计划 F1–F5 最终交接](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#f1f5-最终交接)。没有重开 R1–R9、清库、放宽断言、merge/close/retarget、tag、改号、Archive/TestFlight 或主动触发分发 CI。
+
+下一步仅独立 Review。签名/App Group、Photos/微信、真实离线/慢网络、Owner 私人库覆盖升级、相机硬件及真机性能仍需 [Owner 验证](OWNER_MANUAL_VALIDATION_CHECKLIST.md)。历史 V8 hash 差异根因、云端实际 build/TestFlight 可用性仍 UNKNOWN/OWNER_REQUIRED。
+
+---
+
+以下为历史交接，旧完成状态不代表本轮 F1–F5 完成。
+
+# 当前任务：External Capture v1 与项目遗留统一收口
+
+**READY_FOR_INDEPENDENT_REVIEW — 代码与文档收口完成，Owner 真机门禁单独保留。**
+
+本轮范围为 R1–R9、L1–L2，替代仅 R1–R3 的旧指令。唯一逐项结论与可复现证据见 [统一收口执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。
+
+- 分支 `codex/external-capture-v1`；审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`；最终产品代码 `a0728d77d63e27af4ffeb9341105d62f4d4e5842` 已推送。后续交接提交仅补 Files 测试保存完成同步及文档；最终仓库 HEAD 以 PR head 为准。
+- [PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) 仍 OPEN Draft，base `feature/build9-today-entry-followups` 未变。未执行 merge/close/retarget、tag、改号、Archive/TestFlight 或新增 CI。
+- R4 原分享图片丢失及新增普通图片安装竞争均已复现并修复；共享锁使用稳定路径身份，恢复仅删除空目录及本次拥有的图片。失败/取消/成功恢复、导出截止边界、草稿与排队分享验证通过。
+- 统一门禁代码 `3b4cc3d4390f8e5e6a1e17206b9f9538b2227a4a`：Unit 240/240 PASS，UI 48/49 PASS，整体 exit 65。唯一 UI 失败为屏幕下方关系按钮未滚动；补正常滚动后定向 PASS，保留原断言和失败记录。
+- R4 修复后 63/63 相关 Unit PASS（StableLock1，exit 0）；最终锁身份/排队 2 Unit 与 ManualReview UI PASS（FinalSupplement1）。同组 Files 点击系统 Save 后立即终止，随后选择器 No Recents，未选到备份而失败，整体 exit 65；增加保存完成同步后同设备 Files 预览→取消→恢复 1/1 PASS（FilesSaveCompletion1，exit 0）。没有将失败的原整组重标为 PASS。
+- 最终 unsigned Release app/appex PASS（ReleaseStableLock1，exit 0）；SwiftData import warning 消失，仅未采用 AppIntents 的自动提取提示。project/plist/scheme、App Group、activation v2 与 509 个中英字符串静态检查通过。
+- App/Extension 1.0(7)、schema V10、备份 v6（合法 v1–v6 可读）未变。原 V1 功能与 UX-01/02 已有交付，不重新列为未开发。
+
+当前没有已确认而未处理的本轮代码缺陷。仍需 [Owner 集中真机验证](OWNER_MANUAL_VALIDATION_CHECKLIST.md)：签名/App Group、Photos/微信公开分享、实际离线/慢网络、Owner 旧库保留数据覆盖升级及交互性能。历史默认模拟器 V8 hash 差异原因、实际云端 build 与 TestFlight 可用性仍 UNKNOWN/OWNER_REQUIRED；没有清库或删除模拟器数据。
+
+下一边界仅独立 Review 与经 Owner 授权的真机门禁。未来 PR 集成顺序及 #1 已包含于 #2 的证据见执行计划；本轮不自动进入合并、发布或全文抓取。
+
+以下内容均为历史交接（superseded），旧状态及 Next Action 不再指挥当前工作。先前逐组进展、失败与反证保留在执行计划中。
+
+
+---
+
+# External Capture v1 — Independent Review handoff
+
+2026-09-22: Owner authorized External Capture v1 and explicitly selected Build 9 `ae14f107f7eebb89a1549e00de3d941e6a996281` as its baseline. Active branch: `codex/external-capture-v1`; Draft PR base: `feature/build9-today-entry-followups`. The previous PR #6 handoff below is historical.
+
+Implemented: public Share Extension + App Group atomic inbox, ordinary Entry import with optional source and durable receipt, Safari selected text/title/URL, nonblocking metadata, source reopening, privacy-safe diagnostics, additive schema V10 and backup v6 (v1–v5 readable). App and extension remain 1.0 (7).
+
+Verified: full Unit 218/218 and key UI 3/3; bounded closure 6 Unit + 1 Safari UI; final unsigned Release app/extension build, all PASS. The closure covers partial post-commit cleanup and JSON publication-size bounds. See [EXTERNAL_CAPTURE_EXECUTION_PLAN.md](EXTERNAL_CAPTURE_EXECUTION_PLAN.md) for exact evidence, limitations and device checks. Historical default simulator-store warnings remain documented; no destructive fallback or private-data reset.
+
+Delivery complete: implementation commit `068a27a` is pushed on `codex/external-capture-v1`; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets the Owner-selected Build 9 branch. **READY_FOR_INDEPENDENT_REVIEW** — stop implementation. Subsequent commits only record this handoff. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture.
+
+---
+
 # PR #6 Review Closure — 再次独立 Review
 
 2026-09-16：R1/R2/R3 均核实成立并完成定向修复。起始 `7843641f6d977ffe13e6e78e837c561709e83f71`，产品/回归测试提交 `967dc01bc127d5dc27a4dfd1b1ebe8108b248237`，沿用 `feature/build9-today-entry-followups`，只更新 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)。
