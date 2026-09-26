@@ -101,11 +101,11 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 
 | ID | 当前结论 | 证据 / 下一验证 |
 | --- | --- | --- |
-| R4 | CONFIRMED → 修复定向验证中 | restore worker 安装 Originals 后，catch 删除整个目录；MainActor importer 无共享互斥。新增 `testRestoreFailurePreservesInterleavedCommittedShareImage` 用 beforeSave checkpoint + semaphore 控制交错，断言已提交分享图片保持可读。 |
-| R2 | 修复实现 / 继续验证 | 主 App importer 与 Extension 发布/图片校验/hash/缩略图移至 worker；同包并发消费幂等通过。大图响应性和最终 UI 门禁仍待做。 |
-| R1 | 修复实现 / 公共 host 验证通过 | version 2 默认匹配；真实独立混合 host 与 Safari 均出现并完整导入。语义化选择、caption、替代表现、部分失败及多来源提示已实现；真机/部分保存 UI 门禁待做。 |
+| R4 | FIXED（final gate 待做） | 原图片丢失已确定性复现；共享发布锁/私有 context/拥有路径清理后，失败、安装后取消、二次空库检查、成功恢复排队分享、导出 cutoff 与草稿保护均定向通过，详见第一及第七组。 |
+| R2 | 修复实现 / 继续验证 | 主 App importer 与 Extension 发布/图片校验/hash/缩略图移至 worker；同包并发消费幂等通过。九张总量 >180 MiB PNG 导入九次 MainActor 响应及草稿保护已通过；最终门禁与真机性能仍待做。 |
+| R1 | 修复实现 / 公共 host 验证通过 | version 2 默认匹配；真实独立混合 host 与 Safari 均出现并完整导入。语义化选择、caption、替代表现、部分失败及多来源提示已实现；部分保存确认 UI 已通过；真机及统一门禁待做。 |
 | R3 | FIXED（final gate 待做） | 失败状态持久化、同故障仅首次提醒、设置页逐条重试/稍后/确认丢弃已实现；版本变化重新尝试，receipt 优先区分已提交副本。3 Unit + 1 UI 定向通过。 |
-| R5 | 修复实现 / 定向通过 | 一次性 callback bridge、每次读取 30 秒边界、Progress/Task 与 generation；超时/取消/迟到 callback 拒收通过。补充 UI 取消/部分保存验证待做。 |
+| R5 | FIXED（final gate 待做） | once-only bridge、30 秒边界、Task/Progress/generation 的 Unit 与部分保存 UI 通过；取消返回系统选择器后可实际重开，旧 provider 回调后无污染/无幽灵 Entry。直接回 host 的旧断言由标准 SLCompose 对照证伪，实际选择器截图可见，详见第八组。 |
 | R6 | 修复验证中 | 外部可选 metadata 统一按 UTF-8 预算截断完整 Character，严格 payload/backup 验证不放宽；2 项定向测试通过，结合后续 UI 继续验证。 |
 | R7 | FIXED（final gate 待做） | staging 活跃租约/终止回收、写前副本日志/逐文件补偿、实际测试进程终止恢复、低容量注入及导出 Pending 告知已定向通过；未知 Recovery 保留。 |
 | R8 | 修复验证中 | source 字段合并去重与真实提交后刷新已实现，来源仅字段 Unit 通过；Safari 空结果刷新和 follow-up UI 均通过（R8 运行 exit 0）；final gate 待做。 |
@@ -277,3 +277,20 @@ R7 备份新增行为：可消费分享先导入；随后在共享发布边界�
 `/tmp/PGOS-Closure-SafariCancel1.xcresult` exit 65：真实 Safari 取消后 MoreMenuButton 同样不可点击；录屏 42 秒帧 `/tmp/PGOS-SafariCancel42.png` 明确显示空白系统分享面板仍在，不能归因于合成 host。已开始验证自定义扩展控制器 dismiss 完成后再调用标准 cancelRequest 的顺序修复，未改为 completeRequest，不发布取消内容。原始失败断言保留。
 
 `CancelDismiss1.xcresult` 两项取消 UI 均失败（整体 exit 65）：先 dismiss 后 cancelRequest 未改变结果，已撤销这一无效试验及 host 临时生命周期日志/强制 dismiss；标准 cancelRequest 保留。扩展系统日志 `/tmp/PGOS-CancelDismiss-System.log` 确认 cancelRequest 已送达 ExtensionFoundation 并执行 teardown，未出现取消内容发布。下一步需继续检查系统 host 的取消收尾/空白面板，不能把正确发送取消通知等同完整用户流程通过。新取消回归断言保留，当前已知失败，尚未 final gate 或 READY。
+
+
+### 第八组：取消流程的系统对照（进行中）
+
+上一组未解决结论继续接受反证，未修改产品取消实现。`/tmp/PGOS-CancelHost-System.log` 显示系统收到 `activityDidFinish:NO`、`success=NO`，主动选择 `shouldCallCompletionHandler:NO`：取消活动不等于关闭系统分享选择器。因此直接要求 host 按钮恢复可点击的断言不能单独证明产品故障。
+
+建立独立 `SLComposeServiceViewController` 对照，仅覆盖 `isContentValid`，取消由 Apple 默认实现执行，不调用产品 reader/metadata/取消代码。可复现构建脚本 `Scripts/build_capture_cancel_control.sh`；安装 `/tmp/PGOSCancelControlApp.app` 后与原 host 分开。首轮 StandardCancel1 因使用 extension display name 而非所属 App 名称找不到入口，exit 65，无取消证据；StandardCancel2 使用正确名称后确实取消，但直接回 host 断言仍失败（exit 65）。对照录屏 `/tmp/PGOS-StandardCancel20.png` 显示系统分享选择器仍在。
+
+`/tmp/PGOS-Closure-PickerCancel1.xcresult` exit 0，2/2：对照与产品使用完全相同的“取消后选择器入口可点击”断言均通过，生产代码不变。这里修正的是经独立系统对照证伪的测试流程假设，不删除“不发布、可重开、无旧会话污染”的要求。进一步 CancelFlow1 正在验证实际点击重开、正常手势关闭 picker 后同 host 新分享及真实 Safari 取消再分享；旧 provider 返回后会显示完成标记，再检查无幽灵 Entry。结果未出前不将 R5 写为最终完成。
+
+`/tmp/PGOS-Closure-CancelFlow1.xcresult` exit 0，3/3：真实 Safari 取消→系统 picker 再打开→保存→搜索刷新/来源跳转/重启；读取完成取消后实际点击重开；加载中取消→正常手势关闭系统 picker→同一个 host 新分享→旧 provider 确实返回→只出现新正文一次，旧正文不存在。旧回调返回前已开始新分享，未通过杀 host 消除迟到回调。
+
+`/tmp/PGOS-Closure-CancelVisual1.xcresult` exit 0，2/2：Safari 与独立 host 均保留取消后 picker 截图，已人工查看，入口和内容可见、可交互。截图 `/tmp/PGOS-CancelVisual1-Attachments/EE32FF1B-2A11-4500-97DA-873201FD19F3.png` 与 `33EF63CF-D4E4-4690-AF3E-4630763DF587.png`。原“取消必然卡住 host”结论已反证：取消活动回到系统 picker，关闭 picker 是下一用户动作；原空白帧保留为历史观察，不能覆盖当前标准对照、实际重开与可见截图证据。生产 cancelRequest 未替换、未改为成功。
+
+对照构建脚本首版缺 CFBundleDisplayName，重建成功但安装失败（exit 1），补齐后 ReproBuild2 exit 0 且安装 exit 0。脚本不会删除模拟器数据。仅移除本轮误放于 `/tmp/PGOSCaptureFixtureHost.app/PlugIns` 的生成对照副本，独立对照 App 与 host 各自安装，未删任何 App 数据。
+
+下一步统一门禁以此组提交为候选：全量 Unit、完整 UI suite（覆盖本轮相关集成与旧功能 smoke）、unsigned generic iOS Release app/appex、project/plist/String Catalog 静态检查。未完成门禁前仍 IN_PROGRESS。

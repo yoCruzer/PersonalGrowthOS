@@ -16,9 +16,15 @@ final class CaptureHostApp: UIResponder, UIApplicationDelegate {
 }
 
 final class CaptureHostController: UIViewController {
+    private let callbackLabel = UILabel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        callbackLabel.frame = CGRect(x: 40, y: 420, width: 300, height: 60)
+        callbackLabel.accessibilityIdentifier = "delayed-provider-finished"
+        callbackLabel.isHidden = true
+        view.addSubview(callbackLabel)
         for (index, mode) in ["mixed", "partial", "delayed"].enumerated() {
             let button = UIButton(type: .system)
             button.setTitle("Share \(mode) Fixture", for: .normal)
@@ -46,9 +52,13 @@ final class CaptureHostController: UIViewController {
                 let progress = Progress(totalUnitCount: 1)
                 if delayed {
                     // Deliberately uncooperative fixture: a late callback even after Progress.cancel.
-                    DispatchQueue.global().asyncAfter(deadline: .now() + 8) {
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 12) {
                         progress.completedUnitCount = 1
                         completion(nil, false, CocoaError(.fileReadNoSuchFile))
+                        DispatchQueue.main.async {
+                            self.callbackLabel.text = "Delayed provider finished"
+                            self.callbackLabel.isHidden = false
+                        }
                     }
                 } else {
                     progress.completedUnitCount = 1

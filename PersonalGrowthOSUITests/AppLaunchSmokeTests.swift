@@ -1646,7 +1646,7 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(app.staticTexts["Public host fixture quote"].waitForExistence(timeout: 10))
     }
 
-    func testReadyShareCancellationReturnsToHost() {
+    func testReadyShareCancellationReturnsToSystemPicker() {
         continueAfterFailure = false
         let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
         host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -1656,7 +1656,35 @@ extension AppLaunchSmokeTests {
         waitForExpectations(timeout: 10)
         host.buttons["Cancel"].tap()
         XCTAssertTrue(host.textViews["share-text"].waitForNonExistence(timeout: 5))
-        waitForFixtureHostReady(host)
+        let entry = host.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: entry)
+        waitForExpectations(timeout: 10)
+        let pickerShot = XCTAttachment(screenshot: host.screenshot())
+        pickerShot.name = "System picker after capture cancellation"
+        pickerShot.lifetime = .keepAlways
+        add(pickerShot)
+        entry.tap()
+        XCTAssertTrue(host.textViews["share-text"].waitForExistence(timeout: 10))
+    }
+
+    func testStandardComposeCancellationHostControl() {
+        continueAfterFailure = false
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        host.launch()
+        host.buttons["capture-provider-host"].tap()
+        let entry = host.cells.matching(NSPredicate(format: "label == 'Cancel Control App'")).firstMatch
+        if !entry.waitForExistence(timeout: 5) {
+            let more = host.cells.matching(NSPredicate(format: "label == 'More' OR label == '更多'")).firstMatch
+            if more.exists { more.tap() }
+        }
+        XCTAssertTrue(entry.waitForExistence(timeout: 10), host.debugDescription)
+        entry.tap()
+        let cancel = host.buttons.matching(NSPredicate(format: "label == 'Cancel' OR label == '取消'")).firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 10), host.debugDescription)
+        cancel.tap()
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: entry)
+        waitForExpectations(timeout: 10)
     }
 
     func testLoadingCancellationAndImmediateReopenRejectOldSession() {
@@ -1671,7 +1699,14 @@ extension AppLaunchSmokeTests {
         XCTAssertFalse(host.buttons["Save"].isEnabled)
         host.buttons["Cancel"].tap()
         XCTAssertTrue(host.textViews["share-text"].waitForNonExistence(timeout: 5))
-        host.activate() // Keep the same provider process; restore XCTest's foreground target after cancellation.
+        let entry = host.cells.matching(NSPredicate(format: "label == %@", "随心log")).firstMatch
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: entry)
+        waitForExpectations(timeout: 10)
+        // Cancelling an activity returns to the system picker. Dismiss that picker as a user would.
+        host.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.60))
+            .press(forDuration: 0.1, thenDragTo: host.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)))
+        waitForFixtureHostReady(host)
+        XCTAssertFalse(host.staticTexts["delayed-provider-finished"].exists)
         openFixtureExtension(host, button: "capture-provider-host")
         let editor = host.textViews["share-text"]
         expectation(for: NSPredicate(format: "value == %@", "Public host fixture quote"), evaluatedWith: editor)
@@ -1679,6 +1714,7 @@ extension AppLaunchSmokeTests {
         host.buttons["Save"].tap()
         XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
         waitForFixtureHostReady(host)
+        XCTAssertTrue(host.staticTexts["delayed-provider-finished"].waitForExistence(timeout: 20))
         app.terminate()
         app.launchArguments.removeAll { $0 == "-PGOSResetData" }
         app.launch()
@@ -1776,12 +1812,12 @@ extension AppLaunchSmokeTests {
         XCTAssertEqual(editor.value as? String, "A selected thought with its original source.")
         safari.buttons.matching(NSPredicate(format: "label == 'Cancel' OR label == '取消'")).firstMatch.tap()
         XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
-        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: safari.buttons["MoreMenuButton"])
+        expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: extensionButton)
         waitForExpectations(timeout: 10)
-        safari.buttons["MoreMenuButton"].tap()
-        XCTAssertTrue(share.waitForExistence(timeout: 5))
-        share.tap()
-        XCTAssertTrue(extensionButton.waitForExistence(timeout: 10))
+        let pickerShot = XCTAttachment(screenshot: safari.screenshot())
+        pickerShot.name = "Safari system picker after cancellation"
+        pickerShot.lifetime = .keepAlways
+        add(pickerShot)
         extensionButton.tap()
         XCTAssertTrue(editor.waitForExistence(timeout: 10))
         XCTAssertEqual(editor.value as? String, "A selected thought with its original source.")
