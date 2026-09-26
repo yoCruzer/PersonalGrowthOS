@@ -18,6 +18,8 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
     private var loadTask: Task<Void, Never>?
     private let retryButton = UIButton(type: .system)
     private let cancelButton = UIButton(type: .system)
+    private let diagnosticButton = UIButton(type: .system)
+    private var failureDiagnostic: FailureDiagnostic?
     private var issues: [CaptureReadIssue] = []
     private var workspace = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
 
@@ -32,6 +34,9 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
         retryButton.setTitle(NSLocalizedString("Retry", comment: ""), for: .normal)
         retryButton.addTarget(self, action: #selector(beginLoad), for: .touchUpInside)
         retryButton.isHidden = true
+        diagnosticButton.setTitle(NSLocalizedString("Copy Diagnostic Report", comment: ""), for: .normal)
+        diagnosticButton.addTarget(self, action: #selector(copyDiagnostic), for: .touchUpInside)
+        diagnosticButton.isHidden = true
         let toolbar = UIStackView(arrangedSubviews: [cancelButton, retryButton, UIView(), saveButton])
         toolbar.heightAnchor.constraint(equalToConstant: 44).isActive = true
         editor.delegate = self
@@ -44,7 +49,7 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
         preview.contentMode = .scaleAspectFit
         preview.heightAnchor.constraint(equalToConstant: 100).isActive = true
         preview.isHidden = true
-        let stack = UIStackView(arrangedSubviews: [toolbar, sourceLabel, preview, editor, statusLabel])
+        let stack = UIStackView(arrangedSubviews: [toolbar, sourceLabel, preview, editor, statusLabel, diagnosticButton])
         stack.axis = .vertical
         stack.spacing = 12
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -60,6 +65,8 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
 
     @objc private func beginLoad() {
         guard !finished, !saving else { return }
+        failureDiagnostic = nil
+        diagnosticButton.isHidden = true
         loadTask?.cancel()
         metadataProvider?.cancel()
         let oldWorkspace = workspace
@@ -100,12 +107,13 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
                 }
                 self.updateSource()
                 self.updateReadStatus()
+                if let issue = result.issues.first { self.recordFailure(issue.reason, stage: .providerRead) }
                 self.fetchMetadata()
             } catch {
                 guard let self, !self.finished, self.generation == current else { return }
                 self.retryButton.isHidden = false
                 self.statusLabel.text = NSLocalizedString("Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each).", comment: "")
-                CaptureLog.event("provider.failed")
+                self.recordFailure(error, stage: .providerRead)
             }
         }
     }
@@ -198,6 +206,8 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
         let snapshot = payload
         let sourceFiles = files
         saving = true
+        failureDiagnostic = nil
+        diagnosticButton.isHidden = true
         saveButton.isEnabled = false
         cancelButton.isEnabled = false
         retryButton.isHidden = true
@@ -215,12 +225,24 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
                 cancelButton.isEnabled = true
                 editor.isEditable = true
                 updateReadStatus()
-                CaptureLog.event("inbox.saveFailed", id: snapshot.id)
+                recordFailure(error, stage: .publish)
                 statusLabel.text = CaptureError.isStorageFailure(error)
                     ? NSLocalizedString("Not enough storage. Free some space, then retry. Your share has not been published.", comment: "")
                     : NSLocalizedString("Could not save. Your share is still here; please retry or cancel.", comment: "")
             }
         }
+    }
+
+    private func recordFailure(_ error: Error, stage: FailureDiagnostic.Stage) {
+        let diagnostic = FailureDiagnostic(error: error, stage: stage, role: .shareExtension)
+        failureDiagnostic = diagnostic
+        diagnosticButton.isHidden = false
+        diagnostic.log()
+    }
+
+    @objc private func copyDiagnostic() {
+        guard let failureDiagnostic else { return }
+        UIPasteboard.general.string = failureDiagnostic.report
     }
 
     @objc private func cancelCapture() {

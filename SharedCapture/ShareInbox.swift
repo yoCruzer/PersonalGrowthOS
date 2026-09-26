@@ -255,3 +255,101 @@ final class CaptureStagingSession {
         return count
     }
 }
+
+// Only fixed enums and allowlisted numeric error codes enter a diagnostic report.
+struct FailureDiagnostic: Codable, Equatable {
+    enum Role: String, Codable { case app, shareExtension }
+    enum Stage: String, Codable {
+        case startupPaths, storeOpen, mediaRecovery, integrity, appGroup, inboxState
+        case providerRead, payload, attachment, importSave, cleanup, publish
+    }
+    enum Category: String, Codable {
+        case store, appGroup, capacity, payload, attachment, provider, cleanup, integrity, other
+
+        var title: String {
+            switch self {
+            case .store: return String(localized: "Local data could not be opened")
+            case .appGroup: return String(localized: "The shared Inbox is unavailable")
+            case .capacity: return String(localized: "Not enough storage")
+            case .payload: return String(localized: "Shared content could not be verified")
+            case .attachment: return String(localized: "A shared photo could not be verified")
+            case .provider: return String(localized: "The sharing app did not provide readable content")
+            case .cleanup: return String(localized: "Saved content needs file cleanup")
+            case .integrity: return String(localized: "Local data needs an integrity check")
+            case .other: return String(localized: "The operation could not be completed")
+            }
+        }
+    }
+
+    let role: Role
+    let stage: Stage
+    let category: Category
+    let operationID: UUID
+    let version: String
+    let build: String
+    let domain: String?
+    let code: Int?
+
+    init(error: Error, stage: Stage, role: Role = .app, category: Category? = nil,
+         operationID: UUID = UUID(), info: [String: Any] = Bundle.main.infoDictionary ?? [:]) {
+        self.role = role
+        self.stage = stage
+        self.operationID = operationID
+        func versionValue(_ key: String) -> String {
+            guard let value = info[key] as? String, !value.isEmpty, value.count <= 32,
+                  value.unicodeScalars.allSatisfy({ CharacterSet(charactersIn: "0123456789.").contains($0) }) else { return "unknown" }
+            return value
+        }
+        version = versionValue("CFBundleShortVersionString")
+        build = versionValue("CFBundleVersion")
+        var native = error as NSError
+        var allowed: NSError?
+        for _ in 0..<3 {
+            if [NSCocoaErrorDomain, NSPOSIXErrorDomain, "NSSQLiteErrorDomain", NSURLErrorDomain].contains(native.domain) {
+                allowed = native
+                break
+            }
+            guard let underlying = native.userInfo[NSUnderlyingErrorKey] as? NSError else { break }
+            native = underlying
+        }
+        domain = allowed?.domain
+        code = allowed?.code
+        if CaptureError.isStorageFailure(error) || allowed.map({ CaptureError.isStorageFailure($0) }) == true {
+            self.category = .capacity
+        } else if error as? CaptureError == .groupUnavailable {
+            self.category = .appGroup
+        } else if let category {
+            self.category = category
+        } else if error as? CaptureError == .attachmentInvalid {
+            self.category = .attachment
+        } else {
+            switch stage {
+            case .storeOpen: self.category = .store
+            case .appGroup: self.category = .appGroup
+            case .providerRead: self.category = .provider
+            case .payload: self.category = .payload
+            case .attachment, .mediaRecovery: self.category = .attachment
+            case .cleanup: self.category = .cleanup
+            case .integrity: self.category = .integrity
+            default: self.category = .other
+            }
+        }
+    }
+
+    var report: String {
+        """
+        PersonalGrowthOS diagnostic v1
+        role=\(role.rawValue)
+        stage=\(stage.rawValue)
+        category=\(category.rawValue)
+        version=\(version)
+        build=\(build)
+        storeSchema=10 captureSchema=1 backupSchema=6
+        operation=\(operationID.uuidString)
+        errorDomain=\(domain ?? "unlisted")
+        errorCode=\(code.map(String.init) ?? "unlisted")
+        """
+    }
+
+    func log() { CaptureLog.event(report) }
+}

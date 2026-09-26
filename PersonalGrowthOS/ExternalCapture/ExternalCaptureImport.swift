@@ -45,6 +45,20 @@ final class CaptureImportReceipt {
     init(id: UUID, importedAt: Date) { self.id = id; self.importedAt = importedAt }
 }
 
+struct AppDiagnosticFailure: Error {
+    let underlying: Error
+    let diagnostic: FailureDiagnostic
+
+    init(_ error: Error, stage: FailureDiagnostic.Stage, operationID: UUID = UUID()) {
+        underlying = error
+        let category: FailureDiagnostic.Category?
+        if case MediaStoreError.insufficientCapacity = error { category = .capacity }
+        else { category = nil }
+        diagnostic = FailureDiagnostic(error: error, stage: stage, category: category, operationID: operationID)
+        diagnostic.log()
+    }
+}
+
 enum CaptureInboxReason: String, Codable {
     case pending, unsupportedVersion, invalidContent, storage, cleanup, other
 
@@ -66,6 +80,7 @@ struct CaptureInboxItem: Identifiable {
     let reason: CaptureInboxReason
     let isCommitted: Bool
     let isDeferred: Bool
+    let diagnostic: FailureDiagnostic?
 }
 
 struct CaptureScanReport {
@@ -77,6 +92,7 @@ struct CaptureScanReport {
 private struct CaptureFailureRecord: Codable {
     var reason: CaptureInboxReason
     var deferredVersion: String?
+    var diagnostic: FailureDiagnostic?
 }
 
 @MainActor
@@ -137,7 +153,7 @@ private struct CaptureImportWorker {
                 report.failed += 1
                 let reason = try failureReason(error, id: id)
                 if state[id]?.reason != reason { report.newFailureIDs.append(id) }
-                state[id] = CaptureFailureRecord(reason: reason)
+                state[id] = CaptureFailureRecord(reason: reason, diagnostic: (error as? AppDiagnosticFailure)?.diagnostic)
                 CaptureLog.event("import.retained reason=\(reason.rawValue)")
             }
         }
@@ -166,6 +182,7 @@ private struct CaptureImportWorker {
     }
 
     private func failureReason(_ error: Error, id: String) throws -> CaptureInboxReason {
+        let error = (error as? AppDiagnosticFailure)?.underlying ?? error
         if try hasReceipt(id) { return .cleanup }
         if error as? CaptureError == .unsupportedSchema { return .unsupportedVersion }
         if error is CaptureError || error is DecodingError { return .invalidContent }
@@ -182,7 +199,8 @@ private struct CaptureImportWorker {
             return CaptureInboxItem(id: id,
                 createdAt: try? directory.resourceValues(forKeys: [.creationDateKey]).creationDate,
                 reason: committed ? .cleanup : (state[id]?.reason ?? .pending),
-                isCommitted: committed, isDeferred: state[id]?.deferredVersion == processingVersion)
+                isCommitted: committed, isDeferred: state[id]?.deferredVersion == processingVersion,
+                diagnostic: state[id]?.diagnostic)
         }
     }
 
@@ -209,7 +227,7 @@ private struct CaptureImportWorker {
             state.removeValue(forKey: id)
             try writeState(state)
         } catch {
-            state[id] = CaptureFailureRecord(reason: try failureReason(error, id: id))
+            state[id] = CaptureFailureRecord(reason: try failureReason(error, id: id), diagnostic: (error as? AppDiagnosticFailure)?.diagnostic)
             try writeState(state)
             throw error
         }
@@ -232,11 +250,19 @@ private struct CaptureImportWorker {
     }
 
     func consume(_ directory: URL) throws {
+        var stage = FailureDiagnostic.Stage.payload
+        do { try consume(directory, stage: &stage) }
+        catch is CancellationError { throw CancellationError() }
+        catch { throw AppDiagnosticFailure(error, stage: stage) }
+    }
+
+    private func consume(_ directory: URL, stage: inout FailureDiagnostic.Stage) throws {
         guard let id = UUID(uuidString: directory.lastPathComponent) else { throw CaptureError.invalidPayload }
         let context = ModelContext(container)
         context.autosaveEnabled = false
         let receipt = try context.fetch(FetchDescriptor<CaptureImportReceipt>(predicate: #Predicate { $0.id == id })).first
         if receipt != nil {
+            stage = .cleanup
             CaptureLog.event("import.alreadyCommitted", id: id)
             try inbox.remove(directory)
             return
@@ -253,6 +279,7 @@ private struct CaptureImportWorker {
             let sources = payload.images.map {
                 MediaSource(url: directory.appendingPathComponent($0.filename), originalFilename: $0.filename, contentType: $0.contentType)
             }
+            stage = .attachment
             try mediaStore.ensureCapacity(for: sources)
             for (source, attachment) in zip(sources, payload.images) {
                 try Task.checkCancellation()
@@ -277,6 +304,7 @@ private struct CaptureImportWorker {
             context.insert(entry)
             if let source = payload.source { context.insert(try EntryExternalSource(entryID: id, source: source)) }
             context.insert(CaptureImportReceipt(id: id, importedAt: Date()))
+            stage = .importSave
             try checkpoint?("beforeSave")
             try Task.checkCancellation()
             try context.save()
@@ -290,6 +318,7 @@ private struct CaptureImportWorker {
         catch { CaptureLog.event("attachment.journalRetained", id: id) }
         CaptureLog.event("import.committed", id: id)
         NotificationCenter.default.post(name: .externalCaptureCommitted, object: mediaStore.rootURL)
+        stage = .cleanup
         try checkpoint?("afterSave")
         try inbox.remove(directory)
         CaptureLog.event("inbox.cleaned", id: id)

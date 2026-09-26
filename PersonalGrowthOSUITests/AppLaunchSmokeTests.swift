@@ -2,6 +2,27 @@ import XCTest
 import Network
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSStartupFailureTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let diagnostic = app.staticTexts["startup-diagnostic"]
+        XCTAssertTrue(diagnostic.waitForExistence(timeout: 10))
+        XCTAssertTrue(diagnostic.label.contains("stage=storeOpen"))
+        XCTAssertTrue(diagnostic.label.contains("errorCode=134504"))
+        XCTAssertFalse(diagnostic.label.contains("PRIVATE-STARTUP-TOKEN"))
+        XCTAssertFalse(diagnostic.label.contains("/private/"))
+        app.buttons["startup-copy-diagnostic"].tap()
+        XCTAssertEqual(app.buttons["startup-copy-diagnostic"].label, "Copied")
+        app.buttons["startup-retry"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Timeline"].waitForExistence(timeout: 10))
+        XCTAssertFalse(diagnostic.exists)
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Preserved startup retry fixture"].waitForExistence(timeout: 5))
+    }
+
     func testBackupDisclosesPendingExclusionAndCancelKeepsShares() {
         continueAfterFailure = false
         let app = XCUIApplication()

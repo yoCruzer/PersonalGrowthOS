@@ -19,6 +19,7 @@ struct AppShell: View {
     @Environment(\.scenePhase) private var captureScenePhase
     @State private var captureFailure = false
     @State private var failedCaptureIDs: [String] = []
+    @State private var captureDiagnostic: FailureDiagnostic?
     @State private var isShowingPendingShares = false
     #if DEBUG
     @State private var captureTestStatus: String?
@@ -88,6 +89,9 @@ struct AppShell: View {
         }
         .alert("Some shared content could not be imported", isPresented: $captureFailure) {
             Button("Review Pending Shares") { isShowingPendingShares = true }
+            if let captureDiagnostic {
+                Button("Copy Diagnostic Report") { UIPasteboard.general.string = captureDiagnostic.report }
+            }
             Button("Keep for Later", role: .cancel) {
                 Task {
                     do {
@@ -98,7 +102,8 @@ struct AppShell: View {
                 }
             }
         } message: {
-            Text("The shared files are retained. You can retry when storage is available or after updating the app.")
+            if let captureDiagnostic { Text(captureDiagnostic.category.title) }
+            else { Text("The shared files are retained. You can retry when storage is available or after updating the app.") }
         }
         .sheet(isPresented: $isShowingPendingShares) {
             NavigationStack {
@@ -196,16 +201,21 @@ struct AppShell: View {
             #endif
             return
         }
+        var stage = FailureDiagnostic.Stage.appGroup
         do {
             let importer = ExternalCaptureImporter(container: container.modelContainer,
                 mediaStore: container.mediaStore, inbox: try ShareInbox.shared())
+            stage = .inboxState
             let report = try await importer.scanReport()
+            captureDiagnostic = nil
             if !report.newFailureIDs.isEmpty {
                 failedCaptureIDs = report.newFailureIDs
                 captureFailure = true
             }
         } catch {
-            CaptureLog.event("inbox.unavailable type=\(String(describing: type(of: error)))")
+            let diagnostic = (error as? AppDiagnosticFailure)?.diagnostic ?? FailureDiagnostic(error: error, stage: stage)
+            diagnostic.log()
+            captureDiagnostic = diagnostic
             captureFailure = true
         }
     }
@@ -1494,6 +1504,7 @@ private struct CaptureInboxView: View {
     @State private var selectedDiscard: CaptureInboxItem?
     @State private var busy = false
     @State private var failure = false
+    @State private var diagnostic: FailureDiagnostic?
 
     var body: some View {
         List {
@@ -1505,6 +1516,9 @@ private struct CaptureInboxView: View {
                     if let date = item.createdAt { Text(date, style: .date) }
                     Text(verbatim: String(item.id.prefix(8))).font(.caption).foregroundStyle(.secondary)
                     Text(item.reason.title)
+                    if let diagnostic = item.diagnostic {
+                        Button("Copy Diagnostic Report") { UIPasteboard.general.string = diagnostic.report }
+                    }
                     if item.isDeferred { Text("Kept for later").foregroundStyle(.secondary) }
                     if item.isCommitted {
                         Text("The entry is already saved. These actions only remove the remaining Inbox copy.")
@@ -1537,6 +1551,9 @@ private struct CaptureInboxView: View {
         }
         .alert("Import needs attention", isPresented: $failure) {
             Button("OK", role: .cancel) {}
+            if let diagnostic {
+                Button("Copy Diagnostic Report") { UIPasteboard.general.string = diagnostic.report }
+            }
         } message: {
             Text("The shared files are retained. You can retry when storage is available or after updating the app.")
         }
@@ -1547,9 +1564,15 @@ private struct CaptureInboxView: View {
             inbox: try captureManagementInbox(mediaStore: mediaStore))
     }
 
+    private func recordFailure(_ error: Error) {
+        diagnostic = (error as? AppDiagnosticFailure)?.diagnostic ?? FailureDiagnostic(error: error, stage: .inboxState)
+        diagnostic?.log()
+        failure = true
+    }
+
     private func refresh() async {
         do { items = try await importer().pendingItems() }
-        catch { failure = true }
+        catch { recordFailure(error) }
     }
 
     private func perform(_ operation: @escaping (ExternalCaptureImporter) async throws -> Void) {
@@ -1557,7 +1580,7 @@ private struct CaptureInboxView: View {
         Task {
             defer { busy = false }
             do { try await operation(importer()) }
-            catch { failure = true }
+            catch { recordFailure(error) }
             await refresh()
         }
     }

@@ -53,59 +53,67 @@ struct AppContainer {
         configuration: AppConfiguration,
         fileManager: FileManager = .default
     ) throws -> AppContainer {
-        let applicationSupport = try fileManager.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
-        let directoryName = configuration.launchMode == .uiTesting
-            ? "PersonalGrowthOS-UITesting"
-            : "PersonalGrowthOS"
-        let rootURL = applicationSupport.appendingPathComponent(directoryName, isDirectory: true)
+        var stage = FailureDiagnostic.Stage.startupPaths
+        do {
+            let applicationSupport = try fileManager.url(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+            let directoryName = configuration.launchMode == .uiTesting
+                ? "PersonalGrowthOS-UITesting"
+                : "PersonalGrowthOS"
+            let rootURL = applicationSupport.appendingPathComponent(directoryName, isDirectory: true)
 
-        if configuration.launchMode == .uiTesting,
-           configuration.resetDataOnLaunch,
-           fileManager.fileExists(atPath: rootURL.path) {
-            try fileManager.removeItem(at: rootURL)
+            if configuration.launchMode == .uiTesting,
+               configuration.resetDataOnLaunch,
+               fileManager.fileExists(atPath: rootURL.path) {
+                try fileManager.removeItem(at: rootURL)
+            }
+
+            let storeDirectory = rootURL.appendingPathComponent("Store", isDirectory: true)
+            try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
+            stage = .storeOpen
+            let modelContainer = try PersistenceContainerFactory.makeOnDisk(
+                at: storeDirectory.appendingPathComponent("PersonalGrowthOS.sqlite")
+            )
+
+            stage = .mediaRecovery
+            let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
+            try? ImportExportService.cleanupInterruptedTransfers(
+                mediaRootURL: rootURL,
+                fileManager: fileManager
+            )
+            let imageMetadata = try modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>())
+            let caches = try fileManager.url(
+                for: .cachesDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+            let thumbnailStore = ThumbnailStore(
+                rootURL: caches.appendingPathComponent("PersonalGrowthOS/Thumbnails", isDirectory: true),
+                mediaStore: mediaStore,
+                fileManager: fileManager
+            )
+            let integrityReport = try StartupMediaReconciler.reconcile(
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore,
+                imageMetadata: imageMetadata
+            )
+            stage = .integrity
+            _ = try HabitAnalyticsMigrationBootstrap.apply(context: modelContainer.mainContext)
+            try LinkIntegrityService.validate(context: modelContainer.mainContext)
+            return AppContainer(
+                configuration: configuration,
+                modelContainer: modelContainer,
+                mediaStore: mediaStore,
+                thumbnailStore: thumbnailStore,
+                mediaIntegrityReport: integrityReport
+            )
+        } catch {
+            throw AppDiagnosticFailure(error, stage: stage)
         }
-
-        let storeDirectory = rootURL.appendingPathComponent("Store", isDirectory: true)
-        try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
-        let modelContainer = try PersistenceContainerFactory.makeOnDisk(
-            at: storeDirectory.appendingPathComponent("PersonalGrowthOS.sqlite")
-        )
-
-        let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
-        try? ImportExportService.cleanupInterruptedTransfers(
-            mediaRootURL: rootURL,
-            fileManager: fileManager
-        )
-        let imageMetadata = try modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>())
-        let caches = try fileManager.url(
-            for: .cachesDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
-        let thumbnailStore = ThumbnailStore(
-            rootURL: caches.appendingPathComponent("PersonalGrowthOS/Thumbnails", isDirectory: true),
-            mediaStore: mediaStore,
-            fileManager: fileManager
-        )
-        let integrityReport = try StartupMediaReconciler.reconcile(
-            mediaStore: mediaStore,
-            thumbnailStore: thumbnailStore,
-            imageMetadata: imageMetadata
-        )
-        _ = try HabitAnalyticsMigrationBootstrap.apply(context: modelContainer.mainContext)
-        try LinkIntegrityService.validate(context: modelContainer.mainContext)
-        return AppContainer(
-            configuration: configuration,
-            modelContainer: modelContainer,
-            mediaStore: mediaStore,
-            thumbnailStore: thumbnailStore,
-            mediaIntegrityReport: integrityReport
-        )
     }
 }

@@ -107,7 +107,7 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 | R6 | 修复验证中 | 外部可选 metadata 统一按 UTF-8 预算截断完整 Character，严格 payload/backup 验证不放宽；2 项定向测试通过，结合后续 UI 继续验证。 |
 | R7 | FIXED（final gate 待做） | staging 活跃租约/终止回收、写前副本日志/逐文件补偿、实际测试进程终止恢复、低容量注入及导出 Pending 告知已定向通过；未知 Recovery 保留。 |
 | R8 | 修复验证中 | source 字段合并去重与真实提交后刷新已实现，来源仅字段 Unit 通过；Safari 空结果刷新和 follow-up UI 均通过（R8 运行 exit 0）；final gate 待做。 |
-| R9 | CONFIRMED（静态） | startup 丢弃 Error，缺可复制脱敏报告与非破坏重试；待修复。 |
+| R9 | FIXED（final gate 待做；历史库根因未验证） | 白名单阶段/类别/角色/版本/schema/opID/domain-code 报告可复制，启动安全重试保留 Entry，导入诊断持久化后成功消退；2 Unit + 1 UI 通过。历史主文件 V8 hash 差异只读记录，不等同 Owner 根因。 |
 | L1 | FIXED（Release gate 待做） | 显式 SwiftData import 已补，最终 Release warning 核查尚待统一门禁。 |
 | L2 | 进行中 | 起始本地/远端 ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b；PR #7 OPEN Draft，base 未变。当前上下文已标旧 handoff superseded。 |
 
@@ -245,3 +245,17 @@ R7 备份新增行为：可消费分享先导入；随后在共享发布边界�
 容量/导出 UI 定向运行 `/tmp/PGOS-Closure-CapacityExport5.xcresult`，公共前缀附加 `-only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testStorageFailureNeverPublishesOrCommitsPartialShare -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBackupDisclosesPendingExclusionAndCancelKeepsShares`；exit 0，1 Unit + 1 UI PASS。容量验证为合成故障注入，不代表实际耗尽真机磁盘。OwnedCopies3 参数为两个 `testOwnedCopy*` Unit、`testAttachmentRollbackRetryAndMetadataFallback` 与上述 kill UI；OwnedCopies4 参数为上述导出 Unit 与 kill UI。均使用本节统一 xcodebuild 前缀，日志为同名前缀 `.log`。
 
 第五组补充核查：数据库引用保护、未知 Recovery 保留、每文件失败继续及重试均通过；备份 v6 结构未改，Pending 不打包、不删除。`git diff --check` 与 499 键 en/zh-Hans 完整性检查通过。R4 剩余交错、R2 大图响应、R1/R5 部分保存/取消 UI、R9 与 L2/最终门禁仍未完成。
+
+
+### R9 诊断与安全重试 第六组（定向通过）
+
+第五组 `b0fbdc975cf8b26a02fbc79dc946d737e9d1ba61` 已推送，PR #7 远端核实一致且仍 OPEN Draft/base 不变，handoff 已更新。
+
+- 诊断只包含固定 role/stage/category、受限版本/build、schema、操作 UUID、允许的 NSError domain/code。不会输出 localizedDescription、完整 userInfo、SQL、标题/正文/图片/URL query 或私人路径；unknown domain 与非版本格式字符串显示 unlisted/unknown。
+- 启动阶段区分路径准备、store-open、media-recovery、integrity；保留故障并提供复制报告和复用原库的 Retry。重试明确 resetDataOnLaunch=false，不添加清库/重建 fallback。导入失败诊断存入本地 Inbox 状态并可逐项复制，成功处理后随该待处理项消退；扩展读取/保存错误亦可复制 role=shareExtension 的报告。
+- `/tmp/PGOS-Closure-Diagnostics1.xcresult`：2 Unit PASS；UI FAIL（整体 exit 65），实际报告已显示，但父级 accessibilityIdentifier 覆盖了报告与按钮的独立标识。已修正父级标识作用域，未放宽隐私或保留 Entry 的断言。失败实际 UI 层级在 `/tmp/PGOS-Diagnostics1-Attachments`。
+- `/tmp/PGOS-Closure-Diagnostics2.xcresult` exit 0，2 Unit + 1 UI PASS。公共前缀附加 `-only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testDiagnosticsUseOnlyAllowlistedFieldsAndDistinguishFailures -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testFailedInboxPersistsSanitizedDiagnosticUntilSuccessfulRetry -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry`。日志同名前缀 `.log`。启动故障为合成注入，非模拟真实 Owner 数据事故。
+
+历史模拟器只读证据：`/tmp/PGOS-Closure-HistoricalStoreMetadata.json`。通过 simctl 定位当前标准 App root（非 UITesting），只以 SQLite `mode=ro&immutable=1` 读取 Z_METADATA 模型元数据，不读取记录正文、不 replay WAL、不迁移或删除。主文件标识为 `8.0.0`，14 个模型，与仓库冻结 Build8V8Fixture 的模型集合相同，仅 `HabitPlanRevision` 模型 hash 不同；与 V7 fixture 也不完全相同。WAL/SHM 均存在，因此本证据只描述主文件元数据，不能冒充已完整分析当前 WAL 状态。这个历史库为何形成该 hash、是否对应任何 Owner 真机库仍 UNKNOWN/OWNER_REQUIRED；实际日志 Cocoa134504 不被抹除，不以测试库 PASS 宣称历史库已修复。
+
+第六组诊断由 App 自己生成的日志与复制报告遵循白名单；系统 CoreData 既有控制台错误不被改写或复制进报告，也未通过抑制日志掩盖历史故障。509 个字符串键双语完整，`git diff --check` 通过。下一步补齐 R4 剩余交错/导出 cutoff、R2 大图响应、R1/R5 部分保存/取消 UI，归一 L2 后执行统一 final gate。

@@ -1440,6 +1440,61 @@ final class ExternalCaptureTests: XCTestCase {
         return root
     }
 
+    func testDiagnosticsUseOnlyAllowlistedFieldsAndDistinguishFailures() throws {
+        let secret = "PRIVATE-BODY title photo /private/user.sqlite?token=secret SELECT * FROM Entry"
+        let native = NSError(domain: NSCocoaErrorDomain, code: 134504,
+            userInfo: [NSLocalizedDescriptionKey: secret, "SQL": secret, NSFilePathErrorKey: secret])
+        let store = FailureDiagnostic(error: native, stage: .storeOpen,
+            info: ["CFBundleShortVersionString": "1.0", "CFBundleVersion": "7"])
+        XCTAssertEqual(store.category, .store)
+        XCTAssertEqual(store.domain, NSCocoaErrorDomain)
+        XCTAssertEqual(store.code, 134504)
+        XCTAssertTrue(store.report.contains("stage=storeOpen"))
+        XCTAssertFalse(store.report.contains(secret))
+        XCTAssertFalse(store.report.contains("SELECT"))
+        XCTAssertFalse(store.report.contains("/private/"))
+        let unknown = FailureDiagnostic(error: NSError(domain: secret, code: 123, userInfo: [:]),
+            stage: .providerRead, role: .shareExtension,
+            info: ["CFBundleShortVersionString": secret, "CFBundleVersion": secret])
+        XCTAssertNil(unknown.domain)
+        XCTAssertNil(unknown.code)
+        XCTAssertFalse(unknown.report.contains(secret))
+        XCTAssertEqual(unknown.version, "unknown")
+        XCTAssertEqual(unknown.role, .shareExtension)
+        XCTAssertEqual(FailureDiagnostic(error: CaptureError.groupUnavailable, stage: .providerRead).category, .appGroup)
+        XCTAssertEqual(FailureDiagnostic(error: CocoaError(.fileWriteOutOfSpace), stage: .publish).category, .capacity)
+        XCTAssertEqual(FailureDiagnostic(error: CaptureError.attachmentInvalid, stage: .payload).category, .attachment)
+        XCTAssertEqual(FailureDiagnostic(error: CaptureError.unsupportedSchema, stage: .payload).category, .payload)
+        let wrapped = AppDiagnosticFailure(MediaStoreError.insufficientCapacity(requiredBytes: 20, availableBytes: 0), stage: .attachment)
+        XCTAssertEqual(wrapped.diagnostic.category, .capacity)
+        XCTAssertEqual(try JSONDecoder().decode(FailureDiagnostic.self, from: JSONEncoder().encode(store)), store)
+    }
+
+    func testFailedInboxPersistsSanitizedDiagnosticUntilSuccessfulRetry() async throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let media = MediaStore(rootURL: root)
+        let payload = ShareImportPayload(text: "PRIVATE-PAYLOAD-NOT-IN-REPORT")
+        try inbox.publish(payload, files: [:])
+        let importer = ExternalCaptureImporter(container: container, mediaStore: media, inbox: inbox)
+        importer.checkpoint = { if $0 == "beforeSave" {
+            throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteOutOfSpaceError,
+                userInfo: [NSLocalizedDescriptionKey: "PRIVATE-PAYLOAD-NOT-IN-REPORT"])
+        } }
+        _ = try await importer.scanReport()
+        let reopened = ExternalCaptureImporter(container: container, mediaStore: media, inbox: inbox)
+        let items = try await reopened.pendingItems()
+        let diagnostic = try XCTUnwrap(items.first?.diagnostic)
+        XCTAssertEqual(diagnostic.stage, .importSave)
+        XCTAssertEqual(diagnostic.category, .capacity)
+        XCTAssertFalse(diagnostic.report.contains(payload.text))
+        try await reopened.retry(payload.id.uuidString.lowercased())
+        let remaining = try await reopened.pendingItems()
+        XCTAssertTrue(remaining.isEmpty)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 1)
+    }
+
     func testStorageFailureNeverPublishesOrCommitsPartialShare() async throws {
         let root = try temporaryRoot()
         var inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
