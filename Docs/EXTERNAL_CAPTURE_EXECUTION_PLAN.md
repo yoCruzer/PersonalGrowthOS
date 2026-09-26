@@ -101,7 +101,13 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 | --- | --- | --- |
 | R4 | CONFIRMED → 修复定向验证中 | restore worker 安装 Originals 后，catch 删除整个目录；MainActor importer 无共享互斥。新增 `testRestoreFailurePreservesInterleavedCommittedShareImage` 用 beforeSave checkpoint + semaphore 控制交错，断言已提交分享图片保持可读。 |
 | R2 | CONFIRMED（静态） | importer.scan/consume 同步 MainActor；将与 R4 共同修改并验证。 |
-| R1/R3/R5/R6/R7/R8/R9 | 待逐项核实 | 不以旧测试 PASS 推断缺失场景通过。 |
+| R1 | CONFIRMED（静态/官方规则） | Apple 激活字典 version 2 对混合 asset 匹配成立；实际 provider/系统面板补验待做。 |
+| R3 | CONFIRMED（静态） | 前台仅 Retry/Cancel，无持久稍后或按条处理入口；待修复。 |
+| R5 | CONFIRMED（静态） | loadItem/loadFileRepresentation continuation 无超时/取消管理；待修复。 |
+| R6 | 修复验证中 | 外部可选 metadata 统一按 UTF-8 预算截断完整 Character，严格 payload/backup 验证不放宽；2 项定向测试通过，结合后续 UI 继续验证。 |
+| R7 | CONFIRMED（静态/生命周期待验） | App Group staging 无独立回收；导出 Pending 告知与 owned recovery 补偿待做。 |
+| R8 | 修复验证中 | source 字段合并去重与真实提交后刷新已实现，来源仅字段 Unit 通过；Safari 空结果刷新和 follow-up UI 均通过（R8 运行 exit 0）；final gate 待做。 |
+| R9 | CONFIRMED（静态） | startup 丢弃 Error，缺可复制脱敏报告与非破坏重试；待修复。 |
 | L1 | 待核实 | 显式 SwiftData import / Release warning。 |
 | L2 | 进行中 | 起始本地/远端 ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b；PR #7 OPEN Draft，base 未变。当前上下文已标旧 handoff superseded。 |
 
@@ -127,3 +133,40 @@ Cancellation2: -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/tes
 ```
 
 2026-09-26 实时 PR 列表：#1–#7 仍全部 OPEN Draft，#2→#3→#4→#5→#6→#7 base 链与审计相同；#1/#2 重叠及云端 release identity 尚待核实。未更改远端 PR 状态。
+
+
+### 当前发布与集成证据（L2，2026-09-26）
+
+- 实时 GitHub main：`dd09975d3a3736b24f8646fa4f197cc883ab1796`。
+- 已推送本轮第一组代码：`b25c59d00726395622923cab9a9c11d0d1555ef5`，API 核实 PR 分支远端一致。SSH push 因 publickey 失败；使用既有 gh 登录凭据的 HTTPS 普通 push 成功，无凭据或远端配置改动。
+- `git merge-base --is-ancestor 19475fe0830d9a2c8ceff4f27adc63ed4ecab7a7 1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed` exit 0：PR #1 远端 head 完整包含于 PR #2。PR #1 无独有代码需要重复合并。需保留其中 Weight/persistence/backup/review 修复提交 `6c5ec6c`、`17d3607`、`77d98a5`、`f8a1298` 及其历史；#2 另外包含图标提交 `c45c666` 与 S2 后续。
+- 未来经 Owner 授权可先集成 #2（保留 #1 已包含历史），再依序 #3→#4→#5→#6→#7；#1 如何关闭或合并及各 PR base 调整由 Owner 决定。本轮未执行任何 merge/close/retarget。
+
+| 发布身份维度 | 当前可见证据 |
+| --- | --- |
+| 开发阶段 | Build 9 / External Capture v1，不是安装构建号 |
+| 工程 App/Extension | 1.0 (7)，本轮不改号 |
+| Build 9 git tag | `testflight-1.0.0-build9` → `ae14f107f7eebb89a1549e00de3d941e6a996281` |
+| 云端 Archive | `PersonalGrowthOS / TestFlight-workflow / Archive - iOS`：2026-09-16T15:15:17Z completed/success，0 errors / 1 warning |
+| 云端实际 CFBundleVersion | UNKNOWN，check API 未提供 |
+| TestFlight 上传/处理/可安装性 | UNKNOWN / OWNER_REQUIRED，tag 和 Archive success 不替代这项证据 |
+| External Capture 起始 HEAD checks | ab79c73：0 check runs |
+| 当前 Owner 真机验收 | OWNER_REQUIRED，尚无本轮签名/App Group、provider、升级数据门禁证据 |
+
+本轮继续沿用 Xcode Cloud，没有建立额外 CI 或触发发布工作流。
+
+
+### R6/R8/L1 第二组（定向验证通过，final gate 待做）
+
+- R6：Safari JS、attributedTitle、LP callback 均走 `CaptureSource.normalizeMetadata`。完整 Character 的 UTF-8 预算为 title 32768 / siteName 4096；无效或过长 canonical 丢弃，可选 metadata 不改变原始 URL/正文。ASCII、中文、组合 emoji、附加符、空值/超长字段和严格非法 payload 拒绝通过。当前保存为同步 immutable 发布；R2 extension 异步化后仍需复验晚到 callback 与快照边界。
+- `/tmp/PGOS-Closure-R6.xcresult` exit 0，2/2：`testOptionalMetadataUsesUTF8BudgetWithoutChangingCoreContent` 与 `testSourceBackupRoundTrip`。该测试不是 LP 实际超时证据。
+- R8：搜索将 source URL/canonical/host/siteName/title 的 Entry ID 与既有结果合并去重，保持原排序与 follow-up 片段定位。worker 在数据库 save 成功后发送 scoped commit 通知，搜索在 MainActor 刷新保留 query，包括空结果页；清理失败不撤销 commit 通知。
+- L1：`SearchView.swift` 已显式 import SwiftData；最终 Release warning 门禁仍待统一执行。
+- `/tmp/PGOS-Closure-R8.xcresult`：metadata/来源字段 Unit 2/2 已通过；真实 Safari 系统分享→extension→异步导入→保留的 `127.0.0.1` 空搜索自动命中、来源打开、重启持久化 UI 已通过。既有 follow-up 删除返回刷新 UI 通过；整次 2 Unit + 2 UI，exit 0。
+
+公共 xcodebuild 前缀同上，具体参数：
+
+```text
+R6: -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testOptionalMetadataUsesUTF8BudgetWithoutChangingCoreContent -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testSourceBackupRoundTrip -resultBundlePath /tmp/PGOS-Closure-R6.xcresult
+R8: -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testSourceOnlySearchMatchesAfterEntryRenameWithoutDuplicates -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testOptionalMetadataUsesUTF8BudgetWithoutChangingCoreContent -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6SearchRefreshesAfterDeletingMatchedFollowUps -resultBundlePath /tmp/PGOS-Closure-R8.xcresult
+```

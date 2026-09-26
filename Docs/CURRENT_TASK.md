@@ -6,6 +6,8 @@
 
 R4 已在合成隔离库确定性复现图片丢失，并完成首组修复：共享发布互斥、worker 导入、按拥有路径清理和主草稿保护。定向 8/8 + 取消/草稿 2/2 通过；R4 剩余检查点、R2 扩展 I/O 与其他收口项继续推进。验收与逐项证据统一记录于 [执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。普通实现、测试、commit/push 连续推进；不 merge/close/retarget、tag、改版本或 Archive/TestFlight。不删除用户数据或模拟器数据。
 
+R6 UTF-8 可选 metadata 预算、R8 source 搜索/提交后刷新、L1 显式 SwiftData import 已实现；R6 2/2 Unit，R8 2 Unit + 2 UI（真实 Safari 保留空搜索刷新及 follow-up 删除返回）通过。首组修复完整提交 `b25c59d00726395622923cab9a9c11d0d1555ef5` 已推送并核实远端；第二组证据见计划。接下来继续 R1/R5 provider、R2 extension 重 I/O、R3/R7 生命周期、R9 诊断及 R4 剩余交错，不进入全文抓取或发布。
+
 以下内容均为历史交接（superseded），其中旧状态及 Next Action 不再指挥当前工作；历史验证结果保留，不作为本轮修复通过证据。
 
 ---

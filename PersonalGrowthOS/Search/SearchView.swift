@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct GlobalSearchView: View {
     let mediaStore: MediaStore
@@ -16,6 +17,10 @@ struct GlobalSearchView: View {
                 .navigationTitle("Search")
                 .searchable(text: $query, prompt: "Entries, weekly reviews, habits, goals and tags")
                 .onChange(of: query) { _, _ in search() }
+                .onReceive(NotificationCenter.default.publisher(for: .externalCaptureCommitted)
+                    .receive(on: RunLoop.main)) { notification in
+                    if notification.object as? URL == mediaStore.rootURL { search() }
+                }
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { dismiss() }

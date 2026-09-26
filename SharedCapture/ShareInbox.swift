@@ -25,6 +25,26 @@ struct CaptureSource: Codable, Equatable {
     var capturedAt: Date
     var captureMode: CaptureMode
 
+    // Only external, optional enrichment is normalized. Stored payloads/backups remain strict.
+    mutating func normalizeMetadata() {
+        title = Self.metadataText(title, byteLimit: 32_768)
+        siteName = Self.metadataText(siteName, byteLimit: 4_096)
+        if Self.webURL(canonicalURL) == nil { canonicalURL = nil }
+    }
+
+    static func metadataText(_ value: String?, byteLimit: Int) -> String? {
+        guard let value else { return nil }
+        var result = ""
+        var used = 0
+        for character in value {
+            let count = String(character).utf8.count
+            guard count <= byteLimit - used else { break }
+            result.append(character)
+            used += count
+        }
+        return result.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : result
+    }
+
     static func webURL(_ value: String?) -> URL? {
         guard let value, value.utf8.count <= 16_384, let url = URL(string: value),
               let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),

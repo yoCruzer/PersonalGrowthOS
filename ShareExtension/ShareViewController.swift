@@ -66,8 +66,8 @@ final class ShareViewController: UIViewController {
                             if let url = values["url"] as? String, CaptureSource.webURL(url) != nil {
                                 payload.source = CaptureSource(url: url,
                                     canonicalURL: CaptureSource.webURL(values["canonicalURL"] as? String)?.absoluteString,
-                                    title: (values["title"] as? String).map { String($0.prefix(8_000)) },
-                                    siteName: (values["siteName"] as? String).map { String($0.prefix(1_000)) },
+                                    title: values["title"] as? String,
+                                    siteName: values["siteName"] as? String,
                                     capturedAt: payload.createdAt, captureMode: .metadataOnly)
                             }
                             selectedText = values["selectedText"] as? String
@@ -95,7 +95,7 @@ final class ShareViewController: UIViewController {
                 }
                 if (item.attachments ?? []).isEmpty, let text = item.attributedContentText?.string { texts.append(text) }
                 if payload.source?.title == nil, let title = item.attributedTitle?.string {
-                    payload.source?.title = String(title.prefix(8_000))
+                    payload.source?.title = title
                 }
             }
             guard !finished else { return }
@@ -108,6 +108,7 @@ final class ShareViewController: UIViewController {
                 payload.source = CaptureSource(url: url.absoluteString, siteName: url.host,
                     capturedAt: payload.createdAt, captureMode: .metadataOnly)
             }
+            payload.source?.normalizeMetadata()
             try payload.validate()
             editor.text = payload.text
             updateSource()
@@ -172,6 +173,7 @@ final class ShareViewController: UIViewController {
     }
 
     private func updateSource() {
+        payload.source?.normalizeMetadata()
         sourceLabel.text = [payload.source?.title, payload.source?.url].compactMap { $0 }.joined(separator: "\n")
     }
 
@@ -187,7 +189,7 @@ final class ShareViewController: UIViewController {
             Task { @MainActor in
                 guard let self, !self.finished else { return }
                 if let metadata {
-                    self.payload.source?.title = metadata.title.map { String($0.prefix(8_000)) }
+                    self.payload.source?.title = metadata.title
                     self.payload.source?.canonicalURL = CaptureSource.webURL(metadata.url?.absoluteString)?.absoluteString
                     self.updateSource()
                 }

@@ -1439,6 +1439,59 @@ final class ExternalCaptureTests: XCTestCase {
         return root
     }
 
+    func testSourceOnlySearchMatchesAfterEntryRenameWithoutDuplicates() throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let context = container.mainContext
+        let entry = Entry(title: "Edited title", body: "A quote without a URL", createdAt: Date())
+        context.insert(entry)
+        context.insert(try EntryExternalSource(entryID: entry.id, source: CaptureSource(
+            url: "https://source.example/unique-path", canonicalURL: "https://canonical.example/original",
+            title: "Original source heading", siteName: "Distinct publisher", capturedAt: Date(), captureMode: .selectedContent)))
+        try context.save()
+        let search = LocalSearchService(context: context)
+        for query in ["source.example", "unique-path", "Original source heading", "Distinct publisher", "canonical.example"] {
+            XCTAssertEqual(try search.search(query).entries.map(\.id), [entry.id])
+        }
+        entry.title = "Original source heading"
+        try context.save()
+        XCTAssertEqual(try search.search("Original source heading").entries.map(\.id), [entry.id])
+    }
+
+    func testOptionalMetadataUsesUTF8BudgetWithoutChangingCoreContent() throws {
+        let samples = [String(repeating: "a", count: 40_000),
+                       String(repeating: "中", count: 12_000),
+                       String(repeating: "👨‍👩‍👧‍👦", count: 2_000),
+                       String(repeating: "e\u{301}", count: 20_000), "", "   "]
+        for sample in samples {
+            var source = CaptureSource(url: "https://example.com/original", canonicalURL: "javascript:bad",
+                title: sample, siteName: sample, capturedAt: Date(), captureMode: .selectedContent)
+            source.normalizeMetadata()
+            XCTAssertLessThanOrEqual(source.title?.utf8.count ?? 0, 32_768)
+            XCTAssertLessThanOrEqual(source.siteName?.utf8.count ?? 0, 4_096)
+            if let title = source.title { XCTAssertTrue(sample.hasPrefix(title)) }
+            if let site = source.siteName { XCTAssertTrue(sample.hasPrefix(site)) }
+            XCTAssertNil(source.canonicalURL)
+            XCTAssertEqual(source.url, "https://example.com/original")
+            let payload = ShareImportPayload(text: "Unmodified user quote", source: source)
+            XCTAssertNoThrow(try payload.validate())
+            XCTAssertEqual(payload.text, "Unmodified user quote")
+        }
+        var source = CaptureSource(url: "https://example.com", canonicalURL: "https://example.com/" + String(repeating: "x", count: 17_000),
+            title: String(repeating: "👨‍👩‍👧‍👦", count: 2_000), capturedAt: Date(), captureMode: .metadataOnly)
+        XCTAssertThrowsError(try source.validate())
+        source.normalizeMetadata()
+        XCTAssertNil(source.canonicalURL)
+        XCTAssertNoThrow(try source.validate())
+        let savingSnapshot = source
+        source.title = "Late metadata"
+        XCTAssertNotEqual(source.title, savingSnapshot.title)
+        var oversizedBody = ShareImportPayload(text: String(repeating: "中", count: 400_000), source: source)
+        XCTAssertThrowsError(try oversizedBody.validate())
+        oversizedBody.text = "Valid core"
+        oversizedBody.source?.title = String(repeating: "👨‍👩‍👧‍👦", count: 2_000)
+        XCTAssertThrowsError(try oversizedBody.validate())
+    }
+
     func testPayloadValidationAndAtomicPublication() throws {
         let root = try temporaryRoot()
         let inbox = ShareInbox(root: root)

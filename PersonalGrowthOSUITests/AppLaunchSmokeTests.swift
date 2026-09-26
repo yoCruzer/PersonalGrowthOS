@@ -1511,6 +1511,14 @@ extension AppLaunchSmokeTests {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("127.0.0.1")
+        app.keyboards.buttons["Search"].tap()
+        XCTAssertFalse(app.staticTexts["External Capture Fixture"].exists)
         let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
         safari.terminate()
         safari.launch()
@@ -1542,7 +1550,7 @@ extension AppLaunchSmokeTests {
         save.tap()
         XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
         app.activate()
-        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertEqual(search.value as? String, "127.0.0.1")
         let title = app.staticTexts["External Capture Fixture"].firstMatch
         XCTAssertTrue(title.waitForExistence(timeout: 10), app.debugDescription)
         title.tap()

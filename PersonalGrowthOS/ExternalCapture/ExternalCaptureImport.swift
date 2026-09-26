@@ -1,6 +1,10 @@
 import Foundation
 import SwiftData
 
+extension Notification.Name {
+    static let externalCaptureCommitted = Notification.Name("ExternalCaptureCommitted")
+}
+
 // All operations execute synchronously on a worker while holding this store's lease.
 // No await occurs inside the lease, so actor reentrancy cannot publish a second operation.
 enum StorePublication {
@@ -152,6 +156,7 @@ private struct CaptureImportWorker {
         }
         // A failure here must never roll back committed media. Receipt makes the retry cleanup-only.
         CaptureLog.event("import.committed", id: id)
+        NotificationCenter.default.post(name: .externalCaptureCommitted, object: mediaStore.rootURL)
         try checkpoint?("afterSave")
         try inbox.remove(directory)
         CaptureLog.event("inbox.cleaned", id: id)
