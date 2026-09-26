@@ -1,4 +1,5 @@
 import CryptoKit
+import Darwin
 import Foundation
 import SwiftData
 
@@ -33,6 +34,7 @@ final class ExportPackageLease: Identifiable {
 enum ImportPublicationCheckpoint: Equatable {
     case afterPreflight
     case afterMediaCopy(Int)
+    case beforeInstall
     case afterInstall
     case beforeSave
 }
@@ -610,12 +612,22 @@ final class ImportExportService {
             guard try directoryIsEmptyOrAbsent(activeOriginals, fileManager: fileManager) else {
                 throw TransferPackageError.targetNotEmpty
             }
+            try publicationCheckpoint?(.beforeInstall)
             try fileManager.createDirectory(
                 at: activeOriginals.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            if fileManager.fileExists(atPath: activeOriginals.path) {
-                try fileManager.removeItem(at: activeOriginals)
+            // A regular capture can add a file after the empty check. Never recursively remove it.
+            let descendants = fileManager.enumerator(at: activeOriginals, includingPropertiesForKeys: [.isDirectoryKey])?
+                .allObjects.compactMap { $0 as? URL } ?? []
+            let directories = try descendants.filter { try $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true }
+                .sorted { $0.pathComponents.count > $1.pathComponents.count }
+            for directory in directories + [activeOriginals] {
+                if rmdir(directory.path) != 0 {
+                    let code = errno
+                    if code == ENOTEMPTY || code == EEXIST { throw TransferPackageError.targetNotEmpty }
+                    if code != ENOENT { throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO) }
+                }
             }
             try fileManager.moveItem(at: stagedOriginals, to: activeOriginals)
             installedOriginals = true

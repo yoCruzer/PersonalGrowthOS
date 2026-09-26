@@ -650,7 +650,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.staticTexts["Habit and Goal review"].tap()
         XCTAssertTrue(app.staticTexts["Meditate"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Stay Present"].waitForExistence(timeout: 5))
-        app.buttons["entry-manage-relationships"].tap()
+        let manageRelationships = app.buttons["entry-manage-relationships"]
+        if !manageRelationships.isHittable { app.swipeUp() }
+        XCTAssertTrue(manageRelationships.waitForExistence(timeout: 5))
+        manageRelationships.tap()
         XCTAssertTrue(app.navigationBars["Reviewed Objects"].waitForExistence(timeout: 5))
     }
 

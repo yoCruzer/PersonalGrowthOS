@@ -7,6 +7,51 @@ import XCTest
 
 @MainActor
 final class ImportExportRecoveryTests: XCTestCase {
+    func testPublicationIdentitySurvivesMediaRootCreation() throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let root = fixture.root.appendingPathComponent("NewMediaRoot", isDirectory: true)
+        let before = StorePublication.key(for: root)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        XCTAssertEqual(StorePublication.key(for: root), before)
+        XCTAssertEqual(StorePublication.key(for: URL(fileURLWithPath: root.path, isDirectory: false)), before)
+    }
+
+    func testRestoreEmptyDirectoryCheckCannotDeleteAConcurrentUserImage() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let checkedEmpty = expectation(description: "Restore checked Originals empty before installation")
+        let resume = DispatchSemaphore(value: 0)
+        defer { resume.signal() }
+        let target = try fixture.makeEmptyStore(named: "ConcurrentImageBeforeInstall", publicationCheckpoint: {
+            if $0 == .beforeInstall {
+                checkedEmpty.fulfill()
+                guard resume.wait(timeout: .now() + 30) == .success else { throw TransferPackageError.interrupted }
+            }
+        })
+        let restore = Task { try await target.service.importPackage(from: lease.url) }
+        await fulfillment(of: [checkedEmpty], timeout: 30)
+        let imageURL = fixture.root.appendingPathComponent("concurrent-user.png")
+        try fixture.imageData.write(to: imageURL)
+        let stored = try target.mediaStore.storeOriginal(MediaSource(url: imageURL, originalFilename: "user.png", contentType: "image/png"))
+        let image = ImageMetadata(id: stored.id, relativePath: stored.relativePath, originalFilename: "user.png",
+            contentType: "image/png", byteCount: stored.byteCount, pixelWidth: stored.pixelWidth,
+            pixelHeight: stored.pixelHeight, checksum: stored.checksum, createdAt: Date())
+        let entry = Entry(body: "User image saved before restore install", createdAt: Date(), images: [image])
+        image.entry = entry
+        target.container.mainContext.insert(entry)
+        try target.container.mainContext.save()
+        resume.signal()
+        await assertThrows({ try await restore.value }) { XCTAssertEqual($0 as? TransferPackageError, .targetNotEmpty) }
+        let context = ModelContext(target.container)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<Entry>()).map(\.id), [entry.id])
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: stored.relativePath)), fixture.imageData)
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL).count, 1)
+    }
+
     func testExportCutoffQueuesShareAndCancelledConsumerWithoutLosingDraft() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }

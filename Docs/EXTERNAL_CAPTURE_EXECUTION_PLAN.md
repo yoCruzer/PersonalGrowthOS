@@ -315,3 +315,31 @@ plutil -lint PersonalGrowthOS.xcodeproj/project.pbxproj ShareExtension/Info.plis
 候选完成审计核对（仍待 UI 整体终止）：已直接核实 importer 私有 context 在 store lease 内创建，Entry/Source/receipt 同一次 save，receipt 检查早于 payload 读取，Notification 在 commit 后，清理失败不回滚已提交媒体；journal 写前登记、引用路径保护、逐文件补偿与未知归属保留。Extension Save 先在 MainActor 截取值快照、置 saving，再取消 metadata 并 worker 发布；callback 同时检查 finished/saving/generation。此静态核查与 Unit 的字节预算/值快照测试并列记录，不声称真实 LPMetadataProvider 网络超时已经执行。
 
 FinalGate1 日志已逐项核对 V9→V10、冻结 V7/V8 overlay/reopen、v1 导入、v2/v3/v4 验证、v5 follow-up 往返/旧版拒绝、v6 source 往返、原子发布、receipt-aware retry/discard、R4 交错/cutoff、provider alternatives/timeout/cancel、metadata 预算与 owned-copy 补偿均实际执行通过。UI/真机覆盖仍各自按其证据判定，不由这些 Unit 代替。
+
+
+### 完成审计新增待复现窗口：恢复安装前的空目录检查
+
+在 FinalGate1 UI 仍运行时，继续审查发现 `publishPreparedPackage` 在 `directoryIsEmptyOrAbsent` 成功后仍调用递归 `removeItem(activeOriginals)`。分享导入已受共同 lease 保护，但普通用户图片保存不持该 lease；若写入发生在空目录检查与删除之间，存在删除新图的可达代码窗口。此处仍是路径推导，尚未作为已复现或 Owner 事故报告。
+
+新增 `.beforeInstall` checkpoint（生产 nil）与 `testRestoreEmptyDirectoryCheckCannotDeleteAConcurrentUserImage`：检查空目录后暂停恢复，普通图片/Entry 保存，再恢复并断言 Entry 和图片均仍可读。**该测试尚未运行**，不更改原 FinalGate1 的已编译候选，不中断或重复启动正在运行的 UI 门禁；待原运行终止后先运行这一个复现，再决定修复及影响范围复验。整体仍 IN_PROGRESS，即使原 UI 门禁通过也须闭环此窗口后才能 READY。
+
+执行调整：为保留原 UI 门禁连续运行且避免等待整组结束，已新建专用合成模拟器 `PGOS Closure R4 Unit`（BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2，iOS 26.5），独立 DerivedData `/tmp/PGOS-Closure-R4-UnitDerived`。只启动该单项复现到 `/tmp/PGOS-Closure-R4-DirectoryRepro1.xcresult` / `.log`，当前运行中；未删除/重置任何既有设备或数据。原 FinalGate1 仍在原设备/原构建目录运行，编译候选未变。
+
+DirectoryRepro1 **exit 65 / 1 项失败**，确定性复现：普通 Entry 已提交，但读取新图抛 Cocoa 260（文件不存在），Originals 文件数 0 而期望 1。专用环境不是 Owner 真机事故。
+
+窄修复：保留预检查，以 POSIX `rmdir` 原子移除空目录代替递归删除；检查后出现新文件时 ENOTEMPTY/EEXIST 转为 targetNotEmpty，ENOENT 允许继续，其他错误原样保留为 POSIXError。检查与安装之间新目录出现时 moveItem 自身拒绝覆盖；无路径会递归删除这次新出现的用户文件。新增复现断言继续要求 targetNotEmpty、已提交 Entry 身份、图片字节及唯一 Originals 文件，不放宽数据断言。
+
+`DirectoryFix1` 在专用设备运行完整 ImportExportRecoveryTests + ExternalCaptureTests，`ReleaseDirectoryFix1` 增量 unsigned Release 同时运行；二者结果待记录。原 FinalGate1 UI 仍继续使用 3b4cc3d 已编译候选；最终交付须明确该整体门禁与窄修复后补充复验的对应关系，不将旧门禁冒充新代码验证。
+
+### R4 目录与锁标识补充复验（2026-09-26）
+
+R4 补充复验：DirectoryFix1 exit 65（63 项、2 失败），新增并发普通图片保护通过；失败暴露两处问题：恢复前后同一路径的 URL directory hint 变化使共享锁键不等，以及已删除图片留下空分片目录使单次 rmdir 拒绝恢复。原生 Swift 探针确认 before/after URL 不等而 path 相同；现改用规范化 path 键，并按深度从内向外仅 rmdir 空目录。StableLock1 正在复验，新增锁身份回归待执行。ReleaseDirectoryFix1 exit 0。原 FinalGate1 UI 仍运行；ManualReview 的关系按钮位于折叠屏幕下方，已补正常滚动，原断言保留，待定向复验。整体仍 IN_PROGRESS。
+
+证据：`/tmp/PGOS-Closure-R4-DirectoryFix1.xcresult`、对应 `.log`；原生探针 `/tmp/PGOSLockKeyProbe.swift` exit 0：创建前 URL 无尾斜杠，创建后有尾斜杠，`equal false same path true`。同根租约必须跨目录存在状态保持身份。保留所有失败，未清除模拟器或用户库。
+
+StableLock1 **exit 0，63/63 PASS**（41 ImportExportRecovery + 22 ExternalCapture）；包含目录竞争保护、原库删除合成数据后恢复、成功恢复排队分享与草稿、失败/取消/空库复查、导出 cutoff、旧备份和 V9→V10。锁身份抽取与确定性目录创建回归新增后，FinalSupplement1 正在补验该测试、成功恢复排队，以及 ManualReview 正常滚动和 PR6 Files 预览取消恢复 UI。ReleaseStableLock1 正在编译最终窄修复。
+
+```sh
+xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2' -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests -only-testing:PersonalGrowthOSTests/ExternalCaptureTests -resultBundlePath /tmp/PGOS-Closure-R4-StableLock1.xcresult
+xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2' -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testPublicationIdentitySurvivesMediaRootCreation -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testSuccessfulRestoreDoesNotRollbackDraftCreatedDuringPublication -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testManualReviewCanRelateHabitAndGoal -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore -resultBundlePath /tmp/PGOS-Closure-R4-FinalSupplement1.xcresult
+```

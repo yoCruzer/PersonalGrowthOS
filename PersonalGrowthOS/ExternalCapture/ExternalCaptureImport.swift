@@ -9,10 +9,15 @@ extension Notification.Name {
 // No await occurs inside the lease, so actor reentrancy cannot publish a second operation.
 enum StorePublication {
     private static let registryLock = NSLock()
-    private static var locks: [URL: NSLock] = [:]
+    private static var locks: [String: NSLock] = [:]
+
+    static func key(for root: URL) -> String {
+        // URL directory hints change when a previously absent root is created.
+        root.standardizedFileURL.resolvingSymlinksInPath().path
+    }
 
     static func perform<T>(at root: URL, _ operation: () throws -> T) throws -> T {
-        let key = root.standardizedFileURL.resolvingSymlinksInPath()
+        let key = key(for: root)
         registryLock.lock()
         let lock = locks[key] ?? NSLock()
         locks[key] = lock
