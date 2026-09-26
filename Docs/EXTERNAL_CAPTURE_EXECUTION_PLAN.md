@@ -95,23 +95,23 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 
 ## 统一收口审计 2026-09-26
 
-授权输入：Owner 上传包的 `02_CODEX_CLOSURE_GOAL.md`、`01_AUDIT_REPORT.md`（已按顺序完整阅读），覆盖 R1–R9/L1–L2，替代上方历史 COMPLETE 边界。终点仍为 READY_FOR_INDEPENDENT_REVIEW；本轮尚未完成。
+授权输入：Owner 上传包的 `02_CODEX_CLOSURE_GOAL.md`、`01_AUDIT_REPORT.md`（已按顺序完整阅读），覆盖 R1–R9/L1–L2，替代上方历史 COMPLETE 边界。当前结论：**READY_FOR_INDEPENDENT_REVIEW**。本节表格与末尾“最终交付核对”是当前结论；后续逐组进展段落是保留真实失败和中间判断的时间顺序记录，其中“待做/运行中/下一步”均已由最终结论取代。
 
 计划：先 R4 确定性交错及 R2 单消费者/发布互斥，再 provider/metadata/失败 Inbox/所有权/搜索/诊断，最后统一 final gate 与 L2 交付。定向测试优先，不先跑全量 baseline。
 
-| ID | 当前结论 | 证据 / 下一验证 |
+| ID | 当前结论 / 修复提交 | 回归证据与剩余边界 |
 | --- | --- | --- |
-| R4 | FIXED（final gate 待做） | 原图片丢失已确定性复现；共享发布锁/私有 context/拥有路径清理后，失败、安装后取消、二次空库检查、成功恢复排队分享、导出 cutoff 与草稿保护均定向通过，详见第一及第七组。 |
-| R2 | 修复实现 / 继续验证 | 主 App importer 与 Extension 发布/图片校验/hash/缩略图移至 worker；同包并发消费幂等通过。九张总量 >180 MiB PNG 导入九次 MainActor 响应及草稿保护已通过；最终门禁与真机性能仍待做。 |
-| R1 | 修复实现 / 公共 host 验证通过 | version 2 默认匹配；真实独立混合 host 与 Safari 均出现并完整导入。语义化选择、caption、替代表现、部分失败及多来源提示已实现；部分保存确认 UI 已通过；真机及统一门禁待做。 |
-| R3 | FIXED（final gate 待做） | 失败状态持久化、同故障仅首次提醒、设置页逐条重试/稍后/确认丢弃已实现；版本变化重新尝试，receipt 优先区分已提交副本。3 Unit + 1 UI 定向通过。 |
-| R5 | FIXED（final gate 待做） | once-only bridge、30 秒边界、Task/Progress/generation 的 Unit 与部分保存 UI 通过；取消返回系统选择器后可实际重开，旧 provider 回调后无污染/无幽灵 Entry。直接回 host 的旧断言由标准 SLCompose 对照证伪，实际选择器截图可见，详见第八组。 |
-| R6 | 修复验证中 | 外部可选 metadata 统一按 UTF-8 预算截断完整 Character，严格 payload/backup 验证不放宽；2 项定向测试通过，结合后续 UI 继续验证。 |
-| R7 | FIXED（final gate 待做） | staging 活跃租约/终止回收、写前副本日志/逐文件补偿、实际测试进程终止恢复、低容量注入及导出 Pending 告知已定向通过；未知 Recovery 保留。 |
-| R8 | 修复验证中 | source 字段合并去重与真实提交后刷新已实现，来源仅字段 Unit 通过；Safari 空结果刷新和 follow-up UI 均通过（R8 运行 exit 0）；final gate 待做。 |
-| R9 | FIXED（final gate 待做；历史库根因未验证） | 白名单阶段/类别/角色/版本/schema/opID/domain-code 报告可复制，启动安全重试保留 Entry，导入诊断持久化后成功消退；2 Unit + 1 UI 通过。历史主文件 V8 hash 差异只读记录，不等同 Owner 根因。 |
-| L1 | FIXED（Release gate 待做） | 显式 SwiftData import 已补，最终 Release warning 核查尚待统一门禁。 |
-| L2 | 进行中 | 起始本地/远端 ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b；PR #7 OPEN Draft，base 未变。当前上下文已标旧 handoff superseded。 |
+| R1 | CONFIRMED → FIXED；`a5cd018` | activation v2；公开混合 host 与 Safari 实际出现并导入；语义表示/回退/caption/未知辅助/部分确认/多 URL 已覆盖。真机 Photos/微信 OWNER_REQUIRED。 |
+| R2 | CONFIRMED → FIXED；`b25c59d`、`a5cd018` | worker 文件与图像工作、单根 publication lease；9 张总量 >180 MiB PNG、9 次 MainActor 响应、重复消费和草稿保护通过。真机性能 OWNER_REQUIRED。 |
+| R3 | CONFIRMED → FIXED；`c6b0246` | 失败 Inbox 持久化、稍后/版本变化重试、逐条确认丢弃；3 Unit + 1 UI 定向及完整门禁覆盖。 |
+| R4 | CONFIRMED → FIXED；`b25c59d`、`516e46a`、`a0728d7` | 原交错丢图和普通图片安装竞争均确定性复现；稳定锁键、仅空目录删除、拥有路径清理。StableLock1 63/63、最终锁身份/排队 2/2、FilesSaveCompletion1 1/1；失败/取消/空库复查/导出 cutoff/草稿保护均通过。 |
+| R5 | CONFIRMED → FIXED；`a5cd018`；证据 `3b4cc3d` | 30 秒 once-only、取消/迟到/超时/回退 Unit；实际重开与旧 callback 完成后无污染。原“取消直接回 host”假设 NOT_REPRODUCED，并被标准 SLCompose 对照反证：返回系统 picker。 |
+| R6 | CONFIRMED → FIXED；`c001f3c` | ASCII/中文/组合 emoji/附加符预算、可选 URL 规范化和值快照通过；严格 core/backup 校验不放宽。真实 LP 网络超时 OWNER_REQUIRED，未冒充已执行。 |
+| R7 | CONFIRMED → FIXED；`a5cd018`、`b0fbdc9` | staging 内核租约/进程终止回收、主 App kill-before-save、写前所有权日志、逐文件补偿、容量注入与备份排除告知通过；未知 Pending/Recovery 保留。 |
+| R8 | CONFIRMED → FIXED；`c001f3c` | source-only 搜索去重、真实 commit 后空结果刷新、Safari 与 follow-up 返回刷新通过。 |
+| R9 | CONFIRMED → FIXED；`fa68652` | 脱敏报告、诊断类别、重试保留已有 Entry、错误消退 Unit/UI 通过；历史 V8 根因及 Owner 关联未验证，不作为已修事故。 |
+| L1 | CONFIRMED → FIXED；`c001f3c` | SearchView 显式 SwiftData import；最终 Release 无该警告，未 suppression。 |
+| L2 | FIXED；`516e46a`、本次交接文档 | PR/祖先/tag/既有 Cloud 核验、当前状态归一、Owner 清单去重完成；云端实际 build、TestFlight 可用性 UNKNOWN/OWNER_REQUIRED。未 merge/close/retarget/发布。 |
 
 首次沙箱内 R4 测试无法访问 CoreSimulator，日志 `/tmp/PGOS-Closure-R4-Repro.log`；不属于产品失败。获准访问模拟器后的同一定向测试运行使用 `/tmp/PGOS-Closure-R4-Repro2.log` 与 `.xcresult`，复现退出码 65：Entry/receipt 已提交且 Pending 已清理，但读取分享图片抛出文件不存在（NSCocoaErrorDomain 260）。所有测试使用合成隔离库。
 
@@ -343,3 +343,54 @@ StableLock1 **exit 0，63/63 PASS**（41 ImportExportRecovery + 22 ExternalCaptu
 xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2' -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests -only-testing:PersonalGrowthOSTests/ExternalCaptureTests -resultBundlePath /tmp/PGOS-Closure-R4-StableLock1.xcresult
 xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2' -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testPublicationIdentitySurvivesMediaRootCreation -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testSuccessfulRestoreDoesNotRollbackDraftCreatedDuringPublication -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testManualReviewCanRelateHabitAndGoal -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore -resultBundlePath /tmp/PGOS-Closure-R4-FinalSupplement1.xcresult
 ```
+
+### 最终门禁实际结果与 Files 补验（2026-09-26）
+
+- `FinalGate1.xcresult` 整体 exit 65：Unit 240/240 PASS，UI 48/49 PASS，唯一失败为 ManualReview 页面关系按钮尚在可视区域下方。结果摘要 `/tmp/PGOS-Closure-FinalGate1-summary.json`，288 pass / 1 fail / 0 skip。已补普通滚动，不删关系/页面断言。
+- `ReleaseStableLock1.log` exit 0，最终产品代码 `a0728d77d63e27af4ffeb9341105d62f4d4e5842`；App 与唯一 ShareExtension 均 1.0(7)，Safari 脚本存在，SwiftData import warning 消失；该增量运行仅一条未采用 AppIntents 的自动提取提示。
+- `R4-FinalSupplement1.xcresult` exit 65：锁身份创建前后回归与成功恢复排队 2/2 Unit PASS，ManualReview UI PASS；Files UI 在新建专用设备的导入选择器显示 No Recents，未选中备份，尚未进入产品恢复。原测试点击系统 Save 后立即 terminate；已新增保存文件名输入框消失的同步断言，沿用同一专用设备定向复验 `FilesSaveCompletion1`，结果待出。不能把这项失败归为恢复产品已通过。
+
+产品提交 a0728d7 已普通推送，远端 PR7 JSON 确认 OPEN Draft、base 未变、head 一致；该代码 SHA 当前 check-runs 为 0。没有触发新的 CI/发布任务。
+
+### 最终交付核对（2026-09-26）
+
+**READY_FOR_INDEPENDENT_REVIEW — 代码与文档收口完成，Owner 真机门禁单独保留。**
+
+产品代码完整 SHA `a0728d77d63e27af4ffeb9341105d62f4d4e5842`，审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`。沿用 `codex/external-capture-v1` 和 Draft PR #7 / Build9 base；所有后续修复保留。最终交接提交只增加 Files 系统保存完成同步断言及文档。未改变迁移、版本、图片上限、发布流程或 Foundation。
+
+`FilesSaveCompletion1.xcresult` **exit 0，1/1 UI PASS**：同一专用合成设备，点击系统 Save 后等待文件名输入框消失，再终止 App；选中备份，预览取消后空库与无 Entry 断言通过，再次选择恢复成功，原正文可见。未删除此前 Files 副本或重置设备。此前 No Recents 失败保留；这里的保存完成同步是测试修复，不将它称为产品恢复数据缺陷。ManualReview 在 FinalSupplement1 已通过；两项旧流程的原断言均保留。
+
+| 门禁 / 候选 | 真实结果 | 证据 |
+| --- | --- | --- |
+| 完整门禁 `3b4cc3d` | exit 65；240 Unit PASS、48/49 UI PASS；唯一定位失败随后修复复验 | `/tmp/PGOS-Closure-FinalGate1.xcresult`、`.log`、`-summary.json` |
+| R4 数据丢失新增复现 | exit 65；Entry 保留但 PNG 缺失 | `/tmp/PGOS-Closure-R4-DirectoryRepro1.xcresult` |
+| 首次目录窄修复 | exit 65；63 项中两项失败，分别为残余空分片目录及 URL 锁键身份变化 | `/tmp/PGOS-Closure-R4-DirectoryFix1.xcresult` |
+| R4 修复后的完整受影响 Unit | exit 0；63/63 PASS | `/tmp/PGOS-Closure-R4-StableLock1.xcresult` |
+| 最终锁身份与 UI 补充 | exit 65；2 Unit PASS、ManualReview PASS，Files No Recents 失败后补同步 | `/tmp/PGOS-Closure-R4-FinalSupplement1.xcresult` |
+| Files 同步修复后 | exit 0；1/1 PASS | `/tmp/PGOS-Closure-FilesSaveCompletion1.xcresult` |
+| 最终 unsigned Release | exit 0；App/唯一 appex 1.0(7)、Safari 脚本存在；无 SwiftData import warning | `/tmp/PGOS-Closure-ReleaseStableLock1.log` |
+| 静态配置 | exit 0；project/plist/scheme/App Group/activation v2/509 双语键 | 统一门禁候选节记录；窄修复未更改这些文件 |
+
+最终补验命令（其余完整命令在各对应组记录）：
+
+```sh
+xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2' -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore -resultBundlePath /tmp/PGOS-Closure-FilesSaveCompletion1.xcresult
+xcodebuild build -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS' -derivedDataPath /tmp/PGOS-Capture-Release CODE_SIGNING_ALLOWED=NO > /tmp/PGOS-Closure-ReleaseStableLock1.log 2>&1
+```
+
+八项数据不变量逐项核对：
+
+| 不变量 | 当前实现与证据 |
+| --- | --- |
+| 普通 Entry / Extension 不碰主库 | importer 创建普通 Entry；Extension 仅发布 App Group 包；实际 host/Safari 导入 UI。 |
+| 完整不可变包原子 Pending | MainActor 截取值快照，worker 校验/复制后同卷 rename；原子发布/低容量/取消 Unit。 |
+| Entry/Source/receipt 同提交后清理 | 私有 worker context 单次 save；receipt 提交后的中断重试测试。 |
+| receipt 优先且不复活 | receipt 先于 payload 读取；清理残缺包、永久删除及重开 Unit。 |
+| 旧数据兼容无清库 | V9→V10、冻结历史迁移及合法 v1–v6；原 Entry/图片/置顶/补充/周月 Habit/Weight/WeeklyReview 门禁。历史正常模拟器库保持原状。 |
+| 执行域和草稿 | UIKit/MainActor；worker 内创建 ModelContext，值对象跨任务；9 大图响应与草稿/取消恢复测试。 |
+| 未知内容保留 | future schema、未知 Recovery 与活跃 staging 不删除；只允许选中条目确认丢弃；owned journal 补偿测试。 |
+| metadata 可选且部分失败明确 | 字节预算/冻结 snapshot、不截断用户正文；部分确认 UI、迟到回调及取消后无幽灵 Entry；实际离线 LP 仍 Owner。 |
+
+当前没有已确认而未闭环的本轮代码缺陷；不以测试数量替代上表的边界证据。未执行：真机签名/App Group、Photos/微信、真实离线 LP/云端图片、Owner 真实库覆盖升级、真机峰值内存与交互性能。历史 V8 hash 差异根因未知；本轮只读收集，不删除/重建。现有共享 main-context 一般 rollback 债务维持既有边界，捕获/恢复已隔离；全文、AI/OCR、iCloud、全项目重构仍 DEFERRED/out of scope。UX-01/02 和原 V1 已解决能力不重列待办。
+
+未来仅在 Owner 授权后：独立 Review → 集中真机门禁 → 处理 #1 已包含于 #2 的重叠（保留 6c5ec6c、17d3607、77d98a5、f8a1298、c45c666 及 S2 历史）→ 按依赖审查 #2→#3→#4→#5→#6→#7 的集成与必要 base 调整 → 由现有 Xcode Cloud 确定实际候选 SHA/build、Archive/上传状态并单独核验 TestFlight。上述均未执行；现有 Build9 tag/Archive success 不证明本候选可安装。

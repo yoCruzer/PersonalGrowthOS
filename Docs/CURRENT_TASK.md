@@ -1,19 +1,20 @@
 # 当前任务：External Capture v1 与项目遗留统一收口
-R4 补充复验：DirectoryFix1 exit 65（63 项、2 失败），新增并发普通图片保护通过；失败暴露两处问题：恢复前后同一路径的 URL directory hint 变化使共享锁键不等，以及已删除图片留下空分片目录使单次 rmdir 拒绝恢复。原生 Swift 探针确认 before/after URL 不等而 path 相同；现改用规范化 path 键，并按深度从内向外仅 rmdir 空目录。StableLock1 exit 0，63/63 PASS；FinalSupplement1 正在补验最终锁身份回归及两项 UI。ReleaseDirectoryFix1 exit 0。原 FinalGate1 UI 仍运行；ManualReview 的关系按钮位于折叠屏幕下方，已补正常滚动，原断言保留，待定向复验。整体仍 IN_PROGRESS。
 
+**READY_FOR_INDEPENDENT_REVIEW — 代码与文档收口完成，Owner 真机门禁单独保留。**
 
-状态 **IN_PROGRESS — 统一 UI 门禁运行中**。本轮 Owner Goal 覆盖 R1–R9、L1–L2，替代旧的停止实现及仅 R1–R3 指令。唯一逐项证据入口：[执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。
+本轮范围为 R1–R9、L1–L2，替代仅 R1–R3 的旧指令。唯一逐项结论与可复现证据见 [统一收口执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。
 
-- 分支 `codex/external-capture-v1`；审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`，保留所有后续修复。
-- 门禁代码/测试候选 `3b4cc3d4390f8e5e6a1e17206b9f9538b2227a4a` 已推送并远端核实。[PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) 仍 OPEN Draft，base `feature/build9-today-entry-followups` 未变。
-- R4 图片丢失已确定性复现后修复；共享发布互斥、所有权清理、取消/空库检查/成功恢复与导出 cutoff、草稿保护均定向通过。R2 九张总量 >180 MiB PNG 导入九次 MainActor 响应通过。
-- R1/R5 语义化 provider、超时/once-only/取消/部分确认；R3 失败 Inbox；R6 字节预算；R7 staging/副本日志/中断恢复/备份范围；R8 搜索；R9 脱敏诊断/安全重试均有定向证据。先前取消后直接回 host 的测试假设已由标准 SLCompose 对照反证：取消回到系统 picker，实际重开及旧回调后无污染通过，截图可见，生产取消 API 未改。
-- 统一 Unit **240/240 PASS**；unsigned Release app/appex **PASS（exit 0）**；project/plist/App Group/activation/scheme 与 509 个中英字符串静态检查通过。**FinalGate1 完整 UI 仍运行，整体退出码未知**，不可报告整组或目标完成。
-- App/Extension 1.0(7)、schema V10、backup v6 未变。当前 Owner 真机清单已归一：[集中验收](OWNER_MANUAL_VALIDATION_CHECKLIST.md)。签名/App Group、Photos/微信、真实离线、Owner 库覆盖升级与历史默认模拟器 V8 hash 差异根因仍 OWNER_REQUIRED/未验证。无清库、删除模拟器数据或放宽数据断言。
+- 分支 `codex/external-capture-v1`；审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`；最终产品代码 `a0728d77d63e27af4ffeb9341105d62f4d4e5842` 已推送。后续交接提交仅补 Files 测试保存完成同步及文档；最终仓库 HEAD 以 PR head 为准。
+- [PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) 仍 OPEN Draft，base `feature/build9-today-entry-followups` 未变。未执行 merge/close/retarget、tag、改号、Archive/TestFlight 或新增 CI。
+- R4 原分享图片丢失及新增普通图片安装竞争均已复现并修复；共享锁使用稳定路径身份，恢复仅删除空目录及本次拥有的图片。失败/取消/成功恢复、导出截止边界、草稿与排队分享验证通过。
+- 统一门禁代码 `3b4cc3d4390f8e5e6a1e17206b9f9538b2227a4a`：Unit 240/240 PASS，UI 48/49 PASS，整体 exit 65。唯一 UI 失败为屏幕下方关系按钮未滚动；补正常滚动后定向 PASS，保留原断言和失败记录。
+- R4 修复后 63/63 相关 Unit PASS（StableLock1，exit 0）；最终锁身份/排队 2 Unit 与 ManualReview UI PASS（FinalSupplement1）。同组 Files 点击系统 Save 后立即终止，随后选择器 No Recents，未选到备份而失败，整体 exit 65；增加保存完成同步后同设备 Files 预览→取消→恢复 1/1 PASS（FilesSaveCompletion1，exit 0）。没有将失败的原整组重标为 PASS。
+- 最终 unsigned Release app/appex PASS（ReleaseStableLock1，exit 0）；SwiftData import warning 消失，仅未采用 AppIntents 的自动提取提示。project/plist/scheme、App Group、activation v2 与 509 个中英字符串静态检查通过。
+- App/Extension 1.0(7)、schema V10、备份 v6（合法 v1–v6 可读）未变。原 V1 功能与 UX-01/02 已有交付，不重新列为未开发。
 
-完成审计新增 R4 窗口已在专用合成模拟器 DirectoryRepro1 确定性复现（exit 65）：空目录检查后普通图片保存被递归目录删除误删。已窄修为原子 rmdir，仅允许删除空目录，出现新文件则安全拒绝恢复。DirectoryFix1（完整恢复/导出与 Capture Unit）及 ReleaseDirectoryFix1 正在复验；原 FinalGate1 UI 不受打断。必须闭环这项修复及补充验证后才可 READY。
+当前没有已确认而未处理的本轮代码缺陷。仍需 [Owner 集中真机验证](OWNER_MANUAL_VALIDATION_CHECKLIST.md)：签名/App Group、Photos/微信公开分享、实际离线/慢网络、Owner 旧库保留数据覆盖升级及交互性能。历史默认模拟器 V8 hash 差异原因、实际云端 build 与 TestFlight 可用性仍 UNKNOWN/OWNER_REQUIRED；没有清库或删除模拟器数据。
 
-下一步：先继续观察现有 `/tmp/PGOS-Closure-FinalGate1.log` 与 `.xcresult`，不重复启动门禁；处理真实失败，完成逐要求审计、更新最终 PR handoff 后才交付 READY_FOR_INDEPENDENT_REVIEW。普通定向修复/commit/push 连续授权；不 merge/close/retarget、tag、改号、Archive/TestFlight、新 CI 或全文抓取。L2 远端/发布证据与未来经授权的集成顺序见计划，tag/Archive success 不等于 TestFlight 可安装。
+下一边界仅独立 Review 与经 Owner 授权的真机门禁。未来 PR 集成顺序及 #1 已包含于 #2 的证据见执行计划；本轮不自动进入合并、发布或全文抓取。
 
 以下内容均为历史交接（superseded），旧状态及 Next Action 不再指挥当前工作。先前逐组进展、失败与反证保留在执行计划中。
 

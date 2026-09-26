@@ -1557,6 +1557,7 @@ extension AppLaunchSmokeTests {
         let filename = app.textFields["DOCPicker.filenameTextField"]
         XCTAssertTrue(filename.waitForExistence(timeout: 20))
         app.navigationBars.buttons["Save"].tap()
+        XCTAssertTrue(filename.waitForNonExistence(timeout: 20))
         app.terminate()
         app.launch() // Resets only the dedicated UITesting database, preserving the Files copy.
         func selectBackup() {

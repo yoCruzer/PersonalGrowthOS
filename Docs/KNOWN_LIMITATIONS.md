@@ -1,6 +1,6 @@
 # Known Limitations
 
-2026-09-26 当前入口：[CURRENT_STATE](CURRENT_STATE.md) / [统一收口计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。当前 External Capture 候选仍在统一门禁前；以下历史 Build 3/4/5 记录不代表当前发布阻塞。真机事项统一到 [当前候选清单](OWNER_MANUAL_VALIDATION_CHECKLIST.md)，不逐代重复。
+2026-09-26 当前入口：[CURRENT_STATE](CURRENT_STATE.md) / [统一收口计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。当前 External Capture 已完成本地收口，停在 READY_FOR_INDEPENDENT_REVIEW；以下历史 Build 3/4/5 记录不代表当前发布阻塞。真机事项统一到 [当前候选清单](OWNER_MANUAL_VALIDATION_CHECKLIST.md)，不逐代重复。
 
 ## V1 Product Boundaries
 
