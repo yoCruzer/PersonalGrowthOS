@@ -1440,6 +1440,100 @@ final class ExternalCaptureTests: XCTestCase {
         return root
     }
 
+    func testFailedInboxDeferralSurvivesReopenAndVersionChange() async throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let mediaStore = MediaStore(rootURL: root)
+        let storeURL = root.appendingPathComponent("store.sqlite")
+        let bad = ShareImportPayload(text: "Future shared content")
+        let good = ShareImportPayload(text: "Valid shared content")
+        try inbox.publish(bad, files: [:])
+        let directory = try XCTUnwrap(inbox.pending().first)
+        var future = bad
+        future.schemaVersion = 99
+        try JSONEncoder().encode(future).write(to: directory.appendingPathComponent("payload.json"))
+        try inbox.publish(good, files: [:])
+        do {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+            let importer = ExternalCaptureImporter(container: container, mediaStore: mediaStore, inbox: inbox)
+            importer.processingVersion = "old"
+            let first = try await importer.scanReport()
+            XCTAssertEqual(first.newFailureIDs, [bad.id.uuidString.lowercased()])
+            XCTAssertEqual(first.failed, 1)
+            XCTAssertEqual(first.pendingCount, 1)
+            XCTAssertEqual(try container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id), [good.id])
+            let repeated = try await importer.scanReport()
+            XCTAssertTrue(repeated.newFailureIDs.isEmpty)
+            let pending = try await importer.pendingItems()
+            XCTAssertEqual(pending.first?.reason, .unsupportedVersion)
+            XCTAssertFalse(try XCTUnwrap(pending.first).isCommitted)
+            try await importer.keepForLater([bad.id.uuidString.lowercased()])
+            let laterGood = ShareImportPayload(text: "New valid share after deferral")
+            let laterBad = ShareImportPayload(text: "New invalid share after deferral")
+            try inbox.publish(laterGood, files: [:])
+            try inbox.publish(laterBad, files: [:])
+            let laterDirectory = try XCTUnwrap(inbox.pending().first { $0.lastPathComponent == laterBad.id.uuidString.lowercased() })
+            try Data("invalid JSON".utf8).write(to: laterDirectory.appendingPathComponent("payload.json"))
+            let newFailure = try await importer.scanReport()
+            XCTAssertEqual(newFailure.newFailureIDs, [laterBad.id.uuidString.lowercased()])
+            XCTAssertEqual(newFailure.failed, 1)
+            XCTAssertEqual(newFailure.pendingCount, 2)
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+            try await importer.discardPending(laterBad.id.uuidString.lowercased())
+        }
+        do {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+            let importer = ExternalCaptureImporter(container: container, mediaStore: mediaStore, inbox: inbox)
+            importer.processingVersion = "old"
+            let pending = try await importer.pendingItems()
+            XCTAssertTrue(try XCTUnwrap(pending.first).isDeferred)
+            // A repaired fixture stays deferred until explicitly retried or the app version changes.
+            try JSONEncoder().encode(bad).write(to: directory.appendingPathComponent("payload.json"))
+            let deferred = try await importer.scanReport()
+            XCTAssertEqual(deferred.failed, 0)
+            XCTAssertEqual(deferred.pendingCount, 1)
+            importer.processingVersion = "new"
+            let updated = try await importer.scanReport()
+            XCTAssertEqual(updated.pendingCount, 0)
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 3)
+        }
+    }
+
+    func testPendingRetryAndDiscardAreSelectedAndReceiptAware() async throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        let committed = ShareImportPayload(text: "Already committed")
+        try inbox.publish(committed, files: [:])
+        importer.checkpoint = { if $0 == "afterSave" { throw CaptureError.invalidPayload } }
+        let failed = try await importer.scanReport()
+        XCTAssertEqual(failed.failed, 1)
+        var items = try await importer.pendingItems()
+        XCTAssertTrue(try XCTUnwrap(items.first).isCommitted)
+        XCTAssertEqual(items.first?.reason, .cleanup)
+        let other = ShareImportPayload(text: "Leave this pending")
+        try inbox.publish(other, files: [:])
+        try await importer.discardPending(committed.id.uuidString.lowercased())
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 1)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
+        XCTAssertEqual(try inbox.pending().map(\.lastPathComponent), [other.id.uuidString.lowercased()])
+        try await importer.keepForLater([other.id.uuidString.lowercased()])
+        items = try await importer.pendingItems()
+        XCTAssertTrue(try XCTUnwrap(items.first).isDeferred)
+        importer.checkpoint = nil
+        try await importer.retry(other.id.uuidString.lowercased())
+        XCTAssertTrue(try inbox.pending().isEmpty)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+        // A retained duplicate of the committed entry only needs cleanup, even without its payload.
+        try inbox.publish(committed, files: [:])
+        let duplicate = try XCTUnwrap(inbox.pending().first)
+        try FileManager.default.removeItem(at: duplicate.appendingPathComponent("payload.json"))
+        try await importer.retry(committed.id.uuidString.lowercased())
+        XCTAssertTrue(try inbox.pending().isEmpty)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+    }
+
     func testConcurrentExplicitConsumptionCommitsOnceAndCleansIdempotently() async throws {
         let root = try temporaryRoot()
         let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))

@@ -18,6 +18,8 @@ struct AppShell: View {
     @State private var isShowingStorage = false
     @Environment(\.scenePhase) private var captureScenePhase
     @State private var captureFailure = false
+    @State private var failedCaptureIDs: [String] = []
+    @State private var isShowingPendingShares = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -75,10 +77,26 @@ struct AppShell: View {
             if phase == .active { Task { await importShares() } }
         }
         .alert("Some shared content could not be imported", isPresented: $captureFailure) {
-            Button("Retry") { Task { await importShares() } }
-            Button("Cancel", role: .cancel) { }
+            Button("Review Pending Shares") { isShowingPendingShares = true }
+            Button("Keep for Later", role: .cancel) {
+                Task {
+                    do {
+                        let importer = ExternalCaptureImporter(container: container.modelContainer,
+                            mediaStore: container.mediaStore, inbox: try captureManagementInbox(mediaStore: container.mediaStore))
+                        try await importer.keepForLater(failedCaptureIDs)
+                    } catch { CaptureLog.event("inbox.deferFailed") }
+                }
+            }
         } message: {
             Text("The shared files are retained. You can retry when storage is available or after updating the app.")
+        }
+        .sheet(isPresented: $isShowingPendingShares) {
+            NavigationStack {
+                CaptureInboxView(mediaStore: container.mediaStore)
+                    .toolbar { ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { isShowingPendingShares = false }
+                    } }
+            }
         }
         .sheet(isPresented: $isShowingStorage) {
             MediaStorageView(
@@ -92,6 +110,31 @@ struct AppShell: View {
     private func importShares() async {
         if container.configuration.launchMode == .uiTesting {
             #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-PGOSPendingInboxTest") {
+                do {
+                    let inbox = try captureManagementInbox(mediaStore: container.mediaStore)
+                    let importer = ExternalCaptureImporter(container: container.modelContainer,
+                        mediaStore: container.mediaStore, inbox: inbox)
+                    let marker = container.mediaStore.rootURL.appendingPathComponent("PendingFixtureSeeded")
+                    if !FileManager.default.fileExists(atPath: marker.path) {
+                        for suffix in ["1", "2"] {
+                            var payload = ShareImportPayload(text: "Synthetic pending fixture")
+                            payload.id = UUID(uuidString: "00000000-0000-0000-0000-00000000000\(suffix)")!
+                            try inbox.publish(payload, files: [:])
+                            payload.schemaVersion = 99
+                            let directory = try inbox.pending().first { $0.lastPathComponent == payload.id.uuidString }!
+                            try JSONEncoder().encode(payload).write(to: directory.appendingPathComponent("payload.json"))
+                        }
+                        try Data().write(to: marker)
+                    }
+                    let report = try await importer.scanReport()
+                    if !report.newFailureIDs.isEmpty {
+                        failedCaptureIDs = report.newFailureIDs
+                        captureFailure = true
+                    }
+                } catch { captureFailure = true }
+                return
+            }
             guard ProcessInfo.processInfo.arguments.contains("-PGOSCaptureShareTest") else { return }
             do {
                 let inbox = try ShareInbox.shared()
@@ -111,7 +154,11 @@ struct AppShell: View {
         do {
             let importer = ExternalCaptureImporter(container: container.modelContainer,
                 mediaStore: container.mediaStore, inbox: try ShareInbox.shared())
-            captureFailure = try await importer.scan() > 0
+            let report = try await importer.scanReport()
+            if !report.newFailureIDs.isEmpty {
+                failedCaptureIDs = report.newFailureIDs
+                captureFailure = true
+            }
         } catch {
             CaptureLog.event("inbox.unavailable type=\(String(describing: type(of: error)))")
             captureFailure = true
@@ -849,6 +896,14 @@ private struct MediaStorageView: View {
                 } footer: {
                     Text("Backups contain all records, entry text, and original photos and are not encrypted. Import is available only when this database is empty; V1 never merges or erases existing data.")
                 }
+                Section {
+                    NavigationLink {
+                        CaptureInboxView(mediaStore: mediaStore)
+                    } label: {
+                        Label("Pending Shares", systemImage: "tray")
+                    }
+                    .accessibilityIdentifier("settings-pending-shares")
+                }
                 Section("About") {
                     Button {
                         UIPasteboard.general.string = AppVersionInformation().displayText
@@ -1367,5 +1422,90 @@ private struct PinnedEntriesView: View {
             } label: { PinnedEntrySummary(entry: entry) }
         }
         .navigationTitle("Pinned Entries")
+    }
+}
+
+
+@MainActor
+private func captureManagementInbox(mediaStore: MediaStore) throws -> ShareInbox {
+    if AppConfiguration.current().launchMode == .uiTesting {
+        return ShareInbox(root: mediaStore.rootURL.appendingPathComponent("UITestInbox"))
+    }
+    return try ShareInbox.shared()
+}
+
+private struct CaptureInboxView: View {
+    let mediaStore: MediaStore
+    @Environment(\.modelContext) private var context
+    @State private var items: [CaptureInboxItem] = []
+    @State private var selectedDiscard: CaptureInboxItem?
+    @State private var busy = false
+    @State private var failure = false
+
+    var body: some View {
+        List {
+            if items.isEmpty {
+                Text("No pending shares")
+            }
+            ForEach(items) { item in
+                Section {
+                    if let date = item.createdAt { Text(date, style: .date) }
+                    Text(verbatim: String(item.id.prefix(8))).font(.caption).foregroundStyle(.secondary)
+                    Text(item.reason.title)
+                    if item.isDeferred { Text("Kept for later").foregroundStyle(.secondary) }
+                    if item.isCommitted {
+                        Text("The entry is already saved. These actions only remove the remaining Inbox copy.")
+                            .font(.caption)
+                    }
+                    Button("Retry") { perform { try await $0.retry(item.id) } }
+                    Button("Keep for Later") { perform { try await $0.keepForLater([item.id]) } }
+                    Button(item.isCommitted ? "Remove Pending Copy" : "Discard Share", role: .destructive) {
+                        selectedDiscard = item
+                    }
+                    .accessibilityIdentifier("pending-discard-\(item.id)")
+                }
+            }
+        }
+        .disabled(busy)
+        .overlay { if busy { ProgressView() } }
+        .navigationTitle("Pending Shares")
+        .task { await refresh() }
+        .alert("Remove this pending share?", isPresented: Binding(
+            get: { selectedDiscard != nil }, set: { if !$0 { selectedDiscard = nil } }
+        ), presenting: selectedDiscard) { item in
+            Button(item.isCommitted ? "Remove Pending Copy" : "Discard Share", role: .destructive) {
+                perform { try await $0.discardPending(item.id) }
+            }
+            Button("Cancel", role: .cancel) { selectedDiscard = nil }
+        } message: { item in
+            Text(item.isCommitted
+                ? "The saved entry will remain. Only this Inbox copy will be removed."
+                : "This share has not been imported. Its pending content will be permanently removed.")
+        }
+        .alert("Import needs attention", isPresented: $failure) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("The shared files are retained. You can retry when storage is available or after updating the app.")
+        }
+    }
+
+    private func importer() throws -> ExternalCaptureImporter {
+        ExternalCaptureImporter(container: context.container, mediaStore: mediaStore,
+            inbox: try captureManagementInbox(mediaStore: mediaStore))
+    }
+
+    private func refresh() async {
+        do { items = try await importer().pendingItems() }
+        catch { failure = true }
+    }
+
+    private func perform(_ operation: @escaping (ExternalCaptureImporter) async throws -> Void) {
+        busy = true
+        Task {
+            defer { busy = false }
+            do { try await operation(importer()) }
+            catch { failure = true }
+            await refresh()
+        }
     }
 }

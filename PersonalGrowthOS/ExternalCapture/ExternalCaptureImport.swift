@@ -45,12 +45,47 @@ final class CaptureImportReceipt {
     init(id: UUID, importedAt: Date) { self.id = id; self.importedAt = importedAt }
 }
 
+enum CaptureInboxReason: String, Codable {
+    case pending, unsupportedVersion, invalidContent, storage, cleanup, other
+
+    var title: String {
+        switch self {
+        case .pending: return String(localized: "Waiting to import")
+        case .unsupportedVersion: return String(localized: "Requires a newer app version")
+        case .invalidContent: return String(localized: "Shared content or photo is invalid")
+        case .storage: return String(localized: "Not enough storage")
+        case .cleanup: return String(localized: "Imported; pending file cleanup")
+        case .other: return String(localized: "Import needs attention")
+        }
+    }
+}
+
+struct CaptureInboxItem: Identifiable {
+    let id: String
+    let createdAt: Date?
+    let reason: CaptureInboxReason
+    let isCommitted: Bool
+    let isDeferred: Bool
+}
+
+struct CaptureScanReport {
+    var failed = 0
+    var newFailureIDs: [String] = []
+    var pendingCount = 0
+}
+
+private struct CaptureFailureRecord: Codable {
+    var reason: CaptureInboxReason
+    var deferredVersion: String?
+}
+
 @MainActor
 final class ExternalCaptureImporter {
     let container: ModelContainer
     let mediaStore: MediaStore
     let inbox: ShareInbox
     var checkpoint: ((String) throws -> Void)?
+    var processingVersion = "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown")/\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "unknown")/capture1"
 
     init(container: ModelContainer, mediaStore: MediaStore, inbox: ShareInbox) {
         self.container = container
@@ -58,23 +93,22 @@ final class ExternalCaptureImporter {
         self.inbox = inbox
     }
 
-    func scan() async throws -> Int {
+    func scan() async throws -> Int { try await scanReport().failed }
+    func scanReport() async throws -> CaptureScanReport { try await run { try $0.scan() } }
+    func consume(_ directory: URL) async throws { try await run { try $0.consume(directory) } }
+    func pendingItems() async throws -> [CaptureInboxItem] { try await run { try $0.pendingItems() } }
+    func keepForLater(_ ids: [String]) async throws { try await run { try $0.keepForLater(ids) } }
+    func retry(_ id: String) async throws { try await run { try $0.retry(id) } }
+    func discardPending(_ id: String) async throws { try await run { try $0.discardPending(id) } }
+
+    private func run<T>(_ operation: @escaping (CaptureImportWorker) throws -> T) async throws -> T {
         let worker = CaptureImportWorker(container: container, mediaStore: mediaStore,
-            inbox: inbox, checkpoint: checkpoint)
+            inbox: inbox, checkpoint: checkpoint, processingVersion: processingVersion)
         let task = Task.detached {
             try worker.checkpoint?("scheduled")
-            return try StorePublication.perform(at: worker.mediaStore.rootURL) { try worker.scan() }
+            return try StorePublication.perform(at: worker.mediaStore.rootURL) { try operation(worker) }
         }
         return try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
-    }
-
-    func consume(_ directory: URL) async throws {
-        let worker = CaptureImportWorker(container: container, mediaStore: mediaStore,
-            inbox: inbox, checkpoint: checkpoint)
-        let task = Task.detached {
-            try StorePublication.perform(at: worker.mediaStore.rootURL) { try worker.consume(directory) }
-        }
-        try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
     }
 }
 
@@ -83,21 +117,112 @@ private struct CaptureImportWorker {
     let mediaStore: MediaStore
     let inbox: ShareInbox
     let checkpoint: ((String) throws -> Void)?
+    let processingVersion: String
 
-    func scan() throws -> Int {
+    func scan() throws -> CaptureScanReport {
         _ = try CaptureStagingSession.reclaimAbandoned(root: inbox.root)
-        var failed = 0
+        var report = CaptureScanReport()
+        var state = try readState()
         for directory in try inbox.pending() {
             try Task.checkCancellation()
+            let id = directory.lastPathComponent
+            if state[id]?.deferredVersion == processingVersion { continue }
             CaptureLog.event("inbox.discovered")
-            do { try consume(directory) }
+            do {
+                try consume(directory)
+                state.removeValue(forKey: id)
+            } catch is CancellationError { throw CancellationError() }
             catch {
-                failed += 1
-                let reason = (error as? CaptureError)?.rawValue ?? String(describing: type(of: error))
-                CaptureLog.event("import.retained reason=\(reason)")
+                report.failed += 1
+                let reason = try failureReason(error, id: id)
+                if state[id]?.reason != reason { report.newFailureIDs.append(id) }
+                state[id] = CaptureFailureRecord(reason: reason)
+                CaptureLog.event("import.retained reason=\(reason.rawValue)")
             }
         }
-        return failed
+        let pending = try inbox.pending()
+        report.pendingCount = pending.count
+        let liveIDs = Set(pending.map(\.lastPathComponent))
+        try writeState(state.filter { liveIDs.contains($0.key) })
+        return report
+    }
+
+    private var stateURL: URL { mediaStore.rootURL.appendingPathComponent("CaptureInboxState.json") }
+
+    private func readState() throws -> [String: CaptureFailureRecord] {
+        guard FileManager.default.fileExists(atPath: stateURL.path) else { return [:] }
+        return try JSONDecoder().decode([String: CaptureFailureRecord].self, from: Data(contentsOf: stateURL))
+    }
+
+    private func writeState(_ state: [String: CaptureFailureRecord]) throws {
+        try FileManager.default.createDirectory(at: mediaStore.rootURL, withIntermediateDirectories: true)
+        try JSONEncoder().encode(state).write(to: stateURL, options: .atomic)
+    }
+
+    private func hasReceipt(_ name: String) throws -> Bool {
+        guard let id = UUID(uuidString: name) else { return false }
+        return try ModelContext(container).fetchCount(FetchDescriptor<CaptureImportReceipt>(predicate: #Predicate { $0.id == id })) > 0
+    }
+
+    private func failureReason(_ error: Error, id: String) throws -> CaptureInboxReason {
+        if try hasReceipt(id) { return .cleanup }
+        if error as? CaptureError == .unsupportedSchema { return .unsupportedVersion }
+        if error is CaptureError || error is DecodingError { return .invalidContent }
+        if case MediaStoreError.insufficientCapacity = error { return .storage }
+        let underlying = error as NSError
+        if (underlying.domain == NSCocoaErrorDomain && underlying.code == NSFileWriteOutOfSpaceError)
+            || (underlying.domain == NSPOSIXErrorDomain && underlying.code == 28) { return .storage }
+        return .other
+    }
+
+    func pendingItems() throws -> [CaptureInboxItem] {
+        let state = try readState()
+        return try inbox.pending().map { directory in
+            let id = directory.lastPathComponent
+            let committed = try hasReceipt(id)
+            return CaptureInboxItem(id: id,
+                createdAt: try? directory.resourceValues(forKeys: [.creationDateKey]).creationDate,
+                reason: committed ? .cleanup : (state[id]?.reason ?? .pending),
+                isCommitted: committed, isDeferred: state[id]?.deferredVersion == processingVersion)
+        }
+    }
+
+    func keepForLater(_ ids: [String]) throws {
+        var state = try readState()
+        let live = Set(try inbox.pending().map(\.lastPathComponent))
+        for id in ids where live.contains(id) {
+            var record = state[id] ?? CaptureFailureRecord(reason: .pending)
+            record.deferredVersion = processingVersion
+            state[id] = record
+        }
+        try writeState(state)
+    }
+
+    private func directory(_ id: String) throws -> URL? {
+        try inbox.pending().first { $0.lastPathComponent == id }
+    }
+
+    func retry(_ id: String) throws {
+        guard let directory = try directory(id) else { return }
+        var state = try readState()
+        do {
+            try consume(directory)
+            state.removeValue(forKey: id)
+            try writeState(state)
+        } catch {
+            state[id] = CaptureFailureRecord(reason: try failureReason(error, id: id))
+            try writeState(state)
+            throw error
+        }
+    }
+
+    func discardPending(_ id: String) throws {
+        guard let directory = try directory(id) else { return }
+        // Only the selected Pending copy is removed, never an Entry or its receipt.
+        try inbox.remove(directory)
+        var state = try readState()
+        state.removeValue(forKey: id)
+        try writeState(state)
     }
 
     func consume(_ directory: URL) throws {

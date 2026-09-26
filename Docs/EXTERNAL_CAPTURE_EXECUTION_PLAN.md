@@ -102,7 +102,7 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 | R4 | CONFIRMED → 修复定向验证中 | restore worker 安装 Originals 后，catch 删除整个目录；MainActor importer 无共享互斥。新增 `testRestoreFailurePreservesInterleavedCommittedShareImage` 用 beforeSave checkpoint + semaphore 控制交错，断言已提交分享图片保持可读。 |
 | R2 | 修复实现 / 继续验证 | 主 App importer 与 Extension 发布/图片校验/hash/缩略图移至 worker；同包并发消费幂等通过。大图响应性和最终 UI 门禁仍待做。 |
 | R1 | 修复实现 / 公共 host 验证通过 | version 2 默认匹配；真实独立混合 host 与 Safari 均出现并完整导入。语义化选择、caption、替代表现、部分失败及多来源提示已实现；真机/部分保存 UI 门禁待做。 |
-| R3 | CONFIRMED（静态） | 前台仅 Retry/Cancel，无持久稍后或按条处理入口；待修复。 |
+| R3 | FIXED（final gate 待做） | 失败状态持久化、同故障仅首次提醒、设置页逐条重试/稍后/确认丢弃已实现；版本变化重新尝试，receipt 优先区分已提交副本。3 Unit + 1 UI 定向通过。 |
 | R5 | 修复实现 / 定向通过 | 一次性 callback bridge、每次读取 30 秒边界、Progress/Task 与 generation；超时/取消/迟到 callback 拒收通过。补充 UI 取消/部分保存验证待做。 |
 | R6 | 修复验证中 | 外部可选 metadata 统一按 UTF-8 预算截断完整 Character，严格 payload/backup 验证不放宽；2 项定向测试通过，结合后续 UI 继续验证。 |
 | R7 | 部分修复 | App Group staging 内核租约与独立进程终止回收已通过；无标记旧 staging 保留。导入副本补偿、单文件失败重试、备份 Pending 告知仍待做。 |
@@ -209,3 +209,20 @@ Activation2 (13 Unit pass; UI fail as above): -only-testing:PersonalGrowthOSTest
 ```
 
 后续仍须：R3 最小失败 Inbox；R7 owned-copy journal/Recovery 补偿、容量与逐文件清理、导出 Pending 边界；R9 脱敏诊断与安全重试；R4 剩余检查点/导出交错；R2 大图主线程响应；新 UI 部分保存/取消；L2 旧文档与 Owner 清单归一及统一 final gate。尚不 READY。
+
+
+### R3 失败 Inbox 第四组（2026-09-26，定向通过）
+
+- 第三组提交 `a5cd018d23c9742f30280476761cb6b8cb83567a` 普通 HTTPS push 成功；实时 `gh pr view 7 --json number,state,isDraft,baseRefName,headRefName,headRefOid,url` 核实 OPEN Draft、同 SHA、base 仍为 `feature/build9-today-entry-followups`。
+- 状态文件位于主 App 媒体根目录，包 ID/稳定原因/稍后处理版本持久化；未知 schema 继续保留。正常包仍被扫描，同一坏包同原因不反复弹窗；稍后处理跨重开，版本变化可重新尝试，手动 Retry 绕过稍后状态。
+- 设置页提供 Pending Shares，逐项显示日期、短 ID、状态与操作。未导入丢弃与已提交副本清理有不同说明，确认只移除选中 Pending，绝不删除 Entry/receipt。所有状态操作复用同一发布租约；UI testing 仅访问自己 root 下 UITestInbox，不进入私人共享队列。
+- `/tmp/PGOS-Closure-Inbox1.log` exit 70：沙箱无法访问 CoreSimulator，非产品测试结果。
+- `/tmp/PGOS-Closure-Inbox2.xcresult` exit 65：两个新 Unit 的测试 ID 使用大写 UUID，与生产 Pending 小写目录不符，逐条操作未命中；夹具改为实际目录 ID，未放宽断言。
+- `/tmp/PGOS-Closure-Inbox3.xcresult` exit 65：新增 UI 测试误用不存在的 XCUIElement.lastMatch，未运行；已改为系统确认 sheet 内的按钮。
+- `/tmp/PGOS-Closure-Inbox4.xcresult` exit 65：两项 Unit 均通过；UI 的系统 confirmationDialog 实际呈现 popover 并隐藏取消按钮，原取消动作测试失败。改用具有明确取消动作的 alert，继续定向 UI 复验。公共 xcodebuild 前缀同上，附加两项 `ExternalCaptureTests/testFailedInboxDeferralSurvivesReopenAndVersionChange`、`ExternalCaptureTests/testPendingRetryAndDiscardAreSelectedAndReceiptAware` 和 `AppLaunchSmokeTests/testPendingInboxDefersAndConfirmsOnlySelectedDiscard`。日志同名前缀 `.log`。
+
+本组不替代 R7 导入副本补偿/备份边界、R9 诊断或其他剩余收口项；完整 Goal 仍为 IN_PROGRESS。
+
+R3 后续 UI 复验：`/tmp/PGOS-Closure-InboxUI5.xcresult` exit 0、1/1 PASS，公共前缀 + `-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPendingInboxDefersAndConfirmsOnlySelectedDiscard`。取消不删、确认仅选中项、重启不弹窗且保留另一条 deferred 均通过。Inbox4 的失败 UI 层级及录屏导出在 `/tmp/PGOS-Inbox4-Attachments`。首次在进程退出前导出结果包未完成，进程 exit 65 后读取成功；非产物损坏。
+
+R3 补充 Unit `/tmp/PGOS-Closure-InboxUnit6.xcresult`：在 deferred 坏包存在时加入新好包和新坏包，要求新好包提交、新故障单独提示；并回归 receipt 中断重开/删除不复活。公共前缀附加 `-only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testFailedInboxDeferralSurvivesReopenAndVersionChange -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testPendingRetryAndDiscardAreSelectedAndReceiptAware -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testImportCommitInterruptionRetryDeletionAndReopen`。exit 0，3/3 PASS。495 个字符串键 en/zh-Hans 完整，JSON 与 `git diff --check` 通过。

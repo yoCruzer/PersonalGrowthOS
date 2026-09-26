@@ -2,6 +2,43 @@ import XCTest
 import Network
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testPendingInboxDefersAndConfirmsOnlySelectedDiscard() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSPendingInboxTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let alert = app.alerts["Some shared content could not be imported"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 10))
+        alert.buttons["Keep for Later"].tap()
+        app.buttons["settings-button"].tap()
+        let pending = app.buttons["settings-pending-shares"]
+        if !pending.isHittable { app.swipeUp() }
+        XCTAssertTrue(pending.waitForExistence(timeout: 5))
+        pending.tap()
+        XCTAssertTrue(app.staticTexts["Kept for later"].firstMatch.waitForExistence(timeout: 5))
+        let first = app.buttons["pending-discard-00000000-0000-0000-0000-000000000001"]
+        let second = app.buttons["pending-discard-00000000-0000-0000-0000-000000000002"]
+        first.tap()
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(first.exists)
+        first.tap()
+        app.alerts["Remove this pending share?"].buttons["Discard Share"].tap()
+        XCTAssertTrue(first.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(second.exists)
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
+        XCTAssertFalse(alert.exists)
+        app.buttons["settings-button"].tap()
+        if !pending.isHittable { app.swipeUp() }
+        pending.tap()
+        XCTAssertTrue(second.waitForExistence(timeout: 5))
+        XCTAssertFalse(first.exists)
+        XCTAssertTrue(app.staticTexts["Kept for later"].exists)
+    }
+
     func testCoreShellPassesAccessibilityAudit() throws {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

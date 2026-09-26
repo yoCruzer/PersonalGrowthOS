@@ -10,6 +10,8 @@ R6 UTF-8 可选 metadata 预算、R8 source 搜索/提交后刷新、L1 显式 S
 
 R1/R5 provider 语义化读取、30 秒 callback 边界、取消/generation、部分保存确认与扩展 worker 发布已实现。真实 Safari 及独立公开 API 混合 host 系统面板→extension→主 App 导入均通过；version 2 默认匹配通过，strict 匹配失败已据实记录。R7 staging 内核租约在 Unit 与真实合成子进程 SIGKILL 后回收验证通过；Pending/无归属旧目录保留。仍待 R3、R7 导入副本/备份边界、R9、R4 剩余交错与完整 final gate，继续按同一 Goal 推进。
 
+R3 失败 Inbox 已实现，3 项定向 Unit + 1 项 UI 通过：持久稍后、版本重试、新故障/正常包不被屏蔽、receipt 区分、取消和逐条确认丢弃、重启不重复提醒；结果见执行计划。下一步为 R7 导入副本补偿/备份边界、R9 诊断及剩余完整门禁。第三组 `a5cd018d23c9742f30280476761cb6b8cb83567a` 已推送且 PR #7 远端核实一致，仍为 OPEN Draft。
+
 以下内容均为历史交接（superseded），其中旧状态及 Next Action 不再指挥当前工作；历史验证结果保留，不作为本轮修复通过证据。
 
 ---
