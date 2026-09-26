@@ -1879,7 +1879,12 @@ extension AppLaunchSmokeTests {
         let addressInput = safari.textFields.firstMatch
         addressInput.typeText("http://127.0.0.1:18763/capture.html\n")
         XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
-        safari.buttons["MoreMenuButton"].tap()
+        let moreMenu = safari.buttons["MoreMenuButton"]
+        XCTAssertTrue(moreMenu.waitForExistence(timeout: 5))
+        XCTAssertFalse(moreMenu.frame.isEmpty)
+        XCTAssertTrue(safari.frame.contains(moreMenu.frame))
+        // Selected web text can give this visible Safari button an invalid AX hit point.
+        moreMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         let share = safari.buttons["ShareButton"]
         XCTAssertTrue(share.waitForExistence(timeout: 5), safari.debugDescription)
         share.tap()
