@@ -294,3 +294,24 @@ R7 备份新增行为：可消费分享先导入；随后在共享发布边界�
 对照构建脚本首版缺 CFBundleDisplayName，重建成功但安装失败（exit 1），补齐后 ReproBuild2 exit 0 且安装 exit 0。脚本不会删除模拟器数据。仅移除本轮误放于 `/tmp/PGOSCaptureFixtureHost.app/PlugIns` 的生成对照副本，独立对照 App 与 host 各自安装，未删任何 App 数据。
 
 下一步统一门禁以此组提交为候选：全量 Unit、完整 UI suite（覆盖本轮相关集成与旧功能 smoke）、unsigned generic iOS Release app/appex、project/plist/String Catalog 静态检查。未完成门禁前仍 IN_PROGRESS。
+
+
+### 统一门禁候选（2026-09-26，进行中）
+
+候选代码与测试 SHA：`3b4cc3d4390f8e5e6a1e17206b9f9538b2227a4a`，已推送；之后的交接文档更新不改变该门禁代码。
+
+```sh
+xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=5F04DE28-8329-4774-9488-076D6DDC5230' -derivedDataPath /tmp/PGOS-Capture-Derived -parallel-testing-enabled NO -resultBundlePath /tmp/PGOS-Closure-FinalGate1.xcresult > /tmp/PGOS-Closure-FinalGate1.log 2>&1
+xcodebuild build -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS' -derivedDataPath /tmp/PGOS-Capture-Release CODE_SIGNING_ALLOWED=NO > /tmp/PGOS-Closure-ReleaseGate1.log 2>&1
+plutil -lint PersonalGrowthOS.xcodeproj/project.pbxproj ShareExtension/Info.plist ShareExtension/ShareExtension.entitlements PersonalGrowthOS/PersonalGrowthOS.entitlements
+```
+
+- FinalGate1 的 **Unit 240/240 PASS**（2026-09-26 18:40:37 +0800，89.086 秒）；完整 UI suite 正在同一个进程中继续，整体退出码尚未产生，不得把 Unit 小结当作整组通过。不要重启重复门禁，先核实原运行及 result bundle 是否终止完整。
+- ReleaseGate1 **exit 0 / BUILD SUCCEEDED**。app 与唯一嵌入 ShareExtension 均 1.0(7)，`Preprocessing.js` 存在；没有对照测试 extension 被打入产品。Search 的 SwiftData 缺失 import 警告不再出现。两条 `Metadata extraction skipped. No AppIntents.framework dependency found.` 为未采用 AppIntents 的自动提取提示，无 suppression，不是 Archive/分发结果。
+- project/plist/entitlements lint、scheme XML parse、509 个 String Catalog key 的 en/zh-Hans 全翻译状态、App Group 一致、activation dictionary v2/最多九图检查均 exit 0。未使用 TRUEPREDICATE，未改上限或版本号。
+- L2 再查询：`/tmp/PGOS-Closure-PRs-Final.jsonl` 确认 #1–#7 仍 open Draft 且 base 链未变，#7 远端为上述候选 SHA；main 仍 dd09975d3a3736b24f8646fa4f197cc883ab1796。#1 ancestor #2 再核验 exit 0。Build9 annotated tag 对象 290a5b74fdbfbcb0f8d02272c5294db850e07992 解引用仍为 ae14f107f7eebb89a1549e00de3d941e6a996281。
+- `/tmp/PGOS-Closure-Cloud-Final.json` 仍为既有 2026-09-16 Archive success/1 warning；`/tmp/PGOS-Closure-HeadChecks-Final.json` 当前候选 0 checks。实际云端 build 与 TestFlight 可用性仍 UNKNOWN/OWNER_REQUIRED，无任何发布动作。
+
+候选完成审计核对（仍待 UI 整体终止）：已直接核实 importer 私有 context 在 store lease 内创建，Entry/Source/receipt 同一次 save，receipt 检查早于 payload 读取，Notification 在 commit 后，清理失败不回滚已提交媒体；journal 写前登记、引用路径保护、逐文件补偿与未知归属保留。Extension Save 先在 MainActor 截取值快照、置 saving，再取消 metadata 并 worker 发布；callback 同时检查 finished/saving/generation。此静态核查与 Unit 的字节预算/值快照测试并列记录，不声称真实 LPMetadataProvider 网络超时已经执行。
+
+FinalGate1 日志已逐项核对 V9→V10、冻结 V7/V8 overlay/reopen、v1 导入、v2/v3/v4 验证、v5 follow-up 往返/旧版拒绝、v6 source 往返、原子发布、receipt-aware retry/discard、R4 交错/cutoff、provider alternatives/timeout/cancel、metadata 预算与 owned-copy 补偿均实际执行通过。UI/真机覆盖仍各自按其证据判定，不由这些 Unit 代替。

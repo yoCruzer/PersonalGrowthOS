@@ -1,22 +1,18 @@
 # 当前任务：External Capture v1 与项目遗留统一收口
 
-2026-09-26：Owner 新 Goal 替代此前停止实现及仅 R1–R3 的边界。状态 **IN_PROGRESS**，目标仍为完成 R1–R9、L1–L2 后交付 READY_FOR_INDEPENDENT_REVIEW。
+状态 **IN_PROGRESS — 统一 UI 门禁运行中**。本轮 Owner Goal 覆盖 R1–R9、L1–L2，替代旧的停止实现及仅 R1–R3 指令。唯一逐项证据入口：[执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。
 
-起始分支 `codex/external-capture-v1`，完整 SHA `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`；起始工作区干净。实时查询确认 [PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) 为 OPEN Draft，head 与本地一致，base `feature/build9-today-entry-followups`。无后续修复需要回退或重复。
+- 分支 `codex/external-capture-v1`；审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`，保留所有后续修复。
+- 门禁代码/测试候选 `3b4cc3d4390f8e5e6a1e17206b9f9538b2227a4a` 已推送并远端核实。[PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) 仍 OPEN Draft，base `feature/build9-today-entry-followups` 未变。
+- R4 图片丢失已确定性复现后修复；共享发布互斥、所有权清理、取消/空库检查/成功恢复与导出 cutoff、草稿保护均定向通过。R2 九张总量 >180 MiB PNG 导入九次 MainActor 响应通过。
+- R1/R5 语义化 provider、超时/once-only/取消/部分确认；R3 失败 Inbox；R6 字节预算；R7 staging/副本日志/中断恢复/备份范围；R8 搜索；R9 脱敏诊断/安全重试均有定向证据。先前取消后直接回 host 的测试假设已由标准 SLCompose 对照反证：取消回到系统 picker，实际重开及旧回调后无污染通过，截图可见，生产取消 API 未改。
+- 统一 Unit **240/240 PASS**；unsigned Release app/appex **PASS（exit 0）**；project/plist/App Group/activation/scheme 与 509 个中英字符串静态检查通过。**FinalGate1 完整 UI 仍运行，整体退出码未知**，不可报告整组或目标完成。
+- App/Extension 1.0(7)、schema V10、backup v6 未变。当前 Owner 真机清单已归一：[集中验收](OWNER_MANUAL_VALIDATION_CHECKLIST.md)。签名/App Group、Photos/微信、真实离线、Owner 库覆盖升级与历史默认模拟器 V8 hash 差异根因仍 OWNER_REQUIRED/未验证。无清库、删除模拟器数据或放宽数据断言。
 
-R4 已在合成隔离库确定性复现图片丢失，并完成首组修复：共享发布互斥、worker 导入、按拥有路径清理和主草稿保护。定向 8/8 + 取消/草稿 2/2 通过；R4 剩余检查点、R2 扩展 I/O 与其他收口项继续推进。验收与逐项证据统一记录于 [执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。普通实现、测试、commit/push 连续推进；不 merge/close/retarget、tag、改版本或 Archive/TestFlight。不删除用户数据或模拟器数据。
+下一步：先继续观察现有 `/tmp/PGOS-Closure-FinalGate1.log` 与 `.xcresult`，不重复启动门禁；处理真实失败，完成逐要求审计、更新最终 PR handoff 后才交付 READY_FOR_INDEPENDENT_REVIEW。普通定向修复/commit/push 连续授权；不 merge/close/retarget、tag、改号、Archive/TestFlight、新 CI 或全文抓取。L2 远端/发布证据与未来经授权的集成顺序见计划，tag/Archive success 不等于 TestFlight 可安装。
 
-R6 UTF-8 可选 metadata 预算、R8 source 搜索/提交后刷新、L1 显式 SwiftData import 已实现；R6 2/2 Unit，R8 2 Unit + 2 UI（真实 Safari 保留空搜索刷新及 follow-up 删除返回）通过。首组修复完整提交 `b25c59d00726395622923cab9a9c11d0d1555ef5` 已推送并核实远端；第二组证据见计划。接下来继续 R1/R5 provider、R2 extension 重 I/O、R3/R7 生命周期、R9 诊断及 R4 剩余交错，不进入全文抓取或发布。
+以下内容均为历史交接（superseded），旧状态及 Next Action 不再指挥当前工作。先前逐组进展、失败与反证保留在执行计划中。
 
-R1/R5 provider 语义化读取、30 秒 callback 边界、取消/generation、部分保存确认与扩展 worker 发布已实现。真实 Safari 及独立公开 API 混合 host 系统面板→extension→主 App 导入均通过；version 2 默认匹配通过，strict 匹配失败已据实记录。R7 staging 内核租约在 Unit 与真实合成子进程 SIGKILL 后回收验证通过；Pending/无归属旧目录保留。仍待 R3、R7 导入副本/备份边界、R9、R4 剩余交错与完整 final gate，继续按同一 Goal 推进。
-
-R3 失败 Inbox 已实现，3 项定向 Unit + 1 项 UI 通过：持久稍后、版本重试、新故障/正常包不被屏蔽、receipt 区分、取消和逐条确认丢弃、重启不重复提醒；结果见执行计划。R3 提交 `c6b024656c8da28c97d4f8b6fcb244215b8754aa` 已推送，远端一致。R7 写前副本日志/逐文件补偿、真实测试进程 kill-before-save 恢复、低容量注入、导出先导入与 Pending 排除告知均定向通过；未知 Recovery 与用户 Pending 保留。第五组 `b0fbdc975cf8b26a02fbc79dc946d737e9d1ba61` 已推送且远端一致。R9 白名单诊断/安全重试已实现，2 Unit + 1 UI 定向通过，安全重试保留已有 Entry；历史默认模拟器主文件元数据与冻结 V8 仅 HabitPlanRevision hash 不同，根因/Owner 关联仍未验证，未修改该库。剩余 R4/R2/R1/R5、L2 与统一 final gate 继续推进。第三组 `a5cd018d23c9742f30280476761cb6b8cb83567a` 已推送且 PR #7 远端核实一致，仍为 OPEN Draft。
-
-第七组进行中：R4 导出 cutoff 1/1 与安装后二次空库检查/成功恢复排队分享 2/2 定向通过；真实 host 部分保存确认 UI 通过，取消后同进程立即重开仍因 host 不可交互失败，真实 Safari 对照亦复现空白系统面板；取消通知已到达系统 teardown，显式 dismiss 试验无效且已撤回，仍在定位，不记为已解决。九图响应性测试 NineLarge1 已实际执行 1/1 通过（总量 >180 MiB、九次 MainActor 响应、草稿保留）。L2 当前清单入口已归一，最终门禁未执行，仍 IN_PROGRESS。详见执行计划第七组。
-
-第八组已反证上段取消缺陷判断：Apple 标准 SLCompose 对照同样在取消后返回系统分享选择器，不能直接要求 host 可点击。CancelFlow1 3/3 与 CancelVisual1 2/2 均 exit 0，真实重开、迟到回调无污染/无幽灵记录及取消后可见截图通过，生产取消 API 未改变。下一步执行统一 final gate 与完成审计，尚未 READY。
-
-以下内容均为历史交接（superseded），其中旧状态及 Next Action 不再指挥当前工作；历史验证结果保留，不作为本轮修复通过证据。
 
 ---
 
