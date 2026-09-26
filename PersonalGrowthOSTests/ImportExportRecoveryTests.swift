@@ -7,6 +7,31 @@ import XCTest
 
 @MainActor
 final class ImportExportRecoveryTests: XCTestCase {
+    func testExportDrainsValidSharesAndDisclosesOnlyUnimportedPending() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makeEmptyStore(named: "ExportPendingBoundary")
+        let inbox = ShareInbox(root: fixture.root.appendingPathComponent("ShareInbox"))
+        let valid = ShareImportPayload(text: "Included by export drain")
+        let future = ShareImportPayload(text: "Future content remains pending")
+        try inbox.publish(future, files: [:])
+        let futureDirectory = try XCTUnwrap(inbox.pending().first)
+        var unsupported = future
+        unsupported.schemaVersion = 99
+        try JSONEncoder().encode(unsupported).write(to: futureDirectory.appendingPathComponent("payload.json"))
+        try inbox.publish(valid, files: [:])
+        let lease = try await source.service.exportPackage(inbox: inbox)
+        defer { lease.cleanup() }
+        XCTAssertEqual(lease.pendingShareCount, 1)
+        XCTAssertEqual(try inbox.pending(), [futureDirectory])
+        let target = try fixture.makeEmptyStore(named: "ExportPendingRestored")
+        _ = try await target.service.importPackage(from: lease.url)
+        let entries = try target.container.mainContext.fetch(FetchDescriptor<Entry>())
+        XCTAssertEqual(entries.map(\.id), [valid.id])
+        XCTAssertEqual(entries.first?.body, valid.text)
+        XCTAssertEqual(try JSONDecoder().decode(ShareImportPayload.self, from: Data(contentsOf: futureDirectory.appendingPathComponent("payload.json"))), unsupported)
+    }
+
     func testRestoreFailurePreservesInterleavedCommittedShareImage() async throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }

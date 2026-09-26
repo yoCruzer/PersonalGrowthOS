@@ -216,7 +216,9 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
                 editor.isEditable = true
                 updateReadStatus()
                 CaptureLog.event("inbox.saveFailed", id: snapshot.id)
-                statusLabel.text = NSLocalizedString("Could not save. Your share is still here; please retry or cancel.", comment: "")
+                statusLabel.text = CaptureError.isStorageFailure(error)
+                    ? NSLocalizedString("Not enough storage. Free some space, then retry. Your share has not been published.", comment: "")
+                    : NSLocalizedString("Could not save. Your share is still here; please retry or cancel.", comment: "")
             }
         }
     }

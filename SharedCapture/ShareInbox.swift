@@ -14,6 +14,12 @@ enum CaptureLog {
 enum CaptureError: String, Error {
     case groupUnavailable, emptyContent, invalidURL, unsupportedSchema, invalidPayload
     case attachmentInvalid, tooLarge, unsupportedProvider, providerTimedOut, multipleSources
+
+    static func isStorageFailure(_ error: Error) -> Bool {
+        let error = error as NSError
+        return (error.domain == NSCocoaErrorDomain && error.code == NSFileWriteOutOfSpaceError)
+            || (error.domain == NSPOSIXErrorDomain && error.code == 28)
+    }
 }
 
 enum CaptureMode: String, Codable { case metadataOnly, selectedContent }
@@ -99,6 +105,7 @@ struct ShareImportPayload: Codable, Equatable {
 struct ShareInbox {
     static let groupIdentifier = "group.com.yocruzer.PersonalGrowthOS"
     let root: URL
+    var beforePublication: (() throws -> Void)?
     private let fm = FileManager.default
 
     static func shared() throws -> ShareInbox {
@@ -129,6 +136,7 @@ struct ShareInbox {
         CaptureLog.event("payload.serialized bytes=\(data.count)", id: payload.id)
         try data.write(to: staging.appendingPathComponent("payload.json"), options: .atomic)
         try Task.checkCancellation()
+        try beforePublication?()
         try fm.moveItem(at: staging, to: pending.appendingPathComponent(payload.id.uuidString.lowercased()))
         CaptureLog.event("inbox.published", id: payload.id)
     }

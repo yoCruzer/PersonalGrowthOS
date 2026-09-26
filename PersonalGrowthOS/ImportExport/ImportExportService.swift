@@ -5,11 +5,13 @@ import SwiftData
 final class ExportPackageLease: Identifiable {
     let id = UUID()
     let url: URL
+    let pendingShareCount: Int
     private let fileManager: FileManager
     private var isCleaned = false
 
-    init(url: URL, fileManager: FileManager = .default) {
+    init(url: URL, pendingShareCount: Int = 0, fileManager: FileManager = .default) {
         self.url = url
+        self.pendingShareCount = pendingShareCount
         self.fileManager = fileManager
     }
 
@@ -102,7 +104,10 @@ final class ImportExportService {
         }
     }
 
-    func exportPackage() async throws -> ExportPackageLease {
+    func exportPackage(inbox: ShareInbox? = nil) async throws -> ExportPackageLease {
+        if let inbox {
+            _ = try await ExternalCaptureImporter(container: container, mediaStore: mediaStore, inbox: inbox).scanReport()
+        }
         log("export.started")
         let operationID = UUID()
         let exportDate = now()
@@ -116,6 +121,10 @@ final class ImportExportService {
             let worker = Task.detached {
                 return try StorePublication.perform(at: mediaRoot) {
                     let snapshotContext = ModelContext(exportContainer)
+                    let receipts = Set(try snapshotContext.fetch(FetchDescriptor<CaptureImportReceipt>()).map(\.id))
+                    let pendingShareCount = try (inbox?.pending() ?? []).filter { directory in
+                        UUID(uuidString: directory.lastPathComponent).map { !receipts.contains($0) } ?? true
+                    }.count
                     try LinkIntegrityService.validate(context: snapshotContext)
                     let transfer = try TransferSnapshot.make(context: snapshotContext)
                     let inputs = try transfer.images.map { record in
@@ -137,7 +146,8 @@ final class ImportExportService {
                     return ExportBuildResult(
                         destination: destination,
                         objectCount: transfer.totalObjectCount,
-                        mediaCount: transfer.images.count
+                        mediaCount: transfer.images.count,
+                        pendingShareCount: pendingShareCount
                     )
                 }
             }
@@ -153,7 +163,7 @@ final class ImportExportService {
                 throw error
             }
             log("export.completed objects=\(result.objectCount) media=\(result.mediaCount)")
-            return ExportPackageLease(url: result.destination, fileManager: fileManager)
+            return ExportPackageLease(url: result.destination, pendingShareCount: result.pendingShareCount, fileManager: fileManager)
         } catch {
             log("export.failed")
             throw error
@@ -169,6 +179,7 @@ final class ImportExportService {
         let destination: URL
         let objectCount: Int
         let mediaCount: Int
+        let pendingShareCount: Int
     }
 
     nonisolated private static func buildExportPackage(

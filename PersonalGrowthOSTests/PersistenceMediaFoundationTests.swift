@@ -1440,6 +1440,95 @@ final class ExternalCaptureTests: XCTestCase {
         return root
     }
 
+    func testStorageFailureNeverPublishesOrCommitsPartialShare() async throws {
+        let root = try temporaryRoot()
+        var inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        inbox.beforePublication = { throw CocoaError(.fileWriteOutOfSpace) }
+        let payload = ShareImportPayload(text: "Storage fixture")
+        XCTAssertThrowsError(try inbox.publish(payload, files: [:])) { error in
+            XCTAssertTrue(CaptureError.isStorageFailure(error))
+        }
+        XCTAssertTrue(try inbox.pending().isEmpty)
+        XCTAssertEqual(try CaptureStagingSession.reclaimAbandoned(root: inbox.root), 0)
+        inbox.beforePublication = nil
+        let imageURL = root.appendingPathComponent("storage.png")
+        let data = UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { context in
+            UIColor.red.setFill(); context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+        }
+        try data.write(to: imageURL)
+        let imageID = UUID()
+        let attachment = CaptureAttachment(id: imageID, filename: imageID.uuidString.lowercased(), contentType: "image/png",
+            byteCount: Int64(data.count), checksum: try ShareInbox.checksum(imageURL))
+        let imagePayload = ShareImportPayload(images: [attachment])
+        try inbox.publish(imagePayload, files: [imageID: imageURL])
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let media = MediaStore(rootURL: root, availableCapacity: { 0 })
+        let importer = ExternalCaptureImporter(container: container, mediaStore: media, inbox: inbox)
+        let report = try await importer.scanReport()
+        XCTAssertEqual(report.failed, 1)
+        XCTAssertEqual(report.pendingCount, 1)
+        let items = try await importer.pendingItems()
+        XCTAssertEqual(items.first?.reason, .storage)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 0)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
+        XCTAssertEqual(try media.originalsByteCount(), 0)
+        let retry = ExternalCaptureImporter(container: container,
+            mediaStore: MediaStore(rootURL: root, availableCapacity: { .max }), inbox: inbox)
+        try await retry.retry(imagePayload.id.uuidString.lowercased())
+        XCTAssertTrue(try inbox.pending().isEmpty)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 1)
+    }
+
+    func testOwnedCopyCompensationRetriesIndividualFailuresAndPreservesUnknownRecovery() throws {
+        let root = try temporaryRoot()
+        let media = MediaStore(rootURL: root)
+        let image = root.appendingPathComponent("source.png")
+        try UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { context in
+            UIColor.blue.setFill(); context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+        }.write(to: image)
+        let source = MediaSource(url: image, originalFilename: "source.png", contentType: "image/png")
+        let checksum = try ShareInbox.checksum(image)
+        var journal = CaptureMediaJournal(operationID: UUID(), captureID: UUID())
+        let firstID = try journal.prepareCopy(contentType: source.contentType, checksum: checksum, mediaStore: media)
+        let first = try media.storeOriginal(source, id: firstID)
+        let secondID = try journal.prepareCopy(contentType: source.contentType, checksum: checksum, mediaStore: media)
+        let second = try media.storeOriginal(source, id: secondID)
+        let unknown = try media.storeOriginal(source)
+        // A previous startup can have moved interrupted copies into Recovery before compensation.
+        _ = try media.reconcile(referencedOriginalPaths: [])
+        let firstRecovery = try media.fileURL(for: "Recovery/Orphaned/" + first.relativePath)
+        let secondRecovery = try media.fileURL(for: "Recovery/Orphaned/" + second.relativePath)
+        let unknownRecovery = try media.fileURL(for: "Recovery/Orphaned/" + unknown.relativePath)
+        CaptureMediaJournal.reconcile(mediaStore: media, referencedPaths: []) { url in
+            if url == firstRecovery { throw CocoaError(.fileWriteNoPermission) }
+            try FileManager.default.removeItem(at: url)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: firstRecovery.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: secondRecovery.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: unknownRecovery.path))
+        CaptureMediaJournal.reconcile(mediaStore: media, referencedPaths: [])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: firstRecovery.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: unknownRecovery.path))
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("CaptureCopyJournal").path).isEmpty)
+    }
+
+    func testOwnedCopyIntentBeforeCopyAndCommittedReferencesAreSafe() throws {
+        let root = try temporaryRoot()
+        let media = MediaStore(rootURL: root)
+        let image = root.appendingPathComponent("source.png")
+        try UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { context in
+            UIColor.green.setFill(); context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+        }.write(to: image)
+        let checksum = try ShareInbox.checksum(image)
+        var journal = CaptureMediaJournal(operationID: UUID(), captureID: UUID())
+        _ = try journal.prepareCopy(contentType: "image/png", checksum: checksum, mediaStore: media)
+        let committedID = try journal.prepareCopy(contentType: "image/png", checksum: checksum, mediaStore: media)
+        let committed = try media.storeOriginal(MediaSource(url: image, originalFilename: "source.png", contentType: "image/png"), id: committedID)
+        CaptureMediaJournal.reconcile(mediaStore: media, referencedPaths: [committed.relativePath])
+        XCTAssertEqual(try ShareInbox.checksum(media.fileURL(for: committed.relativePath)), checksum)
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("CaptureCopyJournal").path).isEmpty)
+    }
+
     func testFailedInboxDeferralSurvivesReopenAndVersionChange() async throws {
         let root = try temporaryRoot()
         let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))

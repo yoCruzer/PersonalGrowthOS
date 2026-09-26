@@ -105,7 +105,7 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 | R3 | FIXED（final gate 待做） | 失败状态持久化、同故障仅首次提醒、设置页逐条重试/稍后/确认丢弃已实现；版本变化重新尝试，receipt 优先区分已提交副本。3 Unit + 1 UI 定向通过。 |
 | R5 | 修复实现 / 定向通过 | 一次性 callback bridge、每次读取 30 秒边界、Progress/Task 与 generation；超时/取消/迟到 callback 拒收通过。补充 UI 取消/部分保存验证待做。 |
 | R6 | 修复验证中 | 外部可选 metadata 统一按 UTF-8 预算截断完整 Character，严格 payload/backup 验证不放宽；2 项定向测试通过，结合后续 UI 继续验证。 |
-| R7 | 部分修复 | App Group staging 内核租约与独立进程终止回收已通过；无标记旧 staging 保留。导入副本补偿、单文件失败重试、备份 Pending 告知仍待做。 |
+| R7 | FIXED（final gate 待做） | staging 活跃租约/终止回收、写前副本日志/逐文件补偿、实际测试进程终止恢复、低容量注入及导出 Pending 告知已定向通过；未知 Recovery 保留。 |
 | R8 | 修复验证中 | source 字段合并去重与真实提交后刷新已实现，来源仅字段 Unit 通过；Safari 空结果刷新和 follow-up UI 均通过（R8 运行 exit 0）；final gate 待做。 |
 | R9 | CONFIRMED（静态） | startup 丢弃 Error，缺可复制脱敏报告与非破坏重试；待修复。 |
 | L1 | FIXED（Release gate 待做） | 显式 SwiftData import 已补，最终 Release warning 核查尚待统一门禁。 |
@@ -226,3 +226,22 @@ Activation2 (13 Unit pass; UI fail as above): -only-testing:PersonalGrowthOSTest
 R3 后续 UI 复验：`/tmp/PGOS-Closure-InboxUI5.xcresult` exit 0、1/1 PASS，公共前缀 + `-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPendingInboxDefersAndConfirmsOnlySelectedDiscard`。取消不删、确认仅选中项、重启不弹窗且保留另一条 deferred 均通过。Inbox4 的失败 UI 层级及录屏导出在 `/tmp/PGOS-Inbox4-Attachments`。首次在进程退出前导出结果包未完成，进程 exit 65 后读取成功；非产物损坏。
 
 R3 补充 Unit `/tmp/PGOS-Closure-InboxUnit6.xcresult`：在 deferred 坏包存在时加入新好包和新坏包，要求新好包提交、新故障单独提示；并回归 receipt 中断重开/删除不复活。公共前缀附加 `-only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testFailedInboxDeferralSurvivesReopenAndVersionChange -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testPendingRetryAndDiscardAreSelectedAndReceiptAware -only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testImportCommitInterruptionRetryDeletionAndReopen`。exit 0，3/3 PASS。495 个字符串键 en/zh-Hans 完整，JSON 与 `git diff --check` 通过。
+
+
+### R7 导入副本补偿与备份边界 第五组（定向通过）
+
+R3 第四组提交 `c6b024656c8da28c97d4f8b6fcb244215b8754aa` 已推送；实时 GitHub API 核实 PR #7 OPEN Draft、head 一致、base 未改，PR body 已更新前四组真实进度。
+
+R7 新实现：在每个导入副本写入前，原子持久化 operation/capture ID、预分配图片 UUID、类型与 checksum。启动及扫描/回滚补偿只检查由此精确推导的 Originals/Recovery 路径；已被数据库引用的图片保留，checksum 或归属不符、未知日志/未知 Recovery 保留。逐文件失败继续清理其他条目，并保留失败项日志供之后重试。数据库提交后移除日志；提交与日志清理之间进程终止时，由数据库引用保护文件。
+
+- `/tmp/PGOS-Closure-OwnedCopies1.xcresult` exit 65：既有附件回滚与 receipt 中断两项 PASS；新两项 fixture 把 MediaStore 的 MIME 类型误写成 UTI `public.png`，在复制前正确拒绝，已改为 `image/png`。
+- `/tmp/PGOS-Closure-OwnedCopies2.xcresult` exit 65：UI fixture 的 publish 文件字典误用 filename 而非 UUID，编译拒绝，已修正。
+- `/tmp/PGOS-Closure-OwnedCopies3.xcresult` exit 65：3 Unit PASS；UI fixture 的附件 filename 不符合已存在 UUID 协议，未到达复制检查点，已修正 fixture，未修改协议。
+- `/tmp/PGOS-Closure-OwnedCopies4.xcresult` exit 0：1 Unit + 1 UI PASS。`ImportExportRecoveryTests/testExportDrainsValidSharesAndDisclosesOnlyUnimportedPending` 证明合法分享先导入后包含于可恢复备份，future schema 包保留且排除数量为 1。`AppLaunchSmokeTests/testKilledImportBeforeSaveReclaimsOwnedCopyAndRetriesPending` 在实际图片持久化后/DB save 前暂停 worker，确认 Record Tab 可交互后终止测试 App，再两次重开，证明 Pending 只导入一次、Originals 一份、Recovery 为零。仅测试独立 root，不操作默认用户库。
+- 本组各定向结果如下；全目标 final gate 仍待其余收口项稳定，不以这些局部结果宣称 READY。
+
+R7 备份新增行为：可消费分享先导入；随后在共享发布边界内统计无 receipt 的 Pending 并制作快照。导出完成后，若排除数量非零，明确告知并由用户选择分享备份或取消；Pending 保留。已提交仅清理失败的副本不计入排除数量。容量不足增加扩展可理解提示，并新增发布前 ENOSPC/主导入低容量注入验证。
+
+容量/导出 UI 定向运行 `/tmp/PGOS-Closure-CapacityExport5.xcresult`，公共前缀附加 `-only-testing:PersonalGrowthOSTests/ExternalCaptureTests/testStorageFailureNeverPublishesOrCommitsPartialShare -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBackupDisclosesPendingExclusionAndCancelKeepsShares`；exit 0，1 Unit + 1 UI PASS。容量验证为合成故障注入，不代表实际耗尽真机磁盘。OwnedCopies3 参数为两个 `testOwnedCopy*` Unit、`testAttachmentRollbackRetryAndMetadataFallback` 与上述 kill UI；OwnedCopies4 参数为上述导出 Unit 与 kill UI。均使用本节统一 xcodebuild 前缀，日志为同名前缀 `.log`。
+
+第五组补充核查：数据库引用保护、未知 Recovery 保留、每文件失败继续及重试均通过；备份 v6 结构未改，Pending 不打包、不删除。`git diff --check` 与 499 键 en/zh-Hans 完整性检查通过。R4 剩余交错、R2 大图响应、R1/R5 部分保存/取消 UI、R9 与 L2/最终门禁仍未完成。

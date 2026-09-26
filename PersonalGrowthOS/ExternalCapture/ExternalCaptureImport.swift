@@ -121,6 +121,7 @@ private struct CaptureImportWorker {
 
     func scan() throws -> CaptureScanReport {
         _ = try CaptureStagingSession.reclaimAbandoned(root: inbox.root)
+        reconcileCopies()
         var report = CaptureScanReport()
         var state = try readState()
         for directory in try inbox.pending() {
@@ -169,9 +170,7 @@ private struct CaptureImportWorker {
         if error as? CaptureError == .unsupportedSchema { return .unsupportedVersion }
         if error is CaptureError || error is DecodingError { return .invalidContent }
         if case MediaStoreError.insufficientCapacity = error { return .storage }
-        let underlying = error as NSError
-        if (underlying.domain == NSCocoaErrorDomain && underlying.code == NSFileWriteOutOfSpaceError)
-            || (underlying.domain == NSPOSIXErrorDomain && underlying.code == 28) { return .storage }
+        if CaptureError.isStorageFailure(error) { return .storage }
         return .other
     }
 
@@ -225,6 +224,13 @@ private struct CaptureImportWorker {
         try writeState(state)
     }
 
+    private func reconcileCopies() {
+        do {
+            let paths = Set(try ModelContext(container).fetch(FetchDescriptor<ImageMetadata>()).map(\.relativePath))
+            CaptureMediaJournal.reconcile(mediaStore: mediaStore, referencedPaths: paths)
+        } catch { CaptureLog.event("attachment.compensationUnavailable") }
+    }
+
     func consume(_ directory: URL) throws {
         guard let id = UUID(uuidString: directory.lastPathComponent) else { throw CaptureError.invalidPayload }
         let context = ModelContext(container)
@@ -242,14 +248,16 @@ private struct CaptureImportWorker {
         }
         CaptureLog.event("import.started", id: id)
         var stored: [StoredMediaFile] = []
+        var journal = CaptureMediaJournal(operationID: UUID(), captureID: id)
         do {
             let sources = payload.images.map {
                 MediaSource(url: directory.appendingPathComponent($0.filename), originalFilename: $0.filename, contentType: $0.contentType)
             }
             try mediaStore.ensureCapacity(for: sources)
-            for source in sources {
+            for (source, attachment) in zip(sources, payload.images) {
                 try Task.checkCancellation()
-                stored.append(try mediaStore.storeOriginal(source))
+                let imageID = try journal.prepareCopy(contentType: source.contentType, checksum: attachment.checksum, mediaStore: mediaStore)
+                stored.append(try mediaStore.storeOriginal(source, id: imageID))
                 CaptureLog.event("attachment.copied count=\(stored.count)", id: id)
                 try checkpoint?("attachment")
             }
@@ -274,17 +282,99 @@ private struct CaptureImportWorker {
             try context.save()
         } catch {
             context.rollback()
-            for file in stored {
-                do { try mediaStore.removeOriginal(at: file.relativePath) }
-                catch { CaptureLog.event("attachment.cleanupFailed", id: id) }
-            }
+            reconcileCopies()
             throw error
         }
         // A failure here must never roll back committed media. Receipt makes the retry cleanup-only.
+        do { try journal.finish(mediaStore: mediaStore) }
+        catch { CaptureLog.event("attachment.journalRetained", id: id) }
         CaptureLog.event("import.committed", id: id)
         NotificationCenter.default.post(name: .externalCaptureCommitted, object: mediaStore.rootURL)
         try checkpoint?("afterSave")
         try inbox.remove(directory)
         CaptureLog.event("inbox.cleaned", id: id)
+    }
+}
+
+
+// An intent is durable before copying; only these exact, checksum-matching copies are reclaimable.
+// Unknown journals and unknown Recovery files stay untouched.
+struct CaptureMediaJournal: Codable {
+    struct Copy: Codable {
+        let id: UUID
+        let contentType: String
+        let checksum: String
+    }
+    var schemaVersion = 1
+    let operationID: UUID
+    let captureID: UUID
+    var copies: [Copy] = []
+
+    private static func root(_ mediaStore: MediaStore) -> URL {
+        mediaStore.rootURL.appendingPathComponent("CaptureCopyJournal", isDirectory: true)
+    }
+
+    private func url(_ mediaStore: MediaStore) -> URL {
+        Self.root(mediaStore).appendingPathComponent(operationID.uuidString.lowercased() + ".json")
+    }
+
+    func save(mediaStore: MediaStore) throws {
+        try FileManager.default.createDirectory(at: Self.root(mediaStore), withIntermediateDirectories: true)
+        try JSONEncoder().encode(self).write(to: url(mediaStore), options: .atomic)
+    }
+
+    mutating func prepareCopy(contentType: String, checksum: String, mediaStore: MediaStore) throws -> UUID {
+        let id = UUID()
+        let path = try mediaStore.originalRelativePath(id: id, contentType: contentType)
+        for candidate in [path, "Recovery/Orphaned/" + path] {
+            guard !FileManager.default.fileExists(atPath: try mediaStore.fileURL(for: candidate).path) else {
+                throw MediaStoreError.destinationAlreadyExists
+            }
+        }
+        copies.append(Copy(id: id, contentType: contentType, checksum: checksum))
+        try save(mediaStore: mediaStore)
+        return id
+    }
+
+    func finish(mediaStore: MediaStore) throws {
+        let file = url(mediaStore)
+        if FileManager.default.fileExists(atPath: file.path) { try FileManager.default.removeItem(at: file) }
+    }
+
+    static func reconcile(mediaStore: MediaStore, referencedPaths: Set<String>,
+                          remove: (URL) throws -> Void = { try FileManager.default.removeItem(at: $0) }) {
+        let directory = root(mediaStore)
+        guard FileManager.default.fileExists(atPath: directory.path) else { return }
+        do {
+            for file in try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isSymbolicLinkKey]) {
+                do {
+                    guard file.pathExtension == "json", try file.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink != true else { continue }
+                    var journal = try JSONDecoder().decode(Self.self, from: Data(contentsOf: file))
+                    guard journal.schemaVersion == 1, journal.url(mediaStore) == file else { continue }
+                    var retained: [Copy] = []
+                    for copy in journal.copies {
+                        do {
+                            let path = try mediaStore.originalRelativePath(id: copy.id, contentType: copy.contentType)
+                            if referencedPaths.contains(path) { continue }
+                            for candidate in [path, "Recovery/Orphaned/" + path] {
+                                let url = try mediaStore.fileURL(for: candidate)
+                                guard FileManager.default.fileExists(atPath: url.path) else { continue }
+                                guard url.resolvingSymlinksInPath().path.hasPrefix(mediaStore.rootURL.resolvingSymlinksInPath().path + "/"),
+                                      try ShareInbox.checksum(url) == copy.checksum else {
+                                    throw CaptureError.attachmentInvalid
+                                }
+                                try remove(url)
+                            }
+                        } catch {
+                            retained.append(copy)
+                            CaptureLog.event("attachment.compensationRetained", id: journal.captureID)
+                        }
+                    }
+                    journal.copies = retained
+                    if retained.isEmpty { try journal.finish(mediaStore: mediaStore) }
+                    else { try journal.save(mediaStore: mediaStore) }
+                } catch { CaptureLog.event("attachment.journalRetained") }
+            }
+        } catch { CaptureLog.event("attachment.journalUnavailable") }
     }
 }

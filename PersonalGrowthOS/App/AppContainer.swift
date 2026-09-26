@@ -8,6 +8,7 @@ enum StartupMediaReconciler {
         imageMetadata: [ImageMetadata]
     ) throws -> MediaIntegrityReport {
         let referencedPaths = Set(imageMetadata.map(\.relativePath))
+        CaptureMediaJournal.reconcile(mediaStore: mediaStore, referencedPaths: referencedPaths)
         try mediaStore.recoverInterruptedTrash(referencedOriginalPaths: referencedPaths)
         var report = try mediaStore.reconcile(referencedOriginalPaths: referencedPaths)
         report.removedThumbnailCount = try thumbnailStore.reconcile(

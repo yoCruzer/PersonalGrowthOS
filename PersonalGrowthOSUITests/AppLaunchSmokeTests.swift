@@ -2,6 +2,53 @@ import XCTest
 import Network
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testBackupDisclosesPendingExclusionAndCancelKeepsShares() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSPendingInboxTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let initial = app.alerts["Some shared content could not be imported"]
+        XCTAssertTrue(initial.waitForExistence(timeout: 10))
+        initial.buttons["Keep for Later"].tap()
+        app.buttons["settings-button"].tap()
+        app.buttons["settings-export-button"].tap()
+        app.buttons["Export and Share"].tap()
+        let warning = app.alerts["Pending shares are not in this backup"]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10))
+        XCTAssertTrue(warning.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "2 shares")).firstMatch.exists)
+        warning.buttons["Cancel"].tap()
+        let pending = app.buttons["settings-pending-shares"]
+        if !pending.isHittable { app.swipeUp() }
+        pending.tap()
+        XCTAssertTrue(app.buttons["pending-discard-00000000-0000-0000-0000-000000000001"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(app.buttons["pending-discard-00000000-0000-0000-0000-000000000002"].exists)
+    }
+
+    func testKilledImportBeforeSaveReclaimsOwnedCopyAndRetriesPending() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSOwnedCopyRecoveryTest", "-PGOSKillAfterCopy",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["copy-durable-before-save"].waitForExistence(timeout: 10))
+        // The file worker is blocked before DB save, while the actual app UI remains usable.
+        app.tabBars.buttons["Record"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Record"].isSelected)
+        app.terminate()
+        app.launchArguments.removeAll { ["-PGOSResetData", "-PGOSKillAfterCopy"].contains($0) }
+        app.launch()
+        XCTAssertTrue(app.staticTexts["originals=1;recovery=0;pending=0"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Interrupted copy fixture"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.staticTexts["originals=1;recovery=0;pending=0"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Interrupted copy fixture").count, 1)
+    }
+
     func testPendingInboxDefersAndConfirmsOnlySelectedDiscard() {
         continueAfterFailure = false
         let app = XCUIApplication()
