@@ -1,6 +1,14 @@
 import Foundation
 import SwiftData
 
+// Technical modification time is monotonic even when the wall clock moves backwards.
+// Business occurrence dates deliberately continue to use their original clock/input.
+enum TechnicalTimestamp {
+    static func updated(now: Date, createdAt: Date, previous: Date) -> Date {
+        max(now, createdAt, previous)
+    }
+}
+
 @Model
 final class Entry {
     @Attribute(.unique) var id: UUID
@@ -807,7 +815,7 @@ final class EntryEditingService {
             entry.title = draft.title
             entry.body = draft.body
             entry.occurredAt = draft.occurredAt
-            entry.updatedAt = timestamp
+            entry.updatedAt = TechnicalTimestamp.updated(now: timestamp, createdAt: entry.createdAt, previous: entry.updatedAt)
             entry.images = finalImages
             try persistence.save()
         } catch let operationError {
@@ -892,7 +900,7 @@ final class EntryDeletionService {
         let originalStatus = entry.status
         let originalUpdatedAt = entry.updatedAt
         entry.status = status
-        entry.updatedAt = now()
+        entry.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: entry.createdAt, previous: entry.updatedAt)
         do {
             try persistence.save()
         } catch {

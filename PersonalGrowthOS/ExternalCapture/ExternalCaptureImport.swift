@@ -92,6 +92,21 @@ struct CaptureScanReport {
     var failed = 0
     var newFailureIDs: [String] = []
     var pendingCount = 0
+    var recoveredAuxiliaryState = false
+    var auxiliaryStateWriteFailed = false
+}
+
+struct CaptureInboxSnapshot {
+    let items: [CaptureInboxItem]
+    let hasStateRecoveryNotice: Bool
+
+    static var recoveryMessage: String {
+        String(localized: "Pending-share reminder settings were damaged. The original file was preserved and readable settings were recovered. Some Keep for Later choices may need to be set again. Shared content and saved entries were not removed.")
+    }
+
+    static var writeFailureMessage: String {
+        String(localized: "Reminder settings could not be saved. Entries already imported remain saved. Unimported shares remain in Pending Shares; reminder choices can be retried.")
+    }
 }
 
 private struct CaptureFailureRecord: Codable {
@@ -118,6 +133,7 @@ final class ExternalCaptureImporter {
     func scanReport() async throws -> CaptureScanReport { try await run { try $0.scan() } }
     func consume(_ directory: URL) async throws { try await run { try $0.consume(directory) } }
     func pendingItems() async throws -> [CaptureInboxItem] { try await run { try $0.pendingItems() } }
+    func pendingSnapshot() async throws -> CaptureInboxSnapshot { try await run { try $0.pendingSnapshot() } }
     func keepForLater(_ ids: [String]) async throws { try await run { try $0.keepForLater(ids) } }
     func retry(_ id: String) async throws { try await run { try $0.retry(id) } }
     func discardPending(_ id: String) async throws { try await run { try $0.discardPending(id) } }
@@ -144,7 +160,9 @@ private struct CaptureImportWorker {
         _ = try CaptureStagingSession.reclaimAbandoned(root: inbox.root)
         reconcileCopies()
         var report = CaptureScanReport()
-        var state = try readState()
+        let recovered = try readState()
+        var state = recovered.records
+        report.recoveredAuxiliaryState = recovered.repaired
         for directory in try inbox.pending() {
             try Task.checkCancellation()
             let id = directory.lastPathComponent
@@ -165,18 +183,45 @@ private struct CaptureImportWorker {
         let pending = try inbox.pending()
         report.pendingCount = pending.count
         let liveIDs = Set(pending.map(\.lastPathComponent))
-        try writeState(state.filter { liveIDs.contains($0.key) })
+        do { try writeState(state.filter { liveIDs.contains($0.key) }) }
+        catch {
+            report.auxiliaryStateWriteFailed = true
+            FailureDiagnostic(error: error, stage: .inboxState).log()
+        }
         return report
     }
 
     private var stateURL: URL { mediaStore.rootURL.appendingPathComponent("CaptureInboxState.json") }
 
-    private func readState() throws -> [String: CaptureFailureRecord] {
-        guard FileManager.default.fileExists(atPath: stateURL.path) else { return [:] }
-        return try JSONDecoder().decode([String: CaptureFailureRecord].self, from: Data(contentsOf: stateURL))
+    private var stateRecoveryURL: URL { mediaStore.rootURL.appendingPathComponent("CaptureInboxStateRecovery") }
+
+    private func readState() throws -> (records: [String: CaptureFailureRecord], repaired: Bool) {
+        let data: Data
+        do { data = try Data(contentsOf: stateURL) }
+        catch CocoaError.fileReadNoSuchFile { return ([:], false) }
+        // Read/access/storage errors are not JSON damage and must not overwrite the file.
+        do { return (try JSONDecoder().decode([String: CaptureFailureRecord].self, from: data), false) }
+        catch is DecodingError {
+            var records: [String: CaptureFailureRecord] = [:]
+            if let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                for (key, value) in object {
+                    guard JSONSerialization.isValidJSONObject(value),
+                          let bytes = try? JSONSerialization.data(withJSONObject: value),
+                          let record = try? JSONDecoder().decode(CaptureFailureRecord.self, from: bytes) else { continue }
+                    records[key] = record
+                }
+            }
+            try FileManager.default.createDirectory(at: stateRecoveryURL, withIntermediateDirectories: true)
+            // Preserve the exact original before replacing only this auxiliary state.
+            try data.write(to: stateRecoveryURL.appendingPathComponent("\(UUID().uuidString).json"), options: .atomic)
+            try writeState(records)
+            CaptureLog.event("inbox.auxiliaryStateRecovered")
+            return (records, true)
+        }
     }
 
     private func writeState(_ state: [String: CaptureFailureRecord]) throws {
+        try checkpoint?("beforeStateWrite")
         try FileManager.default.createDirectory(at: mediaStore.rootURL, withIntermediateDirectories: true)
         try JSONEncoder().encode(state).write(to: stateURL, options: .atomic)
     }
@@ -197,8 +242,12 @@ private struct CaptureImportWorker {
     }
 
     func pendingItems() throws -> [CaptureInboxItem] {
-        let state = try readState()
-        return try inbox.pending().map { directory in
+        try pendingSnapshot().items
+    }
+
+    func pendingSnapshot() throws -> CaptureInboxSnapshot {
+        let state = try readState().records
+        let items = try inbox.pending().map { directory in
             let id = directory.lastPathComponent
             let committed = try hasReceipt(id)
             return CaptureInboxItem(id: id,
@@ -207,10 +256,12 @@ private struct CaptureImportWorker {
                 isCommitted: committed, isDeferred: state[id]?.deferredVersion == processingVersion,
                 diagnostic: state[id]?.diagnostic)
         }
+        let hasNotice = FileManager.default.fileExists(atPath: stateRecoveryURL.path)
+        return CaptureInboxSnapshot(items: items, hasStateRecoveryNotice: hasNotice)
     }
 
     func keepForLater(_ ids: [String]) throws {
-        var state = try readState()
+        var state = try readState().records
         let live = Set(try inbox.pending().map(\.lastPathComponent))
         for id in ids where live.contains(id) {
             var record = state[id] ?? CaptureFailureRecord(reason: .pending)
@@ -226,23 +277,27 @@ private struct CaptureImportWorker {
 
     func retry(_ id: String) throws {
         guard let directory = try directory(id) else { return }
-        var state = try readState()
+        var state = try readState().records
         do {
             try consume(directory)
-            state.removeValue(forKey: id)
-            try writeState(state)
         } catch {
             state[id] = CaptureFailureRecord(reason: try failureReason(error, id: id), diagnostic: (error as? AppDiagnosticFailure)?.diagnostic)
-            try writeState(state)
+            do { try writeState(state) }
+            catch { FailureDiagnostic(error: error, stage: .inboxState).log() }
             throw error
         }
+        state.removeValue(forKey: id)
+        // Content committed and Pending cleanup completed. Stale bookkeeping can be
+        // pruned on the next scan; it must not turn this successful retry into a failure.
+        do { try writeState(state) }
+        catch { FailureDiagnostic(error: error, stage: .inboxState).log() }
     }
 
     func discardPending(_ id: String) throws {
         guard let directory = try directory(id) else { return }
         // Only the selected Pending copy is removed, never an Entry or its receipt.
         try inbox.remove(directory)
-        var state = try readState()
+        var state = try readState().records
         state.removeValue(forKey: id)
         try writeState(state)
     }

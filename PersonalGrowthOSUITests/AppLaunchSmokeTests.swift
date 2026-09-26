@@ -107,6 +107,39 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Kept for later"].exists)
     }
 
+    func testDamagedInboxSettingsShowRecoveryNoticeAndRemainUsableAfterRelaunch() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSPendingInboxTest", "-PGOSPendingStateDamageTest",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let alert = app.alerts["Some shared content could not be imported"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 10))
+        XCTAssertTrue(alert.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "reminder settings were damaged")).firstMatch.exists)
+        alert.buttons["Keep for Later"].tap()
+        app.tabBars.buttons["Timeline"].tap()
+        XCTAssertTrue(app.staticTexts["Intact share after reminder damage"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
+        XCTAssertFalse(alert.exists)
+        app.buttons["settings-button"].tap()
+        let pending = app.buttons["settings-pending-shares"]
+        if !pending.isHittable { app.swipeUp() }
+        pending.tap()
+        XCTAssertTrue(app.staticTexts["pending-state-recovery-notice"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["pending-discard-00000000-0000-0000-0000-000000000001"].exists)
+        let notice = XCTAttachment(screenshot: app.screenshot())
+        notice.name = "Recovered reminder settings with preserved pending shares"
+        notice.lifetime = .keepAlways
+        add(notice)
+        let second = app.buttons["pending-discard-00000000-0000-0000-0000-000000000002"]
+        if !second.exists { app.swipeUp() }
+        XCTAssertTrue(second.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Kept for later"].firstMatch.exists)
+    }
+
     func testCoreShellPassesAccessibilityAudit() throws {
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -223,6 +256,16 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.tabBars.buttons["Record"].tap()
 
         XCTAssertTrue(app.textViews["capture-body"].waitForExistence(timeout: 5))
+        let body = app.textViews["capture-body"]
+        body.tap()
+        body.typeText("Record draft survives tab switch")
+        app.tabBars.buttons["Today"].tap()
+        app.tabBars.buttons["Record"].tap()
+        XCTAssertEqual(body.value as? String, "Record draft survives tab switch")
+        app.buttons["capture-save"].tap()
+        XCTAssertTrue(app.staticTexts["Record draft survives tab switch"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Record"].tap()
+        XCTAssertEqual(body.value as? String, "")
     }
 
     func testGlobalCaptureIsAvailableFromSettings() {
@@ -1616,6 +1659,43 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(entry.waitForExistence(timeout: 10), host.debugDescription)
         entry.tap()
         XCTAssertTrue(host.textViews["share-text"].waitForExistence(timeout: 10), host.debugDescription)
+    }
+
+    func testRetryAfterEditingPreservesNoteAndRecoveredTextInEntry() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let host = XCUIApplication(bundleIdentifier: "com.yocruzer.CaptureFixtureHost")
+        host.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        host.launch()
+        openFixtureExtension(host, button: "capture-provider-retry")
+        let editor = host.textViews["share-text"]
+        expectation(for: NSPredicate(format: "value == %@", "Public host fixture quote"), evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        XCTAssertTrue(host.buttons["Retry"].exists)
+        editor.tap()
+        editor.typeText("\nPersonal retry note")
+        let edited = editor.value as? String ?? ""
+        XCTAssertTrue(edited.contains("Personal retry note"))
+        host.buttons["Retry"].tap()
+        let expected = edited + "\n\nRecovered second passage"
+        expectation(for: NSPredicate(format: "value == %@", expected), evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
+        XCTAssertFalse(host.buttons["Retry"].exists)
+        host.buttons["Save"].doubleTap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
+        XCTAssertFalse(host.alerts.firstMatch.exists)
+        waitForFixtureHostReady(host)
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Timeline"].tap()
+        let row = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Public host fixture quote")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Public host fixture quote")).count, 1)
+        row.tap()
+        XCTAssertTrue(app.staticTexts[expected].waitForExistence(timeout: 5), app.debugDescription)
     }
 
     func testPartialHostRequiresExplicitReadableContentConfirmation() {

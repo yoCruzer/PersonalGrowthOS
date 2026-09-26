@@ -21,11 +21,11 @@ final class CaptureHostController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        callbackLabel.frame = CGRect(x: 40, y: 420, width: 300, height: 60)
+        callbackLabel.frame = CGRect(x: 40, y: 500, width: 300, height: 60)
         callbackLabel.accessibilityIdentifier = "delayed-provider-finished"
         callbackLabel.isHidden = true
         view.addSubview(callbackLabel)
-        for (index, mode) in ["mixed", "partial", "delayed"].enumerated() {
+        for (index, mode) in ["mixed", "partial", "delayed", "retry"].enumerated() {
             let button = UIButton(type: .system)
             button.setTitle("Share \(mode) Fixture", for: .normal)
             button.accessibilityIdentifier = mode == "mixed" ? "capture-provider-host" : "capture-provider-\(mode)"
@@ -45,7 +45,19 @@ final class CaptureHostController: UIViewController {
         let text = sender.tag == 2 ? "Cancelled session quote" : "Public host fixture quote"
         let quote = NSItemProvider(object: text as NSString)
         var providers = [source, quote]
-        if sender.tag != 0 {
+        if sender.tag == 3 {
+            let recovered = NSItemProvider()
+            let attempts = RetryAttempts()
+            recovered.registerDataRepresentation(forTypeIdentifier: UTType.utf8PlainText.identifier, visibility: .all) { completion in
+                if attempts.next() == 1 {
+                    completion(nil, CocoaError(.fileReadNoSuchFile))
+                } else {
+                    completion(Data("Recovered second passage".utf8), nil)
+                }
+                return nil
+            }
+            providers.append(recovered)
+        } else if sender.tag != 0 {
             let photo = NSItemProvider()
             let delayed = sender.tag == 2
             photo.registerFileRepresentation(forTypeIdentifier: UTType.png.identifier, fileOptions: [], visibility: .all) { completion in
@@ -70,5 +82,15 @@ final class CaptureHostController: UIViewController {
         }
         let activity = UIActivityViewController(activityItemsConfiguration: UIActivityItemsConfiguration(itemProviders: providers))
         present(activity, animated: true)
+    }
+}
+
+private final class RetryAttempts: @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+    func next() -> Int {
+        lock.lock(); defer { lock.unlock() }
+        count += 1
+        return count
     }
 }

@@ -13,7 +13,7 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
     private var finished = false
     private var saving = false
     private var loaded = false
-    private var editedText: String?
+    private var textDraft = CaptureTextDraft()
     private var generation = UUID()
     private var loadTask: Task<Void, Never>?
     private let retryButton = UIButton(type: .system)
@@ -100,7 +100,8 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
                 self.issues = result.issues
                 self.loaded = true
                 self.editor.isEditable = true
-                self.editor.text = self.editedText ?? result.payload.text
+                self.textDraft.receive(result.textItems)
+                self.editor.text = self.textDraft.text
                 if let data = result.thumbnail {
                     self.preview.image = UIImage(data: data)
                     self.preview.isHidden = false
@@ -119,7 +120,7 @@ final class ShareViewController: UIViewController, UITextViewDelegate {
     }
 
     func textViewDidChange(_ textView: UITextView) {
-        editedText = textView.text
+        textDraft.edit(textView.text)
         updateReadStatus()
     }
 

@@ -1,8 +1,175 @@
 import XCTest
+import SwiftData
+import UIKit
 @testable import PersonalGrowthOS
 
 @MainActor
 final class AppCompositionTests: XCTestCase {
+    func testPhotoInputReverseCompletionCameraAndSaveKeepOwnedBytes() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        func photo(_ name: String, _ color: UIColor) throws -> MediaSource {
+            let url = root.appendingPathComponent(name + ".png")
+            try UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { context in
+                color.setFill(); context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+            }.write(to: url)
+            return MediaSource(url: url, originalFilename: name + ".png", contentType: "image/png")
+        }
+        let session = PhotoInputSession()
+        let draft = CaptureDraftState()
+        draft.body = "Keep complete draft"
+        let a = session.begin()
+        let b = session.begin()
+        let bPhoto = try photo("B", .blue)
+        let bBytes = try Data(contentsOf: bPhoto.url)
+        if session.finish(b, sources: [bPhoto], replacing: true) { draft.finishImageLoad(with: .success([bPhoto])) }
+        let aPhoto = try photo("A", .red)
+        XCTAssertFalse(session.finish(a, sources: [aPhoto], replacing: true))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: aPhoto.url.path))
+        XCTAssertEqual(draft.imageSources.map(\.url), [bPhoto.url])
+        XCTAssertEqual(try Data(contentsOf: bPhoto.url), bBytes)
+
+        let slow = session.begin()
+        let camera = session.begin()
+        let cPhoto = try photo("Camera", .green)
+        let cBytes = try Data(contentsOf: cPhoto.url)
+        if session.finish(camera, sources: [cPhoto], replacing: false) { draft.appendCameraImage(cPhoto) }
+        let late = try photo("Late", .red)
+        XCTAssertFalse(session.finish(slow, sources: [late], replacing: true))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: late.url.path))
+        XCTAssertEqual(draft.body, "Keep complete draft")
+        XCTAssertEqual(draft.imageSources.map(\.url), [bPhoto.url, cPhoto.url])
+        XCTAssertEqual(try Data(contentsOf: cPhoto.url), cBytes)
+
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let media = MediaStore(rootURL: root.appendingPathComponent("Saved"), availableCapacity: { .max })
+        let entry = try EntryCreationService(persistence: ModelContextEntryPersistence(context: container.mainContext), mediaStore: media)
+            .create(EntryCreationDraft(body: draft.body, images: draft.imageSources))
+        let beforeReset = session.begin()
+        session.end()
+        draft.reset()
+        let resetLate = try photo("AfterReset", .red)
+        XCTAssertFalse(session.finish(beforeReset, sources: [resetLate], replacing: true))
+        XCTAssertFalse(session.finish(camera, sources: [cPhoto], replacing: false), "Duplicate completion cannot reclaim an accepted result")
+        XCTAssertTrue(draft.imageSources.isEmpty)
+        XCTAssertEqual(draft.body, "")
+        XCTAssertFalse(session.isLoading)
+        XCTAssertEqual(entry.body, "Keep complete draft")
+        XCTAssertEqual(entry.images.count, 2)
+        let images = entry.images.sorted { $0.sortOrder < $1.sortOrder }
+        XCTAssertEqual(try Data(contentsOf: media.fileURL(for: images[0].relativePath)), bBytes)
+        XCTAssertEqual(try Data(contentsOf: media.fileURL(for: images[1].relativePath)), cBytes)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: resetLate.url.path))
+        let editing = PhotoInputSession()
+        let editOne = editing.begin()
+        let addedOne = try photo("EditOne", .yellow)
+        XCTAssertTrue(editing.finish(editOne, sources: [addedOne], replacing: false))
+        let editTwo = editing.begin()
+        let addedTwo = try photo("EditTwo", .purple)
+        XCTAssertTrue(editing.finish(editTwo, sources: [addedTwo], replacing: false))
+        let addedBytes = try [addedOne, addedTwo].map { try Data(contentsOf: $0.url) }
+        try EntryEditingService(persistence: ModelContextEntryPersistence(context: container.mainContext), mediaStore: media)
+            .update(entry, with: EntryEditingDraft(title: entry.title, body: entry.body, occurredAt: entry.occurredAt,
+                retainedImageIDs: images.map(\.id), addedImages: [addedOne, addedTwo]))
+        editing.end()
+        XCTAssertEqual(entry.images.count, 4)
+        let allImages = entry.images.sorted { $0.sortOrder < $1.sortOrder }
+        XCTAssertEqual(try allImages.map { try Data(contentsOf: media.fileURL(for: $0.relativePath)) }, [bBytes, cBytes] + addedBytes)
+        let cancelledEdit = editing.begin()
+        editing.end()
+        let cancelledPhoto = try photo("CancelledEdit", .red)
+        XCTAssertFalse(editing.finish(cancelledEdit, sources: [cancelledPhoto], replacing: false))
+        XCTAssertEqual(try allImages.map { try Data(contentsOf: media.fileURL(for: $0.relativePath)) }, [bBytes, cBytes] + addedBytes)
+    }
+
+    func testTrackedPhotoTaskCancellationStillRejectsUncooperativeCompletion() async throws {
+        let session = PhotoInputSession()
+        let old = session.begin()
+        let started = expectation(description: "Old input is suspended")
+        var release: CheckedContinuation<Void, Never>?
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let task = Task {
+            await withCheckedContinuation { continuation in
+                release = continuation
+                started.fulfill()
+            }
+            XCTAssertTrue(Task.isCancelled)
+            // Deliberately ignores cancellation, just like a late provider callback can.
+            try! Data("old task bytes".utf8).write(to: url)
+            XCTAssertFalse(session.finish(old, sources: [MediaSource(url: url, originalFilename: "old", contentType: "image/png")], replacing: true))
+        }
+        session.track(task, for: old)
+        await fulfillment(of: [started], timeout: 5)
+        let newer = session.begin()
+        release?.resume()
+        await task.value
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
+        XCTAssertTrue(session.isLoading)
+        XCTAssertTrue(session.finish(newer, sources: [], replacing: false))
+        XCTAssertFalse(session.isLoading)
+    }
+
+    func testPhotoInputCloseReentryAndAppendDoNotClearNewLoadingOrFiles() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        func photo(_ name: String) throws -> MediaSource {
+            let url = root.appendingPathComponent(name)
+            try Data(name.utf8).write(to: url)
+            return MediaSource(url: url, originalFilename: name, contentType: "image/png")
+        }
+        let session = PhotoInputSession()
+        let old = session.begin()
+        session.end()
+        let current = session.begin()
+        let rejected = try photo("rejected")
+        XCTAssertFalse(session.finish(old, sources: [rejected], replacing: false))
+        XCTAssertTrue(session.isLoading, "An old completion cannot clear the new operation's spinner")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: rejected.url.path))
+        let first = try photo("first")
+        XCTAssertTrue(session.finish(current, sources: [first], replacing: false))
+        let next = session.begin()
+        let second = try photo("second")
+        XCTAssertTrue(session.finish(next, sources: [second], replacing: false))
+        XCTAssertEqual(try Data(contentsOf: first.url), Data("first".utf8))
+        XCTAssertEqual(try Data(contentsOf: second.url), Data("second".utf8))
+        let cancelled = session.begin()
+        session.cancel(cancelled)
+        XCTAssertFalse(session.finish(cancelled, sources: [], replacing: false))
+        XCTAssertEqual(try Data(contentsOf: first.url), Data("first".utf8))
+        session.end()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: first.url.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: second.url.path))
+    }
+
+    func testCameraCancellationLateDataAndDuplicateCompletionAreOnceOnly() throws {
+        let data = UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { _ in }
+        var sources: [MediaSource] = []
+        var cancellations = 0
+        let cancelled = CameraViewController(completion: { result in
+            if case .success(let source) = result { sources.append(source) }
+        }, cancellation: { cancellations += 1 })
+        cancelled.cancel()
+        cancelled.cancel()
+        cancelled.receivePhotoData(.success(data))
+        XCTAssertEqual(cancellations, 1)
+        XCTAssertTrue(sources.isEmpty)
+        let reopened = CameraViewController(completion: { result in
+            if case .success(let source) = result { sources.append(source) }
+        }, cancellation: { cancellations += 1 })
+        reopened.receivePhotoData(.success(data))
+        let source = try XCTUnwrap(sources.first)
+        defer { try? FileManager.default.removeItem(at: source.url) }
+        reopened.receivePhotoData(.success(data))
+        reopened.cancel()
+        cancelled.receivePhotoData(.success(data))
+        XCTAssertEqual(sources.count, 1)
+        XCTAssertEqual(cancellations, 1)
+        XCTAssertEqual(try Data(contentsOf: source.url), data)
+    }
+
     func testDefaultInputsSelectStandardMode() {
         let configuration = AppConfiguration.resolve(arguments: [], environment: [:])
 

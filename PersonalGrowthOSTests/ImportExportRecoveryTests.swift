@@ -7,6 +7,127 @@ import XCTest
 
 @MainActor
 final class ImportExportRecoveryTests: XCTestCase {
+    func testClockRollbackUpdatesExportRestoreAndReopenPreserveFacts() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makeEmptyStore(named: "ClockSource", onDisk: true)
+        let context = source.container.mainContext
+        let created = Date(timeIntervalSince1970: 5_000)
+        let occurred = Date(timeIntervalSince1970: 1_000)
+        var clock = created
+        let input = fixture.root.appendingPathComponent("clock.png")
+        try fixture.imageData.write(to: input)
+        let persistence = ModelContextEntryPersistence(context: context)
+        let entry = try EntryCreationService(persistence: persistence, mediaStore: source.mediaStore, now: { clock })
+            .create(EntryCreationDraft(body: "Original content", images: [MediaSource(url: input, originalFilename: "clock.png", contentType: "image/png")]))
+        let editor = EntryEditingService(persistence: persistence, mediaStore: source.mediaStore, now: { clock })
+        let transitions = EntryDeletionService(persistence: persistence, mediaStore: source.mediaStore, now: { clock })
+        let weights = WeightRecordService(context: context, now: { clock })
+        let weight = try weights.create(weightKilograms: 70, recordedAt: occurred)
+        let habits = HabitService(context: context, now: { clock })
+        let habit = try habits.create(name: "Preserved habit")
+        let goals = GoalService(context: context, now: { clock })
+        let goal = try goals.create(title: "Preserved goal", kind: .standard)
+        let reviews = WeeklyReviewService(context: context, now: { clock })
+        let review = try XCTUnwrap(reviews.review(containing: occurred))
+        let periodStart = review.periodStart
+        let periodEnd = review.periodEnd
+        let imageIDs = entry.images.map(\.id)
+        clock = created.addingTimeInterval(60)
+        for instant in [clock, created.addingTimeInterval(30), created.addingTimeInterval(-60)] {
+            clock = instant
+            try editor.update(entry, with: EntryEditingDraft(title: "Retained title", body: "Edited content",
+                occurredAt: occurred, retainedImageIDs: imageIDs, addedImages: []))
+            XCTAssertEqual(entry.updatedAt, created.addingTimeInterval(60))
+            try transitions.archive(entry)
+            XCTAssertEqual(entry.updatedAt, created.addingTimeInterval(60))
+            try weights.update(weight, weightKilograms: 69, recordedAt: occurred)
+            XCTAssertEqual(weight.updatedAt, created.addingTimeInterval(60))
+            try habits.update(habit, name: habit.name, recordingMode: .multiplePerDay, dailyTargetCount: 2)
+            try habits.updateName(habit, name: habit.name)
+            try habits.transition(habit, to: habit.status == .active ? .paused : .active)
+            XCTAssertEqual(habit.updatedAt, created.addingTimeInterval(60))
+            try goals.update(goal, title: goal.title, kind: goal.kind)
+            try goals.transition(goal, to: goal.status == .active ? .paused : .active)
+            XCTAssertEqual(goal.updatedAt, created.addingTimeInterval(60))
+            try reviews.update(review, draft: WeeklyReviewDraft(rememberedText: "Preserved review", improvementText: "", nextStepText: "", focusText: "", isCompleted: false))
+            XCTAssertEqual(review.updatedAt, created.addingTimeInterval(60))
+        }
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "ClockRestored", onDisk: true)
+        _ = try await target.service.importPackage(from: lease.url)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: target.storeURL)
+        let restored = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<Entry>()).first)
+        XCTAssertEqual(restored.id, entry.id)
+        XCTAssertEqual(restored.body, "Edited content")
+        XCTAssertEqual(restored.title, "Retained title")
+        XCTAssertEqual(restored.status, .archived)
+        XCTAssertEqual(restored.createdAt, created)
+        XCTAssertEqual(restored.updatedAt, created.addingTimeInterval(60))
+        XCTAssertEqual(restored.occurredAt, occurred)
+        XCTAssertEqual(restored.images.map(\.id), imageIDs)
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: XCTUnwrap(restored.images.first).relativePath)), fixture.imageData)
+        let restoredWeight = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<WeightRecord>()).first)
+        XCTAssertEqual(restoredWeight.id, weight.id)
+        XCTAssertEqual(restoredWeight.createdAt, created)
+        XCTAssertEqual(restoredWeight.updatedAt, created.addingTimeInterval(60))
+        XCTAssertEqual(restoredWeight.recordedAt, occurred)
+        XCTAssertEqual(restoredWeight.weightKilograms, 69)
+        let restoredHabit = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<Habit>()).first)
+        XCTAssertEqual(restoredHabit.id, habit.id)
+        XCTAssertEqual(restoredHabit.name, habit.name)
+        XCTAssertEqual(restoredHabit.updatedAt, created.addingTimeInterval(60))
+        let restoredGoal = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<Goal>()).first)
+        XCTAssertEqual(restoredGoal.id, goal.id)
+        XCTAssertEqual(restoredGoal.title, goal.title)
+        XCTAssertEqual(restoredGoal.updatedAt, created.addingTimeInterval(60))
+        let restoredReview = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<WeeklyReview>()).first)
+        XCTAssertEqual(restoredReview.id, review.id)
+        XCTAssertEqual(restoredReview.rememberedText, "Preserved review")
+        XCTAssertEqual(restoredReview.updatedAt, created.addingTimeInterval(60))
+        XCTAssertEqual(restoredReview.periodStart, periodStart)
+        XCTAssertEqual(restoredReview.periodEnd, periodEnd)
+        let habitEvents = try reopened.mainContext.fetch(FetchDescriptor<HabitLifecycleEvent>())
+        XCTAssertTrue(habitEvents.contains { $0.occurredAt == clock && $0.occurredLocalDay == HabitLocalDay(date: clock).description })
+        let goalEvents = try reopened.mainContext.fetch(FetchDescriptor<GoalLifecycleEvent>())
+        XCTAssertTrue(goalEvents.contains { $0.occurredAt == clock })
+    }
+
+    func testExplicitResaveRepairsInjectedLocalTimeWithoutChangingContentOrIdentity() async throws {
+        let fixture = try TransferTestFixture()
+        defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let entry = try XCTUnwrap(source.container.mainContext.fetch(FetchDescriptor<Entry>()).first)
+        let created = entry.createdAt
+        let occurred = entry.occurredAt
+        let originalBody = entry.body
+        let originalID = entry.id
+        let imageIDs = entry.images.map(\.id)
+        entry.updatedAt = created.addingTimeInterval(-60) // Synthetic preexisting local corruption.
+        try source.container.mainContext.save()
+        await assertThrows({ try await source.service.exportPackage() }) {
+            XCTAssertEqual($0 as? TransferPackageError, .invalidObject("entry"))
+        }
+        try EntryEditingService(persistence: ModelContextEntryPersistence(context: source.container.mainContext),
+            mediaStore: source.mediaStore, now: { created.addingTimeInterval(-120) })
+            .update(entry, with: EntryEditingDraft(title: entry.title, body: entry.body, occurredAt: occurred,
+                retainedImageIDs: imageIDs, addedImages: []))
+        XCTAssertEqual(entry.createdAt, created)
+        XCTAssertEqual(entry.updatedAt, created)
+        let lease = try await source.service.exportPackage()
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "ExplicitTimeRepair")
+        _ = try await target.service.importPackage(from: lease.url)
+        let restored = try XCTUnwrap(target.container.mainContext.fetch(FetchDescriptor<Entry>()).first { $0.id == originalID })
+        XCTAssertEqual(restored.body, originalBody)
+        XCTAssertEqual(restored.occurredAt, occurred)
+        XCTAssertEqual(Set(restored.images.map(\.id)), Set(imageIDs))
+        for image in restored.images {
+            XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: image.relativePath)), fixture.imageData)
+        }
+    }
+
     func testPublicationIdentitySurvivesMediaRootCreation() throws {
         let fixture = try TransferTestFixture()
         defer { fixture.remove() }
@@ -124,6 +245,8 @@ final class ImportExportRecoveryTests: XCTestCase {
         unsupported.schemaVersion = 99
         try JSONEncoder().encode(unsupported).write(to: futureDirectory.appendingPathComponent("payload.json"))
         try inbox.publish(valid, files: [:])
+        try FileManager.default.createDirectory(at: source.mediaStore.rootURL, withIntermediateDirectories: true)
+        try Data("{damaged reminder state".utf8).write(to: source.mediaStore.rootURL.appendingPathComponent("CaptureInboxState.json"))
         let lease = try await source.service.exportPackage(inbox: inbox)
         defer { lease.cleanup() }
         XCTAssertEqual(lease.pendingShareCount, 1)

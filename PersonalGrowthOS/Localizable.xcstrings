@@ -1,6 +1,38 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Reminder settings could not be saved. Entries already imported remain saved. Unimported shares remain in Pending Shares; reminder choices can be retried.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder settings could not be saved. Entries already imported remain saved. Unimported shares remain in Pending Shares; reminder choices can be retried."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提醒设置未能保存。已导入的记录仍已保存；尚未导入的分享仍在“待处理分享”中，可稍后重试提醒设置。"
+          }
+        }
+      }
+    },
+    "Pending-share reminder settings were damaged. The original file was preserved and readable settings were recovered. Some Keep for Later choices may need to be set again. Shared content and saved entries were not removed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending-share reminder settings were damaged. The original file was preserved and readable settings were recovered. Some Keep for Later choices may need to be set again. Shared content and saved entries were not removed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "待处理分享的提醒设置已损坏。原文件已保留，可读取的设置已恢复；部分“稍后处理”选择可能需要重新设置。分享内容和已保存记录未被移除。"
+          }
+        }
+      }
+    },
     "%@ Activity": {
       "localizations": {
         "en": {

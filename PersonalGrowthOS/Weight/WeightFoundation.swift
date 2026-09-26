@@ -135,7 +135,7 @@ final class WeightRecordService {
         let originalUpdatedAt = persistedRecord.updatedAt
         persistedRecord.weightKilograms = validatedWeight
         persistedRecord.recordedAt = recordedAt
-        persistedRecord.updatedAt = now()
+        persistedRecord.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: persistedRecord.createdAt, previous: persistedRecord.updatedAt)
         do {
             try save()
         } catch {

@@ -1,3 +1,17 @@
+# PR #7 F1–F5 统一修复（2026-09-26）
+
+**IN_PROGRESS — F1–F5 实现与针对性验证完成，统一受影响门禁待完成。**
+
+本轮按 Owner 上传的 F1–F5 统一修复包连续执行，替代仅 F1–F3 的范围；不重开原 R1–R9 Goal。已依次阅读架构审查、先前独立审查与统一 Goal。当前本地与远端 HEAD 均为 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`，无后续修复，起始工作区干净。PR #7 经实时查询仍 OPEN Draft，base 为 `feature/build9-today-entry-followups`。
+
+执行顺序：F1/F2 共享读取 → F3 Inbox 辅助状态隔离 → F4 主 App 输入会话与文件归属 → F5 技术时间策略；先针对性复现及修复，稳定后统一受影响 Unit/代表性 UI、备份兼容与必要 Release 构建。包内探针不是项目门禁。保留原 R4 修复、所有失败记录与 Owner 真机独立门禁。
+
+目标停在 `READY_FOR_INDEPENDENT_REVIEW`；当前未达到。逐项新证据追加至 [执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md)。不清库、不弱化数据断言，不 merge、改 base、tag、改号或发布。
+
+---
+
+以下为历史交接，旧完成状态不代表本轮 F1–F5 完成。
+
 # 当前状态：External Capture v1 与项目遗留统一收口
 
 **READY_FOR_INDEPENDENT_REVIEW — 代码与文档收口完成，Owner 真机门禁单独保留。**

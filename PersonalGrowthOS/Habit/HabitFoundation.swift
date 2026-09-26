@@ -614,7 +614,7 @@ final class HabitService {
         let timestamp = now()
         persistedHabit.name = validatedName
         persistedHabit.normalizedName = TextSearchNormalizer.normalize(validatedName)
-        persistedHabit.updatedAt = timestamp
+        persistedHabit.updatedAt = TechnicalTimestamp.updated(now: timestamp, createdAt: persistedHabit.createdAt, previous: persistedHabit.updatedAt)
 
         let existingConfiguration = try fetchConfiguration(habit.id)
         let originalMode = existingConfiguration?.recordingMode
@@ -687,7 +687,7 @@ final class HabitService {
         let timestamp = now()
         persisted.name = validatedName
         persisted.normalizedName = TextSearchNormalizer.normalize(validatedName)
-        persisted.updatedAt = timestamp
+        persisted.updatedAt = TechnicalTimestamp.updated(now: timestamp, createdAt: persisted.createdAt, previous: persisted.updatedAt)
         if let plan = planChange {
             let mode = plan.recordingMode
             let target = plan.period == .day ? plan.targetCount : nil
@@ -714,7 +714,7 @@ final class HabitService {
         let originalUpdatedAt = habit.updatedAt
         habit.status = status
         let timestamp = now()
-        habit.updatedAt = timestamp
+        habit.updatedAt = TechnicalTimestamp.updated(now: timestamp, createdAt: habit.createdAt, previous: habit.updatedAt)
         context.insert(HabitLifecycleEvent(
             habitID: habit.id,
             kind: lifecycleKind(from: originalStatus, to: status),

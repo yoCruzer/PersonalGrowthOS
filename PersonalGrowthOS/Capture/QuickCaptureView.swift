@@ -4,6 +4,67 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 @MainActor
+final class PhotoInputOperation: Identifiable {
+    let id = UUID()
+    fileprivate var completed = false
+    fileprivate var task: Task<Void, Never>?
+}
+
+// Owns only uncommitted input files. Each completion must still own the current operation.
+@MainActor
+final class PhotoInputSession: ObservableObject {
+    @Published private(set) var isLoading = false
+    private var current: PhotoInputOperation?
+    private var ownedURLs: Set<URL> = []
+
+    func begin() -> PhotoInputOperation {
+        current?.task?.cancel()
+        let operation = PhotoInputOperation()
+        current = operation
+        isLoading = true
+        return operation
+    }
+
+    func track(_ task: Task<Void, Never>, for operation: PhotoInputOperation) {
+        guard current === operation, !operation.completed else { task.cancel(); return }
+        operation.task = task
+    }
+
+    @discardableResult
+    func finish(_ operation: PhotoInputOperation, sources: [MediaSource], replacing: Bool) -> Bool {
+        guard !operation.completed else { return false }
+        operation.completed = true
+        operation.task = nil
+        guard current === operation else {
+            for source in sources where !ownedURLs.contains(source.url) { try? FileManager.default.removeItem(at: source.url) }
+            return false
+        }
+        current = nil
+        isLoading = false
+        if replacing { removeOwnedFiles() }
+        ownedURLs.formUnion(sources.map(\.url))
+        return true
+    }
+
+    func cancel(_ operation: PhotoInputOperation) {
+        guard current === operation else { return }
+        operation.task?.cancel()
+        current = nil
+        isLoading = false
+    }
+
+    func end() {
+        if let current { cancel(current) }
+        removeOwnedFiles()
+    }
+
+    private func removeOwnedFiles() {
+        for url in ownedURLs { try? FileManager.default.removeItem(at: url) }
+        ownedURLs = []
+    }
+}
+
+@MainActor
 final class CaptureDraftState: ObservableObject {
     @Published var body = ""
     @Published private(set) var imageSources: [MediaSource] = []
@@ -88,8 +149,8 @@ struct QuickCaptureView: View {
     @StateObject private var draft = CaptureDraftState()
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var isSaving = false
-    @State private var temporaryImageURLs: [URL] = []
-    @State private var isShowingCamera = false
+    @StateObject private var inputSession = PhotoInputSession()
+    @State private var cameraOperation: PhotoInputOperation?
 
     init(mediaStore: MediaStore, didSave: @escaping () -> Void) {
         self.init(
@@ -157,7 +218,8 @@ struct QuickCaptureView: View {
                     .accessibilityIdentifier("capture-photo-picker")
 
                     Button {
-                        isShowingCamera = true
+                        cameraOperation = inputSession.begin()
+                        draft.beginImageLoad()
                     } label: {
                         Label("Take Photo", systemImage: "camera")
                     }
@@ -198,7 +260,7 @@ struct QuickCaptureView: View {
             .toolbar {
                 if showsCancel {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") { dismiss() }
+                        Button("Cancel") { inputSession.end(); dismiss() }
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -216,35 +278,42 @@ struct QuickCaptureView: View {
                 guard !items.isEmpty else { return }
                 load(items)
             }
-            .sheet(isPresented: $isShowingCamera) {
+            .sheet(item: $cameraOperation) { operation in
                 CameraCaptureView(
                     completion: { result in
-                        isShowingCamera = false
                         switch result {
                         case .success(let source):
-                            temporaryImageURLs.append(source.url)
+                            guard inputSession.finish(operation, sources: [source], replacing: false) else { return }
+                            draft.finishImageLoad(with: .success(draft.imageSources))
                             draft.appendCameraImage(source)
                         case .failure(let error):
+                            guard inputSession.finish(operation, sources: [], replacing: false) else { return }
                             draft.finishImageLoad(with: .failure(error))
                         }
+                        if cameraOperation === operation { cameraOperation = nil }
                     },
                     cancellation: {
-                        isShowingCamera = false
+                        guard cameraOperation === operation else { return }
+                        inputSession.cancel(operation)
+                        draft.finishImageLoad(with: .success(draft.imageSources))
+                        cameraOperation = nil
                     }
                 )
+                .interactiveDismissDisabled()
                 .ignoresSafeArea()
             }
             .onDisappear {
                 if cleansUpOnDisappear {
-                    removeTemporaryImages()
+                    inputSession.end()
                 }
             }
         }
     }
 
     private func load(_ items: [PhotosPickerItem]) {
+        let operation = inputSession.begin()
         draft.beginImageLoad()
-        Task {
+        let task = Task {
             var newURLs: [URL] = []
             do {
                 var sources: [MediaSource] = []
@@ -252,6 +321,7 @@ struct QuickCaptureView: View {
                     guard let data = try await item.loadTransferable(type: Data.self) else {
                         throw CaptureImageLoadError.noData
                     }
+                    try Task.checkCancellation()
                     guard let type = item.supportedContentTypes.first(where: { $0.conforms(to: .image) }),
                           let fileExtension = type.preferredFilenameExtension else {
                         throw CaptureImageLoadError.unsupportedType
@@ -266,16 +336,18 @@ struct QuickCaptureView: View {
                         contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
                     ))
                 }
-                removeTemporaryImages()
-                temporaryImageURLs = newURLs
+                guard inputSession.finish(operation, sources: sources, replacing: true) else { return }
                 draft.finishImageLoad(with: .success(sources))
             } catch {
                 for url in newURLs {
                     try? FileManager.default.removeItem(at: url)
                 }
-                draft.finishImageLoad(with: .failure(error))
+                if inputSession.finish(operation, sources: [], replacing: false) {
+                    draft.finishImageLoad(with: .failure(error))
+                }
             }
         }
+        inputSession.track(task, for: operation)
     }
 
     private func save() {
@@ -295,7 +367,7 @@ struct QuickCaptureView: View {
                 )
                 entry = try service.create(entryDraft)
             }
-            removeTemporaryImages()
+            inputSession.end()
             draft.reset()
             selectedItems = []
             isSaving = false
@@ -304,13 +376,6 @@ struct QuickCaptureView: View {
             isSaving = false
             draft.reportSaveFailure(error)
         }
-    }
-
-    private func removeTemporaryImages() {
-        for url in temporaryImageURLs {
-            try? FileManager.default.removeItem(at: url)
-        }
-        temporaryImageURLs = []
     }
 
     private func removeImage(at index: Int) {

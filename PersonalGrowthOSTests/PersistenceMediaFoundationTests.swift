@@ -1647,6 +1647,113 @@ final class ExternalCaptureTests: XCTestCase {
         XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("CaptureCopyJournal").path).isEmpty)
     }
 
+    func testCorruptInboxStateCannotHidePendingOrBlockReceiptAwareImport() async throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let storeURL = root.appendingPathComponent("StateRecovery.sqlite")
+        let container = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+        let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        let committed = ShareImportPayload(text: "Already saved")
+        try inbox.publish(committed, files: [:])
+        importer.checkpoint = { if $0 == "afterSave" { throw CaptureError.invalidPayload } }
+        _ = try await importer.scanReport()
+        importer.checkpoint = nil
+        let good = ShareImportPayload(text: "Recover intact content")
+        try inbox.publish(good, files: [:])
+        var future = ShareImportPayload(text: "Keep unknown content")
+        try inbox.publish(future, files: [:])
+        let futureDirectory = try XCTUnwrap(inbox.pending().first { $0.lastPathComponent == future.id.uuidString.lowercased() })
+        future.schemaVersion = 99
+        let futureBytes = try JSONEncoder().encode(future)
+        try futureBytes.write(to: futureDirectory.appendingPathComponent("payload.json"))
+        let corrupt = Data("{truncated state".utf8)
+        try corrupt.write(to: root.appendingPathComponent("CaptureInboxState.json"))
+        let items = try await importer.pendingItems()
+        XCTAssertEqual(items.count, 3)
+        let snapshot = try await importer.pendingSnapshot()
+        XCTAssertTrue(snapshot.hasStateRecoveryNotice)
+        let originals = try FileManager.default.contentsOfDirectory(at: root.appendingPathComponent("CaptureInboxStateRecovery"), includingPropertiesForKeys: nil)
+        XCTAssertEqual(originals.count, 1)
+        XCTAssertEqual(try Data(contentsOf: XCTUnwrap(originals.first)), corrupt)
+        XCTAssertTrue(try XCTUnwrap(items.first { $0.id == committed.id.uuidString.lowercased() }).isCommitted)
+        let report = try await importer.scanReport()
+        XCTAssertEqual(report.pendingCount, 1)
+        XCTAssertEqual(try container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id).sorted { $0.uuidString < $1.uuidString },
+            [good.id, committed.id].sorted { $0.uuidString < $1.uuidString })
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 2)
+        XCTAssertEqual(try Data(contentsOf: futureDirectory.appendingPathComponent("payload.json")), futureBytes)
+        let reopenedContainer = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+        let reopened = ExternalCaptureImporter(container: reopenedContainer, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        try await reopened.keepForLater([future.id.uuidString.lowercased()])
+        let later = try await reopened.pendingItems()
+        XCTAssertTrue(try XCTUnwrap(later.first).isDeferred)
+        let newer = ShareImportPayload(text: "New share remains usable")
+        try inbox.publish(newer, files: [:])
+        _ = try await reopened.scanReport()
+        XCTAssertEqual(try reopenedContainer.mainContext.fetchCount(FetchDescriptor<Entry>()), 3)
+    }
+
+    func testInboxStateWriteFailureDoesNotMisreportCommittedScanOrRetry() async throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        importer.checkpoint = { if $0 == "beforeStateWrite" { throw CocoaError(.fileWriteOutOfSpace) } }
+        let first = ShareImportPayload(text: "Committed despite reminder write failure")
+        try inbox.publish(first, files: [:])
+        let report = try await importer.scanReport()
+        XCTAssertTrue(report.auxiliaryStateWriteFailed)
+        XCTAssertEqual(report.failed, 0)
+        XCTAssertTrue(report.newFailureIDs.isEmpty)
+        XCTAssertEqual(report.pendingCount, 0)
+        let second = ShareImportPayload(text: "Successful explicit retry")
+        try inbox.publish(second, files: [:])
+        try await importer.retry(second.id.uuidString.lowercased())
+        XCTAssertTrue(try inbox.pending().isEmpty)
+        XCTAssertEqual(Set(try container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id)), [first.id, second.id])
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 2)
+        importer.checkpoint = nil
+        let next = try await importer.scanReport()
+        XCTAssertFalse(next.auxiliaryStateWriteFailed)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+    }
+
+    func testDamagedInboxRecordKeepsOtherDeferralsAndIOErrorsRemainErrors() async throws {
+        let root = try temporaryRoot()
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let importer = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        let deferred = ShareImportPayload(text: "Keep deferred")
+        let damaged = ShareImportPayload(text: "Readable despite bad reminder")
+        try inbox.publish(deferred, files: [:])
+        try inbox.publish(damaged, files: [:])
+        try await importer.keepForLater([deferred.id.uuidString.lowercased()])
+        let stateURL = root.appendingPathComponent("CaptureInboxState.json")
+        var state = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: stateURL)) as? [String: Any])
+        state[damaged.id.uuidString.lowercased()] = ["reason": "unknown-enum"]
+        try JSONSerialization.data(withJSONObject: state).write(to: stateURL)
+        let report = try await importer.scanReport()
+        XCTAssertTrue(report.recoveredAuxiliaryState)
+        let reopened = ExternalCaptureImporter(container: container, mediaStore: MediaStore(rootURL: root), inbox: inbox)
+        let snapshot = try await reopened.pendingSnapshot()
+        XCTAssertTrue(snapshot.hasStateRecoveryNotice)
+        XCTAssertEqual(snapshot.items.map(\.id), [deferred.id.uuidString.lowercased()])
+        XCTAssertTrue(try XCTUnwrap(snapshot.items.first).isDeferred)
+        XCTAssertEqual(try container.mainContext.fetch(FetchDescriptor<Entry>()).map(\.id), [damaged.id])
+        try await reopened.retry(deferred.id.uuidString.lowercased())
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+
+        // A filesystem read failure is not a malformed JSON record.
+        try FileManager.default.removeItem(at: stateURL)
+        try FileManager.default.createDirectory(at: stateURL, withIntermediateDirectories: false)
+        do { _ = try await reopened.pendingItems(); XCTFail("Expected a file access error") }
+        catch { XCTAssertFalse(error is DecodingError) }
+        var directory: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: stateURL.path, isDirectory: &directory))
+        XCTAssertTrue(directory.boolValue)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("CaptureInboxStateRecovery").path).count, 1)
+    }
+
     func testFailedInboxDeferralSurvivesReopenAndVersionChange() async throws {
         let root = try temporaryRoot()
         let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
@@ -1815,6 +1922,59 @@ final class ExternalCaptureTests: XCTestCase {
         item.attachments = [image]
         result = try await reader.read([item])
         XCTAssertNil(result.payload.source, "An image file URL must never become a webpage source")
+    }
+
+    func testSameSourceMetadataSurvivesBothProviderOrdersAndDuplicates() async throws {
+        let reader = ShareProviderReader(workspace: try temporaryRoot())
+        let plain = NSItemProvider(object: NSURL(string: "https://example.com/shared")!)
+        let metadata = NSItemProvider(item: [NSExtensionJavaScriptPreprocessingResultsKey: [
+            "url": "https://example.com/shared", "title": "Explicit page title",
+            "canonicalURL": "https://example.com/canonical", "siteName": "Explicit site",
+            "selectedText": "Selected passage"
+        ]] as NSDictionary, typeIdentifier: UTType.propertyList.identifier)
+        let emptyMetadata = NSItemProvider(item: [NSExtensionJavaScriptPreprocessingResultsKey: [
+            "url": "https://example.com/shared", "title": "", "siteName": ""
+        ]] as NSDictionary, typeIdentifier: UTType.propertyList.identifier)
+        for providers in [[plain, metadata], [metadata, plain], [plain, metadata, plain, emptyMetadata, metadata]] {
+            let item = NSExtensionItem()
+            item.attachments = providers
+            let result = try await reader.read([item])
+            XCTAssertEqual(result.payload.source?.url, "https://example.com/shared")
+            XCTAssertEqual(result.payload.source?.canonicalURL, "https://example.com/canonical")
+            XCTAssertEqual(result.payload.source?.title, "Explicit page title")
+            XCTAssertEqual(result.payload.source?.siteName, "Explicit site")
+            XCTAssertEqual(result.payload.text, "Selected passage")
+            XCTAssertEqual(result.payload.source?.captureMode, .selectedContent)
+            XCTAssertTrue(result.issues.isEmpty)
+            XCTAssertNoThrow(try result.payload.validate())
+        }
+    }
+
+    func testRetryTextDraftPreservesEditsDeletionsAndAddsRecoveredItemsOnce() {
+        let first = CaptureTextItem(id: "provider-1-text", text: "Original A")
+        let recovered = CaptureTextItem(id: "provider-2-text", text: "Recovered B")
+        for edited in ["Original A\nMy note", "My note", ""] {
+            var draft = CaptureTextDraft()
+            draft.receive([first])
+            draft.edit(edited)
+            draft.receive([first, recovered])
+            let expected = edited.isEmpty ? "Recovered B" : edited + "\n\nRecovered B"
+            XCTAssertEqual(draft.text, expected)
+            draft.receive([first, recovered])
+            XCTAssertEqual(draft.text, expected)
+            draft.edit("Keep only my note")
+            draft.receive([first, recovered])
+            XCTAssertEqual(draft.text, "Keep only my note")
+        }
+        var unedited = CaptureTextDraft()
+        unedited.receive([first])
+        unedited.receive([first, recovered])
+        XCTAssertEqual(unedited.text, "Original A\n\nRecovered B")
+        unedited.receive([CaptureTextItem(id: "item-0-caption", text: "Original A")])
+        XCTAssertEqual(unedited.text, "Original A\n\nRecovered B")
+        var newSession = CaptureTextDraft()
+        newSession.receive([recovered])
+        XCTAssertEqual(newSession.text, "Recovered B")
     }
 
     func testProviderAlternativesPartialFailureAndMultipleSourcesAreExplicit() async throws {

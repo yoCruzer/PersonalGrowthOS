@@ -34,6 +34,8 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
     private let photoOutput = AVCapturePhotoOutput()
     private let sessionQueue = DispatchQueue(label: "com.yocruzer.PersonalGrowthOS.camera")
     private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var finished = false
+    private var captureRequested = false
 
     init(
         completion: @escaping (Result<MediaSource, Error>) -> Void,
@@ -63,6 +65,7 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        cancel()
         sessionQueue.async { [session] in
             if session.isRunning { session.stopRunning() }
         }
@@ -118,6 +121,7 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
     }
 
     private func configureSession() {
+        guard !finished else { return }
         guard let device = AVCaptureDevice.default(
             .builtInWideAngleCamera,
             for: .video,
@@ -147,6 +151,8 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
     }
 
     @objc private func capturePhoto() {
+        guard !finished, !captureRequested else { return }
+        captureRequested = true
         let codec: AVVideoCodecType = photoOutput.availablePhotoCodecTypes.contains(.hevc) ? .hevc : .jpeg
         photoOutput.capturePhoto(
             with: AVCapturePhotoSettings(format: [AVVideoCodecKey: codec]),
@@ -154,7 +160,9 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
         )
     }
 
-    @objc private func cancel() {
+    @objc func cancel() {
+        guard !finished else { return }
+        finished = true
         cancellation()
     }
 
@@ -163,11 +171,18 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
         didFinishProcessingPhoto photo: AVCapturePhoto,
         error: Error?
     ) {
+        let result: Result<Data, Error>
+        if let error { result = .failure(error) }
+        else if let data = photo.fileDataRepresentation() { result = .success(data) }
+        else { result = .failure(CameraCaptureError.noFileRepresentation) }
+        DispatchQueue.main.async { self.receivePhotoData(result) }
+    }
+
+    // The hardware callback crosses to the UI session before creating any temporary file.
+    func receivePhotoData(_ result: Result<Data, Error>) {
+        guard !finished else { return }
         do {
-            if let error { throw error }
-            guard let data = photo.fileDataRepresentation() else {
-                throw CameraCaptureError.noFileRepresentation
-            }
+            let data = try result.get()
             guard let source = CGImageSourceCreateWithData(data as CFData, nil),
                   let identifier = CGImageSourceGetType(source) as String?,
                   let type = UTType(identifier),
@@ -189,9 +204,8 @@ final class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegat
     }
 
     private func finish(_ result: Result<MediaSource, Error>) {
-        let completion = completion
-        DispatchQueue.main.async {
-            completion(result)
-        }
+        guard !finished else { return }
+        finished = true
+        completion(result)
     }
 }

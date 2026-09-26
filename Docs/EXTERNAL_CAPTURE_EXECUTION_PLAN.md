@@ -1,3 +1,5 @@
+> 当前任务为文末“PR #7 F1–F5 统一修复”，状态 IN_PROGRESS。下方 R1–R9 完成结论保留为历史证据。
+
 > 当前入口为下方“统一收口审计 2026-09-26”及其逐组证据，状态 IN_PROGRESS。其前的 2026-09-22 COMPLETE/Stop 指令属于历史 handoff（superseded），不指挥当前 Goal。Owner-only 验收统一使用 [当前候选清单](OWNER_MANUAL_VALIDATION_CHECKLIST.md)。
 
 # External Capture v1
@@ -394,3 +396,53 @@ xcodebuild build -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -c
 当前没有已确认而未闭环的本轮代码缺陷；不以测试数量替代上表的边界证据。未执行：真机签名/App Group、Photos/微信、真实离线 LP/云端图片、Owner 真实库覆盖升级、真机峰值内存与交互性能。历史 V8 hash 差异根因未知；本轮只读收集，不删除/重建。现有共享 main-context 一般 rollback 债务维持既有边界，捕获/恢复已隔离；全文、AI/OCR、iCloud、全项目重构仍 DEFERRED/out of scope。UX-01/02 和原 V1 已解决能力不重列待办。
 
 未来仅在 Owner 授权后：独立 Review → 集中真机门禁 → 处理 #1 已包含于 #2 的重叠（保留 6c5ec6c、17d3607、77d98a5、f8a1298、c45c666 及 S2 历史）→ 按依赖审查 #2→#3→#4→#5→#6→#7 的集成与必要 base 调整 → 由现有 Xcode Cloud 确定实际候选 SHA/build、Archive/上传状态并单独核验 TestFlight。上述均未执行；现有 Build9 tag/Archive success 不证明本候选可安装。
+
+
+## PR #7 F1–F5 统一修复
+
+2026-09-26：Owner 上传统一修复包，已按指定顺序阅读。起始本地/远端 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`，工作区干净，无后续 F1–F3 修复；PR #7 OPEN Draft/base 未变。
+
+实施：F1/F2 共享读取及 fixture UI → F3 辅助状态隔离 → F4 主 App 会话/临时文件 → F5 技术更新时间/完整导出恢复。每项针对性复现；稳定后统一受影响回归。不重跑完整 baseline，不重开原 R1–R9，不以探针替代门禁。
+
+当前五项实现已加入；定向复现与验证如下，统一受影响回归尚未完成，状态仍 IN_PROGRESS。
+
+
+### F1–F5 实现与针对性证据
+
+本节早期运行均以 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0` 为起点，叠加本轮工作区改动；不能冒充该原始 SHA 已含修复。最终统一门禁将固定到下一个实现提交 SHA。所有测试使用合成数据与既有专用模拟器，不访问 Owner 私人库。
+
+- **F1**：reader 给正文片段稳定的 provider/caption 身份；`CaptureTextDraft` 分开维护已接收基线和用户当前编辑稿。Retry 仅追加新恢复项；用户删掉的旧正文不重新插入，重复 Retry 不重复追加。真实公开 host 新增首次失败、再次成功的正文 provider。
+- **F2**：同 URL 合并缺失 title/canonical；显式 Safari siteName 优于 URL.host 回退，空字段不擦除。多个非空显式字段冲突保持首个；原始 URL 与 canonical 不混用。真正多来源仍保留正文并提示。
+- **F3**：只有 JSON 解码错误进入恢复。先保存原始字节到 `CaptureInboxStateRecovery/<UUID>.json`，逐条保留有效设置，再原子写回辅助状态；权限/目录/容量等 I/O 错误不伪装为 JSON 损坏。管理页持久显示脱敏提示；首次自动扫描恢复亦提示。Pending/Entry/receipt/未知 schema/原 Recovery 不参与此清理。
+- **F4**：`PhotoInputSession` 持有操作身份、取消句柄与已接管临时 URL；过期完成只清其自身输出，不能清新草稿或提前结束新 spinner。Quick Capture 保持替换，camera 开始使在飞 picker 失效且成功时追加；编辑页保持追加并在加载期间禁用新选择。Save/Cancel/结束使操作失效，Record tab 的非清理消失维持原行为。camera 终止与快门请求 once-only，回到主线程检查有效性后才产生文件。
+- **F5**：Entry 编辑/状态、Weight 编辑以及检索确认同样违反备份时间约束的 Habit/Goal/WeeklyReview 更新使用 `max(now, createdAt, oldUpdatedAt)`。follow-up 原 `createdAt+1s` Edited 规则保留。HabitConfiguration 没有 createdAt 且无此备份不变量，未扩大改动；EntryTimestamps 已拒绝创建前时间且非持久化写入口，未重写。所有 initializer、rollback、业务 occurredAt/recordedAt、Local Day、plan 生效日期与历史 schema/TransferValidator 保持原语义。
+
+已存在反转时间的有界修复路径：先保留原本内容与身份，用户明确重新保存该条记录；普通服务重新保存将技术时间提高到 createdAt/既有技术时间/当前时间的最大值，不改原创建时间或业务日期。合成故障测试先确认实际导出拒绝，再用同正文/图片/日期重新保存，实际完整备份恢复后逐项核对。没有后台批量修正 Owner 库，也没有放宽外来备份校验。
+
+| 运行（路径前缀 `/tmp/PGOS-F1F5-`，日志 `.log`、结果 `.xcresult`） | 实际结果 |
+| --- | --- |
+| `F2-Repro1` | 原 reader，exit 65；1 项、6 条失败断言，普通 URL 先到丢 title/canonical/显式 siteName。 |
+| `Readers-Fix1` | exit 0；4/4 Unit：双顺序/重复/空值、用户编辑/删除/再次 Retry、多个来源/回退、image+webURL/数量。 |
+| `F1-Repro1` | 原 `ShareViewController` 接收逻辑，exit 65；真实扩展中备注保留但恢复正文未显示，明确失败于编辑器全文断言。已恢复修复版源文件。 |
+| `F3F5Repro-F1UIFix1` | 整体 exit 65；F3 坏 JSON 列表读取失败；F5 较小/跨创建时间回拨断言失败，实际完整导出 `invalidObject("entry")`；修复后 F1 UI 1/1 PASS，备注+恢复正文保存后重开可见且只有一条 Entry。 |
+| `StateClock-Fix1` | exit 0；3/3 Unit：坏状态+好包/future/receipt；坏记录不伤正常延后与 I/O 拒绝；回拨后实际导出/恢复/重开。 |
+| `F4-Fix1` | exit 65，编译阶段新增 F5 夹具误用不存在的 GoalKind.goal；修正为既有 .standard，未运行产品测试。 |
+| `F4Clock-Fix2` | exit 0；6/6 Unit + 1/1 Record UI。相机/旧任务会话与字节、扩大到 Habit/Goal/WeeklyReview 的实际备份重开、明确重存修复、坏状态不阻断备份且排除 Pending 计数准确。 |
+| `FinalTargeted1` | exit 65；3/3 Unit PASS、Record 草稿跨 tab/保存重置 UI PASS；Inbox 第二项位于可视区域下方，断言失败。 |
+| `InboxUI2` | exit 0；1/1 UI PASS，补正常滚动且保留全部内容/延后断言；恢复提示截图已人工核验。 |
+| `StateWrite1` | exit 0；1/1 Unit PASS，故障注入辅助状态写入失败，scan/explicit retry 的已提交结果不误标未保存、无重复 Entry/receipt。 |
+
+公共命令前缀：
+
+```sh
+xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=BCB06FAD-68A8-41DB-B5F4-99CCA02E06E2' -derivedDataPath /tmp/PGOS-Closure-R4-UnitDerived -parallel-testing-enabled NO
+```
+
+每次 `-only-testing` 列表完整记录于相应 `.log` 开头的 Command line invocation；结果路径用 `-resultBundlePath /tmp/PGOS-F1F5-<运行>.xcresult`，输出重定向到同名 `.log`。公开 host：`sh Scripts/build_capture_fixture_host.sh` exit 0，安装同一模拟器，无 erase/uninstall。上传的架构探针另以 `swiftc -parse-as-library -module-cache-path /tmp/PGOS-F1F5-ProbeModuleCache /tmp/PGOS-F1F5-architecture_boundary_probe.swift -o /tmp/PGOS-F1F5-architecture-probe` 编译运行，exit 0，5/5 控制流复现；`/tmp/PGOS-F1F5-architecture-probe.log` 明确不是 iOS/SwiftData/ZIP 门禁，不计入产品 PASS。
+
+最终受影响门禁边界：ExternalCaptureTests（provider/Inbox/原 R4/journal）、AppCompositionTests（会话）、PersistenceMediaFoundationTests 与 EntryDomainTests（普通 Entry/media/follow-up）、Weight/Habit/Goal/WeeklyReview 真实服务、ImportExportRecoveryTests（完整 v1–v6/非法拒绝/冻结迁移/恢复）。公共持久化代码的改动仅技术字段赋值和纯函数，不改事务/迁移核心；覆盖完整受影响服务 suite 和备份 suite，不重跑无关全库 UI。代表性 UI 保留真实 F1 host、取消/迟到、Safari、Inbox、普通 Entry、Record、备份排除与 Files 恢复；最后 unsigned Release app+appex。原整组 exit65 与所有历史门禁均保留原标签。
+
+
+F3 提交后辅助状态补充：scan 的最终状态写入失败单独报告 `auxiliaryStateWriteFailed` 并给出“已导入仍已保存”的提示；成功 retry 之后仅清理过时状态的失败写入脱敏诊断，下一次 scan 重试清理，不向用户宣称内容未保存。测试 checkpoint 生产默认 nil。原始导入错误不会被之后状态记录写入失败覆盖。Inbox 截图 `/tmp/PGOS-F1F5-InboxUI2-Attachments/1C2E15CC-B43B-458D-AECF-7CE91922DE32.png` 已核实提示完整且不包含正文/路径；第二条内容在滚动后验证。
+
+当前全部针对性门禁通过，准备固定实现 SHA 执行统一受影响回归；尚不 READY。静态 project/plist/scheme 检查通过；新增两条提示均 en/zh-Hans，当前 511 keys，最终版本/Release 再核对。

@@ -20,6 +20,8 @@ struct AppShell: View {
     @State private var captureFailure = false
     @State private var failedCaptureIDs: [String] = []
     @State private var captureDiagnostic: FailureDiagnostic?
+    @State private var captureStateRecovered = false
+    @State private var captureStateWriteFailed = false
     @State private var isShowingPendingShares = false
     #if DEBUG
     @State private var captureTestStatus: String?
@@ -102,7 +104,9 @@ struct AppShell: View {
                 }
             }
         } message: {
-            if let captureDiagnostic { Text(captureDiagnostic.category.title) }
+            if captureStateWriteFailed { Text(CaptureInboxSnapshot.writeFailureMessage) }
+            else if captureStateRecovered { Text(CaptureInboxSnapshot.recoveryMessage) }
+            else if let captureDiagnostic { Text(captureDiagnostic.category.title) }
             else { Text("The shared files are retained. You can retry when storage is available or after updating the app.") }
         }
         .sheet(isPresented: $isShowingPendingShares) {
@@ -175,10 +179,15 @@ struct AppShell: View {
                             let directory = try inbox.pending().first { $0.lastPathComponent == payload.id.uuidString }!
                             try JSONEncoder().encode(payload).write(to: directory.appendingPathComponent("payload.json"))
                         }
+                        if ProcessInfo.processInfo.arguments.contains("-PGOSPendingStateDamageTest") {
+                            try inbox.publish(ShareImportPayload(text: "Intact share after reminder damage"), files: [:])
+                            try Data("{damaged reminder fixture".utf8).write(to: container.mediaStore.rootURL.appendingPathComponent("CaptureInboxState.json"))
+                        }
                         try Data().write(to: marker)
                     }
                     let report = try await importer.scanReport()
-                    if !report.newFailureIDs.isEmpty {
+                    captureStateRecovered = report.recoveredAuxiliaryState
+                    if !report.newFailureIDs.isEmpty || report.recoveredAuxiliaryState {
                         failedCaptureIDs = report.newFailureIDs
                         captureFailure = true
                     }
@@ -208,7 +217,9 @@ struct AppShell: View {
             stage = .inboxState
             let report = try await importer.scanReport()
             captureDiagnostic = nil
-            if !report.newFailureIDs.isEmpty {
+            captureStateRecovered = report.recoveredAuxiliaryState
+            captureStateWriteFailed = report.auxiliaryStateWriteFailed
+            if !report.newFailureIDs.isEmpty || report.recoveredAuxiliaryState || report.auxiliaryStateWriteFailed {
                 failedCaptureIDs = report.newFailureIDs
                 captureFailure = true
             }
@@ -1501,6 +1512,7 @@ private struct CaptureInboxView: View {
     let mediaStore: MediaStore
     @Environment(\.modelContext) private var context
     @State private var items: [CaptureInboxItem] = []
+    @State private var hasStateRecoveryNotice = false
     @State private var selectedDiscard: CaptureInboxItem?
     @State private var busy = false
     @State private var failure = false
@@ -1508,6 +1520,10 @@ private struct CaptureInboxView: View {
 
     var body: some View {
         List {
+            if hasStateRecoveryNotice {
+                Text(CaptureInboxSnapshot.recoveryMessage)
+                    .accessibilityIdentifier("pending-state-recovery-notice")
+            }
             if items.isEmpty {
                 Text("No pending shares")
             }
@@ -1571,7 +1587,11 @@ private struct CaptureInboxView: View {
     }
 
     private func refresh() async {
-        do { items = try await importer().pendingItems() }
+        do {
+            let snapshot = try await importer().pendingSnapshot()
+            items = snapshot.items
+            hasStateRecoveryNotice = snapshot.hasStateRecoveryNotice
+        }
         catch { recordFailure(error) }
     }
 

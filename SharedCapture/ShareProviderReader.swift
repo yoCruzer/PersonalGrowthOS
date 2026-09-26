@@ -84,6 +84,30 @@ struct CaptureReadResult {
     var files: [UUID: URL] = [:]
     var issues: [CaptureReadIssue] = []
     var thumbnail: Data?
+    var textItems: [CaptureTextItem] = []
+}
+
+struct CaptureTextItem {
+    let id: String
+    let text: String
+}
+
+// An edit owns the displayed text. Retry only introduces previously unread logical items.
+struct CaptureTextDraft {
+    private(set) var text = ""
+    private var received: [String: String] = [:]
+
+    mutating func edit(_ text: String) { self.text = text }
+
+    mutating func receive(_ items: [CaptureTextItem]) {
+        for item in items where received[item.id] == nil {
+            let alreadyReceived = received.values.contains(item.text)
+            received[item.id] = item.text
+            if !alreadyReceived {
+                text = text.isEmpty ? item.text : text + "\n\n" + item.text
+            }
+        }
+    }
 }
 
 struct ShareProviderReader {
@@ -96,19 +120,36 @@ struct ShareProviderReader {
         var texts: [String] = []
         var titles: [String] = []
         var ordinal = 0
-        func appendText(_ text: String?) {
-            if let text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !texts.contains(text) { texts.append(text) }
+        var hasExplicitSiteName = false
+        func appendText(_ text: String?, id: String) {
+            if let text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                result.textItems.append(CaptureTextItem(id: id, text: text))
+                if !texts.contains(text) { texts.append(text) }
+            }
         }
-        func appendSource(_ source: CaptureSource) {
-            if result.payload.source == nil { result.payload.source = source }
+        func appendSource(_ source: CaptureSource, explicitMetadata: Bool = false) {
+            if result.payload.source == nil {
+                result.payload.source = source
+                hasExplicitSiteName = explicitMetadata && source.siteName != nil
+            }
             else if result.payload.source?.url != source.url {
                 // One source card is supported. Preserve every other explicit URL as text,
                 // and require acknowledgement of the ambiguity before saving.
-                appendText(source.url)
+                appendText(source.url, id: "provider-\(ordinal)-url")
                 result.issues.append(CaptureReadIssue(item: ordinal, reason: .multipleSources))
+            } else {
+                // First nonempty explicit value wins; a plain URL's host is only a fallback.
+                if result.payload.source?.title == nil { result.payload.source?.title = source.title }
+                if result.payload.source?.canonicalURL == nil { result.payload.source?.canonicalURL = source.canonicalURL }
+                if let siteName = source.siteName {
+                    if result.payload.source?.siteName == nil || (explicitMetadata && !hasExplicitSiteName) {
+                        result.payload.source?.siteName = siteName
+                    }
+                    if explicitMetadata { hasExplicitSiteName = true }
+                }
             }
         }
-        for item in items {
+        for (itemIndex, item) in items.enumerated() {
             var pageMetadataTitle: String?
             try Task.checkCancellation()
             if let title = item.attributedTitle?.string { titles.append(title) }
@@ -158,12 +199,12 @@ struct ShareProviderReader {
                                     capturedAt: result.payload.createdAt, captureMode: .metadataOnly)
                                 source.normalizeMetadata()
                                 pageMetadataTitle = source.title
-                                appendSource(source)
-                                appendText(values["selectedText"] as? String)
+                                appendSource(source, explicitMetadata: true)
+                                appendText(values["selectedText"] as? String, id: "provider-\(ordinal)-text")
                             } else {
                                 let text = Self.text(value)
                                 guard let text else { throw CaptureError.unsupportedProvider }
-                                appendText(text)
+                                appendText(text, id: "provider-\(ordinal)-text")
                             }
                         }
                         accepted = true
@@ -180,7 +221,7 @@ struct ShareProviderReader {
             // Captions are independent of attachment encodings, even when attachments exist.
             let caption = item.attributedContentText?.string
             if caption != pageMetadataTitle {
-                appendText(caption)
+                appendText(caption, id: "item-\(itemIndex)-caption")
             }
         }
         result.payload.text = texts.joined(separator: "\n\n")
