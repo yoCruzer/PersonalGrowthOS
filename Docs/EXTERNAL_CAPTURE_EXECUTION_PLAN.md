@@ -89,3 +89,41 @@ Unsupported images (e.g. GIF/WebP), video, full webpage bodies and source-app id
 ## Final delivery
 
 **COMPLETE — READY_FOR_INDEPENDENT_REVIEW.** Tested product implementation: `068a27a`. Ordinary push succeeded; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets `feature/build9-today-entry-followups` from `codex/external-capture-v1`. Following documentation-only commit records the handoff; it does not change tested product code. Both current-context documents are updated. No merge, Ready-for-review conversion, tag, build-number change, Archive or TestFlight occurred. Stop here; independent review and Owner device checks are the next boundary.
+
+
+## 统一收口审计 2026-09-26
+
+授权输入：Owner 上传包的 `02_CODEX_CLOSURE_GOAL.md`、`01_AUDIT_REPORT.md`（已按顺序完整阅读），覆盖 R1–R9/L1–L2，替代上方历史 COMPLETE 边界。终点仍为 READY_FOR_INDEPENDENT_REVIEW；本轮尚未完成。
+
+计划：先 R4 确定性交错及 R2 单消费者/发布互斥，再 provider/metadata/失败 Inbox/所有权/搜索/诊断，最后统一 final gate 与 L2 交付。定向测试优先，不先跑全量 baseline。
+
+| ID | 当前结论 | 证据 / 下一验证 |
+| --- | --- | --- |
+| R4 | CONFIRMED → 修复定向验证中 | restore worker 安装 Originals 后，catch 删除整个目录；MainActor importer 无共享互斥。新增 `testRestoreFailurePreservesInterleavedCommittedShareImage` 用 beforeSave checkpoint + semaphore 控制交错，断言已提交分享图片保持可读。 |
+| R2 | CONFIRMED（静态） | importer.scan/consume 同步 MainActor；将与 R4 共同修改并验证。 |
+| R1/R3/R5/R6/R7/R8/R9 | 待逐项核实 | 不以旧测试 PASS 推断缺失场景通过。 |
+| L1 | 待核实 | 显式 SwiftData import / Release warning。 |
+| L2 | 进行中 | 起始本地/远端 ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b；PR #7 OPEN Draft，base 未变。当前上下文已标旧 handoff superseded。 |
+
+首次沙箱内 R4 测试无法访问 CoreSimulator，日志 `/tmp/PGOS-Closure-R4-Repro.log`；不属于产品失败。获准访问模拟器后的同一定向测试运行使用 `/tmp/PGOS-Closure-R4-Repro2.log` 与 `.xcresult`，复现退出码 65：Entry/receipt 已提交且 Pending 已清理，但读取分享图片抛出文件不存在（NSCocoaErrorDomain 260）。所有测试使用合成隔离库。
+
+
+### R4/R2 第一组证据
+
+- 原缺陷运行复现：`/tmp/PGOS-Closure-R4-Repro2.xcresult`，exit 65，`testRestoreFailurePreservesInterleavedCommittedShareImage` 图片可读断言失败；不是 Owner 真机事故。
+- 修复：同一标准化媒体根目录的 `StorePublication` 锁覆盖完整同步 worker 操作，无 await 重入；导入的私有 ModelContext 在 worker 创建/使用，扫描、hash、拷图离开 MainActor。恢复与导出快照/媒体读取共用该发布边界。恢复失败只清理此次安装的图片路径；成功不 rollback 主 context。
+- `/tmp/PGOS-Closure-R4-Fix.xcresult`，exit 0，8/8：上述交错回归、恢复中断及 6 项现有 ExternalCaptureTests。分享请求在恢复 beforeSave 暂停期间已调度，receipt 仍为 0、Pending 保留；释放恢复失败后分享提交且图片可读。receipt/reopen/永久删除不复活、图片失败回滚、V9 迁移、source 备份往返均通过。
+- 安装后取消及成功恢复期间编辑草稿验证：首次 `Cancellation` 因 fixture 缺少 createdAt 编译失败（exit 65）；修正后 `/tmp/PGOS-Closure-R4-Cancellation2.xcresult` exit 0，2/2 PASS。取消后排队分享完成；成功与取消均保留主 context 未保存草稿。
+- R4 其余检查点、导出一致边界验证与 R2 extension 重 I/O 仍待完成；不得将本组通过写成全部收口完成。
+
+命令公共前缀：`xcodebuild test -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=5F04DE28-8329-4774-9488-076D6DDC5230' -derivedDataPath /tmp/PGOS-Capture-Derived -parallel-testing-enabled NO`。
+
+各运行附加参数（日志为同名前缀 `.log`）：
+
+```text
+Repro2: -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRestoreFailurePreservesInterleavedCommittedShareImage -resultBundlePath /tmp/PGOS-Closure-R4-Repro2.xcresult
+Fix: -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRestoreFailurePreservesInterleavedCommittedShareImage -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testInterruptedPublicationLeavesEmptyTargetAndNoOriginals -only-testing:PersonalGrowthOSTests/ExternalCaptureTests -resultBundlePath /tmp/PGOS-Closure-R4-Fix.xcresult
+Cancellation2: -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRestoreCancellationAfterInstallReleasesShareAndPreservesDraft -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testSuccessfulRestoreDoesNotRollbackDraftCreatedDuringPublication -resultBundlePath /tmp/PGOS-Closure-R4-Cancellation2.xcresult
+```
+
+2026-09-26 实时 PR 列表：#1–#7 仍全部 OPEN Draft，#2→#3→#4→#5→#6→#7 base 链与审计相同；#1/#2 重叠及云端 release identity 尚待核实。未更改远端 PR 状态。

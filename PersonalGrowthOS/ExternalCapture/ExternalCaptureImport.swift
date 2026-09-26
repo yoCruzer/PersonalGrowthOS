@@ -1,6 +1,25 @@
 import Foundation
 import SwiftData
 
+// All operations execute synchronously on a worker while holding this store's lease.
+// No await occurs inside the lease, so actor reentrancy cannot publish a second operation.
+enum StorePublication {
+    private static let registryLock = NSLock()
+    private static var locks: [URL: NSLock] = [:]
+
+    static func perform<T>(at root: URL, _ operation: () throws -> T) throws -> T {
+        let key = root.standardizedFileURL.resolvingSymlinksInPath()
+        registryLock.lock()
+        let lock = locks[key] ?? NSLock()
+        locks[key] = lock
+        registryLock.unlock()
+        lock.lock()
+        defer { lock.unlock() }
+        try Task.checkCancellation()
+        return try operation()
+    }
+}
+
 @Model
 final class EntryExternalSource {
     @Attribute(.unique) var entryID: UUID
@@ -35,10 +54,36 @@ final class ExternalCaptureImporter {
         self.inbox = inbox
     }
 
-    // Synchronous on MainActor to serialize scans; a private context cannot save/rollback editor drafts.
+    func scan() async throws -> Int {
+        let worker = CaptureImportWorker(container: container, mediaStore: mediaStore,
+            inbox: inbox, checkpoint: checkpoint)
+        let task = Task.detached {
+            try worker.checkpoint?("scheduled")
+            return try StorePublication.perform(at: worker.mediaStore.rootURL) { try worker.scan() }
+        }
+        return try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
+    }
+
+    func consume(_ directory: URL) async throws {
+        let worker = CaptureImportWorker(container: container, mediaStore: mediaStore,
+            inbox: inbox, checkpoint: checkpoint)
+        let task = Task.detached {
+            try StorePublication.perform(at: worker.mediaStore.rootURL) { try worker.consume(directory) }
+        }
+        try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
+    }
+}
+
+private struct CaptureImportWorker {
+    let container: ModelContainer
+    let mediaStore: MediaStore
+    let inbox: ShareInbox
+    let checkpoint: ((String) throws -> Void)?
+
     func scan() throws -> Int {
         var failed = 0
         for directory in try inbox.pending() {
+            try Task.checkCancellation()
             CaptureLog.event("inbox.discovered")
             do { try consume(directory) }
             catch {
@@ -73,6 +118,7 @@ final class ExternalCaptureImporter {
             }
             try mediaStore.ensureCapacity(for: sources)
             for source in sources {
+                try Task.checkCancellation()
                 stored.append(try mediaStore.storeOriginal(source))
                 CaptureLog.event("attachment.copied count=\(stored.count)", id: id)
                 try checkpoint?("attachment")
@@ -94,10 +140,14 @@ final class ExternalCaptureImporter {
             if let source = payload.source { context.insert(try EntryExternalSource(entryID: id, source: source)) }
             context.insert(CaptureImportReceipt(id: id, importedAt: Date()))
             try checkpoint?("beforeSave")
+            try Task.checkCancellation()
             try context.save()
         } catch {
             context.rollback()
-            for file in stored { try mediaStore.removeOriginal(at: file.relativePath) }
+            for file in stored {
+                do { try mediaStore.removeOriginal(at: file.relativePath) }
+                catch { CaptureLog.event("attachment.cleanupFailed", id: id) }
+            }
             throw error
         }
         // A failure here must never roll back committed media. Receipt makes the retry cleanup-only.

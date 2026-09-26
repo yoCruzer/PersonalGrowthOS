@@ -70,12 +70,12 @@ struct AppShell: View {
             .tag(AppTab.library)
         }
         .accessibilityIdentifier("app-shell")
-        .task { importShares() }
+        .task { await importShares() }
         .onChange(of: captureScenePhase) { _, phase in
-            if phase == .active { importShares() }
+            if phase == .active { Task { await importShares() } }
         }
         .alert("Some shared content could not be imported", isPresented: $captureFailure) {
-            Button("Retry") { importShares() }
+            Button("Retry") { Task { await importShares() } }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("The shared files are retained. You can retry when storage is available or after updating the app.")
@@ -89,7 +89,7 @@ struct AppShell: View {
         }
     }
 
-    private func importShares() {
+    private func importShares() async {
         if container.configuration.launchMode == .uiTesting {
             #if DEBUG
             guard ProcessInfo.processInfo.arguments.contains("-PGOSCaptureShareTest") else { return }
@@ -101,7 +101,7 @@ struct AppShell: View {
                     let payload = try inbox.read(directory)
                     // Only the explicit synthetic localhost test page may enter the isolated UI store.
                     if payload.source?.url == "http://127.0.0.1:18763/capture.html" {
-                        try importer.consume(directory)
+                        try await importer.consume(directory)
                     }
                 }
             } catch { captureFailure = true }
@@ -111,7 +111,7 @@ struct AppShell: View {
         do {
             let importer = ExternalCaptureImporter(container: container.modelContainer,
                 mediaStore: container.mediaStore, inbox: try ShareInbox.shared())
-            captureFailure = try importer.scan() > 0
+            captureFailure = try await importer.scan() > 0
         } catch {
             CaptureLog.event("inbox.unavailable type=\(String(describing: type(of: error)))")
             captureFailure = true

@@ -31,6 +31,7 @@ final class ExportPackageLease: Identifiable {
 enum ImportPublicationCheckpoint: Equatable {
     case afterPreflight
     case afterMediaCopy(Int)
+    case afterInstall
     case beforeSave
 }
 
@@ -113,30 +114,32 @@ final class ImportExportService {
         let exportLimits = limits
         do {
             let worker = Task.detached {
-                let snapshotContext = ModelContext(exportContainer)
-                try LinkIntegrityService.validate(context: snapshotContext)
-                let transfer = try TransferSnapshot.make(context: snapshotContext)
-                let inputs = try transfer.images.map { record in
-                    ExportMediaInput(
-                        record: record,
-                        sourceURL: try Self.mediaURL(root: mediaRoot, relativePath: record.relativePath)
+                return try StorePublication.perform(at: mediaRoot) {
+                    let snapshotContext = ModelContext(exportContainer)
+                    try LinkIntegrityService.validate(context: snapshotContext)
+                    let transfer = try TransferSnapshot.make(context: snapshotContext)
+                    let inputs = try transfer.images.map { record in
+                        ExportMediaInput(
+                            record: record,
+                            sourceURL: try Self.mediaURL(root: mediaRoot, relativePath: record.relativePath)
+                        )
+                    }
+                    let destination = try Self.buildExportPackage(
+                        transfer: transfer,
+                        mediaInputs: inputs,
+                        operationID: operationID,
+                        exportedAt: exportDate,
+                        build: build,
+                        workspaceRoot: exportWorkspaceRoot,
+                        availableCapacity: capacity,
+                        limits: exportLimits
+                    )
+                    return ExportBuildResult(
+                        destination: destination,
+                        objectCount: transfer.totalObjectCount,
+                        mediaCount: transfer.images.count
                     )
                 }
-                let destination = try Self.buildExportPackage(
-                    transfer: transfer,
-                    mediaInputs: inputs,
-                    operationID: operationID,
-                    exportedAt: exportDate,
-                    build: build,
-                    workspaceRoot: exportWorkspaceRoot,
-                    availableCapacity: capacity,
-                    limits: exportLimits
-                )
-                return ExportBuildResult(
-                    destination: destination,
-                    objectCount: transfer.totalObjectCount,
-                    mediaCount: transfer.images.count
-                )
             }
             let result = try await withTaskCancellationHandler {
                 try await worker.value
@@ -533,20 +536,21 @@ final class ImportExportService {
         let mediaRoot = mediaStore.rootURL
         let checkpoint = publicationCheckpoint
         let worker = Task.detached {
-            try Self.publishPreparedPackage(
-                package: package,
-                container: importContainer,
-                mediaRoot: mediaRoot,
-                importedAt: importedAt,
-                publicationCheckpoint: checkpoint
-            )
+            try StorePublication.perform(at: mediaRoot) {
+                try Self.publishPreparedPackage(
+                    package: package,
+                    container: importContainer,
+                    mediaRoot: mediaRoot,
+                    importedAt: importedAt,
+                    publicationCheckpoint: checkpoint
+                )
+            }
         }
         try await withTaskCancellationHandler {
             try await worker.value
         } onCancel: {
             worker.cancel()
         }
-        context.rollback()
     }
 
     nonisolated private static func publishPreparedPackage(
@@ -599,6 +603,7 @@ final class ImportExportService {
             }
             try fileManager.moveItem(at: stagedOriginals, to: activeOriginals)
             installedOriginals = true
+            try publicationCheckpoint?(.afterInstall)
 
             try ensureTargetIsEmpty(publicationContext)
             _ = try materialize(
@@ -621,7 +626,9 @@ final class ImportExportService {
         } catch {
             publicationContext.rollback()
             if installedOriginals && !didSave {
-                try? fileManager.removeItem(at: activeOriginals)
+                for image in package.data.images {
+                    try? activeStore.removeOriginal(at: image.relativePath)
+                }
             }
             throw error
         }

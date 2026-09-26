@@ -1,3 +1,15 @@
+# 当前任务：External Capture v1 与项目遗留统一收口
+
+2026-09-26：Owner 新 Goal 替代此前停止实现及仅 R1–R3 的边界。状态 **IN_PROGRESS**，目标仍为完成 R1–R9、L1–L2 后交付 READY_FOR_INDEPENDENT_REVIEW。
+
+起始分支 `codex/external-capture-v1`，完整 SHA `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`；起始工作区干净。实时查询确认 [PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) 为 OPEN Draft，head 与本地一致，base `feature/build9-today-entry-followups`。无后续修复需要回退或重复。
+
+R4 已在合成隔离库确定性复现图片丢失，并完成首组修复：共享发布互斥、worker 导入、按拥有路径清理和主草稿保护。定向 8/8 + 取消/草稿 2/2 通过；R4 剩余检查点、R2 扩展 I/O 与其他收口项继续推进。验收与逐项证据统一记录于 [执行计划](EXTERNAL_CAPTURE_EXECUTION_PLAN.md#统一收口审计-2026-09-26)。普通实现、测试、commit/push 连续推进；不 merge/close/retarget、tag、改版本或 Archive/TestFlight。不删除用户数据或模拟器数据。
+
+以下内容均为历史交接（superseded），其中旧状态及 Next Action 不再指挥当前工作；历史验证结果保留，不作为本轮修复通过证据。
+
+---
+
 # External Capture v1 — Independent Review handoff
 
 2026-09-22: Owner authorized External Capture v1 and explicitly selected Build 9 `ae14f107f7eebb89a1549e00de3d941e6a996281` as its baseline. Active branch: `codex/external-capture-v1`; Draft PR base: `feature/build9-today-entry-followups`. The previous PR #6 handoff below is historical.
