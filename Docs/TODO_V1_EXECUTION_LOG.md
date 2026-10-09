@@ -152,7 +152,7 @@ final-todo-ci-ui-1：837b619e5f2d6a0367aa31d61e3829acf731b4e4 干净提交，exi
 
 **READY_FOR_INDEPENDENT_REVIEW**。停止当前整体开发Goal，下一边界仅独立Review与Owner设备门禁；本轮无merge/close/tag/改分发编号/Archive/TestFlight/私人库清理。
 
-## ReviewFix + Usability 统一 Goal — 2026-10-09（进行中）
+## ReviewFix + Usability 统一 Goal — 2026-10-09
 
 本轮唯一目标为 Owner 附件 `PersonalGrowthOS_TodoV1_ReviewFix_Usability_Goal.zip/CODEX_GOAL_ZH.md`，完整解压阅读，连续 S0→S4，不按阶段请求确认。实际 `git fetch origin` 与 `gh pr view 8 --json ...`：local/upstream/PR head 均 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`，clean，OPEN Draft；base 仍 `codex/external-capture-v1`。初次沙箱 fetch/网络读未获环境访问，常规提权后成功；不是远端异常。
 
@@ -244,10 +244,36 @@ xcrun simctl ui FD666264-A2DF-445C-A77D-534B9E8ED595 appearance light
 
 运行警告审计：xcresult diagnostics/legacy issue定位4条invalid frame分别在旧Review打开、Todo每日保存关闭键盘、旧Review多字段、旧Weight；前一整体Goal集中UI已有5条同类，s1-ui-6也已有1条。背景publication在Weight键盘输入动画阶段（00:00:00.405，Save于随后10.23s发生），未给产品源位置；现有WeightRecordService为@MainActor，真实保存→重启与完整Unit通过。没有证据证明其为本轮数据写入回归，也不冒称已消除或完全归因SDK；保留给独立Review，未关闭的运行警告风险与断言失败区分。
 
-`s4-final-affected-ui-2` exit0：6/6 UI PASS，0 FAIL/SKIP，真实构建SHA2065065e87863de5a452ade8609bac561a0bd096；连续录入/2个不同UUID/保存提示/完成重开取消/统计/全局搜索/重启、每日重复/skip/stop、权限拒绝反馈、普通任务周转换、About复制、真实Dark中文AX最大编辑/Hub/About均通过。没有重新跑22项；首轮唯一失败在本轮闭合。随后再加强连续保存断言为isHittable并保存keepAlways截图，只做该UI、About与一次Weight警告定位补验，不改产品实现、不重跑全量Unit。
+`s4-final-affected-ui-2` exit0：6/6 UI PASS，0 FAIL/SKIP，1条invalid-frame警告，真实构建SHA2065065e87863de5a452ade8609bac561a0bd096；连续录入/2个不同UUID/保存提示/完成重开取消/统计/全局搜索/重启、每日重复/skip/stop、权限拒绝反馈、普通任务周转换、About复制、真实Dark中文AX最大编辑/Hub/About均通过。没有重新跑22项；首轮唯一失败在本轮闭合。随后再加强连续保存断言为isHittable并保存keepAlways截图，只做该UI、About与一次Weight警告定位补验，不改产品实现、不重跑全量Unit。
 
 最终完整Unit实际命令：
 ```sh
 xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-review-evidence/s4-final-full-unit-2.xcresult -only-testing:PersonalGrowthOSTests > /tmp/pgos-review-evidence/s4-final-full-unit-2.log 2>&1
 xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-review-evidence/s4-final-affected-ui-2.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDeniedReminderFeedbackSurvivesEditorDismissalAndOffersSettings -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testAboutContainsRealCommitAndCopiesFullSHAIntoTodoInput -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoChineseDarkLargestTextAndAboutPassSemanticAccessibilityAudit > /tmp/pgos-review-evidence/s4-final-affected-ui-2.log 2>&1
 ```
+
+
+### 最终交接 — 2026-10-10
+
+`s4-visible-feedback-ui-3` exit0：3/3 UI PASS、0 FAIL/SKIP；候选HEAD678e47b4816b9ae92ab1768b4603159a3af3863b。保存提示isHittable与keepAlways截图F7799171-2C18-4B05-B283-701EB52E4AD4.png视觉证明文字完整位于键盘上方，连续两个独立任务/完成撤销取消/搜索重启原断言通过。About实测该SHA完整复制；Weight保存/最新值/重启再次通过，后台publication未复现（仍有1条invalid-frame，未说零警告）。中文真实Dark编辑/Hub/About及新四状态菜单截图已逐张核实；s3-ui-5只有浅色证据的纠正保留。
+
+最终1000任务/1100事件有界性能：Clock0.095734467 / 0.095000526 / 0.096871520秒、physical_peak61393.488 / 61377.104 / 61377.104kB，独立查询/统计/完整性断言全保留，指标来自最终xcresult。完整Unit297/297而不是累加多轮PASS；集中22项首轮21/22不重标全绿，唯一失败经6项与3项补验闭合。
+
+3项补验实际命令：
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-review-evidence/s4-visible-feedback-ui-3.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testAboutContainsRealCommitAndCopiesFullSHAIntoTodoInput -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeightEntryIsAccessiblePersistsAndShowsLatestValue > /tmp/pgos-review-evidence/s4-visible-feedback-ui-3.log 2>&1
+```
+
+最终完整diff再次自查：模型/旧节点与合法旧包、转换身份/来源/createdAt/事件链/重复重试/回滚、相对日/后继覆盖/历史、通知延迟/权限/容量/旧请求类别、raw原字节恢复/正常写入隔离、统一状态查询/四统计、双语/可访问性、五Tab及原核心全部在批准边界。静态audit=PASS：V1–V10前缀字节相同，615条原catalog值不变、14条en/zh新增；project仅4行fixture资源引用，版本/签名/AppGroup无变化；原V10/V7/V8 fixture无diff。没有扩大Foundation、云/依赖/AI/RRULE/额外Tab范围。
+
+普通 `git push origin codex/todo-v1-personal-actions` exit0，4625602→678e47b，local/upstream均678e47b4816b9ae92ab1768b4603159a3af3863b，原Draft PR #8/base保留；随后仅本交接文档commit与普通push同分支，不另建PR。最终仓库HEAD以PR head为准；最终文档SHA与真实Debug/Release产物核对日志为s4-handoff-debug.log、s4-handoff-release.log、s4-handoff-bundles.json。
+
+最终文档HEAD产物命令（每项退出码与bundle结果以实际日志为准）：
+```sh
+xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-todo-derived CODE_SIGNING_ALLOWED=NO > /tmp/pgos-review-evidence/s4-handoff-debug.log 2>&1
+xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-review-release-derived CODE_SIGNING_ALLOWED=NO > /tmp/pgos-review-evidence/s4-handoff-release.log 2>&1
+```
+
+最终普通push后只读核查git local/upstream/远端与PR head、OPEN Draft、base、clean，以及workflows/check-runs/statuses。无workflows的远端独立CI为NOT_RUN，aggregate pending不表示有CI运行；实际Xcode Cloud/Archive/TestFlight未触发。Owner私人Build12覆盖、签名/AppGroup、真机通知/设置/旅行/飞行模式、VoiceOver及隔离raw故障复现见验收增量清单，全部NOT_RUN/OWNER_DEVICE_GATE；未触碰、删除或恢复Owner私人数据库。未关闭运行警告和已保存旧候选错误期次不静默修复的策略明确交给独立Review。
+
+**READY_FOR_INDEPENDENT_REVIEW**。本轮S0→S4停止，下一边界仅原Draft PR #8独立Review与Owner设备门禁，不自行merge/tag/改号/发布。

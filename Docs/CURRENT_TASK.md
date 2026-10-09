@@ -1,8 +1,16 @@
-# Todo V1 ReviewFix + Usability — IN_PROGRESS（2026-10-09）
+# Todo V1 ReviewFix + Usability — READY_FOR_INDEPENDENT_REVIEW（2026-10-10）
 
-Owner 新附件 `CODEX_GOAL_ZH.md` 授权在原 Draft PR #8 连续执行 S0→S4：先关闭提醒偏移、未来Open后继同步、及时通知失败反馈、启动完整性恢复四项问题，再完成Open单次任务转换重复与全部任务状态筛选，最终集中验证、普通push，停在READY_FOR_INDEPENDENT_REVIEW。
+Owner 附件 `CODEX_GOAL_ZH.md` 的唯一整体Goal已连续完成S0→S4：两个P1先有真实失败回归，四项Review修复闭合，已有Open单次原身份转换重复、全部任务直接四状态筛选完成。重复提醒固定计划锚点优先/相对日±366/墙钟分钟；future模板同步已有Open后继并明确覆盖单独模板字段；保存与通知状态及时反馈；Todo完整性异常保留pre-open原字节、暂停正常写入并可导出raw支持恢复包，不自动修复/清库。
 
-本轮起点/local/upstream/PR head均 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`，原分支/base不变。S0与两个P1可失败回归、S1/S2/S3定向门禁完成；实现已冻结，自查通过，S4完整Unit/集中UI/真实产物与交付门禁待执行。原轮下方READY状态只属于历史，不代表本轮完成。不得merge/tag/改号/Archive/TestFlight；未触碰Owner私人数据库。新增候选模型11.1.0保留旧11.0.0迁移节点，备份仍v7。实际每轮结果见 [执行记录](TODO_V1_EXECUTION_LOG.md#reviewfix--usability-统一-goal--2026-10-09进行中)。
+Repo `yoCruzer/PersonalGrowthOS`，原分支 `codex/todo-v1-personal-actions`、[Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8)、base `codex/external-capture-v1` 均保持。起点 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`；最终产品提交 `2065065e87863de5a452ade8609bac561a0bd096`；强化UI截图/断言候选 `678e47b4816b9ae92ab1768b4603159a3af3863b`（完整SHA以实际git/PR为准）。后续仅文档交接，最终仓库HEAD以PR head为准。候选已普通push；本次交接文档随后普通push同一PR，不merge/tag/改号/Archive/TestFlight。
+
+最终完整Unit **297/297 PASS，0 FAIL/SKIP、零runtime warning**；首轮完整296/296因两项真实尾端缺陷修正后重跑，全部记录。集中关键UI首轮 **21/22 PASS、1 FAIL**（保存提示不在视野）；修复后 **6/6 UI PASS**，强化可触达/截图/About/Weight补验 **3/3 PASS**。不把首轮改标全绿。中文真实Dark与AX最大字号、五Tab、四统计1/1/3/1严格明细、连续录入/搜索/重启、真实Safari/Host分享和原功能贯通完成。
+
+真实Simulator Debug/unsignedRelease App及唯一appex均1.0(7)，40位SHA自动注入/localGit/clean/Tag空；最终文档HEAD再核对真实Debug/Release资源。V11=11.1.0，冻结原11.0.0迁移节点；v7只增可选offset。原V1–V10 schema字节、615条原翻译、历史fixture、版本/签名/AppGroup设置不变；原Build12V10及原候选V11迁移/重开、v7精确往返与15类坏包通过。详见[验收与设备复现](TODO_V1_ACCEPTANCE.md)及[命令/退出码/失败审计](TODO_V1_EXECUTION_LOG.md#reviewfix--usability-统一-goal--2026-10-09)。
+
+未关闭风险：旧候选已保存的错误提醒期次不自动改写，用户可显式编辑，新生成期次恢复正确偏移；raw ZIP只供支持恢复。UI仍有SwiftUI invalid-frame警告；集中Weight键盘输入阶段一次后台publication警告，在3项补验未复现，未声称根因已消除。真实私人Build12覆盖升级、真机签名/AppGroup/通知/设置、旅行/飞行模式、VoiceOver、实际Xcode Cloud/TestFlight均**NOT_RUN/OWNER_DEVICE_GATE**。远端workflows=0，独立CI NOT_RUN，不将空checks/statuses或aggregate pending当作CI通过。
+
+下一边界仅独立Review和Owner设备门禁；停止当前实现，不继续合并或发布。
 
 ---
 

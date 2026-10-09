@@ -70,7 +70,7 @@
 已普通推送并创建独立 [Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8)，停在 READY_FOR_INDEPENDENT_REVIEW，下一步需要独立 Review，重点 V11/事件真相、重复期次撤销、v7 时间精度/恢复与通知并发。远端没有配置 GitHub Actions；普通 push 后检查为空，不能写“远端 CI 通过”。没有新增云端服务、付费依赖、复杂 RRULE、子任务或自动从分享生成 Todo。
 
 
-## 本轮 ReviewFix + Usability 验收（进行中）
+## 本轮 ReviewFix + Usability 验收 — READY_FOR_INDEPENDENT_REVIEW
 
 本轮起点4625602…，Owner新批准六项统一Goal。历史矩阵仍为原轮证据，新增工作必须由本轮结果证明。
 
@@ -83,7 +83,9 @@
 | S2 | s2-target-1共27 Unit PASS，四种频率原UUID/createdAt/source/list/重要/旧事件bytes不变、关闭态和缺日拒绝、回滚/精确重试/两次磁盘重开、v7往返与15类坏包；s2-ui-2真实普通任务保存→重开编辑→周重复→首日拒绝→显式计划日→完成→重启只有一后继，1/1 UI PASS。已有系列不任意改频率。 |
 | S3 | s3领域组合正负通过；s3-ui-5 2/2 UI PASS，默认Open/All三状态/各单态、清单/关键词、无日期、完成撤销/返回/重启、四统计1/1/3/1严格行数。该轮截图实际浅色；s4-polish-dark-1实际simctl Dark后中文AX最大字号菜单截图与语义通过，五Tab及>=44pt触达保留。全局搜索仍含Completed/Canceled。 |
 
-新候选存储为V11 11.1.0，有冻结11.0.0节点和exact candidate fixture；备份仍v7新增optional offset。s1-target-4共80 Unit+1 UI PASS/1 UI FAIL（exit65）；后续补验不改写失败整组。完整Unit与集中UI/Debug/Release留到S4冻结候选一次执行。
+新候选存储为V11 11.1.0，有冻结11.0.0节点和exact candidate fixture；备份仍v7新增optional offset。s1-target-4共80 Unit+1 UI PASS/1 UI FAIL（exit65）；后续补验不改写失败整组。最终完整Unit297/297 PASS；集中关键UI21/22 PASS、1 FAIL，修复后6/6受影响UI、3/3强化可触达/About/Weight UI PASS，0 SKIP。真实Debug/unsignedRelease App与唯一appex均1.0(7)，40位SHA资源精确对应实际HEAD，short SHA实际复制完整值。所有首轮失败/编译失败/补验与真正浅色而非深色的截图纠正均原样记录。
+
+未关闭的Review关注：旧候选已经保存的错误提醒不自动重写历史，可显式编辑；raw ZIP需要支持恢复。UI保留invalid-frame警告，Weight键盘阶段一次后台publication警告未给产品源位置，后续3项补验未复现该后台警告，不宣称根因已消除。完整Unit零runtime warning；警告与断言PASS严格区分。源字段/修订/事件引用/提醒协调/持久化/取消和原私有记录保护自动门禁闭合，设备事项继续独立保留。
 
 本轮Owner增量设备复现（NOT_RUN；使用测试任务，不清私人库）：
 
