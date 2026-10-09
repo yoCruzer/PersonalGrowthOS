@@ -151,3 +151,44 @@ final-todo-ci-ui-1：837b619e5f2d6a0367aa31d61e3829acf731b4e4 干净提交，exi
 最后文档提交后执行实际命令：xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-todo-derived CODE_SIGNING_ALLOWED=NO > /tmp/pgos-todo-evidence/final-handoff-debug.log 2>&1。证据 final-handoff-debug.log / final-handoff-debug-bundle.json：核对当前真实HEAD、localGit、Dirty=false、Tag空，Version1.0/Build7不变；不将文档提交冒称重跑完整测试。最终 git status、PR head/远端分支、本地HEAD和checks/statuses另做只读核对。远端 workflows=0，因此独立CI NOT_RUN，不能冒称通过。
 
 **READY_FOR_INDEPENDENT_REVIEW**。停止当前整体开发Goal，下一边界仅独立Review与Owner设备门禁；本轮无merge/close/tag/改分发编号/Archive/TestFlight/私人库清理。
+
+## ReviewFix + Usability 统一 Goal — 2026-10-09（进行中）
+
+本轮唯一目标为 Owner 附件 `PersonalGrowthOS_TodoV1_ReviewFix_Usability_Goal.zip/CODEX_GOAL_ZH.md`，完整解压阅读，连续 S0→S4，不按阶段请求确认。实际 `git fetch origin` 与 `gh pr view 8 --json ...`：local/upstream/PR head 均 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`，clean，OPEN Draft；base 仍 `codex/external-capture-v1`。初次沙箱 fetch/网络读未获环境访问，常规提权后成功；不是远端异常。
+
+S0 代码确认 S1-A/B/C/D、S2/S3 均成立。S1 正负设计：同日提醒 vs 前一日提醒，this-only vs future-template，Open后继 vs Completed/Canceled，保存失败回滚 vs 保存成功；S2 保留UUID/createdAt/来源/历史、关闭态拒绝/重开接受、日期缺失拒绝、幂等/存储重开/备份；S3 组合状态/日期/清单/关键词与统计钻取严格等价。前期不跑全量 Unit/UI/Clean。
+
+本轮证据目录 `/tmp/pgos-review-evidence`；环境与原轮相同：macOS27.0.1 / Xcode27.0(27A266a)、专用 iPhone18Pro / iOS27 Simulator `FD666264-A2DF-445C-A77D-534B9E8ED595`。公共命令 `xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-review-evidence/<run>.xcresult <only-testing参数> > /tmp/pgos-review-evidence/<run>.log 2>&1`。
+
+- `s1-red` exit65：两个P1新回归按预期 FAIL，原V11合成库生成 PASS（1 PASS / 2 FAIL / 0 SKIP）。A：2/28 错提醒而非2/27；B：后继仍 Individually edited 而非 Future。断言未减弱。生成库只用原产品源码，checkpoint后WAL=0，复制到 `Fixtures/OriginalV11Fixture`，生成代码和来源随库保存；未触碰私人库。
+- `s1-target-1` exit0：TodoFoundationTests + TodoReminderTests，23/23 PASS。尚不等于完整 S1 Gate。
+- `s1-target-2` exit65：新恢复测试误用 ZIPArchiveReader 参数，编译失败未运行。
+- `s1-target-3` exit65：新通知测试 async 非throwing闭包中直接try，编译失败未运行。
+- `s1-target-4`：定向 Foundation/Reminder/ImportExport + 保存拒绝反馈/损坏恢复两项 UI，结果待实际完成提取。
+
+实现选择：提醒以固定原始 plannedAnchorDay（否则deadlineAnchorDay）为锚点、civil day offset支持±366、保持墙钟分钟/DST首次与缺时顺延；新增可选series字段和v7 DTO字段。冻结旧V11 11.0.0 TodoSeries，新V11为11.1.0轻量迁移，V1–V10不动；legacy nil policy从首个匹配墙钟期次恢复，不重写事件。future编辑覆盖已有Open后继的标题/备注/重要/清单/提醒（明确覆盖单独模板编辑），不改后继日期/身份；withdrawn复用时应用当前模板，deliberately Canceled/Completed不复活。保存后共享反馈在editor连续输入和shell关闭后显示，checking不冒报排队成功，可重试/系统设置。Todo启动校验先于media修复/bootstrap：先冻结pre-open SQLite/WAL，完整性异常只提供诊断与raw retained ZIP，正常写入暂停；raw包不是正常v7恢复包，不自动修复/清库。
+
+- `s1-target-4` exit65：80 Unit + 启动恢复1 UI PASS / 提醒拒绝反馈1 UI FAIL，0 SKIP。完整导入导出与非法包、原Build12V10迁移和冻结候选V11迁移均通过。失败准确为新banner按钮标识被app-shell覆盖；看到saved/denied/settings不是排队成功，随后调整标识层级。
+- `s1-supplement-5` exit65：2 Unit（提前1日v7精确往返、15种非法包含367日/无分钟偏移）+提醒拒绝反馈1 UI PASS / 原每日重复1 UI FAIL。截图/AX直接证实TabView top inset反馈与Today导航栏重叠，Hub点击未发生；是产品布局缺陷，不归因权限弹窗。修复移至五页面底部，关闭按钮>=44pt。
+- `s1-ui-6`：只补验提醒拒绝与原每日重复路径，结果待提取。附加防并发：准备rawZIP时禁Retry，防止恢复文件读取中进入正常启动修复。
+
+S1 Gate：`s1-ui-6` exit0，2/2 UI PASS（拒绝提醒保存反馈 + 原每日重复完成/skip/stop/restart）；结合前述80 Unit/损坏恢复UI及2项偏移备份补验，四项修复闭合，自主进入S2。依然保留首轮与补验失败，未全量重跑。
+
+S2：已有Open单次编辑频率建立series与index0/key，保留原task/createdAt/source/旧event bytes，追加convertedToSeries事实；在同save事务中，失败全回滚。已有series只允许精确的已提交转换重试，不允许任意频率变更；关闭态先重开，无日期明确拒绝。复用S1相对日提醒。
+
+- `s2-target-1` exit65：27 Unit PASS / 新转换1 UI FAIL。四种频率、身份/历史/来源/清单/重要/提醒保留、关闭态和缺日拒绝、回滚/幂等、磁盘两次重开、完整v7往返与15类非法包均PASS。UI成功选周重复并看到需首日说明，点击保存后error位于lazy Form下方未显示；不删除拒绝断言，改为底部固定可见保存错误提示。
+- `s2-ui-2`：只定向补验普通任务保存→重开编辑→周重复→缺日拒绝→显式选计划日→完成→重启后继，结果待提取。
+
+S2 Gate：`s2-ui-2` exit0，1/1 UI PASS，保留原UUID行识别、缺首日明确拒绝、显式选择日期、周重复、完成后重启单后继/统计断言。结合27 Unit，S2闭合，自主进入S3。
+
+S3：主View只保留Today/Upcoming/All；All下直接Task Status菜单显示当前状态（默认未完成），四种状态一层可选，不重复设置Completed/Canceled范围选择。TodoQuery统一组合list/unclassified/normalized keyword；状态仅作用于All，统计专用scope不受All默认状态影响，钻取新view不继承父list/query。回到已打开Hub保留选择，切换回All和重新打开默认Open。空态提示说明当前筛选。
+
+- `s3-target-1` exit65：领域1 PASS / UI1 FAIL。UI默认Open/allStates/completed/canceled/list均通过；原系统searchable收起时无SearchField，后续明确navigationBarDrawer always可见并正常滚动定位。
+- `s3-ui-2` exit65：0/1 UI，新增搜索栏将部分lazy行置于视野下方，allStates下Filter Done未被创建，测试改为正常滚动reveal与可见filter选择，保留全部正负断言。
+- `s3-ui-3` exit65：0/1 UI。关键词/列表组合、搜索结果完成→重开和返回结果均已走通；新SDK搜索关闭控件实际为Close而非Cancel，AX证据有Clear text和Close。仅测试改为实际Clear text/Close，统计精确行数断言仍保留。
+- `s3-ui-4` exit65：0/1 UI。统计按钮存在但位于导航栏后的区域，isHittable仍返回true；按实际frame需位于导航栏下方再点击，保留统计精确数量断言。
+
+- `s3-ui-5` exit0：2/2 UI PASS，状态/清单/搜索/完成撤销/4统计1、1、3、1精确明细/重启通过；中文最大字号菜单语义通过。截图核实该轮实际为浅色，启动参数未改变真实外观，不能算深色证据。
+- `s4-polish-dark-1` exit0：33 Unit + 2 UI PASS，0 FAIL/SKIP。实际 `xcrun simctl ui FD666264-A2DF-445C-A77D-534B9E8ED595 appearance dark` 后，最大字号中文四状态截图黑色背景/白色文字完整可读。追加已物化后继通知替换独立预期、孤立event引用损坏原字节恢复；新建与转换共用makeSeries；错误页可滚动。未重跑全量。
+
+S3 Gate闭合，S4候选冻结：完整diff自查（模型/迁移、事件链/幂等/回滚、相对日策略、原字节恢复、共享查询/统计、通知类别与真实反馈、双语/五Tab）通过。项目设置仅新增原V11 fixture资源4行，无版本/签名/AppGroup漂移；原V1–V10 schema前缀与原615条翻译精确不变。随后仅执行一次完整Unit、一次关键UI集中门禁与真实Debug/unsignedRelease产物。未完成交付之前不标READY。

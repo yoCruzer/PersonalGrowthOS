@@ -66,6 +66,7 @@ TD1000000000000000000003 = {isa = PBXBuildFile; fileRef = TD00000000000000000000
 TD1000000000000000000004 = {isa = PBXBuildFile; fileRef = TD0000000000000000000004; };
 TD1000000000000000000005 = {isa = PBXBuildFile; fileRef = TD0000000000000000000005; };
 TD1000000000000000000006 = {isa = PBXBuildFile; fileRef = TD0000000000000000000006; };
+RV1000000000000000000001 = {isa = PBXBuildFile; fileRef = RV0000000000000000000001; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -146,6 +147,7 @@ TD0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourceco
 TD0000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoViews.swift"; sourceTree = SOURCE_ROOT; };
 TD0000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/TodoReminderTests.swift"; sourceTree = SOURCE_ROOT; };
 TD0000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoTransfer.swift"; sourceTree = SOURCE_ROOT; };
+RV0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/OriginalV11Fixture"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -186,6 +188,7 @@ TD0000000000000000000004,
 TD0000000000000000000003,
 TD3000000000000000000002,
 TD3000000000000000000001,
+RV0000000000000000000001,
 TD0000000000000000000002,
 TD0000000000000000000001,
 CA0000000000000000000005,
@@ -506,6 +509,7 @@ TD4000000000000000000002,
 			buildActionMask = 2147483647;
 			files = (
 TD4000000000000000000001,
+RV1000000000000000000001,
 				B00000000000000000000041 /* Build7V7Fixture in Resources */,
 				B00000000000000000000042 /* Build8V8Fixture in Resources */,
 			);

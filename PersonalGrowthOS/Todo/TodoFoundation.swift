@@ -7,15 +7,17 @@ typealias TodoDay = HabitLocalDay
 enum TodoTaskState: String, Codable, CaseIterable { case open, completed, canceled }
 enum TodoFrequency: String, Codable, CaseIterable { case daily, weekly, monthly, yearly }
 enum TodoEventKind: String, Codable {
-    case created, edited, completed, reopened, canceled, skipped, successorWithdrawn, seriesStopped
+    case created, edited, completed, reopened, canceled, skipped, successorWithdrawn, seriesStopped, convertedToSeries
 }
 enum TodoFailure: Error, LocalizedError {
-    case invalidTitle, invalidDate, invalidReminder, missingTask, missingList, missingSource, invalidSeries, corruptData
+    case invalidTitle, invalidDate, invalidReminder, invalidReminderOffset, conversionRequiresOpen, missingTask, missingList, missingSource, invalidSeries, corruptData
     var errorDescription: String? {
         switch self {
         case .invalidTitle: return String(localized: "Enter a task title of up to 4,000 characters.")
         case .invalidDate: return String(localized: "Choose a valid calendar day.")
         case .invalidReminder: return String(localized: "Choose a future reminder time.")
+        case .invalidReminderOffset: return String(localized: "Repeating reminders must be within 366 days of the occurrence anchor.")
+        case .conversionRequiresOpen: return String(localized: "Reopen this task before converting it to a repeating series.")
         case .missingTask: return String(localized: "This task is no longer available.")
         case .missingList: return String(localized: "This list is no longer available.")
         case .missingSource: return String(localized: "The source entry is no longer available.")
@@ -105,15 +107,17 @@ final class TodoSeries {
     var listID: UUID?
     /// Wall-clock minutes, resolved in the current device time zone for each occurrence.
     var reminderMinutes: Int?
+    /// Civil days relative to the fixed occurrence anchor; nil is a legacy candidate.
+    var reminderDayOffset: Int?
     var isStopped: Bool
     var createdAt: Date
     var updatedAt: Date
     init(id: UUID = UUID(), frequency: TodoFrequency, anchorDay: String,
-         draft: TodoDraft, reminderMinutes: Int?, createdAt: Date) {
+         draft: TodoDraft, reminderMinutes: Int?, reminderDayOffset: Int? = nil, createdAt: Date) {
         self.id = id; frequencyRawValue = frequency.rawValue; self.anchorDay = anchorDay
         plannedAnchorDay = draft.plannedDay; deadlineAnchorDay = draft.deadlineDay
         title = draft.title; notes = draft.notes; isImportant = draft.isImportant; listID = draft.listID
-        self.reminderMinutes = reminderMinutes; isStopped = false
+        self.reminderMinutes = reminderMinutes; self.reminderDayOffset = reminderDayOffset; isStopped = false
         self.createdAt = createdAt; updatedAt = createdAt
     }
 }
@@ -218,6 +222,22 @@ enum TodoRecurrence {
         return low
     }
 
+    static func reminderOffset(localDay: String, anchor: String) throws -> Int {
+        guard let local = TodoDay(localDay)?.date(timeZone: utc), let anchor = TodoDay(anchor)?.date(timeZone: utc) else { throw TodoFailure.invalidReminder }
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = utc
+        let offset = calendar.dateComponents([.day], from: anchor, to: local).day!
+        guard (-366...366).contains(offset) else { throw TodoFailure.invalidReminderOffset }
+        return offset
+    }
+    static func reminderDay(occurrence: TodoDay, offset: Int) throws -> TodoDay {
+        guard (-366...366).contains(offset), let date = occurrence.date(timeZone: utc) else { throw TodoFailure.invalidReminderOffset }
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = utc
+        guard let shifted = calendar.date(byAdding: .day, value: offset, to: date) else { throw TodoFailure.invalidReminderOffset }
+        let day = TodoDay(date: shifted, timeZone: utc)
+        guard TodoDay(day.description) != nil else { throw TodoFailure.invalidReminderOffset }
+        return day
+    }
+
     static func reminder(day: TodoDay, minutes: Int, timeZone: TimeZone) -> Date? {
         guard (0..<1440).contains(minutes), let start = day.date(timeZone: timeZone) else { return nil }
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = timeZone
@@ -271,6 +291,16 @@ final class TodoTaskService {
             beforeValue: try before.map { try JSONEncoder().encode($0) },
             afterValue: try JSONEncoder().encode(TodoEventValue(task))))
     }
+    private func makeSeries(_ draft: TodoDraft, at date: Date) throws -> TodoSeries {
+        guard let frequency = draft.frequency, let anchor = draft.plannedDay ?? draft.deadlineDay else { throw TodoFailure.invalidSeries }
+        let zone = timeZone()
+        let minutes = draft.remindAt.map { instant in
+            let parts = WeeklyReviewCalendarPolicy.calendar(timeZone: zone).dateComponents([.hour, .minute], from: instant)
+            return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+        }
+        let offset = try draft.remindAt.map { try TodoRecurrence.reminderOffset(localDay: TodoDay(date: $0, timeZone: zone).description, anchor: anchor) }
+        return TodoSeries(frequency: frequency, anchorDay: anchor, draft: draft, reminderMinutes: minutes, reminderDayOffset: offset, createdAt: date)
+    }
     @discardableResult
     func create(_ draft: TodoDraft, sourceEntryID: UUID? = nil, id: UUID = UUID()) throws -> TodoTask {
         try draft.validate(); try requireList(draft.listID)
@@ -280,13 +310,8 @@ final class TodoTaskService {
         let date = now()
         return try transaction {
             var seriesID: UUID?
-            if let frequency = draft.frequency {
-                let anchor = draft.plannedDay ?? draft.deadlineDay!
-                let minutes = draft.remindAt.map { date in
-                    let parts = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone()).dateComponents([.hour, .minute], from: date)
-                    return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
-                }
-                let series = TodoSeries(frequency: frequency, anchorDay: anchor, draft: draft, reminderMinutes: minutes, createdAt: date)
+            if draft.frequency != nil {
+                let series = try makeSeries(draft, at: date)
                 context.insert(series); seriesID = series.id
             }
             let task = TodoTask(id: id, title: draft.title, notes: draft.notes, isImportant: draft.isImportant,
@@ -299,24 +324,82 @@ final class TodoTaskService {
             return task
         }
     }
+    private func reminderOffset(for rule: TodoSeries) throws -> Int {
+        if let offset = rule.reminderDayOffset { return offset }
+        // Old V11 candidates have no offset. Recover the first matching saved wall-day
+        // without changing task/event bytes; an absent reminder needs no policy.
+        guard let minutes = rule.reminderMinutes, let frequency = TodoFrequency(rawValue: rule.frequencyRawValue) else { return 0 }
+        let id = rule.id
+        let candidates = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == id }))
+            .filter { $0.reminderMinutes == minutes && $0.reminderLocalDay != nil }
+            .sorted { ($0.occurrenceIndex ?? 0) < ($1.occurrenceIndex ?? 0) }
+        guard let first = candidates.first, let index = first.occurrenceIndex, let local = first.reminderLocalDay else { return 0 }
+        return try TodoRecurrence.reminderOffset(localDay: local, anchor: TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index).description)
+    }
+    private func applyTemplate(_ rule: TodoSeries, to task: TodoTask, at date: Date) throws {
+        let before = try TodoEventValue(task)
+        task.title = rule.title; task.notes = rule.notes; task.isImportant = rule.isImportant; task.listID = rule.listID
+        try applyReminder(rule, to: task)
+        try record(task, kind: .edited, before: before, at: date)
+    }
+    private func applyReminder(_ rule: TodoSeries, to task: TodoTask) throws {
+        guard let minutes = rule.reminderMinutes else {
+            task.remindAt = nil; setReminderWallTime(task, from: nil); return
+        }
+        guard let frequency = TodoFrequency(rawValue: rule.frequencyRawValue), let index = task.occurrenceIndex else { throw TodoFailure.invalidSeries }
+        let occurrence = try TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index)
+        let day = try TodoRecurrence.reminderDay(occurrence: occurrence, offset: reminderOffset(for: rule))
+        guard let reminder = TodoRecurrence.reminder(day: day, minutes: minutes, timeZone: timeZone()) else { throw TodoFailure.invalidReminder }
+        task.remindAt = reminder; task.reminderLocalDay = day.description
+        task.reminderMinutes = minutes; task.reminderTimeZoneID = timeZone().identifier
+    }
     func edit(id: UUID, draft: TodoDraft, futureSeries: Bool = false) throws {
         try draft.validate(); try requireList(draft.listID)
         let task = try task(id: id)
-        guard draft.frequency == nil else { throw TodoFailure.invalidSeries }
+        if let frequency = draft.frequency {
+            guard task.state == .open else { throw TodoFailure.conversionRequiresOpen }
+            if let seriesID = task.seriesID {
+                let rule = try series(seriesID)
+                var existing = TodoDraft(task); existing.frequency = frequency
+                let history = try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate: #Predicate { $0.taskID == id }))
+                // A committed conversion retry is idempotent, not an arbitrary rule edit.
+                guard rule.frequencyRawValue == frequency.rawValue, existing == draft,
+                      history.contains(where: { $0.kindRawValue == TodoEventKind.convertedToSeries.rawValue }) else { throw TodoFailure.invalidSeries }
+                return
+            }
+        }
         try transaction {
             let before = try TodoEventValue(task)
+            if draft.frequency != nil {
+                let rule = try makeSeries(draft, at: now())
+                context.insert(rule)
+                task.seriesID = rule.id; task.occurrenceIndex = 0; task.occurrenceKey = "\(rule.id.uuidString)/0"
+                setReminderWallTime(task, from: draft.remindAt)
+            }
             task.title = draft.title; task.notes = draft.notes; task.isImportant = draft.isImportant
             task.plannedDay = draft.plannedDay; task.deadlineDay = draft.deadlineDay
             if task.remindAt != draft.remindAt { setReminderWallTime(task, from: draft.remindAt) }
             task.remindAt = draft.remindAt; task.listID = draft.listID
+            if let seriesID = task.seriesID, let local = task.reminderLocalDay, let index = task.occurrenceIndex {
+                let rule = try series(seriesID)
+                guard let frequency = TodoFrequency(rawValue: rule.frequencyRawValue) else { throw TodoFailure.invalidSeries }
+                _ = try TodoRecurrence.reminderOffset(localDay: local, anchor: TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index).description)
+            }
             if futureSeries, let seriesID = task.seriesID {
                 let series = try series(seriesID)
                 series.title = draft.title; series.notes = draft.notes; series.isImportant = draft.isImportant
                 series.listID = draft.listID
                 series.reminderMinutes = task.reminderMinutes
+                if let local = task.reminderLocalDay, let index = task.occurrenceIndex, let frequency = TodoFrequency(rawValue: series.frequencyRawValue) {
+                    series.reminderDayOffset = try TodoRecurrence.reminderOffset(localDay: local, anchor: TodoRecurrence.day(anchor: series.anchorDay, frequency: frequency, index: index).description)
+                } else { series.reminderDayOffset = nil }
+                for successor in try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == seriesID }))
+                    where successor.id != task.id && successor.state == .open && (successor.occurrenceIndex ?? -1) > (task.occurrenceIndex ?? -1) {
+                    try applyTemplate(series, to: successor, at: now())
+                }
                 series.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: series.createdAt, previous: series.updatedAt)
             }
-            try record(task, kind: .edited, before: before, at: now())
+            try record(task, kind: draft.frequency == nil ? .edited : .convertedToSeries, before: before, at: now())
         }
     }
     func transition(id: UUID, to state: TodoTaskState, skip: Bool = false) throws {
@@ -359,6 +442,7 @@ final class TodoTaskService {
             let before = try TodoEventValue(existing)
             existing.stateRawValue = TodoTaskState.open.rawValue; existing.canceledAt = nil; existing.completedAt = nil
             try record(existing, kind: .reopened, before: before, at: date)
+            try applyTemplate(series, to: existing, at: date)
             return
         }
         func shifted(_ anchor: String?) throws -> String? {
@@ -366,13 +450,14 @@ final class TodoTaskService {
         }
         let planned = try shifted(series.plannedAnchorDay), deadline = try shifted(series.deadlineAnchorDay)
         let occurrence = try TodoRecurrence.day(anchor: series.anchorDay, frequency: frequency, index: next)
-        let reminder = series.reminderMinutes.flatMap { TodoRecurrence.reminder(day: occurrence, minutes: $0, timeZone: timeZone()) }
+        let reminderDay = try TodoRecurrence.reminderDay(occurrence: occurrence, offset: reminderOffset(for: series))
+        let reminder = series.reminderMinutes.flatMap { TodoRecurrence.reminder(day: reminderDay, minutes: $0, timeZone: timeZone()) }
         let nextTask = TodoTask(title: series.title, notes: series.notes, isImportant: series.isImportant,
             plannedDay: planned, deadlineDay: deadline, remindAt: reminder, listID: series.listID,
             seriesID: seriesID, occurrenceIndex: next, createdAt: date)
         if reminder != nil {
             nextTask.reminderTimeZoneID = timeZone().identifier
-            nextTask.reminderLocalDay = occurrence.description
+            nextTask.reminderLocalDay = reminderDay.description
             nextTask.reminderMinutes = series.reminderMinutes
         }
         context.insert(nextTask); try record(nextTask, kind: .created, before: nil, at: date)
@@ -448,8 +533,15 @@ final class TodoTaskService {
 }
 
 enum TodoFilter: String, CaseIterable { case today, upcoming, all, completed, canceled, completedToday, completedWeek, open, overdue }
+enum TodoStatusFilter: String, CaseIterable { case open, all, completed, canceled }
 enum TodoQuery {
-    static func matches(_ task: TodoTask, filter: TodoFilter, now: Date, timeZone: TimeZone = .current) -> Bool {
+    static func matches(_ task: TodoTask, filter: TodoFilter, now: Date, timeZone: TimeZone = .current,
+                        status: TodoStatusFilter = .all, listID: UUID? = nil, unclassifiedOnly: Bool = false, keyword: String = "") -> Bool {
+        if filter == .all && status != .all && task.stateRawValue != status.rawValue { return false }
+        if let listID, task.listID != listID { return false }
+        if unclassifiedOnly && task.listID != nil { return false }
+        let normalized = TextSearchNormalizer.normalize(keyword)
+        if !normalized.isEmpty && !TextSearchNormalizer.normalize(task.title + "\n" + task.notes).contains(normalized) { return false }
         let today = TodoDay(date: now, timeZone: timeZone).description
         let dueToday = task.plannedDay.map { $0 <= today } == true || task.deadlineDay.map { $0 <= today } == true
         switch filter {
@@ -523,6 +615,7 @@ enum TodoIntegrity {
             try require(rule.anchorDay == (rule.plannedAnchorDay ?? rule.deadlineAnchorDay))
             if let id = rule.listID { try require(listIDs.contains(id)) }
             if let minutes = rule.reminderMinutes { try require((0..<1440).contains(minutes)) }
+            if let offset = rule.reminderDayOffset { try require((-366...366).contains(offset) && rule.reminderMinutes != nil) }
             try require((openBySeries[rule.id]?.count ?? 0) <= 1)
         }
         for task in tasks {
@@ -545,6 +638,7 @@ enum TodoIntegrity {
             try require(!history.isEmpty && task.revision == history.count - 1)
             var previous: TodoEventValue?
             var previousTechnical = task.createdAt
+            var conversions = 0
             for (index, event) in history.enumerated() {
                 try Task.checkCancellation()
                 guard let kind = TodoEventKind(rawValue: event.kindRawValue) else { throw TodoFailure.corruptData }
@@ -558,6 +652,11 @@ enum TodoIntegrity {
                 case .created:
                     try require(index == 0 && before == nil && after.state == .open && event.occurredAt == task.createdAt && event.createdAt == task.createdAt)
                 case .edited: try require(index > 0 && before?.state == after.state)
+                case .convertedToSeries:
+                    conversions += 1
+                    try require(index > 0 && conversions == 1 && before?.state == .open && after.state == .open
+                        && before?.reminderLocalDay == nil && before?.reminderMinutes == nil
+                        && task.seriesID != nil && task.occurrenceIndex == 0)
                 case .seriesStopped:
                     try require(index > 0 && before == after && task.seriesID.flatMap { rulesByID[$0] }?.isStopped == true)
                 case .completed: try require(before?.state != .completed && after.state == .completed && after.completedAt == event.occurredAt)

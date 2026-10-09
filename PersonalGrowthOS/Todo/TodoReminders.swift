@@ -39,6 +39,9 @@ final class SystemTodoNotificationClient: TodoNotificationClient {
     private let center: UNUserNotificationCenter
     init(center: UNUserNotificationCenter = .current()) { self.center = center }
     func permission() async -> TodoNotificationPermission {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-PGOSUITesting"), ProcessInfo.processInfo.arguments.contains("-PGOSTodoReminderDeniedTest") { return .denied }
+        #endif
         switch await center.notificationSettings().authorizationStatus {
         case .authorized, .provisional, .ephemeral: return .allowed
         case .notDetermined: return .notDetermined
@@ -71,6 +74,8 @@ final class TodoReminderCoordinator {
     private var wantsPermission = false
     private var reconciliationFailed = false
     private var revisions: [UUID: Int] = [:]
+    var savedTaskID: UUID?
+    func reportSavedTask(_ task: TodoTask) { savedTaskID = task.state == .open && task.remindAt != nil ? task.id : nil }
     private(set) var statuses: [UUID: TodoReminderStatus] = [:]
     init(client: (any TodoNotificationClient)? = nil, now: @escaping () -> Date = Date.init) {
         self.client = client ?? SystemTodoNotificationClient(); self.now = now

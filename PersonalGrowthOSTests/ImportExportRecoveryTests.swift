@@ -2194,7 +2194,11 @@ extension ImportExportRecoveryTests {
         let list = try service.createList(name: "生活")
         let day = TodoDay(date: Date()).description
         let task = try service.create(TodoDraft(title: "买电池 🔋\n原文", notes: "备注", isImportant: true, plannedDay: day,
-            deadlineDay: day, remindAt: Date().addingTimeInterval(3600), listID: list.id, frequency: .monthly), sourceEntryID: entry.id)
+            deadlineDay: day, remindAt: TodoRecurrence.reminder(day: try TodoRecurrence.reminderDay(occurrence: TodoDay(day)!, offset: -1), minutes: 1200, timeZone: .current), listID: list.id), sourceEntryID: entry.id)
+        let originalID = task.id, originalCreated = task.createdAt
+        var conversion = TodoDraft(task); conversion.frequency = .monthly
+        try service.edit(id: task.id, draft: conversion)
+        XCTAssertEqual(task.id, originalID); XCTAssertEqual(task.createdAt, originalCreated)
         try service.transition(id: task.id, to: .completed)
         try service.transition(id: task.id, to: .open)
         try service.transition(id: task.id, to: .completed)
@@ -2219,6 +2223,7 @@ extension ImportExportRecoveryTests {
         let restored = try TodoTaskService(context: reopened.mainContext).task(id: task.id)
         XCTAssertEqual(restored.title, task.title); XCTAssertEqual(restored.completedAt, task.completedAt)
         XCTAssertEqual(restored.reminderTimeZoneID, task.reminderTimeZoneID)
+        XCTAssertEqual(try reopened.mainContext.fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset, -1)
         let reminderClient = TodoNotificationStub(), reminders = TodoReminderCoordinator(client: reminderClient)
         await reminders.reconcile(context: reopened.mainContext)
         let restoredOpen = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
@@ -2280,7 +2285,7 @@ extension ImportExportRecoveryTests {
         let source = try fixture.makePopulatedStore(), context = source.container.mainContext
         let task = try TodoTaskService(context: context).create(TodoDraft(title: "有效期次", plannedDay: "2026-10-09", frequency: .daily))
         let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
-        for scenario in 0..<13 {
+        for scenario in 0..<15 {
             let corrupt = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("TodoCorrupt\(scenario)"), rewriteJSON: { manifest, data in
                 var tasks = data.todoTasks, events = data.todoEvents, series = data.todoSeries
                 var sources = data.todoSources
@@ -2297,7 +2302,9 @@ extension ImportExportRecoveryTests {
                 case 9: events[0].kindRawValue = TodoEventKind.reopened.rawValue
                 case 10: sources = [TodoTaskSourceTransfer(TodoTaskSource(taskID: task.id, entryID: UUID()))]
                 case 11: sources = [TodoTaskSourceTransfer(TodoTaskSource(taskID: UUID(), entryID: data.entries[0].id))]
-                default: tasks[0].revision = Int.max
+                case 12: tasks[0].revision = Int.max
+                case 13: series[0].reminderMinutes = 600; series[0].reminderDayOffset = 367
+                default: series[0].reminderDayOffset = -1
                 }
                 return (manifest, data.replacingTodos(tasks: tasks, events: events, series: series, sources: sources))
             })

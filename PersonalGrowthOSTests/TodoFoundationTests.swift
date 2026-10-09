@@ -372,3 +372,319 @@ extension TodoFoundationTests {
         }
     }
 }
+
+@MainActor
+extension TodoFoundationTests {
+    func testReviewReminderKeepsOneDayLeadAcrossShortMonthAndLeapYear() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let service = TodoTaskService(context: context, now: { self.date("2026-01-31") }, timeZone: { self.zone })
+        let reminder = TodoRecurrence.reminder(day: TodoDay("2026-01-30")!, minutes: 1200, timeZone: zone)!
+        let first = try service.create(TodoDraft(title: "Monthly", plannedDay: "2026-01-31", remindAt: reminder, frequency: .monthly))
+        try service.transition(id: first.id, to: .completed)
+        let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+        XCTAssertEqual(next.plannedDay, "2026-02-28")
+        XCTAssertEqual(next.reminderLocalDay, "2026-02-27")
+        XCTAssertEqual(next.remindAt, TodoRecurrence.reminder(day: TodoDay("2026-02-27")!, minutes: 1200, timeZone: zone))
+        let sameDay = try service.create(TodoDraft(title: "Control", plannedDay: "2026-01-31", remindAt: TodoRecurrence.reminder(day: TodoDay("2026-01-31")!, minutes: 1200, timeZone: zone), frequency: .monthly))
+        try service.transition(id: sameDay.id, to: .completed)
+        let control = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.seriesID == sameDay.seriesID && $0.state == .open })
+        XCTAssertEqual(control.reminderLocalDay, "2026-02-28")
+    }
+
+    func testReviewFutureTemplateUpdatesMaterializedOpenButKeepsHistory() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let service = TodoTaskService(context: context, now: { self.date("2026-10-09") }, timeZone: { self.zone })
+        let first = try service.create(TodoDraft(title: "Old", plannedDay: "2026-10-09", frequency: .daily))
+        try service.transition(id: first.id, to: .completed)
+        let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+        let nextID = next.id, nextKey = next.occurrenceKey
+        var own = TodoDraft(next); own.title = "Individually edited"
+        try service.edit(id: next.id, draft: own)
+        var draft = TodoDraft(first); draft.title = "Future"; draft.notes = "new note"; draft.isImportant = true
+        try service.edit(id: first.id, draft: draft, futureSeries: false)
+        XCTAssertEqual(next.title, "Individually edited")
+        let list = try service.createList(name: "Future list"); draft.listID = list.id
+        let completedAt = first.completedAt
+        try service.edit(id: first.id, draft: draft, futureSeries: true)
+        XCTAssertEqual(next.title, "Future"); XCTAssertEqual(next.notes, "new note"); XCTAssertTrue(next.isImportant); XCTAssertEqual(next.listID, list.id)
+        XCTAssertEqual(next.id, nextID); XCTAssertEqual(next.occurrenceKey, nextKey)
+        XCTAssertEqual(first.completedAt, completedAt); XCTAssertEqual(first.state, .completed)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()), 2)
+        try TodoIntegrity.validate(context: context)
+    }
+
+
+}
+
+@MainActor
+extension TodoFoundationTests {
+    func testOriginalV11CandidateMigratesWithoutLosingTaskEventBytesAndInfersReminderLead() throws {
+        let source = try XCTUnwrap(Bundle(for: Self.self).resourceURL?.appendingPathComponent("OriginalV11Fixture"))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.copyItem(at: source, to: root)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let id = try XCTUnwrap(UUID(uuidString: String(contentsOf: root.appendingPathComponent("task-id.txt"), encoding: .utf8)))
+        var events: [TodoTaskEventTransfer] = []
+        for pass in 0..<2 {
+            try autoreleasepool {
+                let container = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("store.sqlite")), context = container.mainContext
+                try TodoIntegrity.validate(context: context)
+                let first = try TodoTaskService(context: context).task(id: id)
+                XCTAssertEqual(first.title, "Original V11"); XCTAssertEqual(first.state, .completed)
+                let facts = try context.fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init).sorted { $0.id.uuidString < $1.id.uuidString }
+                if pass == 0 { events = facts } else { XCTAssertEqual(facts, events) }
+                let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+                if pass == 1 {
+                    let service = TodoTaskService(context: context, now: { self.date("2026-02-28") }, timeZone: { self.zone })
+                    try service.transition(id: next.id, to: .completed)
+                    let third = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+                    XCTAssertEqual(third.plannedDay, "2026-03-31"); XCTAssertEqual(third.reminderLocalDay, "2026-03-30")
+                    try TodoIntegrity.validate(context: context)
+                }
+            }
+        }
+    }
+
+    func testReminderLeadMonthlyTenthLeapYearDSTAndTravelUseCivilAnchor() throws {
+        for (anchor, reminderDay, frequency, clockDay, expectedPlan, expectedReminder) in [
+            ("2026-01-10", "2026-01-09", TodoFrequency.monthly, "2026-01-10", "2026-02-10", "2026-02-09"),
+            ("2028-01-31", "2028-01-30", .monthly, "2028-01-31", "2028-02-29", "2028-02-28"),
+            ("2024-02-29", "2024-02-28", .yearly, "2024-02-29", "2025-02-28", "2025-02-27"),
+            ("2026-03-08", "2026-03-07", .daily, "2026-03-08", "2026-03-09", "2026-03-08"),
+            ("2026-11-01", "2026-10-31", .daily, "2026-11-01", "2026-11-02", "2026-11-01")
+        ] {
+            let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+            var currentZone = TimeZone(identifier: "America/New_York")!
+            let service = TodoTaskService(context: context, now: { TodoDay(clockDay)!.date(timeZone: currentZone)!.addingTimeInterval(12*3600) }, timeZone: { currentZone })
+            let minutes = anchor == "2026-11-01" ? 90 : 150
+            let first = try service.create(TodoDraft(title: anchor, plannedDay: anchor, deadlineDay: TodoDay(anchor)!.description, remindAt: TodoRecurrence.reminder(day: TodoDay(reminderDay)!, minutes: minutes, timeZone: currentZone), frequency: frequency))
+            try service.transition(id: first.id, to: .completed)
+            let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+            XCTAssertEqual(next.plannedDay, expectedPlan); XCTAssertEqual(next.reminderLocalDay, expectedReminder)
+            XCTAssertEqual(next.reminderMinutes, minutes)
+            let nyExpected = TodoRecurrence.reminder(day: TodoDay(expectedReminder)!, minutes: minutes, timeZone: currentZone)
+            XCTAssertEqual(next.remindAt, nyExpected)
+            if expectedReminder == "2026-11-01" {
+                XCTAssertEqual(next.remindAt, ISO8601DateFormatter().date(from: "2026-11-01T05:30:00Z"))
+            }
+            currentZone = zone; try service.refreshRepeatingReminderTimes()
+            XCTAssertEqual(next.remindAt, TodoRecurrence.reminder(day: TodoDay(expectedReminder)!, minutes: minutes, timeZone: zone))
+            currentZone = TimeZone(identifier: "America/New_York")!; try service.refreshRepeatingReminderTimes()
+            XCTAssertEqual(next.remindAt, nyExpected)
+            try TodoIntegrity.validate(context: context)
+        }
+        let container = try PersistenceContainerFactory.makeInMemory()
+        let service = TodoTaskService(context: container.mainContext, timeZone: { self.zone })
+        XCTAssertThrowsError(try service.create(TodoDraft(title: "Too far", plannedDay: "2026-01-10", remindAt: date("2024-01-01"), frequency: .monthly)))
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<TodoTask>()), 0)
+    }
+
+    func testFutureEditRollbackAndWithdrawnReuseDoNotResurrectCanceledHistory() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let service = TodoTaskService(context: context, now: { self.date("2026-01-10") }, timeZone: { self.zone })
+        let first = try service.create(TodoDraft(title: "Old", plannedDay: "2026-01-10", remindAt: TodoRecurrence.reminder(day: TodoDay("2026-01-09")!, minutes: 1200, timeZone: zone), frequency: .monthly))
+        try service.transition(id: first.id, to: .completed)
+        let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+        let nextID = next.id
+        var draft = TodoDraft(first); draft.title = "New"; draft.remindAt = TodoRecurrence.reminder(day: TodoDay("2026-01-08")!, minutes: 600, timeZone: zone)
+        enum Injected: Error { case fail }
+        let bad = TodoTaskService(context: context, timeZone: { self.zone }, save: { throw Injected.fail })
+        XCTAssertThrowsError(try bad.edit(id: first.id, draft: draft, futureSeries: true))
+        XCTAssertEqual(try service.task(id: nextID).title, "Old")
+        XCTAssertEqual(try context.fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset, -1)
+        try service.edit(id: first.id, draft: draft, futureSeries: true)
+        XCTAssertEqual(next.reminderLocalDay, "2026-02-08"); XCTAssertEqual(next.reminderMinutes, 600)
+        try service.transition(id: first.id, to: .open)
+        var newer = TodoDraft(first); newer.title = "Newest"
+        try service.edit(id: first.id, draft: newer, futureSeries: true)
+        try service.transition(id: first.id, to: .completed)
+        XCTAssertEqual(next.id, nextID); XCTAssertEqual(next.title, "Newest"); XCTAssertEqual(next.state, .open)
+        try service.transition(id: next.id, to: .canceled)
+        let canceledEvents = try context.fetch(FetchDescriptor<TodoTaskEvent>()).filter { $0.taskID == nextID }.map(TodoTaskEventTransfer.init)
+        newer.title = "After cancellation"; try service.edit(id: first.id, draft: newer, futureSeries: true)
+        XCTAssertEqual(next.title, "Newest"); XCTAssertEqual(next.state, .canceled)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<TodoTaskEvent>()).filter { $0.taskID == nextID }.map(TodoTaskEventTransfer.init), canceledEvents)
+        try service.transition(id: first.id, to: .open); try service.transition(id: first.id, to: .completed)
+        XCTAssertEqual(next.state, .canceled)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<TodoTask>()).filter { $0.state == .open }.count, 1)
+        try TodoIntegrity.validate(context: context)
+    }
+
+    func testTodoIntegrityFailureOffersRawByteRecoveryAndDoesNotReconcileMedia() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let media = root.appendingPathComponent("Media/Originals/unreferenced-original.bin")
+        try FileManager.default.createDirectory(at: media.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let original = Data("PRIVATE original immutable bytes".utf8); try original.write(to: media)
+        let orphanTaskID = UUID()
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: store)
+            let entry = Entry(body: "PRIVATE retained entry", createdAt: date("2026-10-09")); container.mainContext.insert(entry)
+            let task = try TodoTaskService(context: container.mainContext).create(TodoDraft(title: "corrupt"))
+            task.revision = 99
+            let event = try XCTUnwrap(container.mainContext.fetch(FetchDescriptor<TodoTaskEvent>()).first)
+            event.taskID = orphanTaskID
+            try container.mainContext.save()
+        }
+        let originalSQLite = try Data(contentsOf: store)
+        let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
+        do { _ = try AppContainer.make(configuration: config, rootURLOverride: root); XCTFail("Must stop normal startup") }
+        catch let failure as StartupRetainedDataFailure {
+            defer { failure.retained.cleanup() }
+            XCTAssertFalse(failure.diagnostic.report.contains("PRIVATE"))
+            XCTAssertEqual(try Data(contentsOf: failure.retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), originalSQLite)
+            XCTAssertEqual(try Data(contentsOf: media), original)
+            let archive = try failure.retained.archive(diagnostic: failure.diagnostic.report)
+            let extracted = root.appendingPathComponent("Extracted")
+            try ZIPArchiveReader(archiveURL: archive, availableCapacity: .max).extractAll(to: extracted)
+            XCTAssertEqual(try Data(contentsOf: extracted.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), originalSQLite)
+            XCTAssertEqual(try Data(contentsOf: extracted.appendingPathComponent("Media/Originals/unreferenced-original.bin")), original)
+            let restored = try PersistenceContainerFactory.makeOnDisk(at: extracted.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+            XCTAssertEqual(try restored.mainContext.fetch(FetchDescriptor<Entry>()).first?.body, "PRIVATE retained entry")
+            XCTAssertEqual(try restored.mainContext.fetch(FetchDescriptor<TodoTask>()).first?.revision, 99)
+            XCTAssertEqual(try restored.mainContext.fetch(FetchDescriptor<TodoTaskEvent>()).first?.taskID, orphanTaskID)
+            XCTAssertThrowsError(try TodoIntegrity.validate(context: restored.mainContext))
+        }
+        catch { XCTFail("Wrong recovery failure: \(error)") }
+    }
+}
+
+@MainActor
+extension TodoFoundationTests {
+    func testConvertOpenTaskKeepsIdentitySourceHistoryAndRetryIsIdempotentForEveryFrequency() throws {
+        for frequency in TodoFrequency.allCases {
+            let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+            let service = TodoTaskService(context: context, now: { self.date("2026-01-31") }, timeZone: { self.zone })
+            let entry = Entry(body: "Original untouched", createdAt: date("2026-01-30")); context.insert(entry); try context.save()
+            let list = try service.createList(name: "Personal")
+            let task = try service.create(TodoDraft(title: "Keep title", notes: "Keep notes", isImportant: true, plannedDay: "2026-01-31", deadlineDay: "2026-02-01", remindAt: TodoRecurrence.reminder(day: TodoDay("2026-01-30")!, minutes: 1200, timeZone: zone), listID: list.id), sourceEntryID: entry.id)
+            let id = task.id, created = task.createdAt
+            try service.transition(id: id, to: .canceled); try service.transition(id: id, to: .open)
+            let oldHistory = try context.fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init)
+            let source = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTaskSource>()).first)
+            var draft = TodoDraft(task); draft.frequency = frequency
+            try service.edit(id: id, draft: draft)
+            XCTAssertEqual(task.id, id); XCTAssertEqual(task.createdAt, created)
+            XCTAssertEqual(task.title, "Keep title"); XCTAssertEqual(task.notes, "Keep notes"); XCTAssertTrue(task.isImportant)
+            XCTAssertEqual(task.listID, list.id); XCTAssertEqual(task.occurrenceIndex, 0)
+            XCTAssertEqual(task.occurrenceKey, "\(task.seriesID!.uuidString)/0")
+            XCTAssertEqual(source.entryID, entry.id); XCTAssertEqual(source.taskID, id)
+            let allHistory = try context.fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init)
+            XCTAssertTrue(oldHistory.allSatisfy { allHistory.contains($0) })
+            XCTAssertEqual(task.revision, 3)
+            try service.edit(id: id, draft: draft)
+            XCTAssertEqual(task.revision, 3); XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoSeries>()), 1)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()), 1)
+            try service.transition(id: id, to: .completed)
+            let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+            let nextID = next.id
+            XCTAssertEqual(try TodoRecurrence.reminderOffset(localDay: next.reminderLocalDay!, anchor: next.plannedDay!), -1)
+            try service.transition(id: id, to: .open); try service.transition(id: id, to: .completed)
+            XCTAssertEqual(next.id, nextID); XCTAssertEqual(next.state, .open)
+            try service.transition(id: nextID, to: .canceled, skip: true)
+            let third = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+            try service.stopSeries(taskID: third.id)
+            try service.transition(id: id, to: .open); try service.transition(id: id, to: .completed)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()), 3)
+            XCTAssertEqual(try context.fetch(FetchDescriptor<TodoTask>()).filter { $0.state == .open }.count, 0)
+            XCTAssertEqual(entry.body, "Original untouched"); XCTAssertEqual(entry.updatedAt, date("2026-01-30"))
+            try TodoIntegrity.validate(context: context)
+        }
+    }
+
+    func testConversionRejectsMissingDayClosedTaskRuleChangeAndRollsBackBeforeSave() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let service = TodoTaskService(context: context, now: { self.date("2026-01-31") }, timeZone: { self.zone })
+        let task = try service.create(TodoDraft(title: "Undated"))
+        var draft = TodoDraft(task); draft.frequency = .daily
+        XCTAssertThrowsError(try service.edit(id: task.id, draft: draft))
+        XCTAssertNil(task.seriesID); XCTAssertEqual(task.revision, 0)
+        draft.deadlineDay = "2026-01-31"
+        for state in [TodoTaskState.completed, .canceled] {
+            try service.transition(id: task.id, to: state)
+            XCTAssertThrowsError(try service.edit(id: task.id, draft: draft)) { XCTAssertEqual($0 as? TodoFailure, .conversionRequiresOpen) }
+            XCTAssertNil(task.seriesID); try service.transition(id: task.id, to: .open)
+        }
+        let count = try context.fetchCount(FetchDescriptor<TodoTaskEvent>())
+        enum Injected: Error { case fail }
+        let bad = TodoTaskService(context: context, save: { throw Injected.fail })
+        XCTAssertThrowsError(try bad.edit(id: task.id, draft: draft))
+        XCTAssertNil(try service.task(id: task.id).seriesID)
+        XCTAssertNil(task.deadlineDay)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoSeries>()), 0)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTaskEvent>()), count)
+        try service.edit(id: task.id, draft: draft)
+        var changed = draft; changed.frequency = .weekly
+        XCTAssertThrowsError(try service.edit(id: task.id, draft: changed))
+        XCTAssertEqual(try context.fetch(FetchDescriptor<TodoSeries>()).first?.frequencyRawValue, "daily")
+        try TodoIntegrity.validate(context: context)
+    }
+
+    func testConvertedTaskAndOriginalEventsSurviveDiskRestartAndGenerateOnce() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("store.sqlite")
+        var id: UUID!, created: Date!, history: [TodoTaskEventTransfer] = []
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: url), context = container.mainContext
+            let service = TodoTaskService(context: context, now: { self.date("2026-01-31") })
+            let task = try service.create(TodoDraft(title: "Original", plannedDay: "2026-01-31"))
+            id = task.id; created = task.createdAt
+            var draft = TodoDraft(task); draft.frequency = .weekly
+            try service.edit(id: id, draft: draft)
+            history = try context.fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init)
+        }
+        for _ in 0..<2 {
+            try autoreleasepool {
+                let container = try PersistenceContainerFactory.makeOnDisk(at: url), context = container.mainContext
+                let service = TodoTaskService(context: context, now: { self.date("2026-01-31") })
+                let task = try service.task(id: id)
+                XCTAssertEqual(task.createdAt, created); XCTAssertNotNil(task.seriesID)
+                XCTAssertTrue(history.allSatisfy { event in (try? context.fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init).contains(event)) == true })
+                try service.transition(id: id, to: .completed)
+                XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()), 2)
+                XCTAssertEqual(try context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open }?.plannedDay, "2026-02-07")
+                XCTAssertEqual(task.state, .completed); XCTAssertEqual(task.revision, 2)
+                try TodoIntegrity.validate(context: context)
+            }
+        }
+    }
+}
+
+@MainActor
+extension TodoFoundationTests {
+    func testAllStatusDateListKeywordCompositionAndStatisticsRemainExact() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let clock = date("2026-10-09")
+        let service = TodoTaskService(context: context, now: { clock }, timeZone: { self.zone })
+        let list = try service.createList(name: "A")
+        let open = try service.create(TodoDraft(title: "Match open", listID: list.id))
+        let done = try service.create(TodoDraft(title: "Match done", listID: list.id))
+        let canceled = try service.create(TodoDraft(title: "Match canceled", listID: list.id))
+        let overdue = try service.create(TodoDraft(title: "Match overdue", isImportant: true, plannedDay: "2026-10-10", deadlineDay: "2026-10-08"))
+        let upcoming = try service.create(TodoDraft(title: "Unrelated", plannedDay: "2026-10-10"))
+        try service.transition(id: done.id, to: .completed); try service.transition(id: canceled.id, to: .canceled)
+        let tasks = try context.fetch(FetchDescriptor<TodoTask>())
+        for (state, ids) in [(TodoStatusFilter.open, [open.id, overdue.id, upcoming.id]), (.all, tasks.map(\.id)), (.completed, [done.id]), (.canceled, [canceled.id])] {
+            XCTAssertEqual(Set(tasks.filter { TodoQuery.matches($0, filter: .all, now: clock, timeZone: zone, status: state) }.map(\.id)), Set(ids))
+        }
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .all, now: clock, status: .all, listID: list.id, keyword: "MATCH") }.count, 3)
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .all, now: clock, status: .completed, listID: list.id, keyword: "done") }.map(\.id), [done.id])
+        XCTAssertTrue(tasks.filter { TodoQuery.matches($0, filter: .all, now: clock, status: .completed, unclassifiedOnly: true, keyword: "match") }.isEmpty)
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .all, now: clock, status: .all, unclassifiedOnly: true, keyword: "match") }.map(\.id), [overdue.id])
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .today, now: clock, timeZone: zone, status: .completed) }.map(\.id), [overdue.id])
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .upcoming, now: clock, timeZone: zone) }.map(\.id), [upcoming.id])
+        for (filter, ids) in [(TodoFilter.completedToday, [done.id]), (.completedWeek, [done.id]), (.open, [open.id, overdue.id, upcoming.id]), (.overdue, [overdue.id])] {
+            XCTAssertEqual(Set(tasks.filter { TodoQuery.matches($0, filter: filter, now: clock, timeZone: zone, status: .open) }.map(\.id)), Set(ids))
+        }
+        XCTAssertEqual(TodoQuery.sorted(tasks).first?.id, overdue.id)
+        try service.transition(id: done.id, to: .open)
+        XCTAssertFalse(TodoQuery.matches(done, filter: .all, now: clock, status: .completed))
+        XCTAssertFalse(TodoQuery.matches(done, filter: .completedToday, now: clock))
+        XCTAssertTrue(TodoQuery.matches(done, filter: .all, now: clock, status: .open))
+        XCTAssertEqual(Set(try LocalSearchService(context: context).search("Match").todos.map(\.id)), Set([open.id, done.id, canceled.id, overdue.id]))
+    }
+}

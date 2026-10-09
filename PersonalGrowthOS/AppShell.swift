@@ -38,6 +38,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
+            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
             .tabItem { Label("Today", systemImage: "sun.max") }
             .tag(AppTab.today)
 
@@ -47,6 +48,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
+            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
             .tabItem { Label("Timeline", systemImage: "clock") }
             .tag(AppTab.timeline)
 
@@ -57,6 +59,7 @@ struct AppShell: View {
             ) { _ in
                 selectedTab = .timeline
             }
+            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
             .tabItem { Label("Record", systemImage: "plus.circle.fill") }
             .tag(AppTab.record)
 
@@ -66,6 +69,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
+            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
             .tabItem { Label("Growth", systemImage: "leaf") }
             .tag(AppTab.growth)
 
@@ -75,6 +79,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
+            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
             .tabItem { Label("Library", systemImage: "books.vertical") }
             .tag(AppTab.library)
         }

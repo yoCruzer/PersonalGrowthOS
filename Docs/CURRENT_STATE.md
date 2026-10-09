@@ -1,3 +1,13 @@
+# Todo V1 ReviewFix + Usability — IN_PROGRESS（2026-10-09）
+
+Owner 新附件 `CODEX_GOAL_ZH.md` 授权在原 Draft PR #8 连续执行 S0→S4：先关闭提醒偏移、未来Open后继同步、及时通知失败反馈、启动完整性恢复四项问题，再完成Open单次任务转换重复与全部任务状态筛选，最终集中验证、普通push，停在READY_FOR_INDEPENDENT_REVIEW。
+
+本轮起点/local/upstream/PR head均 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`，原分支/base不变。S0与两个P1可失败回归、S1/S2/S3定向门禁完成；实现已冻结，自查通过，S4完整Unit/集中UI/真实产物与交付门禁待执行。原轮下方READY状态只属于历史，不代表本轮完成。不得merge/tag/改号/Archive/TestFlight；未触碰Owner私人数据库。新增候选模型11.1.0保留旧11.0.0迁移节点，备份仍v7。实际每轮结果见 [执行记录](TODO_V1_EXECUTION_LOG.md#reviewfix--usability-统一-goal--2026-10-09进行中)。
+
+---
+
+以下为上一轮交接与历史记录。
+
 # Todo V1 — READY_FOR_INDEPENDENT_REVIEW（2026-10-09）
 
 Owner Goal Pack Rev2 整体范围已实现并验证。分支 codex/todo-v1-personal-actions，从 Build12 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871 派生；远端 base codex/external-capture-v1、旧 annotated tag 均再次核对为该提交，旧 PR #1–#7 仍 OPEN Draft。最终产品/测试提交 837b619e5f2d6a0367aa31d61e3829acf731b4e4；后续交接只有文档，最终仓库 HEAD 以新 PR head 为准。

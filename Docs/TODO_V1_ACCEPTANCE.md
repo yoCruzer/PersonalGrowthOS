@@ -68,3 +68,19 @@
 ## 剩余边界
 
 已普通推送并创建独立 [Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8)，停在 READY_FOR_INDEPENDENT_REVIEW，下一步需要独立 Review，重点 V11/事件真相、重复期次撤销、v7 时间精度/恢复与通知并发。远端没有配置 GitHub Actions；普通 push 后检查为空，不能写“远端 CI 通过”。没有新增云端服务、付费依赖、复杂 RRULE、子任务或自动从分享生成 Todo。
+
+
+## 本轮 ReviewFix + Usability 验收（进行中）
+
+本轮起点4625602…，Owner新批准六项统一Goal。历史矩阵仍为原轮证据，新增工作必须由本轮结果证明。
+
+| 项目 | 当前可复查证据与边界 |
+| --- | --- |
+| S1-A | 原代码正负回归s1-red真实FAIL；修复后短月/每月10日/31日/闰年/年度/DST gap与overlap/纽约↔上海、候选原V11迁移重开通过，s1-target-4 Unit；相对日v7往返与±366非法包拒绝在s1-supplement-5通过。计划锚点优先，不因本期改日期漂移。 |
+| S1-B | 原Open后继同步回归s1-red真实FAIL；s1-target-4证明future覆盖单独编辑模板、this-only不覆盖、身份/日期保留、失败回滚、withdrawn复用与Canceled历史不复活。同步字段标题/备注/重要/清单/提醒，UI明确覆盖策略。 |
+| S1-C | s1-target-4通知mock证明延迟中checking与已保存事实分开、权限/队列/调度错误可见、旧类别请求不移除；拒绝提示真实UI在s1-supplement-5通过。布局导航修复补验进行中；真实通知送达仍Owner门禁。 |
+| S1-D | s1-target-4损坏revision/事件链synthetic库：pre-open原SQLite byte equality、原始媒体byte equality、rawZIP提取后可开原库/原Entry但依然拒绝损坏Todo；启动UI复制诊断/准备ShareLink/retry/重启均通过，普通AppShell不加载。rawZIP是支持恢复包，不能当正常备份导入；不清库/修复。 |
+| S2 | 尚未开始实现；须证明Open单次原身份转换、关闭态拒绝、首日必选、事件历史/保存回滚/幂等/重启/v7往返/真实UI。 |
+| S3 | 尚未开始实现；须证明默认Open、三类全状态/各单态、清单/关键词/日期组合、四统计严格同数字、深色/大字体与双语。 |
+
+新候选存储为V11 11.1.0，有冻结11.0.0节点和exact candidate fixture；备份仍v7新增optional offset。s1-target-4共80 Unit+1 UI PASS/1 UI FAIL（exit65）；后续补验不改写失败整组。完整Unit与集中UI/Debug/Release留到S4冻结候选一次执行。

@@ -142,6 +142,7 @@ struct TodoSeriesTransfer: Codable, Equatable {
     var isImportant: Bool
     var listID: UUID?
     var reminderMinutes: Int?
+    var reminderDayOffset: Int?
     var isStopped: Bool
     @TodoTransferInstant var createdAt: Date
     @TodoTransferInstant var updatedAt: Date
@@ -156,6 +157,7 @@ struct TodoSeriesTransfer: Codable, Equatable {
         isImportant = value.isImportant
         listID = value.listID
         reminderMinutes = value.reminderMinutes
+        reminderDayOffset = value.reminderDayOffset
         isStopped = value.isStopped
         createdAt = value.createdAt
         updatedAt = value.updatedAt
@@ -164,7 +166,7 @@ struct TodoSeriesTransfer: Codable, Equatable {
         try Task.checkCancellation()
         guard let frequency = TodoFrequency(rawValue: frequencyRawValue) else { throw TodoFailure.corruptData }
         let draft = TodoDraft(title: title, notes: notes, isImportant: isImportant, plannedDay: plannedAnchorDay, deadlineDay: deadlineAnchorDay, listID: listID)
-        let value = TodoSeries(id: id, frequency: frequency, anchorDay: anchorDay, draft: draft, reminderMinutes: reminderMinutes, createdAt: createdAt)
+        let value = TodoSeries(id: id, frequency: frequency, anchorDay: anchorDay, draft: draft, reminderMinutes: reminderMinutes, reminderDayOffset: reminderDayOffset, createdAt: createdAt)
         value.isStopped = isStopped; value.updatedAt = updatedAt
         return value
     }

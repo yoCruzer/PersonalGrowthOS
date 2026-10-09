@@ -8560,7 +8560,231 @@
     "Saved content needs file cleanup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Saved content needs file cleanup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保存内容的副本需要清理"}}}},
     "Local data needs an integrity check": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Local data needs an integrity check"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "本地数据需要完整性检查"}}}},
     "The operation could not be completed": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The operation could not be completed"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "操作未能完成"}}}},
-    "Your data is retained. Retry safely, or copy this diagnostic report for support.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Your data is retained. Retry safely, or copy this diagnostic report for support."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "数据仍保留。可以安全重试，或复制此诊断报告以便排查。"}}}}
+    "Your data is retained. Retry safely, or copy this diagnostic report for support.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Your data is retained. Retry safely, or copy this diagnostic report for support."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "数据仍保留。可以安全重试，或复制此诊断报告以便排查。"}}}},
+    "Repeating reminders must be within 366 days of the occurrence anchor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeating reminders must be within 366 days of the occurrence anchor."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重复提醒日期须在固定期次锚点前后366天内。"
+          }
+        }
+      }
+    },
+    "Reopen this task before converting it to a repeating series.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reopen this task before converting it to a repeating series."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先重开此任务，再转换为重复系列。"
+          }
+        }
+      }
+    },
+    "Choose a planned day or hard deadline for the first occurrence before saving.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a planned day or hard deadline for the first occurrence before saving."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存前，请明确选择首次计划日或硬截止日。"
+          }
+        }
+      }
+    },
+    "Converted to repeating series": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Converted to repeating series"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已转换为重复系列"
+          }
+        }
+      }
+    },
+    "Todo saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo saved"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "任务已保存"
+          }
+        }
+      }
+    },
+    "Dismiss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭提示"
+          }
+        }
+      }
+    },
+    "Also updates importance and all generated open successors, replacing their individual template edits. Completed and canceled successors keep their history.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Also updates importance and all generated open successors, replacing their individual template edits. Completed and canceled successors keep their history."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同时更新重要标记和已生成的未完成后继，覆盖它们单独修改的模板字段。已完成及已取消的后继保留历史。"
+          }
+        }
+      }
+    },
+    "Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重复提醒保留相对固定锚点的日历日期偏移；锚点优先取原计划日，否则取原截止日。支持前后366天。"
+          }
+        }
+      }
+    },
+    "Normal writes are paused. Export the retained database and original files for recovery. This private archive needs support recovery and cannot be imported as a normal backup.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal writes are paused. Export the retained database and original files for recovery. This private archive needs support recovery and cannot be imported as a normal backup."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正常写入已暂停。可导出保留的数据库与原始文件用于恢复。此私有包需要支持恢复，不能作为普通备份导入。"
+          }
+        }
+      }
+    },
+    "Prepare Retained Data Export": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepare Retained Data Export"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备原始数据导出"
+          }
+        }
+      }
+    },
+    "Save Retained Data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Retained Data"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存原始数据"
+          }
+        }
+      }
+    },
+    "Task Status": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Task Status"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "任务状态"
+          }
+        }
+      }
+    },
+    "All States": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All States"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有状态"
+          }
+        }
+      }
+    },
+    "Change the status, list or search to see other tasks.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change the status, list or search to see other tasks."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "调整状态、清单或关键词以查看其他任务。"
+          }
+        }
+      }
+    }
   },
   "version": "1.0"
 }

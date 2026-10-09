@@ -132,3 +132,56 @@ final class TodoReminderTests: XCTestCase {
         XCTAssertTrue(client.pending.isEmpty)
     }
 }
+
+@MainActor
+extension TodoReminderTests {
+    func testSaveFeedbackRemainsCheckingWhileDelayedAndDistinguishesPermissionQueueAndFailure() async throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client)
+        let task = try TodoTaskService(context: context).create(TodoDraft(title: "Saved first", remindAt: Date().addingTimeInterval(3600)))
+        coordinator.reportSavedTask(task)
+        XCTAssertEqual(coordinator.savedTaskID, task.id); XCTAssertEqual(coordinator.status(for: task), .checking)
+        client.whileCheckingPermission = {
+            XCTAssertEqual(coordinator.status(for: task), .checking)
+            XCTAssertEqual(try? context.fetchCount(FetchDescriptor<TodoTask>()), 1)
+            await Task.yield()
+        }
+        await coordinator.reconcile(context: context)
+        XCTAssertEqual(coordinator.status(for: task), .scheduled)
+        for state in [TodoNotificationPermission.notDetermined, .denied, .allowed] {
+            client.authorization = state; client.shouldFail = state == .allowed
+            await coordinator.reconcile(context: context)
+            XCTAssertEqual(coordinator.status(for: task), state == .notDetermined ? .permissionRequired : state == .denied ? .denied : .failed)
+            XCTAssertEqual(coordinator.savedTaskID, task.id); XCTAssertEqual(client.permissionCalls, 0)
+        }
+        client.shouldFail = false; client.otherIdentifiers = Set((0..<60).map { "other-\($0)" })
+        await coordinator.reconcile(context: context)
+        XCTAssertEqual(coordinator.status(for: task), .queueFull)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()), 1)
+        XCTAssertTrue(client.removed.allSatisfy { $0.hasPrefix(TodoReminderCoordinator.prefix) })
+    }
+}
+
+@MainActor
+extension TodoReminderTests {
+    func testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation() async throws {
+        let zone = TimeZone(identifier: "Asia/Shanghai")!
+        let clock = TodoDay("2026-01-10")!.date(timeZone: zone)!.addingTimeInterval(12 * 3600)
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let service = TodoTaskService(context: context, now: { clock }, timeZone: { zone })
+        let first = try service.create(TodoDraft(title: "Before", plannedDay: "2026-01-10", remindAt: TodoRecurrence.reminder(day: TodoDay("2026-01-09")!, minutes: 1200, timeZone: zone), frequency: .monthly))
+        try service.transition(id: first.id, to: .completed)
+        let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { clock })
+        await coordinator.reconcile(context: context)
+        let identifier = TodoReminderCoordinator.identifier(next.id)
+        XCTAssertEqual(client.pending[identifier]?.fireAt, TodoRecurrence.reminder(day: TodoDay("2026-02-09")!, minutes: 1200, timeZone: zone))
+        var draft = TodoDraft(first); draft.title = "After"; draft.remindAt = TodoRecurrence.reminder(day: TodoDay("2026-01-08")!, minutes: 600, timeZone: zone)
+        try service.edit(id: first.id, draft: draft, futureSeries: true)
+        await coordinator.reconcile(context: context)
+        XCTAssertEqual(client.pending.count, 1); XCTAssertEqual(client.pending[identifier]?.title, "After")
+        XCTAssertEqual(client.pending[identifier]?.fireAt, TodoRecurrence.reminder(day: TodoDay("2026-02-08")!, minutes: 600, timeZone: zone))
+        XCTAssertEqual(coordinator.status(for: next), .scheduled)
+        XCTAssertTrue(client.removed.allSatisfy { $0.hasPrefix(TodoReminderCoordinator.prefix) })
+    }
+}

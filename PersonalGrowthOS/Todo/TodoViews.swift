@@ -26,6 +26,7 @@ struct TodoHubView: View {
     @Query private var tasks: [TodoTask]
     @Query(sort: \TodoList.createdAt) private var lists: [TodoList]
     @State private var filter: TodoFilter
+    @State private var statusFilter: TodoStatusFilter = .open
     @State private var listID: UUID?
     @State private var unclassifiedOnly = false
     @State private var query = ""
@@ -41,14 +42,12 @@ struct TodoHubView: View {
         _filter = State(initialValue: initialFilter)
     }
     private var visible: [TodoTask] {
-        let normalized = TextSearchNormalizer.normalize(query)
-        return TodoQuery.sorted(tasks.filter {
-            TodoQuery.matches($0, filter: filter, now: referenceDate)
-            && (listID == nil || $0.listID == listID)
-            && (!unclassifiedOnly || $0.listID == nil)
-            && (normalized.isEmpty || TextSearchNormalizer.normalize($0.title + "\n" + $0.notes).contains(normalized))
+        TodoQuery.sorted(tasks.filter {
+            TodoQuery.matches($0, filter: filter, now: referenceDate, status: statusFilter,
+                              listID: listID, unclassifiedOnly: unclassifiedOnly, keyword: query)
         })
     }
+
     var body: some View {
         List {
             Section("Task Summary") {
@@ -59,13 +58,18 @@ struct TodoHubView: View {
             }
             Section {
                 Picker("View", selection: $filter) {
-                    ForEach([TodoFilter.today, .upcoming, .all, .completed, .canceled], id: \.self) { value in
+                    ForEach([TodoFilter.today, .upcoming, .all], id: \.self) { value in
                         Text(value.label).tag(value)
                     }
-                    if ![TodoFilter.today, .upcoming, .all, .completed, .canceled].contains(filter) {
+                    if ![TodoFilter.today, .upcoming, .all].contains(filter) {
                         Text(filter.label).tag(filter)
                     }
                 }.accessibilityIdentifier("todo-filter")
+                if filter == .all {
+                    Picker("Task Status", selection: $statusFilter) {
+                        ForEach(TodoStatusFilter.allCases, id: \.self) { value in Text(value.label).tag(value) }
+                    }.pickerStyle(.menu).accessibilityIdentifier("todo-status-filter")
+                }
                 Menu {
                     Button("All Lists") { listID = nil; unclassifiedOnly = false }
                     Button("Unclassified") { listID = nil; unclassifiedOnly = true }
@@ -75,12 +79,16 @@ struct TodoHubView: View {
                     LabeledContent("List", value: unclassifiedOnly ? String(localized: "Unclassified") : lists.first { $0.id == listID }?.name ?? String(localized: "All Lists"))
                 }.accessibilityIdentifier("todo-list-filter")
             }
-            Section(filter.label) {
+            Section(filter == .all ? "\(filter.label) · \(statusFilter.label)" : filter.label) {
                 if visible.isEmpty {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(query.isEmpty ? String(localized: "No tasks in this view") : String(localized: "No matching tasks"))
-                        Text("Undated tasks are in All Todos. Add a planned day to see them in Today or Upcoming.")
-                            .font(.caption).foregroundStyle(.secondary)
+                        if filter == .today || filter == .upcoming {
+                            Text("Undated tasks are in All Todos. Add a planned day to see them in Today or Upcoming.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        } else if filter == .all {
+                            Text("Change the status, list or search to see other tasks.").font(.caption).foregroundStyle(.secondary)
+                        }
                         Button("Add Todo") { adding = true }.accessibilityIdentifier("todo-empty-add")
                     }
                 }
@@ -107,7 +115,7 @@ struct TodoHubView: View {
             }
         }
         .navigationTitle("Todos")
-        .searchable(text: $query, prompt: "Task title or notes")
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Task title or notes")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { adding = true } label: { Image(systemName: "plus") }
@@ -119,6 +127,7 @@ struct TodoHubView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
         .onChange(of: scenePhase) { _, value in if value == .active { referenceDate = Date() } }
+        .onChange(of: filter) { _, value in if value == .all { statusFilter = .open } }
         .onChange(of: lists.map(\.id)) { _, ids in if let listID, !ids.contains(listID) { self.listID = nil } }
         .alert("Todo Update", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
             Button("OK", role: .cancel) {}
@@ -208,28 +217,39 @@ struct TodoEditorView: View {
                     }
                 }
                 Section("Repeat") {
-                    if task?.seriesID == nil && task == nil {
+                    if task?.seriesID == nil && (task == nil || task?.state == .open) {
                         Picker("Repeat", selection: $draft.frequency) {
                             Text("Does not repeat").tag(nil as TodoFrequency?)
                             ForEach(TodoFrequency.allCases, id: \.self) { frequency in Text(frequency.label).tag(Optional(frequency)) }
                         }.accessibilityIdentifier("todo-repeat")
                     } else if task?.seriesID != nil {
-                        Toggle("Apply title, notes, list and reminder time to future occurrences", isOn: $futureSeries)
+                        Toggle("Apply title, notes, list and reminder time to future occurrences", isOn: $futureSeries).accessibilityIdentifier("todo-edit-future")
+                        Text("Also updates importance and all generated open successors, replacing their individual template edits. Completed and canceled successors keep their history.").font(.caption)
                         Text("Dates change only this occurrence. The original repeat rule stays fixed.").font(.caption)
-                    } else { Text("Does not repeat") }
+                    } else {
+                        Text("Does not repeat")
+                        Text("Reopen this task before converting it to a repeating series.").font(.caption)
+                    }
+                    if draft.frequency != nil && draft.plannedDay == nil && draft.deadlineDay == nil {
+                        Text("Choose a planned day or hard deadline for the first occurrence before saving.").foregroundStyle(.orange).accessibilityIdentifier("todo-repeat-needs-day")
+                    }
+                    Text("Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after.").font(.caption).foregroundStyle(.secondary)
                     Text("Fixed calendar repeats use the original anchor. Missed dates are skipped; completion creates the first future occurrence.").font(.caption).foregroundStyle(.secondary)
                 }
-                if let error { Text(error).foregroundStyle(.red).accessibilityIdentifier("todo-editor-error") }
                 if savedNotice { Label("Saved. Ready for another todo.", systemImage: "checkmark").accessibilityIdentifier("todo-saved-another") }
             }
             .safeAreaInset(edge: .bottom) {
-                if task == nil {
-                    Button("Save and Add Another") { save(another: true) }
-                        .disabled(draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        .frame(maxWidth: .infinity, minHeight: 44).padding(.horizontal)
-                        .background(.bar).accessibilityIdentifier("todo-save-another")
-                }
+                VStack(spacing: 6) {
+                    if let error { Text(error).foregroundStyle(.red).padding(.horizontal).accessibilityIdentifier("todo-editor-error") }
+                    if task == nil {
+                        Button("Save and Add Another") { save(another: true) }
+                            .disabled(draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            .frame(maxWidth: .infinity, minHeight: 44).padding(.horizontal)
+                            .background(.bar).accessibilityIdentifier("todo-save-another")
+                    }
+                }.background(.bar)
             }
+            .safeAreaInset(edge: .top) { TodoReminderFeedbackView() }
             .navigationTitle(task == nil ? String(localized: "Add Todo") : String(localized: "Edit Todo"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -269,6 +289,8 @@ struct TodoEditorView: View {
             let id: UUID
             if let task { try service.edit(id: task.id, draft: draft, futureSeries: futureSeries); id = task.id }
             else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID).id }
+            let saved = try service.task(id: id)
+            reminders.reportSavedTask(saved)
             let ask = draft.remindAt != nil
             Task { await reminders.reconcile(context: context, requestPermission: ask) }
             error = nil
@@ -403,6 +425,7 @@ extension TodoEventKind {
         case .skipped: return String(localized: "Occurrence skipped")
         case .successorWithdrawn: return String(localized: "Successor withdrawn after undo")
         case .seriesStopped: return String(localized: "Series stopped")
+        case .convertedToSeries: return String(localized: "Converted to repeating series")
         }
     }
 }
@@ -473,6 +496,46 @@ private struct TodoListRenameView: View {
                     .accessibilityIdentifier("todo-list-rename-save")
                 }
             }
+        }
+    }
+}
+
+
+/// Lives both in the editor (continuous input) and shell (after sheet dismissal).
+struct TodoReminderFeedbackView: View {
+    @Environment(TodoReminderCoordinator.self) private var reminders
+    @Environment(\.modelContext) private var context
+    @Query private var tasks: [TodoTask]
+    var body: some View {
+        if let id = reminders.savedTaskID, let task = tasks.first(where: { $0.id == id }) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Todo saved").font(.headline)
+                Text(reminders.status(for: task).label).accessibilityIdentifier("todo-saved-reminder-status")
+                HStack {
+                    if reminders.status(for: task) == .denied {
+                        Button("Open iOS Settings") { if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) } }
+                    } else if [.permissionRequired, .failed, .queueFull].contains(reminders.status(for: task)) {
+                        Button("Retry Reminder") { Task { await reminders.reconcile(context: context, requestPermission: true) } }
+                    }
+                    Spacer()
+                    Button("Dismiss") { reminders.savedTaskID = nil }.frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("todo-reminder-feedback-dismiss")
+                }.frame(minHeight: 44)
+            }
+            .padding().frame(maxWidth: .infinity, alignment: .leading).background(.bar)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("todo-saved-reminder-feedback")
+        }
+    }
+}
+
+
+extension TodoStatusFilter {
+    var label: String {
+        switch self {
+        case .open: return String(localized: "Incomplete")
+        case .all: return String(localized: "All States")
+        case .completed: return String(localized: "Completed")
+        case .canceled: return String(localized: "Canceled")
         }
     }
 }

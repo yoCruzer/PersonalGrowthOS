@@ -225,8 +225,41 @@ enum PersonalGrowthSchemaV10: VersionedSchema {
     }
 }
 
-enum PersonalGrowthSchemaV11: VersionedSchema {
+enum PersonalGrowthSchemaV11Original: VersionedSchema {
     static let versionIdentifier = Schema.Version(11, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        PersonalGrowthSchemaV10.models + [TodoTask.self, TodoTaskEvent.self, TodoList.self, TodoSeries.self, TodoTaskSource.self]
+    }
+    @Model
+    final class TodoSeries {
+        @Attribute(.unique) var id: UUID
+        var frequencyRawValue: String
+        var anchorDay: String
+        var plannedAnchorDay: String?
+        var deadlineAnchorDay: String?
+        var title: String
+        var notes: String
+        var isImportant: Bool
+        var listID: UUID?
+        /// Wall-clock minutes, resolved in the current device time zone for each occurrence.
+        var reminderMinutes: Int?
+        var isStopped: Bool
+        var createdAt: Date
+        var updatedAt: Date
+        init(id: UUID = UUID(), frequency: TodoFrequency, anchorDay: String,
+             draft: TodoDraft, reminderMinutes: Int?, createdAt: Date) {
+            self.id = id; frequencyRawValue = frequency.rawValue; self.anchorDay = anchorDay
+            plannedAnchorDay = draft.plannedDay; deadlineAnchorDay = draft.deadlineDay
+            title = draft.title; notes = draft.notes; isImportant = draft.isImportant; listID = draft.listID
+            self.reminderMinutes = reminderMinutes; isStopped = false
+            self.createdAt = createdAt; updatedAt = createdAt
+        }
+    }
+
+}
+
+enum PersonalGrowthSchemaV11: VersionedSchema {
+    static let versionIdentifier = Schema.Version(11, 1, 0)
     static var models: [any PersistentModel.Type] {
         PersonalGrowthSchemaV10.models + [TodoTask.self, TodoTaskEvent.self, TodoList.self, TodoSeries.self, TodoTaskSource.self]
     }
@@ -245,6 +278,7 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             PersonalGrowthSchemaV8.self,
             PersonalGrowthSchemaV9.self,
             PersonalGrowthSchemaV10.self,
+            PersonalGrowthSchemaV11Original.self,
             PersonalGrowthSchemaV11.self
         ]
     }
@@ -287,7 +321,8 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
                 fromVersion: PersonalGrowthSchemaV9.self,
                 toVersion: PersonalGrowthSchemaV10.self
             ),
-            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV10.self, toVersion: PersonalGrowthSchemaV11.self)
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV10.self, toVersion: PersonalGrowthSchemaV11Original.self),
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV11Original.self, toVersion: PersonalGrowthSchemaV11.self)
         ]
     }
 }
