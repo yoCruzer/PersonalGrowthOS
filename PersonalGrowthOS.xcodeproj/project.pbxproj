@@ -62,6 +62,10 @@ TD1000000000000000000001 = {isa = PBXBuildFile; fileRef = TD00000000000000000000
 TD1000000000000000000002 = {isa = PBXBuildFile; fileRef = TD0000000000000000000002; };
 TD4000000000000000000001 = {isa = PBXBuildFile; fileRef = TD3000000000000000000001; };
 TD4000000000000000000002 = {isa = PBXBuildFile; fileRef = TD3000000000000000000002; };
+TD1000000000000000000003 = {isa = PBXBuildFile; fileRef = TD0000000000000000000003; };
+TD1000000000000000000004 = {isa = PBXBuildFile; fileRef = TD0000000000000000000004; };
+TD1000000000000000000005 = {isa = PBXBuildFile; fileRef = TD0000000000000000000005; };
+TD1000000000000000000006 = {isa = PBXBuildFile; fileRef = TD0000000000000000000006; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -138,6 +142,10 @@ TD0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourceco
 TD0000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/TodoFoundationTests.swift"; sourceTree = SOURCE_ROOT; };
 TD3000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/Build12V10Fixture"; sourceTree = SOURCE_ROOT; };
 TD3000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = BuildProvenance.plist; sourceTree = DERIVED_FILE_DIR; };
+TD0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoReminders.swift"; sourceTree = SOURCE_ROOT; };
+TD0000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoViews.swift"; sourceTree = SOURCE_ROOT; };
+TD0000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/TodoReminderTests.swift"; sourceTree = SOURCE_ROOT; };
+TD0000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoTransfer.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -172,6 +180,10 @@ CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+TD0000000000000000000006,
+TD0000000000000000000005,
+TD0000000000000000000004,
+TD0000000000000000000003,
 TD3000000000000000000002,
 TD3000000000000000000001,
 TD0000000000000000000002,
@@ -529,6 +541,9 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+TD1000000000000000000006,
+TD1000000000000000000004,
+TD1000000000000000000003,
 TD1000000000000000000001,
 CA0000000000000000000102,
 CA0000000000000000000101,
@@ -568,6 +583,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+TD1000000000000000000005,
 TD1000000000000000000002,
 				B00000000000000000000004 /* AppCompositionTests.swift in Sources */,
 				B00000000000000000000009 /* EntryDomainTests.swift in Sources */,

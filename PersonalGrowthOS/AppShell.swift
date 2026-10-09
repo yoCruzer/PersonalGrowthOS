@@ -14,6 +14,7 @@ enum AppTab: Hashable {
 struct AppShell: View {
     let container: AppContainer
 
+    @State private var todoReminders = TodoReminderCoordinator()
     @State private var selectedTab: AppTab = .today
     @State private var isShowingStorage = false
     @Environment(\.scenePhase) private var captureScenePhase
@@ -85,9 +86,16 @@ struct AppShell: View {
             }
         }
         #endif
-        .task { await importShares() }
+        .task { await importShares(); await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         .onChange(of: captureScenePhase) { _, phase in
-            if phase == .active { Task { await importShares() } }
+            if phase == .active { Task { await importShares(); await todoReminders.reconcile(context: container.modelContainer.mainContext) } }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
+            guard notification.object as? ModelContainer === container.modelContainer else { return }
+            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
         .alert("Some shared content could not be imported", isPresented: $captureFailure) {
             Button("Review Pending Shares") { isShowingPendingShares = true }
@@ -124,6 +132,7 @@ struct AppShell: View {
                 integrityReport: container.mediaIntegrityReport
             )
         }
+        .environment(todoReminders)
     }
 
     private func importShares() async {
@@ -243,6 +252,7 @@ private struct TodayView: View {
     @State private var referenceDate = Date()
     @State private var showsAllHabits = false
     @State private var showsAllGoals = false
+    @State private var isAddingTodo = false
     @State private var isAddingWeight = false
     @Query private var lifecycleEvents: [HabitLifecycleEvent]
     @Query(sort: [
@@ -393,6 +403,17 @@ private struct TodayView: View {
         .listSectionSpacing(.compact)
         .navigationTitle("Today")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isAddingTodo) { TodoEditorView { _ in isAddingTodo = false } }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationLink { TodoHubView(mediaStore: mediaStore, thumbnailStore: thumbnailStore) } label: { Image(systemName: "checklist") }
+                    .accessibilityLabel("Todos").accessibilityIdentifier("today-todo-hub")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button { isAddingTodo = true } label: { Image(systemName: "plus.circle") }
+                    .accessibilityLabel("Add Todo").accessibilityIdentifier("today-todo-add")
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 VStack(spacing: 0) {
@@ -984,13 +1005,17 @@ private struct MediaStorageView: View {
                     }
                     .accessibilityIdentifier("settings-version")
                     LabeledContent("Version", value: AppVersionInformation().version)
+                        .accessibilityElement(children: .ignore).accessibilityLabel("Version").accessibilityValue(AppVersionInformation().version)
                     LabeledContent("Build", value: AppVersionInformation().build)
-                    LabeledContent("Git Commit") {
+                        .accessibilityElement(children: .ignore).accessibilityLabel("Build").accessibilityValue(AppVersionInformation().build)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Git Commit").font(.caption).foregroundStyle(.secondary)
                         Button {
                             UIPasteboard.general.string = BuildProvenance().commit
                             versionCopied = true
                         } label: {
                             Text(verbatim: BuildProvenance().shortCommit).font(.system(.body, design: .monospaced))
+                                .fixedSize(horizontal: false, vertical: true).frame(minHeight: 44)
                         }
                         .disabled(BuildProvenance().commit == nil)
                         .accessibilityLabel("Copy full Git Commit")

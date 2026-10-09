@@ -83,6 +83,7 @@ final class TodoFoundationTests: XCTestCase {
         try service.transition(id: first.id, to: .completed)
         XCTAssertEqual(next.state, .open); XCTAssertEqual(next.id, nextID)
         try service.transition(id: next.id, to: .canceled, skip: true)
+        try service.transition(id: next.id, to: .canceled, skip: true)
         tasks = try context.fetch(FetchDescriptor<TodoTask>())
         let third = try XCTUnwrap(tasks.first { $0.occurrenceIndex == 2 })
         XCTAssertEqual(third.plannedDay, "2026-03-31")
@@ -102,6 +103,10 @@ final class TodoFoundationTests: XCTestCase {
         let service = TodoTaskService(context: context)
         let list = try service.createList(name: "工作")
         let task = try service.create(TodoDraft(title: "行动", listID: list.id), sourceEntryID: entry.id)
+        let independentlyDeleted = try service.create(TodoDraft(title: "只删除待办"), sourceEntryID: entry.id)
+        try service.delete(id: independentlyDeleted.id)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<Entry>()), 1)
+        XCTAssertEqual(entry.body, "原始记录")
         try service.renameList(id: list.id, name: "生活")
         try service.deleteList(id: list.id)
         XCTAssertNil(task.listID)
@@ -211,5 +216,134 @@ extension TodoFoundationTests {
         let reopened = try PersistenceContainerFactory.makeOnDisk(at: store)
         XCTAssertEqual(try TodoTaskService(context: reopened.mainContext).task(id: taskID).title, "迁移后行动")
         try TodoIntegrity.validate(context: reopened.mainContext)
+    }
+}
+
+@MainActor
+extension TodoFoundationTests {
+    func testRepeatingReminderKeepsChosenLocalDayAndClockAcrossTimeZoneChange() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let shanghai = TimeZone(identifier: "Asia/Shanghai")!, ny = TimeZone(identifier: "America/New_York")!
+        let day = TodoDay("2026-11-01")!
+        let reminder = try XCTUnwrap(TodoRecurrence.reminder(day: day, minutes: 90, timeZone: shanghai))
+        let old = TodoTaskService(context: context, timeZone: { shanghai })
+        let task = try old.create(TodoDraft(title: "每日提醒", plannedDay: day.description, remindAt: reminder, frequency: .daily))
+        let new = TodoTaskService(context: context, timeZone: { ny })
+        try new.refreshRepeatingReminderTimes()
+        XCTAssertEqual(task.reminderTimeZoneID, ny.identifier)
+        XCTAssertEqual(task.plannedDay, day.description)
+        let actual = try XCTUnwrap(task.remindAt)
+        XCTAssertEqual(TodoDay(date: actual, timeZone: ny), day)
+        let parts = WeeklyReviewCalendarPolicy.calendar(timeZone: ny).dateComponents([.hour, .minute], from: actual)
+        XCTAssertEqual(parts.hour, 1); XCTAssertEqual(parts.minute, 30)
+        let revision = task.revision
+        try new.refreshRepeatingReminderTimes()
+        XCTAssertEqual(task.revision, revision)
+        try TodoIntegrity.validate(context: context)
+    }
+    func testGlobalSearchIncludesEveryTaskStateWithoutChangingEntryFollowUpResults() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let entry = Entry(body: "匹配原文", createdAt: Date()); context.insert(entry); try context.save()
+        let followUp = try EntryContinuationService(context: context).add(entryID: entry.id, body: "匹配补充")
+        let service = TodoTaskService(context: context)
+        let first = try service.create(TodoDraft(title: "匹配待办"))
+        let second = try service.create(TodoDraft(title: "其他标题", notes: "匹配备注"))
+        let third = try service.create(TodoDraft(title: "匹配取消"))
+        try service.transition(id: second.id, to: .completed)
+        try service.transition(id: third.id, to: .canceled)
+        let results = try LocalSearchService(context: context).search("匹配")
+        XCTAssertEqual(Set(results.todos.map(\.id)), Set([first.id, second.id, third.id]))
+        XCTAssertEqual(results.entries.map(\.id), [entry.id])
+        XCTAssertEqual(results.followUpMatches[entry.id]?.id, followUp.id)
+    }
+
+    func testDSTGapResolutionDoesNotChangeIntendedRepeatClockAfterTravel() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        var zone = TimeZone(identifier: "America/New_York")!
+        let now = TodoDay("2026-03-07")!.date(timeZone: zone)!.addingTimeInterval(12 * 3600)
+        let service = TodoTaskService(context: context, now: { now }, timeZone: { zone })
+        let reminder = try XCTUnwrap(TodoRecurrence.reminder(day: TodoDay("2026-03-07")!, minutes: 150, timeZone: zone))
+        let first = try service.create(TodoDraft(title: "固定 02:30", plannedDay: "2026-03-07", remindAt: reminder, frequency: .daily))
+        try service.transition(id: first.id, to: .completed)
+        let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+        XCTAssertEqual(next.reminderLocalDay, "2026-03-08"); XCTAssertEqual(next.reminderMinutes, 150)
+        XCTAssertEqual(WeeklyReviewCalendarPolicy.calendar(timeZone: zone).component(.hour, from: try XCTUnwrap(next.remindAt)), 3)
+        var edit = TodoDraft(next); edit.notes = "编辑备注不改变原始提醒时间"
+        try service.edit(id: next.id, draft: edit, futureSeries: true)
+        zone = self.zone
+        try service.refreshRepeatingReminderTimes()
+        let parts = WeeklyReviewCalendarPolicy.calendar(timeZone: zone).dateComponents([.hour, .minute], from: try XCTUnwrap(next.remindAt))
+        XCTAssertEqual(parts.hour, 2); XCTAssertEqual(parts.minute, 30)
+        try TodoIntegrity.validate(context: context)
+    }
+
+    func testTodoTransferPreservesExactSubmicrosecondInstantsUnderLegacyOuterEncoder() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let instant = Date(timeIntervalSinceReferenceDate: 812_345_678.1234567)
+        let service = TodoTaskService(context: context, now: { instant })
+        let task = try service.create(TodoDraft(title: "精确时间", remindAt: instant.addingTimeInterval(3600)))
+        try service.transition(id: task.id, to: .completed)
+        let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .secondsSince1970
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
+        let dto = TodoTaskTransfer(task)
+        let restored = try decoder.decode(TodoTaskTransfer.self, from: encoder.encode(dto))
+        XCTAssertEqual(restored, dto)
+        XCTAssertEqual(restored.completedAt?.timeIntervalSinceReferenceDate, instant.timeIntervalSinceReferenceDate)
+        let events = try context.fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init)
+        let restoredEvents = try decoder.decode([TodoTaskEventTransfer].self, from: encoder.encode(events))
+        XCTAssertEqual(restoredEvents, events)
+        try TodoIntegrity.validate(tasks: [restored.model()], events: restoredEvents.map { try $0.model() }, lists: [], series: [], sources: [], entryIDs: [])
+    }
+
+    func testStatisticsAndStableImportantOrderUseFinalFactsAtDayAndWeekBoundaries() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        var clock = date("2026-10-11")
+        let service = TodoTaskService(context: context, now: { clock }, timeZone: { self.zone })
+        let important = try service.create(TodoDraft(title: "重要", isImportant: true, plannedDay: "2026-10-12"))
+        let planOnly = try service.create(TodoDraft(title: "仅过去计划", plannedDay: "2026-10-01"))
+        let overdue = try service.create(TodoDraft(title: "硬逾期", deadlineDay: "2026-10-01"))
+        let canceled = try service.create(TodoDraft(title: "取消", deadlineDay: "2026-10-01"))
+        try service.transition(id: canceled.id, to: .canceled)
+        try service.transition(id: important.id, to: .completed)
+        let tasks = try context.fetch(FetchDescriptor<TodoTask>())
+        XCTAssertEqual(TodoQuery.sorted(tasks).first?.id, important.id)
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .completedToday, now: clock, timeZone: zone) }.map(\.id), [important.id])
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .overdue, now: clock, timeZone: zone) }.map(\.id), [overdue.id])
+        clock = date("2026-10-12") // Monday: last Sunday's completion falls outside this week.
+        XCTAssertFalse(TodoQuery.matches(important, filter: .completedToday, now: clock, timeZone: zone))
+        XCTAssertFalse(TodoQuery.matches(important, filter: .completedWeek, now: clock, timeZone: zone))
+        try service.transition(id: important.id, to: .open)
+        XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .open, now: clock, timeZone: zone) }.count, 3)
+        XCTAssertFalse(TodoQuery.matches(planOnly, filter: .overdue, now: clock, timeZone: zone))
+        try service.transition(id: important.id, to: .completed)
+        XCTAssertTrue(TodoQuery.matches(important, filter: .completedWeek, now: clock, timeZone: zone))
+        try service.transition(id: important.id, to: .canceled)
+        XCTAssertFalse(TodoQuery.matches(important, filter: .completedWeek, now: clock, timeZone: zone))
+        try TodoIntegrity.validate(context: context)
+    }
+
+    func testBoundedThousandTodoIntegritySearchAndStatisticsPerformance() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let clock = date("2026-10-09")
+        // Batch synthetic setup only; the measured production reads still use the normal persisted context.
+        let service = TodoTaskService(context: context, now: { clock }, save: {})
+        for index in 0..<1_000 {
+            let task = try service.create(TodoDraft(title: "任务 \(index)", notes: index == 999 ? "唯一 needle" : "原始备注",
+                isImportant: index == 500, plannedDay: "2026-10-09"))
+            if index < 100 { try service.transition(id: task.id, to: .completed) }
+        }
+        try context.save()
+        let search = LocalSearchService(context: context), options = XCTMeasureOptions()
+        options.iterationCount = 3
+        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()], options: options) {
+            do {
+                try TodoIntegrity.validate(context: context)
+                XCTAssertEqual(try search.search("needle").todos.count, 1)
+                let tasks = try context.fetch(FetchDescriptor<TodoTask>())
+                XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .open, now: clock, timeZone: zone) }.count, 900)
+                XCTAssertEqual(tasks.filter { TodoQuery.matches($0, filter: .completedToday, now: clock, timeZone: zone) }.count, 100)
+                XCTAssertTrue(TodoQuery.sorted(tasks).first?.isImportant == true)
+            } catch { XCTFail("Bounded Todo reads failed: \(error)") }
+        }
     }
 }

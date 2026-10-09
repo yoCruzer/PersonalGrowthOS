@@ -379,6 +379,7 @@ final class ImportExportService {
             try publicationCheckpoint?(.afterPreflight)
             try Self.ensureTargetIsEmpty(context)
             try await publish(package: package, importedAt: now())
+            NotificationCenter.default.post(name: .todoTasksChanged, object: container)
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.images.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
@@ -494,6 +495,14 @@ final class ImportExportService {
             if manifest.packageSchemaVersion >= 6 {
                 let payload = try JSONSerialization.jsonObject(with: bytes) as? [String: Any]
                 guard payload?["entrySources"] is [Any] else { throw TransferPackageError.corruptData }
+            }
+            let payload = try JSONSerialization.jsonObject(with: bytes) as? [String: Any]
+            for key in ["todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources"] {
+                if manifest.packageSchemaVersion >= 7 {
+                    guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
+                } else {
+                    guard payload?[key] == nil else { throw TransferPackageError.corruptData }
+                }
             }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
@@ -936,6 +945,7 @@ final class ImportExportService {
                     createdAt: record.createdAt
                 ))
             }
+            try package.data.insertTodos(into: context)
             return restoredPaths
         } catch {
             for path in restoredPaths { try? mediaStore.removeOriginal(at: path) }
@@ -975,6 +985,12 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<EntryExternalSource>())
             + context.fetchCount(FetchDescriptor<EntryPin>())
             + context.fetchCount(FetchDescriptor<EntryFollowUp>())
+            + context.fetchCount(FetchDescriptor<TodoTask>())
+            + context.fetchCount(FetchDescriptor<TodoTaskEvent>())
+            + context.fetchCount(FetchDescriptor<TodoList>())
+            + context.fetchCount(FetchDescriptor<TodoSeries>())
+            + context.fetchCount(FetchDescriptor<TodoTaskSource>())
+
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
 
@@ -1212,7 +1228,12 @@ private enum TransferSnapshot {
             entryFollowUps: try cancellableMap(entryFollowUps) {
                 EntryFollowUpTransfer(id: $0.id, entryID: $0.entryID, body: $0.body,
                                       createdAt: $0.createdAt, updatedAt: $0.updatedAt)
-            }.sorted { sortUUID($0.id, $1.id) }
+            }.sorted { sortUUID($0.id, $1.id) },
+            todoTasks: try cancellableMap(context.fetch(FetchDescriptor<TodoTask>())) { TodoTaskTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoEvents: try cancellableMap(context.fetch(FetchDescriptor<TodoTaskEvent>())) { TodoTaskEventTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoLists: try cancellableMap(context.fetch(FetchDescriptor<TodoList>())) { TodoListTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoSeries: try cancellableMap(context.fetch(FetchDescriptor<TodoSeries>())) { TodoSeriesTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoSources: try cancellableMap(context.fetch(FetchDescriptor<TodoTaskSource>())) { TodoTaskSourceTransfer($0) }.sorted { sortUUID($0.id, $1.id) }
         )
     }
 

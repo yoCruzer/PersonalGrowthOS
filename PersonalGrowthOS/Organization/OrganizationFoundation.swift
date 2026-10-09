@@ -423,6 +423,7 @@ struct LocalSearchResults {
     let habits: [Habit]
     let goals: [Goal]
     let weeklyReviews: [WeeklyReview]
+    let todos: [TodoTask]
     let followUpMatches: [UUID: EntryFollowUpMatch]
 
     init(
@@ -431,6 +432,7 @@ struct LocalSearchResults {
         habits: [Habit] = [],
         goals: [Goal] = [],
         weeklyReviews: [WeeklyReview] = [],
+        todos: [TodoTask] = [],
         followUpMatches: [UUID: EntryFollowUpMatch] = [:]
     ) {
         self.entries = entries
@@ -438,6 +440,7 @@ struct LocalSearchResults {
         self.habits = habits
         self.goals = goals
         self.weeklyReviews = weeklyReviews
+        self.todos = todos
         self.followUpMatches = followUpMatches
     }
 }
@@ -517,6 +520,9 @@ final class LocalSearchService {
             habits: habits,
             goals: goals,
             weeklyReviews: weeklyReviews,
+            todos: TodoQuery.sorted(try context.fetch(FetchDescriptor<TodoTask>()).filter {
+                TextSearchNormalizer.normalize($0.title + "\n" + $0.notes).contains(normalizedQuery)
+            }),
             followUpMatches: matches
         )
     }

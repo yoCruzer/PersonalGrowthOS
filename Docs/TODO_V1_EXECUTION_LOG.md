@@ -23,6 +23,43 @@
 - provenance-1：exit 0，2/2 PASS，0 FAIL/SKIP；实际 Debug App 包资源存在、完整 SHA/短 SHA/组合复制行为通过。产物 `/tmp/pgos-todo-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/BuildProvenance.plist` 此次 Commit=c5a3c0ac859efc3ffa4e5d9f77909ec43565c871，Source=localGit，Dirty=true（当时尚未提交新源码），Tag 空；不是硬编码输出。
 - Release、模拟 CI 编译产物、实际 About UI/粘贴、双语大字体深色等仍待候选验证，不能用 helper/脚本测试替代。
 
-## 待完成
+## S2–S4 功能与失败审计
 
-S2 Todo Hub/快捷连续输入/详情/来源回溯/搜索/统计；S3 通知生命周期；S4 备份 v7、完整兼容/非法包/恢复边界、集中回归、Debug/Release 与 UI；S5 普通 push 与新 Draft PR。未达到 READY_FOR_INDEPENDENT_REVIEW，Goal 保持进行中。Owner 私人库覆盖、真机通知实际触达、实际 Cloud/TestFlight 由 Owner 门禁保留。
+已接入 Hub/连续录入/详情/清单/Entry 来源/局部与全局搜索/四项统计；固定锚点重复和稳定期次；独立 opt-in 通知协调（启动/前台/时间变化/成功导入重建）；v7 五实体完整 DTO、计数、严格校验、空库保护与取消回滚。通知变更只在持久化成功后发生，Todo 前缀不取消旧每日/每周提醒。
+
+重要修复：
+- 事件内 Date 使用 2001 epoch，旧外层备份使用 1970 epoch 会引入一 ULP 精度差。Todo v7 DTO 使用明确 reference epoch，保持精确事件链比较；未弱化校验，未改旧实体 wire。
+- 保存关闭由父 sheet 回调统一负责，避免重复 dismiss；连续保存维持标题焦点；键盘关闭按钮可见。清单重命名改为原生 sheet，确认删除只解除归属。
+- 重复提醒保留原本的日/墙钟分钟，DST 缺时按 nextTime 解析，换时区不把缺时补偿后的 03:00 当成原 02:30。并发通知 pass 重读；权限请求只源于显式提醒操作。
+- About Version/Build 添加语义标签；短 SHA 单独一行，真实最大字体仍完整显示。大字号系统字符串先前无效，改用 UIKit rawValue 并用渲染高度证明生效。
+- 旧 synthetic v4/v5 测试移除 v7 空 keys，保持它们真实历史 wire；旧 fixture 字节未改。新增并发预检测试为合成目录显式注入容量，消除目录未创建导致的无关 I/O 错误。
+
+各轮结果（独立 resultBundle/log，不把失败整组重标全绿）：
+
+| Result bundle 前缀 | PASS | FAIL | 结论 |
+| --- | ---: | ---: | --- |
+| ui-reminders-compile-2 | 4 | 0 | 通知替身定向通过；前一轮 catch shadow 编译失败。 |
+| ui-reminders-3 | 8 | 1 | Entry UI 使用旧 capture ID，未进入预期路径；修正正确 ID 后补验。 |
+| backup-todo-1 | 62 | 2 | 旧 wire synthetic 与新往返精度各失败；来源 UI 已通过。 |
+| backup-todo-2 | 1 | 1 | 旧 wire 修复通过，Todo 精度仍失败。 |
+| backup-todo-3 | 0 | 1 | 精确定位到 todo integrity；随后修正 epoch。 |
+| backup-todo-4 | 14 | 0 | 13 领域与完整 Todo 往返通过。 |
+| todo-integration-2 | 23 | 3 | 23 Unit 通过；3 UI 键盘/rename/中文标签路径失败。 |
+| todo-integration-3 | 6 | 3 | 6 Unit 通过；3 UI rename、Toggle 点击位置、Version 语义失败。 |
+| todo-ui-4 | 1 | 1 | 清单/统计贯通通过；重复 Toggle outer row 点击无效。 |
+| todo-daily-ui-5 | 1 | 0 | 系统权限交互、重复完成/跳过/停止/重启贯通通过。 |
+| todo-chinese-real-dark-5 | 1 | 0 | 中文深色语义通过，但截图字号普通，不能算最大字体。 |
+| todo-chinese-actual-size-6 | 0 | 1 | 真实最大字体编辑/高度通过；任务位于 lazy List 下方未滚动，断言失败。 |
+| todo-chinese-actual-size-7 | 1 | 0 | 正常滚动后，真实最大字体编辑/Hub/About 语义及截图通过。 |
+| todo-concurrency-perf-1 | 16 | 1 | 15 领域/性能与导出截止点通过；并发预检合成容量设置遗漏。 |
+| todo-concurrency-2 | 1 | 0 | 容量注入后，预检并发拒绝且重开保留 Todo 通过。 |
+
+另 `todo-integration-1` 是新测试参数顺序编译失败，未运行测试。UI 系统诊断曾额外等待约 600 秒，后续公共命令加 `-collect-test-diagnostics never`；并非测试断言被跳过。
+
+有界性能 `testBoundedThousandTodoIntegritySearchAndStatisticsPerformance`：1000 个 Todo/1100 事件，3 次完整性校验、搜索、最终统计和稳定排序；0.091714458 / 0.091158908 / 0.094870064 秒，峰值 physical 28985.888 kB（XCTest metric，不是 App 总内存承诺）。源事实与独立预期核对，未为节省时长跳过持久化/完整性。
+
+中文实际最大字体证据：`todo-chinese-actual-size-7.xcresult` 的 Editor/Hub/About 三张 keepAlways 截图。设置为 Dark + accessibilityExtraExtraExtraLarge，标题渲染高度 >150pt；语义检查 elementDetection/hitRegion/sufficientElementDescription/trait，通过不等于已运行真机 VoiceOver 朗读。
+
+## 候选尾端门禁（待执行）
+
+只在功能冻结后运行一次完整 Unit 与一次关键 UI 集中 gate；实际 counts/命令/源码 SHA 后续记录。Release/模拟 CI 产物与普通 push/Draft PR 尚未完成，当前不标 READY。远端没有配置 GitHub Actions workflow；普通 push 后只读检查 checks/statuses，实际 Xcode Cloud 发行未触发。Owner 真机与私人数据门禁保留。

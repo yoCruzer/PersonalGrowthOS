@@ -35,6 +35,10 @@ final class TodoTask {
     var plannedDay: String?
     var deadlineDay: String?
     var remindAt: Date?
+    var reminderTimeZoneID: String?
+    /// Intended wall time for a repeating occurrence; retained through DST gap resolution.
+    var reminderLocalDay: String?
+    var reminderMinutes: Int?
     var completedAt: Date?
     var canceledAt: Date?
     var createdAt: Date
@@ -165,10 +169,13 @@ struct TodoEventValue: Codable, Equatable {
     let remindAt: Date?
     let completedAt: Date?
     let canceledAt: Date?
+    let reminderLocalDay: String?
+    let reminderMinutes: Int?
     init(_ task: TodoTask) throws {
         guard let state = task.state else { throw TodoFailure.corruptData }
         self.state = state; plannedDay = task.plannedDay; deadlineDay = task.deadlineDay
         remindAt = task.remindAt; completedAt = task.completedAt; canceledAt = task.canceledAt
+        reminderLocalDay = task.reminderLocalDay; reminderMinutes = task.reminderMinutes
     }
 }
 
@@ -231,7 +238,7 @@ final class TodoTaskService {
         self.save = save ?? { try context.save() }
     }
     private func transaction<T>(_ operation: () throws -> T) throws -> T {
-        do { let result = try operation(); try save(); return result }
+        do { let result = try operation(); try save(); NotificationCenter.default.post(name: .todoTasksChanged, object: context.container); return result }
         catch { context.rollback(); throw error }
     }
     func task(id: UUID) throws -> TodoTask {
@@ -240,6 +247,17 @@ final class TodoTaskService {
     }
     private func requireList(_ id: UUID?) throws {
         if let id, try context.fetchCount(FetchDescriptor<TodoList>(predicate: #Predicate { $0.id == id })) != 1 { throw TodoFailure.missingList }
+    }
+    private func setReminderWallTime(_ task: TodoTask, from instant: Date?) {
+        guard task.seriesID != nil, let instant else {
+            task.reminderTimeZoneID = nil; task.reminderLocalDay = nil; task.reminderMinutes = nil
+            return
+        }
+        let zone = timeZone()
+        let parts = WeeklyReviewCalendarPolicy.calendar(timeZone: zone).dateComponents([.hour, .minute], from: instant)
+        task.reminderTimeZoneID = zone.identifier
+        task.reminderLocalDay = TodoDay(date: instant, timeZone: zone).description
+        task.reminderMinutes = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
     }
     private func series(_ id: UUID) throws -> TodoSeries {
         guard let value = try context.fetch(FetchDescriptor<TodoSeries>(predicate: #Predicate { $0.id == id })).first else { throw TodoFailure.invalidSeries }
@@ -274,6 +292,7 @@ final class TodoTaskService {
             let task = TodoTask(id: id, title: draft.title, notes: draft.notes, isImportant: draft.isImportant,
                 plannedDay: draft.plannedDay, deadlineDay: draft.deadlineDay, remindAt: draft.remindAt,
                 listID: draft.listID, seriesID: seriesID, occurrenceIndex: seriesID == nil ? nil : 0, createdAt: date)
+            setReminderWallTime(task, from: draft.remindAt)
             context.insert(task)
             try record(task, kind: .created, before: nil, at: date)
             if let sourceEntryID { context.insert(TodoTaskSource(taskID: task.id, entryID: sourceEntryID)) }
@@ -288,15 +307,13 @@ final class TodoTaskService {
             let before = try TodoEventValue(task)
             task.title = draft.title; task.notes = draft.notes; task.isImportant = draft.isImportant
             task.plannedDay = draft.plannedDay; task.deadlineDay = draft.deadlineDay
+            if task.remindAt != draft.remindAt { setReminderWallTime(task, from: draft.remindAt) }
             task.remindAt = draft.remindAt; task.listID = draft.listID
             if futureSeries, let seriesID = task.seriesID {
                 let series = try series(seriesID)
                 series.title = draft.title; series.notes = draft.notes; series.isImportant = draft.isImportant
                 series.listID = draft.listID
-                series.reminderMinutes = draft.remindAt.map {
-                    let parts = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone()).dateComponents([.hour, .minute], from: $0)
-                    return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
-                }
+                series.reminderMinutes = task.reminderMinutes
                 series.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: series.createdAt, previous: series.updatedAt)
             }
             try record(task, kind: .edited, before: before, at: now())
@@ -305,6 +322,7 @@ final class TodoTaskService {
     func transition(id: UUID, to state: TodoTaskState, skip: Bool = false) throws {
         let task = try task(id: id)
         guard task.state != state else { return }
+        if skip && (state != .canceled || task.seriesID == nil || task.state != .open) { throw TodoFailure.invalidSeries }
         try transaction {
             let date = now(), before = try TodoEventValue(task)
             if state == .open, let seriesID = task.seriesID {
@@ -352,10 +370,32 @@ final class TodoTaskService {
         let nextTask = TodoTask(title: series.title, notes: series.notes, isImportant: series.isImportant,
             plannedDay: planned, deadlineDay: deadline, remindAt: reminder, listID: series.listID,
             seriesID: seriesID, occurrenceIndex: next, createdAt: date)
+        if reminder != nil {
+            nextTask.reminderTimeZoneID = timeZone().identifier
+            nextTask.reminderLocalDay = occurrence.description
+            nextTask.reminderMinutes = series.reminderMinutes
+        }
         context.insert(nextTask); try record(nextTask, kind: .created, before: nil, at: date)
         let sourceTaskID = task.id
         if let source = try context.fetch(FetchDescriptor<TodoTaskSource>(predicate: #Predicate { $0.taskID == sourceTaskID })).first {
             context.insert(TodoTaskSource(taskID: nextTask.id, entryID: source.entryID))
+        }
+    }
+    func refreshRepeatingReminderTimes() throws {
+        let zone = timeZone()
+        let tasks = try context.fetch(FetchDescriptor<TodoTask>()).filter {
+            $0.state == .open && $0.seriesID != nil && $0.remindAt != nil && $0.reminderTimeZoneID != zone.identifier
+        }
+        guard !tasks.isEmpty else { return }
+        try transaction {
+            for task in tasks {
+                guard let dayString = task.reminderLocalDay, let day = TodoDay(dayString),
+                      let minutes = task.reminderMinutes else { throw TodoFailure.corruptData }
+                let before = try TodoEventValue(task)
+                guard let adjusted = TodoRecurrence.reminder(day: day, minutes: minutes, timeZone: zone) else { throw TodoFailure.invalidReminder }
+                task.remindAt = adjusted; task.reminderTimeZoneID = zone.identifier
+                try record(task, kind: .edited, before: before, at: now())
+            }
         }
     }
     func stopSeries(taskID: UUID) throws {
@@ -373,7 +413,10 @@ final class TodoTaskService {
         let task = try task(id: id)
         try transaction {
             // Deleting an occurrence stops generation so a restart cannot resurrect it.
-            if let seriesID = task.seriesID { let series = try series(seriesID); series.isStopped = true }
+            if let seriesID = task.seriesID {
+                let series = try series(seriesID); series.isStopped = true
+                series.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: series.createdAt, previous: series.updatedAt)
+            }
             try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
             try context.fetch(FetchDescriptor<TodoTaskSource>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
             context.delete(task)
@@ -395,7 +438,10 @@ final class TodoTaskService {
                 let before = try TodoEventValue(task); task.listID = nil
                 try record(task, kind: .edited, before: before, at: now())
             }
-            for series in try context.fetch(FetchDescriptor<TodoSeries>(predicate: #Predicate { $0.listID == id })) { series.listID = nil }
+            for series in try context.fetch(FetchDescriptor<TodoSeries>(predicate: #Predicate { $0.listID == id })) {
+                series.listID = nil
+                series.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: series.createdAt, previous: series.updatedAt)
+            }
             context.delete(list)
         }
     }
@@ -451,10 +497,14 @@ enum TodoIntegrity {
         try unique(series.map(\.id)); try unique(sources.map(\.id)); try unique(sources.map(\.taskID))
         try unique(tasks.compactMap(\.occurrenceKey))
         let taskIDs = Set(tasks.map(\.id)), listIDs = Set(lists.map(\.id)), seriesIDs = Set(series.map(\.id))
+        let rulesByID = Dictionary(uniqueKeysWithValues: series.map { ($0.id, $0) })
         let byTask = Dictionary(grouping: events, by: \.taskID)
+        let openBySeries = Dictionary(grouping: tasks.filter { $0.seriesID != nil && $0.state == .open }, by: { $0.seriesID! })
         func validateValue(_ value: TodoEventValue) throws {
             for day in [value.plannedDay, value.deadlineDay].compactMap({ $0 }) { try require(TodoDay(day) != nil) }
             for date in [value.remindAt, value.completedAt, value.canceledAt].compactMap({ $0 }) { try require(date.timeIntervalSince1970.isFinite) }
+            if let day = value.reminderLocalDay { try require(TodoDay(day) != nil && value.reminderMinutes != nil && value.remindAt != nil) }
+            if let minutes = value.reminderMinutes { try require((0..<1440).contains(minutes) && value.reminderLocalDay != nil) }
             switch value.state {
             case .open: try require(value.completedAt == nil && value.canceledAt == nil)
             case .completed: try require(value.completedAt != nil && value.canceledAt == nil)
@@ -466,23 +516,30 @@ enum TodoIntegrity {
             try dates(list.createdAt, list.updatedAt)
         }
         for rule in series {
+            try Task.checkCancellation()
             let draft = TodoDraft(title: rule.title, notes: rule.notes, plannedDay: rule.plannedAnchorDay, deadlineDay: rule.deadlineAnchorDay)
             try draft.validate(); try dates(rule.createdAt, rule.updatedAt)
             try require(TodoFrequency(rawValue: rule.frequencyRawValue) != nil && TodoDay(rule.anchorDay) != nil)
             try require(rule.anchorDay == (rule.plannedAnchorDay ?? rule.deadlineAnchorDay))
             if let id = rule.listID { try require(listIDs.contains(id)) }
             if let minutes = rule.reminderMinutes { try require((0..<1440).contains(minutes)) }
-            try require(tasks.filter { $0.seriesID == rule.id && $0.state == .open }.count <= 1)
+            try require((openBySeries[rule.id]?.count ?? 0) <= 1)
         }
         for task in tasks {
             try TodoDraft(task).validate(); try dates(task.createdAt, task.updatedAt)
             try require(task.revision >= 0)
             let current = try TodoEventValue(task); try validateValue(current)
+            if let zone = task.reminderTimeZoneID { try require(task.seriesID != nil && task.remindAt != nil && TimeZone(identifier: zone) != nil) }
+            if task.seriesID != nil && task.remindAt != nil {
+                try require(task.reminderTimeZoneID != nil && task.reminderLocalDay != nil && task.reminderMinutes != nil)
+            } else { try require(task.reminderTimeZoneID == nil && task.reminderLocalDay == nil && task.reminderMinutes == nil) }
             if let id = task.listID { try require(listIDs.contains(id)) }
             if let id = task.seriesID {
                 try require(seriesIDs.contains(id))
                 guard let index = task.occurrenceIndex else { throw TodoFailure.corruptData }
                 try require(index >= 0 && index <= 3_000_000 && task.occurrenceKey == "\(id.uuidString)/\(index)")
+                guard let rule = rulesByID[id], let frequency = TodoFrequency(rawValue: rule.frequencyRawValue) else { throw TodoFailure.corruptData }
+                _ = try TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index)
             } else { try require(task.occurrenceIndex == nil && task.occurrenceKey == nil) }
             let history = (byTask[task.id] ?? []).sorted { $0.sequence < $1.sequence }
             try require(history.count == task.revision + 1)
@@ -497,12 +554,15 @@ enum TodoIntegrity {
                 let before = try event.beforeValue.map { try JSONDecoder().decode(TodoEventValue.self, from: $0) }
                 try validateValue(after); try require(before == previous)
                 switch kind {
-                case .created: try require(index == 0 && before == nil && after.state == .open)
-                case .edited, .seriesStopped: try require(index > 0 && before?.state == after.state)
+                case .created:
+                    try require(index == 0 && before == nil && after.state == .open && event.occurredAt == task.createdAt && event.createdAt == task.createdAt)
+                case .edited: try require(index > 0 && before?.state == after.state)
+                case .seriesStopped: try require(index > 0 && before == after && task.seriesID != nil)
                 case .completed: try require(before?.state != .completed && after.state == .completed && after.completedAt == event.occurredAt)
                 case .reopened: try require(before?.state != .open && after.state == .open)
                 case .canceled, .skipped, .successorWithdrawn:
                     try require(before?.state != .canceled && after.state == .canceled && after.canceledAt == event.occurredAt)
+                    if kind != .canceled { try require(task.seriesID != nil && before?.state == .open) }
                 }
                 previous = after; previousTechnical = event.createdAt
             }
@@ -512,3 +572,5 @@ enum TodoIntegrity {
         for source in sources { try require(taskIDs.contains(source.taskID) && entryIDs.contains(source.entryID)) }
     }
 }
+
+extension Notification.Name { static let todoTasksChanged = Notification.Name("TodoTasksChanged") }

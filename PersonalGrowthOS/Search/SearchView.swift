@@ -15,8 +15,11 @@ struct GlobalSearchView: View {
         NavigationStack {
             content
                 .navigationTitle("Search")
-                .searchable(text: $query, prompt: "Entries, weekly reviews, habits, goals and tags")
+                .searchable(text: $query, prompt: "Entries, todos, weekly reviews, habits, goals and tags")
                 .onChange(of: query) { _, _ in search() }
+                .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
+                    if notification.object as? ModelContainer === modelContext.container { search() }
+                }
                 .onReceive(NotificationCenter.default.publisher(for: .externalCaptureCommitted)
                     .receive(on: RunLoop.main)) { notification in
                     if notification.object as? URL == mediaStore.rootURL { search() }
@@ -40,11 +43,11 @@ struct GlobalSearchView: View {
             ContentUnavailableView(
                 "Search Your Library",
                 systemImage: "magnifyingglass",
-                description: Text("Search Entries, Reviews, Tags, Habits, Goals and Flags on this device.")
+                description: Text("Search Entries, Todos, Reviews, Tags, Habits, Goals and Flags on this device.")
             )
         } else if results.entries.isEmpty && results.tags.isEmpty
             && results.habits.isEmpty && results.goals.isEmpty
-            && results.weeklyReviews.isEmpty {
+            && results.weeklyReviews.isEmpty && results.todos.isEmpty {
             ContentUnavailableView.search(text: query)
         } else {
             SearchResultsList(
@@ -81,6 +84,14 @@ private struct SearchResultsList: View {
 
     var body: some View {
         List {
+            if !results.todos.isEmpty {
+                Section("Todos") {
+                    ForEach(results.todos) { task in
+                        NavigationLink { TodoDetailView(taskID: task.id, mediaStore: mediaStore, thumbnailStore: thumbnailStore) } label: { TodoTaskRow(task: task) }
+                    }
+                }
+            }
+
             if !results.entries.isEmpty {
                 Section("Entries") {
                     ForEach(results.entries) { entry in

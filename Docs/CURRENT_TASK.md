@@ -1,8 +1,10 @@
-# Todo V1 开发中 — 2026-10-09
+# Todo V1 候选集中验证 — 2026-10-09
 
-Owner 已授权 Goal Pack Rev2 整体范围，当前为 S1 领域与迁移完成 / S2 手机 UI 进行中。分支 `codex/todo-v1-personal-actions` 从已复核 Build 12 同源提交 `c5a3c0ac859efc3ffa4e5d9f77909ec43565c871` 创建，工作区起始干净。真实基线 SwiftData V10 / 备份 v6 / 五 Tab / App 1.0(7)，Owner 真机 Build 12 与仓库 Build 配置分开记录。
+Owner 已授权 Goal Pack Rev2 整体范围。分支 `codex/todo-v1-personal-actions` 从 Build 12 同源提交 `c5a3c0ac859efc3ffa4e5d9f77909ec43565c871` 派生；PR base 计划为 `codex/external-capture-v1`。当前 SwiftData **V11**、备份 **v7**（合法 v1–v6 可读）、五 Tab、App/Extension **1.0(7)**。Owner 真机当前 Build 12 是独立发行事实。
 
-本轮范围/日期与重复语义见 [TODO_V1_SCOPE.md](TODO_V1_SCOPE.md)。已实现独立领域/原子事件/V11 additive 迁移、清单/来源安全删除与固定锚点重复。11/11 领域/完整性/真实 V10 与原 V7/V8 定向测试通过；实际 provenance 脚本矩阵及 2/2 Bundle/复制测试通过。当前应用 schema V11，备份暂仍 v6（待 S4 完整接入，不能作为新 Todo 的可交付备份）。下一步 UI/搜索/统计/提醒及备份/Release/集中候选门禁，详见执行记录。真机未验；不合并、不 tag、不改号、不 Archive/TestFlight。最终普通 push + 新 Draft PR base `codex/external-capture-v1`，停在 READY_FOR_INDEPENDENT_REVIEW。
+领域、手机 UI、单层清单、固定四种重复、Entry 主动来源、搜索/四项统计、单次通知和完整备份已实现。定向迁移/往返/取消/并发检查通过；真实中文深色最大无障碍字号（UIKit 常量 + 实际高度断言）及 About 完整 SHA 复制通过。历史失败与修复保留于 [执行记录](TODO_V1_EXECUTION_LOG.md)，产品语义见 [范围](TODO_V1_SCOPE.md)。
+
+当前冻结功能候选，下一步一次完整 Unit、覆盖旧核心与 Todo 的关键 UI gate、Debug/Release 与模拟 CI 编译产物核验，随后文档、普通 push + 新 Draft PR，停在 `READY_FOR_INDEPENDENT_REVIEW`。尚未宣布候选门禁完成。Owner 私人旧库覆盖、真机通知、VoiceOver 实际朗读、实际 Xcode Cloud/TestFlight 均未执行；不 merge/close/tag/改号/Archive/TestFlight，不清私人库。
 
 ---
 

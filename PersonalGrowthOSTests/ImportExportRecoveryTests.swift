@@ -1750,7 +1750,8 @@ private final class TransferTestFixture {
                 "habits": 1, "habitLogs": 1, "goals": 1, "goalEvents": 1,
                 "weightRecords": 1, "weeklyReviews": 1,
                 "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
-                "entryPins": 0, "entryFollowUps": 0, "entrySources": 0
+                "entryPins": 0, "entryFollowUps": 0, "entrySources": 0,
+                "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1811,7 +1812,12 @@ private func ids(in context: ModelContext) throws -> [String: Set<UUID>] {
         "habitPlanRevisions": Set(try context.fetch(FetchDescriptor<HabitPlanRevision>()).map(\.id)),
         "habitLifecycleEvents": Set(try context.fetch(FetchDescriptor<HabitLifecycleEvent>()).map(\.id)),
         "entryPins": Set(try context.fetch(FetchDescriptor<EntryPin>()).map(\.id)),
-        "entryFollowUps": Set(try context.fetch(FetchDescriptor<EntryFollowUp>()).map(\.id))
+        "entryFollowUps": Set(try context.fetch(FetchDescriptor<EntryFollowUp>()).map(\.id)),
+        "todoTasks": Set(try context.fetch(FetchDescriptor<TodoTask>()).map(\.id)),
+        "todoEvents": Set(try context.fetch(FetchDescriptor<TodoTaskEvent>()).map(\.id)),
+        "todoLists": Set(try context.fetch(FetchDescriptor<TodoList>()).map(\.id)),
+        "todoSeries": Set(try context.fetch(FetchDescriptor<TodoSeries>()).map(\.id)),
+        "todoSources": Set(try context.fetch(FetchDescriptor<TodoTaskSource>()).map(\.id))
     ]
 }
 
@@ -1822,6 +1828,12 @@ private func totalObjectCount(in context: ModelContext) throws -> Int {
 
 @MainActor
 private func deleteAllFixtureData(_ context: ModelContext) throws {
+    try context.fetch(FetchDescriptor<TodoTaskSource>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<TodoTaskEvent>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<TodoTask>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<TodoSeries>()).forEach(context.delete)
+    try context.fetch(FetchDescriptor<TodoList>()).forEach(context.delete)
+
     try context.fetch(FetchDescriptor<EntryPin>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<EntryFollowUp>()).forEach(context.delete)
     try context.fetch(FetchDescriptor<ObjectLink>()).forEach(context.delete)
@@ -1865,6 +1877,7 @@ private func mutatePackage(
     under root: URL,
     mutation: ((URL, ExportManifest, TransferData) throws -> Void)? = nil,
     rewriteJSON: ((ExportManifest, TransferData) throws -> (ExportManifest, TransferData))? = nil,
+    afterRewrite: ((URL, ExportManifest, TransferData) throws -> Void)? = nil,
     refreshManifest: Bool = true
 ) throws -> URL {
     let extracted = root.appendingPathComponent("Extracted", isDirectory: true)
@@ -1882,7 +1895,13 @@ private func mutatePackage(
     try mutation?(extracted, manifest, data)
     if let rewriteJSON {
         (manifest, data) = try rewriteJSON(manifest, data)
-        let encodedData = try encoder.encode(data)
+        var encodedData = try encoder.encode(data)
+        if manifest.packageSchemaVersion < 7 && data.todoTasks.isEmpty && data.todoEvents.isEmpty && data.todoLists.isEmpty && data.todoSeries.isEmpty && data.todoSources.isEmpty {
+            // Emit the actual legacy wire shape. Never strip non-empty new payloads.
+            var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: encodedData) as? [String: Any])
+            for key in ["todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources"] { payload.removeValue(forKey: key) }
+            encodedData = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys, .withoutEscapingSlashes])
+        }
         try encodedData.write(to: dataURL)
         if refreshManifest {
             manifest = ExportManifest(
@@ -1905,6 +1924,7 @@ private func mutatePackage(
         }
         try encoder.encode(manifest).write(to: manifestURL)
     }
+    try afterRewrite?(extracted, manifest, data)
     let output = root.appendingPathComponent("mutated.zip")
     let sources = try regularFiles(at: extracted).map { file -> ZIPSource in
         let prefix = extracted.standardizedFileURL.path + "/"
@@ -2024,7 +2044,7 @@ extension ImportExportRecoveryTests {
                     entryPins: variant == 5 ? [pin, EntryPinTransfer(id: UUID(), entryID: pin.entryID, pinnedAt: pin.pinnedAt)] : [pin], entryFollowUps: variant == 4 ? [thought, thought] : [thought])
                 return (ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: 5,
                     appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID,
-                    exportedAt: manifest.exportedAt, objectCounts: changed.objectCounts,
+                    exportedAt: manifest.exportedAt, objectCounts: changed.objectCounts(forPackageSchemaVersion: 5),
                     dataFile: manifest.dataFile, mediaFiles: manifest.mediaFiles), changed)
             })
             let target = try fixture.makeEmptyStore(named: "InvalidTarget\(variant)")
@@ -2047,6 +2067,8 @@ extension ImportExportRecoveryTests {
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: dataURL)) as? [String: Any])
                 payload.removeValue(forKey: "entryPins")
                 payload.removeValue(forKey: "entryFollowUps")
+                // V4/V5 fixtures must preserve their historical wire format after the V7 exporter adds Todo arrays.
+                for key in ["todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources"] { payload.removeValue(forKey: key) }
                 let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys)
                 try bytes.write(to: dataURL)
                 let changedManifest = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
@@ -2159,5 +2181,270 @@ extension ImportExportRecoveryTests {
             XCTAssertEqual(item.updatedAt, original.updatedAt)
             XCTAssertGreaterThan(item.updatedAt, item.createdAt)
         }
+    }
+}
+
+@MainActor
+extension ImportExportRecoveryTests {
+    func testTodoV7RoundTripPreservesOccurrencesEventsListsSourcesAndOriginalMedia() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore(onDisk: true), context = source.container.mainContext
+        let entry = try XCTUnwrap(context.fetch(FetchDescriptor<Entry>()).first)
+        let service = TodoTaskService(context: context)
+        let list = try service.createList(name: "生活")
+        let day = TodoDay(date: Date()).description
+        let task = try service.create(TodoDraft(title: "买电池 🔋\n原文", notes: "备注", isImportant: true, plannedDay: day,
+            deadlineDay: day, remindAt: Date().addingTimeInterval(3600), listID: list.id, frequency: .monthly), sourceEntryID: entry.id)
+        try service.transition(id: task.id, to: .completed)
+        try service.transition(id: task.id, to: .open)
+        try service.transition(id: task.id, to: .completed)
+        try TodoIntegrity.validate(context: context)
+        let lease: ExportPackageLease
+        do { lease = try await source.service.exportPackage() }
+        catch { XCTFail("Todo export failed: \(String(reflecting: error))"); throw error }
+        defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "TodoRestored", onDisk: true)
+        let importPublished = expectation(forNotification: .todoTasksChanged, object: nil)
+        let preview: ImportResult
+        do { preview = try await target.service.previewPackage(from: lease.url) }
+        catch { XCTFail("Todo preview failed: \(String(reflecting: error))"); throw error }
+        XCTAssertEqual(preview.objectCounts["todoTasks"], 2)
+        XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+        do { _ = try await target.service.importPackage(from: lease.url) }
+        catch { XCTFail("Todo import failed: \(String(reflecting: error))"); throw error }
+        XCTAssertEqual(try ids(in: context), try ids(in: target.container.mainContext))
+        await fulfillment(of: [importPublished], timeout: 2)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: target.storeURL)
+        try TodoIntegrity.validate(context: reopened.mainContext)
+        let restored = try TodoTaskService(context: reopened.mainContext).task(id: task.id)
+        XCTAssertEqual(restored.title, task.title); XCTAssertEqual(restored.completedAt, task.completedAt)
+        XCTAssertEqual(restored.reminderTimeZoneID, task.reminderTimeZoneID)
+        let reminderClient = TodoNotificationStub(), reminders = TodoReminderCoordinator(client: reminderClient)
+        await reminders.reconcile(context: reopened.mainContext)
+        let restoredOpen = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
+        XCTAssertEqual(reminders.status(for: restoredOpen), .scheduled)
+        XCTAssertEqual(Set(reminderClient.pending.keys), [TodoReminderCoordinator.identifier(restoredOpen.id)])
+        let again = try await target.service.exportPackage(); defer { again.cleanup() }
+        let expected = try extractedDataJSON(from: lease.url, under: fixture.root.appendingPathComponent("TodoExpected"))
+        let actual = try extractedDataJSON(from: again.url, under: fixture.root.appendingPathComponent("TodoActual"))
+        XCTAssertEqual(expected, actual)
+        let image = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<ImageMetadata>()).first)
+        XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: image.relativePath)), fixture.imageData)
+    }
+
+    func testTodoOnlyAndListOnlyTargetsRejectImportWithoutErasingData() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        for index in 0..<2 {
+            let target = try fixture.makeEmptyStore(named: "TodoOccupied\(index)")
+            let service = TodoTaskService(context: target.container.mainContext)
+            if index == 0 { _ = try service.create(TodoDraft(title: "保留私人待办")) }
+            else { _ = try service.createList(name: "保留清单") }
+            let idsBefore = try ids(in: target.container.mainContext)
+            do { _ = try await target.service.importPackage(from: lease.url); XCTFail("Must reject a nonempty Todo target") }
+            catch { XCTAssertEqual(error as? TransferPackageError, .targetNotEmpty) }
+            XCTAssertEqual(try ids(in: target.container.mainContext), idsBefore)
+        }
+    }
+
+    func testTodoImportSaveInterruptionRollsBackEveryNewEntityAndOriginalMedia() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore(), context = source.container.mainContext
+        let service = TodoTaskService(context: context)
+        let list = try service.createList(name: "合成清单")
+        let entry = try XCTUnwrap(context.fetch(FetchDescriptor<Entry>()).first)
+        _ = try service.create(TodoDraft(title: "合成重复", plannedDay: "2026-10-09", listID: list.id, frequency: .weekly), sourceEntryID: entry.id)
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        for cancellation in [false, true] {
+            let target = try fixture.makeEmptyStore(named: "TodoInterrupted\(cancellation)", onDisk: true, publicationCheckpoint: { stage in
+                if stage == .beforeSave {
+                    if cancellation { throw CancellationError() }
+                    throw TransferPackageError.interrupted
+                }
+            })
+            do { _ = try await target.service.importPackage(from: lease.url); XCTFail("Injected save must fail") }
+            catch {
+                if cancellation { XCTAssertTrue(error is CancellationError) }
+                else { XCTAssertEqual(error as? TransferPackageError, .interrupted) }
+            }
+            XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+            XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
+            let reopened = try PersistenceContainerFactory.makeOnDisk(at: target.storeURL)
+            XCTAssertEqual(try totalObjectCount(in: reopened.mainContext), 0)
+        }
+    }
+
+    func testTodoCorruptStateDateEventReferenceDuplicateAndSeriesPackagesAreRejected() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore(), context = source.container.mainContext
+        let task = try TodoTaskService(context: context).create(TodoDraft(title: "有效期次", plannedDay: "2026-10-09", frequency: .daily))
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        for scenario in 0..<6 {
+            let corrupt = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("TodoCorrupt\(scenario)"), rewriteJSON: { manifest, data in
+                var tasks = data.todoTasks, events = data.todoEvents, series = data.todoSeries
+                switch scenario {
+                case 0: tasks[0].stateRawValue = "unknown"
+                case 1: tasks[0].plannedDay = "2026-02-30"
+                case 2: events[0].taskID = UUID()
+                case 3: tasks.append(tasks[0])
+                case 4: series[0].anchorDay = "bad-anchor"
+                default: tasks[0].stateRawValue = "completed"; tasks[0].completedAt = Date()
+                }
+                return (manifest, data.replacingTodos(tasks: tasks, events: events, series: series))
+            })
+            let target = try fixture.makeEmptyStore(named: "TodoReject\(scenario)")
+            do { _ = try await target.service.importPackage(from: corrupt); XCTFail("Corrupt Todo package must be rejected") }
+            catch { XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0) }
+        }
+        XCTAssertEqual(try TodoTaskService(context: context).task(id: task.id).state, .open)
+    }
+
+    func testLegacyV1ThroughV6PackagesImportAndFrozenBuild12V6RestoresOriginalFacts() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        for version in 1...6 {
+            let legacy = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("LegalLegacy\(version)"), rewriteJSON: { manifest, data in
+                let legacyData = TransferData(entries: data.entries, images: data.images, tags: data.tags, links: data.links,
+                    habits: data.habits, habitLogs: data.habitLogs.map { log in
+                        HabitLogTransfer(id: log.id, habitID: log.habitID, occurredAt: log.occurredAt,
+                            isCompleted: log.isCompleted, quantity: log.quantity, unit: log.unit, result: log.result,
+                            linkedEntryID: log.linkedEntryID, createdAt: log.createdAt,
+                            localDayIdentifier: version >= 4 ? log.localDayIdentifier : nil,
+                            localTimeZoneIdentifier: version >= 4 ? log.localTimeZoneIdentifier : nil,
+                            localDayProvenance: version >= 4 ? log.localDayProvenance : nil)
+                    }, goals: data.goals, goalEvents: data.goalEvents,
+                    weightRecords: version >= 2 ? data.weightRecords : [], weeklyReviews: version >= 3 ? data.weeklyReviews : [],
+                    habitPlanRevisions: version >= 4 ? data.habitPlanRevisions : [],
+                    habitLifecycleEvents: version >= 4 ? data.habitLifecycleEvents : [],
+                    entrySources: version >= 6 ? data.entrySources : [], entryPins: version >= 5 ? data.entryPins : [],
+                    entryFollowUps: version >= 5 ? data.entryFollowUps : [])
+                return (ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
+                    appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID,
+                    exportedAt: manifest.exportedAt, objectCounts: legacyData.objectCounts(forPackageSchemaVersion: version),
+                    dataFile: manifest.dataFile, mediaFiles: manifest.mediaFiles), legacyData)
+            }, afterRewrite: { root, manifest, _ in
+                // Remove features absent in the actual older wire format, while retaining V5/V6 required empty arrays.
+                let url = root.appendingPathComponent("data.json")
+                var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                if version < 2 { payload.removeValue(forKey: "weightRecords") }
+                if version < 3 { payload.removeValue(forKey: "weeklyReviews") }
+                if version < 4 { payload.removeValue(forKey: "habitPlanRevisions"); payload.removeValue(forKey: "habitLifecycleEvents") }
+                if version < 5 { payload.removeValue(forKey: "entryPins"); payload.removeValue(forKey: "entryFollowUps") }
+                if version < 6 { payload.removeValue(forKey: "entrySources") }
+                let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys); try bytes.write(to: url)
+                let changed = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
+                    appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID,
+                    exportedAt: manifest.exportedAt, objectCounts: manifest.objectCounts,
+                    dataFile: ExportFileRecord(path: "data.json", byteCount: Int64(bytes.count),
+                        sha256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()), mediaFiles: manifest.mediaFiles)
+                let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .secondsSince1970
+                try encoder.encode(changed).write(to: root.appendingPathComponent("manifest.json"))
+            })
+            let target = try fixture.makeEmptyStore(named: "LegalTarget\(version)", onDisk: true)
+            _ = try await target.service.importPackage(from: legacy)
+            let context = target.container.mainContext
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<Entry>()), 2)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()), 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<WeightRecord>()), version >= 2 ? 1 : 0)
+            XCTAssertEqual(try context.fetchCount(FetchDescriptor<WeeklyReview>()), version >= 3 ? 1 : 0)
+            XCTAssertEqual(try Data(contentsOf: target.mediaStore.fileURL(for: try XCTUnwrap(context.fetch(FetchDescriptor<ImageMetadata>()).first).relativePath)), fixture.imageData)
+        }
+        let frozen = try XCTUnwrap(Bundle(for: TodoFoundationTests.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        let target = try fixture.makeEmptyStore(named: "FrozenV6Restored", onDisk: true)
+        _ = try await target.service.importPackage(from: frozen.appendingPathComponent("expected-v6.zip"))
+        let again = try await target.service.exportPackage(); defer { again.cleanup() }
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
+        let expected = try decoder.decode(TransferData.self, from: extractedDataJSON(from: frozen.appendingPathComponent("expected-v6.zip"), under: fixture.root.appendingPathComponent("FrozenExpected")))
+        let actual = try decoder.decode(TransferData.self, from: extractedDataJSON(from: again.url, under: fixture.root.appendingPathComponent("FrozenActual")))
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testV7RequiresTodoArraysAndLegacyClaimsRejectEvenEmptyNewKeys() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        for scenario in 0..<3 {
+            let corrupt = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("TodoWire\(scenario)"), mutation: { root, manifest, data in
+                let version = scenario == 2 ? 6 : 7
+                let url = root.appendingPathComponent("data.json")
+                var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                if scenario == 0 { payload.removeValue(forKey: "todoEvents") }
+                if scenario == 1 { payload["todoTasks"] = NSNull() }
+                let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys); try bytes.write(to: url)
+                let changed = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
+                    appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID,
+                    exportedAt: manifest.exportedAt, objectCounts: data.objectCounts(forPackageSchemaVersion: version),
+                    dataFile: ExportFileRecord(path: "data.json", byteCount: Int64(bytes.count),
+                        sha256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()), mediaFiles: manifest.mediaFiles)
+                let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .secondsSince1970
+                try encoder.encode(changed).write(to: root.appendingPathComponent("manifest.json"))
+            })
+            let target = try fixture.makeEmptyStore(named: "TodoWireTarget\(scenario)")
+            do { _ = try await target.service.importPackage(from: corrupt); XCTFail("Invalid wire format accepted") }
+            catch { XCTAssertEqual(error as? TransferPackageError, .corruptData) }
+            XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+        }
+    }
+
+    func testTodoCommittedAfterExportCutoffIsExcludedWithoutLosingCurrentFacts() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore(onDisk: true), context = source.container.mainContext
+        let service = TodoTaskService(context: context)
+        let task = try service.create(TodoDraft(title: "截止点之前", plannedDay: "2026-10-09", frequency: .daily))
+        let captured = expectation(description: "Frozen Todo export captured")
+        let release = DispatchSemaphore(value: 0); defer { release.signal() }
+        let exporter = ImportExportService(context: context, mediaStore: source.mediaStore, exportCheckpoint: {
+            captured.fulfill()
+            guard release.wait(timeout: .now() + 30) == .success else { throw TransferPackageError.interrupted }
+        })
+        let export = Task { try await exporter.exportPackage() }
+        await fulfillment(of: [captured], timeout: 30)
+        try service.transition(id: task.id, to: .completed)
+        let later = try service.create(TodoDraft(title: "截止点之后"))
+        release.signal()
+        let lease = try await export.value; defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "TodoCutoffRestore", onDisk: true)
+        _ = try await target.service.importPackage(from: lease.url)
+        let restored = TodoTaskService(context: target.container.mainContext)
+        XCTAssertEqual(try restored.task(id: task.id).state, .open)
+        XCTAssertThrowsError(try restored.task(id: later.id))
+        XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<TodoTaskEvent>()), 1)
+        XCTAssertEqual(try ModelContext(source.container).fetchCount(FetchDescriptor<TodoTask>()), 3)
+        XCTAssertEqual(try service.task(id: task.id).state, .completed)
+        try TodoIntegrity.validate(context: context)
+    }
+
+    func testTodoCommittedDuringImportPreflightPreventsPublicationAndSurvivesReopen() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        let target = try fixture.makeEmptyStore(named: "TodoConcurrentTarget", onDisk: true)
+        let service = TodoTaskService(context: target.container.mainContext)
+        let taskID = UUID()
+        let importer = ImportExportService(context: target.container.mainContext, mediaStore: target.mediaStore,
+            availableCapacity: { .max },
+            publicationCheckpoint: { stage in
+                if stage == .afterPreflight {
+                    try MainActor.assumeIsolated { _ = try service.create(TodoDraft(title: "并发保留"), id: taskID) }
+                }
+            })
+        do { _ = try await importer.importPackage(from: lease.url); XCTFail("Concurrent committed Todo makes target nonempty") }
+        catch { XCTAssertEqual(error as? TransferPackageError, .targetNotEmpty) }
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: target.storeURL)
+        XCTAssertEqual(try TodoTaskService(context: reopened.mainContext).task(id: taskID).title, "并发保留")
+        XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<Entry>()), 0)
+        XCTAssertEqual(try originalFiles(at: target.mediaStore.rootURL), [])
+        try TodoIntegrity.validate(context: reopened.mainContext)
+    }
+}
+
+private extension TransferData {
+    func replacingTodos(tasks: [TodoTaskTransfer]? = nil, events: [TodoTaskEventTransfer]? = nil, series: [TodoSeriesTransfer]? = nil) -> TransferData {
+        TransferData(entries: entries, images: images, tags: tags, links: links, habits: habits, habitLogs: habitLogs, goals: goals,
+            goalEvents: goalEvents, weightRecords: weightRecords, weeklyReviews: weeklyReviews, habitPlanRevisions: habitPlanRevisions,
+            habitLifecycleEvents: habitLifecycleEvents, entrySources: entrySources, entryPins: entryPins, entryFollowUps: entryFollowUps,
+            todoTasks: tasks ?? todoTasks, todoEvents: events ?? todoEvents, todoLists: todoLists, todoSeries: series ?? todoSeries, todoSources: todoSources)
     }
 }

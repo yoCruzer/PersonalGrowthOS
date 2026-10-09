@@ -14,6 +14,9 @@ struct EntryDetailView: View {
     @Query private var sources: [EntryExternalSource]
     @Query private var pins: [EntryPin]
     @Query private var followUps: [EntryFollowUp]
+    @State private var isCreatingTodo = false
+    @Query private var todoSources: [TodoTaskSource]
+    @Query private var availableTodos: [TodoTask]
     @State private var isAddingThought = false
     @State private var editingThought: EntryFollowUp?
     @State private var deletingThought: EntryFollowUp?
@@ -38,6 +41,7 @@ struct EntryDetailView: View {
         self.thumbnailStore = thumbnailStore
         self.focusFollowUpID = focusFollowUpID
         let entryID = entry.id
+        _todoSources = Query(filter: #Predicate<TodoTaskSource> { $0.entryID == entryID })
         _sources = Query(filter: #Predicate<EntryExternalSource> { $0.entryID == entryID })
         _pins = Query(filter: #Predicate<EntryPin> { $0.entryID == entryID })
         _followUps = Query(filter: #Predicate<EntryFollowUp> { $0.entryID == entryID })
@@ -274,10 +278,24 @@ struct EntryDetailView: View {
         )
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if !todoSources.isEmpty {
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        ForEach(todoSources) { source in
+                            NavigationLink(availableTodos.first { $0.id == source.taskID }?.title ?? String(localized: "Todo")) { TodoDetailView(taskID: source.taskID, mediaStore: mediaStore, thumbnailStore: thumbnailStore) }
+                        }
+                    } label: { Image(systemName: "checklist") }
+                    .accessibilityLabel("Todos from this Entry")
+                }
+            }
+
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button("Edit") { isEditing = true }
                     .accessibilityIdentifier("entry-edit")
                 Menu {
+                    Button("Create Todo", systemImage: "checklist") { isCreatingTodo = true }
+                        .accessibilityIdentifier("entry-create-todo")
+
                     if entry.status != .archived {
                         Button(isPinned ? "Unpin Entry" : "Pin Entry", systemImage: isPinned ? "pin.slash" : "pin") {
                             do { try EntryContinuationService(context: modelContext).setPinned(!isPinned, entryID: entry.id) }
@@ -304,6 +322,7 @@ struct EntryDetailView: View {
                 .accessibilityIdentifier("entry-actions")
             }
         }
+        .sheet(isPresented: $isCreatingTodo) { TodoEditorView(sourceEntry: entry) { _ in isCreatingTodo = false } }
         .sheet(isPresented: $isAddingThought) {
             EntryThoughtEditor(entryID: entry.id, followUp: nil) {
                 continuationMessage = String(localized: "Saved")
