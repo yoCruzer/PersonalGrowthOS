@@ -163,6 +163,13 @@ struct TodoDraft: Equatable {
         if let remindAt, !remindAt.timeIntervalSince1970.isFinite { throw TodoFailure.invalidReminder }
         if frequency != nil && plannedDay == nil && deadlineDay == nil { throw TodoFailure.invalidSeries }
     }
+    func validateReminderForSave(now: Date, existingReminder: Date?, usesExistingFutureTemplate: Bool) throws {
+        // A past civil day is a valid reference when updating an existing repeat
+        // template. The service still validates its offset against the fixed anchor.
+        if let reminder = remindAt, reminder <= now, existingReminder != reminder, !usesExistingFutureTemplate {
+            throw TodoFailure.invalidReminder
+        }
+    }
 }
 
 // Limited event payload: state and scheduling facts, never a second canonical task model.

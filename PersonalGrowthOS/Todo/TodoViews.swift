@@ -284,13 +284,19 @@ struct TodoEditorView: View {
     }
     private func save(another: Bool) {
         do {
-            if let reminder = draft.remindAt, reminder <= Date(), task?.remindAt != reminder { throw TodoFailure.invalidReminder }
+            try draft.validateReminderForSave(now: Date(), existingReminder: task?.remindAt,
+                usesExistingFutureTemplate: futureSeries && task?.seriesID != nil)
             let service = TodoTaskService(context: context)
             let id: UUID
             if let task { try service.edit(id: task.id, draft: draft, futureSeries: futureSeries); id = task.id }
             else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID).id }
             let saved = try service.task(id: id)
-            reminders.reportSavedTask(saved)
+            var affectedOpenSuccessor: TodoTask?
+            if futureSeries, saved.state != .open, let seriesID = saved.seriesID {
+                affectedOpenSuccessor = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == seriesID }))
+                    .first { $0.state == .open }
+            }
+            reminders.reportSavedTask(saved, affectedOpenSuccessor: affectedOpenSuccessor)
             let ask = draft.remindAt != nil
             Task { await reminders.reconcile(context: context, requestPermission: ask) }
             error = nil

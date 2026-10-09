@@ -192,3 +192,9 @@ S3：主View只保留Today/Upcoming/All；All下直接Task Status菜单显示当
 - `s4-polish-dark-1` exit0：33 Unit + 2 UI PASS，0 FAIL/SKIP。实际 `xcrun simctl ui FD666264-A2DF-445C-A77D-534B9E8ED595 appearance dark` 后，最大字号中文四状态截图黑色背景/白色文字完整可读。追加已物化后继通知替换独立预期、孤立event引用损坏原字节恢复；新建与转换共用makeSeries；错误页可滚动。未重跑全量。
 
 S3 Gate闭合，S4候选冻结：完整diff自查（模型/迁移、事件链/幂等/回滚、相对日策略、原字节恢复、共享查询/统计、通知类别与真实反馈、双语/五Tab）通过。项目设置仅新增原V11 fixture资源4行，无版本/签名/AppGroup漂移；原V1–V10 schema前缀与原615条翻译精确不变。随后仅执行一次完整Unit、一次关键UI集中门禁与真实Debug/unsignedRelease产物。未完成交付之前不标READY。
+
+S4完整Unit首轮 `s4-full-unit-1` 在c5cc4117c61d1e05fd5e25318545441813b89c1b干净候选上exit0，296/296 PASS，0 FAIL/SKIP；真实unsignedRelease `s4-release-local` exit0，App/唯一appex均1.0(7)，localGit clean/40位SHA精确等于该HEAD、Tag空。provenance脚本矩阵exit0。Host初次直接执行exit126（脚本未设可执行）；用 `sh Scripts/build_capture_fixture_host.sh /tmp/PGOSCaptureFixtureHost.app` exit0，simctl install成功，未重设产品数据。
+
+尾端自查发现已完成前一期的未来模板编辑仍被旧UI“新提醒必须未来时间”限制：历史提醒日作为固定anchor偏移参照时，应允许改变时分/日期。限定修正为仅既有series+futureSeries允许过去参照；普通新提醒/本期改成过去仍拒绝，不变历史时间可保留。增加独立正负日期测试；这是实际产品边界缺陷，非为了重复测试。集中UI首轮仍继续使用此前已构建c5cc411，不把其结果冒充修正后构建。修正后再执行完整Unit最终gate，以及受影响原重复/转换/About UI补验。
+
+同一边界补齐反馈：从Completed前一期保存future模板时，共享反馈指向本次实际更新的Open后继，故其权限/排队/失败及时可见；候选必须同系列/Open/有提醒，Canceled或无提醒不误报。原已物化后继通知替换mock增加对应正负反馈断言。

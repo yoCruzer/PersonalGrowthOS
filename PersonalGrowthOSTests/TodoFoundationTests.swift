@@ -375,6 +375,20 @@ extension TodoFoundationTests {
 
 @MainActor
 extension TodoFoundationTests {
+    func testSaveReminderValidationAllowsHistoricalFutureTemplateReferenceButRejectsNewPastNotifications() throws {
+        let clock = date("2026-02-10"), old = date("2026-01-09"), changed = date("2026-01-08")
+        var draft = TodoDraft(title: "Template", remindAt: changed)
+        XCTAssertNoThrow(try draft.validateReminderForSave(now: clock, existingReminder: old, usesExistingFutureTemplate: true))
+        XCTAssertThrowsError(try draft.validateReminderForSave(now: clock, existingReminder: old, usesExistingFutureTemplate: false))
+        XCTAssertThrowsError(try draft.validateReminderForSave(now: clock, existingReminder: nil, usesExistingFutureTemplate: false))
+        draft.remindAt = old
+        XCTAssertNoThrow(try draft.validateReminderForSave(now: clock, existingReminder: old, usesExistingFutureTemplate: false))
+        draft.remindAt = date("2026-02-11")
+        XCTAssertNoThrow(try draft.validateReminderForSave(now: clock, existingReminder: old, usesExistingFutureTemplate: false))
+        draft.remindAt = nil
+        XCTAssertNoThrow(try draft.validateReminderForSave(now: clock, existingReminder: old, usesExistingFutureTemplate: false))
+    }
+
     func testReviewReminderKeepsOneDayLeadAcrossShortMonthAndLeapYear() throws {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let service = TodoTaskService(context: context, now: { self.date("2026-01-31") }, timeZone: { self.zone })

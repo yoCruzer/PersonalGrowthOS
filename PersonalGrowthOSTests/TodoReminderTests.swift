@@ -178,10 +178,15 @@ extension TodoReminderTests {
         XCTAssertEqual(client.pending[identifier]?.fireAt, TodoRecurrence.reminder(day: TodoDay("2026-02-09")!, minutes: 1200, timeZone: zone))
         var draft = TodoDraft(first); draft.title = "After"; draft.remindAt = TodoRecurrence.reminder(day: TodoDay("2026-01-08")!, minutes: 600, timeZone: zone)
         try service.edit(id: first.id, draft: draft, futureSeries: true)
+        coordinator.reportSavedTask(first, affectedOpenSuccessor: next)
+        XCTAssertEqual(coordinator.savedTaskID, next.id)
         await coordinator.reconcile(context: context)
         XCTAssertEqual(client.pending.count, 1); XCTAssertEqual(client.pending[identifier]?.title, "After")
         XCTAssertEqual(client.pending[identifier]?.fireAt, TodoRecurrence.reminder(day: TodoDay("2026-02-08")!, minutes: 600, timeZone: zone))
         XCTAssertEqual(coordinator.status(for: next), .scheduled)
         XCTAssertTrue(client.removed.allSatisfy { $0.hasPrefix(TodoReminderCoordinator.prefix) })
+        try service.transition(id: next.id, to: .canceled)
+        coordinator.reportSavedTask(first, affectedOpenSuccessor: next)
+        XCTAssertNil(coordinator.savedTaskID)
     }
 }
