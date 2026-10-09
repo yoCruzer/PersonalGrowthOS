@@ -67,4 +67,4 @@
 
 ## 剩余边界
 
-完整自动门禁及新 Draft PR 完成后停在 READY_FOR_INDEPENDENT_REVIEW，下一步需要独立 Review，重点 V11/事件真相、重复期次撤销、v7 时间精度/恢复与通知并发。远端没有配置 GitHub Actions；普通 push 后检查为空，不能写“远端 CI 通过”。没有新增云端服务、付费依赖、复杂 RRULE、子任务或自动从分享生成 Todo。
+已普通推送并创建独立 [Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8)，停在 READY_FOR_INDEPENDENT_REVIEW，下一步需要独立 Review，重点 V11/事件真相、重复期次撤销、v7 时间精度/恢复与通知并发。远端没有配置 GitHub Actions；普通 push 后检查为空，不能写“远端 CI 通过”。没有新增云端服务、付费依赖、复杂 RRULE、子任务或自动从分享生成 Todo。

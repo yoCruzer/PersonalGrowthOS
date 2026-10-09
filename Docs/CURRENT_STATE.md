@@ -1,4 +1,4 @@
-# Todo V1 自动门禁完成 — Draft PR 交付中（2026-10-09）
+# Todo V1 — READY_FOR_INDEPENDENT_REVIEW（2026-10-09）
 
 Owner Goal Pack Rev2 整体范围已实现并验证。分支 codex/todo-v1-personal-actions，从 Build12 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871 派生；远端 base codex/external-capture-v1、旧 annotated tag 均再次核对为该提交，旧 PR #1–#7 仍 OPEN Draft。最终产品/测试提交 837b619e5f2d6a0367aa31d61e3829acf731b4e4；后续交接只有文档，最终仓库 HEAD 以新 PR head 为准。
 
@@ -8,7 +8,7 @@ Todo Hub/连续录入、清单、四种固定重复、Entry主动来源、全局
 
 [A1–A25/P1–P8验收与十分钟真机清单](TODO_V1_ACCEPTANCE.md)；[真实命令、counts和失败审计](TODO_V1_EXECUTION_LOG.md)；[产品语义](TODO_V1_SCOPE.md)。
 
-当前只剩普通推送、新 Draft PR 与最终交接核对，完成后停 **READY_FOR_INDEPENDENT_REVIEW**。远端 workflows=0，独立CI **NOT_RUN**；Owner私人Build12库覆盖、真机通知/签名/AppGroup、VoiceOver朗读、实际Xcode Cloud发行 **OWNER_DEVICE_GATE**。未 merge/close/tag/改号/Archive/TestFlight，未清私人库。
+普通推送与独立 [Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8) 已完成，base codex/external-capture-v1；**READY_FOR_INDEPENDENT_REVIEW**。下一步仅独立审查，不继续实现或发布。最终文档提交后本地 Debug 构建核对最终 HEAD（final-handoff-debug.log / final-handoff-debug-bundle.json）；源码与远端一致性以 PR head 为准。远端 workflows=0，独立CI **NOT_RUN**；Owner私人Build12库覆盖、真机通知/签名/AppGroup、VoiceOver朗读、实际Xcode Cloud发行 **OWNER_DEVICE_GATE**。未 merge/close/tag/改号/Archive/TestFlight，未清私人库。
 
 ---
 

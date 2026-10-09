@@ -142,3 +142,12 @@ Owner 私人 Build12 库保留数据覆盖安装、真机签名/AppGroup、真�
 final-todo-ci-ui-1：837b619e5f2d6a0367aa31d61e3829acf731b4e4 干净提交，exit0，5/5 UI PASS，0 FAIL/SKIP（About、连续输入/状态/统计/搜索/重启、Entry来源、清单、每日重复/跳过/停止）。实际 About 截图 1BA44044-D54C-48B3-8498-9F069A7F56E3.png 已视觉核对：Version1.0 / Build7 / SHA837b619e5 / Xcode Cloud / Release Tag todo-v1-ci-verification 全部可见；完整40位实际复制→粘贴通过。前述首轮17/22与所有失败原样保留；五个失败点各有随后通过证据，未重新把22项整组改标全绿。
 
 当前自动门禁与 A1–A25/P1–P8 文档收口完成，下一步仅普通 push、新 Draft PR 与交接；尚未把未创建的 PR 当作已交付。
+
+
+## S5 交付与停止边界
+
+普通 git push origin codex/todo-v1-personal-actions 成功，独立 Draft PR #8 已创建并附加到本任务：https://github.com/yoCruzer/PersonalGrowthOS/pull/8 。base=codex/external-capture-v1；远端该分支、annotated tag和实际 merge-base 均 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871。旧 #1–#7 状态仍 OPEN Draft，未改base/close/merge。后续交接提交只更新文档；最终HEAD以PR head为准，已验证产品/测试仍837b619e5f2d6a0367aa31d61e3829acf731b4e4。
+
+最后文档提交后执行实际命令：xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-todo-derived CODE_SIGNING_ALLOWED=NO > /tmp/pgos-todo-evidence/final-handoff-debug.log 2>&1。证据 final-handoff-debug.log / final-handoff-debug-bundle.json：核对当前真实HEAD、localGit、Dirty=false、Tag空，Version1.0/Build7不变；不将文档提交冒称重跑完整测试。最终 git status、PR head/远端分支、本地HEAD和checks/statuses另做只读核对。远端 workflows=0，因此独立CI NOT_RUN，不能冒称通过。
+
+**READY_FOR_INDEPENDENT_REVIEW**。停止当前整体开发Goal，下一边界仅独立Review与Owner设备门禁；本轮无merge/close/tag/改分发编号/Archive/TestFlight/私人库清理。

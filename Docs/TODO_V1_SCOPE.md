@@ -4,7 +4,7 @@
 
 ## 基线与边界
 
-远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，计划 Draft PR base codex/external-capture-v1。
+远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，独立 Draft PR #8 base codex/external-capture-v1（https://github.com/yoCruzer/PersonalGrowthOS/pull/8）。
 
 保留五 Tab、原始 Entry/图片/习惯/体重/目标/周回顾/分享来源与导入事务；不改历史 schema 属性、不强制清库、不改 Version/Build、无新 SDK/后端/CloudKit/第六 Tab/复杂规则/子任务/AI。禁止 merge、close、tag、Archive、TestFlight。
 
