@@ -1,14 +1,19 @@
-# Todo V1 候选集中验证 — 2026-10-09
+# Todo V1 自动门禁完成 — Draft PR 交付中（2026-10-09）
 
-Owner 已授权 Goal Pack Rev2 整体范围。分支 `codex/todo-v1-personal-actions` 从 Build 12 同源提交 `c5a3c0ac859efc3ffa4e5d9f77909ec43565c871` 派生；PR base 计划为 `codex/external-capture-v1`。当前 SwiftData **V11**、备份 **v7**（合法 v1–v6 可读）、五 Tab、App/Extension **1.0(7)**。Owner 真机当前 Build 12 是独立发行事实。
+Owner Goal Pack Rev2 整体范围已实现并验证。分支 codex/todo-v1-personal-actions，从 Build12 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871 派生；远端 base codex/external-capture-v1、旧 annotated tag 均再次核对为该提交，旧 PR #1–#7 仍 OPEN Draft。最终产品/测试提交 837b619e5f2d6a0367aa31d61e3829acf731b4e4；后续交接只有文档，最终仓库 HEAD 以新 PR head 为准。
 
-领域、手机 UI、单层清单、固定四种重复、Entry 主动来源、搜索/四项统计、单次通知和完整备份已实现。定向迁移/往返/取消/并发检查通过；真实中文深色最大无障碍字号（UIKit 常量 + 实际高度断言）及 About 完整 SHA 复制通过。历史失败与修复保留于 [执行记录](TODO_V1_EXECUTION_LOG.md)，产品语义见 [范围](TODO_V1_SCOPE.md)。
+Todo Hub/连续录入、清单、四种固定重复、Entry主动来源、全局/局部搜索、四项可点统计、独立一次通知、完整备份均已实现。SwiftData **V11**、备份 **v7**（合法 v1–v6可读），五 Tab、App/Extension **1.0(7)** 保持；Owner手机 Build12 是独立已安装事实。
 
-当前冻结功能候选，下一步一次完整 Unit、覆盖旧核心与 Todo 的关键 UI gate、Debug/Release 与模拟 CI 编译产物核验，随后文档、普通 push + 新 Draft PR，停在 `READY_FOR_INDEPENDENT_REVIEW`。尚未宣布候选门禁完成。Owner 私人旧库覆盖、真机通知、VoiceOver 实际朗读、实际 Xcode Cloud/TestFlight 均未执行；不 merge/close/tag/改号/Archive/TestFlight，不清私人库。
+一次完整 Unit **283/283 PASS**；新增完整性/恢复/相邻路径 **123/123 Unit PASS**，随后 **83 Unit + 4 UI PASS / 2 UI FAIL**。一次关键 UI **17/22 PASS / 5 FAIL**；五个失败点分别完成定向补验，全部有通过证据，最终五项 Todo UI **5/5 PASS**。失败记录不重标全绿。真实 V10/V7/V8、备份精度/回滚/并发、提醒正负、中文深色真实 AX maximum、About完整SHA复制及Debug/Release/模拟CI资源验证已完成。
+
+[A1–A25/P1–P8验收与十分钟真机清单](TODO_V1_ACCEPTANCE.md)；[真实命令、counts和失败审计](TODO_V1_EXECUTION_LOG.md)；[产品语义](TODO_V1_SCOPE.md)。
+
+当前只剩普通推送、新 Draft PR 与最终交接核对，完成后停 **READY_FOR_INDEPENDENT_REVIEW**。远端 workflows=0，独立CI **NOT_RUN**；Owner私人Build12库覆盖、真机通知/签名/AppGroup、VoiceOver朗读、实际Xcode Cloud发行 **OWNER_DEVICE_GATE**。未 merge/close/tag/改号/Archive/TestFlight，未清私人库。
 
 ---
 
 以下为保留的历史交接，不指挥本轮 Todo Goal。
+
 
 # PR #7 F1–F5 统一修复（2026-09-26）
 
@@ -88,14 +93,6 @@ App1.0(7) / schemaV9 / backupv5未变。仅模拟器本地Files提供者通过�
 Owner 使用 Build8 的反馈与其历史真机待验结论分开记录。以下为 Build8 历史证据，不代表当前 Build9 验收。
 
 # Current State
-
-## Todo V1 · 候选收口进行中（2026-10-09）
-
-领域、Today/Hub、连续录入、清单、Entry 主动来源、全局/局部搜索、四项统计、四种固定重复、独立提醒及备份 v7 均已实现，当前 SwiftData V11。源码仍在 `codex/todo-v1-personal-actions`，尚未完成集中回归/普通 push/Draft PR；不能标记独立审查就绪。
-
-证据：`backup-todo-4` 14/14 PASS（真实 V10 与精确时间/DST/往返）；`todo-integration-2` 23 Unit PASS，3 个新增 UI FAIL；`todo-integration-3` 6 Unit PASS，3 UI FAIL。失败推动修正键盘关闭按钮、清单改名编辑页、避免重复关闭 sheet、版本/Build 无障碍标签。中文截图证明旧启动参数没有实际应用深色/最大字体，改用真实模拟器设置验证。实际进度/失败与命令详见 `TODO_V1_EXECUTION_LOG.md`，最终门禁仍待完成。
-
-原 Build 12 同源提交、版本/Build 配置、私人库与发布限制继续有效。Owner 私人库覆盖升级、真实通知触达及实际 Cloud/TestFlight 尚未验证。
 
 | Item | Verified value |
 | --- | --- |

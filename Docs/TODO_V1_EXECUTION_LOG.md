@@ -60,7 +60,7 @@
 
 中文实际最大字体证据：`todo-chinese-actual-size-7.xcresult` 的 Editor/Hub/About 三张 keepAlways 截图。设置为 Dark + accessibilityExtraExtraExtraLarge，标题渲染高度 >150pt；语义检查 elementDetection/hitRegion/sufficientElementDescription/trait，通过不等于已运行真机 VoiceOver 朗读。
 
-## 候选尾端门禁（待执行）
+## 候选尾端门禁（执行前计划；结果见下文）
 
 只在功能冻结后运行一次完整 Unit 与一次关键 UI 集中 gate；实际 counts/命令/源码 SHA 后续记录。Release/模拟 CI 产物与普通 push/Draft PR 尚未完成，当前不标 READY。远端没有配置 GitHub Actions workflow；普通 push 后只读检查 checks/statuses，实际 Xcode Cloud 发行未触发。Owner 真机与私人数据门禁保留。
 
@@ -78,3 +78,67 @@ candidate-failed-ui-2 exit65：0/5 PASS，5 FAIL。新增诊断独立证明 Entr
 官方依据：https://developer.apple.com/documentation/technotes/tn3187-migrating-to-the-uikit-scene-based-life-cycle 。Crash 堆栈为 UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption，来源是本轮合成 Host，不是产品 App 崩溃。
 
 后续只复验新增校验相关 Unit、Entry 删除相邻路径和五个失败 UI，不将前两轮失败重标通过。
+
+
+## 最终定向收口与真实产物
+
+candidate-final-closure-3：提交 1286a8ff1ea61f7da277bf6803930c7d6984dadc，exit65；83 Unit + 4 UI PASS，2 UI FAIL，0 SKIP。Unit 为 TodoFoundation 16、TodoReminder 5、ImportExportRecovery 52、EntryDomain 10；覆盖 Int.max revision 无溢出拒绝、13种非法 Todo 包、完整恢复/回滚/相邻 Entry。两个合成 Host 已实际运行，编辑全文保存→重启和 Todo Entry 来源通过；Safari 与 follow-up UI 仍失败，不改写本次整组结论。
+
+| 后续 resultBundle 前缀 | PASS | FAIL | 结论 |
+| --- | ---: | ---: | --- |
+| candidate-last-ui-4 | 0 | 2 | Safari 地址栏/Go 未正确定位；补充详情误选背景搜索片段，未进入确认。 |
+| candidate-last-ui-5 | 0 | 2 | Safari 编辑层级证明 Keyboard Focused URL 输入字段与底层 capsule 不同；补充 alpha 删除与刷新已成功，beta 结果贴近底部搜索栏未进入详情。 |
+| candidate-last-ui-6 | 1 | 1 | 可见结果 row、详情限定 follow-up、确认限定 sheet 后，补充双删除/返回保留 query/无结果通过；Safari XCTest typing 后编辑字段消失。 |
+| candidate-safari-ui-7 | 0 | 1 | 对已聚焦 App typing 同样关闭 Safari 编辑层，未到扩展。 |
+| candidate-safari-ui-8 | 0 | 1 | 系统 Paste 菜单已出现，但错误查询 Button；实际 AX 为 MenuItem。 |
+| candidate-safari-ui-9 | 0 | 1 | URL正确、网页/选中文字/分享/取消/保存/搜索导入均通过；来源是 Link，旧 Button 查询失败。 |
+| candidate-safari-ui-10 | 1 | 0 | 按 identifier 查询实际 Link 后，完整 Safari 来源打开与重启保留通过，exit0。 |
+
+全部范围断言保留：合成 URL 在 Safari 系统编辑器通过真实 Paste/Go 输入（不是绕过 Safari 或 mock 导入），真实 localhost HTML、选中文字、Share Extension、取消回到选择器、保存、搜索刷新、View Original、重启；补充两个匹配均删除且回到无结果。录屏/AX 诊断表明失败涉及 SDK UI 定位与输入，不把所有失败反推为产品缺陷。confirmationDialog presenting 的稳定目标捕获作为相邻 UI 加固保留。
+
+最终产品/测试提交 **837b619e5f2d6a0367aa31d61e3829acf731b4e4**：TodoEditor 保存重试沿用 submissionID，Save and Add Another 成功后才换新 ID；领域已有 create retry/稳定身份正负证据。final-todo-ci-ui-1 连续输入明确 Open=2，验证两条任务不复用 ID。该轮在干净提交上注入 CI_COMMIT=837b619e5f2d6a0367aa31d61e3829acf731b4e4 / CI_TAG=todo-v1-ci-verification，五项 Todo UI 的结果见下方最终门禁记录。此 CI 标签仅合成输入，没有创建 Git tag。About keepAlways 截图、真实完整 SHA 复制→Todo 粘贴；实际 Debug bundle Commit/Source/Tag 与输入精确一致。
+
+Release：final-code-release-local / final-code-release-ci-tag / final-code-release-ci-untagged 三次 exit0，源码 1286a8ff1ea61f7da277bf6803930c7d6984dadc；真实 plist 分别 localGit/无标签、xcodeCloud/测试标签、同 DerivedData xcodeCloud/空标签。最终产品 837b619e5f2d6a0367aa31d61e3829acf731b4e4 的 final-product-release-local exit0，实际 App/唯一 appex 可执行文件存在，均1.0(7)，Commit=837b619e5f2d6a0367aa31d61e3829acf731b4e4 / Source=localGit / Dirty=false / Tag空。同一最终产品的 Debug CI 资源逐字段核对，保存 bundle.json；不把旧产物标为新提交。
+
+final-provenance-script-matrix.log：实际 Scripts/verify-build-provenance.py 再次 exit0。final-static-audit.json：原511字符串逐项不变、615条均 en/zh-Hans；冻结历史模型/旧 V7/V8 fixture、ShareExtension、原 Info/entitlements/scheme、Contract、V1_SCOPE 无变更；project 只新增文件/资源/编译前阶段，Version/Build/签名/AppGroup/bundleID 配置保持。少数长文本 UI 的 xcresult 记录 Invalid frame dimension 框架运行警告；不宣称已定位警告根因，不通过删除断言处理。
+
+### 可复查命令
+
+环境：主力本机 macOS27.0.1 / Xcode27.0(27A266a)，iPhone18Pro iOS27.0(24A434) 专用 Simulator。以下为实际门禁参数；resultBundle/log 位于 /tmp/pgos-todo-evidence，重复执行需换新的 resultBundlePath。没有再跑第二次完整 Unit/22项关键 UI gate。
+
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-todo-evidence/candidate-full-unit-1.xcresult -only-testing:PersonalGrowthOSTests > /tmp/pgos-todo-evidence/candidate-full-unit-1.log 2>&1
+```
+
+关键 UI 首轮实际命令（17/22 PASS，exit65；失败点分别由上文补验收口）：
+
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-todo-evidence/candidate-key-ui-1.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTextCaptureAppearsInTimelineAndSurvivesRelaunch -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPermanentDeleteRemovesEntryFromTimeline -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testArchivedEntryCanBeRestored -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTagLinkAndGlobalSearchFindEntry -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testRepeatableHabitCounterIncrementsDecrementsAndPersists -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testGoalAndFlagOpenEditAndPersistAcrossRelaunch -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeightEntryIsAccessiblePersistsAndShowsLatestValue -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testLibraryHistoryAndSearchReopenTheSavedWeeklyReview -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBuild9TodayFirstScreenAndPeriodActions -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6SearchRefreshesAfterDeletingMatchedFollowUps -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPublicMixedProviderHostShowsExtensionAndImports -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testReadyShareCancellationReturnsToSystemPicker -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBackupDisclosesPendingExclusionAndCancelKeepsShares -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoEntrySourceKeepsOriginalRecord -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testAboutContainsRealCommitAndCopiesFullSHAIntoTodoInput -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoListCreateRenameFilterAndConfirmedDeleteKeepsTask -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence > /tmp/pgos-todo-evidence/candidate-key-ui-1.log 2>&1
+```
+
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-todo-evidence/candidate-integrity-closure-1.xcresult -only-testing:PersonalGrowthOSTests/TodoFoundationTests -only-testing:PersonalGrowthOSTests/TodoReminderTests -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests -only-testing:PersonalGrowthOSTests/AppCompositionTests -only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests > /tmp/pgos-todo-evidence/candidate-integrity-closure-1.log 2>&1
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-todo-evidence/candidate-final-closure-3.xcresult -only-testing:PersonalGrowthOSTests/TodoFoundationTests -only-testing:PersonalGrowthOSTests/TodoReminderTests -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests -only-testing:PersonalGrowthOSTests/EntryDomainTests -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6SearchRefreshesAfterDeletingMatchedFollowUps -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPublicMixedProviderHostShowsExtensionAndImports -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testReadyShareCancellationReturnsToSystemPicker -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTextCaptureAppearsInTimelineAndSurvivesRelaunch -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoEntrySourceKeepsOriginalRecord > /tmp/pgos-todo-evidence/candidate-final-closure-3.log 2>&1
+CI_COMMIT=837b619e5f2d6a0367aa31d61e3829acf731b4e4 CI_TAG=todo-v1-ci-verification xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-todo-evidence/final-todo-ci-ui-1.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoEntrySourceKeepsOriginalRecord -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testAboutContainsRealCommitAndCopiesFullSHAIntoTodoInput -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoListCreateRenameFilterAndConfirmedDeleteKeepsTask -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence > /tmp/pgos-todo-evidence/final-todo-ci-ui-1.log 2>&1
+xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-todo-release-derived CODE_SIGNING_ALLOWED=NO > /tmp/pgos-todo-evidence/final-product-release-local.log 2>&1
+python3 Scripts/verify-build-provenance.py > /tmp/pgos-todo-evidence/final-provenance-script-matrix.log 2>&1
+```
+
+Safari 最终单项使用同一公共命令，resultBundlePath=candidate-safari-ui-10.xcresult、only-testing=PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport。补充单项在 candidate-last-ui-6 与 Safari 联跑。测试 Host 需先用 Scripts/build_capture_fixture_host.sh 构建，再 xcrun simctl install 到上述专用 UDID；默认合成 App 路径 /tmp/PGOSCaptureFixtureHost.app。真实 V10 fixture 独立源码归档/生成命令见 Scripts/Fixtures/README.md。
+
+实际 JSON/PNG 来自 xcresulttool，而非聊天手写 counts：
+```sh
+xcrun xcresulttool get test-results summary --path /tmp/pgos-todo-evidence/final-todo-ci-ui-1.xcresult --format json
+xcrun xcresulttool export attachments --path /tmp/pgos-todo-evidence/final-todo-ci-ui-1.xcresult --output-path /tmp/pgos-todo-evidence/final-todo-ci-ui-1-attachments
+```
+
+### NOT_RUN 与下一边界
+
+Owner 私人 Build12 库保留数据覆盖安装、真机签名/AppGroup、真实通知送达/拒绝设置、硬件/飞行模式/旅行/VoiceOver 朗读、实际 Xcode Cloud/Archive/TestFlight NOT_RUN。无 Git 整 App UI 未另跑（实际脚本与 Bundle reader 未知分支已覆盖）。没有重跑所有历史 UI；本轮一次22项关键 UI gate覆盖旧核心，再按失败范围补验。远端 GitHub Actions workflows=0，没有可运行的独立 CI；最终普通 push 后只读检查 checks/statuses，不触发分发 CI，不把 aggregate pending 写成运行中或成功。Owner 十分钟清单及 A1–A25/P1–P8 对应证据见 TODO_V1_ACCEPTANCE.md。
+
+
+### 最终门禁结果
+
+final-todo-ci-ui-1：837b619e5f2d6a0367aa31d61e3829acf731b4e4 干净提交，exit0，5/5 UI PASS，0 FAIL/SKIP（About、连续输入/状态/统计/搜索/重启、Entry来源、清单、每日重复/跳过/停止）。实际 About 截图 1BA44044-D54C-48B3-8498-9F069A7F56E3.png 已视觉核对：Version1.0 / Build7 / SHA837b619e5 / Xcode Cloud / Release Tag todo-v1-ci-verification 全部可见；完整40位实际复制→粘贴通过。前述首轮17/22与所有失败原样保留；五个失败点各有随后通过证据，未重新把22项整组改标全绿。
+
+当前自动门禁与 A1–A25/P1–P8 文档收口完成，下一步仅普通 push、新 Draft PR 与交接；尚未把未创建的 PR 当作已交付。
