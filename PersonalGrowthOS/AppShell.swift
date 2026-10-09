@@ -973,7 +973,7 @@ private struct MediaStorageView: View {
                 }
                 Section("About") {
                     Button {
-                        UIPasteboard.general.string = AppVersionInformation().displayText
+                        UIPasteboard.general.string = BuildProvenance().copyText(version: AppVersionInformation())
                         versionCopied = true
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
@@ -983,6 +983,24 @@ private struct MediaStorageView: View {
                         }
                     }
                     .accessibilityIdentifier("settings-version")
+                    LabeledContent("Version", value: AppVersionInformation().version)
+                    LabeledContent("Build", value: AppVersionInformation().build)
+                    LabeledContent("Git Commit") {
+                        Button {
+                            UIPasteboard.general.string = BuildProvenance().commit
+                            versionCopied = true
+                        } label: {
+                            Text(verbatim: BuildProvenance().shortCommit).font(.system(.body, design: .monospaced))
+                        }
+                        .disabled(BuildProvenance().commit == nil)
+                        .accessibilityLabel("Copy full Git Commit")
+                        .accessibilityValue(BuildProvenance().commit ?? String(localized: "Unknown"))
+                        .accessibilityIdentifier("settings-commit")
+                    }
+                    Text(BuildProvenance().sourceLabel).font(.caption).foregroundStyle(.secondary)
+                    if let tag = BuildProvenance().tag {
+                        LabeledContent("Release Tag", value: tag)
+                    }
                 }
             }
             .navigationTitle("Settings")

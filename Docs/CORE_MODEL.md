@@ -240,6 +240,10 @@ Flag 是 Goal 的一种类型，即 `GoalKind.flag`，而不是另一套独立�
 
 ---
 
+# Todo（2026-10-09 批准增量）
+
+`TodoTask` 是独立个人行动对象，使用 Open / Completed / Canceled；不是 Entry 的 Inbox，也不是持续打卡的 Habit 或长期目标 Goal。`TodoTaskEvent` 保留状态与改期事实。可选单层 `TodoList` 只负责归类；固定日历重复使用稳定系列和独立期次，完成统计按期次。用户可从 Entry 主动创建待办，通过独立来源关联回溯；删除来源只解除关联，原记录内容与技术时间不变。详见 `TODO_V1_SCOPE.md`。
+
 # Tag
 
 ## Purpose

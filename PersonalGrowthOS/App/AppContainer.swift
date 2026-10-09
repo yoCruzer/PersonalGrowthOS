@@ -105,6 +105,7 @@ struct AppContainer {
             stage = .integrity
             _ = try HabitAnalyticsMigrationBootstrap.apply(context: modelContainer.mainContext)
             try LinkIntegrityService.validate(context: modelContainer.mainContext)
+            try TodoIntegrity.validate(context: modelContainer.mainContext)
             return AppContainer(
                 configuration: configuration,
                 modelContainer: modelContainer,

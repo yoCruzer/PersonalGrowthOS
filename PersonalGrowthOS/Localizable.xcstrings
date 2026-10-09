@@ -3587,8 +3587,18 @@
     },
     "Monthly Target": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Monthly Target" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每月目标" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monthly Target"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每月目标"
+          }
+        }
       }
     },
     "No Active Habits": {
@@ -5993,182 +6003,482 @@
     },
     "Activity": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Activity" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周动态" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本周动态"
+          }
+        }
       }
     },
     "Active Days": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Active Days" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "活跃天数" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active Days"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "活跃天数"
+          }
+        }
       }
     },
     "Check-ins": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Check-ins" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打卡次数" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-ins"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打卡次数"
+          }
+        }
       }
     },
     "Could Not Save Review": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Could Not Save Review" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法保存回顾" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could Not Save Review"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存回顾"
+          }
+        }
       }
     },
     "Close": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Close" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "关闭" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
+          }
+        }
       }
     },
     "Days with Entries": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Days with Entries" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "有记录的天数" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days with Entries"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有记录的天数"
+          }
+        }
       }
     },
     "Habit Check-ins": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Habit Check-ins" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "习惯打卡" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit Check-ins"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "习惯打卡"
+          }
+        }
       }
     },
     "Look back on this week and choose one next step when you are ready.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Look back on this week and choose one next step when you are ready." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "准备好时，回顾这一周并选定一个下一步。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look back on this week and choose one next step when you are ready."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备好时，回顾这一周并选定一个下一步。"
+          }
+        }
       }
     },
     "Mark this review complete": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Mark this review complete" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "标记此回顾为完成" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark this review complete"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标记此回顾为完成"
+          }
+        }
       }
     },
     "Most Active Habit": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Most Active Habit" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "最常完成的习惯" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Most Active Habit"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最常完成的习惯"
+          }
+        }
       }
     },
     "No activity recorded this week yet.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No activity recorded this week yet." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周还没有记录任何动态。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No activity recorded this week yet."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本周还没有记录任何动态。"
+          }
+        }
       }
     },
     "One focus for next week": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "One focus for next week" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下周的一个重点" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One focus for next week"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下周的一个重点"
+          }
+        }
       }
     },
     "Open larger photo": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Open larger photo" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打开大图" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open larger photo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开大图"
+          }
+        }
       }
     },
     "Photo Entries": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Photo Entries" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "含照片的记录" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photo Entries"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "含照片的记录"
+          }
+        }
       }
     },
     "Recent Entries": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Recent Entries" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "最近记录" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent Entries"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最近记录"
+          }
+        }
       }
     },
     "Reflect on this week": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Reflect on this week" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "回顾这一周" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reflect on this week"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回顾这一周"
+          }
+        }
       }
     },
     "Save Review": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Save Review" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存回顾" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Review"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存回顾"
+          }
+        }
       }
     },
     "Saved": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Saved" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已保存" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存"
+          }
+        }
       }
     },
     "Start Weekly Review": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Start Weekly Review" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开始每周回顾" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start Weekly Review"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始每周回顾"
+          }
+        }
       }
     },
     "Start only when you are ready. Nothing is generated automatically.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Start only when you are ready. Nothing is generated automatically." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "准备好时再开始；不会自动生成任何内容。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start only when you are ready. Nothing is generated automatically."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备好时再开始；不会自动生成任何内容。"
+          }
+        }
       }
     },
     "The weekly review was not saved.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "The weekly review was not saved." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾未能保存。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The weekly review was not saved."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每周回顾未能保存。"
+          }
+        }
       }
     },
     "This Week": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "This Week" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Week"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本周"
+          }
+        }
       }
     },
     "Top Tags": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Top Tags" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "常用标签" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top Tags"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "常用标签"
+          }
+        }
       }
     },
     "Weekly Review": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly Review"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每周回顾"
+          }
+        }
       }
     },
     "Weekly Target": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weekly Target" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周目标" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly Target"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每周目标"
+          }
+        }
       }
     },
     "Weekly Review Unavailable": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review Unavailable" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂时无法使用每周回顾" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly Review Unavailable"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂时无法使用每周回顾"
+          }
+        }
       }
     },
     "Weight Change": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weight Change" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "体重变化" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight Change"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "体重变化"
+          }
+        }
       }
     },
     "What could be better?": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "What could be better?" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "哪些地方可以做得更好？" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What could be better?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "哪些地方可以做得更好？"
+          }
+        }
       }
     },
     "What is your next step?": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "What is your next step?" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的下一步是什么？" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is your next step?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的下一步是什么？"
+          }
+        }
       }
     },
     "Your review is saved only on this device.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Your review is saved only on this device." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的回顾只保存在这台设备上。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your review is saved only on this device."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的回顾只保存在这台设备上。"
+          }
+        }
       }
     },
     "Weight uses kilograms (kg). This is a personal record, not health advice.": {
@@ -6189,152 +6499,402 @@
     },
     "A moment to record today": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "A moment to record today" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "花一点时间记录今天" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A moment to record today"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "花一点时间记录今天"
+          }
+        }
       }
     },
     "Current count": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Current count" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "当前次数" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current count"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前次数"
+          }
+        }
       }
     },
     "Daily Recording Reminder": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Daily Recording Reminder" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每日记录提醒" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily Recording Reminder"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每日记录提醒"
+          }
+        }
       }
     },
     "Entries, weekly reviews, habits, goals and tags": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Entries, weekly reviews, habits, goals and tags" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "记录、每周回顾、习惯、目标和标签" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entries, weekly reviews, habits, goals and tags"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录、每周回顾、习惯、目标和标签"
+          }
+        }
       }
     },
     "Incomplete": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Incomplete" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未完成" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incomplete"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未完成"
+          }
+        }
       }
     },
     "Last Week’s Focus": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Last Week’s Focus" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "上周的焦点" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last Week’s Focus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上周的焦点"
+          }
+        }
       }
     },
     "Look back on your week and choose one focus for the next.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Look back on your week and choose one focus for the next." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "回顾这一周，并为下一周选择一个焦点。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look back on your week and choose one focus for the next."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回顾这一周，并为下一周选择一个焦点。"
+          }
+        }
       }
     },
     "Next Week’s Focus": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Next Week’s Focus" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下周焦点" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next Week’s Focus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下周焦点"
+          }
+        }
       }
     },
     "No Weekly Reviews": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No Weekly Reviews" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂无每周回顾" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Weekly Reviews"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无每周回顾"
+          }
+        }
       }
     },
     "Notifications are disabled in iOS Settings.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Notifications are disabled in iOS Settings." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "通知已在 iOS 设置中关闭。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are disabled in iOS Settings."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知已在 iOS 设置中关闭。"
+          }
+        }
       }
     },
     "Notifications are disabled. You can enable them in iOS Settings.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Notifications are disabled. You can enable them in iOS Settings." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "通知已关闭。你可以前往 iOS 设置开启通知。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are disabled. You can enable them in iOS Settings."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通知已关闭。你可以前往 iOS 设置开启通知。"
+          }
+        }
       }
     },
     "Open iOS Settings": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Open iOS Settings" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打开 iOS 设置" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open iOS Settings"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开 iOS 设置"
+          }
+        }
       }
     },
     "Reminders": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Reminders" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提醒" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提醒"
+          }
+        }
       }
     },
     "Reminders stay on this device and are scheduled only after you turn them on.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Reminders stay on this device and are scheduled only after you turn them on." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提醒仅保存在这台设备上，并只会在你主动开启后安排。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders stay on this device and are scheduled only after you turn them on."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提醒仅保存在这台设备上，并只会在你主动开启后安排。"
+          }
+        }
       }
     },
     "Save a thought or photo while it is still fresh.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Save a thought or photo while it is still fresh." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "趁想法或画面还清晰时记录下来。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save a thought or photo while it is still fresh."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "趁想法或画面还清晰时记录下来。"
+          }
+        }
       }
     },
     "The reminder could not be updated. Please try again.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "The reminder could not be updated. Please try again." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法更新提醒，请再试一次。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The reminder could not be updated. Please try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法更新提醒，请再试一次。"
+          }
+        }
       }
     },
     "This Week’s Focus": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "This Week’s Focus" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本周焦点" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Week’s Focus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本周焦点"
+          }
+        }
       }
     },
     "Time": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Time" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "时间" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "时间"
+          }
+        }
       }
     },
     "Turn the reminder on again to allow notifications.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Turn the reminder on again to allow notifications." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "请再次开启提醒以允许通知。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn the reminder on again to allow notifications."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请再次开启提醒以允许通知。"
+          }
+        }
       }
     },
     "Unsaved changes": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Unsaved changes" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "有未保存的更改" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unsaved changes"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有未保存的更改"
+          }
+        }
       }
     },
     "Weekday": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weekday" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "星期" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekday"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "星期"
+          }
+        }
       }
     },
     "Weekly Review Reminder": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weekly Review Reminder" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾提醒" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly Review Reminder"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每周回顾提醒"
+          }
+        }
       }
     },
     "Weekly Reviews": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weekly Reviews" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每周回顾" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly Reviews"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每周回顾"
+          }
+        }
       }
     },
     "Weekly Reviews you start from Today will appear here.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Weekly Reviews you start from Today will appear here." } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你从“今天”开始的每周回顾会显示在这里。" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly Reviews you start from Today will appear here."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你从“今天”开始的每周回顾会显示在这里。"
+          }
+        }
       }
     },
     "Your Week": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Your Week" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "你的一周" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Week"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的一周"
+          }
+        }
       }
     },
     "About": {
@@ -6849,54 +7409,1030 @@
         }
       }
     },
-    "Source": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Source"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "来源"}}}},
-    "View Original": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "View Original"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "查看原文"}}}},
-    "Some shared content could not be imported": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Some shared content could not be imported"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "部分分享内容暂未导入"}}}},
-    "The shared files are retained. You can retry when storage is available or after updating the app.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The shared files are retained. You can retry when storage is available or after updating the app."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享文件已保留。请在有足够存储空间或更新应用后重试。"}}}},
-    "Saved shares appear when you next open 随心log.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Saved shares appear when you next open 随心log."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保存的内容将在下次打开随心log时导入。"}}}},
-    "Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each).": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each)."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法读取此分享。请分享文字、网页或最多9张照片（每张25 MB以内）。"}}}},
-    "Could not save. Your share is still here; please retry or cancel.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Could not save. Your share is still here; please retry or cancel."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保存失败。分享内容仍在此处，请重试或取消。"}}}},
-    "Additional source kept in text": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Additional source kept in text"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "其他来源链接已保留在正文中"}}}},
-    "Content could not be read": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Content could not be read"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法读取内容"}}}},
-    "Reading shared content…": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Reading shared content…"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "正在读取分享内容…"}}}},
-    "Reading timed out": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Reading timed out"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "读取超时"}}}},
-    "Save Shown Content": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Save Shown Content"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保存显示的内容"}}}},
-    "Save readable content only?": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Save readable content only?"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "仅保存已读取的内容？"}}}},
-    "Saving shared content…": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Saving shared content…"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "正在保存分享内容…"}}}},
-    "Shared text is too long. Shorten it before saving; the original has not been truncated.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Shared text is too long. Shorten it before saving; the original has not been truncated."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享文字过长，请编辑缩短后保存；原文未被截断。"}}}},
-    "Some shared items need attention. Retry, or confirm saving only the content shown below.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Some shared items need attention. Retry, or confirm saving only the content shown below."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "部分分享项目需要处理。请重试，或确认仅保存下方显示的内容。"}}}},
-    "Supported size or count exceeded": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Supported size or count exceeded"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "超过支持的大小或数量"}}}},
-    "Waiting to import": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Waiting to import"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "等待导入"}}}},
-    "Requires a newer app version": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Requires a newer app version"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "需要更新版本的 App"}}}},
-    "Shared content or photo is invalid": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Shared content or photo is invalid"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享内容或照片无效"}}}},
-    "Not enough storage": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Not enough storage"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "存储空间不足"}}}},
-    "Imported; pending file cleanup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Imported; pending file cleanup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已导入，等待清理副本"}}}},
-    "Import needs attention": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Import needs attention"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "导入需要处理"}}}},
-    "Review Pending Shares": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Review Pending Shares"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "查看待处理分享"}}}},
-    "Keep for Later": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Keep for Later"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "保留稍后处理"}}}},
-    "Pending Shares": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Pending Shares"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "待处理分享"}}}},
-    "No pending shares": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "No pending shares"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "没有待处理分享"}}}},
-    "Kept for later": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Kept for later"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保留稍后处理"}}}},
-    "The entry is already saved. These actions only remove the remaining Inbox copy.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The entry is already saved. These actions only remove the remaining Inbox copy."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "记录已保存。这些操作只会清理收件箱中的剩余副本。"}}}},
-    "Remove Pending Copy": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Remove Pending Copy"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "移除待清理副本"}}}},
-    "Discard Share": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Discard Share"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "丢弃分享"}}}},
-    "Remove this pending share?": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Remove this pending share?"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "移除此条待处理分享？"}}}},
-    "The saved entry will remain. Only this Inbox copy will be removed.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The saved entry will remain. Only this Inbox copy will be removed."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保存的记录将保留，只移除此条收件箱副本。"}}}},
-    "This share has not been imported. Its pending content will be permanently removed.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "This share has not been imported. Its pending content will be permanently removed."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "此分享尚未导入，待处理内容将被永久移除。"}}}},
-    "Pending shares are not in this backup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Pending shares are not in this backup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "待处理分享未包含在此备份中"}}}},
-    "Share Backup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Share Backup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享备份"}}}},
-    "At backup start, %lld shares were still pending and are not included. They remain in Pending Shares. New shares are included only after import.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "At backup start, %lld shares were still pending and are not included. They remain in Pending Shares. New shares are included only after import."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "备份开始时仍有 %lld 条分享尚未导入，因此未包含在备份中。它们仍保留在“待处理分享”。新分享只有导入后才会进入备份。"}}}},
-    "Not enough storage. Free some space, then retry. Your share has not been published.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Not enough storage. Free some space, then retry. Your share has not been published."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "存储空间不足，请释放一些空间后重试。此分享尚未发布到收件箱。"}}}},
-    "Copy Diagnostic Report": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Copy Diagnostic Report"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "复制诊断报告"}}}},
-    "Local data could not be opened": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Local data could not be opened"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法打开本地数据"}}}},
-    "The shared Inbox is unavailable": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The shared Inbox is unavailable"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "共享收件箱不可用"}}}},
-    "Shared content could not be verified": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Shared content could not be verified"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法验证分享内容"}}}},
-    "A shared photo could not be verified": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "A shared photo could not be verified"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法验证分享照片"}}}},
-    "The sharing app did not provide readable content": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The sharing app did not provide readable content"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "分享来源未提供可读取的内容"}}}},
-    "Saved content needs file cleanup": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Saved content needs file cleanup"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保存内容的副本需要清理"}}}},
-    "Local data needs an integrity check": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Local data needs an integrity check"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "本地数据需要完整性检查"}}}},
-    "The operation could not be completed": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "The operation could not be completed"}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "操作未能完成"}}}},
-    "Your data is retained. Retry safely, or copy this diagnostic report for support.": {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Your data is retained. Retry safely, or copy this diagnostic report for support."}}, "zh-Hans": {"stringUnit": {"state": "translated", "value": "数据仍保留。可以安全重试，或复制此诊断报告以便排查。"}}}}
+    "Source": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "来源"
+          }
+        }
+      }
+    },
+    "View Original": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View Original"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看原文"
+          }
+        }
+      }
+    },
+    "Some shared content could not be imported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some shared content could not be imported"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "部分分享内容暂未导入"
+          }
+        }
+      }
+    },
+    "The shared files are retained. You can retry when storage is available or after updating the app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The shared files are retained. You can retry when storage is available or after updating the app."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分享文件已保留。请在有足够存储空间或更新应用后重试。"
+          }
+        }
+      }
+    },
+    "Saved shares appear when you next open 随心log.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved shares appear when you next open 随心log."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存的内容将在下次打开随心log时导入。"
+          }
+        }
+      }
+    },
+    "Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to read this share. Try sharing text, a webpage, or up to 9 photos (25 MB each)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取此分享。请分享文字、网页或最多9张照片（每张25 MB以内）。"
+          }
+        }
+      }
+    },
+    "Could not save. Your share is still here; please retry or cancel.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not save. Your share is still here; please retry or cancel."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存失败。分享内容仍在此处，请重试或取消。"
+          }
+        }
+      }
+    },
+    "Additional source kept in text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Additional source kept in text"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他来源链接已保留在正文中"
+          }
+        }
+      }
+    },
+    "Content could not be read": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content could not be read"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取内容"
+          }
+        }
+      }
+    },
+    "Reading shared content…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading shared content…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在读取分享内容…"
+          }
+        }
+      }
+    },
+    "Reading timed out": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading timed out"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "读取超时"
+          }
+        }
+      }
+    },
+    "Save Shown Content": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Shown Content"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存显示的内容"
+          }
+        }
+      }
+    },
+    "Save readable content only?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save readable content only?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅保存已读取的内容？"
+          }
+        }
+      }
+    },
+    "Saving shared content…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving shared content…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在保存分享内容…"
+          }
+        }
+      }
+    },
+    "Shared text is too long. Shorten it before saving; the original has not been truncated.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared text is too long. Shorten it before saving; the original has not been truncated."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分享文字过长，请编辑缩短后保存；原文未被截断。"
+          }
+        }
+      }
+    },
+    "Some shared items need attention. Retry, or confirm saving only the content shown below.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some shared items need attention. Retry, or confirm saving only the content shown below."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "部分分享项目需要处理。请重试，或确认仅保存下方显示的内容。"
+          }
+        }
+      }
+    },
+    "Supported size or count exceeded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supported size or count exceeded"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "超过支持的大小或数量"
+          }
+        }
+      }
+    },
+    "Waiting to import": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting to import"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待导入"
+          }
+        }
+      }
+    },
+    "Requires a newer app version": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requires a newer app version"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要更新版本的 App"
+          }
+        }
+      }
+    },
+    "Shared content or photo is invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared content or photo is invalid"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分享内容或照片无效"
+          }
+        }
+      }
+    },
+    "Not enough storage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not enough storage"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存储空间不足"
+          }
+        }
+      }
+    },
+    "Imported; pending file cleanup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imported; pending file cleanup"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已导入，等待清理副本"
+          }
+        }
+      }
+    },
+    "Import needs attention": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import needs attention"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入需要处理"
+          }
+        }
+      }
+    },
+    "Review Pending Shares": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review Pending Shares"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看待处理分享"
+          }
+        }
+      }
+    },
+    "Keep for Later": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep for Later"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留稍后处理"
+          }
+        }
+      }
+    },
+    "Pending Shares": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending Shares"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "待处理分享"
+          }
+        }
+      }
+    },
+    "No pending shares": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pending shares"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有待处理分享"
+          }
+        }
+      }
+    },
+    "Kept for later": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept for later"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保留稍后处理"
+          }
+        }
+      }
+    },
+    "The entry is already saved. These actions only remove the remaining Inbox copy.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The entry is already saved. These actions only remove the remaining Inbox copy."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录已保存。这些操作只会清理收件箱中的剩余副本。"
+          }
+        }
+      }
+    },
+    "Remove Pending Copy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Pending Copy"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除待清理副本"
+          }
+        }
+      }
+    },
+    "Discard Share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard Share"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "丢弃分享"
+          }
+        }
+      }
+    },
+    "Remove this pending share?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove this pending share?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除此条待处理分享？"
+          }
+        }
+      }
+    },
+    "The saved entry will remain. Only this Inbox copy will be removed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The saved entry will remain. Only this Inbox copy will be removed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存的记录将保留，只移除此条收件箱副本。"
+          }
+        }
+      }
+    },
+    "This share has not been imported. Its pending content will be permanently removed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This share has not been imported. Its pending content will be permanently removed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此分享尚未导入，待处理内容将被永久移除。"
+          }
+        }
+      }
+    },
+    "Pending shares are not in this backup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending shares are not in this backup"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "待处理分享未包含在此备份中"
+          }
+        }
+      }
+    },
+    "Share Backup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Backup"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分享备份"
+          }
+        }
+      }
+    },
+    "At backup start, %lld shares were still pending and are not included. They remain in Pending Shares. New shares are included only after import.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At backup start, %lld shares were still pending and are not included. They remain in Pending Shares. New shares are included only after import."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备份开始时仍有 %lld 条分享尚未导入，因此未包含在备份中。它们仍保留在“待处理分享”。新分享只有导入后才会进入备份。"
+          }
+        }
+      }
+    },
+    "Not enough storage. Free some space, then retry. Your share has not been published.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not enough storage. Free some space, then retry. Your share has not been published."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存储空间不足，请释放一些空间后重试。此分享尚未发布到收件箱。"
+          }
+        }
+      }
+    },
+    "Copy Diagnostic Report": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Diagnostic Report"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制诊断报告"
+          }
+        }
+      }
+    },
+    "Local data could not be opened": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local data could not be opened"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法打开本地数据"
+          }
+        }
+      }
+    },
+    "The shared Inbox is unavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The shared Inbox is unavailable"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "共享收件箱不可用"
+          }
+        }
+      }
+    },
+    "Shared content could not be verified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared content could not be verified"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法验证分享内容"
+          }
+        }
+      }
+    },
+    "A shared photo could not be verified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A shared photo could not be verified"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法验证分享照片"
+          }
+        }
+      }
+    },
+    "The sharing app did not provide readable content": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sharing app did not provide readable content"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分享来源未提供可读取的内容"
+          }
+        }
+      }
+    },
+    "Saved content needs file cleanup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved content needs file cleanup"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存内容的副本需要清理"
+          }
+        }
+      }
+    },
+    "Local data needs an integrity check": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local data needs an integrity check"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地数据需要完整性检查"
+          }
+        }
+      }
+    },
+    "The operation could not be completed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The operation could not be completed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作未能完成"
+          }
+        }
+      }
+    },
+    "Your data is retained. Retry safely, or copy this diagnostic report for support.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your data is retained. Retry safely, or copy this diagnostic report for support."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "数据仍保留。可以安全重试，或复制此诊断报告以便排查。"
+          }
+        }
+      }
+    },
+    "A repeating task needs a planned or deadline day. Stop the series to change its rule.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A repeating task needs a planned or deadline day. Stop the series to change its rule."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重复待办需要计划日或截止日。更改规则请先停止系列。"
+          }
+        }
+      }
+    },
+    "Build": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Build"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "构建编号"
+          }
+        }
+      }
+    },
+    "Choose a future reminder time.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a future reminder time."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择将来的提醒时间。"
+          }
+        }
+      }
+    },
+    "Choose a valid calendar day.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a valid calendar day."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择有效的日历日期。"
+          }
+        }
+      }
+    },
+    "Copy full Git Commit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy full Git Commit"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制完整 Git Commit"
+          }
+        }
+      }
+    },
+    "Enter a task title of up to 4,000 characters.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a task title of up to 4,000 characters."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入不超过 4,000 字的待办标题。"
+          }
+        }
+      }
+    },
+    "Git Commit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Git Commit"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Git Commit"
+          }
+        }
+      }
+    },
+    "Local Git build": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local Git build"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地 Git 构建"
+          }
+        }
+      }
+    },
+    "Local build · uncommitted changes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local build · uncommitted changes"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地构建 · 含未提交修改"
+          }
+        }
+      }
+    },
+    "Release Tag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release Tag"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发布标签"
+          }
+        }
+      }
+    },
+    "Task data is inconsistent. No changes were saved.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Task data is inconsistent. No changes were saved."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "待办数据不一致，未保存任何更改。"
+          }
+        }
+      }
+    },
+    "The source entry is no longer available.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The source entry is no longer available."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "来源记录已不存在。"
+          }
+        }
+      }
+    },
+    "This list is no longer available.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This list is no longer available."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此清单已不存在。"
+          }
+        }
+      }
+    },
+    "This task is no longer available.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This task is no longer available."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这条待办已不存在。"
+          }
+        }
+      }
+    },
+    "Version": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "版本"
+          }
+        }
+      }
+    },
+    "Xcode Cloud": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xcode Cloud"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xcode Cloud"
+          }
+        }
+      }
+    }
   },
   "version": "1.0"
 }

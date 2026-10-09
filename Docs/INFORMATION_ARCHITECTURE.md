@@ -773,3 +773,7 @@ Foundation Documents：
 ## Build 9 Approved Scope — 2026-09-16
 
 Build 9 调整：Today 顶部不再重复 Quick Capture，底部 Record 保留全局记录能力。Today 顺序为今日习惯、体重直接录入、目标/标记摘要、周/月习惯、本周关注与周回顾。正常 Timeline 顶部提供最多三条置顶快捷引用，原 Entry 留在原时间位置；私人补充位于详情原文/图片之后，搜索命中可定位补充。
+
+## Todo V1 批准增量 — 2026-10-09
+
+保持现有 Today / Timeline / Record / Growth / Library 五 Tab。Today 导航栏提供紧凑 Todo Hub 与快速新增入口，不挤占习惯/体重/目标主区。Todo Hub 提供今天、即将到来、全部、已完成、已取消、清单过滤和可点击统计；全局搜索可直达待办详情。Record 仍创建 Entry，Entry 详情可主动创建独立待办。设置→关于离线显示真实构建 SHA 并复制完整 SHA。详见 `TODO_V1_SCOPE.md`。

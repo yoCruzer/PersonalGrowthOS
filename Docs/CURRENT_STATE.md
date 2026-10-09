@@ -1,3 +1,13 @@
+# Todo V1 开发中 — 2026-10-09
+
+Owner 已授权 Goal Pack Rev2 整体范围，当前为 S1 领域与迁移完成 / S2 手机 UI 进行中。分支 `codex/todo-v1-personal-actions` 从已复核 Build 12 同源提交 `c5a3c0ac859efc3ffa4e5d9f77909ec43565c871` 创建，工作区起始干净。真实基线 SwiftData V10 / 备份 v6 / 五 Tab / App 1.0(7)，Owner 真机 Build 12 与仓库 Build 配置分开记录。
+
+本轮范围/日期与重复语义见 [TODO_V1_SCOPE.md](TODO_V1_SCOPE.md)。已实现独立领域/原子事件/V11 additive 迁移、清单/来源安全删除与固定锚点重复。11/11 领域/完整性/真实 V10 与原 V7/V8 定向测试通过；实际 provenance 脚本矩阵及 2/2 Bundle/复制测试通过。当前应用 schema V11，备份暂仍 v6（待 S4 完整接入，不能作为新 Todo 的可交付备份）。下一步 UI/搜索/统计/提醒及备份/Release/集中候选门禁，详见执行记录。真机未验；不合并、不 tag、不改号、不 Archive/TestFlight。最终普通 push + 新 Draft PR base `codex/external-capture-v1`，停在 READY_FOR_INDEPENDENT_REVIEW。
+
+---
+
+以下为保留的历史交接，不指挥本轮 Todo Goal。
+
 # PR #7 F1–F5 统一修复（2026-09-26）
 
 **READY_FOR_INDEPENDENT_REVIEW — F1–F5 修复与受影响回归完成，Owner 真机门禁独立保留。**

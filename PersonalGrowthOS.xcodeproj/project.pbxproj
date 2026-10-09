@@ -58,6 +58,10 @@ CA0000000000000000000104 = {isa = PBXBuildFile; fileRef = CA00000000000000000000
 CA0000000000000000000105 = {isa = PBXBuildFile; fileRef = CA0000000000000000000001; };
 CA0000000000000000000106 = {isa = PBXBuildFile; fileRef = CA0000000000000000000005; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 CA0000000000000000000107 = {isa = PBXBuildFile; fileRef = A00000000000000000000036; };
+TD1000000000000000000001 = {isa = PBXBuildFile; fileRef = TD0000000000000000000001; };
+TD1000000000000000000002 = {isa = PBXBuildFile; fileRef = TD0000000000000000000002; };
+TD4000000000000000000001 = {isa = PBXBuildFile; fileRef = TD3000000000000000000001; };
+TD4000000000000000000002 = {isa = PBXBuildFile; fileRef = TD3000000000000000000002; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +134,10 @@ CA0000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourceco
 CA0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExtension/ShareViewController.swift; sourceTree = SOURCE_ROOT; };
 CA0000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ShareExtension/Preprocessing.js; sourceTree = SOURCE_ROOT; };
 CA0000000000000000000005 = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+TD0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoFoundation.swift"; sourceTree = SOURCE_ROOT; };
+TD0000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/TodoFoundationTests.swift"; sourceTree = SOURCE_ROOT; };
+TD3000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/Build12V10Fixture"; sourceTree = SOURCE_ROOT; };
+TD3000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = BuildProvenance.plist; sourceTree = DERIVED_FILE_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,6 +172,10 @@ CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+TD3000000000000000000002,
+TD3000000000000000000001,
+TD0000000000000000000002,
+TD0000000000000000000001,
 CA0000000000000000000005,
 CA0000000000000000000004,
 CA0000000000000000000003,
@@ -369,6 +381,7 @@ CB0000000000000000000001,
 			isa = PBXNativeTarget;
 			buildConfigurationList = J00000000000000000000002 /* Build configuration list for PBXNativeTarget "PersonalGrowthOS" */;
 			buildPhases = (
+TD5000000000000000000001,
 				D00000000000000000000001 /* Sources */,
 				D00000000000000000000002 /* Frameworks */,
 				D00000000000000000000003 /* Resources */,
@@ -470,6 +483,7 @@ CA0000000000000000000020,
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+TD4000000000000000000002,
 				B00000000000000000000003 /* Assets.xcassets in Resources */,
 				B00000000000000000000033 /* Localizable.xcstrings in Resources */,
 			);
@@ -479,6 +493,7 @@ CA0000000000000000000020,
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+TD4000000000000000000001,
 				B00000000000000000000041 /* Build7V7Fixture in Resources */,
 				B00000000000000000000042 /* Build8V8Fixture in Resources */,
 			);
@@ -494,11 +509,27 @@ CA0000000000000000000020,
 CA0000000000000000000011 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (CA0000000000000000000104, CA0000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+TD5000000000000000000001 = {
+    isa = PBXShellScriptBuildPhase;
+    alwaysOutOfDate = 1;
+    buildActionMask = 2147483647;
+    files = ();
+    inputPaths = ("$(SRCROOT)/Scripts/generate-build-provenance.sh", "$(SRCROOT)", );
+    name = "Generate Build Provenance";
+    outputPaths = ("$(DERIVED_FILE_DIR)/BuildProvenance.plist", );
+    runOnlyForDeploymentPostprocessing = 0;
+    shellPath = /bin/sh;
+    shellScript = "\"$SRCROOT/Scripts/generate-build-provenance.sh\" \"$SRCROOT\" \"$DERIVED_FILE_DIR/BuildProvenance.plist\"";
+};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		D00000000000000000000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+TD1000000000000000000001,
 CA0000000000000000000102,
 CA0000000000000000000101,
 CB0000000000000000000101,
@@ -537,6 +568,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+TD1000000000000000000002,
 				B00000000000000000000004 /* AppCompositionTests.swift in Sources */,
 				B00000000000000000000009 /* EntryDomainTests.swift in Sources */,
 				B00000000000000000000012 /* PersistenceMediaFoundationTests.swift in Sources */,
