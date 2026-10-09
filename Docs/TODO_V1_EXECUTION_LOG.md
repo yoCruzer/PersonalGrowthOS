@@ -200,3 +200,38 @@ S4完整Unit首轮 `s4-full-unit-1` 在c5cc4117c61d1e05fd5e25318545441813b89c1b�
 同一边界补齐反馈：从Completed前一期保存future模板时，共享反馈指向本次实际更新的Open后继，故其权限/排队/失败及时可见；候选必须同系列/Open/有提醒，Canceled或无提醒不误报。原已物化后继通知替换mock增加对应正负反馈断言。
 
 限定修正提交fc37594747d639fe12b05c99b4b9c4aa961f11d2，`s4-final-release-local` exit0，新的真实unsignedRelease App/唯一appex仍1.0(7)，BuildProvenance=该完整40位SHA/localGit/Dirty=false/Tag空；源码与签名设置未漂移。原c5cc411与修正后产物记录分开保留。
+
+### 本轮命令选择范围（配合上方公共命令逐项复现）
+
+所有test使用同一公共命令、对应run名称的log/xcresult；以下名称均为实际`-only-testing:`后缀，类前缀Unit=`PersonalGrowthOSTests/`、UI=`PersonalGrowthOSUITests/AppLaunchSmokeTests/`。编译失败轮同样记录，不推测执行了测试。
+
+| run | 实际选择 |
+| --- | --- |
+| s1-red | Unit TodoFoundationTests/testReviewReminderKeepsOneDayLeadAcrossShortMonthAndLeapYear、testReviewFutureTemplateUpdatesMaterializedOpenButKeepsHistory、testGenerateOriginalV11CandidateFixture（仅在原源码临时生成时存在） |
+| s1-target-1 | Unit TodoFoundationTests、TodoReminderTests |
+| s1-target-2/3/4 | Unit TodoFoundationTests、TodoReminderTests、ImportExportRecoveryTests；UI testTodoDeniedReminderFeedbackSurvivesEditorDismissalAndOffersSettings、testTodoIntegrityFailureRetainsDataAndOffersDiagnosticAndRawExport |
+| s1-supplement-5 | Unit ImportExportRecoveryTests/testTodoV7RoundTripPreservesOccurrencesEventsListsSourcesAndOriginalMedia、testTodoCorruptStateDateEventReferenceDuplicateAndSeriesPackagesAreRejected；UI testTodoDeniedReminderFeedbackSurvivesEditorDismissalAndOffersSettings、testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence |
+| s1-ui-6 | 上述2项UI，无Unit |
+| s2-target-1 | Unit TodoFoundationTests、上述2项ImportExportRecoveryTests；UI testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor |
+| s2-ui-2 | 上述转换UI，无Unit |
+| s3-target-1 | Unit TodoFoundationTests/testAllStatusDateListKeywordCompositionAndStatisticsRemainExact；UI testAllTodoStatusFiltersCombineListSearchAndFourStatistics |
+| s3-ui-2/3/4 | 上述状态组合UI，无Unit |
+| s3-ui-5 | 上述状态组合UI + testAllTodoStatusMenuChineseDarkLargestTextIsAccessible |
+| s4-polish-dark-1 | Unit TodoFoundationTests、TodoReminderTests；UI testAllTodoStatusMenuChineseDarkLargestTextIsAccessible、testTodoIntegrityFailureRetainsDataAndOffersDiagnosticAndRawExport |
+| s4-full-unit-1 | Unit PersonalGrowthOSTests全target |
+
+集中UI实际命令：
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-review-evidence/s4-key-ui-1.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDeniedReminderFeedbackSurvivesEditorDismissalAndOffersSettings -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoIntegrityFailureRetainsDataAndOffersDiagnosticAndRawExport -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testAllTodoStatusFiltersCombineListSearchAndFourStatistics -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoEntrySourceKeepsOriginalRecord -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testAboutContainsRealCommitAndCopiesFullSHAIntoTodoInput -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoListCreateRenameFilterAndConfirmedDeleteKeepsTask -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTextCaptureAppearsInTimelineAndSurvivesRelaunch -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPermanentDeleteRemovesEntryFromTimeline -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testArchivedEntryCanBeRestored -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testRepeatableHabitCounterIncrementsDecrementsAndPersists -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testGoalAndFlagOpenEditAndPersistAcrossRelaunch -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeightEntryIsAccessiblePersistsAndShowsLatestValue -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testLibraryHistoryAndSearchReopenTheSavedWeeklyReview -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testBuild9TodayFirstScreenAndPeriodActions -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPublicMixedProviderHostShowsExtensionAndImports -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExternalCaptureSafariShareAndImport -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testReadyShareCancellationReturnsToSystemPicker > /tmp/pgos-review-evidence/s4-key-ui-1.log 2>&1
+```
+
+真实Release实际命令（两轮分别用s4-release-local、s4-final-release-local日志）：
+```sh
+xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-review-release-derived CODE_SIGNING_ALLOWED=NO > /tmp/pgos-review-evidence/s4-final-release-local.log 2>&1
+python3 Scripts/verify-build-provenance.py > /tmp/pgos-review-evidence/s4-provenance-matrix.log 2>&1
+sh Scripts/build_capture_fixture_host.sh /tmp/PGOSCaptureFixtureHost.app > /tmp/pgos-review-evidence/s4-capture-host-build-2.log 2>&1
+xcrun simctl install FD666264-A2DF-445C-A77D-534B9E8ED595 /tmp/PGOSCaptureFixtureHost.app
+xcrun simctl ui FD666264-A2DF-445C-A77D-534B9E8ED595 appearance light
+```
+
+完整Unit首轮1000任务/1100事件有界测量：Clock 0.091795433 / 0.090898107 / 0.091430164秒，physical_peak 53365.304 / 53348.920 / 53348.920kB。XCTest进程测量不等于真实App整体内存承诺；完整性/搜索独立needle/统计900与100/重要排序断言保留。数据/性能指标来自xcresulttool metrics，非手工估计。
