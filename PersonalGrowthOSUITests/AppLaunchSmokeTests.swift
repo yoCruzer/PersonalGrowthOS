@@ -1530,6 +1530,7 @@ extension AppLaunchSmokeTests {
 
 extension AppLaunchSmokeTests {
     func testPR6SearchRefreshesAfterDeletingMatchedFollowUps() {
+        continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
@@ -1562,17 +1563,27 @@ extension AppLaunchSmokeTests {
         app.keyboards.buttons["Search"].tap()
         for text in ["Needle alpha", "Needle beta"] {
             XCTAssertTrue(app.staticTexts[text].waitForExistence(timeout: 5))
-            app.staticTexts[text].tap()
-            let target = app.staticTexts[text]
+            let result = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label CONTAINS %@", "timeline-entry-", text)).firstMatch
+            XCTAssertTrue(result.exists)
+            // A long result's snippet can overlap the bottom search toolbar; use its visible row.
+            let visible = result.frame.intersection(app.frame.inset(by: UIEdgeInsets(top: 180, left: 0, bottom: 150, right: 0)))
+            XCTAssertFalse(visible.isEmpty)
+            app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
+            let target = app.staticTexts.matching(NSPredicate(format: "label == %@ AND identifier BEGINSWITH %@", text, "follow-up-")).firstMatch
             XCTAssertTrue(target.waitForExistence(timeout: 5))
             XCTAssertTrue(target.isHittable, "Search must scroll to the matching follow-up")
             let identifier = target.identifier
             let delete = app.buttons.matching(NSPredicate(format: "identifier == %@ AND label == %@", identifier, "Delete")).firstMatch
             for _ in 0..<3 where !delete.isHittable { app.swipeUp() }
-            delete.tap()
-            app.buttons["Delete"].firstMatch.tap()
+            XCTAssertFalse(delete.frame.isEmpty)
+            delete.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            let confirmation = app.sheets.buttons["Delete"].firstMatch
+            XCTAssertTrue(confirmation.waitForExistence(timeout: 5), app.debugDescription)
+            confirmation.tap()
             XCTAssertTrue(delete.waitForNonExistence(timeout: 5), app.debugDescription)
-            app.navigationBars.buttons["Search"].firstMatch.tap()
+            let back = app.navigationBars["Entry"].buttons["Search"].firstMatch
+            XCTAssertTrue(back.isHittable, app.debugDescription)
+            back.tap()
             XCTAssertEqual(search.value as? String, "Needle")
             XCTAssertFalse(app.staticTexts[text].exists)
         }
@@ -1884,11 +1895,26 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(safari.frame.contains(address.frame))
         address.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         XCTAssertTrue(safari.keyboards.firstMatch.waitForExistence(timeout: 5), safari.debugDescription)
-        // Safari selects the current URL when entering the address field.
-        let addressInput = safari.textFields.firstMatch
-        addressInput.typeText("http://127.0.0.1:18763/capture.html")
-        let go = safari.keyboards.buttons.matching(NSPredicate(format: "label == 'Go' OR label == '前往' OR label == 'go'")).firstMatch
-        XCTAssertTrue(go.waitForExistence(timeout: 5), safari.debugDescription)
+        let urlTree = XCTAttachment(string: safari.debugDescription)
+        urlTree.name = "Safari URL editing hierarchy"; urlTree.lifetime = .keepAlways; add(urlTree)
+        let urlShot = XCTAttachment(screenshot: safari.screenshot())
+        urlShot.name = "Safari URL editor"; urlShot.lifetime = .keepAlways; add(urlShot)
+        let addressInput = safari.textFields["URL"]
+        XCTAssertTrue(addressInput.waitForExistence(timeout: 5), safari.debugDescription)
+        XCTAssertTrue(addressInput.isHittable, safari.debugDescription)
+        let clear = safari.buttons["ClearTextButton"]
+        if clear.exists && clear.isEnabled { clear.tap() }
+        // Safari's capsule loses focus during XCTest typing on iOS 27; enter the fixture by normal Paste.
+        UIPasteboard.general.string = "http://127.0.0.1:18763/capture.html"
+        addressInput.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 1)
+        let paste = safari.menuItems.matching(NSPredicate(format: "label == 'Paste' OR label == '粘贴'")).firstMatch
+        XCTAssertTrue(paste.waitForExistence(timeout: 5), safari.debugDescription)
+        paste.tap()
+        let allowPaste = safari.alerts.buttons.matching(NSPredicate(format: "label == 'Allow Paste' OR label == '允许粘贴'")).firstMatch
+        if allowPaste.waitForExistence(timeout: 1) { allowPaste.tap() }
+        XCTAssertEqual(addressInput.value as? String, "http://127.0.0.1:18763/capture.html")
+        let go = safari.keyboards.buttons["Go"]
+        XCTAssertTrue(go.isEnabled, safari.debugDescription)
         go.tap()
         XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10), safari.debugDescription)
         let moreMenu = safari.buttons["MoreMenuButton"]
@@ -1933,7 +1959,7 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(title.waitForExistence(timeout: 10), app.debugDescription)
         title.tap()
         XCTAssertTrue(app.staticTexts["A selected thought with its original source."].exists)
-        let sourceLink = app.buttons["entry-source-link"]
+        let sourceLink = app.descendants(matching: .any)["entry-source-link"]
         XCTAssertTrue(sourceLink.waitForExistence(timeout: 5))
         sourceLink.tap()
         XCTAssertTrue(safari.wait(for: .runningForeground, timeout: 10))
@@ -1964,6 +1990,7 @@ extension AppLaunchSmokeTests {
         title.typeText("Call home")
         app.buttons["todo-save"].tap()
         app.buttons["today-todo-hub"].tap()
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "2")
         app.buttons["todo-stat-open"].tap()
         XCTAssertTrue(app.staticTexts["Buy batteries"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Call home"].exists)
@@ -2024,6 +2051,10 @@ extension AppLaunchSmokeTests {
         let full = commit.value as? String ?? ""
         XCTAssertEqual(full.count, 40)
         XCTAssertTrue(full.allSatisfy { $0.isHexDigit })
+        let tag = app.staticTexts["Release Tag"]
+        if tag.exists && !tag.isHittable { app.swipeUp() }
+        let about = XCTAttachment(screenshot: app.screenshot())
+        about.name = "About actual bundle provenance"; about.lifetime = .keepAlways; add(about)
         commit.tap()
         app.buttons["Done"].tap()
         app.buttons["today-todo-add"].tap()

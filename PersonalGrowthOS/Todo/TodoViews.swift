@@ -174,6 +174,7 @@ struct TodoEditorView: View {
     @Environment(TodoReminderCoordinator.self) private var reminders
     @Query(sort: \TodoList.createdAt) private var lists: [TodoList]
     @State private var draft = TodoDraft()
+    @State private var submissionID = UUID()
     @State private var loaded = false
     @State private var futureSeries = false
     @State private var error: String?
@@ -267,11 +268,11 @@ struct TodoEditorView: View {
             let service = TodoTaskService(context: context)
             let id: UUID
             if let task { try service.edit(id: task.id, draft: draft, futureSeries: futureSeries); id = task.id }
-            else { id = try service.create(draft, sourceEntryID: sourceEntry?.id).id }
+            else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID).id }
             let ask = draft.remindAt != nil
             Task { await reminders.reconcile(context: context, requestPermission: ask) }
             error = nil
-            if another { let selectedList = draft.listID; draft = TodoDraft(listID: selectedList); savedNotice = true; focusedField = .title }
+            if another { let selectedList = draft.listID; draft = TodoDraft(listID: selectedList); submissionID = UUID(); savedNotice = true; focusedField = .title }
             else { focusedField = nil; onSaved(id) }
         } catch { self.error = error.localizedDescription }
     }
