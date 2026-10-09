@@ -216,9 +216,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
         editor.tap()
         editor.typeText(" edited")
+        XCTAssertEqual(editor.value as? String, "A restart-safe memory edited", app.debugDescription)
         app.buttons["entry-edit-save"].tap()
         XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["A restart-safe memory edited"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["A restart-safe memory edited"].waitForExistence(timeout: 10), app.debugDescription)
 
         app.terminate()
         app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -1566,7 +1567,7 @@ extension AppLaunchSmokeTests {
             for _ in 0..<3 where !delete.isHittable { app.swipeUp() }
             delete.tap()
             app.buttons["Delete"].firstMatch.tap()
-            XCTAssertTrue(delete.waitForNonExistence(timeout: 5))
+            XCTAssertTrue(delete.waitForNonExistence(timeout: 5), app.debugDescription)
             app.navigationBars.buttons["Search"].firstMatch.tap()
             XCTAssertEqual(search.value as? String, "Needle")
             XCTAssertFalse(app.staticTexts[text].exists)
@@ -1879,7 +1880,7 @@ extension AppLaunchSmokeTests {
         // Safari selects the current URL when entering the address field.
         let addressInput = safari.textFields.firstMatch
         addressInput.typeText("http://127.0.0.1:18763/capture.html\n")
-        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10), safari.debugDescription)
         let moreMenu = safari.buttons["MoreMenuButton"]
         XCTAssertTrue(moreMenu.waitForExistence(timeout: 5))
         XCTAssertFalse(moreMenu.frame.isEmpty)

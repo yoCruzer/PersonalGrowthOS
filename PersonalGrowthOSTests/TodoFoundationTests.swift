@@ -159,6 +159,26 @@ final class TodoFoundationTests: XCTestCase {
 
 @MainActor
 extension TodoFoundationTests {
+    func testIntegrityRequiresCreationFirstAndStoppedSeriesCannotBeReactivatedByBackup() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        let service = TodoTaskService(context: context)
+        _ = try service.create(TodoDraft(title: "合法创建"))
+        try TodoIntegrity.validate(context: context)
+        let initial = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTaskEvent>()).first)
+        initial.kindRawValue = TodoEventKind.reopened.rawValue
+        XCTAssertThrowsError(try TodoIntegrity.validate(context: context))
+        context.rollback()
+        try TodoIntegrity.validate(context: context)
+        let repeating = try service.create(TodoDraft(title: "已停止", plannedDay: "2026-10-09", frequency: .daily))
+        try service.stopSeries(taskID: repeating.id)
+        try TodoIntegrity.validate(context: context)
+        let rule = try XCTUnwrap(context.fetch(FetchDescriptor<TodoSeries>()).first)
+        rule.isStopped = false
+        XCTAssertThrowsError(try TodoIntegrity.validate(context: context))
+        context.rollback()
+        try TodoIntegrity.validate(context: context)
+    }
+
     func testIntegrityRejectsUnknownStateDanglingEventAndInconsistentFinalFact() throws {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let service = TodoTaskService(context: context)

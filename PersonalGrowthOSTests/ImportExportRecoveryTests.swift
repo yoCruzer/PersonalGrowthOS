@@ -2280,22 +2280,32 @@ extension ImportExportRecoveryTests {
         let source = try fixture.makePopulatedStore(), context = source.container.mainContext
         let task = try TodoTaskService(context: context).create(TodoDraft(title: "有效期次", plannedDay: "2026-10-09", frequency: .daily))
         let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
-        for scenario in 0..<6 {
+        for scenario in 0..<12 {
             let corrupt = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("TodoCorrupt\(scenario)"), rewriteJSON: { manifest, data in
                 var tasks = data.todoTasks, events = data.todoEvents, series = data.todoSeries
+                var sources = data.todoSources
                 switch scenario {
                 case 0: tasks[0].stateRawValue = "unknown"
                 case 1: tasks[0].plannedDay = "2026-02-30"
                 case 2: events[0].taskID = UUID()
                 case 3: tasks.append(tasks[0])
                 case 4: series[0].anchorDay = "bad-anchor"
-                default: tasks[0].stateRawValue = "completed"; tasks[0].completedAt = Date()
+                case 5: tasks[0].stateRawValue = "completed"; tasks[0].completedAt = Date()
+                case 6: tasks[0].listID = UUID()
+                case 7: tasks[0].seriesID = UUID()
+                case 8: tasks[0].occurrenceKey = "wrong-occurrence"
+                case 9: events[0].kindRawValue = TodoEventKind.reopened.rawValue
+                case 10: sources = [TodoTaskSourceTransfer(TodoTaskSource(taskID: task.id, entryID: UUID()))]
+                default: sources = [TodoTaskSourceTransfer(TodoTaskSource(taskID: UUID(), entryID: data.entries[0].id))]
                 }
-                return (manifest, data.replacingTodos(tasks: tasks, events: events, series: series))
+                return (manifest, data.replacingTodos(tasks: tasks, events: events, series: series, sources: sources))
             })
             let target = try fixture.makeEmptyStore(named: "TodoReject\(scenario)")
             do { _ = try await target.service.importPackage(from: corrupt); XCTFail("Corrupt Todo package must be rejected") }
-            catch { XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0) }
+            catch {
+                XCTAssertEqual(error as? TransferPackageError, .invalidObject("todo integrity"))
+                XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+            }
         }
         XCTAssertEqual(try TodoTaskService(context: context).task(id: task.id).state, .open)
     }
@@ -2441,10 +2451,10 @@ extension ImportExportRecoveryTests {
 }
 
 private extension TransferData {
-    func replacingTodos(tasks: [TodoTaskTransfer]? = nil, events: [TodoTaskEventTransfer]? = nil, series: [TodoSeriesTransfer]? = nil) -> TransferData {
+    func replacingTodos(tasks: [TodoTaskTransfer]? = nil, events: [TodoTaskEventTransfer]? = nil, series: [TodoSeriesTransfer]? = nil, sources: [TodoTaskSourceTransfer]? = nil) -> TransferData {
         TransferData(entries: entries, images: images, tags: tags, links: links, habits: habits, habitLogs: habitLogs, goals: goals,
             goalEvents: goalEvents, weightRecords: weightRecords, weeklyReviews: weeklyReviews, habitPlanRevisions: habitPlanRevisions,
             habitLifecycleEvents: habitLifecycleEvents, entrySources: entrySources, entryPins: entryPins, entryFollowUps: entryFollowUps,
-            todoTasks: tasks ?? todoTasks, todoEvents: events ?? todoEvents, todoLists: todoLists, todoSeries: series ?? todoSeries, todoSources: todoSources)
+            todoTasks: tasks ?? todoTasks, todoEvents: events ?? todoEvents, todoLists: todoLists, todoSeries: series ?? todoSeries, todoSources: sources ?? todoSources)
     }
 }

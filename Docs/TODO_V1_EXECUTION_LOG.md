@@ -63,3 +63,11 @@
 ## 候选尾端门禁（待执行）
 
 只在功能冻结后运行一次完整 Unit 与一次关键 UI 集中 gate；实际 counts/命令/源码 SHA 后续记录。Release/模拟 CI 产物与普通 push/Draft PR 尚未完成，当前不标 READY。远端没有配置 GitHub Actions workflow；普通 push 后只读检查 checks/statuses，实际 Xcode Cloud 发行未触发。Owner 真机与私人数据门禁保留。
+
+## 候选首轮与数据审查闭合
+
+功能候选 fb63f58420c68f4cadb0ab31d01bc7cbac2c9854：candidate-full-unit-1 exit0，283/283 Unit PASS，0 FAIL/SKIP。candidate-key-ui-1 exit65，17/22 UI PASS，5 FAIL：两个 CaptureFixtureHost 未安装；Safari 页面未加载预期 fixture；Entry 编辑后的正文与预期不一致；follow-up 删除后仍存在。没有将这些归为已通过，继续定向定位。
+
+最后审查补上首个事件必须 created、seriesStopped 对应系列必须停止的校验；新增正负配对与12种坏 Todo 包的精确 invalidObject 断言（包括清单/系列/期次/来源身份）。复验包括领域、提醒、完整备份、启动组合与历史迁移相邻路径；不重复全量。
+
+本地 Release app/appex 编译 exit0，均1.0(7)，localGit/clean/SHA=fb63f58420c68f4cadb0ab31d01bc7cbac2c9854。模拟 CI 标签编译、随后同 DerivedData 无标签编译 exit0，真实资源同 SHA/Source=xcodeCloud，Tag 从 todo-v1-ci-verification 清为空；未创建标签。脚本完整矩阵再次 exit0。远端普通 push成功，workflows=0、check-runs=0、statuses=[]；API aggregate pending 不代表有 CI 正在运行，远端 CI NOT_RUN。

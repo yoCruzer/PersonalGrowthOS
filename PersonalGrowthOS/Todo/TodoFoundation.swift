@@ -549,6 +549,7 @@ enum TodoIntegrity {
                 try Task.checkCancellation()
                 guard let kind = TodoEventKind(rawValue: event.kindRawValue) else { throw TodoFailure.corruptData }
                 try require(event.sequence == index && event.occurredAt.timeIntervalSince1970.isFinite)
+                try require((index == 0) == (kind == .created))
                 try dates(task.createdAt, event.createdAt); try require(event.createdAt >= previousTechnical)
                 let after = try JSONDecoder().decode(TodoEventValue.self, from: event.afterValue)
                 let before = try event.beforeValue.map { try JSONDecoder().decode(TodoEventValue.self, from: $0) }
@@ -557,7 +558,8 @@ enum TodoIntegrity {
                 case .created:
                     try require(index == 0 && before == nil && after.state == .open && event.occurredAt == task.createdAt && event.createdAt == task.createdAt)
                 case .edited: try require(index > 0 && before?.state == after.state)
-                case .seriesStopped: try require(index > 0 && before == after && task.seriesID != nil)
+                case .seriesStopped:
+                    try require(index > 0 && before == after && task.seriesID.flatMap { rulesByID[$0] }?.isStopped == true)
                 case .completed: try require(before?.state != .completed && after.state == .completed && after.completedAt == event.occurredAt)
                 case .reopened: try require(before?.state != .open && after.state == .open)
                 case .canceled, .skipped, .successorWithdrawn:
