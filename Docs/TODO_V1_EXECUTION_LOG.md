@@ -235,3 +235,5 @@ xcrun simctl ui FD666264-A2DF-445C-A77D-534B9E8ED595 appearance light
 ```
 
 完整Unit首轮1000任务/1100事件有界测量：Clock 0.091795433 / 0.090898107 / 0.091430164秒，physical_peak 53365.304 / 53348.920 / 53348.920kB。XCTest进程测量不等于真实App整体内存承诺；完整性/搜索独立needle/统计900与100/重要排序断言保留。数据/性能指标来自xcresulttool metrics，非手工估计。
+
+`s4-key-ui-1` exit65：21/22 UI PASS，1 FAIL，0 SKIP，真实运行产物SHA=c5cc4117c61d1e05fd5e25318545441813b89c1b。新增转换/筛选、四统计精确、About完整SHA复制、Entry/Habit/Goal/Weight/WeeklyReview、Safari真实分享导入/Host/取消与Files恢复均通过；唯一FAIL为旧连续录入Save and Add Another后的todo-saved-another提示，AX证明Form增长后提示位于lazy视野下方。产品修正移至按钮旁bottom inset，不减弱原断言；随后补验连续录入/编辑器相关路径。整组首轮仍记exit65，不改写21/22。该轮另有4条SwiftUI invalid frame与1条background publication运行警告，保留原始结果并定位来源，不能说零运行警告。

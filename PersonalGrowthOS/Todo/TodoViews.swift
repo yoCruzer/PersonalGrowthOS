@@ -236,11 +236,11 @@ struct TodoEditorView: View {
                     Text("Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after.").font(.caption).foregroundStyle(.secondary)
                     Text("Fixed calendar repeats use the original anchor. Missed dates are skipped; completion creates the first future occurrence.").font(.caption).foregroundStyle(.secondary)
                 }
-                if savedNotice { Label("Saved. Ready for another todo.", systemImage: "checkmark").accessibilityIdentifier("todo-saved-another") }
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 6) {
                     if let error { Text(error).foregroundStyle(.red).padding(.horizontal).accessibilityIdentifier("todo-editor-error") }
+                    if savedNotice { Label("Saved. Ready for another todo.", systemImage: "checkmark").padding(.horizontal).accessibilityIdentifier("todo-saved-another") }
                     if task == nil {
                         Button("Save and Add Another") { save(another: true) }
                             .disabled(draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
