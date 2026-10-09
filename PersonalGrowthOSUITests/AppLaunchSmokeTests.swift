@@ -1987,6 +1987,8 @@ extension AppLaunchSmokeTests {
         title.typeText("Buy batteries")
         app.buttons["todo-save-another"].tap()
         XCTAssertTrue(app.staticTexts["todo-saved-another"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["todo-saved-another"].isHittable)
+        let saved = XCTAttachment(screenshot: app.screenshot()); saved.name = "Continuous Todo saved feedback remains visible above keyboard"; saved.lifetime = .keepAlways; add(saved)
         title.typeText("Call home")
         app.buttons["todo-save"].tap()
         app.buttons["today-todo-hub"].tap()

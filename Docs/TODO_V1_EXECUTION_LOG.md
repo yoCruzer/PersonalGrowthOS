@@ -237,3 +237,17 @@ xcrun simctl ui FD666264-A2DF-445C-A77D-534B9E8ED595 appearance light
 完整Unit首轮1000任务/1100事件有界测量：Clock 0.091795433 / 0.090898107 / 0.091430164秒，physical_peak 53365.304 / 53348.920 / 53348.920kB。XCTest进程测量不等于真实App整体内存承诺；完整性/搜索独立needle/统计900与100/重要排序断言保留。数据/性能指标来自xcresulttool metrics，非手工估计。
 
 `s4-key-ui-1` exit65：21/22 UI PASS，1 FAIL，0 SKIP，真实运行产物SHA=c5cc4117c61d1e05fd5e25318545441813b89c1b。新增转换/筛选、四统计精确、About完整SHA复制、Entry/Habit/Goal/Weight/WeeklyReview、Safari真实分享导入/Host/取消与Files恢复均通过；唯一FAIL为旧连续录入Save and Add Another后的todo-saved-another提示，AX证明Form增长后提示位于lazy视野下方。产品修正移至按钮旁bottom inset，不减弱原断言；随后补验连续录入/编辑器相关路径。整组首轮仍记exit65，不改写21/22。该轮另有4条SwiftUI invalid frame与1条background publication运行警告，保留原始结果并定位来源，不能说零运行警告。
+
+最终产品提交2065065e87863de5a452ade8609bac561a0bd096。`s4-final-full-unit-2` exit0：**297/297 Unit PASS，0 FAIL/SKIP、runtimeWarnings=[]**，包括新增过去模板日期保存正负例、后继反馈/请求替换，原Build12V10与旧V11迁移/重开、旧合法wire/v7精确恢复/15类坏包、并发/取消/回滚与1000任务有界性能。因首轮之后发现两项真实产品边界缺陷，按Goal允许在最终候选再执行完整Unit；没有按阶段重复全量，首轮296/296保留。
+
+`s4-final-feedback-release` exit0；Debug测试实际产物与该真实unsignedRelease均核对完整SHA=2065065e87863de5a452ade8609bac561a0bd096、localGit/Dirty=false/Tag空，App及唯一ShareExtension.appex可执行文件存在、均1.0(7)。后续仅文档交接；最终文档HEAD另做Debug产物核对，不冒称文档提交后再跑全量。
+
+运行警告审计：xcresult diagnostics/legacy issue定位4条invalid frame分别在旧Review打开、Todo每日保存关闭键盘、旧Review多字段、旧Weight；前一整体Goal集中UI已有5条同类，s1-ui-6也已有1条。背景publication在Weight键盘输入动画阶段（00:00:00.405，Save于随后10.23s发生），未给产品源位置；现有WeightRecordService为@MainActor，真实保存→重启与完整Unit通过。没有证据证明其为本轮数据写入回归，也不冒称已消除或完全归因SDK；保留给独立Review，未关闭的运行警告风险与断言失败区分。
+
+`s4-final-affected-ui-2` exit0：6/6 UI PASS，0 FAIL/SKIP，真实构建SHA2065065e87863de5a452ade8609bac561a0bd096；连续录入/2个不同UUID/保存提示/完成重开取消/统计/全局搜索/重启、每日重复/skip/stop、权限拒绝反馈、普通任务周转换、About复制、真实Dark中文AX最大编辑/Hub/About均通过。没有重新跑22项；首轮唯一失败在本轮闭合。随后再加强连续保存断言为isHittable并保存keepAlways截图，只做该UI、About与一次Weight警告定位补验，不改产品实现、不重跑全量Unit。
+
+最终完整Unit实际命令：
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-review-evidence/s4-final-full-unit-2.xcresult -only-testing:PersonalGrowthOSTests > /tmp/pgos-review-evidence/s4-final-full-unit-2.log 2>&1
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-review-evidence/s4-final-affected-ui-2.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDeniedReminderFeedbackSurvivesEditorDismissalAndOffersSettings -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testAboutContainsRealCommitAndCopiesFullSHAIntoTodoInput -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoChineseDarkLargestTextAndAboutPassSemanticAccessibilityAudit > /tmp/pgos-review-evidence/s4-final-affected-ui-2.log 2>&1
+```
