@@ -78,9 +78,20 @@
 | --- | --- |
 | S1-A | 原代码正负回归s1-red真实FAIL；修复后短月/每月10日/31日/闰年/年度/DST gap与overlap/纽约↔上海、候选原V11迁移重开通过，s1-target-4 Unit；相对日v7往返与±366非法包拒绝在s1-supplement-5通过。计划锚点优先，不因本期改日期漂移。 |
 | S1-B | 原Open后继同步回归s1-red真实FAIL；s1-target-4证明future覆盖单独编辑模板、this-only不覆盖、身份/日期保留、失败回滚、withdrawn复用与Canceled历史不复活。同步字段标题/备注/重要/清单/提醒，UI明确覆盖策略。 |
-| S1-C | s1-target-4通知mock证明延迟中checking与已保存事实分开、权限/队列/调度错误可见、旧类别请求不移除；拒绝提示真实UI在s1-supplement-5通过。布局导航修复补验进行中；真实通知送达仍Owner门禁。 |
+| S1-C | s1-target-4通知mock证明延迟中checking与已保存事实分开、权限/队列/调度错误可见、旧类别请求不移除；拒绝提示与原重复UI在s1-ui-6通过。s4-polish-dark-1已物化后继旧请求替换通过；future编辑Completed前一期的反馈指向实际Open后继。真实通知送达仍Owner门禁。 |
 | S1-D | s1-target-4损坏revision/事件链synthetic库：pre-open原SQLite byte equality、原始媒体byte equality、rawZIP提取后可开原库/原Entry但依然拒绝损坏Todo；启动UI复制诊断/准备ShareLink/retry/重启均通过，普通AppShell不加载。rawZIP是支持恢复包，不能当正常备份导入；不清库/修复。 |
-| S2 | 尚未开始实现；须证明Open单次原身份转换、关闭态拒绝、首日必选、事件历史/保存回滚/幂等/重启/v7往返/真实UI。 |
-| S3 | 尚未开始实现；须证明默认Open、三类全状态/各单态、清单/关键词/日期组合、四统计严格同数字、深色/大字体与双语。 |
+| S2 | s2-target-1共27 Unit PASS，四种频率原UUID/createdAt/source/list/重要/旧事件bytes不变、关闭态和缺日拒绝、回滚/精确重试/两次磁盘重开、v7往返与15类坏包；s2-ui-2真实普通任务保存→重开编辑→周重复→首日拒绝→显式计划日→完成→重启只有一后继，1/1 UI PASS。已有系列不任意改频率。 |
+| S3 | s3领域组合正负通过；s3-ui-5 2/2 UI PASS，默认Open/All三状态/各单态、清单/关键词、无日期、完成撤销/返回/重启、四统计1/1/3/1严格行数。该轮截图实际浅色；s4-polish-dark-1实际simctl Dark后中文AX最大字号菜单截图与语义通过，五Tab及>=44pt触达保留。全局搜索仍含Completed/Canceled。 |
 
 新候选存储为V11 11.1.0，有冻结11.0.0节点和exact candidate fixture；备份仍v7新增optional offset。s1-target-4共80 Unit+1 UI PASS/1 UI FAIL（exit65）；后续补验不改写失败整组。完整Unit与集中UI/Debug/Release留到S4冻结候选一次执行。
+
+本轮Owner增量设备复现（NOT_RUN；使用测试任务，不清私人库）：
+
+1. 保留现有Build12私人记录，覆盖升级后核对Entry/图片、Habit/Goal/Weight/WeeklyReview、分享Inbox；About复制完整SHA，App/Extension仍1.0(7)。
+2. 建每月10日、9日20:00提醒的测试任务；完成后核对后继10日、提醒9日。另测31日→短月和上海↔纽约墙钟；从已完成前一期勾选未来模板，修改标题/备注/重要/清单与提醒，已有Open后继同步。单独编辑后继再应用未来模板会覆盖其模板字段；日期/ID保持。
+3. 先建无日期普通任务，保存后重开编辑，选每周；保存明确要求首日，选择计划日后保存。核对原任务身份/来源/历史仍在，完成→重启只有一个Open后继；Completed/Canceled先显式重开，已有系列频率不支持任意更改。
+4. 全部任务默认未完成，一层菜单切All/Completed/Canceled，组合清单与搜索；逐个点四统计核对原数字。中文/英文、真实深浅外观/最大字号、VoiceOver朗读核对触达和含义。
+5. 真机设一分钟后的提醒、锁屏确认送达；拒绝权限时任务仍保存，及时提示并可开iOS设置；改时/完成移除旧Todo请求，原每日/每周提醒不丢。准备v7备份，恢复只在独立空库核对。
+6. 损坏启动路径仅在隔离合成库复现：Copy Diagnostic→Prepare Retained Data Export→Save Retained Data。raw ZIP含原SQLite/WAL/原文件，供支持恢复，不能当正常v7包导入；不修改/清空Owner私人库制造故障。
+
+Owner私人库实际覆盖、签名/AppGroup、真机通知送达/设置、旅行/飞行模式/硬件、VoiceOver、实际Xcode Cloud/Archive/TestFlight均NOT_RUN。模拟器语义检查不等于VoiceOver朗读。后续仅独立Review与设备门禁，不自行进入合并/发布。

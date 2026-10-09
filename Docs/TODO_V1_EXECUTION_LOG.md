@@ -198,3 +198,5 @@ S4完整Unit首轮 `s4-full-unit-1` 在c5cc4117c61d1e05fd5e25318545441813b89c1b�
 尾端自查发现已完成前一期的未来模板编辑仍被旧UI“新提醒必须未来时间”限制：历史提醒日作为固定anchor偏移参照时，应允许改变时分/日期。限定修正为仅既有series+futureSeries允许过去参照；普通新提醒/本期改成过去仍拒绝，不变历史时间可保留。增加独立正负日期测试；这是实际产品边界缺陷，非为了重复测试。集中UI首轮仍继续使用此前已构建c5cc411，不把其结果冒充修正后构建。修正后再执行完整Unit最终gate，以及受影响原重复/转换/About UI补验。
 
 同一边界补齐反馈：从Completed前一期保存future模板时，共享反馈指向本次实际更新的Open后继，故其权限/排队/失败及时可见；候选必须同系列/Open/有提醒，Canceled或无提醒不误报。原已物化后继通知替换mock增加对应正负反馈断言。
+
+限定修正提交fc37594747d639fe12b05c99b4b9c4aa961f11d2，`s4-final-release-local` exit0，新的真实unsignedRelease App/唯一appex仍1.0(7)，BuildProvenance=该完整40位SHA/localGit/Dirty=false/Tag空；源码与签名设置未漂移。原c5cc411与修正后产物记录分开保留。
