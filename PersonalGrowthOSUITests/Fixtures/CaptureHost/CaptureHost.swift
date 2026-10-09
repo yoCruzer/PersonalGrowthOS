@@ -4,14 +4,23 @@ import UniformTypeIdentifiers
 // Standalone synthetic host exercises the extension from a separate app.
 @main
 final class CaptureHostApp: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession,
+                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: "Fixture", sessionRole: connectingSceneSession.role)
+        configuration.delegateClass = CaptureHostScene.self
+        return configuration
+    }
+}
+
+final class CaptureHostScene: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let window = UIWindow(frame: UIScreen.main.bounds)
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        guard let windowScene = scene as? UIWindowScene else { return }
+        let window = UIWindow(windowScene: windowScene)
         window.rootViewController = CaptureHostController()
         window.makeKeyAndVisible()
         self.window = window
-        return true
     }
 }
 

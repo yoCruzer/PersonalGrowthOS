@@ -335,9 +335,8 @@ struct EntryDetailView: View {
         }
         .confirmationDialog("Delete this follow-up?", isPresented: Binding(
             get: { deletingThought != nil }, set: { if !$0 { deletingThought = nil } }
-        ), titleVisibility: .visible) {
+        ), titleVisibility: .visible, presenting: deletingThought) { thought in
             Button("Delete", role: .destructive) {
-                guard let thought = deletingThought else { return }
                 do {
                     try EntryContinuationService(context: modelContext).delete(thought)
                     deletingThought = nil

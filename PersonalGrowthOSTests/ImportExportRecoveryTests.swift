@@ -2280,7 +2280,7 @@ extension ImportExportRecoveryTests {
         let source = try fixture.makePopulatedStore(), context = source.container.mainContext
         let task = try TodoTaskService(context: context).create(TodoDraft(title: "有效期次", plannedDay: "2026-10-09", frequency: .daily))
         let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
-        for scenario in 0..<12 {
+        for scenario in 0..<13 {
             let corrupt = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("TodoCorrupt\(scenario)"), rewriteJSON: { manifest, data in
                 var tasks = data.todoTasks, events = data.todoEvents, series = data.todoSeries
                 var sources = data.todoSources
@@ -2296,7 +2296,8 @@ extension ImportExportRecoveryTests {
                 case 8: tasks[0].occurrenceKey = "wrong-occurrence"
                 case 9: events[0].kindRawValue = TodoEventKind.reopened.rawValue
                 case 10: sources = [TodoTaskSourceTransfer(TodoTaskSource(taskID: task.id, entryID: UUID()))]
-                default: sources = [TodoTaskSourceTransfer(TodoTaskSource(taskID: UUID(), entryID: data.entries[0].id))]
+                case 11: sources = [TodoTaskSourceTransfer(TodoTaskSource(taskID: UUID(), entryID: data.entries[0].id))]
+                default: tasks[0].revision = Int.max
                 }
                 return (manifest, data.replacingTodos(tasks: tasks, events: events, series: series, sources: sources))
             })

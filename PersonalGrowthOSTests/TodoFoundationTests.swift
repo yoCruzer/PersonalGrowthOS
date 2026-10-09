@@ -169,6 +169,11 @@ extension TodoFoundationTests {
         XCTAssertThrowsError(try TodoIntegrity.validate(context: context))
         context.rollback()
         try TodoIntegrity.validate(context: context)
+        let task = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first)
+        task.revision = Int.max
+        XCTAssertThrowsError(try TodoIntegrity.validate(context: context))
+        context.rollback()
+        try TodoIntegrity.validate(context: context)
         let repeating = try service.create(TodoDraft(title: "已停止", plannedDay: "2026-10-09", frequency: .daily))
         try service.stopSeries(taskID: repeating.id)
         try TodoIntegrity.validate(context: context)

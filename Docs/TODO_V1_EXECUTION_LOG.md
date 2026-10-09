@@ -71,3 +71,10 @@
 最后审查补上首个事件必须 created、seriesStopped 对应系列必须停止的校验；新增正负配对与12种坏 Todo 包的精确 invalidObject 断言（包括清单/系列/期次/来源身份）。复验包括领域、提醒、完整备份、启动组合与历史迁移相邻路径；不重复全量。
 
 本地 Release app/appex 编译 exit0，均1.0(7)，localGit/clean/SHA=fb63f58420c68f4cadb0ab31d01bc7cbac2c9854。模拟 CI 标签编译、随后同 DerivedData 无标签编译 exit0，真实资源同 SHA/Source=xcodeCloud，Tag 从 todo-v1-ci-verification 清为空；未创建标签。脚本完整矩阵再次 exit0。远端普通 push成功，workflows=0、check-runs=0、statuses=[]；API aggregate pending 不代表有 CI 正在运行，远端 CI NOT_RUN。
+
+candidate-integrity-closure-1（d0c41e88b0f1e9c444fa3a14a5cb23ce22d389c3）exit0：123/123 Unit PASS，0 FAIL/SKIP，包含 Todo/提醒/ImportExportRecovery/AppComposition/PersistenceMediaFoundation。审查再补 revision=Int.max 的无溢出拒绝，13种坏包断言保持精确，不通过 +1 的溢出崩溃处理输入。
+
+candidate-failed-ui-2 exit65：0/5 PASS，5 FAIL。新增诊断独立证明 Entry TextEditor tap 把光标放开头，实际内容为“ editedA restart-safe memory”；改为 UI 选全文并输入完整预期，原编辑/保存/重启断言保留。补充确认删除代码不再从随 dismiss 清空的 optional 读取目标，使用 confirmationDialog presenting 捕获目标。Safari 未离开 start page，地址栏增加实际屏幕内中心点击、键盘与 Go 按钮断言，保持真实页面/选中文字/分享/取消/导入断言。Host 安装后在 iOS27 因 NoSceneLifecycleAdoption 崩溃，按 Apple TN3187 增加 UIScene，仅合成测试 Host 变化（App/ShareExtension 不改生命周期）。
+官方依据：https://developer.apple.com/documentation/technotes/tn3187-migrating-to-the-uikit-scene-based-life-cycle 。Crash 堆栈为 UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption，来源是本轮合成 Host，不是产品 App 崩溃。
+
+后续只复验新增校验相关 Unit、Entry 删除相邻路径和五个失败 UI，不将前两轮失败重标通过。

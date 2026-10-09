@@ -215,7 +215,11 @@ final class AppLaunchSmokeTests: XCTestCase {
         let editor = app.textViews["entry-edit-body"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
         editor.tap()
-        editor.typeText(" edited")
+        editor.press(forDuration: 1)
+        let selectAll = app.menuItems["Select All"].exists ? app.menuItems["Select All"] : app.buttons["Select All"]
+        XCTAssertTrue(selectAll.waitForExistence(timeout: 5), app.debugDescription)
+        selectAll.tap()
+        editor.typeText("A restart-safe memory edited")
         XCTAssertEqual(editor.value as? String, "A restart-safe memory edited", app.debugDescription)
         app.buttons["entry-edit-save"].tap()
         XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
@@ -1876,10 +1880,16 @@ extension AppLaunchSmokeTests {
         safari.launch()
         let address = safari.textFields["TabBarItemTitle"]
         XCTAssertTrue(address.waitForExistence(timeout: 10), safari.debugDescription)
-        address.tap()
+        XCTAssertFalse(address.frame.isEmpty)
+        XCTAssertTrue(safari.frame.contains(address.frame))
+        address.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(safari.keyboards.firstMatch.waitForExistence(timeout: 5), safari.debugDescription)
         // Safari selects the current URL when entering the address field.
         let addressInput = safari.textFields.firstMatch
-        addressInput.typeText("http://127.0.0.1:18763/capture.html\n")
+        addressInput.typeText("http://127.0.0.1:18763/capture.html")
+        let go = safari.keyboards.buttons.matching(NSPredicate(format: "label == 'Go' OR label == '前往' OR label == 'go'")).firstMatch
+        XCTAssertTrue(go.waitForExistence(timeout: 5), safari.debugDescription)
+        go.tap()
         XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10), safari.debugDescription)
         let moreMenu = safari.buttons["MoreMenuButton"]
         XCTAssertTrue(moreMenu.waitForExistence(timeout: 5))

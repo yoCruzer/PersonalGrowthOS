@@ -17,6 +17,12 @@ cat > "$fixture_app/Info.plist" <<'PLIST'
 <key>MinimumOSVersion</key><string>17.0</string>
 <key>LSRequiresIPhoneOS</key><true/>
 <key>UIDeviceFamily</key><array><integer>1</integer></array>
+<key>UIApplicationSceneManifest</key><dict>
+<key>UIApplicationSupportsMultipleScenes</key><false/>
+<key>UISceneConfigurations</key><dict><key>UIWindowSceneSessionRoleApplication</key><array><dict>
+<key>UISceneConfigurationName</key><string>Fixture</string>
+<key>UISceneDelegateClassName</key><string>CaptureFixtureHost.CaptureHostScene</string>
+</dict></array></dict></dict>
 <key>UILaunchScreen</key><dict/>
 </dict></plist>
 PLIST

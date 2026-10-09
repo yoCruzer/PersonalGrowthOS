@@ -542,7 +542,7 @@ enum TodoIntegrity {
                 _ = try TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index)
             } else { try require(task.occurrenceIndex == nil && task.occurrenceKey == nil) }
             let history = (byTask[task.id] ?? []).sorted { $0.sequence < $1.sequence }
-            try require(history.count == task.revision + 1)
+            try require(!history.isEmpty && task.revision == history.count - 1)
             var previous: TodoEventValue?
             var previousTechnical = task.createdAt
             for (index, event) in history.enumerated() {
