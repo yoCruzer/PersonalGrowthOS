@@ -78,24 +78,27 @@ struct PersonalGrowthOSApp: App {
                             copied = true
                         }
                         .accessibilityIdentifier("startup-copy-diagnostic")
-                        if let retained = error as? StartupRetainedDataFailure {
-                            Text("Normal writes are paused. Export the retained database and original files for recovery. This private archive needs support recovery and cannot be imported as a normal backup.")
-                                .font(.caption).multilineTextAlignment(.center)
-                            if let recoveryURL {
-                                ShareLink("Save Retained Data", item: recoveryURL).accessibilityIdentifier("startup-share-retained")
-                            } else {
-                                Button("Prepare Retained Data Export") {
-                                    isPreparingRecovery = true; recoveryError = nil
-                                    Task {
-                                        do {
-                                            recoveryURL = try await Task.detached { try retained.retained.archive(diagnostic: diagnostic.report) }.value
-                                        } catch { recoveryError = error.localizedDescription }
-                                        isPreparingRecovery = false
-                                    }
-                                }.disabled(isPreparingRecovery).accessibilityIdentifier("startup-export-retained")
+                        if let failure = error as? StartupRetainedDataFailure {
+                            if let snapshotFailure = failure.snapshotFailure { Text(verbatim: snapshotFailure.report).font(.caption.monospaced()) }
+                            if let retained = failure.retained {
+                                Text("Normal writes are paused. Export the retained database and original files for recovery. This private archive needs support recovery and cannot be imported as a normal backup.")
+                                    .font(.caption).multilineTextAlignment(.center)
+                                if let recoveryURL {
+                                    ShareLink("Save Retained Data", item: recoveryURL).accessibilityIdentifier("startup-share-retained")
+                                } else {
+                                    Button("Prepare Retained Data Export") {
+                                        isPreparingRecovery = true; recoveryError = nil
+                                        Task {
+                                            do {
+                                                recoveryURL = try await Task.detached { try retained.archive(diagnostic: diagnostic.report) }.value
+                                            } catch { recoveryError = error.localizedDescription }
+                                            isPreparingRecovery = false
+                                        }
+                                    }.disabled(isPreparingRecovery).accessibilityIdentifier("startup-export-retained")
+                                }
+                                if let recoveryError { Text(recoveryError).font(.caption) }
+                                if isPreparingRecovery { ProgressView() }
                             }
-                            if let recoveryError { Text(recoveryError).font(.caption) }
-                            if isPreparingRecovery { ProgressView() }
                         }
                         Button("Retry") { retryStartup() }
                             .accessibilityIdentifier("startup-retry")

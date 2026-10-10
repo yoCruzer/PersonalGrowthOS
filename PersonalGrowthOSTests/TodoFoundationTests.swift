@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SQLite3
 import XCTest
 @testable import PersonalGrowthOS
 
@@ -212,9 +213,17 @@ extension TodoFoundationTests {
         try ZIPArchiveReader(archiveURL: root.appendingPathComponent("expected-v6.zip"), availableCapacity: .max).extractAll(to: expectedRoot)
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
         let expected = try decoder.decode(TransferData.self, from: Data(contentsOf: expectedRoot.appendingPathComponent("data.json")))
-        let store = root.appendingPathComponent("PersonalGrowthOS.sqlite")
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.moveItem(at: root.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
+        let originalBytes = try Data(contentsOf: store)
+        let configuration = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
         for pass in 0..<2 {
-            let container = try PersistenceContainerFactory.makeOnDisk(at: store), context = container.mainContext
+            let manager = pass == 0 ? FileManager.default : FailingStartupCopyManager(28)
+            let app = try AppContainer.make(configuration: configuration, fileManager: manager, rootURLOverride: root)
+            let container = app.modelContainer, context = container.mainContext
+            XCTAssertEqual(try Data(contentsOf: root.appendingPathComponent("Recovery/BeforeMigration/Store/PersonalGrowthOS.sqlite")), originalBytes)
+            if let failing = manager as? FailingStartupCopyManager { XCTAssertEqual(failing.copyAttempts, 0) }
             try LinkIntegrityService.validate(context: context)
             try TodoIntegrity.validate(context: context)
             XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()), 0)
@@ -542,15 +551,21 @@ extension TodoFoundationTests {
             event.taskID = orphanTaskID
             try container.mainContext.save()
         }
+        var sourceReader: OpaquePointer?
+        XCTAssertEqual(sqlite3_open_v2(store.path, &sourceReader, SQLITE_OPEN_READONLY, nil), SQLITE_OK)
+        defer { sqlite3_close(sourceReader) }
+        sqlite3_busy_timeout(sourceReader, 1_000)
+        XCTAssertEqual(sqlite3_exec(sourceReader, "BEGIN; SELECT Z_PLIST FROM Z_METADATA", nil, nil, nil), SQLITE_OK)
         let originalSQLite = try Data(contentsOf: store)
         let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
         do { _ = try AppContainer.make(configuration: config, rootURLOverride: root); XCTFail("Must stop normal startup") }
         catch let failure as StartupRetainedDataFailure {
-            defer { failure.retained.cleanup() }
+            let retained = try XCTUnwrap(failure.retained)
             XCTAssertFalse(failure.diagnostic.report.contains("PRIVATE"))
-            XCTAssertEqual(try Data(contentsOf: failure.retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), originalSQLite)
+            let frozenBytes = try Data(contentsOf: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+            XCTAssertEqual(frozenBytes, originalSQLite)
             XCTAssertEqual(try Data(contentsOf: media), original)
-            let archive = try failure.retained.archive(diagnostic: failure.diagnostic.report)
+            let archive = try retained.archive(diagnostic: failure.diagnostic.report)
             let extracted = root.appendingPathComponent("Extracted")
             try ZIPArchiveReader(archiveURL: archive, availableCapacity: .max).extractAll(to: extracted)
             XCTAssertEqual(try Data(contentsOf: extracted.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), originalSQLite)
@@ -700,5 +715,284 @@ extension TodoFoundationTests {
         XCTAssertFalse(TodoQuery.matches(done, filter: .completedToday, now: clock))
         XCTAssertTrue(TodoQuery.matches(done, filter: .all, now: clock, status: .open))
         XCTAssertEqual(Set(try LocalSearchService(context: context).search("Match").todos.map(\.id)), Set([open.id, done.id, canceled.id, overdue.id]))
+    }
+}
+
+private final class FailingStartupCopyManager: FileManager, @unchecked Sendable {
+    let failureCode: Int
+    var copyAttempts = 0
+    init(_ code: Int) { failureCode = code; super.init() }
+    override func copyItem(at srcURL: URL, to dstURL: URL) throws {
+        copyAttempts += 1
+        throw NSError(domain: NSPOSIXErrorDomain, code: failureCode)
+    }
+}
+
+extension TodoFoundationTests {
+    func testHealthyStartupDoesNotRequireCopyUnderIOErrorOrNoSpace() throws {
+        for code in [5, 28] { // EIO / ENOSPC at the protective copy boundary.
+            let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            defer { try? FileManager.default.removeItem(at: root) }
+            let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
+            try autoreleasepool {
+                let app = try AppContainer.make(configuration: config, rootURLOverride: root)
+                app.modelContainer.mainContext.insert(Entry(body: "healthy preserved", createdAt: Date()))
+                try app.modelContainer.mainContext.save()
+            }
+            let manager = FailingStartupCopyManager(code)
+            do {
+                let reopened = try AppContainer.make(configuration: config, fileManager: manager, rootURLOverride: root)
+                XCTAssertEqual(manager.copyAttempts, 0)
+                XCTAssertEqual(try reopened.modelContainer.mainContext.fetch(FetchDescriptor<Entry>()).first?.body, "healthy preserved")
+            } catch { XCTFail("Healthy startup blocked by copy errno \(code): \(error)") }
+        }
+    }
+
+    func testRecoveryCaptureReusesDurableSnapshotAcrossRetryAndRestart() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try autoreleasepool {
+            let container = try PersistenceContainerFactory.makeOnDisk(at: store)
+            _ = try TodoTaskService(context: container.mainContext).create(TodoDraft(title: "retained"))
+        }
+        let first = try StartupRetainedData.capture(rootURL: root)
+        XCTAssertTrue(first.snapshotURL.path.hasPrefix(root.path + "/"), "Recovery must live in Application Support, beside the source root")
+        for _ in 0..<4 {
+            let retry = try StartupRetainedData.capture(rootURL: root)
+            XCTAssertEqual(retry.snapshotURL, first.snapshotURL)
+        }
+    }
+}
+
+extension TodoFoundationTests {
+    func testMigrationCopyFailureStopsBeforeOpeningOriginalV10() throws {
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        for code in [5, 28] {
+            let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            defer { try? FileManager.default.removeItem(at: root) }
+            let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+            try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: fixture.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
+            let bytes = try Data(contentsOf: store)
+            XCTAssertFalse(StartupStoreProtection.isCurrentStore(at: store))
+            let manager = FailingStartupCopyManager(code)
+            XCTAssertThrowsError(try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), fileManager: manager, rootURLOverride: root))
+            XCTAssertEqual(manager.copyAttempts, 1)
+            XCTAssertEqual(try Data(contentsOf: store), bytes)
+            XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent("Recovery/BeforeMigration").path))
+        }
+    }
+
+    func testRecoveryWALBytesAreConsistentAndConcurrentWriterIsExcluded() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        var db: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(store.path, &db), SQLITE_OK)
+        defer { sqlite3_close(db) }
+        XCTAssertEqual(sqlite3_exec(db, "PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE Z_METADATA (Z_PLIST BLOB); INSERT INTO Z_METADATA VALUES (X'01'); CREATE TABLE evidence (value TEXT); INSERT INTO evidence VALUES ('committed WAL fact');", nil, nil, nil), SQLITE_OK)
+        let wal = URL(fileURLWithPath: store.path + "-wal")
+        let sqliteBytes = try Data(contentsOf: store), walBytes = try Data(contentsOf: wal)
+        XCTAssertGreaterThan(walBytes.count, 32)
+        try StartupStoreProtection.withFrozenStore(at: store) {
+            XCTAssertEqual(sqlite3_exec(db, "INSERT INTO evidence VALUES ('must not write')", nil, nil, nil), SQLITE_BUSY)
+        }
+        let retained = try StartupRetainedData.capture(rootURL: root)
+        XCTAssertEqual(try Data(contentsOf: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), sqliteBytes)
+        XCTAssertEqual(try Data(contentsOf: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite-wal")), walBytes)
+        XCTAssertEqual(try Data(contentsOf: store), sqliteBytes)
+        XCTAssertEqual(try Data(contentsOf: wal), walBytes)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite-shm").path))
+        let archive = try retained.archive(diagnostic: "synthetic WAL")
+        let extracted = root.appendingPathComponent("Extracted")
+        try ZIPArchiveReader(archiveURL: archive, availableCapacity: .max).extractAll(to: extracted)
+        var recovered: OpaquePointer?
+        XCTAssertEqual(sqlite3_open_v2(extracted.appendingPathComponent("Store/PersonalGrowthOS.sqlite").path, &recovered, SQLITE_OPEN_READONLY, nil), SQLITE_OK)
+        defer { sqlite3_close(recovered) }
+        var statement: OpaquePointer?
+        XCTAssertEqual(sqlite3_prepare_v2(recovered, "SELECT value FROM evidence", -1, &statement, nil), SQLITE_OK)
+        defer { sqlite3_finalize(statement) }
+        XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
+        XCTAssertEqual(String(cString: sqlite3_column_text(statement, 0)), "committed WAL fact")
+        XCTAssertEqual(sqlite3_step(statement), SQLITE_DONE)
+    }
+
+    func testCorruptStartupRetryRestartTempPurgeAndExportFailurePreserveOnlySnapshot() async throws {
+        let support = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let root = support.appendingPathComponent("P1-Synthetic-" + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
+        try autoreleasepool {
+            let app = try AppContainer.make(configuration: config, rootURLOverride: root)
+            let task = try TodoTaskService(context: app.modelContainer.mainContext).create(TodoDraft(title: "broken identity"))
+            task.revision = 90
+            try app.modelContainer.mainContext.save()
+        }
+        var snapshot: URL?
+        for attempt in 0..<5 {
+            try autoreleasepool {
+                do { _ = try AppContainer.make(configuration: config, rootURLOverride: root); XCTFail("Normal writers must stop") }
+                catch let failure as StartupRetainedDataFailure {
+                    XCTAssertNil(failure.snapshotFailure)
+                    let retained = try XCTUnwrap(failure.retained)
+                    if let snapshot { XCTAssertEqual(retained.snapshotURL, snapshot) }
+                    else { snapshot = retained.snapshotURL }
+                    let bytes = try Data(contentsOf: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+                    if attempt == 0 {
+                        let archive = try retained.archive(diagnostic: "test")
+                        let firstArchive = try Data(contentsOf: archive)
+                        for code in [5, 28] {
+                            XCTAssertThrowsError(try retained.archive(diagnostic: "retry", write: { _, partial in
+                                try Data("partial".utf8).write(to: partial)
+                                throw NSError(domain: NSPOSIXErrorDomain, code: code)
+                            }))
+                            XCTAssertEqual(try Data(contentsOf: archive), firstArchive)
+                            XCTAssertEqual(try Data(contentsOf: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), bytes)
+                            XCTAssertFalse(FileManager.default.fileExists(atPath: retained.snapshotURL.appendingPathComponent(".export-building.zip").path))
+                        }
+                        XCTAssertThrowsError(try retained.archive(diagnostic: "cancel", write: { _, partial in
+                            try Data("partial cancellation".utf8).write(to: partial)
+                            throw CancellationError()
+                        })) { XCTAssertTrue($0 is CancellationError) }
+                        XCTAssertEqual(try Data(contentsOf: archive), firstArchive)
+                        XCTAssertEqual(try Data(contentsOf: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), bytes)
+                        let disposableTemp = FileManager.default.temporaryDirectory.appendingPathComponent("P1-Disposable-" + UUID().uuidString)
+                        try FileManager.default.createDirectory(at: disposableTemp, withIntermediateDirectories: true)
+                        try firstArchive.write(to: disposableTemp.appendingPathComponent("temporary-export.zip"))
+                        try FileManager.default.removeItem(at: disposableTemp)
+                        XCTAssertTrue(FileManager.default.fileExists(atPath: retained.snapshotURL.path))
+                    }
+                }
+            }
+        }
+        let slots = try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("Recovery").path).filter { !$0.hasPrefix(".") }
+        XCTAssertEqual(slots.count, 1)
+        let retained = StartupRetainedData(rootURL: root, snapshotURL: try XCTUnwrap(snapshot))
+        let archive = try retained.archive(diagnostic: "final")
+        let empty = try PersistenceContainerFactory.makeInMemory()
+        do {
+            _ = try await ImportExportService(context: empty.mainContext, mediaStore: MediaStore(rootURL: root.appendingPathComponent("EmptyMedia")), availableCapacity: { .max }).previewPackage(from: archive)
+            XCTFail("raw recovery ZIP must not be accepted as v7")
+        } catch { XCTAssertEqual((error as? AppDiagnosticFailure)?.underlying as? ZIPArchiveError ?? error as? ZIPArchiveError, .missingMember("manifest.json/data.json")) }
+        XCTAssertEqual(try empty.mainContext.fetchCount(FetchDescriptor<TodoTask>()), 0)
+    }
+}
+
+extension TodoFoundationTests {
+    func testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure() throws {
+        let fm = FileManager.default
+        let volume = URL(fileURLWithPath: "/private/tmp/pgos-p1-low-space")
+        guard fm.fileExists(atPath: volume.appendingPathComponent("RUN_LOW_SPACE_TEST").path) else {
+            throw XCTSkip("Requires the isolated 32MB HFS+ test image; never fill the primary volume")
+        }
+        let root = volume.appendingPathComponent("Synthetic-" + UUID().uuidString)
+        let filler = volume.appendingPathComponent("Filler-" + UUID().uuidString)
+        defer { try? fm.removeItem(at: filler); try? fm.removeItem(at: root) }
+        let healthy = root.appendingPathComponent("Healthy"), legacy = root.appendingPathComponent("Legacy"), broken = root.appendingPathComponent("Broken")
+        let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
+        try autoreleasepool {
+            let app = try AppContainer.make(configuration: config, rootURLOverride: healthy)
+            app.modelContainer.mainContext.insert(Entry(body: "low-space evidence", createdAt: Date()))
+            try app.modelContainer.mainContext.save()
+            let corrupt = try AppContainer.make(configuration: config, rootURLOverride: broken)
+            let task = try TodoTaskService(context: corrupt.modelContainer.mainContext).create(TodoDraft(title: "invalid"))
+            task.revision = 99; try corrupt.modelContainer.mainContext.save()
+        }
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        try fm.createDirectory(at: legacy.appendingPathComponent("Store"), withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture.appendingPathComponent("PersonalGrowthOS.sqlite"), to: legacy.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        // Non-cloneable real bytes on HFS+: each full Store copy needs >4MiB.
+        let block = Data(repeating: 0x5a, count: 4 * 1_024 * 1_024)
+        for directory in [healthy, legacy, broken] { try block.write(to: directory.appendingPathComponent("Store/large-fixture.bin")) }
+        let legacyBytes = try Data(contentsOf: legacy.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        XCTAssertTrue(fm.createFile(atPath: filler.path, contents: nil))
+        let handle = try FileHandle(forWritingTo: filler)
+        func freeBytes() throws -> Int64 { (try fm.attributesOfFileSystem(forPath: volume.path)[.systemFreeSize] as! NSNumber).int64Value }
+        while try freeBytes() > 1_500_000 { try handle.write(contentsOf: Data(repeating: 0x67, count: 256 * 1_024)) }
+        try handle.close()
+        XCTAssertLessThan(try freeBytes(), 4 * 1_024 * 1_024)
+        let duplicate = root.appendingPathComponent("ImpossibleCopy")
+        XCTAssertThrowsError(try fm.copyItem(at: healthy.appendingPathComponent("Store"), to: duplicate)) { error in
+            let ns = error as NSError
+            XCTAssertTrue(ns.code == NSFileWriteOutOfSpaceError || (ns.userInfo[NSUnderlyingErrorKey] as? NSError)?.code == Int(ENOSPC), "\(ns)")
+        }
+        try? fm.removeItem(at: duplicate)
+        try autoreleasepool {
+            let app = try AppContainer.make(configuration: config, rootURLOverride: healthy)
+            XCTAssertEqual(try app.modelContainer.mainContext.fetch(FetchDescriptor<Entry>()).first?.body, "low-space evidence")
+            app.modelContainer.mainContext.insert(Entry(body: "writes still usable", createdAt: Date()))
+            try app.modelContainer.mainContext.save()
+            XCTAssertEqual(try app.modelContainer.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+        }
+        XCTAssertThrowsError(try AppContainer.make(configuration: config, rootURLOverride: legacy))
+        XCTAssertEqual(try Data(contentsOf: legacy.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), legacyBytes)
+        do { _ = try AppContainer.make(configuration: config, rootURLOverride: broken); XCTFail("Never allow normal writes when snapshot fails") }
+        catch let failure as StartupRetainedDataFailure {
+            XCTAssertNil(failure.retained)
+            XCTAssertEqual(failure.snapshotFailure?.category, .capacity)
+        }
+        try fm.removeItem(at: filler)
+        do { _ = try AppContainer.make(configuration: config, rootURLOverride: broken); XCTFail("Still corrupt after space returns") }
+        catch let failure as StartupRetainedDataFailure {
+            XCTAssertNotNil(failure.retained)
+            XCTAssertNil(failure.snapshotFailure)
+        }
+    }
+}
+
+private final class CheckpointStartupCopyManager: FileManager, @unchecked Sendable {
+    let checkpoint: () -> Void
+    init(checkpoint: @escaping () -> Void) { self.checkpoint = checkpoint; super.init() }
+    override func copyItem(at srcURL: URL, to dstURL: URL) throws {
+        checkpoint()
+        try super.copyItem(at: srcURL, to: dstURL)
+    }
+}
+
+extension TodoFoundationTests {
+    func testPassiveCheckpointRaceIsRejectedAndRetryCapturesConsistentRawFiles() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        var db: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(store.path, &db), SQLITE_OK)
+        defer { sqlite3_close(db) }
+        XCTAssertEqual(sqlite3_exec(db, "PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE Z_METADATA (Z_PLIST BLOB); CREATE TABLE evidence (value TEXT); INSERT INTO evidence VALUES ('checkpoint fact');", nil, nil, nil), SQLITE_OK)
+        let before = try Data(contentsOf: store)
+        let manager = CheckpointStartupCopyManager {
+            XCTAssertEqual(sqlite3_wal_checkpoint_v2(db, nil, SQLITE_CHECKPOINT_PASSIVE, nil, nil), SQLITE_OK)
+        }
+        XCTAssertThrowsError(try StartupRetainedData.capture(rootURL: root, fileManager: manager))
+        XCTAssertNotEqual(try Data(contentsOf: store), before, "Real passive checkpoint must change main database pages")
+        let paths = try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("Recovery").path)
+        XCTAssertEqual(paths.filter { !$0.hasPrefix(".") }.count, 0)
+        XCTAssertFalse(paths.contains(".IntegrityFailure-building"))
+        let retained = try StartupRetainedData.capture(rootURL: root)
+        XCTAssertEqual(try Data(contentsOf: retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), try Data(contentsOf: store))
+        XCTAssertEqual(try StartupRetainedData.capture(rootURL: root).snapshotURL, retained.snapshotURL)
+    }
+
+    func testDifferentFailurePreservesEarlierSnapshotAndIncompleteSnapshotIsNeverOverwritten() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
+        let app = try AppContainer.make(configuration: config, rootURLOverride: root)
+        let task = try TodoTaskService(context: app.modelContainer.mainContext).create(TodoDraft(title: "first evidence"))
+        let first = try StartupRetainedData.capture(rootURL: root)
+        let original = try Data(contentsOf: first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        task.title = "different evidence"; try app.modelContainer.mainContext.save()
+        let second = try StartupRetainedData.capture(rootURL: root)
+        XCTAssertNotEqual(first.snapshotURL, second.snapshotURL)
+        XCTAssertEqual(try Data(contentsOf: first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), original)
+        try FileManager.default.removeItem(at: second.snapshotURL.appendingPathComponent("COMPLETE"))
+        let manager = FailingStartupCopyManager(28)
+        XCTAssertThrowsError(try StartupRetainedData.capture(rootURL: root, fileManager: manager))
+        XCTAssertEqual(manager.copyAttempts, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: second.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite").path))
+        XCTAssertEqual(try Data(contentsOf: first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), original)
     }
 }

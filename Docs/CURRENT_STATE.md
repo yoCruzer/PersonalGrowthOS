@@ -1,3 +1,11 @@
+# Draft PR #8 — P1 数据保全限定修复进行中（2026-10-10）
+
+Review 基线8be670cd7375c0c7f0352d7749bf8a7ff3114767，原分支/原Draft PR #8/base保持。S0 EIO/ENOSPC与临时副本负向证据成立；S1启动只读预检、迁移前保护、持久内容身份快照已实现；S2物理32MB低空间、WAL/并发/Retry/raw ZIP正负通过7/7，最终WAL补验5/5。S3集成与原Build12迁移6/6通过（2Unit+4UI，零运行警告），最终候选/提交/push/PR更新未完成，当前不标READY。权威命令、失败及保全/清理策略见 [限定修复记录](TODO_P1_DATA_PRESERVATION.md)。只处理两个P1，不新增Todo产品功能；V11.1/v7/五Tab/1.0(7)/原UX不变。
+
+---
+
+以下为上一轮独立审查交接，不代表本轮已经完成。
+
 # Todo V1 ReviewFix + Usability — READY_FOR_INDEPENDENT_REVIEW（2026-10-10）
 
 Owner 附件 `CODEX_GOAL_ZH.md` 的唯一整体Goal已连续完成S0→S4：两个P1先有真实失败回归，四项Review修复闭合，已有Open单次原身份转换重复、全部任务直接四状态筛选完成。重复提醒固定计划锚点优先/相对日±366/墙钟分钟；future模板同步已有Open后继并明确覆盖单独模板字段；保存与通知状态及时反馈；Todo完整性异常保留pre-open原字节、暂停正常写入并可导出raw支持恢复包，不自动修复/清库。

@@ -2232,11 +2232,16 @@ extension AppLaunchSmokeTests {
         app.buttons["startup-copy-diagnostic"].tap()
         app.buttons["startup-export-retained"].tap()
         XCTAssertTrue(app.buttons["startup-share-retained"].waitForExistence(timeout: 10))
-        app.buttons["startup-retry"].tap()
-        XCTAssertTrue(app.buttons["startup-export-retained"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        for _ in 0..<3 {
+            app.buttons["startup-retry"].tap()
+            XCTAssertTrue(app.buttons["startup-export-retained"].waitForExistence(timeout: 10))
+            XCTAssertFalse(app.tabBars.firstMatch.exists)
+        }
         app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
         XCTAssertTrue(app.buttons["startup-export-retained"].waitForExistence(timeout: 10))
+        app.buttons["startup-export-retained"].tap()
+        XCTAssertTrue(app.buttons["startup-share-retained"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
     }
 }
 

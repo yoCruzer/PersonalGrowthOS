@@ -337,11 +337,12 @@ enum PersistenceContainerFactory {
         ))
     }
 
-    static func makeOnDisk(at storeURL: URL) throws -> ModelContainer {
+    static func makeOnDisk(at storeURL: URL, allowsSave: Bool = true) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
             schema: Schema(versionedSchema: PersonalGrowthSchemaV11.self),
             url: storeURL,
+            allowsSave: allowsSave,
             cloudKitDatabase: .none
         ))
     }
