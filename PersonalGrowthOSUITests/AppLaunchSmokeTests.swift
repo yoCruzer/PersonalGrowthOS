@@ -1,5 +1,6 @@
 import XCTest
 import Network
+import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
     func testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry() {
@@ -214,10 +215,15 @@ final class AppLaunchSmokeTests: XCTestCase {
         let editor = app.textViews["entry-edit-body"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
         editor.tap()
-        editor.typeText(" edited")
+        editor.press(forDuration: 1)
+        let selectAll = app.menuItems["Select All"].exists ? app.menuItems["Select All"] : app.buttons["Select All"]
+        XCTAssertTrue(selectAll.waitForExistence(timeout: 5), app.debugDescription)
+        selectAll.tap()
+        editor.typeText("A restart-safe memory edited")
+        XCTAssertEqual(editor.value as? String, "A restart-safe memory edited", app.debugDescription)
         app.buttons["entry-edit-save"].tap()
         XCTAssertTrue(editor.waitForNonExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["A restart-safe memory edited"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["A restart-safe memory edited"].waitForExistence(timeout: 10), app.debugDescription)
 
         app.terminate()
         app.launchArguments = ["-PGOSUITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -1524,6 +1530,7 @@ extension AppLaunchSmokeTests {
 
 extension AppLaunchSmokeTests {
     func testPR6SearchRefreshesAfterDeletingMatchedFollowUps() {
+        continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
@@ -1556,17 +1563,27 @@ extension AppLaunchSmokeTests {
         app.keyboards.buttons["Search"].tap()
         for text in ["Needle alpha", "Needle beta"] {
             XCTAssertTrue(app.staticTexts[text].waitForExistence(timeout: 5))
-            app.staticTexts[text].tap()
-            let target = app.staticTexts[text]
+            let result = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label CONTAINS %@", "timeline-entry-", text)).firstMatch
+            XCTAssertTrue(result.exists)
+            // A long result's snippet can overlap the bottom search toolbar; use its visible row.
+            let visible = result.frame.intersection(app.frame.inset(by: UIEdgeInsets(top: 180, left: 0, bottom: 150, right: 0)))
+            XCTAssertFalse(visible.isEmpty)
+            app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
+            let target = app.staticTexts.matching(NSPredicate(format: "label == %@ AND identifier BEGINSWITH %@", text, "follow-up-")).firstMatch
             XCTAssertTrue(target.waitForExistence(timeout: 5))
             XCTAssertTrue(target.isHittable, "Search must scroll to the matching follow-up")
             let identifier = target.identifier
             let delete = app.buttons.matching(NSPredicate(format: "identifier == %@ AND label == %@", identifier, "Delete")).firstMatch
             for _ in 0..<3 where !delete.isHittable { app.swipeUp() }
-            delete.tap()
-            app.buttons["Delete"].firstMatch.tap()
-            XCTAssertTrue(delete.waitForNonExistence(timeout: 5))
-            app.navigationBars.buttons["Search"].firstMatch.tap()
+            XCTAssertFalse(delete.frame.isEmpty)
+            delete.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            let confirmation = app.sheets.buttons["Delete"].firstMatch
+            XCTAssertTrue(confirmation.waitForExistence(timeout: 5), app.debugDescription)
+            confirmation.tap()
+            XCTAssertTrue(delete.waitForNonExistence(timeout: 5), app.debugDescription)
+            let back = app.navigationBars["Entry"].buttons["Search"].firstMatch
+            XCTAssertTrue(back.isHittable, app.debugDescription)
+            back.tap()
             XCTAssertEqual(search.value as? String, "Needle")
             XCTAssertFalse(app.staticTexts[text].exists)
         }
@@ -1874,11 +1891,32 @@ extension AppLaunchSmokeTests {
         safari.launch()
         let address = safari.textFields["TabBarItemTitle"]
         XCTAssertTrue(address.waitForExistence(timeout: 10), safari.debugDescription)
-        address.tap()
-        // Safari selects the current URL when entering the address field.
-        let addressInput = safari.textFields.firstMatch
-        addressInput.typeText("http://127.0.0.1:18763/capture.html\n")
-        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertFalse(address.frame.isEmpty)
+        XCTAssertTrue(safari.frame.contains(address.frame))
+        address.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(safari.keyboards.firstMatch.waitForExistence(timeout: 5), safari.debugDescription)
+        let urlTree = XCTAttachment(string: safari.debugDescription)
+        urlTree.name = "Safari URL editing hierarchy"; urlTree.lifetime = .keepAlways; add(urlTree)
+        let urlShot = XCTAttachment(screenshot: safari.screenshot())
+        urlShot.name = "Safari URL editor"; urlShot.lifetime = .keepAlways; add(urlShot)
+        let addressInput = safari.textFields["URL"]
+        XCTAssertTrue(addressInput.waitForExistence(timeout: 5), safari.debugDescription)
+        XCTAssertTrue(addressInput.isHittable, safari.debugDescription)
+        let clear = safari.buttons["ClearTextButton"]
+        if clear.exists && clear.isEnabled { clear.tap() }
+        // Safari's capsule loses focus during XCTest typing on iOS 27; enter the fixture by normal Paste.
+        UIPasteboard.general.string = "http://127.0.0.1:18763/capture.html"
+        addressInput.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 1)
+        let paste = safari.menuItems.matching(NSPredicate(format: "label == 'Paste' OR label == '粘贴'")).firstMatch
+        XCTAssertTrue(paste.waitForExistence(timeout: 5), safari.debugDescription)
+        paste.tap()
+        let allowPaste = safari.alerts.buttons.matching(NSPredicate(format: "label == 'Allow Paste' OR label == '允许粘贴'")).firstMatch
+        if allowPaste.waitForExistence(timeout: 1) { allowPaste.tap() }
+        XCTAssertEqual(addressInput.value as? String, "http://127.0.0.1:18763/capture.html")
+        let go = safari.keyboards.buttons["Go"]
+        XCTAssertTrue(go.isEnabled, safari.debugDescription)
+        go.tap()
+        XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10), safari.debugDescription)
         let moreMenu = safari.buttons["MoreMenuButton"]
         XCTAssertTrue(moreMenu.waitForExistence(timeout: 5))
         XCTAssertFalse(moreMenu.frame.isEmpty)
@@ -1921,7 +1959,7 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(title.waitForExistence(timeout: 10), app.debugDescription)
         title.tap()
         XCTAssertTrue(app.staticTexts["A selected thought with its original source."].exists)
-        let sourceLink = app.buttons["entry-source-link"]
+        let sourceLink = app.descendants(matching: .any)["entry-source-link"]
         XCTAssertTrue(sourceLink.waitForExistence(timeout: 5))
         sourceLink.tap()
         XCTAssertTrue(safari.wait(for: .runningForeground, timeout: 10))
@@ -1931,5 +1969,399 @@ extension AppLaunchSmokeTests {
         app.launch()
         app.tabBars.buttons["Timeline"].tap()
         XCTAssertTrue(app.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10))
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["today-todo-add"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.tabBars.buttons.count, 5)
+        app.buttons["today-todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        title.typeText("Buy batteries")
+        app.buttons["todo-save-another"].tap()
+        XCTAssertTrue(app.staticTexts["todo-saved-another"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["todo-saved-another"].isHittable)
+        let saved = XCTAttachment(screenshot: app.screenshot()); saved.name = "Continuous Todo saved feedback remains visible above keyboard"; saved.lifetime = .keepAlways; add(saved)
+        title.typeText("Call home")
+        app.buttons["todo-save"].tap()
+        app.buttons["today-todo-hub"].tap()
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "2")
+        app.buttons["todo-stat-open"].tap()
+        XCTAssertTrue(app.staticTexts["Buy batteries"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Call home"].exists)
+        app.staticTexts["Buy batteries"].tap()
+        app.buttons["todo-detail-toggle"].tap()
+        XCTAssertTrue(app.staticTexts["Todo completed"].waitForExistence(timeout: 5))
+        app.buttons["todo-detail-toggle"].tap()
+        XCTAssertTrue(app.staticTexts["Todo reopened"].waitForExistence(timeout: 5))
+        app.buttons["todo-cancel"].tap()
+        XCTAssertTrue(app.staticTexts["Todo canceled"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "-PGOSResetData" }
+        app.launch()
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["library-search-button"].tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5)); search.tap(); search.typeText("batteries")
+        XCTAssertTrue(app.staticTexts["Buy batteries"].waitForExistence(timeout: 5))
+        app.staticTexts["Buy batteries"].tap()
+        XCTAssertTrue(app.staticTexts["Canceled"].waitForExistence(timeout: 5))
+    }
+
+    func testTodoEntrySourceKeepsOriginalRecord() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.tabBars.buttons["Record"].tap()
+        let body = app.textViews["capture-body"]
+        XCTAssertTrue(body.waitForExistence(timeout: 5)); body.tap(); body.typeText("Original entry for action")
+        app.buttons["capture-save"].tap()
+        XCTAssertTrue(app.staticTexts["Original entry for action"].waitForExistence(timeout: 5))
+        app.staticTexts["Original entry for action"].tap()
+        app.buttons["entry-actions"].tap()
+        app.buttons["entry-create-todo"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["todo-title"].waitForExistence(timeout: 5))
+        app.buttons["todo-save"].tap()
+        XCTAssertTrue(app.staticTexts["Original entry for action"].exists)
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["today-todo-hub"].tap()
+        app.buttons["todo-stat-open"].tap()
+        app.staticTexts["Original entry for action"].tap()
+        let source = app.buttons["todo-source-entry"]
+        if !source.isHittable { app.swipeUp() }
+        XCTAssertTrue(source.waitForExistence(timeout: 5)); source.tap()
+        XCTAssertTrue(app.staticTexts["Original entry for action"].waitForExistence(timeout: 5))
+    }
+
+    func testAboutContainsRealCommitAndCopiesFullSHAIntoTodoInput() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["settings-button"].tap()
+        let commit = app.buttons["settings-commit"]
+        for _ in 0..<6 where !commit.isHittable { app.swipeUp() }
+        XCTAssertTrue(commit.waitForExistence(timeout: 5))
+        let full = commit.value as? String ?? ""
+        XCTAssertEqual(full.count, 40)
+        XCTAssertTrue(full.allSatisfy { $0.isHexDigit })
+        let tag = app.staticTexts["Release Tag"]
+        if tag.exists && !tag.isHittable { app.swipeUp() }
+        let about = XCTAttachment(screenshot: app.screenshot())
+        about.name = "About actual bundle provenance"; about.lifetime = .keepAlways; add(about)
+        commit.tap()
+        app.buttons["Done"].tap()
+        app.buttons["today-todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.press(forDuration: 1)
+        let paste = app.menuItems["Paste"].exists ? app.menuItems["Paste"] : app.buttons["Paste"]
+        XCTAssertTrue(paste.waitForExistence(timeout: 5)); paste.tap()
+        let allow = app.alerts.buttons["Allow Paste"]
+        if allow.waitForExistence(timeout: 1) { allow.tap() }
+        XCTAssertEqual(title.value as? String, full)
+    }
+
+    func testTodoListCreateRenameFilterAndConfirmedDeleteKeepsTask() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["today-todo-hub"].tap()
+        app.buttons["todo-list-filter"].tap(); app.buttons["Manage Lists"].tap()
+        let name = app.textFields["todo-list-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5)); name.tap(); name.typeText("Work")
+        app.buttons["todo-list-create"].tap()
+        XCTAssertTrue(app.staticTexts["Work"].exists)
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "todo-list-rename-")).firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Rename List"].waitForExistence(timeout: 5))
+        let renameField = app.textFields["todo-list-rename-name"]
+        renameField.tap(); renameField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 4) + "Home")
+        app.buttons["todo-list-rename-save"].tap()
+        XCTAssertTrue(app.staticTexts["Home"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
+        app.buttons["todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5)); title.typeText("Buy batteries for home")
+        app.buttons["todo-dismiss-keyboard"].tap()
+        app.buttons["todo-editor-list"].tap(); app.buttons["Home"].tap()
+        app.buttons["todo-save"].tap()
+        app.buttons["todo-stat-open"].tap()
+        app.buttons["todo-list-filter"].tap(); app.buttons["Home"].tap()
+        XCTAssertTrue(app.staticTexts["Buy batteries for home"].waitForExistence(timeout: 5))
+        app.buttons["todo-list-filter"].tap(); app.buttons["Manage Lists"].tap()
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "todo-list-delete-")).firstMatch.tap()
+        let deletion = app.alerts["Delete List?"]
+        XCTAssertTrue(deletion.waitForExistence(timeout: 5)); deletion.buttons["Cancel"].tap()
+        XCTAssertTrue(app.staticTexts["Home"].exists)
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "todo-list-delete-")).firstMatch.tap()
+        app.alerts["Delete List?"].buttons["Delete"].tap()
+        XCTAssertFalse(app.staticTexts["Home"].exists)
+        app.buttons["Done"].tap()
+        app.buttons["todo-list-filter"].tap(); app.buttons["Unclassified"].tap()
+        XCTAssertTrue(app.staticTexts["Buy batteries for home"].waitForExistence(timeout: 5))
+        app.staticTexts["Buy batteries for home"].tap()
+        app.buttons["todo-detail-toggle"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertEqual(app.buttons["todo-stat-today"].value as? String, "1")
+        app.buttons["todo-stat-today"].tap()
+        XCTAssertTrue(app.staticTexts["Buy batteries for home"].exists)
+    }
+
+    func testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence() {
+        continueAfterFailure = false
+        addUIInterruptionMonitor(withDescription: "Todo reminder authorization") { alert in
+            for label in ["Allow", "允许"] where alert.buttons[label].exists { alert.buttons[label].tap(); return true }
+            return false
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["today-todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5)); title.typeText("Morning medicine")
+        app.buttons["todo-dismiss-keyboard"].tap()
+        app.switches["todo-planned-toggle"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        XCTAssertTrue(app.datePickers["todo-planned-day"].waitForExistence(timeout: 5))
+        app.switches["todo-reminder-toggle"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        for _ in 0..<5 where !app.buttons["todo-repeat"].isHittable { app.swipeUp() }
+        app.buttons["todo-repeat"].tap(); app.buttons["Every Day"].tap()
+        app.buttons["todo-save"].tap()
+        XCTAssertTrue(title.waitForNonExistence(timeout: 5))
+        app.buttons["today-todo-hub"].tap()
+        XCTAssertTrue(app.buttons["todo-stat-open"].waitForExistence(timeout: 5))
+        app.buttons["todo-stat-open"].tap()
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
+        app.staticTexts["Morning medicine"].tap()
+        app.buttons["todo-detail-toggle"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
+        app.staticTexts["Morning medicine"].tap()
+        let skip = app.buttons["todo-skip"]
+        for _ in 0..<3 where !skip.isHittable { app.swipeUp() }
+        XCTAssertTrue(skip.isHittable); skip.tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
+        app.staticTexts["Morning medicine"].tap()
+        let stop = app.buttons["todo-stop-series"]
+        for _ in 0..<3 where !stop.isHittable { app.swipeUp() }
+        stop.tap()
+        app.alerts["Stop Entire Series?"].buttons["Stop Entire Series"].tap()
+        for _ in 0..<3 where !app.buttons["todo-detail-toggle"].isHittable { app.swipeDown() }
+        app.buttons["todo-detail-toggle"].tap()
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        app.buttons["today-todo-hub"].tap()
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "0")
+        XCTAssertEqual(app.buttons["todo-stat-today"].value as? String, "2")
+    }
+
+    func testTodoChineseDarkLargestTextAndAboutPassSemanticAccessibilityAudit() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN",
+            "-AppleInterfaceStyle", "Dark", "-UIPreferredContentSizeCategoryName", UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        app.launch()
+        XCTAssertEqual(app.tabBars.buttons.count, 5)
+        app.buttons["today-todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["todo-save"].isEnabled)
+        let text = "买电池 🔋 并检查未来构建来源，这是完整保留的长标题"
+        title.typeText(text)
+        app.buttons["todo-dismiss-keyboard"].tap()
+        XCTAssertGreaterThan(title.frame.height, 150, "Largest accessibility text must actually enlarge the multiline title")
+        try performSemanticAccessibilityAudit(app)
+        let editor = XCTAttachment(screenshot: app.screenshot()); editor.name = "Todo Chinese dark largest text editor"; editor.lifetime = .keepAlways; add(editor)
+        XCTAssertTrue(app.buttons["todo-save"].isHittable)
+        app.buttons["todo-save"].tap()
+        app.buttons["today-todo-hub"].tap()
+        for _ in 0..<6 where !app.buttons["todo-stat-open"].isHittable { app.swipeUp() }
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
+        app.buttons["todo-stat-open"].tap()
+        for _ in 0..<10 where !app.staticTexts[text].exists { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts[text].waitForExistence(timeout: 5))
+        try performSemanticAccessibilityAudit(app)
+        let hub = XCTAttachment(screenshot: app.screenshot()); hub.name = "Todo Chinese dark largest text hub"; hub.lifetime = .keepAlways; add(hub)
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        app.buttons["settings-button"].tap()
+        let commit = app.buttons["settings-commit"]
+        for _ in 0..<12 where !commit.isHittable { app.swipeUp() }
+        XCTAssertTrue(commit.isHittable)
+        XCTAssertEqual((commit.value as? String)?.count, 40)
+        commit.tap()
+        try performSemanticAccessibilityAudit(app)
+        let about = XCTAttachment(screenshot: app.screenshot()); about.name = "About Chinese dark largest text commit"; about.lifetime = .keepAlways; add(about)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testTodoDeniedReminderFeedbackSurvivesEditorDismissalAndOffersSettings() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSTodoReminderDeniedTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch(); app.buttons["today-todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5)); title.typeText("Saved despite denial")
+        app.buttons["todo-dismiss-keyboard"].tap()
+        app.switches["todo-reminder-toggle"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        app.buttons["todo-save"].tap()
+        XCTAssertTrue(title.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Todo saved"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Notifications are disabled in iOS Settings."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Open iOS Settings"].exists)
+        app.buttons["todo-reminder-feedback-dismiss"].tap()
+        app.buttons["today-todo-hub"].tap(); app.buttons["todo-stat-open"].tap()
+        XCTAssertTrue(app.staticTexts["Saved despite denial"].waitForExistence(timeout: 5))
+    }
+
+    func testTodoIntegrityFailureRetainsDataAndOffersDiagnosticAndRawExport() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSTodoIntegrityFailureTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["startup-export-retained"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        app.buttons["startup-copy-diagnostic"].tap()
+        app.buttons["startup-export-retained"].tap()
+        XCTAssertTrue(app.buttons["startup-share-retained"].waitForExistence(timeout: 10))
+        for _ in 0..<3 {
+            app.buttons["startup-retry"].tap()
+            XCTAssertTrue(app.buttons["startup-export-retained"].waitForExistence(timeout: 10))
+            XCTAssertFalse(app.tabBars.firstMatch.exists)
+        }
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        XCTAssertTrue(app.buttons["startup-export-retained"].waitForExistence(timeout: 10))
+        app.buttons["startup-export-retained"].tap()
+        XCTAssertTrue(app.buttons["startup-share-retained"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch(); app.buttons["today-todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5)); title.typeText("Convert existing action")
+        app.buttons["todo-save"].tap()
+        app.buttons["today-todo-hub"].tap(); app.buttons["todo-stat-open"].tap()
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", "todo-row-")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5)); let originalRowID = row.identifier
+        app.staticTexts["Convert existing action"].tap(); app.buttons["todo-edit"].tap()
+        app.buttons["todo-dismiss-keyboard"].tap()
+        for _ in 0..<5 where !app.buttons["todo-repeat"].isHittable { app.swipeUp() }
+        app.buttons["todo-repeat"].tap(); app.buttons["Every Week"].tap()
+        XCTAssertTrue(app.staticTexts["todo-repeat-needs-day"].waitForExistence(timeout: 5))
+        app.buttons["todo-save"].tap()
+        XCTAssertTrue(app.staticTexts["todo-editor-error"].waitForExistence(timeout: 5))
+        for _ in 0..<5 where !app.switches["todo-planned-toggle"].isHittable { app.swipeDown() }
+        app.switches["todo-planned-toggle"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        app.buttons["todo-save"].tap()
+        XCTAssertTrue(title.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Repeating occurrence"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)[originalRowID].exists)
+        app.buttons["todo-detail-toggle"].tap()
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        app.buttons["today-todo-hub"].tap(); app.buttons["todo-stat-open"].tap()
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
+        XCTAssertEqual(app.buttons["todo-stat-today"].value as? String, "1")
+        XCTAssertTrue(app.staticTexts["Convert existing action"].exists)
+        XCTAssertTrue(app.staticTexts["Repeating occurrence"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)[originalRowID].exists)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testAllTodoStatusFiltersCombineListSearchAndFourStatistics() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSTodoFiltersTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch(); app.buttons["today-todo-hub"].tap()
+        XCTAssertEqual(app.buttons["todo-stat-today"].value as? String, "1")
+        XCTAssertEqual(app.buttons["todo-stat-week"].value as? String, "1")
+        XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "3")
+        XCTAssertEqual(app.buttons["todo-stat-overdue"].value as? String, "1")
+        app.buttons["todo-filter"].tap(); app.buttons["All Todos"].tap()
+        XCTAssertTrue(app.buttons["todo-status-filter"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Filter Open"].exists); XCTAssertTrue(app.staticTexts["Undated unclassified"].exists)
+        XCTAssertFalse(app.staticTexts["Filter Done"].exists); XCTAssertFalse(app.staticTexts["Filter Canceled"].exists)
+        func reveal(_ title: String) {
+            for _ in 0..<5 where !app.staticTexts[title].exists { app.swipeUp() }
+            XCTAssertTrue(app.staticTexts[title].waitForExistence(timeout: 5))
+        }
+        func select(_ state: String) {
+            for _ in 0..<5 where !app.buttons["todo-status-filter"].isHittable { app.swipeDown() }
+            app.buttons["todo-status-filter"].tap(); app.buttons[state].tap()
+        }
+        select("All States")
+        reveal("Filter Done"); reveal("Filter Canceled")
+        select("Completed"); XCTAssertTrue(app.staticTexts["Filter Done"].exists); XCTAssertFalse(app.staticTexts["Filter Open"].exists)
+        select("Canceled"); XCTAssertTrue(app.staticTexts["Filter Canceled"].exists); XCTAssertFalse(app.staticTexts["Filter Done"].exists)
+        select("All States")
+        for _ in 0..<5 where !app.buttons["todo-list-filter"].isHittable { app.swipeDown() }
+        app.buttons["todo-list-filter"].tap(); app.buttons["Filter List"].tap()
+        XCTAssertFalse(app.staticTexts["Undated unclassified"].exists)
+        let search = app.searchFields.firstMatch
+        for _ in 0..<3 where !search.isHittable { app.swipeDown() }
+        XCTAssertTrue(search.waitForExistence(timeout: 5)); search.tap(); search.typeText("Filter Done")
+        XCTAssertTrue(app.staticTexts["Filter Done"].waitForExistence(timeout: 5)); XCTAssertFalse(app.staticTexts["Filter Open"].exists)
+        app.staticTexts["Filter Done"].tap(); app.buttons["todo-detail-toggle"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.staticTexts["Filter Done"].exists)
+        app.searchFields.firstMatch.buttons["Clear text"].tap()
+        app.buttons["Close"].tap()
+        for _ in 0..<5 where !app.buttons["todo-list-filter"].isHittable { app.swipeDown() }
+        app.buttons["todo-list-filter"].tap(); app.buttons["All Lists"].tap()
+        select("Completed"); XCTAssertFalse(app.staticTexts["Filter Done"].exists)
+        select("Incomplete"); reveal("Filter Done")
+        app.staticTexts["Filter Done"].tap(); app.buttons["todo-detail-toggle"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        for (id, title, count) in [("todo-stat-today", "Filter Done", 1), ("todo-stat-week", "Filter Done", 1), ("todo-stat-open", "Filter Open", 3), ("todo-stat-overdue", "Filter Overdue", 1)] {
+            for _ in 0..<6 where !app.buttons[id].isHittable || app.buttons[id].frame.minY < app.navigationBars.firstMatch.frame.maxY {
+                app.swipeDown()
+            }
+            XCTAssertEqual(app.buttons[id].value as? String, String(count)); app.buttons[id].tap()
+            reveal(title)
+            let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "todo-row-"))
+            XCTAssertEqual(rows.count, count)
+            XCTAssertFalse(app.buttons["todo-status-filter"].exists)
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        app.buttons["today-todo-hub"].tap(); app.buttons["todo-filter"].tap(); app.buttons["All Todos"].tap()
+        XCTAssertTrue(app.staticTexts["Filter Open"].exists); XCTAssertFalse(app.staticTexts["Filter Done"].exists)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testAllTodoStatusMenuChineseDarkLargestTextIsAccessible() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSTodoFiltersTest", "-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN",
+            "-AppleInterfaceStyle", "Dark", "-UIPreferredContentSizeCategoryName", UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        app.launch(); XCTAssertEqual(app.tabBars.buttons.count, 5); app.buttons["today-todo-hub"].tap()
+        for _ in 0..<12 where !app.buttons["todo-filter"].isHittable { app.swipeUp() }
+        app.buttons["todo-filter"].tap(); app.buttons["全部待办"].tap()
+        let status = app.buttons["todo-status-filter"]
+        for _ in 0..<8 where !status.isHittable { app.swipeUp() }
+        XCTAssertTrue(status.isHittable); XCTAssertGreaterThanOrEqual(status.frame.height, 44)
+        XCTAssertTrue(status.label.contains("未完成"))
+        try performSemanticAccessibilityAudit(app)
+        let selected = XCTAttachment(screenshot: app.screenshot()); selected.name = "Chinese dark maximum Todo status selector"; selected.lifetime = .keepAlways; add(selected)
+        status.tap()
+        for label in ["未完成", "所有状态", "已完成", "已取消"] { XCTAssertTrue(app.buttons[label].exists) }
+        let menu = XCTAttachment(screenshot: app.screenshot()); menu.name = "Chinese dark maximum four Todo states"; menu.lifetime = .keepAlways; add(menu)
+        app.buttons["所有状态"].tap()
+        XCTAssertTrue(status.label.contains("所有状态"))
     }
 }

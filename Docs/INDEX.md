@@ -131,3 +131,9 @@ Foundation Documents：
 | Version | Date       | Change                    |
 | ------- | ---------- | ------------------------- |
 | v0.1    | 2026-07-15 | Initial Foundation Draft. |
+
+## 已批准产品增量
+
+`TODO_V1_SCOPE.md`：Build 12 同源提交后的轻量个人行动管理与构建溯源；原 V1 历史范围与发行事实保持。
+
+验收与当前交接：[TODO_V1_ACCEPTANCE.md](TODO_V1_ACCEPTANCE.md)（A1–A25、P1–P8、Owner十分钟清单）；[TODO_V1_EXECUTION_LOG.md](TODO_V1_EXECUTION_LOG.md)（实际命令/结果/失败与补验）。

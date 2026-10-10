@@ -225,6 +225,46 @@ enum PersonalGrowthSchemaV10: VersionedSchema {
     }
 }
 
+enum PersonalGrowthSchemaV11Original: VersionedSchema {
+    static let versionIdentifier = Schema.Version(11, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        PersonalGrowthSchemaV10.models + [TodoTask.self, TodoTaskEvent.self, TodoList.self, TodoSeries.self, TodoTaskSource.self]
+    }
+    @Model
+    final class TodoSeries {
+        @Attribute(.unique) var id: UUID
+        var frequencyRawValue: String
+        var anchorDay: String
+        var plannedAnchorDay: String?
+        var deadlineAnchorDay: String?
+        var title: String
+        var notes: String
+        var isImportant: Bool
+        var listID: UUID?
+        /// Wall-clock minutes, resolved in the current device time zone for each occurrence.
+        var reminderMinutes: Int?
+        var isStopped: Bool
+        var createdAt: Date
+        var updatedAt: Date
+        init(id: UUID = UUID(), frequency: TodoFrequency, anchorDay: String,
+             draft: TodoDraft, reminderMinutes: Int?, createdAt: Date) {
+            self.id = id; frequencyRawValue = frequency.rawValue; self.anchorDay = anchorDay
+            plannedAnchorDay = draft.plannedDay; deadlineAnchorDay = draft.deadlineDay
+            title = draft.title; notes = draft.notes; isImportant = draft.isImportant; listID = draft.listID
+            self.reminderMinutes = reminderMinutes; isStopped = false
+            self.createdAt = createdAt; updatedAt = createdAt
+        }
+    }
+
+}
+
+enum PersonalGrowthSchemaV11: VersionedSchema {
+    static let versionIdentifier = Schema.Version(11, 1, 0)
+    static var models: [any PersistentModel.Type] {
+        PersonalGrowthSchemaV10.models + [TodoTask.self, TodoTaskEvent.self, TodoList.self, TodoSeries.self, TodoTaskSource.self]
+    }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -237,7 +277,9 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             PersonalGrowthSchemaV7.self,
             PersonalGrowthSchemaV8.self,
             PersonalGrowthSchemaV9.self,
-            PersonalGrowthSchemaV10.self
+            PersonalGrowthSchemaV10.self,
+            PersonalGrowthSchemaV11Original.self,
+            PersonalGrowthSchemaV11.self
         ]
     }
 
@@ -278,7 +320,9 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             MigrationStage.lightweight(
                 fromVersion: PersonalGrowthSchemaV9.self,
                 toVersion: PersonalGrowthSchemaV10.self
-            )
+            ),
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV10.self, toVersion: PersonalGrowthSchemaV11Original.self),
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV11Original.self, toVersion: PersonalGrowthSchemaV11.self)
         ]
     }
 }
@@ -287,24 +331,25 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV10.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV11.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
     }
 
-    static func makeOnDisk(at storeURL: URL) throws -> ModelContainer {
+    static func makeOnDisk(at storeURL: URL, allowsSave: Bool = true) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV10.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV11.self),
             url: storeURL,
+            allowsSave: allowsSave,
             cloudKitDatabase: .none
         ))
     }
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV10.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV11.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )
@@ -643,6 +688,7 @@ extension EntryDeletingPersistence {
 
 extension ModelContextEntryPersistence: EntryDeletingPersistence {
     func deleteContinuations(entryID: UUID) throws {
+        try context.fetch(FetchDescriptor<TodoTaskSource>(predicate: #Predicate { $0.entryID == entryID })).forEach(context.delete)
         try context.fetch(FetchDescriptor<EntryExternalSource>(predicate: #Predicate { $0.entryID == entryID }))
             .forEach(context.delete)
         try context.fetch(FetchDescriptor<EntryPin>(predicate: #Predicate { $0.entryID == entryID }))

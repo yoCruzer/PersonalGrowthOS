@@ -1513,6 +1513,9 @@ final class ExternalCaptureTests: XCTestCase {
         XCTAssertEqual(store.domain, NSCocoaErrorDomain)
         XCTAssertEqual(store.code, 134504)
         XCTAssertTrue(store.report.contains("stage=storeOpen"))
+        XCTAssertFalse(store.report.contains("storeSchema=10"))
+        XCTAssertFalse(store.report.contains("backupSchema=6"))
+        XCTAssertTrue(store.report.contains("schemaEvidence=notCollected"))
         XCTAssertFalse(store.report.contains(secret))
         XCTAssertFalse(store.report.contains("SELECT"))
         XCTAssertFalse(store.report.contains("/private/"))
@@ -1531,6 +1534,16 @@ final class ExternalCaptureTests: XCTestCase {
         let wrapped = AppDiagnosticFailure(MediaStoreError.insufficientCapacity(requiredBytes: 20, availableBytes: 0), stage: .attachment)
         XCTAssertEqual(wrapped.diagnostic.category, .capacity)
         XCTAssertEqual(try JSONDecoder().decode(FailureDiagnostic.self, from: JSONEncoder().encode(store)), store)
+        let located = FailureDiagnostic(error: native, stage: .storeOpen, startupStep: .storeWritableOpen, protectionStep: .sourceSignature)
+        XCTAssertEqual(try JSONDecoder().decode(FailureDiagnostic.self, from: JSONEncoder().encode(located)), located)
+        XCTAssertTrue(located.report.contains("startupStep=storeWritableOpen"))
+        XCTAssertTrue(located.report.contains("protectionStep=sourceSignature"))
+        XCTAssertFalse(located.report.contains(secret))
+        var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(store)) as? [String: Any])
+        legacy.removeValue(forKey: "startupStep")
+        legacy.removeValue(forKey: "protectionStep")
+        XCTAssertNil(try JSONDecoder().decode(FailureDiagnostic.self, from: JSONSerialization.data(withJSONObject: legacy)).startupStep)
+        XCTAssertNil(try JSONDecoder().decode(FailureDiagnostic.self, from: JSONSerialization.data(withJSONObject: legacy)).protectionStep)
     }
 
     func testFailedInboxPersistsSanitizedDiagnosticUntilSuccessfulRetry() async throws {

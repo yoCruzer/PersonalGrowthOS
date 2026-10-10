@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 6
+    static let currentPackageSchemaVersion = 7
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -46,6 +46,12 @@ struct TransferData: Codable, Equatable {
     let entrySources: [EntrySourceTransfer]
     let entryFollowUps: [EntryFollowUpTransfer]
 
+    let todoTasks: [TodoTaskTransfer]
+    let todoEvents: [TodoTaskEventTransfer]
+    let todoLists: [TodoListTransfer]
+    let todoSeries: [TodoSeriesTransfer]
+    let todoSources: [TodoTaskSourceTransfer]
+
     init(
         entries: [EntryTransfer],
         images: [ImageTransfer],
@@ -61,7 +67,12 @@ struct TransferData: Codable, Equatable {
         habitLifecycleEvents: [HabitLifecycleEventTransfer] = [],
         entrySources: [EntrySourceTransfer] = [],
         entryPins: [EntryPinTransfer] = [],
-        entryFollowUps: [EntryFollowUpTransfer] = []
+        entryFollowUps: [EntryFollowUpTransfer] = [],
+        todoTasks: [TodoTaskTransfer] = [],
+        todoEvents: [TodoTaskEventTransfer] = [],
+        todoLists: [TodoListTransfer] = [],
+        todoSeries: [TodoSeriesTransfer] = [],
+        todoSources: [TodoTaskSourceTransfer] = []
     ) {
         self.entries = entries
         self.images = images
@@ -78,6 +89,12 @@ struct TransferData: Codable, Equatable {
         self.entryPins = entryPins
         self.entrySources = entrySources
         self.entryFollowUps = entryFollowUps
+        self.todoTasks = todoTasks
+        self.todoEvents = todoEvents
+        self.todoLists = todoLists
+        self.todoSeries = todoSeries
+        self.todoSources = todoSources
+
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -96,6 +113,11 @@ struct TransferData: Codable, Equatable {
         case entryPins
         case entrySources
         case entryFollowUps
+        case todoTasks
+        case todoEvents
+        case todoLists
+        case todoSeries
+        case todoSources
     }
 
     init(from decoder: Decoder) throws {
@@ -125,6 +147,12 @@ struct TransferData: Codable, Equatable {
         entryPins = try container.decodeIfPresent([EntryPinTransfer].self, forKey: .entryPins) ?? []
         entrySources = try container.decodeIfPresent([EntrySourceTransfer].self, forKey: .entrySources) ?? []
         entryFollowUps = try container.decodeIfPresent([EntryFollowUpTransfer].self, forKey: .entryFollowUps) ?? []
+        todoTasks = try container.decodeIfPresent([TodoTaskTransfer].self, forKey: .todoTasks) ?? []
+        todoEvents = try container.decodeIfPresent([TodoTaskEventTransfer].self, forKey: .todoEvents) ?? []
+        todoLists = try container.decodeIfPresent([TodoListTransfer].self, forKey: .todoLists) ?? []
+        todoSeries = try container.decodeIfPresent([TodoSeriesTransfer].self, forKey: .todoSeries) ?? []
+        todoSources = try container.decodeIfPresent([TodoTaskSourceTransfer].self, forKey: .todoSources) ?? []
+
     }
 
     var objectCounts: [String: Int] {
@@ -143,7 +171,12 @@ struct TransferData: Codable, Equatable {
             "habitLifecycleEvents": habitLifecycleEvents.count,
             "entryPins": entryPins.count,
             "entrySources": entrySources.count,
-            "entryFollowUps": entryFollowUps.count
+            "entryFollowUps": entryFollowUps.count,
+            "todoTasks": todoTasks.count,
+            "todoEvents": todoEvents.count,
+            "todoLists": todoLists.count,
+            "todoSeries": todoSeries.count,
+            "todoSources": todoSources.count
         ]
     }
 
@@ -152,6 +185,7 @@ struct TransferData: Codable, Equatable {
             (version != 1 || key != "weightRecords")
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
+                && (version >= 7 || !key.hasPrefix("todo"))
                 && (version >= 6 || key != "entrySources")
                 && (version >= 5 || (key != "entryPins" && key != "entryFollowUps"))
         }
@@ -386,6 +420,16 @@ enum TransferValidator {
         ) else {
             throw TransferPackageError.unsupportedSchema(manifest.packageSchemaVersion)
         }
+        guard data.totalObjectCount <= limits.maximumObjectCount else {
+            throw TransferPackageError.objectLimitExceeded
+        }
+        guard manifest.packageSchemaVersion >= 7 ||
+                (data.todoTasks.isEmpty && data.todoEvents.isEmpty && data.todoLists.isEmpty && data.todoSeries.isEmpty && data.todoSources.isEmpty) else {
+            throw TransferPackageError.invalidObject("todo schema")
+        }
+        do { try data.validateTodos() }
+        catch is CancellationError { throw CancellationError() }
+        catch { throw TransferPackageError.invalidObject("todo integrity") }
         guard manifest.packageSchemaVersion != 1 || data.weightRecords.isEmpty else {
             throw TransferPackageError.invalidObject("weightRecord")
         }

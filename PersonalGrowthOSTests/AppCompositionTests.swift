@@ -350,3 +350,30 @@ extension AppCompositionTests {
         XCTAssertEqual(missing.build, String(localized: "Unknown"))
     }
 }
+
+
+extension AppCompositionTests {
+    func testBuildProvenanceKeepsBundleVersionSeparateAndCopiesFullSHA() {
+        let sha = String(repeating: "a1", count: 20)
+        let version = AppVersionInformation(info: ["CFBundleName": "App", "CFBundleShortVersionString": "1.0", "CFBundleVersion": "12"], localizedInfo: [:])
+        let value = BuildProvenance(values: ["Commit": sha, "Source": "xcodeCloud", "Tag": "release/1.0", "Dirty": false])
+        XCTAssertEqual(value.shortCommit, String(sha.prefix(9)))
+        XCTAssertEqual(value.commit, sha)
+        XCTAssertEqual(value.tag, "release/1.0")
+        XCTAssertTrue(value.copyText(version: version).contains("Build 12"))
+        XCTAssertTrue(value.copyText(version: version).contains(sha))
+        XCTAssertEqual(BuildProvenance(values: [:]).commit, nil)
+        XCTAssertEqual(BuildProvenance(values: ["Commit": "not-a-sha"]).commit, nil)
+        XCTAssertNil(BuildProvenance(values: ["Commit": sha, "Source": "localGit", "Tag": "branch"]).tag)
+        XCTAssertTrue(BuildProvenance(values: ["Commit": sha, "Source": "localGit", "Dirty": true]).isDirty)
+    }
+    func testCompiledAppContainsGeneratedProvenanceResource() throws {
+        let url = try XCTUnwrap(Bundle.main.url(forResource: "BuildProvenance", withExtension: "plist"))
+        let bytes = try Data(contentsOf: url)
+        let values = try XCTUnwrap(PropertyListSerialization.propertyList(from: bytes, format: nil) as? [String: Any])
+        let loaded = BuildProvenance()
+        XCTAssertEqual(loaded.commit, values["Commit"] as? String)
+        XCTAssertEqual(loaded.commit?.count, 40)
+        XCTAssertEqual(loaded.source, "localGit")
+    }
+}
