@@ -780,6 +780,7 @@ extension TodoFoundationTests {
             let manager = FailingStartupCopyManager(code)
             XCTAssertThrowsError(try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), fileManager: manager, rootURLOverride: root)) { error in
                 XCTAssertEqual((error as? AppDiagnosticFailure)?.diagnostic.startupStep, .preMigrationProtection)
+                XCTAssertEqual((error as? AppDiagnosticFailure)?.diagnostic.protectionStep, .storeCopy)
             }
             XCTAssertEqual(manager.copyAttempts, 1)
             XCTAssertEqual(try Data(contentsOf: store), bytes)
@@ -934,7 +935,7 @@ extension TodoFoundationTests {
         do { _ = try AppContainer.make(configuration: config, rootURLOverride: broken); XCTFail("Never allow normal writes when snapshot fails") }
         catch let failure as StartupRetainedDataFailure {
             XCTAssertNil(failure.retained)
-            XCTAssertEqual(failure.snapshotFailure?.category, .capacity)
+            XCTAssertEqual(failure.snapshotFailure?.category, .capacity, failure.snapshotFailure?.report ?? "No snapshot diagnostic")
         }
         try fm.removeItem(at: filler)
         do { _ = try AppContainer.make(configuration: config, rootURLOverride: broken); XCTFail("Still corrupt after space returns") }
@@ -942,6 +943,12 @@ extension TodoFoundationTests {
             XCTAssertNotNil(failure.retained)
             XCTAssertNil(failure.snapshotFailure)
         }
+    }
+}
+
+private final class Cocoa259StartupCopyManager: FileManager, @unchecked Sendable {
+    override func copyItem(at srcURL: URL, to dstURL: URL) throws {
+        throw NSError(domain: NSCocoaErrorDomain, code: 259, userInfo: [NSFilePathErrorKey: "PRIVATE-COPY-PATH", NSLocalizedDescriptionKey: "PRIVATE-COPY-PATH"])
     }
 }
 
@@ -955,6 +962,127 @@ private final class CheckpointStartupCopyManager: FileManager, @unchecked Sendab
 }
 
 extension TodoFoundationTests {
+    func testAliasedProtectionRawArchiveKeepsNamesAndRejectsInternalSymlinks() throws {
+        let fm = FileManager.default
+        let work = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? fm.removeItem(at: work) }
+        let physical = work.appendingPathComponent("Physical"), alias = work.appendingPathComponent("DifferentLengthAlias")
+        let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
+        try autoreleasepool {
+            let app = try AppContainer.make(configuration: config, rootURLOverride: physical)
+            app.modelContainer.mainContext.insert(Entry(body: "synthetic alias recovery", createdAt: Date()))
+            try app.modelContainer.mainContext.save()
+        }
+        try fm.createSymbolicLink(at: alias, withDestinationURL: physical)
+        let media = physical.appendingPathComponent("Media/synthetic.bin")
+        try fm.createDirectory(at: media.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let mediaBytes = Data("synthetic raw media".utf8)
+        try mediaBytes.write(to: media)
+        let first = try StartupRetainedData.capture(rootURL: alias, purpose: .beforeMigration)
+        let expectedStore = try Data(contentsOf: first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        XCTAssertEqual(try StartupRetainedData.capture(rootURL: physical, purpose: .beforeMigration).snapshotURL.resolvingSymlinksInPath(), first.snapshotURL.resolvingSymlinksInPath())
+        let archive = try first.archive(diagnostic: "synthetic alias")
+        let extracted = work.appendingPathComponent("Extracted")
+        try ZIPArchiveReader(archiveURL: archive, availableCapacity: .max).extractAll(to: extracted)
+        XCTAssertEqual(try Data(contentsOf: extracted.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), expectedStore)
+        XCTAssertEqual(try Data(contentsOf: extracted.appendingPathComponent("Media/synthetic.bin")), mediaBytes)
+        XCTAssertFalse(fm.fileExists(atPath: extracted.appendingPathComponent("Recovery").path))
+        XCTAssertFalse(fm.fileExists(atPath: extracted.appendingPathComponent("DifferentLengthAlias").path))
+        let outside = work.appendingPathComponent("Outside.bin")
+        try Data("synthetic outside".utf8).write(to: outside)
+        let unsafe = physical.appendingPathComponent("Store/linked.bin")
+        try fm.createSymbolicLink(at: unsafe, withDestinationURL: outside)
+        XCTAssertThrowsError(try StartupRetainedData.capture(rootURL: alias, purpose: .beforeMigration)) { error in
+            XCTAssertEqual((error as? AppDiagnosticFailure)?.underlying as? ZIPArchiveError, .unsafePath)
+            XCTAssertEqual((error as? AppDiagnosticFailure)?.diagnostic.protectionStep, .sourceSignature)
+        }
+        XCTAssertEqual(try Data(contentsOf: first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), expectedStore)
+        try fm.removeItem(at: unsafe) // Only this test's deliberate link.
+        try fm.createSymbolicLink(at: physical.appendingPathComponent("linked-media.bin"), withDestinationURL: outside)
+        XCTAssertThrowsError(try first.archive(diagnostic: "synthetic alias")) { error in
+            XCTAssertEqual(error as? ZIPArchiveError, .unsafePath)
+        }
+        XCTAssertEqual(try Data(contentsOf: extracted.appendingPathComponent("Media/synthetic.bin")), mediaBytes)
+    }
+
+    func testCocoa259DuringCopyIsLocatedAndDoesNotMigrateOrPublish() throws {
+        let fm = FileManager.default
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        let root = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? fm.removeItem(at: root) }
+        try fm.copyItem(at: fixture, to: root)
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try fm.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.moveItem(at: root.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
+        let before = try Data(contentsOf: store)
+        XCTAssertThrowsError(try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), fileManager: Cocoa259StartupCopyManager(), rootURLOverride: root)) { error in
+            let diagnostic = (error as? AppDiagnosticFailure)?.diagnostic
+            XCTAssertEqual(diagnostic?.startupStep, .preMigrationProtection)
+            XCTAssertEqual(diagnostic?.protectionStep, .storeCopy)
+            XCTAssertEqual(diagnostic?.domain, NSCocoaErrorDomain)
+            XCTAssertEqual(diagnostic?.code, 259)
+            XCTAssertFalse(diagnostic?.report.contains("PRIVATE-COPY-PATH") ?? true)
+        }
+        XCTAssertEqual(try Data(contentsOf: store), before)
+        XCTAssertFalse(fm.fileExists(atPath: root.appendingPathComponent("Recovery/BeforeMigration").path))
+        XCTAssertFalse(fm.fileExists(atPath: root.appendingPathComponent("Recovery/.BeforeMigration-building").path))
+        XCTAssertFalse(StartupStoreProtection.isCurrentStore(at: store))
+        let app = try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), rootURLOverride: root)
+        XCTAssertFalse(try app.modelContainer.mainContext.fetch(FetchDescriptor<Entry>()).isEmpty)
+        XCTAssertEqual(try Data(contentsOf: root.appendingPathComponent("Recovery/BeforeMigration/Store/PersonalGrowthOS.sqlite")), before)
+    }
+
+    func testBuild12V10ContainerAliasMigratesWithoutFalseMissingStore259() async throws {
+        let fm = FileManager.default
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        let work = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? fm.removeItem(at: work) }
+        let physical = work.appendingPathComponent("Physical")
+        let alias = work.appendingPathComponent("LongContainerAlias")
+        try fm.createDirectory(at: work, withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture, to: physical)
+        try fm.createSymbolicLink(at: alias, withDestinationURL: physical)
+        let store = physical.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try fm.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.moveItem(at: physical.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
+        let before = try Data(contentsOf: store)
+        let expectedRoot = work.appendingPathComponent("Expected")
+        try ZIPArchiveReader(archiveURL: fixture.appendingPathComponent("expected-v6.zip"), availableCapacity: .max).extractAll(to: expectedRoot)
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
+        let expected = try decoder.decode(TransferData.self, from: Data(contentsOf: expectedRoot.appendingPathComponent("data.json")))
+        // Foundation returns physical child URLs even when enumeration starts
+        // from an alias. The old signature code truncated using alias length.
+        let aliasStore = alias.appendingPathComponent("Store", isDirectory: true)
+        let children = try XCTUnwrap(fm.enumerator(at: aliasStore, includingPropertiesForKeys: nil)?.allObjects as? [URL])
+        let child = try XCTUnwrap(children.first { $0.lastPathComponent == "PersonalGrowthOS.sqlite" })
+        XCTAssertFalse(child.path.hasPrefix(aliasStore.path + "/"))
+        let config = AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false)
+        for (pass, root) in [alias, physical].enumerated() {
+            let app: AppContainer
+            do { app = try AppContainer.make(configuration: config, rootURLOverride: root) }
+            catch let failure as AppDiagnosticFailure {
+                XCTAssertEqual(failure.diagnostic.startupStep, .preMigrationProtection)
+                XCTAssertEqual(failure.diagnostic.domain, NSCocoaErrorDomain)
+                XCTAssertEqual(failure.diagnostic.code, 259)
+                XCTAssertEqual(try Data(contentsOf: store), before)
+                XCTFail("Healthy V10 falsely rejected by path alias: \(failure.diagnostic.report)")
+                return
+            }
+            XCTAssertEqual(try Data(contentsOf: physical.appendingPathComponent("Recovery/BeforeMigration/Store/PersonalGrowthOS.sqlite")), before)
+            let lease = try await app.importExportService.exportPackage()
+            defer { lease.cleanup() }
+            let exported = work.appendingPathComponent("Export-\(pass)")
+            try ZIPArchiveReader(archiveURL: lease.url, availableCapacity: .max).extractAll(to: exported)
+            XCTAssertEqual(try decoder.decode(TransferData.self, from: Data(contentsOf: exported.appendingPathComponent("data.json"))), expected)
+            for image in try app.modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>()) {
+                XCTAssertEqual(try Data(contentsOf: app.mediaStore.fileURL(for: image.relativePath)),
+                               try Data(contentsOf: MediaStore(rootURL: fixture).fileURL(for: image.relativePath)))
+            }
+            try TodoIntegrity.validate(context: app.modelContainer.mainContext)
+            try LinkIntegrityService.validate(context: app.modelContainer.mainContext)
+        }
+    }
+
     func testCorruptV10MetadataIsDistinguishedFromInvalidProtectionAndRetainsBytes() throws {
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

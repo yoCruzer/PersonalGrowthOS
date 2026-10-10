@@ -261,6 +261,11 @@ struct FailureDiagnostic: Codable, Equatable {
     enum StartupStep: String, Codable {
         case preMigrationProtection, snapshotValidation, storeReadOnlyOpen, storeWritableOpen
     }
+    enum ProtectionStep: String, Codable {
+        case recoveryDirectory, protectionLock, readerOpen, writerOpen, writerTransaction, readerTransaction
+        case sourceSignature, failureIdentity, snapshotValidation, stagingCleanup, stagingDirectory
+        case storeCopy, copiedSHMCleanup, sourceSignatureRecheck, copiedSignature, completeWrite, snapshotPublication
+    }
     enum Role: String, Codable { case app, shareExtension }
     enum Stage: String, Codable {
         case startupPaths, storeOpen, mediaRecovery, integrity, appGroup, inboxState
@@ -293,14 +298,16 @@ struct FailureDiagnostic: Codable, Equatable {
     let domain: String?
     let code: Int?
     let startupStep: StartupStep?
+    let protectionStep: ProtectionStep?
 
     init(error: Error, stage: Stage, role: Role = .app, category: Category? = nil,
          operationID: UUID = UUID(), info: [String: Any] = Bundle.main.infoDictionary ?? [:],
-         startupStep: StartupStep? = nil) {
+         startupStep: StartupStep? = nil, protectionStep: ProtectionStep? = nil) {
         self.role = role
         self.stage = stage
         self.operationID = operationID
         self.startupStep = startupStep
+        self.protectionStep = protectionStep
         func versionValue(_ key: String) -> String {
             guard let value = info[key] as? String, !value.isEmpty, value.count <= 32,
                   value.unicodeScalars.allSatisfy({ CharacterSet(charactersIn: "0123456789.").contains($0) }) else { return "unknown" }
@@ -352,6 +359,7 @@ struct FailureDiagnostic: Codable, Equatable {
         build=\(build)
         schemaEvidence=notCollected
         startupStep=\(startupStep?.rawValue ?? "notCollected")
+        protectionStep=\(protectionStep?.rawValue ?? "notCollected")
         operation=\(operationID.uuidString)
         errorDomain=\(domain ?? "unlisted")
         errorCode=\(code.map(String.init) ?? "unlisted")

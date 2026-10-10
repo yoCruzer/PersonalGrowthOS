@@ -1,3 +1,15 @@
+# Build16 preMigrationProtection 259 — 路径别名修复 READY_FOR_INDEPENDENT_REVIEW（2026-10-10）
+
+基线 `fb830a1d555b9738d15867546d395239d38e1edc`；原分支/原Draft PR #8/base保持。Owner确认完整Container未下载或独立备份，授权继续合成测试；未读取私人副本、未操作iPhone、无新安装授权。现存本机iphoneos产物1.0(16)、SHA匹配基线、Dirty=true，不能证明安装二进制与干净HEAD一致。
+
+新alias-V10红测精确复现preMigrationProtection/Cocoa259：Foundation枚举返回物理子路径，旧source storeSignature用别名根长度截断，误判健康主库缺失。统一App运行根及签名/raw枚举根与子路径规范化，先拒绝内部symlink再检查边界；新增固定protectionStep，无私人路径或内容。原snapshotValidation坏副本仍拒绝，不作为此次真机根因；不改Schema/迁移/完整性校验，不删除保护副本或清库。
+
+最终完整Unit311/311、0FAIL/SKIP/运行警告；真实32MB HFS+低空间、WAL/并发/取消、原V10/原V11、v7与媒体保留通过；Release通过，启动UI2/2通过，0FAIL/SKIP/运行警告。首轮fixture初始化、mediaRecovery与HFS+路径差异失败均保留。完整中文根因、实际命令和证据见 [Build16报告](TODO_IPHONE_PREMIGRATION_259.md)。真机实际归因与修复后启动NOT_RUN；原生复制/读取故障仍可能同样报259，不能以合成通过冒称真实恢复。
+
+仅普通推送原Draft PR，停止在READY_FOR_INDEPENDENT_REVIEW；远端workflows=0、独立CI NOT_RUN。未来真机操作须先保全并获明确授权；不merge、Tag、改号或TestFlight。下方为上一轮历史交接。
+
+---
+
 # 真实 iPhone 259 — 诊断修复 READY_FOR_INDEPENDENT_REVIEW，原事故根因 UNKNOWN（2026-10-10）
 
 Owner 明确授权在无法获取失败现场条件下继续。升级前ZIP仍在iPhone，当前失败容器未下载，未确认是否已清除；没有读取或操作真实私人数据，也没有安装授权。事故基线 `dc4bacc930f9490128896c4e6b66d67540a074ac`；原分支/原Draft PR #8/base保持。

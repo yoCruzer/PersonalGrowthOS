@@ -79,7 +79,8 @@ struct AppContainer {
             let directoryName = configuration.launchMode == .uiTesting
                 ? "PersonalGrowthOS-UITesting"
                 : "PersonalGrowthOS"
-            let rootURL = rootURLOverride ?? applicationSupport.appendingPathComponent(directoryName, isDirectory: true)
+            let rootURL = (rootURLOverride ?? applicationSupport.appendingPathComponent(directoryName, isDirectory: true))
+                .standardizedFileURL.resolvingSymlinksInPath()
 
             if configuration.launchMode == .uiTesting,
                configuration.resetDataOnLaunch,
@@ -239,19 +240,23 @@ enum StartupStoreProtection {
     /// A reader pins the WAL while BEGIN IMMEDIATE excludes writers. Keep the
     /// reader alive through writer close so that closing our writer cannot
     /// checkpoint/truncate the source WAL. SHM is disposable, never archived.
-    static func withFrozenStore<T>(at url: URL, _ body: () throws -> T) throws -> T {
+    static func withFrozenStore<T>(at url: URL, onStep: ((FailureDiagnostic.ProtectionStep) -> Void)? = nil, _ body: () throws -> T) throws -> T {
         var reader: OpaquePointer?, writer: OpaquePointer?
         func check(_ code: Int32) throws {
             guard code == SQLITE_OK else { throw NSError(domain: "SQLite", code: Int(code)) }
         }
+        onStep?(.readerOpen)
         try check(sqlite3_open_v2(url.path, &reader, SQLITE_OPEN_READONLY, nil))
         defer { if let reader { sqlite3_close(reader) } }
+        onStep?(.writerOpen)
         try check(sqlite3_open_v2(url.path, &writer, SQLITE_OPEN_READWRITE, nil))
         defer { if let writer { sqlite3_close(writer) } }
         sqlite3_busy_timeout(writer, 1_000)
+        onStep?(.writerTransaction)
         try check(sqlite3_exec(writer, "BEGIN IMMEDIATE", nil, nil, nil))
         defer { sqlite3_exec(writer, "ROLLBACK", nil, nil, nil) }
         sqlite3_busy_timeout(reader, 1_000)
+        onStep?(.readerTransaction)
         try check(sqlite3_exec(reader, "BEGIN; SELECT Z_PLIST FROM Z_METADATA", nil, nil, nil))
         return try body()
     }
@@ -267,13 +272,19 @@ struct StartupRetainedData: Sendable {
 
     private static func storeSignature(_ directory: URL) throws -> [String: String] {
         let fm = FileManager.default
+        // Enumeration resolves ancestor aliases (including /var -> /private/var).
+        // Use the same physical directory for the root and returned children.
+        let directory = directory.standardizedFileURL.resolvingSymlinksInPath()
+        let prefix = directory.path + "/"
         guard let files = fm.enumerator(at: directory, includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey]) else { throw CocoaError(.fileReadUnknown) }
         var result: [String: String] = [:]
         for case let url as URL in files {
-            let relative = String(url.path.dropFirst(directory.path.count + 1))
-            if relative == "PersonalGrowthOS.sqlite-shm" { continue }
             let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
             guard values.isSymbolicLink != true else { throw ZIPArchiveError.unsafePath }
+            let path = url.standardizedFileURL.resolvingSymlinksInPath().path
+            guard path.hasPrefix(prefix) else { throw ZIPArchiveError.unsafePath }
+            let relative = String(path.dropFirst(prefix.count))
+            if relative == "PersonalGrowthOS.sqlite-shm" { continue }
             if values.isRegularFile == true {
                 let handle = try FileHandle(forReadingFrom: url)
                 defer { try? handle.close() }
@@ -287,50 +298,70 @@ struct StartupRetainedData: Sendable {
     }
 
     static func capture(rootURL: URL, purpose: Purpose = .integrityFailure, fileManager: FileManager = .default) throws -> Self {
-        let recoveryRoot = rootURL.appendingPathComponent("Recovery", isDirectory: true)
-        try fileManager.createDirectory(at: recoveryRoot, withIntermediateDirectories: true)
-        let lease = try CaptureFileLease(url: recoveryRoot.appendingPathComponent(".lock"))
-        defer { withExtendedLifetime(lease) {} }
-        let store = rootURL.appendingPathComponent("Store", isDirectory: true)
-        return try StartupStoreProtection.withFrozenStore(at: store.appendingPathComponent("PersonalGrowthOS.sqlite")) {
-            let signature = try storeSignature(store)
-            let identity: String
-            if purpose == .integrityFailure {
-                let logical = try StartupStoreProtection.fingerprint(at: store.appendingPathComponent("PersonalGrowthOS.sqlite"))
-                let external = signature.filter { !["PersonalGrowthOS.sqlite", "PersonalGrowthOS.sqlite-wal"].contains($0.key) }
-                let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
-                let hash = SHA256.hash(data: Data(logical.utf8) + (try encoder.encode(external)))
-                identity = "-" + hash.map { String(format: "%02x", $0) }.joined()
-            } else { identity = "" }
-            let snapshot = recoveryRoot.appendingPathComponent(purpose.rawValue + identity, isDirectory: true)
-            let completed = snapshot.appendingPathComponent("COMPLETE")
-            if fileManager.fileExists(atPath: snapshot.path) {
-                do {
-                    let expected = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: completed))
-                    guard try storeSignature(snapshot.appendingPathComponent("Store")) == expected else { throw CocoaError(.fileReadCorruptFile) }
-                } catch {
-                    throw AppDiagnosticFailure(error, stage: .storeOpen, startupStep: .snapshotValidation)
+        var protectionStep = FailureDiagnostic.ProtectionStep.recoveryDirectory
+        do {
+            let recoveryRoot = rootURL.appendingPathComponent("Recovery", isDirectory: true)
+            try fileManager.createDirectory(at: recoveryRoot, withIntermediateDirectories: true)
+            protectionStep = .protectionLock
+            let lease = try CaptureFileLease(url: recoveryRoot.appendingPathComponent(".lock"))
+            defer { withExtendedLifetime(lease) {} }
+            let store = rootURL.appendingPathComponent("Store", isDirectory: true)
+            return try StartupStoreProtection.withFrozenStore(at: store.appendingPathComponent("PersonalGrowthOS.sqlite"), onStep: { protectionStep = $0 }) {
+                protectionStep = .sourceSignature
+                let signature = try storeSignature(store)
+                let identity: String
+                if purpose == .integrityFailure {
+                    protectionStep = .failureIdentity
+                    let logical = try StartupStoreProtection.fingerprint(at: store.appendingPathComponent("PersonalGrowthOS.sqlite"))
+                    let external = signature.filter { !["PersonalGrowthOS.sqlite", "PersonalGrowthOS.sqlite-wal"].contains($0.key) }
+                    let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
+                    let hash = SHA256.hash(data: Data(logical.utf8) + (try encoder.encode(external)))
+                    identity = "-" + hash.map { String(format: "%02x", $0) }.joined()
+                } else { identity = "" }
+                let snapshot = recoveryRoot.appendingPathComponent(purpose.rawValue + identity, isDirectory: true)
+                let completed = snapshot.appendingPathComponent("COMPLETE")
+                if fileManager.fileExists(atPath: snapshot.path) {
+                    do {
+                        let expected = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: completed))
+                        guard try storeSignature(snapshot.appendingPathComponent("Store")) == expected else { throw CocoaError(.fileReadCorruptFile) }
+                    } catch {
+                        throw AppDiagnosticFailure(error, stage: .storeOpen, startupStep: .snapshotValidation, protectionStep: .snapshotValidation)
+                    }
+                    return Self(rootURL: rootURL, snapshotURL: snapshot)
                 }
-                return Self(rootURL: rootURL, snapshotURL: snapshot)
+                let staging = recoveryRoot.appendingPathComponent("." + purpose.rawValue + "-building", isDirectory: true)
+                // Only incomplete, unpublished staging is disposable. Source stays intact.
+                protectionStep = .stagingCleanup
+                if fileManager.fileExists(atPath: staging.path) { try fileManager.removeItem(at: staging) }
+                protectionStep = .stagingDirectory
+                try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
+                do {
+                    let original = signature
+                    protectionStep = .storeCopy
+                    try fileManager.copyItem(at: store, to: staging.appendingPathComponent("Store", isDirectory: true))
+                    let shm = staging.appendingPathComponent("Store/PersonalGrowthOS.sqlite-shm")
+                    protectionStep = .copiedSHMCleanup
+                    if fileManager.fileExists(atPath: shm.path) { try fileManager.removeItem(at: shm) }
+                    // PASSIVE checkpoints may copy WAL pages without taking the
+                    // writer lock. Publish only if both source and copied raw files
+                    // match the same signature; a race fails closed for safe Retry.
+                    protectionStep = .sourceSignatureRecheck
+                    guard try storeSignature(store) == original else { throw CocoaError(.fileReadUnknown) }
+                    protectionStep = .copiedSignature
+                    guard try storeSignature(staging.appendingPathComponent("Store")) == original else { throw CocoaError(.fileReadUnknown) }
+                    protectionStep = .completeWrite
+                    try JSONEncoder().encode(original).write(to: staging.appendingPathComponent("COMPLETE"), options: .atomic)
+                    protectionStep = .snapshotPublication
+                    try fileManager.moveItem(at: staging, to: snapshot)
+                    return Self(rootURL: rootURL, snapshotURL: snapshot)
+                } catch { try? fileManager.removeItem(at: staging); throw error }
             }
-            let staging = recoveryRoot.appendingPathComponent("." + purpose.rawValue + "-building", isDirectory: true)
-            // Only incomplete, unpublished staging is disposable. Source stays intact.
-            if fileManager.fileExists(atPath: staging.path) { try fileManager.removeItem(at: staging) }
-            try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
-            do {
-                let original = signature
-                try fileManager.copyItem(at: store, to: staging.appendingPathComponent("Store", isDirectory: true))
-                let shm = staging.appendingPathComponent("Store/PersonalGrowthOS.sqlite-shm")
-                if fileManager.fileExists(atPath: shm.path) { try fileManager.removeItem(at: shm) }
-                // PASSIVE checkpoints may copy WAL pages without taking the
-                // writer lock. Publish only if both source and copied raw files
-                // match the same signature; a race fails closed for safe Retry.
-                guard try storeSignature(store) == original,
-                      try storeSignature(staging.appendingPathComponent("Store")) == original else { throw CocoaError(.fileReadUnknown) }
-                try JSONEncoder().encode(original).write(to: staging.appendingPathComponent("COMPLETE"), options: .atomic)
-                try fileManager.moveItem(at: staging, to: snapshot)
-                return Self(rootURL: rootURL, snapshotURL: snapshot)
-            } catch { try? fileManager.removeItem(at: staging); throw error }
+        } catch let diagnostic as AppDiagnosticFailure {
+            throw diagnostic
+        } catch {
+            throw AppDiagnosticFailure(error, stage: .storeOpen,
+                startupStep: purpose == .beforeMigration ? .preMigrationProtection : nil,
+                protectionStep: protectionStep)
         }
     }
 
@@ -344,13 +375,17 @@ struct StartupRetainedData: Sendable {
         try Data(("Raw retained data for support recovery. This is NOT a v7 import package. Keep this private.\n" + diagnostic).utf8).write(to: diagnosticURL, options: .atomic)
         var sources = [ZIPSource(path: "RECOVERY.txt", fileURL: diagnosticURL)]
         func appendFiles(from directory: URL, prefix: String, excludingInfrastructure: Bool = false) throws {
+            let directory = directory.standardizedFileURL.resolvingSymlinksInPath()
+            let rootPrefix = directory.path + "/"
             guard let enumerator = fm.enumerator(at: directory, includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey]) else { throw CocoaError(.fileReadUnknown) }
             for case let url as URL in enumerator {
                 try Task.checkCancellation()
-                let relative = String(url.path.dropFirst(directory.path.count + 1))
-                if excludingInfrastructure && (["Store", "Recovery"].contains(relative) || relative.hasPrefix("Store/") || relative.hasPrefix("Recovery/")) { enumerator.skipDescendants(); continue }
                 let attributes = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
                 guard attributes.isSymbolicLink != true else { throw ZIPArchiveError.unsafePath }
+                let path = url.standardizedFileURL.resolvingSymlinksInPath().path
+                guard path.hasPrefix(rootPrefix) else { throw ZIPArchiveError.unsafePath }
+                let relative = String(path.dropFirst(rootPrefix.count))
+                if excludingInfrastructure && (["Store", "Recovery"].contains(relative) || relative.hasPrefix("Store/") || relative.hasPrefix("Recovery/")) { enumerator.skipDescendants(); continue }
                 if attributes.isRegularFile == true { sources.append(ZIPSource(path: prefix + relative, fileURL: url)) }
             }
         }

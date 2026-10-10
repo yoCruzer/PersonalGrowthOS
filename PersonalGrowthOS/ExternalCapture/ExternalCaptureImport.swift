@@ -55,12 +55,12 @@ struct AppDiagnosticFailure: Error {
     let diagnostic: FailureDiagnostic
 
     init(_ error: Error, stage: FailureDiagnostic.Stage, operationID: UUID = UUID(),
-         startupStep: FailureDiagnostic.StartupStep? = nil) {
+         startupStep: FailureDiagnostic.StartupStep? = nil, protectionStep: FailureDiagnostic.ProtectionStep? = nil) {
         underlying = error
         let category: FailureDiagnostic.Category?
         if case MediaStoreError.insufficientCapacity = error { category = .capacity }
         else { category = nil }
-        diagnostic = FailureDiagnostic(error: error, stage: stage, category: category, operationID: operationID, startupStep: startupStep)
+        diagnostic = FailureDiagnostic(error: error, stage: stage, category: category, operationID: operationID, startupStep: startupStep, protectionStep: protectionStep)
         diagnostic.log()
     }
 }

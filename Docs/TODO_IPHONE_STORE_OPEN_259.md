@@ -1,3 +1,5 @@
+> 后续Build16诊断为preMigrationProtection，与本文旧snapshotValidation合成路径不同。当前匹配路径缺陷与修复见 [Build16报告](TODO_IPHONE_PREMIGRATION_259.md)；本文保留历史证据，不能将旧快照损坏当新事故已证实根因。
+
 # Todo V1 首次真实 iPhone storeOpen 259 — 合成复现与诊断修复报告
 
 日期：2026-10-10。事故 Review HEAD：`dc4bacc930f9490128896c4e6b66d67540a074ac`；Owner 报告原安装为 TestFlight Build 12 / `c5a3c0ac8`，无线 Run 安装成功后显示 `stage=storeOpen / NSCocoaErrorDomain / 259`。本报告不含私人正文、图片、数据库或私人内容摘要。
