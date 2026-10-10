@@ -778,7 +778,9 @@ extension TodoFoundationTests {
             let bytes = try Data(contentsOf: store)
             XCTAssertFalse(StartupStoreProtection.isCurrentStore(at: store))
             let manager = FailingStartupCopyManager(code)
-            XCTAssertThrowsError(try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), fileManager: manager, rootURLOverride: root))
+            XCTAssertThrowsError(try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), fileManager: manager, rootURLOverride: root)) { error in
+                XCTAssertEqual((error as? AppDiagnosticFailure)?.diagnostic.startupStep, .preMigrationProtection)
+            }
             XCTAssertEqual(manager.copyAttempts, 1)
             XCTAssertEqual(try Data(contentsOf: store), bytes)
             XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent("Recovery/BeforeMigration").path))
@@ -949,6 +951,111 @@ private final class CheckpointStartupCopyManager: FileManager, @unchecked Sendab
     override func copyItem(at srcURL: URL, to dstURL: URL) throws {
         checkpoint()
         try super.copyItem(at: srcURL, to: dstURL)
+    }
+}
+
+extension TodoFoundationTests {
+    func testCorruptV10MetadataIsDistinguishedFromInvalidProtectionAndRetainsBytes() throws {
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: fixture.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
+        var db: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(store.path, &db), SQLITE_OK)
+        XCTAssertEqual(sqlite3_exec(db, "UPDATE Z_METADATA SET Z_PLIST=X'01';", nil, nil, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_close(db), SQLITE_OK)
+        let before = try Data(contentsOf: store)
+        for _ in 0..<2 {
+            do {
+                _ = try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), rootURLOverride: root)
+                XCTFail("Malformed metadata must not permit normal startup")
+            } catch let failure as AppDiagnosticFailure {
+                XCTAssertEqual(failure.diagnostic.stage, .storeOpen)
+                XCTAssertEqual(failure.diagnostic.startupStep, .storeWritableOpen)
+                XCTAssertTrue(failure.underlying is SwiftDataError)
+                XCTAssertNil(failure.diagnostic.domain, "Unknown SwiftData domains must remain excluded from the diagnostic allowlist")
+                XCTAssertNil(failure.diagnostic.code)
+            }
+            XCTAssertEqual(try Data(contentsOf: store), before)
+            XCTAssertEqual(try Data(contentsOf: root.appendingPathComponent("Recovery/BeforeMigration/Store/PersonalGrowthOS.sqlite")), before)
+        }
+    }
+
+    func testBuild12CommittedWALProtectionRetryAndMigrationPreserveEntryAndMedia() throws {
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.copyItem(at: fixture, to: root)
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.moveItem(at: root.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
+        let mainBefore = try Data(contentsOf: store)
+        var db: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(store.path, &db), SQLITE_OK)
+        defer { if let db { sqlite3_close(db) } }
+        XCTAssertEqual(sqlite3_exec(db, "PRAGMA wal_autocheckpoint=0; UPDATE ZENTRY SET ZBODY='Synthetic committed WAL entry';", nil, nil, nil), SQLITE_OK)
+        XCTAssertEqual(try Data(contentsOf: store), mainBefore, "Fact must still live in WAL, not the main database")
+        let wal = store.deletingLastPathComponent().appendingPathComponent("PersonalGrowthOS.sqlite-wal")
+        let walBefore = try Data(contentsOf: wal)
+        XCTAssertGreaterThan(walBefore.count, 32)
+        let first = try StartupRetainedData.capture(rootURL: root, purpose: .beforeMigration)
+        XCTAssertEqual(try Data(contentsOf: store), mainBefore)
+        XCTAssertEqual(try Data(contentsOf: wal), walBefore)
+        let retainedStore = first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        XCTAssertEqual(try Data(contentsOf: retainedStore), mainBefore)
+        XCTAssertEqual(try Data(contentsOf: first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite-wal")), walBefore)
+        var retainedDB: OpaquePointer?
+        XCTAssertEqual(sqlite3_open_v2(retainedStore.path, &retainedDB, SQLITE_OPEN_READONLY, nil), SQLITE_OK)
+        defer { if let retainedDB { sqlite3_close(retainedDB) } }
+        var statement: OpaquePointer?
+        XCTAssertEqual(sqlite3_prepare_v2(retainedDB, "SELECT ZBODY FROM ZENTRY", -1, &statement, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
+        XCTAssertEqual(String(cString: sqlite3_column_text(statement, 0)), "Synthetic committed WAL entry")
+        sqlite3_finalize(statement)
+        XCTAssertEqual(sqlite3_close(retainedDB), SQLITE_OK); retainedDB = nil
+        XCTAssertEqual(try StartupRetainedData.capture(rootURL: root, purpose: .beforeMigration).snapshotURL, first.snapshotURL)
+        XCTAssertEqual(sqlite3_close(db), SQLITE_OK); db = nil
+        let app = try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), rootURLOverride: root)
+        XCTAssertEqual(try app.modelContainer.mainContext.fetch(FetchDescriptor<Entry>()).map(\.body), ["Synthetic committed WAL entry"])
+        let images = try app.modelContainer.mainContext.fetch(FetchDescriptor<ImageMetadata>())
+        XCTAssertFalse(images.isEmpty)
+        for image in images {
+            XCTAssertEqual(try Data(contentsOf: app.mediaStore.fileURL(for: image.relativePath)),
+                           try Data(contentsOf: MediaStore(rootURL: fixture).fileURL(for: image.relativePath)))
+        }
+        try TodoIntegrity.validate(context: app.modelContainer.mainContext)
+        try LinkIntegrityService.validate(context: app.modelContainer.mainContext)
+    }
+
+    func testInvalidBeforeMigrationSnapshotProduces259BeforeSwiftDataAndPreservesSource() throws {
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: fixture.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
+        let retained = try StartupRetainedData.capture(rootURL: root, purpose: .beforeMigration)
+        let snapshotStore = retained.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        let damaged = Data("synthetic damaged snapshot".utf8)
+        try damaged.write(to: snapshotStore)
+        let before = try Data(contentsOf: store)
+        for _ in 0..<3 {
+            do {
+                _ = try AppContainer.make(configuration: AppConfiguration(launchMode: .uiTesting, resetDataOnLaunch: false), rootURLOverride: root)
+                XCTFail("Invalid protection must not permit migration")
+            } catch let failure as AppDiagnosticFailure {
+                XCTAssertEqual(failure.diagnostic.stage, .storeOpen)
+                XCTAssertEqual(failure.diagnostic.domain, NSCocoaErrorDomain)
+                XCTAssertEqual(failure.diagnostic.code, 259)
+                XCTAssertTrue(failure.diagnostic.report.contains("startupStep=snapshotValidation"))
+                XCTAssertFalse(failure.diagnostic.report.contains("storeSchema=10"))
+            }
+            XCTAssertEqual(try Data(contentsOf: store), before)
+            XCTAssertEqual(try Data(contentsOf: snapshotStore), damaged)
+            XCTAssertFalse(StartupStoreProtection.isCurrentStore(at: store))
+        }
     }
 }
 

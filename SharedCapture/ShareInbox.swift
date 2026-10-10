@@ -258,6 +258,9 @@ final class CaptureStagingSession {
 
 // Only fixed enums and allowlisted numeric error codes enter a diagnostic report.
 struct FailureDiagnostic: Codable, Equatable {
+    enum StartupStep: String, Codable {
+        case preMigrationProtection, snapshotValidation, storeReadOnlyOpen, storeWritableOpen
+    }
     enum Role: String, Codable { case app, shareExtension }
     enum Stage: String, Codable {
         case startupPaths, storeOpen, mediaRecovery, integrity, appGroup, inboxState
@@ -289,12 +292,15 @@ struct FailureDiagnostic: Codable, Equatable {
     let build: String
     let domain: String?
     let code: Int?
+    let startupStep: StartupStep?
 
     init(error: Error, stage: Stage, role: Role = .app, category: Category? = nil,
-         operationID: UUID = UUID(), info: [String: Any] = Bundle.main.infoDictionary ?? [:]) {
+         operationID: UUID = UUID(), info: [String: Any] = Bundle.main.infoDictionary ?? [:],
+         startupStep: StartupStep? = nil) {
         self.role = role
         self.stage = stage
         self.operationID = operationID
+        self.startupStep = startupStep
         func versionValue(_ key: String) -> String {
             guard let value = info[key] as? String, !value.isEmpty, value.count <= 32,
                   value.unicodeScalars.allSatisfy({ CharacterSet(charactersIn: "0123456789.").contains($0) }) else { return "unknown" }
@@ -338,13 +344,14 @@ struct FailureDiagnostic: Codable, Equatable {
 
     var report: String {
         """
-        PersonalGrowthOS diagnostic v1
+        PersonalGrowthOS diagnostic v2
         role=\(role.rawValue)
         stage=\(stage.rawValue)
         category=\(category.rawValue)
         version=\(version)
         build=\(build)
-        storeSchema=10 captureSchema=1 backupSchema=6
+        schemaEvidence=notCollected
+        startupStep=\(startupStep?.rawValue ?? "notCollected")
         operation=\(operationID.uuidString)
         errorDomain=\(domain ?? "unlisted")
         errorCode=\(code.map(String.init) ?? "unlisted")

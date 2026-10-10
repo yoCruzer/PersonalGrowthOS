@@ -1,4 +1,18 @@
-# Draft PR #8 — P1 数据保全修复 READY_FOR_INDEPENDENT_REVIEW（2026-10-10）
+# 真实 iPhone 259 — 诊断修复 READY_FOR_INDEPENDENT_REVIEW，原事故根因 UNKNOWN（2026-10-10）
+
+Owner 明确授权在无法获取失败现场条件下继续。升级前ZIP仍在iPhone，当前失败容器未下载，未确认是否已清除；没有读取或操作真实私人数据，也没有安装授权。事故基线 `dc4bacc930f9490128896c4e6b66d67540a074ac`；原分支/原Draft PR #8/base保持。
+
+合成V10已有保护副本签名不一致时，在 `StartupRetainedData.capture` 校验路径稳定复现 `storeOpen / Cocoa259`，早于SwiftData；连续Retry保留源与故障副本。健康同源V10含committed WAL保护/重试/迁移保留Entry与媒体；原V11迁移通过。非法metadata实验返回SwiftDataError，不能冒称另一条259。原手机实际错误路径尚无法证实。
+
+本轮最小修复只解决诊断定位与硬编码Schema：新增固定startupStep，保留原始错误与定位；diagnostic v2明确Schema未采集；旧JSON兼容与隐私allowlist保持。未改Schema/迁移/校验/Recovery布局，未用清库或删除副本掩盖失败。**诊断改善不等于原手机启动故障已修复；事故继续保留UNKNOWN。**
+
+最终完整Unit 307 PASS / 0 FAIL / 1 SKIP（总308，物理32MB低空间卷未挂载）；启动UI2/2、unsignedSimulator Release App/Extension通过，runtimeWarnings=[]。首轮误选诊断测试类、诊断red失败、metadata错误码假设失败均保留。详细中文根因边界、修复和真实命令见 [事故报告](TODO_IPHONE_STORE_OPEN_259.md)。真实Build12私库/ZIP、真机再安装/恢复与独立CI均NOT_RUN（远端workflows=0）。
+
+停止在本轮诊断与合成证据独立审查边界。只普通推送原Draft PR #8，不改Ready状态、不合并、不打Tag、不触发TestFlight；未来真机操作仍需Owner明确授权。下方旧READY与旧测试为历史，不能证明本次手机恢复成功。
+
+---
+
+# 历史：Draft PR #8 — P1 数据保全修复 READY_FOR_INDEPENDENT_REVIEW（2026-10-10）
 
 本轮Review基线8be670cd7375c0c7f0352d7749bf8a7ff3114767；产品/测试候选70f37908dc87b00afe7b71025568b7ef8b1143ac。后续仅文档，最终仓库HEAD以原Draft PR #8 head为准。原分支codex/todo-v1-personal-actions、base codex/external-capture-v1保持，普通push并更新原PR，不merge/tag/改号/Archive/TestFlight。
 

@@ -57,6 +57,7 @@ struct AppContainer {
         rootURLOverride: URL? = nil
     ) throws -> AppContainer {
         var stage = FailureDiagnostic.Stage.startupPaths
+        var startupStep: FailureDiagnostic.StartupStep?
         var retainedStore: StartupRetainedData?
         func integrityFailure(_ error: Error, rootURL: URL) -> StartupRetainedDataFailure {
             let diagnostic = FailureDiagnostic(error: error, stage: .integrity)
@@ -65,7 +66,7 @@ struct AppContainer {
                     retained: try StartupRetainedData.capture(rootURL: rootURL, fileManager: fileManager), snapshotFailure: nil)
             } catch {
                 return StartupRetainedDataFailure(diagnostic: diagnostic, retained: retainedStore,
-                    snapshotFailure: FailureDiagnostic(error: error, stage: .storeOpen))
+                    snapshotFailure: (error as? AppDiagnosticFailure)?.diagnostic ?? FailureDiagnostic(error: error, stage: .storeOpen))
             }
         }
         do {
@@ -93,6 +94,7 @@ struct AppContainer {
             // Only a store that may migrate needs a mandatory pre-open copy.
             if fileManager.fileExists(atPath: storeURL.path) {
                 if StartupStoreProtection.isCurrentStore(at: storeURL) {
+                    startupStep = .storeReadOnlyOpen
                     // Read-only preflight prevents even a normal writable open
                     // from touching an already-invalid current store.
                     try autoreleasepool {
@@ -102,14 +104,17 @@ struct AppContainer {
                         catch { throw integrityFailure(error, rootURL: rootURL) }
                     }
                 } else {
+                    startupStep = .preMigrationProtection
                     retainedStore = try StartupRetainedData.capture(rootURL: rootURL, purpose: .beforeMigration, fileManager: fileManager)
                 }
             }
+            startupStep = .storeWritableOpen
             let modelContainer = try PersistenceContainerFactory.makeOnDisk(
                 at: storeDirectory.appendingPathComponent("PersonalGrowthOS.sqlite")
             )
 
             stage = .integrity
+            startupStep = nil
             modelContainer.mainContext.autosaveEnabled = false
             do { try TodoIntegrity.validate(context: modelContainer.mainContext) }
             catch {
@@ -151,8 +156,10 @@ struct AppContainer {
             )
         } catch let retained as StartupRetainedDataFailure {
             throw retained
+        } catch let diagnostic as AppDiagnosticFailure {
+            throw diagnostic
         } catch {
-            throw AppDiagnosticFailure(error, stage: stage)
+            throw AppDiagnosticFailure(error, stage: stage, startupStep: startupStep)
         }
     }
 }
@@ -298,8 +305,12 @@ struct StartupRetainedData: Sendable {
             let snapshot = recoveryRoot.appendingPathComponent(purpose.rawValue + identity, isDirectory: true)
             let completed = snapshot.appendingPathComponent("COMPLETE")
             if fileManager.fileExists(atPath: snapshot.path) {
-                let expected = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: completed))
-                guard try storeSignature(snapshot.appendingPathComponent("Store")) == expected else { throw CocoaError(.fileReadCorruptFile) }
+                do {
+                    let expected = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: completed))
+                    guard try storeSignature(snapshot.appendingPathComponent("Store")) == expected else { throw CocoaError(.fileReadCorruptFile) }
+                } catch {
+                    throw AppDiagnosticFailure(error, stage: .storeOpen, startupStep: .snapshotValidation)
+                }
                 return Self(rootURL: rootURL, snapshotURL: snapshot)
             }
             let staging = recoveryRoot.appendingPathComponent("." + purpose.rawValue + "-building", isDirectory: true)
