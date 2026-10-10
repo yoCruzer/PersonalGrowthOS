@@ -1,3 +1,19 @@
+# Draft PR #8 — P1 数据保全修复 READY_FOR_INDEPENDENT_REVIEW（2026-10-10）
+
+本轮Review基线8be670cd7375c0c7f0352d7749bf8a7ff3114767；产品/测试候选70f37908dc87b00afe7b71025568b7ef8b1143ac。后续仅文档，最终仓库HEAD以原Draft PR #8 head为准。原分支codex/todo-v1-personal-actions、base codex/external-capture-v1保持，普通push并更新原PR，不merge/tag/改号/Archive/TestFlight。
+
+S0 EIO/ENOSPC负向风险成立；S1健康库只读预检无需完整copy、历史首次迁移前必须持久保护、Todo失败停止正常写入；S2持久内容身份快照复用、WAL/并发/PASSIVE checkpoint竞态、5次故障Retry、真正临时导出清理、导出I/O/ENOSPC/取消、原副本不删除与raw ZIP拒绝普通v7导入全部通过。32MB独立HFS+卷中完整copy真实ENOSPC而健康库打开/保存仍成功；历史copy失败原库未迁移，损坏copy失败仍停写，空间恢复后能建副本。
+
+S3原Build12真实AppContainer迁移/第二次copy失败不影响打开、完整原事实/媒体/v7与重开，加4项集成UI共6/6通过。最终唯一一次完整Unit **305/305 PASS，0 FAIL/SKIP、零运行警告**；固定候选2/2启动UI通过（重启重导、健康Retry保留Entry）。真实Debug/unsignedRelease App及唯一appex **1.0(7)**，SHA/localGit/clean/Tag空已核对。V11.1/v7、五Tab、原Todo规则/UX、翻译/fixtures/版本/签名/AppGroup无变化。所有初次失败与编译失败保留，未重标全绿；详细命令及生命周期策略见 [限定修复证据](TODO_P1_DATA_PRESERVATION.md)。
+
+重要副本位于Application Support/Recovery，创建ZIP或关闭ShareLink不代表安全外部导出；已完成副本不自动删除，只清未发布staging/partial。不同真实故障内容各自保留，可能占空间。Owner私人Build12实际覆盖、真机签名/AppGroup/通知、设备实际系统清理/VoiceOver、Cloud/TestFlight **NOT_RUN/OWNER_DEVICE_GATE**；远端workflows=0，独立CI **NOT_RUN**。旧UI运行警告历史风险与已保存旧候选错误提醒不在本轮范围，未冒称解决。没有清空、重建、静默修复私人库。
+
+**停止实现，下一边界仅原Draft PR #8独立审查及Owner设备门禁。**
+
+---
+
+以下为本轮验证中的历史checkpoint，不再指挥下一步。
+
 # Draft PR #8 — P1 数据保全限定修复进行中（2026-10-10）
 
 Review 基线8be670cd7375c0c7f0352d7749bf8a7ff3114767，原分支/原Draft PR #8/base保持。S0 EIO/ENOSPC与临时副本负向证据成立；S1启动只读预检、迁移前保护、持久内容身份快照已实现；S2物理32MB低空间、WAL/并发/Retry/raw ZIP正负通过7/7，最终WAL补验5/5。S3集成与原Build12迁移6/6通过（2Unit+4UI，零运行警告），最终候选/提交/push/PR更新未完成，当前不标READY。权威命令、失败及保全/清理策略见 [限定修复记录](TODO_P1_DATA_PRESERVATION.md)。只处理两个P1，不新增Todo产品功能；V11.1/v7/五Tab/1.0(7)/原UX不变。

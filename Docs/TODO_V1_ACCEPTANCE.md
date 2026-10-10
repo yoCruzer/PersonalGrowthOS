@@ -97,3 +97,10 @@
 6. 损坏启动路径仅在隔离合成库复现：Copy Diagnostic→Prepare Retained Data Export→Save Retained Data。raw ZIP含原SQLite/WAL/原文件，供支持恢复，不能当正常v7包导入；不修改/清空Owner私人库制造故障。
 
 Owner私人库实际覆盖、签名/AppGroup、真机通知送达/设置、旅行/飞行模式/硬件、VoiceOver、实际Xcode Cloud/Archive/TestFlight均NOT_RUN。模拟器语义检查不等于VoiceOver朗读。后续仅独立Review与设备门禁，不自行进入合并/发布。
+
+
+## 最后一轮P1数据保全复审
+
+原功能验收矩阵保持；新增验收以 [P1限定修复记录](TODO_P1_DATA_PRESERVATION.md) 为准。候选70f3790完整Unit305/305、最终启动UI2/2与Build12/集成6/6通过，均0SKIP/零本轮运行警告。真低空间卷完整Store复制ENOSPC时健康库仍打开/保存；V10首次迁移保护失败保留原字节；损坏库停写；重复Retry/重启复用持久副本；实际临时导出文件夹清理后Application Support副本保留；导出I/O/ENOSPC/取消不删重要副本或旧成功ZIP；WAL事实恢复与PASSIVE checkpoint竞态安全拒绝；raw ZIP不被当正常v7包接受。
+
+Owner设备门禁仍NOT_RUN，复现只用隔离合成库，禁止清私人库制造故障。重要副本只有在独立外部导出并验证可恢复后才能人工考虑清理；本轮没有自动清理已完成副本或删除入口。五Tab/V11.1/v7/原Todo规则/UX保持。READY_FOR_INDEPENDENT_REVIEW。

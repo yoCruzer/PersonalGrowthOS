@@ -277,3 +277,10 @@ xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrow
 最终普通push后只读核查git local/upstream/远端与PR head、OPEN Draft、base、clean，以及workflows/check-runs/statuses。无workflows的远端独立CI为NOT_RUN，aggregate pending不表示有CI运行；实际Xcode Cloud/Archive/TestFlight未触发。Owner私人Build12覆盖、签名/AppGroup、真机通知/设置/旅行/飞行模式、VoiceOver及隔离raw故障复现见验收增量清单，全部NOT_RUN/OWNER_DEVICE_GATE；未触碰、删除或恢复Owner私人数据库。未关闭运行警告和已保存旧候选错误期次不静默修复的策略明确交给独立Review。
 
 **READY_FOR_INDEPENDENT_REVIEW**。本轮S0→S4停止，下一边界仅原Draft PR #8独立Review与Owner设备门禁，不自行merge/tag/改号/发布。
+
+
+## 最后一轮限定P1数据保全 — 2026-10-10
+
+基线8be670cd7375c0c7f0352d7749bf8a7ff3114767；实现/最终验证候选70f37908dc87b00afe7b71025568b7ef8b1143ac。只关闭启动全库copy依赖和临时UUID恢复快照生命周期，不新增Todo功能。权威S0→S3实际commands/counts/首次失败、低空间image与WAL/PASSIVE checkpoint/raw ZIP正负证据及明确创建/复用/导出/清理/失败策略见 [本轮记录](TODO_P1_DATA_PRESERVATION.md)。
+
+最终完整Unit305/305、固定候选启动UI2/2与此前Build12/集成6/6 PASS；均0SKIP、runtimeWarnings=[]，一次完整门禁，没有按阶段重复全量。真实Debug/unsignedRelease App/唯一appex1.0(7)，schema V11.1/backupv7不变。重要副本不因ZIP/分享完成自动删除；不同故障长期保留空间代价与真机/CI未运行明确列出。普通push原分支更新原Draft PR #8，停READY_FOR_INDEPENDENT_REVIEW；不merge/tag/改号/Archive/TestFlight，不清私人库。

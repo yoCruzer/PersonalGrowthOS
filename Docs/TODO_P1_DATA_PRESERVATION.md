@@ -64,6 +64,29 @@ SQLite锁与checkpoint依据：[SQLite WAL](https://www.sqlite.org/wal.html)、[
 
 ## 最终候选与未执行边界
 
-S3通过，最终候选门禁尚未收口，当前不标READY。最终只执行一次候选完整Unit、真实Debug/unsignedRelease与必要UI；不按阶段重复全量。最终固定候选、counts、普通push/PR head核查完成后更新本节与两个current-context文档。
+产品/测试候选 `70f37908dc87b00afe7b71025568b7ef8b1143ac` 已冻结并验证；最终交接提交仅文档，不改产品。最终仓库HEAD以PR head为准。
+
+- `s3-final-unit` exit0：**305/305 Unit PASS，0 FAIL/SKIP、runtimeWarnings=[]**。这是本轮唯一一次完整Unit，包含原V7/V8/Build12V10/候选原V11迁移、v7合法旧包/非法包/取消/并发/回滚、原领域与提醒路径、有界性能和8项新增P1测试。真实低空间卷marker存在，没有跳过该测试。
+- `s3-final-startup-ui` exit0：**2/2 UI PASS，0 FAIL/SKIP、runtimeWarnings=[]**。固定候选上的健康故障Retry原Entry不丢，以及损坏启动3次Retry/进程重启/重启后导出。此前S3集成4UI保持独立证据，不把不同轮次累加成全量UI。
+- `s3-final-release` exit0；最终测试真实Debug与unsignedRelease App/唯一ShareExtension.appex都有可执行文件，均 **1.0(7)**；BuildProvenance=该40位SHA/localGit/Dirty=false/Tag空。核对结果 `s3-candidate-bundles.json`；`s3-provenance`脚本矩阵exit0。
+- 静态完整diff审计：全部Schema与MigrationPlan定义对基线字节不变；V11.1/v7、五Tab、Todo领域规则、project/plist/entitlements/签名/AppGroup/翻译/历史fixtures/分享源码无变化；`git diff --check`通过。没有模型升级或发行号变化。
+- 实际低空间卷测试结束后仅卸载本轮image，image/xcresult/log仍在`/tmp/pgos-p1-evidence`供复查。仅本测试拥有的filler/合成库被defer清理。
+
+最终门禁实际命令：
+
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-p1-evidence/s3-final-unit.xcresult -only-testing:PersonalGrowthOSTests > /tmp/pgos-p1-evidence/s3-final-unit.log 2>&1
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-todo-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-p1-evidence/s3-final-startup-ui.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoIntegrityFailureRetainsDataAndOffersDiagnosticAndRawExport -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry > /tmp/pgos-p1-evidence/s3-final-startup-ui.log 2>&1
+xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-p1-release-derived CODE_SIGNING_ALLOWED=NO > /tmp/pgos-p1-evidence/s3-final-release.log 2>&1
+python3 Scripts/verify-build-provenance.py > /tmp/pgos-p1-evidence/s3-provenance.log 2>&1
+hdiutil detach /tmp/pgos-p1-low-space
+```
+
+普通push同一分支、原OPEN Draft PR #8/base保持，最终交接后再只读核对local/upstream/remote/PR head和clean。更新原PR描述，不新建/Ready/merge。远端workflows=0，独立CI **NOT_RUN**；空check-runs/statuses/aggregate pending不代表通过。**READY_FOR_INDEPENDENT_REVIEW**：停在两项P1限定修复边界，下一步仅独立审查与Owner设备门禁。
 
 Owner私人Build12覆盖安装、真机签名/AppGroup/通知、真实设备系统清理/VoiceOver、实际Xcode Cloud/Archive/TestFlight均NOT_RUN/OWNER_DEVICE_GATE。模拟器通过不能替代这些门禁。远端CI以实际workflow/check/status核查为准；本轮不新增或主动触发发行CI。不同内容的重要故障副本会累计保留，占用空间是保全策略的明确代价；没有将分享完成误判为安全外部导出。
+
+
+此前ReviewFix UI的invalid-frame与一次Weight后台publication警告保持历史未闭合风险；本轮S3/最终门禁未复现，不声称解决其根因。旧候选已保存错误提醒不在这两个P1范围内，不静默改写。独立审查重点：只读预检与迁移保护边界、SQL内容身份、WAL/checkpoint签名验证、lease/发布、raw导出及不删除唯一副本。
+
+最终文档HEAD另做Debug/unsignedRelease资源核对（不再重跑Unit/UI）：日志 `s3-handoff-debug.log`、`s3-handoff-release.log`、`s3-handoff-bundles.json`。命令与上方build一致，分别选择Debug/Release、相同DerivedData、输出对应日志；产物SHA必须对应最终文档HEAD。
