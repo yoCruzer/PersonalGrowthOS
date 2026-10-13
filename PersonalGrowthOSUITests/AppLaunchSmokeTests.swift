@@ -2370,6 +2370,84 @@ extension AppLaunchSmokeTests {
 }
 
 extension AppLaunchSmokeTests {
+    func testQuietWinsHabitRankingKeepsSurvivingEvidenceAndDeletionInvalidatesIt() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSQuietWinsTest", "-PGOSQuietWinsRankingTest",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-quiet-wins"].tap()
+        let habitCard = app.buttons["quiet-wins-card-habit"]
+        XCTAssertTrue(habitCard.waitForExistence(timeout: 10))
+        XCTAssertTrue(habitCard.label.contains("Quiet reading")); XCTAssertTrue(habitCard.label.contains("2"))
+        habitCard.tap()
+        let sources = app.buttons.matching(identifier: "quiet-wins-source-habitLog")
+        XCTAssertTrue(sources.firstMatch.waitForExistence(timeout: 10)); XCTAssertEqual(sources.count, 2)
+        sources.firstMatch.tap()
+        let decrease = app.buttons["habit-detail-counter-decrease"]
+        XCTAssertTrue(decrease.waitForExistence(timeout: 10)); decrease.tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(sources.firstMatch.waitForExistence(timeout: 10)); XCTAssertEqual(sources.count, 1)
+        XCTAssertTrue(app.staticTexts["Days with check-ins for “Quiet reading”: 1"].exists)
+        XCTAssertFalse(app.staticTexts["Evidence No Longer Available"].exists)
+        let yesterday = Calendar(identifier: .gregorian).date(byAdding: .day, value: -1, to: Date())!
+        let formatter = DateFormatter(); formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.dateFormat = "yyyy-MM-dd"
+        XCTAssertTrue(sources.firstMatch.label.contains(formatter.string(from: yesterday)))
+        let image = XCTAttachment(screenshot: app.screenshot()); image.name = "Ranking changed, yesterday still valid"; image.lifetime = .keepAlways; add(image)
+        // Remove the remaining real source through existing Habit deletion controls.
+        sources.firstMatch.tap(); app.buttons["habit-actions"].tap(); app.buttons["Delete Permanently"].tap()
+        app.alerts["Delete this Habit permanently?"].buttons["Delete"].tap()
+        XCTAssertTrue(app.staticTexts["Evidence No Longer Available"].waitForExistence(timeout: 10))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(habitCard.waitForExistence(timeout: 10)); XCTAssertTrue(habitCard.label.contains("Quiet walking"))
+        habitCard.tap(); XCTAssertEqual(sources.count, 1)
+        XCTAssertTrue(sources.firstMatch.label.contains("Quiet walking"))
+    }
+
+    func testQuietWinsOpenPagesRefreshAfterRealBackgroundImportAndRapidRanges() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSQuietWinsTest", "-PGOSQuietWinsIntegrationTest",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch(); app.tabBars.buttons["Growth"].tap(); app.buttons["growth-quiet-wins"].tap()
+        let marker = app.staticTexts["quiet-wins-test-read"]
+        XCTAssertTrue(marker.waitForExistence(timeout: 10))
+        func importAndWaitForNewRead() {
+            let before = marker.label
+            let trigger = app.buttons["quiet-wins-test-import"]
+            XCTAssertTrue(trigger.waitForExistence(timeout: 10)); trigger.tap()
+            let committed = NSPredicate(format: "label == %@", "Import committed")
+            expectation(for: committed, evaluatedWith: trigger)
+            waitForExpectations(timeout: 15)
+            let refreshed = NSPredicate { _, _ in marker.exists && marker.label != before }
+            expectation(for: refreshed, evaluatedWith: marker)
+            waitForExpectations(timeout: 15)
+            XCTAssertFalse(app.staticTexts["Unable to Load Evidence"].exists)
+        }
+        importAndWaitForNewRead()
+        let range = app.buttons["quiet-wins-range"]
+        // No card wait between selections: later requests must keep the final range.
+        for days in ["Last 7 days", "Last 90 days", "Last 30 days", "Last 7 days", "Last 90 days", "Last 30 days"] {
+            range.tap(); app.buttons[days].tap()
+        }
+        let finalRange = NSPredicate { _, _ in marker.exists && marker.label.hasPrefix("30:") }
+        expectation(for: finalRange, evaluatedWith: marker); waitForExpectations(timeout: 15)
+        XCTAssertTrue(range.label.contains("Last 30 days"))
+        let entryCard = app.buttons["quiet-wins-card-entries"]
+        for _ in 0..<6 where !entryCard.isHittable { app.swipeUp() }
+        entryCard.tap()
+        XCTAssertTrue(app.buttons["quiet-wins-source-entry"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.buttons.matching(identifier: "quiet-wins-source-entry").count, 1)
+        importAndWaitForNewRead()
+        XCTAssertEqual(app.buttons.matching(identifier: "quiet-wins-source-entry").count, 1)
+        app.buttons["quiet-wins-source-entry"].tap()
+        XCTAssertTrue(app.staticTexts["A real synthetic record for source navigation."].waitForExistence(timeout: 10))
+        let image = XCTAttachment(screenshot: app.screenshot()); image.name = "Original source after background imports"; image.lifetime = .keepAlways; add(image)
+        app.navigationBars.buttons.element(boundBy: 0).tap(); app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(marker.waitForExistence(timeout: 10)); XCTAssertTrue(marker.label.hasPrefix("30:"))
+    }
+
     func testQuietWinsFiveSourcesRangeAndTodoUndoRefresh() {
         continueAfterFailure = false
         let app = XCUIApplication()

@@ -90,6 +90,12 @@ struct QuietWinsCard: Identifiable, Equatable, Sendable {
 struct QuietWinsProjection: Equatable, Sendable {
     let window: QuietWinsWindow
     let cards: [QuietWinsCard]
+    /// Valid current evidence includes facts that are not recommended on the homepage.
+    let evidenceCards: [QuietWinsCard]
+
+    func evidenceCard(id: String) -> QuietWinsCard? {
+        evidenceCards.first { $0.id == id }
+    }
 }
 
 enum QuietWinsEngine {
@@ -165,6 +171,7 @@ enum QuietWinsEngine {
         if !entries.isEmpty { cards.append(.init(id: "entries", kind: .entries, title: "", count: Set(entries.map(\.day)).count, sources: entries)) }
         if !reviews.isEmpty { cards.append(.init(id: "reviews", kind: .reviews, title: "", count: Set(reviews.compactMap(\.weekIdentifier)).count, sources: reviews)) }
         cards.append(contentsOf: (Array(goals.dropFirst()) + Array(habits.dropFirst())).prefix(5 - cards.count))
-        return QuietWinsProjection(window: window, cards: cards)
+        let evidenceCards = goals + habits + cards.filter { $0.kind != .goal && $0.kind != .habit }
+        return QuietWinsProjection(window: window, cards: cards, evidenceCards: evidenceCards)
     }
 }

@@ -50,6 +50,11 @@ struct QuietWinsView: View {
                 }
                 Text("These are things you really did")
                     .font(.headline).fixedSize(horizontal: false, vertical: true)
+                #if DEBUG
+                if QuietWinsUITestFixture.integrationEnabled, let window = projection?.window {
+                    QuietWinsUITestReadMarker(window: window)
+                }
+                #endif
             }
             if failed {
                 ContentUnavailableView("Unable to Load Evidence", systemImage: "exclamationmark.triangle",
@@ -82,11 +87,16 @@ struct QuietWinsView: View {
             }
         }
         .navigationTitle("Quiet Wins")
+        #if DEBUG
+        .toolbar {
+            if QuietWinsUITestFixture.integrationEnabled { QuietWinsUITestImportControl(mediaStore: mediaStore) }
+        }
+        #endif
         .accessibilityIdentifier("quiet-wins-view")
         .task(id: "\(days):\(refresh)") { await load() }
         .onAppear { refresh += 1 }
         .onChange(of: scenePhase) { _, phase in if phase == .active { refresh += 1 } }
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in refresh += 1 }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: DispatchQueue.main)) { _ in refresh += 1 }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refresh += 1 }
     }
 
@@ -125,6 +135,11 @@ struct QuietWinsEvidenceView: View {
             if let card {
                 Section {
                     Text(card.fact).font(.headline).fixedSize(horizontal: false, vertical: true)
+                    #if DEBUG
+                    if QuietWinsUITestFixture.integrationEnabled, let window = loadedWindow {
+                        QuietWinsUITestReadMarker(window: window)
+                    }
+                    #endif
                     if card.kind == .reviews {
                         Text("Weeks overlapping this date range; completion time is not inferred.")
                             .font(.subheadline).foregroundStyle(.secondary)
@@ -149,10 +164,15 @@ struct QuietWinsEvidenceView: View {
             } else { ProgressView().accessibilityLabel("Loading evidence") }
         }
         .navigationTitle("Evidence")
+        #if DEBUG
+        .toolbar {
+            if QuietWinsUITestFixture.integrationEnabled { QuietWinsUITestImportControl(mediaStore: mediaStore) }
+        }
+        #endif
         .task(id: refresh) { await load() }
         .onAppear { refresh += 1 }
         .onChange(of: scenePhase) { _, phase in if phase == .active { refresh += 1 } }
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in refresh += 1 }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: DispatchQueue.main)) { _ in refresh += 1 }
     }
 
     @MainActor private func load() async {
@@ -163,11 +183,41 @@ struct QuietWinsEvidenceView: View {
         do {
             let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
             try Task.checkCancellation()
-            card = result.cards.first { $0.id == cardID }; loadedWindow = result.window; loaded = true
+            card = result.evidenceCard(id: cardID); loadedWindow = result.window; loaded = true
         } catch is CancellationError {
         } catch { if !Task.isCancelled { failed = true; loaded = true } }
     }
 }
+
+#if DEBUG
+/// Explicit synthetic UI-test instrumentation; absent from Release and ordinary launches.
+private struct QuietWinsUITestReadMarker: View {
+    let window: QuietWinsWindow
+    var body: some View {
+        Text(verbatim: "\(window.days):\(window.asOf.timeIntervalSince1970)")
+            .accessibilityIdentifier("quiet-wins-test-read")
+    }
+}
+
+private struct QuietWinsUITestImportControl: View {
+    let mediaStore: MediaStore
+    @Environment(\.modelContext) private var context
+    @State private var status = "Import fixture"
+    var body: some View {
+        Button(status) {
+            status = "Importing fixture"
+            Task { @MainActor in
+                do {
+                    try await QuietWinsUITestFixture.importPublicFixture(container: context.container, mediaStore: mediaStore)
+                    status = "Import committed"
+                } catch { status = "Import failed" }
+            }
+        }
+        .disabled(status != "Import fixture")
+        .accessibilityIdentifier("quiet-wins-test-import")
+    }
+}
+#endif
 
 /// Resolve stable IDs against current models, never keep a deleted model as a route.
 struct QuietWinsSourceView: View {

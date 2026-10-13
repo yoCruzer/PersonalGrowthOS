@@ -174,10 +174,142 @@ final class QuietWinsTests: XCTestCase {
         XCTAssertEqual(result, QuietWinsEngine.build(input, window: window(90)))
         XCTAssertLessThan(elapsed, .seconds(5))
     }
+
+    func testHabitAndGoalEvidenceSurvivesHomepageRankingButNotRealInvalidation() throws {
+        let a = UUID(), b = UUID(), goalA = UUID(), goalB = UUID()
+        let yesterday = now.addingTimeInterval(-86_400)
+        let aYesterday = QuietWinsInput.Log(id: UUID(), habitID: a, occurredAt: yesterday, isCompleted: true, localDay: "2026-10-12")
+        let aToday = QuietWinsInput.Log(id: UUID(), habitID: a, occurredAt: now, isCompleted: true, localDay: "2026-10-13")
+        let bToday = QuietWinsInput.Log(id: UUID(), habitID: b, occurredAt: now, isCompleted: true, localDay: "2026-10-13")
+        var input = QuietWinsInput(
+            goals: [.init(id: goalA, title: "Goal A", isCompleted: true, completedAt: yesterday)],
+            todos: [.init(id: UUID(), title: "Task", isCompleted: true, completedAt: now)],
+            habits: [.init(id: a, title: "A"), .init(id: b, title: "B")], logs: [aYesterday, aToday, bToday],
+            entries: [.init(id: UUID(), title: "Life", occurredAt: now, isOrdinary: true, hasContent: true, isExternal: false)],
+            reviews: [.init(id: UUID(), weekIdentifier: "2026-W42", isCompleted: true)])
+        let selected = try XCTUnwrap(QuietWinsEngine.build(input, window: window()).cards.first { $0.kind == .habit })
+        XCTAssertEqual(selected.id, "habit:\(a.uuidString)"); XCTAssertEqual(selected.count, 2)
+        input.logs.removeAll { $0.id == aToday.id }
+        input.goals.append(.init(id: goalB, title: "Goal B", isCompleted: true, completedAt: now))
+        let changed = QuietWinsEngine.build(input, window: window())
+        XCTAssertEqual(changed.cards.count, 5)
+        XCTAssertEqual(changed.cards.first { $0.kind == .habit }?.id, "habit:\(b.uuidString)")
+        XCTAssertEqual(changed.cards.first { $0.kind == .goal }?.id, "goal:\(goalB.uuidString)")
+        XCTAssertFalse(changed.cards.contains { $0.id == selected.id })
+        let surviving = try XCTUnwrap(changed.evidenceCard(id: selected.id))
+        XCTAssertEqual(surviving.count, 1); XCTAssertEqual(surviving.sources.map(\.sourceID), [aYesterday.id])
+        XCTAssertNotNil(changed.evidenceCard(id: "goal:\(goalA.uuidString)"))
+        input.logs.removeAll { $0.habitID == a }
+        input.goals[0] = .init(id: goalA, title: "Goal A", isCompleted: false, completedAt: nil)
+        let invalid = QuietWinsEngine.build(input, window: window())
+        XCTAssertNil(invalid.evidenceCard(id: selected.id))
+        XCTAssertNil(invalid.evidenceCard(id: "goal:\(goalA.uuidString)"))
+    }
 }
 
 @MainActor
 final class QuietWinsReaderTests: XCTestCase {
+    func testSourceNilRealImportsAreExcludedAndFrozenV7RestoreBoundaryIsExplicit() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let container = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("source.sqlite"))
+        let context = container.mainContext
+        context.autosaveEnabled = false
+        let now = ISO8601DateFormatter().date(from: "2026-10-13T12:00:00Z")!
+        let media = MediaStore(rootURL: root.appendingPathComponent("SourceMedia"))
+        let png = UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).pngData { renderer in
+            UIColor.green.setFill(); renderer.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
+        }
+        let imageURL = root.appendingPathComponent("public.png"); try png.write(to: imageURL)
+        let attachmentID = UUID()
+        let attachment = CaptureAttachment(id: attachmentID, filename: attachmentID.uuidString.lowercased(),
+            contentType: "image/png", byteCount: Int64(png.count), checksum: try ShareInbox.checksum(imageURL))
+        let text = ShareImportPayload(createdAt: now.addingTimeInterval(-60), text: "Public excerpt without a URL")
+        let picture = ShareImportPayload(createdAt: now.addingTimeInterval(-120), images: [attachment])
+        let web = ShareImportPayload(createdAt: now.addingTimeInterval(-180), text: "Public URL excerpt",
+            source: CaptureSource(url: "https://example.invalid/public", capturedAt: now, captureMode: .selectedContent))
+        XCTAssertNil(text.source); XCTAssertNil(picture.source)
+        let inbox = ShareInbox(root: root.appendingPathComponent("Inbox"))
+        try inbox.publish(text, files: [:]); try inbox.publish(picture, files: [attachmentID: imageURL]); try inbox.publish(web, files: [:])
+        let importer = ExternalCaptureImporter(container: container, mediaStore: media, inbox: inbox)
+        let failures = try await importer.scan(); XCTAssertEqual(failures, 0)
+        let verification = ModelContext(container)
+        XCTAssertEqual(Set(try verification.fetch(FetchDescriptor<CaptureImportReceipt>()).map(\.id)), Set([text.id, picture.id, web.id]))
+        XCTAssertEqual(try verification.fetch(FetchDescriptor<EntryExternalSource>()).map(\.entryID), [web.id])
+        // The receipt's real import instant is outside this historical window: join by ID.
+        XCTAssertTrue(try verification.fetch(FetchDescriptor<CaptureImportReceipt>()).allSatisfy { $0.importedAt > now })
+        let creation = EntryCreationService(persistence: ModelContextEntryPersistence(context: context), mediaStore: media, now: { now })
+        let directText = try creation.create(.init(body: "My own public synthetic record", occurredAt: now.addingTimeInterval(-240)))
+        let directPicture = try creation.create(.init(title: "My own picture", occurredAt: now.addingTimeInterval(-300),
+            image: MediaSource(url: imageURL, originalFilename: "public.png", contentType: "image/png")))
+        func read(_ current: ModelContainer) async throws -> QuietWinsProjection {
+            let window = QuietWinsWindow(days: 30, asOf: now, timeZone: TimeZone(secondsFromGMT: 0)!)
+            let saves = SaveCounter()
+            let token = NotificationCenter.default.addObserver(forName: ModelContext.willSave, object: nil, queue: nil) { _ in saves.increment() }
+            defer { NotificationCenter.default.removeObserver(token); XCTAssertEqual(saves.value, 0) }
+            return try await Task.detached { try await QuietWinsReader(modelContainer: current).read(window: window) }.value
+        }
+        func assertDirect(_ result: QuietWinsProjection, file: StaticString = #filePath, line: UInt = #line) {
+            XCTAssertEqual(result.cards.map(\.kind), [.entries], file: file, line: line)
+            XCTAssertEqual(result.cards.first?.count, 1, file: file, line: line)
+            XCTAssertEqual(Set(result.cards.flatMap(\.sources).map(\.sourceID)), Set([directText.id, directPicture.id]), file: file, line: line)
+        }
+        let exporter = ImportExportService(context: context, mediaStore: media, availableCapacity: { .max }, now: { now })
+        func exportData(_ lease: ExportPackageLease) throws -> TransferData {
+            let target = root.appendingPathComponent(UUID().uuidString)
+            try ZIPArchiveReader(archiveURL: lease.url, availableCapacity: .max).extractAll(to: target)
+            let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
+            return try decoder.decode(TransferData.self, from: Data(contentsOf: target.appendingPathComponent("data.json")))
+        }
+        let beforeLease = try await exporter.exportPackage(); defer { beforeLease.cleanup() }
+        let before = try exportData(beforeLease)
+        let counter = SaveCounter()
+        let observer = NotificationCenter.default.addObserver(forName: ModelContext.willSave, object: nil, queue: nil) { _ in counter.increment() }
+        assertDirect(try await read(container))
+        NotificationCenter.default.removeObserver(observer)
+        XCTAssertEqual(counter.value, 0); XCTAssertFalse(context.hasChanges)
+        let afterLease = try await exporter.exportPackage(); defer { afterLease.cleanup() }
+        XCTAssertEqual(before, try exportData(afterLease))
+        let importedPicture = try XCTUnwrap(verification.fetch(FetchDescriptor<Entry>()).first { $0.id == picture.id })
+        XCTAssertEqual(try Data(contentsOf: media.fileURL(for: importedPicture.images[0].relativePath)), png)
+        XCTAssertEqual(try Data(contentsOf: media.fileURL(for: directPicture.images[0].relativePath)), png)
+        let restoredMedia = MediaStore(rootURL: root.appendingPathComponent("RestoredMedia"))
+        let restoredURL = root.appendingPathComponent("restored.sqlite")
+        func assertFrozenRestore(_ result: QuietWinsProjection) {
+            // Owner accepted this existing v7 limitation: no receipt is serialized.
+            // URL provenance survives; source=nil text/photo cannot be distinguished
+            // from direct records without changing the frozen transfer contract.
+            XCTAssertEqual(result.cards.map(\.kind), [.entries])
+            XCTAssertEqual(result.cards.first?.count, 1)
+            XCTAssertEqual(Set(result.cards.flatMap(\.sources).map(\.sourceID)), Set([directText.id, directPicture.id, text.id, picture.id]))
+            XCTAssertFalse(result.cards.flatMap(\.sources).contains { $0.sourceID == web.id })
+        }
+        func restore() async throws {
+            let target = try PersistenceContainerFactory.makeOnDisk(at: restoredURL)
+            _ = try await ImportExportService(context: target.mainContext, mediaStore: restoredMedia, availableCapacity: { .max }).importPackage(from: beforeLease.url)
+            assertFrozenRestore(try await read(target))
+        }
+        try await restore()
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: restoredURL)
+        assertFrozenRestore(try await read(reopened))
+        XCTAssertTrue(try reopened.mainContext.fetch(FetchDescriptor<CaptureImportReceipt>()).isEmpty)
+        let restoredExporter = ImportExportService(context: reopened.mainContext, mediaStore: restoredMedia, availableCapacity: { .max }, now: { now })
+        let reopenedLease = try await restoredExporter.exportPackage(); defer { reopenedLease.cleanup() }
+        XCTAssertEqual(before, try exportData(reopenedLease))
+        // Delete actual imports, retaining durable receipts, then retry the same share.
+        let deletion = EntryDeletionService(persistence: ModelContextEntryPersistence(context: verification), mediaStore: media)
+        for entry in try verification.fetch(FetchDescriptor<Entry>()) where [text.id, picture.id, web.id].contains(entry.id) {
+            try deletion.permanentlyDelete(entry)
+        }
+        XCTAssertEqual(try verification.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 3)
+        XCTAssertTrue(try verification.fetch(FetchDescriptor<EntryExternalSource>()).isEmpty)
+        try inbox.publish(text, files: [:])
+        let retryFailures = try await importer.scan(); XCTAssertEqual(retryFailures, 0)
+        XCTAssertFalse(try ModelContext(container).fetch(FetchDescriptor<Entry>()).contains { $0.id == text.id })
+        assertDirect(try await read(container))
+    }
+
     func testPictureBackfillExternalReviewAndContinuationsPreserveCompleteExport() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
