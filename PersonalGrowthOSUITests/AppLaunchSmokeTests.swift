@@ -1884,7 +1884,9 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
         search.typeText("127.0.0.1")
-        app.keyboards.buttons["Search"].tap()
+        // iOS 27 may expose the keyboard's Search AX button outside the viewport.
+        // Submit the unchanged query through the already-focused native search field.
+        search.typeText("\n")
         XCTAssertFalse(app.staticTexts["External Capture Fixture"].exists)
         let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
         safari.terminate()
