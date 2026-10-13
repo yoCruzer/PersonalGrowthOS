@@ -30,12 +30,12 @@
 
 - Goal/Flag：当前 completed、真实 completedAt 在范围；存在生命周期时保守核对日期最新的事件。归档/重激活不算；不拿 updatedAt 代替完成时刻。
 - Todo：当前 completed + completedAt；期次按 task ID，不读取历史完成事件造卡，排除未来/取消/跳过/撤销。
-- Habit：正向日志，存储本地日优先；多次同日只算一个活跃日，所有实际 log ID 留作来源。缺元数据沿用既有 occurredAt/当前时区回退，非法元数据直接排除。只说“有打卡”，不计算达标/遵守率/连胜/趋势，不依赖计划或生命周期去推断成就。
+- Habit：正向日志，只接受合法的已有持久本地日；多次同日只算一个活跃日，所有实际log ID留作来源。缺失/非法元数据均保守排除，不从occurredAt与当前时区猜原日，不写入/删除/补元数据。合法legacyBootstrap日仍保留，它是原项目持久历史日期政策，不冒称可证明原写入时区。只说“有打卡”，不计算达标/遵守率/连胜/趋势，不依赖计划或生命周期去推断成就。
 - Entry：以 occurredAt 选范围，仅合法 quickNote 内容（正文或图片）；排除 Review、空技术行、EntryExternalSource。置顶/后续附记不增加来源数；不做正文语义分类。
 - WeeklyReview：仅完成记录，用 canonical weekIdentifier 选择与范围重叠周次；界面明确“重叠周次，不推断完成时刻”，不用 updatedAt。
 - 同 ID 完全重复压成一项；矛盾重复输入保守隐藏。稳定日期/ID tie-breaker。优先 Goal、Todo、Habit，再中性记录/复盘，每类先一项，不足再填 Goal/Habit，最多五卡，没有总成长分。
 
-`QuietWinsReader` 在 detached task 内创建独立 ModelActor，关闭其 autosave，按最大90天有界查询，不在 SwiftUI body 重做历史全表聚合。Habit 以范围内 civil metadata 取日志并补已存在的合法 legacy instant 范围，批量 ID 映射，没有每卡 N×M 查询。过滤与聚合均后台；取消传递给 worker、各查询组检查 cancellation，旧请求不发布结果。无 insert/save/bootstrap/通知/网络。
+`QuietWinsReader` 在 detached task 内创建独立 ModelActor，关闭其 autosave，按最大90天有界查询，不在 SwiftUI body 重做历史全表聚合。Habit只以范围内持久civil metadata批量取正向日志与ID映射，不再补抓无法证明原本地日的legacy instant，没有每卡 N×M 查询。过滤与聚合均后台；取消传递给 worker、各查询组检查 cancellation，旧请求不发布结果。无 insert/save/bootstrap/通知/网络。
 
 Growth 增加“成长回顾”，Today 和原五 Tab 不增加常驻内容。7/30/90天菜单、具体日期、空态、最多五事实卡；卡→类型化明细→稳定源 ID 的现有 Goal/Todo/Habit/Entry/WeeklyReview 详情。图片原文仍在原 Entry；Habit 明细列每个真实日志日，并到所属 Habit 的原详情/历史。返回、保存通知、前台、显著时间改变重读；来源消失或不再完成时安全降级。
 
@@ -45,7 +45,7 @@ Growth 增加“成长回顾”，Today 和原五 Tab 不增加常驻内容。7/
 
 最终固定候选复审：`todo_review` 实际重新审查完整 `a4a716df5f674b2add1e6cb1071902bd11cb93f9` 生产diff/13项测试，并对 `d88585a0613f60bc27075ea6fbd6c059b713b86f` 的两项测试交互做终端核验；结论：没有 confirmed、范围内的 P0/P1 阻塞项。直接核验324/324完整Unit、干净Release资源、7/8原UI失败及补跑Safari1/1。没有让实现者自审冒充独立审查。
 
-提交分类：`a4a716d` 为Quiet Wins产品/测试/初始报告，父提交精确d72；`2f803cb0b456bf1d6673e7618033179c270a0f0f`、`d88585a0613f60bc27075ea6fbd6c059b713b86f` 仅修正既有Safari测试键盘Search/Go的屏幕外AX点击为已聚焦字段的原生Return。产品及Unit源码/工程与a4字节相同，所有分享/取消/来源/重启内容断言保留。无Todo修复commit；后续交接commit只有三份文档。
+提交分类：`a4a716d` 为Quiet Wins产品/测试/初始报告，父提交精确d72；`2f803cb0b456bf1d6673e7618033179c270a0f0f`、`d88585a0613f60bc27075ea6fbd6c059b713b86f` 仅修正既有Safari测试键盘Search/Go的屏幕外AX点击为已聚焦字段的原生Return。产品及Unit源码/工程与a4字节相同，所有分享/取消/来源/重启内容断言保留。无Todo修复commit；其后 `3174b0e` 只改交接文档。最终D3审计收紧另有 `4c13d9f746238305c91fd6faa4321dd3ff6a0c61`：仅新引擎/Reader不再猜未知Habit日期，加跨时区正负和跨周边界断言；旧生产存储与Todo未改。最后一次独立Agent终审直接核验该提交和21Unit+2集成结果，无剩余confirmed范围内P0/P1。
 
 一项 P2：`QuietWinsReader.read` 中 Goal 生命周期按最大 occurredAt 保守验证；创建后时钟回拨再完成时，当前 completedAt 虽在窗口内，较晚日期的 created/resumed 事件会使卡片漏显。无虚假成就/写入/数据丢失。`testGoalClockRollbackRemainsConservativeAndReadOnly` 固定这种保守行为，不为它改模型或扩展事件顺序协议。旧 WeeklyReview 导航与原Todo重复详情的 `Invalid frame dimension` 运行警告在集中 UI 组各复现一次，记录为原相邻页面风险，未声称根因消除。
 
@@ -71,8 +71,11 @@ Growth 增加“成长回顾”，Today 和原五 Tab 不增加常驻内容。7/
 | final-ui-2（a4a716d） | exit65，**7/8 UI PASS、1FAIL**、0SKIP、两条invalid-frame warnings；唯一失败为App搜索键盘Search AX屏幕外点击，尚未启动Safari/扩展。七项为QuietWins五来源/撤销/重启、Todo核心/重复/来源、Files备份预览取消恢复、启动安全Retry、Record。 |
 | safari-final-1（2f803cb） | exit65，0/1 UI，0warnings；App Search原生Return通过，下一失败为Safari Go AX屏幕外点击，尚未进入扩展。保留原失败，不当作分享代码缺陷。 |
 | safari-final-2（d88585a） | exit0，**1/1 UI PASS**、0FAIL/SKIP/warnings；App search与Safari Go均原生Return，其余网页/真实扩展/取消重开/保存/来源重开/重启断言完整。所有八条关键路径各有通过证据，**不是原整组重新全绿**；无新production/Unit代码，不重复全量。 |
+| day-guard-red | exit65，0/1 Unit、1FAIL；旧引擎在UTC/Shanghai/LosAngeles对无持久日日志猜日期，保留红测。正常d72 AppContainer启动、import发布和check-in均已有成对bootstrap/元数据，不把此纯投影边界证明为Owner数据或Todo故障。 |
+| day-guard-green（4c13d9f同源工作树） | exit0，**21/21 Unit PASS**、0FAIL/SKIP/warnings，14QuietWins+7相邻bootstrap/旧数据路径。原命令v7 selector误放TodoFoundationTests，未执行该项，不写22/22。 |
+| day-guard-integration（同源工作树） | exit0，正确ImportExportRecoveryTests类的完整v7往返1Unit + 受影响五来源/撤销/重启1UI=**2/2 PASS**，一条已有WeeklyReview invalid-frame warning。D3后总22项定向Unit及1UI有通过证据，不重跑/重标旧324为最终325全量。 |
 
-性能真实指标：pure projection（4000Todo/4000Entry/20000Log/25Habit）0.240077916s；磁盘reader（4000Entry/4000Todo/20000Log，半数为400天前数据）0.464396209s，main heartbeat0.013036875s，进程peakRSS读取前/后均516145152bytes。RSS含fixture构建与测试进程，不称功能占用516MB或“零内存分配”；90天投影只保留2000Todo/2000Entry/10000Log。单设备Debug合成指标不是真机性能承诺。
+初始定向性能真实指标（D3收紧前）：pure projection（4000Todo/4000Entry/20000Log/25Habit）0.240077916s；磁盘reader（4000Entry/4000Todo/20000Log，半数为400天前数据）0.464396209s，main heartbeat0.013036875s，进程peakRSS读取前/后均516145152bytes。RSS含fixture构建与测试进程，不称功能占用516MB或“零内存分配”；90天投影只保留2000Todo/2000Entry/10000Log。单设备Debug合成指标不是真机性能承诺。 最后D3源码的day-guard-green同规模实测：projection=0.220890417s、reader=0.245807s、main heartbeat=0.012273084s；进程peakRSS前/后均541278208bytes。所有读写保护/计数断言保持。
 
 可复现通用命令（每次真实run有独立日志/结果包）：
 
@@ -93,7 +96,9 @@ touch /tmp/pgos-p1-low-space/RUN_LOW_SPACE_TEST
 hdiutil detach /tmp/pgos-p1-low-space
 ```
 
-交接文档HEAD只改变文档，不改变以上受验产品/Unit源码。最终本地Debug/unsignedRelease资源会按该HEAD再构建核对；实际命令输出与完整SHA保存到 `/tmp/pgos-quiet-wins-evidence/final-head-build-proof.json`，源/测试门禁仍准确归属于上述固定提交，不制造文档自引用SHA。
+最后D3产品修订为4c13d9f；其后的交接文档HEAD只改变文档，不改变最后定向验证源码。最终本地Debug/unsignedRelease资源会按该HEAD再构建核对；实际命令输出与完整SHA保存到 `/tmp/pgos-quiet-wins-evidence/final-head-build-proof.json`，源/测试门禁仍准确归属于上述固定提交，不制造文档自引用SHA。
+
+day-guard-green selectors为全部QuietWinsTests+QuietWinsReaderTests，以及HabitFoundationTests的`testAnalyticsBootstrapFreezesLegacyLocalDaysAndStartsConservativeCoverage`、`testV7StoreMigratesAndBootstrapsHabitAnalyticsWithoutChangingHistory`、`testExactBuild7V7FixtureMigratesBootstrapsAndReopensWithoutDataLoss`、`testPersistedLocalDayControlsOncePerDayDuplicateAndTodayProgress`、`testRepeatableCounterDecrementUsesPersistedLocalDayAndSkipsFalseLogs`，TodoFoundationTests的`testExactBuild12V10FixtureMigratesAndReopensPreservingAllOldFactsAndMedia`、`testOriginalV11CandidateMigratesWithoutLosingTaskEventBytesAndInfersReminderLead`。误类名v7选择器未执行；day-guard-integration以`ImportExportRecoveryTests/testTodoV7RoundTripPreservesOccurrencesEventsListsSourcesAndOriginalMedia`与五来源UI补齐。
 
 其它已执行：git diff --check、project plutil PASS；原629条字符串值与基线逐条相等，新增23键全部en/zh-Hans完备；保护生产文件字节不变。最初注册工程脚本找错Sources phase、工具沙箱读取xcresult TestReport需权限、console日志不可用、Dark设置Shutdown等命令失败已保留到实际工具记录；均未当功能通过，已用真实工程phase、结果诊断和明确boot纠正。
 
@@ -104,9 +109,9 @@ hdiutil detach /tmp/pgos-p1-low-space
 | A1 | 空输入/未完成/外部正负Unit；中文空态实际UI。 |
 | A2 | completedAt/当前状态/lifecycle/归档/重新激活纯Unit；真实Goal详情导航；回拨保守读取Unit。 |
 | A3 | 期次ID去重/撤销/取消/未来Unit；真实Todo详情撤销、首页消失、重启UI；全量原Todo系列测试。 |
-| A4 | 正向/false/同日次数/持久日旅行/孤儿Unit与Reader；仅有打卡文案，不声称达标。 |
+| A4 | 正向/false/同日次数/持久日旅行/孤儿Unit与Reader；D3三时区未知日红→绿、合法持久日配对与磁盘未知日零写入排除；旧bootstrap日保留，仅有打卡文案。 |
 | A5 | occurredAt/内容/Review/external/去重Unit；真实图片关系与完整原数据导出前后相等Reader；Entry正文UI。 |
-| A6 | 合法周次重叠/未完成/非法/未来Unit；原WeeklyReview精确文本UI；不使用更新时间。 |
+| A6 | 合法周次重叠/未完成/非法/未来Unit，以及7天窗口从周三起、前一周周一来源正确纳入的部分重叠断言；原WeeklyReview精确文本UI；不使用更新时间。 |
 | A7 | 7/30/90/跨年/闰日/DST/asOf未来Unit；范围切换实际UI。 |
 | A8 | 五来源现有详情UI；Todo撤销后的源降级与卡消失、重启UI；删除源读取Unit。 |
 | A9 | 英文Light/中文实际Dark最大AX截图与语义audit；五Tab断言，原Today未改。 |
