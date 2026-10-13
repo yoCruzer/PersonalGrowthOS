@@ -1,3 +1,60 @@
+# PR #9 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-14）
+
+本轮读取附件 `REVIEW_ZH.md` 与 `CODEX_REVIEW_FIX_ZH.md`，继续原 OPEN Draft [PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9)。审查起点 `2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af`；固定产品/测试修复提交 **`69ad37fc12ddf6fbf15853f0a0174d6f5e5d9218`**。后续仅三份交接文档；最终完整 SHA 以原 PR head、本地 Git 和 `/tmp/pgos-quiet-wins-review-evidence/final-head-build-proof.json` 的同源核对为准，不在文档中制造自引用 SHA。
+
+原 worktree 属于另一任务，未改变其归属或内容；本任务从同一 HEAD 创建 Codex 管理工作树 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`。普通推送目标仍为 `codex/quiet-wins-on-d72`，PR base 仍为 `codex/todo-v1-personal-actions`，没有另建 PR、强推或重置。原工作区的 project、xcstrings、xcodecloud 未提交改动保留。只读核对 PR #8 仍 OPEN Draft、head=`d72c016dd34c8114cf44744d0e061b95bd312091`、base=`codex/external-capture-v1`。
+
+## R1 / R2 实际结论
+
+**R1 成立（P1），现有来源证据的本地漏用已修复。** 真实 `ShareInbox.publish` → `ExternalCaptureImporter` → 临时磁盘 SwiftData 库证明，无 URL 纯文字/纯图片有同 Entry ID 的收据，却没有 `EntryExternalSource`，旧投影仍把两者计入生活记录。修复只在 Reader 合并当前窗口 Entry ID 对应的两种外部来源证据；不以 `importedAt` 的窗口筛选收据，不改 importer 或补造来源。合成收据时间在读取的历史窗口之外，仍应排除。
+
+正负对照包括 source=nil 文字/图片、有 URL 分享、App 内直接文字/图片；调用真实 `EntryDeletionService` 删除导入后保留收据，再发布同一分享不复活 Entry/卡片。原内容/时间/身份/图片 metadata 完整 v7 导出前后相等、图片原字节不变；读取各阶段 `willSave=0`、无保存副作用。
+
+**v7 恢复限制经 Owner 明确接受，未冒称全部恢复口径保持。** 首轮修复测试在导出→空库恢复→重开时仍失败：现行 `TransferData` 不序列化 `CaptureImportReceipt`，恢复也不构造它。URL 来源恢复后仍排除；source=nil 外部文字/图片恢复后失去唯一可辨认来源，会按普通记录进入投影。独立 Agent 核对了 `TransferData`、导出/恢复源码与实际失败 xcresult。Owner 明确选择“保持冻结范围，明确记录恢复限制”；随后回归精确断言收据为空、URL 仍排除、直接内容保留及两份 source=nil 内容重新进入，而不是悄悄将原失败重标为通过。不改 v7 格式、恢复流程或原记录，不靠正文/时间猜来源。没有任何来源元数据的手动粘贴也不在可辨认范围内。
+
+**R2 成立（P2），以局部投影修复。** 首页 `cards` 仍最多五张，新增内存 `evidenceCards` 保留同一窗口内所有当前有效候选；明细以生成的类型/稳定 ID 查找该集合。仍每次真实重读，不缓存旧卡、不增加持久化实体或导航平台。五类型齐全时，习惯 A 昨天+今天两天、B 只有今天；撤销 A 今天后首页推荐 B，但 A 明细继续显示昨天一条/一天。A 最后事实删除后正确降级。引擎同时配对验证 Goal 被更近完成事实挤出首页后仍有效，重新激活后才失效。
+
+后台真实导入 UI 首次复现 `Publishing changes from background threads…` 运行警告；没有观察到崩溃。两个 Quiet Wins 页面的 `didSave` publisher 改用主队列交付，仍接收同一容器其他 context 的成功保存，未只过滤 mainContext。相同后台导入/排名 UI 补跑不再出现该警告；不扩大为全应用线程问题已解决。
+
+## 本轮实际门禁、失败与未执行
+
+macOS 27.0.1 / Xcode 27.0 (27A266a)，iPhone 18 Pro / iOS 27.0 (24A434) Simulator，UDID `FD666264-A2DF-445C-A77D-534B9E8ED595`。仅公开合成临时库、图片、分享和专用 UI 测试数据；证据目录 `/tmp/pgos-quiet-wins-review-evidence`，DerivedData `/tmp/pgos-quiet-wins-review-derived`。
+
+| Run | 实际结果与边界 |
+| --- | --- |
+| r1-red | 沙箱无法连接 CoreSimulator，exit70，未执行 App 测试；不算产品红测。 |
+| review-red-2 | 正式权限运行，exit65，0/2 Unit PASS，2 FAIL，0 SKIP/warnings：真实 source=nil 导入错误来源 ID、排名更替后明细 nil。附件的 Foundation 探针没有复制进 App，也未冒称 App 测试。 |
+| focused-green-1 | exit65，15/16 Unit PASS，1 FAIL，0 SKIP/warnings；R2 与本地 R1 通过，唯一失败为上述现行 v7 恢复来源丢失，原结果保留。 |
+| affected-gate-1 | exit0，**44/44 Unit + 3/3 UI PASS**，0 FAIL/SKIP。Unit 为全部 16 Quiet Wins、全部 27 ExternalCapture、1 完整 Todo v7 往返；UI 为五来源/撤销/重启、A/B 排名/最后来源删除、首页和明细保持打开时后台真实导入/快速范围切换/源导航。两条运行警告分别为旧五来源周回顾 invalid-frame，以及新后台导入 publication；不称零警告。 |
+| ui-main-delivery-1 | 只改两个保存通知的交付队列后，exit0，**2/2 UI PASS**，0 FAIL/SKIP，`runtimeWarnings=[]`；配对排名与真实后台导入仍通过。Unit/存储源码与上一组字节相同，没有重新跑或冒称“最终49项全量”。 |
+
+真实 UI 截图已导出并查看：A 明细标题为 1 天，来源仅昨天；后台导入后原 Entry 正文仍为合成原值。两项新 UI 测试使用 DEBUG + 专用 UI-testing 参数下的夹具/读值标记/触发按钮：实际调用生产 importer 并观察新的读取时间，普通启动无入口，Release 不编译。范围切换是轻量集成用例，不是强制乱序的取消压力证明。
+
+实际命令（均在本任务 worktree；每个 run 的独立 log/xcresult 保留）：
+
+```sh
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-quiet-wins-review-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-quiet-wins-review-evidence/affected-gate-1.xcresult -only-testing:PersonalGrowthOSTests/QuietWinsTests -only-testing:PersonalGrowthOSTests/QuietWinsReaderTests -only-testing:PersonalGrowthOSTests/ExternalCaptureTests -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testTodoV7RoundTripPreservesOccurrencesEventsListsSourcesAndOriginalMedia -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testQuietWinsHabitRankingKeepsSurvivingEvidenceAndDeletionInvalidatesIt -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testQuietWinsOpenPagesRefreshAfterRealBackgroundImportAndRapidRanges -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testQuietWinsFiveSourcesRangeAndTodoUndoRefresh > /tmp/pgos-quiet-wins-review-evidence/affected-gate-1.log 2>&1
+xcodebuild test -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -destination 'platform=iOS Simulator,id=FD666264-A2DF-445C-A77D-534B9E8ED595' -derivedDataPath /tmp/pgos-quiet-wins-review-derived -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-quiet-wins-review-evidence/ui-main-delivery-1.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testQuietWinsHabitRankingKeepsSurvivingEvidenceAndDeletionInvalidatesIt -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testQuietWinsOpenPagesRefreshAfterRealBackgroundImportAndRapidRanges > /tmp/pgos-quiet-wins-review-evidence/ui-main-delivery-1.log 2>&1
+xcrun xcresulttool get test-results summary --path /tmp/pgos-quiet-wins-review-evidence/affected-gate-1.xcresult
+xcrun xcresulttool get test-results tests --path /tmp/pgos-quiet-wins-review-evidence/affected-gate-1.xcresult
+xcrun xcresulttool get object --legacy --path /tmp/pgos-quiet-wins-review-evidence/affected-gate-1.xcresult --format json
+xcrun xcresulttool export attachments --path /tmp/pgos-quiet-wins-review-evidence/affected-gate-1.xcresult --output-path /tmp/pgos-quiet-wins-review-evidence/affected-gate-1-attachments
+```
+
+红测与首轮修复使用同一通用命令：review-red-2 只选 `QuietWinsReaderTests/testSourceNilRealImportsAreExcludedAndDirectRecordsSurviveRestoreReopen`（当时的原测试名）与 `QuietWinsTests/testHabitAndGoalEvidenceSurvivesHomepageRankingButNotRealInvalidation`；focused-green-1 选全部 QuietWinsTests + QuietWinsReaderTests。Owner 接受限制后，恢复测试改名为 `testSourceNilRealImportsAreExcludedAndFrozenV7RestoreBoundaryIsExplicit`。
+
+最终交接 HEAD 的 Debug / unsigned Simulator Release 与 App/唯一 appex 的完整 SHA、Dirty、Tag、Bundle ID、版本核对记录在 `final-head-build-proof.json`；对应 `final-head-debug.log` 与 `final-head-release.log`。构建命令为 `xcodebuild build -quiet -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/pgos-quiet-wins-review-derived CODE_SIGNING_ALLOWED=NO`，Release 使用 `-configuration Release` 和 `/tmp/pgos-quiet-wins-review-release-derived`，分别重定向到上述日志。`git diff --check` 通过；产品修复仅三个 Quiet Wins 文件，测试仅两个现有文件，交接仅本文和两份 CURRENT 文档。
+
+## 独立复审与停止边界
+
+未参与实现的 `independent_review` Agent 对固定 `69ad37fc12ddf6fbf15853f0a0174d6f5e5d9218` 的五文件完整 diff、保护文件零差异、真实红测/恢复失败/47项门禁/主队列2UI补跑 xcresult 和排名截图逐项核验：**没有新的 confirmed P0/P1/P2**，可交接。该 Agent 没有修改代码或启动竞争测试；独立读取结果不冒称独立重新执行全部测试。
+
+保留已披露 **Goal 时钟回拨 P2**、Owner 接受的 **source=nil 分享 v7 恢复来源缺失限制**，以及旧周回顾 invalid-frame 警告。完整300+ Unit 本轮 **NOT_RUN**，因只读查询/投影/通知交付局部变化，已执行全部受影响模块及关键 UI；不复用历史324/324冒称新候选全量。只读 GitHub workflows 数量仍为0，独立远端CI **NOT_RUN**；真实设备/私人库/签名/AppGroup/实际Cloud/VoiceOver与发行 **NOT_RUN/OWNER_DEVICE_GATE**。
+
+Schema/迁移、v1–v7备份、ExternalCapture/ShareInbox、Todo/提醒/Recovery、工程/签名、Bundle ID/AppGroup/版本全部相对本轮起点零生产差异。只普通 push 更新原 Draft PR #9，停在 **READY_FOR_INDEPENDENT_REVIEW**；不修改 PR #8、不 merge/tag/Archive/TestFlight、不访问真实手机或私人数据。下方为原交付历史，不再指挥本轮进入发行。
+
+---
+
 # Quiet Wins V0 — Todo-first / d72c016
 
 日期：2026-10-13。Owner 唯一 Goal：附件 `GOAL_QUIET_WINS_TODO_FIRST_ZH.md`（2026-10-13 ZIP，替代旧 ZIP）。连续 R0→R1→跳过 R2→Q1→Q2→Q3→Q4。**READY_FOR_OWNER_REVIEW_AND_TESTFLIGHT_GATE**。实现、独立审查、针对性闭环与本机门禁完成，已普通push并创建新 [Draft PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9)。不进入发行。

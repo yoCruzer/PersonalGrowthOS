@@ -1,3 +1,19 @@
+# PR #9 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-14）
+
+原 Draft [PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9)，head 分支 `codex/quiet-wins-on-d72`、base `codex/todo-v1-personal-actions` 保持。起点 `2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af`；固定产品/测试修复 **`69ad37fc12ddf6fbf15853f0a0174d6f5e5d9218`**，之后仅交接文档，最终完整 SHA 以本地/原PR head/实包构建同源证据为准。任务 worktree 为 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`；原 worktree 及 PR #8 的未提交改动保留，PR #8 head=d72/base不变。
+
+R1真实 ShareInbox/Importer/磁盘SwiftData红测成立；Reader按当前Entry ID联合网页来源与导入收据，不按importedAt窗口，source=nil文字/图片本地正确排除，直接记录/图片正对照保留。R2红测成立；当前有效证据独立于首页五卡排名，真实A两天→撤销今天后A剩昨天明细仍在，最终删除后降级；Goal排名/真实失效配对通过。不缓存旧卡、不重构导航。后台真实导入UI复现publication警告后，仅两个保存监听改主队列交付，仍接收后台context。
+
+**Owner明确接受现行v7来源缺失限制**：备份不保存CaptureImportReceipt，source=nil外部文字/图片恢复重开后不可辨认，会按普通记录计入；URL来源仍排除。首轮恢复失败保留，新的边界断言如实固定该事实，没有改备份/importer/原数据或伪造来源。Goal时钟回拨P2继续保留。
+
+本轮实际门禁：红测0/2 PASS（exit65）；首轮修复15/16 PASS（v7限制失败，exit65）；定向 **44/44 Unit + 3/3 UI PASS（exit0）**，含全部QuietWins16、分享27、完整v7往返1及五来源/排名/真实后台导入。该组保留旧周回顾invalid-frame及后台publication两条警告。仅交付队列修正后 **2/2关键UI PASS（exit0），零警告**，不拼成最终49项全量。独立Agent已对固定提交、保护文件、原失败与真实xcresult/排名截图终审，无新confirmed P0/P1/P2。
+
+完整命令、失败、修复与独立复审见 [QUIET_WINS_V0.md](QUIET_WINS_V0.md) 新首节。最终HEAD的Debug/unsignedSimulatorRelease实包与完整SHA/版本同源核对见 `/tmp/pgos-quiet-wins-review-evidence/final-head-build-proof.json`。本轮完整300+Unit、独立远端CI（workflows=0）及真实手机/私人库/签名/Cloud/VoiceOver/发行均NOT_RUN；原Schema/备份/提醒/Recovery/版本/签名不改。只普通push更新原Draft PR #9，停止在 **READY_FOR_INDEPENDENT_REVIEW**，下一边界仅审查；不merge/tag/Archive/TestFlight，不修改PR #8。
+
+以下为原交付历史，不再授权进入发行。
+
+---
+
 # Quiet Wins V0 — READY_FOR_OWNER_REVIEW_AND_TESTFLIGHT_GATE（2026-10-13）
 
 Owner唯一Goal为2026-10-13附件 `GOAL_QUIET_WINS_TODO_FIRST_ZH.md`。精确父提交 `d72c016dd34c8114cf44744d0e061b95bd312091`；独立工作树/分支 `codex/quiet-wins-on-d72`，原工作区未提交改动保留。新 [Draft PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9) base=`codex/todo-v1-personal-actions`；原PR#8仍OPEN Draft、head=d72/base不变。QuietWins产品/13项测试提交a4a716d，两个后续提交只修Safari测试原生键盘交互；最终D3边界修订 `4c13d9f746238305c91fd6faa4321dd3ff6a0c61` 仅收紧新投影对未知Habit日期不猜测，旧存储/Todo未改；其后交接只改三份文档，最终HEAD以git/PR同源核对为准。
