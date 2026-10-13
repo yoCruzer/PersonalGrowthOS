@@ -1,3 +1,11 @@
+# Quiet Wins V0 — 实现完成，固定候选门禁进行中（2026-10-13）
+
+Owner唯一Goal为2026-10-13附件 `GOAL_QUIET_WINS_TODO_FIRST_ZH.md`。精确基线d72c016，新独立工作树/分支 `codex/quiet-wins-on-d72`，保留原工作区未提交改动与PR#8。独立Todo Review无confirmed P0/P1，跳过R2；只读QuietWins引擎/Growth入口/五类来源/中英文已实现，定向证据、失败、性能与独立审查见 [QUIET_WINS_V0.md](QUIET_WINS_V0.md)。最终集中Unit/集成UI/构建/提交/push/新Draft PR仍待收口，不提前标READY。原Bundle ID/容器/版本/模型/备份/提醒不改，无发布或私人真机操作。
+
+下面为保留的历史交接，不指挥本轮继续实现或修改PR#8。
+
+---
+
 # Build16 preMigrationProtection 259 — 路径别名修复 READY_FOR_INDEPENDENT_REVIEW（2026-10-10）
 
 基线 `fb830a1d555b9738d15867546d395239d38e1edc`；原分支/原Draft PR #8/base保持。Owner确认完整Container未下载或独立备份，授权继续合成测试；未读取私人副本、未操作iPhone、无新安装授权。现存本机iphoneos产物1.0(16)、SHA匹配基线、Dirty=true，不能证明安装二进制与干净HEAD一致。
