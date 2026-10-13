@@ -16,6 +16,10 @@ struct PersonalGrowthOSApp: App {
         let result = Result<AppContainer, Error> {
             let container = try AppContainer.make(configuration: configuration)
             #if DEBUG
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSQuietWinsTest") {
+                try QuietWinsUITestFixture.seed(context: container.modelContainer.mainContext)
+            }
             if configuration.launchMode == .uiTesting,
                ProcessInfo.processInfo.arguments.contains("-PGOSStartupFailureTest") {
                 container.modelContainer.mainContext.insert(Entry(body: "Preserved startup retry fixture", createdAt: Date()))

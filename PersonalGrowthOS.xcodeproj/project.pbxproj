@@ -67,6 +67,10 @@ TD1000000000000000000004 = {isa = PBXBuildFile; fileRef = TD00000000000000000000
 TD1000000000000000000005 = {isa = PBXBuildFile; fileRef = TD0000000000000000000005; };
 TD1000000000000000000006 = {isa = PBXBuildFile; fileRef = TD0000000000000000000006; };
 RV1000000000000000000001 = {isa = PBXBuildFile; fileRef = RV0000000000000000000001; };
+QW1000000000000000000001 = {isa = PBXBuildFile; fileRef = QW0000000000000000000001; };
+QW1000000000000000000002 = {isa = PBXBuildFile; fileRef = QW0000000000000000000002; };
+QW1000000000000000000003 = {isa = PBXBuildFile; fileRef = QW0000000000000000000003; };
+QW1000000000000000000004 = {isa = PBXBuildFile; fileRef = QW0000000000000000000004; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +152,10 @@ TD0000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourceco
 TD0000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/TodoReminderTests.swift"; sourceTree = SOURCE_ROOT; };
 TD0000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoTransfer.swift"; sourceTree = SOURCE_ROOT; };
 RV0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/OriginalV11Fixture"; sourceTree = SOURCE_ROOT; };
+QW0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/QuietWins/QuietWinsEngine.swift"; sourceTree = SOURCE_ROOT; };
+QW0000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/QuietWins/QuietWinsReader.swift"; sourceTree = SOURCE_ROOT; };
+QW0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/QuietWins/QuietWinsViews.swift"; sourceTree = SOURCE_ROOT; };
+QW0000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/QuietWinsTests.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,6 +190,11 @@ CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+                QW0000000000000000000001,
+                QW0000000000000000000002,
+                QW0000000000000000000003,
+                QW0000000000000000000004,
+
 TD0000000000000000000006,
 TD0000000000000000000005,
 TD0000000000000000000004,
@@ -545,6 +558,10 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                QW1000000000000000000001,
+                QW1000000000000000000002,
+                QW1000000000000000000003,
+
 TD1000000000000000000006,
 TD1000000000000000000004,
 TD1000000000000000000003,
@@ -587,6 +604,8 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                QW1000000000000000000004,
+
 TD1000000000000000000005,
 TD1000000000000000000002,
 				B00000000000000000000004 /* AppCompositionTests.swift in Sources */,

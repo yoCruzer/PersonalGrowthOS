@@ -54,6 +54,18 @@ struct GrowthView: View {
                 }
             }
             .accessibilityIdentifier("growth-weight")
+            NavigationLink {
+                QuietWinsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("Quiet Wins", systemImage: "leaf")
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Look back on things you've done")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .accessibilityIdentifier("growth-quiet-wins")
         }
         .navigationTitle("Growth")
         .accessibilityIdentifier("growth-view")
