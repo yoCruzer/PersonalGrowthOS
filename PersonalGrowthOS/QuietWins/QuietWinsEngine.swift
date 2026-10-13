@@ -128,14 +128,10 @@ enum QuietWinsEngine {
         let logs = unique(input.logs).compactMap { log -> QuietWinsSource? in
             guard log.isCompleted, log.occurredAt <= window.asOf,
                   let habit = habitByID[log.habitID] else { return nil }
-            let day: HabitLocalDay
-            if let stored = log.localDay {
-                guard let parsed = HabitLocalDay(stored) else { return nil }
-                day = parsed
-            } else {
-                day = HabitLocalDay(date: log.occurredAt, timeZone: window.timeZone)
-            }
-            guard window.contains(day) else { return nil }
+            // An absolute instant cannot establish the original civil day after travel.
+            // Normal startup/import/check-in already persist this metadata; fail closed otherwise.
+            guard let stored = log.localDay, let day = HabitLocalDay(stored),
+                  window.contains(day) else { return nil }
             return QuietWinsSource(kind: .habitLog, sourceID: log.id, parentID: log.habitID, title: habit.title,
                 day: day, date: log.occurredAt, weekIdentifier: nil)
         }

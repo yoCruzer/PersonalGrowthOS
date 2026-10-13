@@ -40,15 +40,8 @@ actor QuietWinsReader {
         let civilLogs = try modelContext.fetch(FetchDescriptor<HabitLog>(predicate: #Predicate {
             dayLogIDs.contains($0.id) && $0.isCompleted && $0.occurredAt <= end
         }))
-        // Also cover legacy logs without metadata. Two-day padding includes global zone offsets.
-        let paddedStart = start.addingTimeInterval(-2 * 86_400)
-        let instantLogs = try modelContext.fetch(FetchDescriptor<HabitLog>(predicate: #Predicate {
-            $0.occurredAt >= paddedStart && $0.occurredAt <= end && $0.isCompleted
-        }))
-        let logsByID = Dictionary((civilLogs + instantLogs).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let logIDs = Array(logsByID.keys)
-        let metadata = try modelContext.fetch(FetchDescriptor<HabitLogDayMetadata>(predicate: #Predicate { logIDs.contains($0.habitLogID) }))
-        let daysByLog = Dictionary(metadata.map { ($0.habitLogID, $0.localDayIdentifier) }, uniquingKeysWith: { first, _ in first })
+        let logsByID = Dictionary(civilLogs.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let daysByLog = Dictionary(dayMetadata.map { ($0.habitLogID, $0.localDayIdentifier) }, uniquingKeysWith: { first, _ in first })
         let habitIDs = Array(Set(logsByID.values.map(\.habitID)))
         input.habits = try modelContext.fetch(FetchDescriptor<Habit>(predicate: #Predicate { habitIDs.contains($0.id) }))
             .map { .init(id: $0.id, title: $0.name) }

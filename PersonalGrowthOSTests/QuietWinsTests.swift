@@ -69,6 +69,24 @@ final class QuietWinsTests: XCTestCase {
         XCTAssertFalse(a.fact.lowercased().contains("achieved"))
     }
 
+    func testUnknownHabitDayCannotBeGuessedAfterTravel() {
+        let habit = UUID(), log = UUID(), instant = date("2026-10-12T23:30:00Z")
+        var input = QuietWinsInput(habits: [.init(id: habit, title: "Travel")],
+            logs: [.init(id: log, habitID: habit, occurredAt: instant, isCompleted: true, localDay: nil)])
+        for zone in ["UTC", "Asia/Shanghai", "America/Los_Angeles"] {
+            let w = QuietWinsWindow(days: 30, asOf: now, timeZone: TimeZone(identifier: zone)!)
+            XCTAssertTrue(QuietWinsEngine.build(input, window: w).cards.isEmpty,
+                "An absolute instant cannot prove the original local day in \(zone)")
+        }
+        input.logs = [.init(id: log, habitID: habit, occurredAt: instant, isCompleted: true, localDay: "2026-10-13")]
+        for zone in ["UTC", "Asia/Shanghai", "America/Los_Angeles"] {
+            let w = QuietWinsWindow(days: 30, asOf: now, timeZone: TimeZone(identifier: zone)!)
+            let card = QuietWinsEngine.build(input, window: w).cards.first
+            XCTAssertEqual(card?.count, 1)
+            XCTAssertEqual(card?.sources.first?.day.description, "2026-10-13")
+        }
+    }
+
     func testEntryOccurredDayPicturesReviewAndTechnicalExternalExclusion() {
         let ordinary = QuietWinsInput.Record(id: UUID(), title: "photo", occurredAt: now,
             isOrdinary: true, hasContent: true, isExternal: false)
@@ -84,7 +102,7 @@ final class QuietWinsTests: XCTestCase {
 
     func testWeeklyReviewCountsOverlappingWeekIdentitiesNotEditTime() {
         let input = QuietWinsInput(reviews: [
-            .init(id: UUID(), weekIdentifier: "2026-W38", isCompleted: true), // starts one day before window
+            .init(id: UUID(), weekIdentifier: "2026-W38", isCompleted: true), // starts on the window boundary
             .init(id: UUID(), weekIdentifier: "2026-W42", isCompleted: true),
             .init(id: UUID(), weekIdentifier: "2026-W43", isCompleted: true),
             .init(id: UUID(), weekIdentifier: "2026-W37", isCompleted: true),
@@ -94,6 +112,16 @@ final class QuietWinsTests: XCTestCase {
         XCTAssertEqual(card.count, 2)
         XCTAssertEqual(Set(card.sources.compactMap(\.weekIdentifier)), Set(["2026-W38", "2026-W42"]))
         XCTAssertTrue(card.sources.allSatisfy { $0.date == nil })
+        let crossing = QuietWinsInput(reviews: [
+            .init(id: UUID(), weekIdentifier: "2026-W40", isCompleted: true),
+            .init(id: UUID(), weekIdentifier: "2026-W41", isCompleted: true),
+            .init(id: UUID(), weekIdentifier: "2026-W42", isCompleted: true),
+            .init(id: UUID(), weekIdentifier: "2026-W43", isCompleted: true)])
+        let recent = QuietWinsEngine.build(crossing, window: window(7)).cards[0]
+        XCTAssertEqual(window(7).firstDay.description, "2026-10-07")
+        XCTAssertEqual(Set(recent.sources.compactMap(\.weekIdentifier)), Set(["2026-W41", "2026-W42"]))
+        XCTAssertEqual(recent.sources.first(where: { $0.weekIdentifier == "2026-W41" })?.day.description, "2026-10-05")
+
     }
 
     func testCivilWindowsLeapYearDSTYearBoundaryAndFutureInstants() {
@@ -282,6 +310,8 @@ final class QuietWinsReaderTests: XCTestCase {
         context.insert(log)
         context.insert(HabitLogDayMetadata(habitLogID: log.id, localDayIdentifier: "2026-10-13",
             localTimeZoneIdentifier: "Asia/Shanghai", provenance: .capturedAtWrite))
+        let unknownDay = HabitLog(habitID: habit.id, occurredAt: now, isCompleted: true, createdAt: now)
+        context.insert(unknownDay) // Do not bootstrap or reinterpret it while reading evidence.
         let entry = Entry(body: "Actual life", createdAt: now, occurredAt: now.addingTimeInterval(-60))
         context.insert(entry)
         let week = try WeeklyReviewPeriod(containing: now)
@@ -298,6 +328,8 @@ final class QuietWinsReaderTests: XCTestCase {
             let projection = try await Task.detached { try await QuietWinsReader(modelContainer: container).read(window: window) }.value
             XCTAssertEqual(projection.cards.map(\.kind), [.todos, .habit, .entries, .reviews])
             XCTAssertEqual(projection.cards.first(where: { $0.kind == .habit })?.sources[0].day.description, "2026-10-13")
+            XCTAssertEqual(projection.cards.first(where: { $0.kind == .habit })?.sources.count, 1)
+            XCTAssertFalse(projection.cards.flatMap(\.sources).contains { $0.sourceID == unknownDay.id })
         }
         XCTAssertEqual(saveCounter.value, 0)
         XCTAssertEqual([entry.updatedAt, task.updatedAt, habit.updatedAt], oldTimes)
