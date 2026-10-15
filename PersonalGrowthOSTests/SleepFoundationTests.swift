@@ -140,6 +140,23 @@ import XCTest
         XCTAssertEqual(night.axis(draft().values.bedtime!), -60 ... -30)
         XCTAssertEqual(SleepReviewSnapshot(records: [], goals: [], windowDays: 30, today: .init(year: 2026, month: 10, day: 18), now: clock).recordedDays, 0)
     }
+    func testReviewAxisIncludesLateWakeBucketWithoutClippingItsNextDayEndpoint() throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), clock = instant("2026-10-15")
+        let service = SleepService(context: c.mainContext, now: { clock })
+        var late = draft("2026-10-14")
+        late.values.bedtime = .init(day: late.wakeDay, minute: 1200, precision: 30)
+        late.values.wake = .init(day: late.wakeDay, minute: 1410, precision: 60)
+        _ = try service.save(late)
+        let review = SleepReviewSnapshot(records: try records(c).map(SleepRecordTransfer.init), goals: [], windowDays: 7, today: ImportantCivilDay(identifier: "2026-10-15")!, now: clock)
+        XCTAssertEqual(review.wakeCount, 1)
+        XCTAssertEqual(review.axisHourDomain, -24...24.5)
+        XCTAssertEqual(SleepFormatting.axisHour(-24), String(localized: "Previous day") + " 00:00")
+        XCTAssertEqual(SleepFormatting.axisHour(0), String(localized: "Wake day") + " 00:00")
+        XCTAssertEqual(SleepFormatting.axisHour(24), String(localized: "Next day") + " 00:00")
+        XCTAssertEqual(review.nights.first?.axis(late.values.wake!), 1410...1470)
+        let empty = SleepReviewSnapshot(records: [], goals: [], windowDays: 7, today: ImportantCivilDay(identifier: "2026-10-15")!, now: clock)
+        XCTAssertEqual(empty.axisHourDomain, -24...24)
+    }
     func testDiskSaveReopenEditDeleteAndTimezoneTravelNeverMovesWakeDay() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true); defer { try? FileManager.default.removeItem(at: root) }

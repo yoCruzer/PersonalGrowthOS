@@ -1157,6 +1157,12 @@
       }
     }
   },
+  "Next day": {
+    "localizations": {
+      "en": { "stringUnit": { "state": "translated", "value": "Next day" } },
+      "zh-Hans": { "stringUnit": { "state": "translated", "value": "次日" } }
+    }
+  },
   "Previous day": {
     "extractionState": "manual",
     "localizations": {

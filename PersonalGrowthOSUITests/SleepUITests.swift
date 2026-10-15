@@ -38,6 +38,7 @@ final class SleepUITests: XCTestCase {
         app.buttons["sleep-feeling-3"].tap(); app.buttons["sleep-save"].tap()
         app.tabBars.buttons["Growth"].tap(); app.buttons["growth-sleep"].tap(); app.buttons["sleep-review"].tap()
         XCTAssertTrue(app.staticTexts["1 recorded wake days / 7 calendar days"].waitForExistence(timeout: 5))
+        attachment(app, "Sleep-seven-day-interval-chart-and-denominators")
         let night = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "sleep-review-night-")).firstMatch
         reveal(night, app: app); XCTAssertTrue(night.label.contains("7 h 30 min–8 h 15 min")); night.tap()
         let delete = app.buttons["sleep-delete"]; reveal(delete, app: app); delete.tap()

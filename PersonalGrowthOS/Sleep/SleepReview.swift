@@ -20,6 +20,18 @@ struct SleepReviewNight: Identifiable {
 struct SleepReviewSnapshot {
     let windowDays: Int
     let nights: [SleepReviewNight]
+    /// Keep complete recorded buckets visible, including a late wake range ending next day.
+    var axisHourDomain: ClosedRange<Double> {
+        var lower = -24.0, upper = 24.0
+        for night in nights {
+            for value in [night.bedtime, night.wake] {
+                guard let value, let axis = night.axis(value) else { continue }
+                lower = min(lower, Double(axis.lowerBound) / 60)
+                upper = max(upper, Double(axis.upperBound) / 60)
+            }
+        }
+        return lower...upper
+    }
     var recordedDays: Int { nights.count }
     var bedtimeCount: Int { nights.filter { $0.bedtime != nil }.count }
     var wakeCount: Int { nights.filter { $0.wake != nil }.count }
