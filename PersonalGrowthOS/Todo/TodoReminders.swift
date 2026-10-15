@@ -76,6 +76,7 @@ final class TodoReminderCoordinator {
     private static let log = Logger(subsystem: "com.yocruzer.PersonalGrowthOS", category: "TodoReminders")
     private let client: any TodoNotificationClient
     private let now: () -> Date
+    private let sleepHistory: SleepReminderHistory
     private let sleepPreferences: () -> SleepReminderPreferences
     private(set) var sleepState = ImportantDayReminderState(status: .none)
     private var confirmedSleepPreferences: SleepReminderPreferences?
@@ -107,8 +108,8 @@ final class TodoReminderCoordinator {
         if reconciliationFailed { return .init(status: .failed) }
         return dayRevisions[day.id] == day.ruleData + day.preferencesData ? importantDayStates[day.id] ?? .init(status: .checking) : .init(status: .checking)
     }
-    init(client: (any TodoNotificationClient)? = nil, now: @escaping () -> Date = Date.init, sleepPreferences: @escaping () -> SleepReminderPreferences = { .load() }) {
-        self.client = client ?? SystemTodoNotificationClient(); self.now = now; self.sleepPreferences = sleepPreferences
+    init(client: (any TodoNotificationClient)? = nil, now: @escaping () -> Date = Date.init, sleepPreferences: @escaping () -> SleepReminderPreferences = { .load() }, sleepHistory: SleepReminderHistory? = nil) {
+        self.client = client ?? SystemTodoNotificationClient(); self.now = now; self.sleepPreferences = sleepPreferences; self.sleepHistory = sleepHistory ?? SleepReminderHistory()
     }
     static func identifier(_ taskID: UUID) -> String { prefix + taskID.uuidString.lowercased() }
     func status(for task: TodoTask) -> TodoReminderStatus {
@@ -118,6 +119,7 @@ final class TodoReminderCoordinator {
     }
     func reconcile(context: ModelContext, requestPermission: Bool = false) async {
         generation += 1; wantsPermission = wantsPermission || requestPermission
+        if sleepPreferences().enabled { sleepState.status = .checking }
         guard !running else { return }
         running = true; defer { running = false }
         await NotificationMutationGate.shared.acquire()
@@ -149,7 +151,7 @@ final class TodoReminderCoordinator {
                 }
                 let sleepSettings = sleepPreferences()
                 let sleepRecords = try ModelContext(context.container).fetch(FetchDescriptor<SleepRecord>())
-                let sleepRequests = SleepReminderPlanner.requests(preferences: sleepSettings, recordedDays: Set(sleepRecords.map(\.wakeDay)), now: now(), zone: .current)
+                let sleepRequests = SleepReminderPlanner.requests(preferences: sleepSettings, recordedDays: Set(sleepRecords.map(\.wakeDay)), elapsedPlannedDays: sleepHistory.elapsedDays(now: now()), now: now(), zone: .current)
                 requests += sleepRequests
                 var permission = await client.permission()
                 if pass != generation { continue }
@@ -207,6 +209,7 @@ final class TodoReminderCoordinator {
                     let status: TodoReminderStatus = states.contains(.failed) ? .failed : states.contains(.denied) ? .denied : states.contains(.permissionRequired) ? .permissionRequired : states.contains(.queueFull) ? .queueFull : .scheduled
                     dayStates[day.id] = .init(status: status, nextFire: scheduled.first, coverageEnd: scheduled.last, scheduledCount: scheduled.count)
                 }
+                sleepHistory.confirm(sleepRequests.filter { requestStatuses[$0.id] == .scheduled }, now: now())
                 let sleepScheduled = sleepRequests.filter { requestStatuses[$0.id] == .scheduled }.map(\.fireAt).sorted()
                 let sleepStatuses = sleepRequests.compactMap { requestStatuses[$0.id] }
                 let sleepStatus: TodoReminderStatus = !sleepSettings.enabled ? .none : sleepRequests.isEmpty ? .elapsed : sleepStatuses.contains(.failed) ? .failed : sleepStatuses.contains(.denied) ? .denied : sleepStatuses.contains(.permissionRequired) ? .permissionRequired : sleepStatuses.contains(.queueFull) ? .queueFull : .scheduled

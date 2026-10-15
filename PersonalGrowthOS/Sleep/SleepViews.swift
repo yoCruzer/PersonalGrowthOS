@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import SwiftData
 import SwiftUI
+import Charts
 
 @MainActor @Observable final class SleepDraftSession {
     var draft: SleepDraft
@@ -74,13 +75,13 @@ struct SleepTodaySection: View {
     @Environment(SleepWorkspace.self) private var workspace
     @AppStorage("sleep.showToday") private var showToday = true
     @AppStorage("sleep.introductionDismissed") private var introduced = false
-    @State private var route: SleepExternalRoute?
+    let open: (String) -> Void
     let referenceDate: Date
     private var day: String { ImportantCivilDay(referenceDate).identifier }
     var body: some View {
         if showToday {
             Section {
-                Button { route = .init(id: day) } label: {
+                Button { open(day) } label: {
                     HStack {
                         Image(systemName: "moon.zzz")
                         VStack(alignment: .leading, spacing: 2) {
@@ -97,7 +98,6 @@ struct SleepTodaySection: View {
                     }
                 }
             }
-            .sheet(item: $route) { route in SleepEditorLoader(day: route.id) }
         }
     }
 }
@@ -140,7 +140,7 @@ struct SleepEditorView: View {
         Form {
             Section {
                 Text("Wake day: \(day)").font(.headline).accessibilityIdentifier("sleep-wake-day")
-                Text("\(ImportantCivilDay(identifier: day)!.adding(days: -1)!.identifier) evening → \(day) morning").font(.caption).foregroundStyle(.secondary)
+                Text(SleepFormatting.range(session.draft.values.bedtime) + " → " + SleepFormatting.range(session.draft.values.wake)).font(.caption).foregroundStyle(.secondary)
                 Text("Bedtime means beginning to try to sleep. Getting up means ending your main rest and starting your day.").font(.caption)
             }
             Section {
@@ -166,14 +166,32 @@ struct SleepEditorView: View {
             Section {
                 Button("Save sleep record") { save() }.disabled(session.saving || !session.draft.values.hasContent)
                     .frame(maxWidth: .infinity, minHeight: 44).accessibilityIdentifier("sleep-save")
-                if let error = session.error { Text(error).foregroundStyle(.red).accessibilityIdentifier("sleep-error") }
+                if session.draft.values.bedtime != nil && session.draft.values.wake != nil {
+                    if let interval = SleepRules.interval(session.draft.values, zone: zone) {
+                        if interval.upperBound > 18 * 3600 { Text("Long interval: check the dates in the original record.").font(.caption) }
+                    } else { Text("Unknown or overlapping ranges; interval cannot be estimated.").font(.caption) }
+                }
+                if let error = session.error {
+                    Text(error).foregroundStyle(.red).accessibilityIdentifier("sleep-error")
+                    if let saved = workspace.records.first(where: { $0.wakeDay == day }) {
+                        DisclosureGroup("Compare with saved record") {
+                            Text(SleepFormatting.range(saved.values.bedtime)); Text(SleepFormatting.range(saved.values.wake))
+                            Text(saved.values.feeling.map(SleepFormatting.feeling) ?? String(localized: "Unknown"))
+                            Text(saved.values.note)
+                            Button("Reload saved record and discard this draft", role: .destructive) {
+                                do { session.draft = try SleepDraft(saved.model()); session.error = nil }
+                                catch { session.error = error.localizedDescription }
+                            }
+                        }
+                    }
+                }
             }
             Section {
                 DisclosureGroup("Note and date options", isExpanded: $more) {
                     TextField("Optional note", text: $session.draft.values.note, axis: .vertical).lineLimit(2...6).accessibilityIdentifier("sleep-note")
                     DatePicker("Wake date", selection: Binding(get: { ImportantCivilDay(identifier: day)!.date! }, set: { date in
                         let next = ImportantCivilDay(date, timeZone: TimeZone(secondsFromGMT: 0)!)
-                        guard let current = ImportantCivilDay(identifier: day), let delta = current.distance(to: next) else { return }
+                        guard ImportantCivilDay(identifier: next.identifier) != nil, let current = ImportantCivilDay(identifier: day), let delta = current.distance(to: next) else { session.error = SleepFailure.invalidDay.localizedDescription; return }
                         session.draft.wakeDay = next.identifier
                         if let range = session.draft.values.bedtime, let d = ImportantCivilDay(identifier: range.day)?.adding(days: delta) { session.draft.values.bedtime?.day = d.identifier }
                         if session.draft.values.wake != nil { session.draft.values.wake?.day = next.identifier }
@@ -217,12 +235,10 @@ struct SleepEditorView: View {
             workspace.message = String(localized: "Sleep record saved.")
             Task { @MainActor in
                 await reminders.reconcile(context: context)
-                if SleepReminderPreferences.load().enabled && ![TodoReminderStatus.scheduled, .elapsed].contains(reminders.sleepStatus().status) {
-                    workspace.message = String(localized: "Record saved. The morning reminder is not fully scheduled.") + " " + reminders.sleepStatus().status.label
-                }
+
             }
             dismiss()
-        } catch { session.error = error.localizedDescription; session.saving = false }
+        } catch { workspace.refresh(context); session.error = error.localizedDescription; session.saving = false }
     }
 }
 
@@ -260,6 +276,7 @@ private struct SleepRangeInput: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title).font(.subheadline.weight(.medium))
                     Text(SleepFormatting.range(range)).font(.subheadline).foregroundStyle(.secondary)
+                    if let range, (try? range.bounds(zone: zone)) == nil { Text("Civil range retained; absolute time is uncertain due to daylight saving.").font(.caption) }
                 }.frame(maxWidth: .infinity, minHeight: 44, alignment: .leading).contentShape(Rectangle())
             }.accessibilityIdentifier("sleep-\(kind)-menu")
             if custom {
@@ -354,6 +371,29 @@ struct SleepReviewView: View {
             Section("Time ranges and bedtime–getting-up interval") {
                 Text("Bedtime samples: \(snapshot.bedtimeCount) · Getting-up samples: \(snapshot.wakeCount) · Interval samples: \(snapshot.intervalCount)").font(.caption)
                 Text("Dates keep the cross-night axis: previous-evening times precede wake-day morning times. This interval includes time awake; it is not measured sleep duration.").font(.caption)
+                if snapshot.bedtimeCount + snapshot.wakeCount > 0 {
+                    Chart {
+                        ForEach(snapshot.nights) { night in
+                            if let b = night.bedtime, let axis = night.axis(b) {
+                                RuleMark(xStart: .value("Civil hour", Double(axis.lowerBound) / 60), xEnd: .value("Civil hour", Double(axis.upperBound) / 60), y: .value("Wake day", night.record.wakeDay))
+                                    .foregroundStyle(by: .value("Field", String(localized: "Bedtime"))).lineStyle(StrokeStyle(lineWidth: 5))
+                                PointMark(x: .value("Civil hour", Double(axis.lowerBound) / 60), y: .value("Wake day", night.record.wakeDay)).foregroundStyle(by: .value("Field", String(localized: "Bedtime")))
+                            }
+                            if let w = night.wake, let axis = night.axis(w) {
+                                RuleMark(xStart: .value("Civil hour", Double(axis.lowerBound) / 60), xEnd: .value("Civil hour", Double(axis.upperBound) / 60), y: .value("Wake day", night.record.wakeDay))
+                                    .foregroundStyle(by: .value("Field", String(localized: "Getting up"))).lineStyle(StrokeStyle(lineWidth: 5))
+                                PointMark(x: .value("Civil hour", Double(axis.lowerBound) / 60), y: .value("Wake day", night.record.wakeDay)).foregroundStyle(by: .value("Field", String(localized: "Getting up")))
+                            }
+                        }
+                    }
+                    .chartXScale(domain: -24...24)
+                    .chartXAxis { AxisMarks(values: [-24, -12, 0, 12, 24]) { value in
+                        AxisGridLine(); AxisValueLabel { if let hour = value.as(Int.self) { Text(hour < 0 ? String(localized: "Previous day") + " " + SleepFormatting.minute((hour + 24) * 60) : String(localized: "Wake day") + " " + SleepFormatting.minute(hour * 60)) } }
+                    } }
+                    .frame(height: CGFloat(min(440, max(160, snapshot.nights.count * 24))))
+                    .accessibilityIdentifier("sleep-time-trend")
+                    NavigationLink("Open plotted nights") { SleepReviewSourceList(nights: snapshot.nights.filter { $0.bedtime != nil || $0.wake != nil }) }
+                }
                 ForEach(snapshot.nights) { night in
                     Button { route = .init(id: night.record.wakeDay) } label: {
                         VStack(alignment: .leading, spacing: 4) {
@@ -413,9 +453,9 @@ struct SleepSettingsView: View {
     private var effective: String { let today = ImportantCivilDay(Date()); return (workspace.goals.isEmpty ? today : today.adding(days: 1)!).identifier }
     var body: some View {
         Form {
-            Section("Today entry") { Toggle("Show sleep on Today", isOn: $showToday); Text("Hiding this entry keeps history and independently enabled reminders.").font(.caption) }
+            Section("Today entry") { Toggle("Show sleep on Today", isOn: $showToday).accessibilityIdentifier("sleep-show-today"); Text("Hiding this entry keeps history and independently enabled reminders.").font(.caption) }
             Section("Personal bedtime goal") {
-                Toggle("Use a personal bedtime goal", isOn: $goalEnabled)
+                Toggle("Use a personal bedtime goal", isOn: $goalEnabled).accessibilityIdentifier("sleep-goal-enabled")
                 if goalEnabled { timePicker("No later than", minutes: $goalMinute) }
                 Text("Effective wake day: \(effective)")
                 if let day = ImportantCivilDay(identifier: effective) { Text("Cutoff: \(goalMinute >= 720 ? day.adding(days: -1)!.identifier : day.identifier) \(SleepFormatting.minute(goalMinute))").font(.caption) }
@@ -451,17 +491,26 @@ struct SleepSettingsView: View {
         .onChange(of: reminderMinute) { _, _ in Task { await reminders.reconcile(context: context) } }
     }
     private func timePicker(_ title: LocalizedStringKey, minutes: Binding<Int>) -> some View {
-        DatePicker(title, selection: Binding(get: { Calendar.current.startOfDay(for: Date()).addingTimeInterval(TimeInterval(minutes.wrappedValue * 60)) }, set: { date in
-            let c = Calendar.current; minutes.wrappedValue = c.component(.hour, from: date) * 60 + c.component(.minute, from: date)
+        DatePicker(title, selection: Binding(get: { SleepWallClock.pickerDate(minutes: minutes.wrappedValue, zone: .current) }, set: { date in
+            minutes.wrappedValue = SleepWallClock.minutes(date, zone: .current)
         }), displayedComponents: .hourAndMinute)
     }
 }
 
 struct SleepFeedbackView: View {
     @Environment(SleepWorkspace.self) private var workspace
+    @Environment(TodoReminderCoordinator.self) private var reminders
+    @AppStorage(SleepReminderPreferences.enabledKey) private var enabled = false
+    private func feedback(_ message: String) -> String {
+        guard message == String(localized: "Sleep record saved."), enabled else { return message }
+        let status = reminders.sleepStatus().status
+        if status == .scheduled || status == .elapsed { return message }
+        if status == .checking { return message + " " + status.label }
+        return String(localized: "Record saved. The morning reminder is not fully scheduled.") + " " + status.label
+    }
     var body: some View {
         if let message = workspace.message {
-            HStack { Text(message).font(.caption); Spacer(); Button("Dismiss") { workspace.message = nil } }.padding(8).background(.bar).accessibilityIdentifier("sleep-save-feedback")
+            HStack { Text(feedback(message)).font(.caption); Spacer(); Button("Dismiss") { workspace.message = nil } }.padding(8).background(.bar).accessibilityIdentifier("sleep-save-feedback")
         }
     }
 }

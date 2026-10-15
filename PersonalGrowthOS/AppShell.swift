@@ -92,8 +92,13 @@ struct AppShell: View {
         .accessibilityIdentifier("app-shell")
         #if DEBUG
         .overlay(alignment: .top) {
+            VStack {
+            if ProcessInfo.processInfo.arguments.contains("-PGOSSleepRouteControlsTest") {
+                Button("Queue synthetic sleep route") { sleepRouter.receive(day: "2026-01-01") }.accessibilityIdentifier("sleep-test-route")
+            }
             if let captureTestStatus {
                 Text(verbatim: captureTestStatus).accessibilityIdentifier("capture-test-status")
+            }
             }
         }
         #endif
@@ -136,6 +141,9 @@ struct AppShell: View {
             }
         }
         .onChange(of: captureScenePhase) { _, phase in
+            #if DEBUG
+            if phase == .background, ProcessInfo.processInfo.arguments.contains("-PGOSSleepQueueOnBackgroundTest") { sleepRouter.receive(day: "2026-01-01") }
+            #endif
             if phase == .active { Task {
                 sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute()
                 await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
@@ -334,6 +342,7 @@ private struct TodayView: View {
     @State private var showsAllGoals = false
     @State private var isAddingTodo = false
     @State private var isAddingWeight = false
+    @State private var sleepRoute: SleepExternalRoute?
     @Query private var lifecycleEvents: [HabitLifecycleEvent]
     @Query(sort: [
         SortDescriptor(\Habit.normalizedName, order: .forward),
@@ -445,7 +454,7 @@ private struct TodayView: View {
                 }
             }
             weightSection
-            SleepTodaySection(referenceDate: referenceDate)
+            SleepTodaySection(open: { sleepRoute = .init(id: $0) }, referenceDate: referenceDate)
             if !activeGoals.isEmpty {
                 Section {
                     ForEach(showsAllGoals ? activeGoals : Array(activeGoals.prefix(2))) { goal in
@@ -507,6 +516,7 @@ private struct TodayView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { referenceDate = Date() } }
+        .sheet(item: $sleepRoute) { route in SleepEditorLoader(day: route.id) }
         .sheet(isPresented: $isAddingWeight) {
             WeightEditorView(record: nil) { isAddingWeight = false }
         }

@@ -17,6 +17,10 @@ struct SleepRange: Codable, Equatable {
     var precision: Int // 0 = manually recalled exact minute; otherwise the original bucket width.
     var utcOffset: Int? = nil // Explicit occurrence for a repeated DST wall time.
 
+    func validateCivil() throws {
+        guard ImportantCivilDay(identifier: day) != nil, (0..<1440).contains(minute),
+              [0, 15, 30, 60].contains(precision), utcOffset.map({ (-86400...86400).contains($0) }) ?? true else { throw SleepFailure.invalidTime }
+    }
     func bounds(zone: TimeZone) throws -> ClosedRange<Date> {
         guard let civil = ImportantCivilDay(identifier: day), (0..<1440).contains(minute),
               [0, 15, 30, 60].contains(precision) else { throw SleepFailure.invalidTime }
@@ -42,7 +46,7 @@ struct SleepRange: Codable, Equatable {
         let total = minute + precision
         let endDay = total >= 1440 ? civil.adding(days: 1)! : civil
         let lower = try resolve(civil, minute), upper = try resolve(endDay, total % 1440)
-        guard lower <= upper else { throw SleepFailure.invalidTime }
+        guard lower <= upper, utcOffset.map({ zone.secondsFromGMT(for: lower) == $0 }) ?? true else { throw SleepFailure.invalidTime }
         return lower...upper
     }
 }
@@ -66,9 +70,10 @@ struct SleepValues: Codable, Equatable {
     var createdAt: Date
     var updatedAt: Date
     var revision: Int
+    var observedAt: Date
     init(id: UUID = UUID(), wakeDay: String, timeZoneID: String, values: SleepValues, createdAt: Date) throws {
         self.id = id; self.wakeDay = wakeDay; self.timeZoneID = timeZoneID
-        valueData = try JSONEncoder().encode(values); self.createdAt = createdAt; updatedAt = createdAt; revision = 0
+        valueData = try JSONEncoder().encode(values); self.createdAt = createdAt; updatedAt = createdAt; revision = 0; observedAt = createdAt
     }
     func values() throws -> SleepValues { try JSONDecoder().decode(SleepValues.self, from: valueData) }
 }
@@ -76,17 +81,19 @@ struct SleepValues: Codable, Equatable {
 @Model final class SleepGoalRule {
     @Attribute(.unique) var id: UUID
     @Attribute(.unique) var effectiveDay: String
+    var observedAt: Date
     var cutoffMinute: Int? // nil is a dated disable rule.
     var createdAt: Date
     init(id: UUID = UUID(), effectiveDay: String, cutoffMinute: Int?, createdAt: Date) {
-        self.id = id; self.effectiveDay = effectiveDay; self.cutoffMinute = cutoffMinute; self.createdAt = createdAt
+        self.id = id; self.effectiveDay = effectiveDay; self.cutoffMinute = cutoffMinute; self.createdAt = createdAt; observedAt = createdAt
     }
 }
 
 enum SleepFailure: Error, LocalizedError {
-    case empty, invalidTime, ambiguousTime, invalidDay, future, conflict, missing, corrupt
+    case empty, invalidTime, ambiguousTime, invalidDay, future, conflict, missing, corrupt, clockRollback
     var errorDescription: String? {
         switch self {
+        case .clockRollback: return String(localized: "The clock is earlier than a saved observation. Correct the clock before changing bedtime goals; sleep facts can still be recorded with unknown filling time.")
         case .empty: return String(localized: "Choose a time, feeling or note before saving.")
         case .invalidTime: return String(localized: "Check the time range and its dates. Wake time must follow bedtime.")
         case .ambiguousTime: return String(localized: "This local time is repeated or does not exist due to daylight saving. Choose an explicit valid time or leave it unknown.")
@@ -142,10 +149,26 @@ enum SleepRules {
         let previous = civil.adding(days: -1)!.identifier
         if let bed = values.bedtime, bed.day != previous && bed.day != day { throw SleepFailure.invalidDay }
         if let wake = values.wake, wake.day != day { throw SleepFailure.invalidDay }
-        let bed = try values.bedtime?.bounds(zone: zone), wake = try values.wake?.bounds(zone: zone)
+        try values.bedtime?.validateCivil(); try values.wake?.validateCivil()
+        // Legal civil evidence can be retained when DST prevents a unique absolute interpretation.
+        // Only malformed ranges are rejected; interval and goal derivation stay unavailable.
+        func resolved(_ range: SleepRange?) throws -> ClosedRange<Date>? {
+            guard let range else { return nil }
+            do { return try range.bounds(zone: zone) }
+            catch SleepFailure.ambiguousTime { return nil }
+        }
+        let bed = try resolved(values.bedtime), wake = try resolved(values.wake)
         if let bed, let wake, wake.upperBound < bed.lowerBound { throw SleepFailure.invalidTime }
         if let now {
-            guard civil <= ImportantCivilDay(now, timeZone: zone),
+            let localNow = ImportantCivilDay(now, timeZone: zone)
+            var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
+            let currentMinute = calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now)
+            for range in [values.bedtime, values.wake].compactMap({ $0 }) {
+                if (try? range.bounds(zone: zone)) == nil {
+                    guard range.day < localNow.identifier || (range.day == localNow.identifier && range.minute <= currentMinute) else { throw SleepFailure.future }
+                }
+            }
+            guard civil <= localNow,
                   bed.map({ $0.lowerBound <= now }) ?? true,
                   wake.map({ $0.lowerBound <= now }) ?? true else { throw SleepFailure.future }
         }
@@ -161,8 +184,9 @@ enum SleepRules {
         guard let b = values.bedtime else { return .missing }
         guard timing(values.bedtimeFilledAt, day: day, zone: zone, now: now).included else { return .excluded }
         // A main sleep beginning from noon to early evening is factual, but outside a conventional night goal.
-        guard !(720..<1080).contains(b.minute) else { return .nonNight }
         guard let civil = ImportantCivilDay(identifier: day),
+              (b.day == civil.adding(days: -1)!.identifier && b.minute >= 1080) || (b.day == day && b.minute < 720) else { return .nonNight }
+        guard
               let bed = try? b.bounds(zone: zone),
               let cutoff = try? SleepRange(day: (minute >= 720 ? civil.adding(days: -1)! : civil).identifier,
                                            minute: minute, precision: 0).bounds(zone: zone).lowerBound else { return .nonNight }
@@ -212,7 +236,9 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         }
         let old = try record.values()
         var values = draft.values
-        let reliable = timestamp >= record.createdAt && timestamp >= record.updatedAt
+        let goalObservations = try context.fetch(FetchDescriptor<SleepGoalRule>()).map(\.observedAt)
+        let knownUpperBound = (all.map(\.observedAt) + goalObservations).max() ?? timestamp
+        let reliable = timestamp >= knownUpperBound
         let changedDay = record.wakeDay != draft.wakeDay || record.timeZoneID != draft.timeZoneID
         func filled(_ changed: Bool, exists: Bool, previous: Date?) -> Date? {
             exists ? (changed ? (reliable ? timestamp : nil) : previous) : nil
@@ -224,7 +250,7 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         record.wakeDay = draft.wakeDay; record.timeZoneID = draft.timeZoneID
         record.valueData = try JSONEncoder().encode(values)
         record.updatedAt = TechnicalTimestamp.updated(now: timestamp, createdAt: record.createdAt, previous: record.updatedAt)
-        record.revision += 1
+        record.revision += 1; record.observedAt = max(record.observedAt, timestamp)
         do { if let commit { try commit(context) } else { try context.save() } }
         catch { context.rollback(); throw error }
         NotificationCenter.default.post(name: .sleepRecordsChanged, object: owner.container)
@@ -243,9 +269,15 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         guard cutoffMinute.map({ (0..<1440).contains($0) }) ?? true else { throw SleepFailure.invalidTime }
         let context = ModelContext(owner.container); context.autosaveEnabled = false
         let rules = try context.fetch(FetchDescriptor<SleepGoalRule>())
-        let today = ImportantCivilDay(now(), timeZone: timeZone)
+        let timestamp = now()
+        let observations = rules.map(\.observedAt) + (try context.fetch(FetchDescriptor<SleepRecord>())).map(\.observedAt)
+        guard timestamp >= observations.max() ?? timestamp else { throw SleepFailure.clockRollback }
+        let today = ImportantCivilDay(timestamp, timeZone: timeZone)
         let effective = rules.isEmpty ? today : today.adding(days: 1)!
-        if let pending = rules.first(where: { $0.effectiveDay == effective.identifier }) { pending.cutoffMinute = cutoffMinute }
+        if let pending = rules.first(where: { $0.effectiveDay == effective.identifier }) {
+            guard pending.effectiveDay > today.identifier else { throw SleepFailure.clockRollback }
+            pending.cutoffMinute = cutoffMinute; pending.observedAt = timestamp
+        }
         else { context.insert(SleepGoalRule(effectiveDay: effective.identifier, cutoffMinute: cutoffMinute, createdAt: now())) }
         do { if let commit { try commit(context) } else { try context.save() } }
         catch { context.rollback(); throw error }
@@ -263,14 +295,15 @@ enum SleepIntegrity {
             let values = try record.values()
             try SleepRules.validate(day: record.wakeDay, zoneID: record.timeZoneID, values: values)
             guard record.revision >= 0, record.updatedAt >= record.createdAt,
-                  record.createdAt.timeIntervalSinceReferenceDate.isFinite, record.updatedAt.timeIntervalSinceReferenceDate.isFinite else { throw SleepFailure.corrupt }
+                  record.createdAt.timeIntervalSinceReferenceDate.isFinite, record.updatedAt.timeIntervalSinceReferenceDate.isFinite,
+                  record.observedAt.timeIntervalSinceReferenceDate.isFinite, record.observedAt >= record.createdAt else { throw SleepFailure.corrupt }
             for (exists, stamp) in [(values.bedtime != nil, values.bedtimeFilledAt), (values.wake != nil, values.wakeFilledAt), (values.feeling != nil, values.feelingFilledAt)] {
                 guard exists || stamp == nil, stamp.map({ $0.timeIntervalSinceReferenceDate.isFinite && $0 >= record.createdAt && $0 <= record.updatedAt }) ?? true else { throw SleepFailure.corrupt }
             }
         }
         for goal in goals {
             guard ImportantCivilDay(identifier: goal.effectiveDay) != nil, goal.cutoffMinute.map({ (0..<1440).contains($0) }) ?? true,
-                  goal.createdAt.timeIntervalSinceReferenceDate.isFinite else { throw SleepFailure.corrupt }
+                  goal.createdAt.timeIntervalSinceReferenceDate.isFinite, goal.observedAt.timeIntervalSinceReferenceDate.isFinite, goal.observedAt >= goal.createdAt else { throw SleepFailure.corrupt }
         }
     }
 }

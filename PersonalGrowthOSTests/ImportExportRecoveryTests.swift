@@ -1752,7 +1752,7 @@ private final class TransferTestFixture {
                 "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
                 "entryPins": 0, "entryFollowUps": 0, "entrySources": 0,
                 "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0,
-                "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0
+                "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0, "sleepRecords": 0, "sleepGoals": 0
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1904,6 +1904,9 @@ private func mutatePackage(
         }
         if manifest.packageSchemaVersion < 8 && data.importantDays.isEmpty && data.importantDayEntryLinks.isEmpty && data.importantDayTodoLinks.isEmpty && data.importantDayCovers.isEmpty {
             for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
+        }
+        if manifest.packageSchemaVersion < 9 && data.sleepRecords.isEmpty && data.sleepGoals.isEmpty {
+            for key in ["sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
         }
         encodedData = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys, .withoutEscapingSlashes])
         try encodedData.write(to: dataURL)
@@ -2072,7 +2075,7 @@ extension ImportExportRecoveryTests {
                 payload.removeValue(forKey: "entryPins")
                 payload.removeValue(forKey: "entryFollowUps")
                 // V4/V5 fixtures must preserve their historical wire format after newer exporters add arrays.
-                for key in ["todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources", "importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
+                for key in ["sleepRecords", "sleepGoals", "todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources", "importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys)
                 try bytes.write(to: dataURL)
                 let changedManifest = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
@@ -2393,6 +2396,7 @@ extension ImportExportRecoveryTests {
                 let version = scenario < 8 ? 8 : 7
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                for key in ["sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
                 if scenario < 4 { payload.removeValue(forKey: keys[scenario]) }
                 else if scenario < 8 { payload[keys[scenario - 4]] = NSNull() }
                 else if scenario == 9 { for key in keys { payload.removeValue(forKey: key) } }
@@ -2426,6 +2430,7 @@ extension ImportExportRecoveryTests {
                 let version = scenario == 2 ? 6 : 7
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                for key in ["sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
                 for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 if scenario == 0 { payload.removeValue(forKey: "todoEvents") }
                 if scenario == 1 { payload["todoTasks"] = NSNull() }
@@ -2503,5 +2508,62 @@ private extension TransferData {
             goalEvents: goalEvents, weightRecords: weightRecords, weeklyReviews: weeklyReviews, habitPlanRevisions: habitPlanRevisions,
             habitLifecycleEvents: habitLifecycleEvents, entrySources: entrySources, entryPins: entryPins, entryFollowUps: entryFollowUps,
             todoTasks: tasks ?? todoTasks, todoEvents: events ?? todoEvents, todoLists: todoLists, todoSeries: series ?? todoSeries, todoSources: sources ?? todoSources)
+    }
+}
+
+@MainActor extension ImportExportRecoveryTests {
+    func testSleepV9MalformedPackagesFailAtomicallyAndV8DayPackageStillRestores() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore(), clock = Date()
+        var draft = SleepDraft(day: ImportantCivilDay(clock).identifier); draft.values.feeling = 4
+        _ = try SleepService(context: source.container.mainContext, now: { clock }).save(draft)
+        try SleepService(context: source.container.mainContext, now: { clock }).setGoal(cutoffMinute: 1410)
+        var day = ImportantDayDraft(); day.title = "Synthetic combined restore"
+        _ = try ImportantDayService(context: source.container.mainContext, mediaStore: source.mediaStore).save(day)
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        for scenario in 0..<10 {
+            let package = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("SleepWire\(scenario)"), mutation: { root, manifest, data in
+                let url = root.appendingPathComponent("data.json")
+                var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                var records = try XCTUnwrap(payload["sleepRecords"] as? [[String: Any]])
+                var first = try XCTUnwrap(records.first)
+                var values = try XCTUnwrap(first["values"] as? [String: Any])
+                var version = 9
+                switch scenario {
+                case 0: values["feeling"] = 6; first["values"] = values; records[0] = first; payload["sleepRecords"] = records
+                case 1: payload["sleepRecords"] = records + records
+                case 2: first["id"] = UUID().uuidString; payload["sleepRecords"] = records + [first]
+                case 3: values["bedtime"] = ["day": draft.wakeDay, "minute": 10, "precision": 42]; first["values"] = values; payload["sleepRecords"] = [first]
+                case 4: first["timeZoneID"] = "Invalid/Zone"; payload["sleepRecords"] = [first]
+                case 5: values["feelingFilledAt"] = clock.addingTimeInterval(9999).timeIntervalSinceReferenceDate; first["values"] = values; payload["sleepRecords"] = [first]
+                case 6: payload.removeValue(forKey: "sleepRecords")
+                case 7: payload["sleepGoals"] = NSNull()
+                case 8: version = 8 // Old versions must reject even empty v9-only keys.
+                default: version = 8; payload.removeValue(forKey: "sleepRecords"); payload.removeValue(forKey: "sleepGoals")
+                }
+                let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys); try bytes.write(to: url)
+                var counts = data.objectCounts(forPackageSchemaVersion: version)
+                if scenario == 9 { counts.removeValue(forKey: "sleepRecords"); counts.removeValue(forKey: "sleepGoals") }
+                let changed = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
+                    appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID, exportedAt: manifest.exportedAt,
+                    objectCounts: counts, dataFile: ExportFileRecord(path: "data.json", byteCount: Int64(bytes.count),
+                        sha256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()), mediaFiles: manifest.mediaFiles)
+                let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .secondsSince1970
+                try encoder.encode(changed).write(to: root.appendingPathComponent("manifest.json"))
+            })
+            let target = try fixture.makeEmptyStore(named: "SleepWireTarget\(scenario)")
+            if scenario == 9 {
+                _ = try await target.service.importPackage(from: package)
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<ImportantDay>()), 1)
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<SleepRecord>()), 0)
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+            } else {
+                do { _ = try await target.service.importPackage(from: package); XCTFail("Invalid sleep package accepted: \(scenario)") }
+                catch { XCTAssertFalse(error is CancellationError) }
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<SleepRecord>()), 0)
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<ImportantDay>()), 0)
+                XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+            }
+        }
     }
 }
