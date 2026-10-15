@@ -196,7 +196,8 @@ final class TodoReminderCoordinator {
                     }
                     if pass != generation { break }
                 }
-                if pass != generation { continue }
+                // Cancellation is already a system mutation. Confirm and retain that evidence even
+                // when a newer generation interrupted add; only status publication stays generation-gated.
                 let confirmed = await client.pendingIdentifiers()
                 sleepHistory.confirmCancellation(removedIdentifiers.subtracting(confirmed), now: now())
                 sleepHistory.confirm(sleepRequests.filter { confirmed.contains($0.id) && requestStatuses[$0.id] == .scheduled }, now: now())

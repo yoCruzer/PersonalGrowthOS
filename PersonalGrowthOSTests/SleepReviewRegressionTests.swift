@@ -147,3 +147,27 @@ import XCTest
         XCTAssertNoThrow(try SleepRules.validate(day: "2026-11-01", zoneID: ny.identifier, values: values, now: now))
     }
 }
+
+@MainActor extension SleepReviewRegressionTests {
+    func testCancellationEvidenceSurvivesGenerationChangeDuringNextDayAdd() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub()
+        let day = ImportantCivilDay(Date()), name = "SleepInterleavedSynthetic-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: name)); defer { defaults.removePersistentDomain(forName: name) }
+        var now = day.instant(minutes: 480, timeZone: .current)!, prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        var co = TodoReminderCoordinator(client: client, now: { now }, sleepPreferences: { prefs }, sleepHistory: SleepReminderHistory(defaults: defaults))
+        await co.reconcile(context: c.mainContext)
+        now.addTimeInterval(300)
+        var draft = SleepDraft(day: day.identifier); draft.values.note = "Synthetic interleaved cancel"
+        let service = SleepService(context: c.mainContext, now: { now }); let id = try service.save(draft)
+        client.whileAdding = { Task { await co.reconcile(context: c.mainContext) } }
+        await co.reconcile(context: c.mainContext); await Task.yield()
+        XCTAssertNil(client.pending[SleepReminderPlanner.prefix + day.identifier])
+        prefs.minute = 600; await co.reconcile(context: c.mainContext)
+        now = day.instant(minutes: 570, timeZone: .current)!
+        let record = try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<SleepRecord>()).first)
+        try service.delete(id: id, revision: record.revision)
+        co = TodoReminderCoordinator(client: client, now: { now }, sleepPreferences: { prefs }, sleepHistory: SleepReminderHistory(defaults: defaults))
+        await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(client.pending[SleepReminderPlanner.prefix + day.identifier]?.fireAt, day.instant(minutes: 600, timeZone: .current))
+    }
+}
