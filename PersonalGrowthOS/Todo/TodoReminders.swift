@@ -214,6 +214,8 @@ final class TodoReminderCoordinator {
                     catch {
                         Self.log.error("Notification scheduling failed code=\((error as NSError).code, privacy: .public)")
                         client.remove([request.id]); failedRemovals.insert(request.id); requestStatuses[request.id] = .failed
+                        let remaining = await client.pendingIdentifiers()
+                        if !remaining.contains(request.id) { sleepHistory.confirmCancellation([request.id], now: now()) }
                     }
                     if pass != generation { break }
                 }

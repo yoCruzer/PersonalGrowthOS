@@ -354,3 +354,24 @@ import XCTest
         await co.reconcile(context: c.mainContext); XCTAssertNotNil(client.pending[id])
     }
 }
+
+@MainActor extension SleepReviewRegressionTests {
+    func testR3EntireAcceptedBatchElapsedHasNoPendingCoverageOrDeliveryClaim() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!
+        var clock = fire.addingTimeInterval(-1)
+        let history = SleepReminderHistory(defaults: nil)
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { .init(enabled: true, minute: 540) }, sleepHistory: history)
+        client.afterAdding = { request in
+            if request.sleepWakeDay == day.adding(days: 6)!.identifier {
+                clock = day.adding(days: 7)!.instant(minutes: 600, timeZone: .current)!
+                client.pending = [:]
+            }
+        }
+        await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(co.sleepStatus().status, .elapsed)
+        XCTAssertEqual(co.sleepStatus().scheduledCount, 0)
+        XCTAssertNil(co.sleepStatus().nextFire); XCTAssertNil(co.sleepStatus().coverageEnd)
+        XCTAssertEqual(history.elapsedDays(now: clock).count, 7)
+    }
+}
