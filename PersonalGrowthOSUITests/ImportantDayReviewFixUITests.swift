@@ -130,9 +130,14 @@ final class ImportantDayReviewFixUITests: XCTestCase {
             if confirm.isHittable { break }
             let scroll = app.scrollViews["important-day-confirmation-scroll"]
             if scroll.exists {
-                print("ReviewConfirmScroll frame=\(scroll.frame) confirm=\(confirm.frame) wheel=\(app.pickerWheels.firstMatch.value ?? "missing")")
-                // Drag the padded edge so the nested year wheel does not consume the gesture.
-                scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.99, dy: 0.9)).press(forDuration: 0.01, thenDragTo: scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.99, dy: 0.1)))
+                let keyboard = app.keyboards.firstMatch
+                let visibleBottom = min(scroll.frame.maxY, keyboard.exists ? keyboard.frame.minY : app.frame.maxY)
+                let visibleHeight = visibleBottom - scroll.frame.minY
+                print("ReviewConfirmScroll frame=\(scroll.frame) visibleHeight=\(visibleHeight) confirm=\(confirm.frame) wheel=\(app.pickerWheels.firstMatch.value ?? "missing")")
+                XCTAssertGreaterThan(visibleHeight, 60)
+                // AX may include the area under the keyboard. Drag only the visible padded edge.
+                let origin = scroll.coordinate(withNormalizedOffset: .zero)
+                origin.withOffset(CGVector(dx: scroll.frame.width - 5, dy: visibleHeight - 20)).press(forDuration: 0.01, thenDragTo: origin.withOffset(CGVector(dx: scroll.frame.width - 5, dy: 20)))
             } else { app.swipeUp() }
         }
         XCTAssertTrue(confirm.isHittable); confirm.tap()
