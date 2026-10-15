@@ -1,8 +1,46 @@
-# PR #10 R3b — IMPLEMENTING
+# PR #10 R3b — READY_FOR_INDEPENDENT_REVIEW
 
-本轮从干净80cf5b71ba5421d2b38e3a5b206ead847c07cbef续接，原Draft/base与未知主workspace改动保持。只处理未确认历法往返隐藏无效字段；生产状态两项反例已真实失败（公历回程isLeapMonth残留/校验invalidDate、反向Gregorian-only规则残留）。正在补真实UI和局部规范化，保持年月日/标题/说明/有效编辑、严格校验/首次加载/perspective/取消。证据根 `/private/tmp/pgos-important-days-r3b-evidence/`；尚未交付，最终停READY_FOR_INDEPENDENT_REVIEW。下方上轮R1–R5交付为历史。
+本轮唯一新增范围：未确认历法往返隐藏无效状态，用户直接授权从上次交付80cf5b71ba5421d2b38e3a5b206ead847c07cbef续接。启动实际HEAD匹配、worktree干净、PR10 OPEN Draft/head/base核对；没有后续未知提交。沿原分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`，工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`，base仍为 `codex/quiet-wins-on-d72`=`20d315a62179ad29a6cbcf76c33c11638412e54e`。原主workspace三项未知dirty与80cf交付时status/diff SHA256逐字一致，未覆盖。PR8/9不改。
+
+最终产品/测试 **`11b4cd8b88d18c21ad6aa66cedbd557a0b29f954`**；最后生产 `28a67f81ff048f73dcbfacb4b51ba322bfe0ea32`，11b仅UI测试修订。此后交付仅五Docs，delivery由Git/远端/PR及外部proof记录，不自引用。证据根 **`/private/tmp/pgos-important-days-r3b-evidence/`**。
+
+## 修复与要求闭环
+
+- 原因：calendar返回acknowledged时仅把calendarChanged设false，中途农历isLeapMonth/leapMonthRule仍在，确认和闰月控件却隐藏，Gregorian严格校验拒绝。
+- 只改两处生产文件：`ImportantDayEditorPolicy.calendarSelectionChanged`在返回ack时复用原`confirmCalendar`清理不适用字段，其他目标仍返回true等待显式确认；Editor现有loaded guard内调用。没有恢复整份旧draft，不覆盖用户年月日/标题/说明/偏好/perspective，不转换绝对日期，不钳制非法日。
+- 新增5个生产状态Unit：公历未确认往返及标题/说明/偏好磁盘保存重开；反向清理Gregorian-only字段并保原始农历事实；非法2/30、必选2/29、公历闰月仍拒绝；不同目标显式确认边界；合法Gregorian闰日/农历闰月/三十日首次加载与往返逐字段保持。原R3的明确确认、31号拒绝等测试继续通过。
+- 新增2个实际编辑器UI：从真实确认建立的Gregorian2023-02-01开始，未确认切Chinese→开leap→直接回Gregorian→保存重开，年月日/elapsed/实际编辑标题保持；重开后切Chinese但不确认，leap=0、Save禁用，取消。反向Chinese→未确认Gregorian→回Chinese，取消标题编辑后原闰月/elapsed不变，保存重开原绝对日期2023-03-22。
+- 原明确历法确认/取消保存重开、preset复位UI通过。没有改Date.validate、Shared、Schema/备份、工程注册、Bundle/主库、五Tab/Record、来源、提醒、Widget隐私或通用表单。
+
+## 实际运行（不合并成一次全绿）
+
+环境Xcode27.0(27A266a)/macOS27.0.1/iOS Simulator27.0，专用合成iPhone18Pro `EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A`；测试DD `/private/tmp/pgos-important-days-data-build`。最终构建复用独立构建缓存 `/private/tmp/pgos-important-days-review-fix-final-build`，不操作真实设备或私库。
+
+| 运行/SHA | 实际结果、边界与证据 |
+| --- | --- |
+| Red1，80cf后接线工作树 | 旧比较表达式提取到同一生产helper并接实际View，2新Unit **0/2PASS、4断言FAIL**：Gregorian隐藏闰月/规则、invalidDate，reverse残留Gregorian-only字段。另1UI因选项文案误匹配Chinese lunar失败，故run总 **0/3、exit65**；该UI不是产品反例。red-production-diff.patch及原bundle/log保留。 |
+| RedUI2，旧helper工作树 | **0/1UI、exit65**，修正文案后scrollTo(leap)导航失败。真实录屏red-ui2-failure.png表明手势起点在键盘区域，未完成产品反例。之后只将有键盘时测试滚动起点移到屏中，未降低语义断言。事后simctl截图已回桌面，不作为失败现场。 |
+| Green1，精确28a67f8 | **36Unit+3UI PASS，1UI FAIL（39/40），0SKIP，exit65，runtimeWarnings=[]**。Date11/Persistence8/ReviewFix17全部PASS，原明确确认/取消重开、反向保留原始农历、preset复位3UI PASS。主UI已成功往返、Save启用并实际保存重启；唯一失败是用错误后缀标题找行（原生光标实际在开头，录屏已显示前缀输入）。不改标原run。 |
+| FinalUI1，精确11b4cd8 | **1/1UI PASS，0FAIL/SKIP，exit0，runtimeWarnings=[]**。仅修测试为捕获实际输入再比较往返精确值及既有trim后的重开值，保留含原文/R3b要求，另增加已保存leap=false直接检查。成功真实PNG已目视。产品与28a相同，不机械重复36Unit/三UI。 |
+| Debug/Release，精确clean11b4cd8 | **两构建PASS、exit0**，Debug generic iOS Simulator / unsigned Release generic iOS。实包App+Share+Widget×2六身份与1.0(7)保持；两App BuildProvenance=11b/localGit/Dirty=false/Tag空。appex无单独provenance文件，来自同一构建图。命令及final-build-proof.json留证。 |
+
+实际命令从每个log头原样提取为`actual-commands.json`。集中命令：
+
+```sh
+python3 Scripts/run_important_day_route_ui.py --simulator EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A --result /private/tmp/pgos-important-days-r3b-evidence/Green1.xcresult --log /private/tmp/pgos-important-days-r3b-evidence/green1.log -only-testing:PersonalGrowthOSTests/ImportantDayDateTests -only-testing:PersonalGrowthOSTests/ImportantDayPersistenceTests -only-testing:PersonalGrowthOSTests/ImportantDayReviewFixTests -only-testing:PersonalGrowthOSUITests/ImportantDayReviewFixUITests/testUnconfirmedGregorianCalendarRoundTripCanSaveAndReopenWithEditedTitle -only-testing:PersonalGrowthOSUITests/ImportantDayReviewFixUITests/testUnconfirmedReverseCalendarRoundTripAndCancelPreserveSavedLunarFacts -only-testing:PersonalGrowthOSUITests/ImportantDayReviewFixUITests/testLunarLeapCalendarConfirmationCancelThenSaveAndReopen -only-testing:PersonalGrowthOSUITests/ImportantDayUITests/testEditingPresetResetsExplicitPeriodBeforeWritingNewEntry
+```
+
+FinalUI1复用driver，仅选择上述主往返UI；Red1选择两个新往返Unit与主UI，RedUI2仅主UI。driver加`-collect-test-diagnostics never -parallel-testing-enabled NO test CODE_SIGNING_ALLOWED=NO`，本轮不涉及URL路由，delivered均0。最终构建：`xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug|Release -destination 'generic/platform=iOS Simulator'|'generic/platform=iOS' -derivedDataPath /private/tmp/pgos-important-days-review-fix-final-build build CODE_SIGNING_ALLOWED=NO`（Debug仅sim、Release仅generic iOS）。
+
+## 独立复审、限制与交接
+
+本轮唯一独立只读reviewer `/root/review_fix_limited`：固定28a核实生产红测接线/四断言及两文件局部修复；11b仅测试delta逐项检查未弱化，直接读FinalUI1原xcresult、日志/PNG及Green1真实失败与三项相邻UI。结论 **R3b关闭，无未关闭confirmed范围内P0/P1/P2**。最终构建及纯文档/remote交付另做只读核对；实际结果见build proof和final-delivery-proof，不冒充实现者自评。
+
+NOT_RUN：本轮全仓Unit/全套UI、独立远端CI、真实iPhone/私人库/签名/实际桌面通知/VoiceOver/Cloud/发布；其余旧接受限制及旧失败不改。剩余设备验证需Owner另行授权，不进入本批。普通commit/push原分支并更新原Draft PR10后核对head/base/Draft/upstream与PR8/9不变。正常停 **READY_FOR_INDEPENDENT_REVIEW**，下一步只外部限定复审，纯文档交付不重复编译。
 
 ---
+
+# 以下为80cf5b7及更早交付历史
 
 # PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW
 

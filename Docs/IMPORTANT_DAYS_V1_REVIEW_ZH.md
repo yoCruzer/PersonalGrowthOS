@@ -1,3 +1,17 @@
+# PR #10 R3b — READY_FOR_INDEPENDENT_REVIEW
+
+最终产品/测试 **`11b4cd8b88d18c21ad6aa66cedbd557a0b29f954`**，基线80cf5b7；最后生产28a67f8，随后仅UI测试修订。唯一实际独立只读reviewer `/root/review_fix_limited` 完成固定SHA限定复审：**R3b关闭，无未关闭confirmed范围内P0/P1/P2**。
+
+- 固定28a：核实真实View与生产helper旧比较表达式接线、Red1两个Unit/四断言失败；审核返回ack才规范化、不覆盖年月日或其他编辑、不同目标仍明确确认、严格validate/首次加载/perspective/原始有效农历保持。两轮UI导航失败不作产品红。
+- 固定11b：相对28a仅UI文件，输入后捕获实际标题并在往返及保存重开精确比对，未降低语义断言；增加重开后未确认Chinese时leap=0与Save禁用/Cancel直接证据。直接读取FinalUI1原bundle=1/1PASS/无FAIL/SKIP/runtimeWarnings、真实PNG/日志，确认Gregorian2023-02-01、elapsed、标题和实际保存正确。
+- Green1的36Unit+3UI通过/1标题查询失败分开保留，三UI为明确确认取消重开、反向保农历原事实、preset复位。所有原失败不改标全绿；实现者未冒充reviewer。最终固定两构建与六实包/两App clean provenance及纯文档交付另核对于外部proof。
+
+详细命令、SHA、原始证据根与NOT_RUN见[执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)。没有通用表单重构或V12/v8/身份/主库/五Tab/Record/提醒/Widget边界变化。停 **READY_FOR_INDEPENDENT_REVIEW**，只等待外部限定复审；设备与发行未授权。
+
+---
+
+# 以下为80cf5b7及更早交付历史
+
 # PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW
 
 固定任务/历史审查输入d98306f219ed5929d38856216cd9af52fa5c7744，五文件原样保留。最终产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**；最后生产7b4704f，随后只UI测试导航修订。唯一实际独立只读reviewer `/root/review_fix_limited` 对固定SHA、真实diff及原始证据完成限定复审，**R1–R4关闭、R5局部修复关闭，无未关闭confirmed范围内P0/P1/P2**。这替代下方旧阶段“等待设备”的当前结论；外部复审尚未进行。

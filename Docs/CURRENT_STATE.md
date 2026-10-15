@@ -1,8 +1,18 @@
-# PR #10 R3b — IMPLEMENTING
+# PR #10 R3b — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
-本轮从干净80cf5b71ba5421d2b38e3a5b206ead847c07cbef续接，原Draft/base与未知主workspace改动保持。只处理未确认历法往返隐藏无效字段；生产状态两项反例已真实失败（公历回程isLeapMonth残留/校验invalidDate、反向Gregorian-only规则残留）。正在补真实UI和局部规范化，保持年月日/标题/说明/有效编辑、严格校验/首次加载/perspective/取消。证据根 `/private/tmp/pgos-important-days-r3b-evidence/`；尚未交付，最终停READY_FOR_INDEPENDENT_REVIEW。下方上轮R1–R5交付为历史。
+从干净 `80cf5b71ba5421d2b38e3a5b206ead847c07cbef` 续接，R3b“未确认历法往返遗留隐藏无效状态”已修复。最终产品/测试 **`11b4cd8b88d18c21ad6aa66cedbd557a0b29f954`**；最后生产代码 `28a67f81ff048f73dcbfacb4b51ba322bfe0ea32`，其后仅UI标题断言/隐藏字段检查修订。交付commit只更新五份交接Docs，完整delivery SHA以Git/原PR head及证据根final-delivery-proof.json核对，不写自引用hash。
+
+生产只改ImportantDayInteraction/View：返回已确认历法时复用既有规范化，清理不适用字段，年月日/标题/说明/有效编辑和perspective保持；不同目标仍须明确确认，严格校验/首次加载/取消边界保留。两项真实生产反例先红（四处断言），36Unit及三项相邻UI通过；首轮主UI仅重开标题定位失败，最终补验1/1通过，包括保存重开2023-02-01及已保存闰月=false。独立只读reviewer固定SHA复审确认R3b关闭，无未关闭confirmed范围内P0/P1/P2。
+
+固定11b Debug sim/unsigned Release generic iOS两构建PASS，App/Share/Widget六实包原身份与1.0(7)保持，两App provenance为clean固定SHA。历史失败分别记录，未改标一次全绿。真实iPhone/私库/签名/实际桌面通知/VoiceOver、本轮全仓/全套UI及独立远端CI未运行。
+
+工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`，分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`，普通推送[原Draft PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base保持 `codex/quiet-wins-on-d72` / `20d315a62179ad29a6cbcf76c33c11638412e54e`。原workspace未知project/catalog/xcodecloud改动逐字保持，PR#8/#9不变；V12/v8、主库、五Tab/Record、提醒与Widget边界不变。
+
+本批停 **READY_FOR_INDEPENDENT_REVIEW**，下一步只外部限定复审，不进入发布、真机或下一功能。[执行证据与命令](IMPORTANT_DAYS_V1_EXECUTION.md)、[独立复审](IMPORTANT_DAYS_V1_REVIEW_ZH.md)、[验收](IMPORTANT_DAYS_V1_ACCEPTANCE_ZH.md)。
 
 ---
+
+# 以下为80cf5b7及更早交付历史
 
 # PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 

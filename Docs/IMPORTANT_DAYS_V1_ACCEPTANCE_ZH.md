@@ -1,3 +1,23 @@
+# PR #10 R3b — READY_FOR_INDEPENDENT_REVIEW
+
+最终产品/测试 **`11b4cd8b88d18c21ad6aa66cedbd557a0b29f954`**，最后生产28a67f8；交付只五份交接Docs，完整delivery SHA以Git/原PR及外部proof核对。原Draft PR #10/base/工作分支保持，PR8/9与原workspace未知改动不动。
+
+| 本轮要求 | 实际证据 |
+| --- | --- |
+| 未确认历法回程不留隐藏无效字段 | 两个生产状态反例先真实红；返回ack调用原规范化，Gregorian的isLeapMonth/leapMonthRule等清理，reverse去除Gregorian-only字段，年月日不变。 |
+| 有效编辑保留 | 标题/说明/偏好/perspective生产状态与实际服务磁盘保存重开对照；真实UI输入标题在往返及保存重开后精确保持（遵守原trim）。 |
+| 实际编辑器全过程 | Gregorian2023-02-01→未确认Chinese→开启leap→直接回Gregorian→保存重开通过，仍为2023-02-01/elapsed；再次未确认切Chinese时leap=0且Save禁用，再取消。 |
+| 不回归邻近保护 | 有效原农历闰月/三十日、Gregorian闰日初始/回程逐字段保持；反向UI取消后原事实/elapsed与2023-03-22保存重开保持；明确确认/取消保存、preset复位通过；2/30、Gregorian闰月、未选2/29规则和农历31号继续拒绝，不钳制日期。 |
+| 独立复审/构建 | 一名实际独立只读reviewer固定11b确认R3b关闭，无新范围内P0/P1/P2。固定clean11b Debug sim/unsigned Release generic iOS均PASS，六Bundle原身份及1.0(7)、两App provenance核验；appex无单独provenance文件。 |
+
+实际结果：Green1 **39PASS/1FAIL**（36Unit+3UI通过，失败为标题定位）；FinalUI1 **1/1PASS**，所有原生产红测与UI导航失败保留，不拼成一次全绿。[完整执行与原始证据](IMPORTANT_DAYS_V1_EXECUTION.md)。生产仅改Interaction/View两文件，V12/v8、主库、五Tab/Record、提醒与Widget边界保持。
+
+NOT_RUN及剩余设备项：本轮全仓/全套UI、独立远端CI、真实iPhone/私人库/签名、实际桌面通知/VoiceOver/Cloud/发行。设备验证须Owner另行授权。本批停 **READY_FOR_INDEPENDENT_REVIEW**，不进入旧设备Gate或下一功能。
+
+---
+
+# 以下为80cf5b7及更早交付历史
+
 # PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW
 
 最终产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**，最后生产7b4704f；本交付仅更新五份约定文档，完整delivery SHA以Git/原PR head/外部final-delivery-proof核对。固定输入d98306f五文件原样保留。沿 `/private/tmp/PersonalGrowthOS-important-days-v1` / `codex/important-days-v1` / `origin/codex/important-days-v1` 更新[原Draft PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base固定20d315a与名称保持，PR#8/#9不改。
