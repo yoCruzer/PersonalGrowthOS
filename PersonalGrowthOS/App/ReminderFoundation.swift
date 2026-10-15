@@ -31,6 +31,7 @@ enum ReminderUpdateResult: Equatable {
     case permissionRequired
 }
 
+@MainActor
 final class LocalReminderScheduler {
     static let dailyIdentifier = "com.yocruzer.PersonalGrowthOS.reminder.daily-recording"
     static let weeklyIdentifier = "com.yocruzer.PersonalGrowthOS.reminder.weekly-review"
@@ -89,6 +90,8 @@ final class LocalReminderScheduler {
         body: String,
         requestPermission: Bool
     ) async throws -> ReminderUpdateResult {
+        await NotificationMutationGate.shared.acquire()
+        defer { NotificationMutationGate.shared.release() }
         guard enabled else {
             center.removePendingNotificationRequests(withIdentifiers: [identifier])
             return .removed
@@ -116,7 +119,12 @@ final class LocalReminderScheduler {
                 )
             )
             try Task.checkCancellation()
+            let pending = await center.pendingNotificationRequests()
+            guard pending.contains(where: { $0.identifier == identifier }) || pending.count < 60 else {
+                throw NotificationQueueError.full
+            }
             try await center.add(request)
+            guard await center.pendingNotificationRequests().contains(where: { $0.identifier == identifier }) else { throw NotificationQueueError.notConfirmed }
             return .scheduled
         case .denied:
             center.removePendingNotificationRequests(withIdentifiers: [identifier])
@@ -128,3 +136,5 @@ final class LocalReminderScheduler {
         }
     }
 }
+
+enum NotificationQueueError: Error { case full, notConfirmed }

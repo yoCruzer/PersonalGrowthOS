@@ -177,6 +177,8 @@ struct TodoTaskRow: View {
 struct TodoEditorView: View {
     var task: TodoTask? = nil
     var sourceEntry: Entry? = nil
+    var importantDayID: UUID? = nil
+    var importantDayOccurrence: ImportantCivilDay? = nil
     let onSaved: (UUID) -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
@@ -217,7 +219,7 @@ struct TodoEditorView: View {
                     }
                 }
                 Section("Repeat") {
-                    if task?.seriesID == nil && (task == nil || task?.state == .open) {
+                    if importantDayID == nil && task?.seriesID == nil && (task == nil || task?.state == .open) {
                         Picker("Repeat", selection: $draft.frequency) {
                             Text("Does not repeat").tag(nil as TodoFrequency?)
                             ForEach(TodoFrequency.allCases, id: \.self) { frequency in Text(frequency.label).tag(Optional(frequency)) }
@@ -289,7 +291,7 @@ struct TodoEditorView: View {
             let service = TodoTaskService(context: context)
             let id: UUID
             if let task { try service.edit(id: task.id, draft: draft, futureSeries: futureSeries); id = task.id }
-            else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID).id }
+            else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID, importantDayID: importantDayID, importantDayOccurrence: importantDayOccurrence).id }
             let saved = try service.task(id: id)
             var affectedOpenSuccessor: TodoTask?
             if futureSeries, saved.state != .open, let seriesID = saved.seriesID {

@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 7
+    static let currentPackageSchemaVersion = 8
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -52,6 +52,11 @@ struct TransferData: Codable, Equatable {
     let todoSeries: [TodoSeriesTransfer]
     let todoSources: [TodoTaskSourceTransfer]
 
+    let importantDays: [ImportantDayTransfer]
+    let importantDayEntryLinks: [ImportantDayEntryLinkTransfer]
+    let importantDayTodoLinks: [ImportantDayTodoLinkTransfer]
+    let importantDayCovers: [ImportantDayCoverTransfer]
+
     init(
         entries: [EntryTransfer],
         images: [ImageTransfer],
@@ -72,7 +77,11 @@ struct TransferData: Codable, Equatable {
         todoEvents: [TodoTaskEventTransfer] = [],
         todoLists: [TodoListTransfer] = [],
         todoSeries: [TodoSeriesTransfer] = [],
-        todoSources: [TodoTaskSourceTransfer] = []
+        todoSources: [TodoTaskSourceTransfer] = [],
+        importantDays: [ImportantDayTransfer] = [],
+        importantDayEntryLinks: [ImportantDayEntryLinkTransfer] = [],
+        importantDayTodoLinks: [ImportantDayTodoLinkTransfer] = [],
+        importantDayCovers: [ImportantDayCoverTransfer] = []
     ) {
         self.entries = entries
         self.images = images
@@ -94,6 +103,11 @@ struct TransferData: Codable, Equatable {
         self.todoLists = todoLists
         self.todoSeries = todoSeries
         self.todoSources = todoSources
+        self.importantDays = importantDays
+        self.importantDayEntryLinks = importantDayEntryLinks
+        self.importantDayTodoLinks = importantDayTodoLinks
+        self.importantDayCovers = importantDayCovers
+
 
     }
 
@@ -118,6 +132,11 @@ struct TransferData: Codable, Equatable {
         case todoLists
         case todoSeries
         case todoSources
+        case importantDays
+        case importantDayEntryLinks
+        case importantDayTodoLinks
+        case importantDayCovers
+
     }
 
     init(from decoder: Decoder) throws {
@@ -152,6 +171,11 @@ struct TransferData: Codable, Equatable {
         todoLists = try container.decodeIfPresent([TodoListTransfer].self, forKey: .todoLists) ?? []
         todoSeries = try container.decodeIfPresent([TodoSeriesTransfer].self, forKey: .todoSeries) ?? []
         todoSources = try container.decodeIfPresent([TodoTaskSourceTransfer].self, forKey: .todoSources) ?? []
+        importantDays = try container.decodeIfPresent([ImportantDayTransfer].self, forKey: .importantDays) ?? []
+        importantDayEntryLinks = try container.decodeIfPresent([ImportantDayEntryLinkTransfer].self, forKey: .importantDayEntryLinks) ?? []
+        importantDayTodoLinks = try container.decodeIfPresent([ImportantDayTodoLinkTransfer].self, forKey: .importantDayTodoLinks) ?? []
+        importantDayCovers = try container.decodeIfPresent([ImportantDayCoverTransfer].self, forKey: .importantDayCovers) ?? []
+
 
     }
 
@@ -176,7 +200,11 @@ struct TransferData: Codable, Equatable {
             "todoEvents": todoEvents.count,
             "todoLists": todoLists.count,
             "todoSeries": todoSeries.count,
-            "todoSources": todoSources.count
+            "todoSources": todoSources.count,
+            "importantDays": importantDays.count,
+            "importantDayEntryLinks": importantDayEntryLinks.count,
+            "importantDayTodoLinks": importantDayTodoLinks.count,
+            "importantDayCovers": importantDayCovers.count
         ]
     }
 
@@ -186,6 +214,7 @@ struct TransferData: Codable, Equatable {
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
                 && (version >= 7 || !key.hasPrefix("todo"))
+                && (version >= 8 || !key.hasPrefix("importantDay"))
                 && (version >= 6 || key != "entrySources")
                 && (version >= 5 || (key != "entryPins" && key != "entryFollowUps"))
         }
@@ -427,6 +456,7 @@ enum TransferValidator {
                 (data.todoTasks.isEmpty && data.todoEvents.isEmpty && data.todoLists.isEmpty && data.todoSeries.isEmpty && data.todoSources.isEmpty) else {
             throw TransferPackageError.invalidObject("todo schema")
         }
+        try data.validateImportantDays(packageVersion: manifest.packageSchemaVersion, manifest: manifest)
         do { try data.validateTodos() }
         catch is CancellationError { throw CancellationError() }
         catch { throw TransferPackageError.invalidObject("todo integrity") }
@@ -538,7 +568,7 @@ enum TransferValidator {
                 throw TransferPackageError.duplicateID("manifestMedia")
             }
         }
-        guard mediaByID.count == data.images.count else {
+        guard mediaByID.count == data.mediaAssets.count else {
             throw TransferPackageError.countMismatch
         }
         for image in data.images {

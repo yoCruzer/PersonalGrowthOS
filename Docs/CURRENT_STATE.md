@@ -1,3 +1,11 @@
+# 重要日子 V1 — IMPLEMENTING
+
+当前任务已由 Owner 批准的新完整 Goal 替代；旧 PR #9 冻结仅属下方历史。固定产品基线 `20d315a62179ad29a6cbcf76c33c11638412e54e`，固定规格提交 `3365561c5888701ce662ac6c8655ad1629ded6d0`。在独立 `codex/important-days-v1` 工作树自主完成 A/B、独立审查、验证与新 Draft PR，base 为 `codex/quiet-wins-on-d72`。
+
+准确进展、验证 SHA 与下一动作见 [执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)。当前尚未实现完成，不进入发布。原记录/主库/身份/五 Tab 保持；旧证据保留如下。
+
+---
+
 # PR #9 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-14）
 
 原 Draft [PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9)，head 分支 `codex/quiet-wins-on-d72`、base `codex/todo-v1-personal-actions` 保持。起点 `2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af`；固定产品/测试修复 **`69ad37fc12ddf6fbf15853f0a0174d6f5e5d9218`**，之后仅交接文档，最终完整 SHA 以本地/原PR head/实包构建同源证据为准。任务 worktree 为 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`；原 worktree 及 PR #8 的未提交改动保留，PR #8 head=d72/base不变。

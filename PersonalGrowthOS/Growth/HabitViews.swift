@@ -55,6 +55,14 @@ struct GrowthView: View {
             }
             .accessibilityIdentifier("growth-weight")
             NavigationLink {
+                ImportantDaysView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("Important Days", systemImage: "calendar")
+                    Text("Remember days worth anticipating and revisiting").font(.subheadline).foregroundStyle(.secondary)
+                }
+            }.accessibilityIdentifier("growth-important-days")
+            NavigationLink {
                 QuietWinsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
                 VStack(alignment: .leading, spacing: 4) {

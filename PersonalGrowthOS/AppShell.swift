@@ -95,6 +95,10 @@ struct AppShell: View {
         .onChange(of: captureScenePhase) { _, phase in
             if phase == .active { Task { await importShares(); await todoReminders.reconcile(context: container.modelContainer.mainContext) } }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .importantDaysChanged)) { notification in
+            guard notification.object as? ModelContainer === container.modelContainer else { return }
+            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
             Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
@@ -395,6 +399,7 @@ private struct TodayView: View {
                     Text("Active Goals and Flags")
                 }
             }
+            ImportantDaysTodaySection(mediaStore: mediaStore, thumbnailStore: thumbnailStore, referenceDate: referenceDate)
             periodSection(.week, title: "This Week")
             periodSection(.month, title: "This Month")
             if let thisWeeksFocus {

@@ -7,9 +7,10 @@ enum StartupMediaReconciler {
     static func reconcile(
         mediaStore: MediaStore,
         thumbnailStore: ThumbnailStore,
-        imageMetadata: [ImageMetadata]
+        imageMetadata: [ImageMetadata],
+        importantDayCovers: [ImportantDayCover] = []
     ) throws -> MediaIntegrityReport {
-        let referencedPaths = Set(imageMetadata.map(\.relativePath))
+        let referencedPaths = Set(imageMetadata.map(\.relativePath) + importantDayCovers.map(\.relativePath))
         CaptureMediaJournal.reconcile(mediaStore: mediaStore, referencedPaths: referencedPaths)
         try mediaStore.recoverInterruptedTrash(referencedOriginalPaths: referencedPaths)
         var report = try mediaStore.reconcile(referencedOriginalPaths: referencedPaths)
@@ -143,11 +144,13 @@ struct AppContainer {
             let integrityReport = try StartupMediaReconciler.reconcile(
                 mediaStore: mediaStore,
                 thumbnailStore: thumbnailStore,
-                imageMetadata: imageMetadata
+                imageMetadata: imageMetadata,
+                importantDayCovers: try modelContainer.mainContext.fetch(FetchDescriptor<ImportantDayCover>())
             )
             stage = .integrity
             _ = try HabitAnalyticsMigrationBootstrap.apply(context: modelContainer.mainContext)
             try LinkIntegrityService.validate(context: modelContainer.mainContext)
+            try ImportantDayIntegrity.validate(context: modelContainer.mainContext)
             return AppContainer(
                 configuration: configuration,
                 modelContainer: modelContainer,
@@ -188,7 +191,7 @@ enum StartupStoreProtection {
         guard sqlite3_step(statement) == SQLITE_ROW, let bytes = sqlite3_column_blob(statement, 0) else { return false }
         let data = Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, 0)))
         guard let metadata = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { return false }
-        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV11.versionIdentifier.description]
+        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV12.versionIdentifier.description]
     }
 
     // Content identity ignores SQLite header/checkpoint changes. Equal logical

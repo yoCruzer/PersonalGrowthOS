@@ -15,6 +15,9 @@ struct EntryDetailView: View {
     @Query private var pins: [EntryPin]
     @Query private var followUps: [EntryFollowUp]
     @State private var isCreatingTodo = false
+    @State private var creatingImportantDay = false
+    @Query private var importantDays: [ImportantDay]
+    @Query private var importantDayLinks: [ImportantDayEntryLink]
     @Query private var todoSources: [TodoTaskSource]
     @Query private var availableTodos: [TodoTask]
     @State private var isAddingThought = false
@@ -137,6 +140,12 @@ struct EntryDetailView: View {
                         Link("View Original", destination: url).accessibilityIdentifier("entry-source-link")
                     }
                 }
+            }
+            Section("Important Days") {
+                ForEach(importantDays.filter { day in importantDayLinks.contains { $0.entryID == entry.id && $0.dayID == day.id } }) { day in
+                    NavigationLink { ImportantDayDetailView(dayID: day.id, mediaStore: mediaStore, thumbnailStore: thumbnailStore) } label: { ImportantDayRow(day: day) }
+                }
+                Button("Set as an Important Day") { creatingImportantDay = true }.accessibilityIdentifier("entry-create-important-day")
             }
             Section("Follow-ups") {
                 ForEach(thoughts) { thought in
@@ -271,6 +280,7 @@ struct EntryDetailView: View {
                     .accessibilityIdentifier("entry-manage-relationships")
             }
         }
+        .sheet(isPresented: $creatingImportantDay) { ImportantDayEditorView(mediaStore: mediaStore, sourceEntry: entry) }
         .navigationTitle(
             entry.kind == .review
                 ? String(localized: "Review")
