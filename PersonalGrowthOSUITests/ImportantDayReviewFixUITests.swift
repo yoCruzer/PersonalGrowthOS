@@ -126,7 +126,7 @@ final class ImportantDayReviewFixUITests: XCTestCase {
         XCTAssertTrue(app.buttons["capture-save"].isHittable)
         XCTAssertEqual(body.value as? String, "Chinese accessibility draft")
         let confirm = app.buttons["important-day-confirm-operation"]
-        for _ in 0..<6 {
+        for _ in 0..<12 {
             if confirm.isHittable { break }
             let scroll = app.scrollViews["important-day-confirmation-scroll"]
             if scroll.exists {
@@ -135,9 +135,9 @@ final class ImportantDayReviewFixUITests: XCTestCase {
                 let visibleHeight = visibleBottom - scroll.frame.minY
                 print("ReviewConfirmScroll frame=\(scroll.frame) visibleHeight=\(visibleHeight) confirm=\(confirm.frame) wheel=\(app.pickerWheels.firstMatch.value ?? "missing")")
                 XCTAssertGreaterThan(visibleHeight, 60)
-                // AX may include the area under the keyboard. Drag only the visible padded edge.
+                // Start in the upper half: the keyboard's suggestion bar extends above its AX frame.
                 let origin = scroll.coordinate(withNormalizedOffset: .zero)
-                origin.withOffset(CGVector(dx: scroll.frame.width - 5, dy: visibleHeight - 20)).press(forDuration: 0.01, thenDragTo: origin.withOffset(CGVector(dx: scroll.frame.width - 5, dy: 20)))
+                origin.withOffset(CGVector(dx: scroll.frame.width - 5, dy: visibleHeight * 0.5)).press(forDuration: 0.01, thenDragTo: origin.withOffset(CGVector(dx: scroll.frame.width - 5, dy: 20)))
             } else { app.swipeUp() }
         }
         XCTAssertTrue(confirm.isHittable); confirm.tap()
