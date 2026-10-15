@@ -317,6 +317,8 @@ struct ImportantDayEditorView: View {
     @State private var error: String?
     @Environment(TodoReminderCoordinator.self) private var reminders
     @State private var calendarChanged = false
+    @State private var acknowledgedCalendar: ImportantDayCalendar = .gregorian
+    @State private var lastPreset: ImportantDayPreset = .anticipated
     @State private var duplicateConfirmation = false
     @State private var confirmedActualBeginning = false
     @StateObject private var photoSession = PhotoInputSession()
@@ -336,7 +338,7 @@ struct ImportantDayEditorView: View {
                     }.accessibilityIdentifier("important-day-calendar")
                     if calendarChanged {
                         Text("Changing the calendar reinterprets these month and day numbers. Check the Gregorian preview before confirming.").font(.caption)
-                        Button("Use the date in the selected calendar") { calendarChanged = false }
+                        Button("Use the date in the selected calendar") { acknowledgedCalendar = draft.rule.calendar; calendarChanged = false }
                     }
                     if draft.rule.preset == .anniversary {
                         Toggle("I know the starting year", isOn: Binding(get: { draft.rule.year != nil }, set: { draft.rule.year = $0 ? today.year : nil; if !$0 { draft.rule.perspective = .next } })).accessibilityIdentifier("important-day-known-year")
@@ -440,10 +442,12 @@ struct ImportantDayEditorView: View {
                             draft.rule.preset = .beginning; draft.rule.perspective = .elapsed
                         }
                     }
+                    acknowledgedCalendar = draft.rule.calendar; lastPreset = draft.rule.preset
                 } catch { self.error = String(localized: "The day cannot be edited because its saved data is invalid.") }
             }
-            .onChange(of: draft.rule.calendar) { old, new in if loaded && old != new { calendarChanged = true } }
+            .onChange(of: draft.rule.calendar) { _, new in if loaded { calendarChanged = new != acknowledgedCalendar } }
             .onChange(of: draft.rule.preset) { _, new in
+                guard loaded, new != lastPreset else { return }; lastPreset = new
                 if new != .anniversary && draft.rule.year == nil { draft.rule.year = today.year }
                 draft.rule.perspective = new == .beginning ? .elapsed : .next
             }

@@ -74,7 +74,10 @@ final class ImportantDayUITests: XCTestCase {
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "2024")
         let edit = app.buttons["Edit Important Day"]; scrollTo(edit, app: app); edit.tap()
+        XCTAssertFalse(app.buttons["Use the date in the selected calendar"].exists)
+        XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
         app.buttons["important-day-preset"].tap(); app.buttons["Remember a beginning"].tap()
+        XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
         app.buttons["important-day-save"].tap()
         for _ in 0..<6 { app.swipeDown() }
         XCTAssertFalse(app.switches["important-day-explicit-period"].exists)
