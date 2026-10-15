@@ -20,4 +20,18 @@ ReviewRed1：真实服务 3 项测试全部失败，5 处断言；ReviewGreen1�
 
 ## 第二轮：a1530d14276325af50aa25393904e15a1da42d1a
 
-复审已请求，尚待结论。完整集中门禁与最终构建尚未执行，不标 READY。首轮 Reviewer 读取 xcresult 时因工具内部写 TestReport 权限被拒，仅核对日志；后续可核对主实现者导出的结构化结果与截图，不把该权限边界隐藏。
+首轮五项均关闭。追加三个必选P2：NY→LA时民用日回退改写已生效目标；DST不确定分支未拒绝所有可能解释都逆序；提前取消后仍留下未消费排期台账。ReviewRed2真实3项/4断言红，33b0257加入原观察时区、持久激活证据/跨日目标提案、全部DST解释排序、已确认提前取消移除台账。ReviewGreen2 96/96与FullUnit2 410/410通过。
+
+## 第三轮：33b0257 → 4928209
+
+前两项关闭，Reviewer用实际共享协调器控制流发现提前取消修复的重入缺口：下一日add触发generation变化，末尾guard跳过pending复查和台账确认。真实生产stub交错反例ReviewRed3 0/1红；4928209仅移动失效generation的状态发布门禁，取消事实仍实际复查。ReviewGreen3 44/44通过。Reviewer固定4928209复审确认全部已报告P0/P1/P2关闭。
+
+## 产品与证据收敛
+
+Reviewer核对集中UI原始摘要15/17、两个失败及2条体重路径旧Invalid frame warning，没有改称一次全绿。55e192e仅修测试中Safari教学和原生开关触点，保留原事实断言；SupplementUI1睡眠2项通过，Safari仍失败。独立核查系统日志、ShareInbox调用顺序及基线diff，确认unsigned缺entitlement在provider前失败；允许复用未触及分享路径的历史有效证据，当前候选真实签名/系统分享必须留Owner Gate，不单独阻塞S14。
+
+主实现者发现固定轴裁晚起区间，Reviewer确认P2，要求一并修24刻度日期。47f3d95按实际区间端点扩domain并标次日，实际SleepService反例与23/23 Unit通过，P2关闭。后续ChartVisible2新增AX query失败，视频证明图存在但长日期标签重叠；Reviewer确认限定改三刻度/日期时间分行、用可操作绘图来源入口验证合理，无需扩大设计或重跑全量。
+
+最终固定产品/测试与最后生产SHA `138616cd0970b0f4fba9d0c7d7d44f6ca7d30b53`：保留原晨间区间、保存重开、原记录回跳、删除及体重断言，并实际从“Open plotted nights”进入来源、打开原表单。独立Reviewer最终读取fixed138616c真实diff、ChartVisible3摘要与可见PNG、中文真实Dark/AX、V11/V12及恢复/低空间原证据，并直接读Debug/Release实包plist，确认产品与自动化证据终审通过，无未关闭的已确认范围内P0/P1/P2；Git交付随后单独核对。
+
+主实现者运行所有测试/构建；唯一独立Reviewer只读审查固定diff和导出的原始证据，未写代码、未自己跑测试。首轮xcresult工具内部TestReport写入受权限限制，后续核对主实现者导出的结构化摘要、日志、视频帧与PNG；不把访问限制隐藏或称作亲自运行。最终Docs-only交付不重建，无自引用hash。

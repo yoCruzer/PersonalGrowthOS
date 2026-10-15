@@ -1,6 +1,16 @@
-# 睡眠与作息 V1 — IMPLEMENTING（2026-10-15）
+# 睡眠与作息 V1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-15）
 
-Owner 新授权替代下方旧任务停点。固定基线 5614246、批准文档 1bed2f4；独立工作树和 codex/sleep-routine-v1 实现中。完整范围、门禁和下一动作见 [执行断点](SLEEP_ROUTINE_V1_EXECUTION.md)。尚未通过新功能测试或独立审查，不代表设备验收候选。下方历史原样保留。
+已按Owner新授权在固定重要日子基线 `5614246f98ae63732ccd4fd8a6b66f4a425336f2` 上完成，批准规格固定 `1bed2f46b08c547d52e1ca2f28d74ac0f6696003`。最终产品/测试与最后生产 **`138616cd0970b0f4fba9d0c7d7d44f6ca7d30b53`**，之后仅五份交接Markdown；交付SHA以Git/远端PR head及 `/tmp/pgos-sleep-evidence/final-delivery-proof.json` 核对，不写自引用hash。
+
+Today晨间三项单屏输入、原始区间/时区/字段填写证据、草稿和历史/编辑、7/30自然日独立分母及来源回跳、按生效日的个人目标、共享提醒与过期路由均已接线。追加V13/v9，冻结V1–V12；真实V11/V12磁盘库升级、两模块恢复重开和保护快照通过。唯一独立只读Reviewer多轮发现/反例/修复并终审，无未关闭confirmed范围内P0/P1/P2。
+
+分轮结果：全量Unit406/406；目标持久证据新增后410/410（0SKIP），后续限定取消44/44、图表23/23与最终11/11通过。集中关键UI15/17（原2FAIL保留）；睡眠设置及真实Dark中文最大AX补验2/2，最终图表来源/晨间UI1/1。Safari本轮仍FAIL，已证unsigned扩展缺App Group entitlement；未触及分享源码/配置复用历史有效证据，当前签名分享留Owner Gate。集中保留2条旧体重Invalid frame，后续打开体重补验各1条，不宣称一次全绿。
+
+固定clean138616c的Debug Simulator与unsigned Release generic iOS两构建PASS，App/Share/Widget六实包身份及1.0(7)保持，两App provenance同源；不是可直接安装IPA。独立远端CI NOT_RUN（workflows=0）；真实iPhone/私人库/签名、实际通知/桌面Widget/Photos/VoiceOver未运行。
+
+独立worktree `/Users/himini/.codex/worktrees/sleep-routine-v1/PersonalGrowthOS`，分支/upstream `codex/sleep-routine-v1` / `origin/codex/sleep-routine-v1`，普通推送 [新Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base `codex/important-days-v1`。原workspace project/catalog/xcodecloud未知dirty保持，原PR#8/#9/#10 head/base/OPEN Draft保持。未merge/tag/Archive/发布，不操作真实手机/私库。
+
+下一步仅Owner决定安装并进行睡眠+重要日子组合验收；先保护旧数据、晨间记录并重开、重要日子历法/关联冒烟、实际通知和Widget观察。不得自行进入下一功能或发行。 完整[验收映射](SLEEP_ROUTINE_V1_ACCEPTANCE_ZH.md)、[独立审查](SLEEP_ROUTINE_V1_REVIEW_ZH.md)、[执行证据](SLEEP_ROUTINE_V1_EXECUTION.md)。下方旧停点仅历史，原样保留。
 
 ---
 
