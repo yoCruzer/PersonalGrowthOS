@@ -1,8 +1,14 @@
-# PR #11 R1–R3 限定修复 — IMPLEMENTING（2026-10-15）
+# PR #11 R1–R3 限定修复 — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
-新授权输入固定 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3e`，沿原worktree/分支/PR #11续接。已核对只新增五份输入及manifest SHA-256，归档探针/输出原样保留，不计作App测试。原workspace未知dirty保留。
+批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。
 
-当前只执行批准R1–R3，不被旧设备Gate停点阻止；下一动作是生产路径反例与限定修复，完成内部复审后交外部限定复审。详见[执行断点](SLEEP_ROUTINE_V1_EXECUTION.md)。
+最终产品/测试 **`9da1ce8758d868145e9b5690611634ccd292e469`**；最后生产 `f235d9210bf2bb2a9226fda6156d803c4010cc36`，后续仅R1 UI查询歧义修正与更强分布断言。本批交付只再更新五份交接Markdown，精确delivery SHA见Git/远端PR head及 `/tmp/pgos-sleep-r1-r3-evidence/final-delivery-proof.json`，不写自引用hash。
+
+R1新事实与评价时钟同步、绘图/评分来源读取最新筛选；R2空历史关闭保存service no-op；R3接受/到期/未来missing/失败/真正提前取消及generation证据分开。内部独立只读复审已闭环，无未关闭confirmed范围内P0/P1/P2；原V13/v9/主库/身份/发布配置不变。
+
+本轮Red1四项全红；集中50Unit+R2 UI通过，R1扩展UI有两次经真实现场核实的测试交互失败，未抹去；R3独立补红0/1后41Unit通过，最终R1 UI补验通过。固定clean9da1ce8的Debug Simulator（复用UI3等效构建）与unsigned Release generic iOS均PASS/exit0，六实包身份/1.0(7)/两App provenance同源核验通过，Release仅保留既有AppIntents提取提示。 Safari unsigned FAIL、旧体重warning及全部设备未执行项继续保留；不跑旧全量。
+
+原工作树/分支/upstream与原PR #11普通推送保持，未知dirty未动；最终clean/ref同步见delivery proof。下一步仅外部限定复审本轮R1–R3；通过后再恢复组合设备Gate，不自行进入签名安装或新功能。详见[执行](SLEEP_ROUTINE_V1_EXECUTION.md)、[审查](SLEEP_ROUTINE_V1_REVIEW_ZH.md)、[验收](SLEEP_ROUTINE_V1_ACCEPTANCE_ZH.md)。
 
 ---
 

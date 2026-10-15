@@ -1,3 +1,25 @@
+# PR #11 R1–R3 限定修复 — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
+
+批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。
+
+最终产品/测试 **`9da1ce8758d868145e9b5690611634ccd292e469`**；最后生产 `f235d9210bf2bb2a9226fda6156d803c4010cc36`，后续仅R1 UI查询歧义修正与更强分布断言。本批交付只再更新五份交接Markdown，精确delivery SHA见Git/远端PR head及 `/tmp/pgos-sleep-r1-r3-evidence/final-delivery-proof.json`，不写自引用hash。
+
+R1：Workspace先完整读取局部records/goals，再同一MainActor回合发布事实与同一真实评价时刻；回顾与绘图/评分来源统一从最新snapshot按筛选意图重算，返回/前台/跨日推进真实时钟。未钳制FilledAt、未删未来/回拨保护。实际UI在原回顾内修改两时间和感受立即保持1/1/1及评分1；评分来源改为很好后原较差分组即时为空、新分布1；绘图来源清起床立即变1/0/0，切30天保持归属。晚补/回忆、备注/no-op、回拨与字段证据对照保留。
+
+R2：真实SleepService仅在rules空且cutoff=nil时no-op。三次初始关闭保存仍零规则，首次开启今日生效并磁盘重开；UI关闭保存→开启今日→重启保持通过。已有真实nil规则不清洗；后续修改/关闭、未来待生效规则、回拨/跨时区原测试保持。
+
+R3：每次add成功即保留接受元数据，generation只门禁UI状态；成功接受后到期不以末pending缺失误报失败，elapsed不声称系统已显示。明确取消与失败remove尽早pending复核，防止后续批次跨旧fire锁住真正提前取消日期；未来missing仍failed并移除未到期台账。旧plannedFires键及Double格式未改，重启兼容。替换在旧fire前成功确认可更新；成功返回已跨旧fire时保守保留旧elapsed并撤销较晚新pending，防止重复，不伪造准确接受/实际递送时刻。聚合仅统计真正未来scheduled，全部到期时elapsed/0/nilcoverage；真实失败、拒权、容量优先级保留。
+
+唯一独立只读Reviewer为本轮新session `/root/sleep_r1_r3_reviewer`，未继承实现者历史，不改代码/文件/PR、不运行测试或构建。先独立读取固定Goal、归档报告/探针/输出/manifest与必要上下文，区分旧Linux移录探针与本机生产证据。主实现者执行所有测试；Reviewer直接核对diff、原日志/导出摘要/截图与实际bundle plist。
+
+独立发现的额外R3同类时序：失败remove仅末尾确认，别的add跨旧fire时锁住真正提前取消。Red2实际0/1、2断言红，f235d92仅失败remove后立即pending查询修复；Green2全部41Unit通过。R1的两次扩展UI失败分别经真实层级确认Tab遮挡与Unknown查询歧义，仅正常滚动/限定查询，断言未弱化；初次直接编辑的真实红与绿色样本结果均保留。
+
+独立Reviewer固定9da1ce8758d868145e9b5690611634ccd292e469完成代码/原始反例/分轮日志与关键PNG、两实包plist终审，R1–R3关闭，无未关闭已确认范围内P0/P1/P2。其本人未运行测试或改实现。 原始run与固定SHA/失败/警告及未执行边界见[本轮执行](SLEEP_ROUTINE_V1_EXECUTION.md)，不是把旧审查“当时无发现”改写为发现过这三项。归档四文件及新Goal逐字不变，不计为App测试。
+
+下一边界是外部限定复审；内部审查完成不等于设备门禁通过。后续历史原样如下。
+
+---
+
 # 睡眠与作息 V1 独立审查
 
 Reviewer：真正独立只读 Agent `/root/sleep_reviewer`，同一 Reviewer 分阶段复审。Reviewer 未修改实现，未运行构建/测试；主实现者运行，Reviewer 核对原始 diff、日志及可读的 xcresult/截图。没有第二个实现者，也没有并行 Xcode 队列。

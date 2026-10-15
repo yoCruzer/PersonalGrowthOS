@@ -1,3 +1,29 @@
+# PR #11 R1–R3 限定修复 — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
+
+批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。
+
+最终产品/测试 **`9da1ce8758d868145e9b5690611634ccd292e469`**；最后生产 `f235d9210bf2bb2a9226fda6156d803c4010cc36`，后续仅R1 UI查询歧义修正与更强分布断言。本批交付只再更新五份交接Markdown，精确delivery SHA见Git/远端PR head及 `/tmp/pgos-sleep-r1-r3-evidence/final-delivery-proof.json`，不写自引用hash。
+
+| 本轮问题 | 新生产证据与关闭边界 |
+| --- | --- |
+| R1 | Red1真实回顾内编辑→unknown3/样本0；统一事实与评价时钟后直接编辑、评分来源改值、绘图来源清起床和30天窗口即时一致。真实未来/回拨与recalled仍排除，备注/no-op原字段证据保持 |
+| R2 | Red1真实service与设置均红；初始关闭多次保存零规则，首次启用今日，磁盘重开/真实UI重启保持。已有目标禁用历史不清洗；下一日起效和跨时区/回拨保护原样 |
+| R3 | Red1批末前到期不再failed且重启不重复；Red2失败提前取消跨期补红再修。成功接受、elapsed、未来missing/失败与真正取消分开；legacy键、generation、公平容量与实际pending状态有配对 |
+
+| Run / 固定SHA | 真实结果与关闭依据 |
+| --- | --- |
+| Red1 / 500c9dc | 0/2 Unit（7断言FAIL）+0/2真实UI（2FAIL），exit65、0SKIP/warning；旧生产R1字段全部unknown、R2off落规则、R3末确认前到期丢台账均实际复现 |
+| Focused1 / 64d5dc2 | 50/50相关Unit + 1/2 UI PASS，exit65、0SKIP/warning；R2 UI通过，R1直接保存1/1/1及评分1恢复；扩展来源测试因Poor行中心落TabBar，未导航。层级783–835、TabBar791起及录像证实，补正常滚动与完整frame断言，未删事实检查 |
+| Red2 / 1a732fb | 0/1 Unit，2断言FAIL，exit65、0SKIP/warning；独立Reviewer指出add替换抛错后的remove未及时确认，下一日add跨旧fire后真正提前取消被锁 |
+| Green2 / f235d92 | 41/41相关Unit + 0/1 UI，exit65、0SKIP/warning；取消缺口与全部通知/目标/交错对照通过。UI实际走完评分来源改值即时移出、返回与绘图来源打开，失败因Unknown同时匹配菜单与评分未知；限定排除后者，不删清起床与30天断言 |
+| UI3 / clean9da1ce8 | 1/1真实UI PASS，exit0、0SKIP/warning；完整走原回顾编辑→评分来源成员即时移出/新分布1→绘图来源清起床→1/0/0→30天归属，无额外离开回顾或后台刷新 |
+
+固定clean9da1ce8的Debug Simulator（复用UI3等效构建）与unsigned Release generic iOS均PASS/exit0，六实包身份/1.0(7)/两App provenance同源核验通过，Release仅保留既有AppIntents提取提示。 独立Reviewer固定9da1ce8758d868145e9b5690611634ccd292e469完成代码/原始反例/分轮日志与关键PNG、两实包plist终审，R1–R3关闭，无未关闭已确认范围内P0/P1/P2。其本人未运行测试或改实现。 原始证据、候选工程/scheme与两构建精确路径见[执行断点](SLEEP_ROUTINE_V1_EXECUTION.md)，无签名iOS app不是可直接安装IPA。原workspace未知dirty保留，分支普通推送原PR，旧PR不动；交付提交仅五文档，不重建。
+
+本批停READY_FOR_INDEPENDENT_REVIEW供外部按新SHA限定关闭R1–R3。外部通过后组合设备项仍只需：保留备份/不卸载并核对旧数据；晨间记录/原回顾内编辑后重开；重要日子历法往返和关系冒烟；真实通知、Widget与签名Safari分享另行观察。真实手机版本未知，不假设已到V12/V13。当前未签名分享FAIL不因旧SHA成功证据而关闭；私库/签名/App Group/系统递送/桌面/Photos/VoiceOver与CI均未执行，不merge/tag/Archive/发布。
+
+---
+
 # 睡眠与作息 V1 验收映射
 
 状态：READY_FOR_OWNER_DEVICE_GATE。固定规格 1bed2f4，产品基线 5614246；本分支包含重要日子全部修复。未操作真机或私人库，不能假定 Owner 安装版本是 V12。

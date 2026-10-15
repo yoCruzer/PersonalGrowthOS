@@ -1,10 +1,42 @@
-# PR #11 R1–R3 限定修复 — IMPLEMENTING（2026-10-15）
+# PR #11 R1–R3 限定修复 — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
-新授权输入固定 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3e`，沿原worktree/分支/PR #11续接。已核对只新增五份输入及manifest SHA-256，归档探针/输出原样保留，不计作App测试。原workspace未知dirty保留。
+批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。
 
-本轮顺序：核实真实服务/回顾生命周期/协调器并补反例 → R1评价时钟、R2初始关闭no-op、R3成功接受/到期/取消证据限定修复 → 一次集中受影响Unit及最少真实UI → 一名独立只读Reviewer固定SHA复审 → clean SHA双构建/实包核验 → 普通push原PR #11与五文档交接，停READY_FOR_INDEPENDENT_REVIEW。无V13/v9、主库、身份/发布配置变更；不跑旧全量、不重跑已知unsigned Safari环境失败。
+最终产品/测试 **`9da1ce8758d868145e9b5690611634ccd292e469`**；最后生产 `f235d9210bf2bb2a9226fda6156d803c4010cc36`，后续仅R1 UI查询歧义修正与更强分布断言。本批交付只再更新五份交接Markdown，精确delivery SHA见Git/远端PR head及 `/tmp/pgos-sleep-r1-r3-evidence/final-delivery-proof.json`，不写自引用hash。
 
-当前断点：准备生产路径红测；尚未声称三个P2关闭。旧交付历史如下。
+本批只修三个外部P2及同一R3时序的独立审查补缺口，不重开睡眠/重要日子开发。V13/v9/主库/身份/发布配置/来源/Share/Widget均冻结；`scope-proof.json`与实际Git diff核对。原workspace三处未知dirty未吸收，历史FAIL及原审查“当时无发现”结论保留。
+
+R1：Workspace先完整读取局部records/goals，再同一MainActor回合发布事实与同一真实评价时刻；回顾与绘图/评分来源统一从最新snapshot按筛选意图重算，返回/前台/跨日推进真实时钟。未钳制FilledAt、未删未来/回拨保护。实际UI在原回顾内修改两时间和感受立即保持1/1/1及评分1；评分来源改为很好后原较差分组即时为空、新分布1；绘图来源清起床立即变1/0/0，切30天保持归属。晚补/回忆、备注/no-op、回拨与字段证据对照保留。
+
+R2：真实SleepService仅在rules空且cutoff=nil时no-op。三次初始关闭保存仍零规则，首次开启今日生效并磁盘重开；UI关闭保存→开启今日→重启保持通过。已有真实nil规则不清洗；后续修改/关闭、未来待生效规则、回拨/跨时区原测试保持。
+
+R3：每次add成功即保留接受元数据，generation只门禁UI状态；成功接受后到期不以末pending缺失误报失败，elapsed不声称系统已显示。明确取消与失败remove尽早pending复核，防止后续批次跨旧fire锁住真正提前取消日期；未来missing仍failed并移除未到期台账。旧plannedFires键及Double格式未改，重启兼容。替换在旧fire前成功确认可更新；成功返回已跨旧fire时保守保留旧elapsed并撤销较晚新pending，防止重复，不伪造准确接受/实际递送时刻。聚合仅统计真正未来scheduled，全部到期时elapsed/0/nilcoverage；真实失败、拒权、容量优先级保留。
+
+## 本轮验证与证据
+
+证据根 `/tmp/pgos-sleep-r1-r3-evidence`，每个run的`*-sha.txt`记录精确SHA，`.log`开头有完整命令，`.xcresult`原始保留，`*-summary.json`由xcresulttool导出。环境沿用Xcode27.0(27A266a)/macOS27.0.1，专用合成iPhone18Pro/iOS27.0模拟器 `834EED0E-6AA2-4A4E-A81A-97F4F556DFCB`，不改系统时钟或操作真机/私库。只一个活跃Xcode队列。
+
+| Run / 固定SHA | 真实结果与关闭依据 |
+| --- | --- |
+| Red1 / 500c9dc | 0/2 Unit（7断言FAIL）+0/2真实UI（2FAIL），exit65、0SKIP/warning；旧生产R1字段全部unknown、R2off落规则、R3末确认前到期丢台账均实际复现 |
+| Focused1 / 64d5dc2 | 50/50相关Unit + 1/2 UI PASS，exit65、0SKIP/warning；R2 UI通过，R1直接保存1/1/1及评分1恢复；扩展来源测试因Poor行中心落TabBar，未导航。层级783–835、TabBar791起及录像证实，补正常滚动与完整frame断言，未删事实检查 |
+| Red2 / 1a732fb | 0/1 Unit，2断言FAIL，exit65、0SKIP/warning；独立Reviewer指出add替换抛错后的remove未及时确认，下一日add跨旧fire后真正提前取消被锁 |
+| Green2 / f235d92 | 41/41相关Unit + 0/1 UI，exit65、0SKIP/warning；取消缺口与全部通知/目标/交错对照通过。UI实际走完评分来源改值即时移出、返回与绘图来源打开，失败因Unknown同时匹配菜单与评分未知；限定排除后者，不删清起床与30天断言 |
+| UI3 / clean9da1ce8 | 1/1真实UI PASS，exit0、0SKIP/warning；完整走原回顾编辑→评分来源成员即时移出/新分布1→绘图来源清起床→1/0/0→30天归属，无额外离开回顾或后台刷新 |
+
+集中命令选实际五类SleepFoundationTests/SleepReviewRegressionTests/SleepReminderTests/ImportantDayReminderTests/TodoReminderTests及两条R1/R2 UI；后续仅补受影响通知/来源UI，未重跑406/410全量、全套UI或已知Safari环境FAIL。41Unit含legacy键、确认后递送正对照、批末前到期、generation、真正提前取消/失败取消跨期、未来missing、成功提前替换/晚确认保守抑制、关闭/删除恢复、Todo/day/daily/weekly容量与串行gate。没有把不同轮次拼成一次全绿。
+
+R1旧真实图 `R1-old-review-35s.png`（当日0/unknown3）及末帧由Red1录像提取；Focused1的`R1-focused1-failure.png`和层级证明行被Tab覆盖。最终UI截图见 `UI3-attachments/manifest.json`，人工与独立Reviewer核验；R2设置截图复用Focused1（其生产代码后续未变），不机械重跑。
+
+## 独立复审、构建与交付
+
+本轮唯一新独立只读Reviewer `/root/sleep_r1_r3_reviewer`：独立检查固定输入/真实代码/反例与原始日志/截图，不改实现、不运行构建测试；R3失败取消缺口先真红再限定补修。独立Reviewer固定9da1ce8758d868145e9b5690611634ccd292e469完成代码/原始反例/分轮日志与关键PNG、两实包plist终审，R1–R3关闭，无未关闭已确认范围内P0/P1/P2。其本人未运行测试或改实现。
+
+固定clean9da1ce8的Debug Simulator（复用UI3等效构建）与unsigned Release generic iOS均PASS/exit0，六实包身份/1.0(7)/两App provenance同源核验通过，Release仅保留既有AppIntents提取提示。 工程 `PersonalGrowthOS.xcodeproj` / scheme `PersonalGrowthOS`。Debug复用clean9da1ce8 UI3等效构建，路径 `/tmp/pgos-sleep-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app`；unsigned generic-iOS Release `/tmp/pgos-sleep-release-derived/Build/Products/Release-iphoneos/PersonalGrowthOS.app`。`final-bundle-proof.json`核对App/Share/Widget六实包原身份与1.0(7)、两App clean9da provenance；appex来自同构建图，无独立provenance文件。不是可直接安装IPA。最后Docs-only不为自引用SHA重建。
+
+普通push原PR #11并更新本轮描述，base/Open Draft不变；旧#8/#9/#10、Goal承载分支与固定产品基线只读保持，最终ref及clean同步见delivery proof。未merge/force-push/tag/Archive/签名安装/发布，未操作真实手机/私人库。远端CI NOT_RUN（workflows=0）；Safari unsigned FAIL仍设备Gate，不绕过App Group、不冒称当前候选分享通过；旧体重warning不扩修。私人库升级/签名分享/实际通知递送/桌面Widget/Photos/VoiceOver均NOT_RUN。
+
+停READY_FOR_INDEPENDENT_REVIEW供外部只审R1–R3新固定SHA；外部关闭后再由Owner决定组合真机Gate，不自行安装、发行或开始新模块。
 
 ---
 
