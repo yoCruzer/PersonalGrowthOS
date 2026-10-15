@@ -1,3 +1,17 @@
+# PR #11 外部限定复审通过 — READY_FOR_OWNER_DEVICE_GATE（2026-10-15）
+
+据 Owner 本次确认，外部限定复审通过固定产品/测试 `9da1ce8758d868145e9b5690611634ccd292e469`，对应交付 `114558f404ced9cffca5517533a11cb10d2d4ec8`：R1、R2、R3 关闭，未发现范围内尚未关闭的确认 P0/P1/P2。
+
+外部复审独立读取固定源码和测试，通知控制流便携探针 **12/12 通过**。这不是 iOS XCTest、原生 UI、SwiftData 迁移或系统递送验证，不加入原 Unit 数量，也不代表真机通过；本次收口仅记录 Owner 转达的结论，未执行探针、测试或构建。
+
+本次只追加五份交接 Markdown 并更新原 Draft PR #11 描述；产品、V13/v9、主库、身份、签名和发布配置不变，旧审查与分轮失败保留。Safari unsigned FAIL、当前签名分享、私人库升级、真实通知/Widget/Photos/VoiceOver 等继续设备 Gate。等待 Owner 另行签名安装或发布授权；不 merge、tag、Archive、发布或操作真实手机/私人库。
+
+组合设备清单（获安装授权后）：先保留备份、不卸载并核对旧数据；Today 记录一晚，回顾内编辑、保存重开核对；重要日子做历法往返与关联冒烟；实际通知/Widget及签名 Safari 分享分别观察。
+
+以下为原交接与审查历史，原文保留。
+
+---
+
 # PR #11 R1–R3 限定修复 — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
 批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。
