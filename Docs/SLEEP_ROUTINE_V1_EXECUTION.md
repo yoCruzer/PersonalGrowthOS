@@ -1,3 +1,13 @@
+# PR #11 R1–R3 限定修复 — IMPLEMENTING（2026-10-15）
+
+新授权输入固定 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3e`，沿原worktree/分支/PR #11续接。已核对只新增五份输入及manifest SHA-256，归档探针/输出原样保留，不计作App测试。原workspace未知dirty保留。
+
+本轮顺序：核实真实服务/回顾生命周期/协调器并补反例 → R1评价时钟、R2初始关闭no-op、R3成功接受/到期/取消证据限定修复 → 一次集中受影响Unit及最少真实UI → 一名独立只读Reviewer固定SHA复审 → clean SHA双构建/实包核验 → 普通push原PR #11与五文档交接，停READY_FOR_INDEPENDENT_REVIEW。无V13/v9、主库、身份/发布配置变更；不跑旧全量、不重跑已知unsigned Safari环境失败。
+
+当前断点：准备生产路径红测；尚未声称三个P2关闭。旧交付历史如下。
+
+---
+
 # 睡眠与作息 V1 执行断点
 
 状态：READY_FOR_OWNER_DEVICE_GATE。固定产品基线 `5614246f98ae63732ccd4fd8a6b66f4a425336f2`；批准文档快照 `1bed2f46b08c547d52e1ca2f28d74ac0f6696003`。已核验祖先关系，二者差异仅批准的两份 Markdown。

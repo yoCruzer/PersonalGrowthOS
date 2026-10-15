@@ -1,0 +1,15 @@
+R1 normal edit with no clock rollback:
+  before edit, initial filling evidence: sameDay, included=true
+  after edit, cached review reference:   unknown, included=false
+  after edit, actual current reference:  sameDay, included=true
+  controls: next-day / recalled / unknown classifications preserved
+R2 no-op goal save observation:
+  first activation without an off-rule: 2026-10-15
+  first activation after saving an already-off goal: 2026-10-16
+R3 delivered during end-of-batch confirmation (OS-valid injected client state):
+  successfully submitted today, then delivered before pending query
+  final status incorrectly failed: true
+  ledger remembers today's elapsed plan: false
+  changing reminder to 11:00 queues today's reminder again: true
+  control: confirmation completed before delivery correctly prevents requeue
+  control: truly canceled-before-delivery request can be rescheduled

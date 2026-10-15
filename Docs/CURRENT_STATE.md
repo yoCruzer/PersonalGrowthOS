@@ -1,3 +1,11 @@
+# PR #11 R1–R3 限定修复 — IMPLEMENTING（2026-10-15）
+
+新授权输入固定 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3e`，沿原worktree/分支/PR #11续接。已核对只新增五份输入及manifest SHA-256，归档探针/输出原样保留，不计作App测试。原workspace未知dirty保留。
+
+当前只执行批准R1–R3，不被旧设备Gate停点阻止；下一动作是生产路径反例与限定修复，完成内部复审后交外部限定复审。详见[执行断点](SLEEP_ROUTINE_V1_EXECUTION.md)。
+
+---
+
 # 睡眠与作息 V1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-15）
 
 已按Owner新授权在固定重要日子基线 `5614246f98ae63732ccd4fd8a6b66f4a425336f2` 上完成，批准规格固定 `1bed2f46b08c547d52e1ca2f28d74ac0f6696003`。最终产品/测试与最后生产 **`138616cd0970b0f4fba9d0c7d7d44f6ca7d30b53`**，之后仅五份交接Markdown；交付SHA以Git/远端PR head及 `/tmp/pgos-sleep-evidence/final-delivery-proof.json` 核对，不写自引用hash。
