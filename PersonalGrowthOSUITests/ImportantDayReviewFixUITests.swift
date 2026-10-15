@@ -124,7 +124,11 @@ final class ImportantDayReviewFixUITests: XCTestCase {
         for _ in 0..<6 {
             if confirm.isHittable { break }
             let scroll = app.scrollViews["important-day-confirmation-scroll"]
-            if scroll.exists { scroll.swipeUp() } else { app.swipeUp() }
+            if scroll.exists {
+                print("ReviewConfirmScroll frame=\(scroll.frame) confirm=\(confirm.frame) wheel=\(app.pickerWheels.firstMatch.value ?? "missing")")
+                // Drag the padded edge so the nested year wheel does not consume the gesture.
+                scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.99, dy: 0.9)).press(forDuration: 0.01, thenDragTo: scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.99, dy: 0.1)))
+            } else { app.swipeUp() }
         }
         XCTAssertTrue(confirm.isHittable); confirm.tap()
         XCTAssertEqual(body.value as? String, "Chinese accessibility draft")
