@@ -171,3 +171,44 @@ import XCTest
         XCTAssertEqual(client.pending[SleepReminderPlanner.prefix + day.identifier]?.fireAt, day.instant(minutes: 600, timeZone: .current))
     }
 }
+
+@MainActor extension SleepReviewRegressionTests {
+    func testR2InitialDisabledSavesAreNoopAndFirstActivationIsTodayAfterDiskReopen() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("goal.sqlite"), clock = date("2026-10-15")
+        try autoreleasepool {
+            let c = try PersistenceContainerFactory.makeOnDisk(at: url)
+            let service = SleepService(context: c.mainContext, now: { clock })
+            for _ in 0..<3 { try service.setGoal(cutoffMinute: nil, timeZone: zone) }
+            XCTAssertEqual(try ModelContext(c).fetchCount(FetchDescriptor<SleepGoalRule>()), 0)
+            try service.setGoal(cutoffMinute: 1410, timeZone: zone)
+        }
+        let c = try PersistenceContainerFactory.makeOnDisk(at: url)
+        let rules = try ModelContext(c).fetch(FetchDescriptor<SleepGoalRule>())
+        XCTAssertEqual(rules.count, 1)
+        XCTAssertEqual(rules.first?.effectiveDay, "2026-10-15")
+        XCTAssertEqual(rules.first?.cutoffMinute, 1410)
+    }
+    func testR3AcceptedMorningElapsedBeforeBatchConfirmationIsNotFailureAndSurvivesRestart() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub()
+        let day = ImportantCivilDay(Date()), fire = day.instant(minutes: 540, timeZone: .current)!
+        var clock = fire.addingTimeInterval(-1), prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        let name = "SleepBatchElapsedSynthetic-\(UUID())", defaults = try XCTUnwrap(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let history = SleepReminderHistory(defaults: defaults), id = SleepReminderPlanner.prefix + day.identifier
+        var co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { prefs }, sleepHistory: history)
+        client.whileAdding = { clock = fire.addingTimeInterval(1); client.pending.removeValue(forKey: id) }
+        await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(co.sleepStatus().status, .scheduled)
+        XCTAssertEqual(co.sleepStatus().scheduledCount, 6)
+        XCTAssertEqual(co.sleepStatus().nextFire, day.adding(days: 1)!.instant(minutes: 540, timeZone: .current))
+        XCTAssertTrue(history.elapsedDays(now: clock).contains(day.identifier))
+        prefs.minute = 660
+        co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { prefs }, sleepHistory: SleepReminderHistory(defaults: defaults))
+        await co.reconcile(context: c.mainContext)
+        XCTAssertNil(client.pending[id])
+        XCTAssertTrue(SleepReminderHistory(defaults: defaults).elapsedDays(now: clock).contains(day.identifier))
+    }
+}

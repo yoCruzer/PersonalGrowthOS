@@ -153,3 +153,41 @@ extension SleepUITests {
         XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "sleep-history-")).count, 1)
     }
 }
+
+extension SleepUITests {
+    func testR1ReviewEditsImmediatelyKeepTimeAndFeelingSamplesWithoutLeavingReview() {
+        let app = launch(); openToday(app)
+        app.buttons["sleep-bed-menu"].tap(); app.buttons["sleep-bed-1380-30"].tap()
+        app.buttons["sleep-wake-menu"].tap(); app.buttons["sleep-wake-420-15"].tap()
+        app.buttons["sleep-feeling-4"].tap(); app.buttons["sleep-save"].tap()
+        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-sleep"].tap(); app.buttons["sleep-review"].tap()
+        XCTAssertTrue(app.staticTexts["1 recorded wake days / 7 calendar days"].waitForExistence(timeout: 5))
+        let night = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "sleep-review-night-")).firstMatch
+        reveal(night, app: app); night.tap()
+        app.buttons["sleep-bed-menu"].tap(); app.buttons["sleep-bed-1410-30"].tap()
+        app.buttons["sleep-wake-menu"].tap(); app.buttons["sleep-wake-435-15"].tap()
+        app.buttons["sleep-feeling-2"].tap(); app.buttons["sleep-save"].tap()
+        XCTAssertTrue(app.navigationBars["Sleep review"].waitForExistence(timeout: 5))
+        for _ in 0..<4 { app.swipeDown() }
+        let samples = app.staticTexts["Bedtime samples: 1 · Getting-up samples: 1 · Interval samples: 1"]
+        reveal(samples, app: app); XCTAssertTrue(samples.exists, app.debugDescription)
+        let ratings = app.staticTexts["Valid ratings: 1"]; reveal(ratings, app: app)
+        XCTAssertTrue(ratings.exists, app.debugDescription)
+        attachment(app, "R1-immediate-review-after-real-edit")
+    }
+    func testR2SavingInitiallyOffGoalDoesNotConsumeFirstTodayActivationInSettings() {
+        let app = launch()
+        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-sleep"].tap(); app.buttons["sleep-settings"].tap()
+        let enabled = app.switches["sleep-goal-enabled"]
+        XCTAssertEqual(enabled.value as? String, "0")
+        app.buttons["sleep-save-goal"].tap()
+        XCTAssertFalse(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Goal disabled")).firstMatch.exists, app.debugDescription)
+        enabled.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        XCTAssertEqual(enabled.value as? String, "1")
+        app.buttons["sleep-save-goal"].tap()
+        attachment(app, "R2-first-enabled-goal-after-off-save")
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-sleep"].tap(); app.buttons["sleep-settings"].tap()
+        XCTAssertEqual(app.switches["sleep-goal-enabled"].value as? String, "1")
+    }
+}
