@@ -29,6 +29,9 @@ final class ImportantDayNotificationDelegate: NSObject, UIApplicationDelegate, U
         if let text = response.notification.request.content.userInfo["importantDayID"] as? String, let id = UUID(uuidString: text) {
             Task { @MainActor in ImportantDayExternalRouter.shared.receive(id: id, source: .notification) }
         }
+        if let day = response.notification.request.content.userInfo["sleepWakeDay"] as? String {
+            Task { @MainActor in SleepExternalRouter.shared.receive(day: day) }
+        }
         completionHandler()
     }
 }

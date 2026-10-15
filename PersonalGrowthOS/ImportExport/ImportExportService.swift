@@ -382,6 +382,7 @@ final class ImportExportService {
             try await publish(package: package, importedAt: now())
             NotificationCenter.default.post(name: .todoTasksChanged, object: container)
             NotificationCenter.default.post(name: .importantDaysChanged, object: container)
+            NotificationCenter.default.post(name: .sleepRecordsChanged, object: container)
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.mediaAssets.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
@@ -512,6 +513,11 @@ final class ImportExportService {
                 } else {
                     guard payload?[key] == nil else { throw TransferPackageError.corruptData }
                 }
+            }
+            for key in ["sleepRecords", "sleepGoals"] {
+                if manifest.packageSchemaVersion >= 9 {
+                    guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
+                } else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
             }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
@@ -957,6 +963,7 @@ final class ImportExportService {
             for cover in package.data.importantDayCovers where copyOriginals {
                 restoredPaths.append(try copyMedia(cover, packageRoot: package.extractedRoot, mediaRoot: mediaStore.rootURL))
             }
+            try package.data.insertSleep(into: context)
             try package.data.insertImportantDays(into: context)
             try package.data.insertTodos(into: context)
             return restoredPaths
@@ -1007,6 +1014,8 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<ImportantDayEntryLink>())
             + context.fetchCount(FetchDescriptor<ImportantDayTodoLink>())
             + context.fetchCount(FetchDescriptor<ImportantDayCover>())
+            + context.fetchCount(FetchDescriptor<SleepRecord>())
+            + context.fetchCount(FetchDescriptor<SleepGoalRule>())
 
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
@@ -1254,7 +1263,9 @@ enum TransferSnapshot {
             importantDays: try cancellableMap(context.fetch(FetchDescriptor<ImportantDay>())) { try ImportantDayTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             importantDayEntryLinks: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayEntryLink>())) { ImportantDayEntryLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             importantDayTodoLinks: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayTodoLink>())) { ImportantDayTodoLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            importantDayCovers: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayCover>())) { ImportantDayCoverTransfer($0) }.sorted { sortUUID($0.id, $1.id) }
+            importantDayCovers: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayCover>())) { ImportantDayCoverTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            sleepRecords: try cancellableMap(context.fetch(FetchDescriptor<SleepRecord>())) { try SleepRecordTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            sleepGoals: try cancellableMap(context.fetch(FetchDescriptor<SleepGoalRule>())) { SleepGoalTransfer($0) }.sorted { sortUUID($0.id, $1.id) }
         )
     }
 

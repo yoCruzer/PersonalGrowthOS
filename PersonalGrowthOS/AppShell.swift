@@ -14,6 +14,9 @@ enum AppTab: Hashable {
 struct AppShell: View {
     let container: AppContainer
 
+    @State private var sleepWorkspace = SleepWorkspace()
+    @State private var sleepRouter = SleepExternalRouter.shared
+    @State private var presentedSleep: SleepExternalRoute?
     @State private var todoReminders = TodoReminderCoordinator()
     @State private var widgetPublisher = ImportantDayWidgetPublisher()
     @State private var externalRouter = ImportantDayExternalRouter.shared
@@ -41,7 +44,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { SleepFeedbackView(); ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Today", systemImage: "sun.max") }
             .tag(AppTab.today)
 
@@ -51,7 +54,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { SleepFeedbackView(); ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Timeline", systemImage: "clock") }
             .tag(AppTab.timeline)
 
@@ -62,7 +65,7 @@ struct AppShell: View {
             ) { _ in
                 selectedTab = .timeline
             }
-            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { SleepFeedbackView(); ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Record", systemImage: "plus.circle.fill") }
             .tag(AppTab.record)
 
@@ -72,7 +75,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { SleepFeedbackView(); ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Growth", systemImage: "leaf") }
             .tag(AppTab.growth)
 
@@ -82,7 +85,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { SleepFeedbackView(); ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Library", systemImage: "books.vertical") }
             .tag(AppTab.library)
         }
@@ -95,18 +98,35 @@ struct AppShell: View {
         }
         #endif
         .task {
+            sleepWorkspace.refresh(container.modelContainer.mainContext)
+            deliverSleepRoute()
             await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             deliverImportantDayRoute()
             await todoReminders.reconcile(context: container.modelContainer.mainContext)
         }
+        .onChange(of: sleepRouter.pending) { _, _ in deliverSleepRoute() }
+        .sheet(item: $presentedSleep) { route in SleepEditorLoader(day: route.id) }
+        .onReceive(NotificationCenter.default.publisher(for: .sleepRecordsChanged)) { notification in
+            guard notification.object as? ModelContainer === container.modelContainer else { return }
+            sleepWorkspace.refresh(container.modelContainer.mainContext)
+            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
+        }
         .onChange(of: externalRouter.pending) { _, _ in deliverImportantDayRoute() }
         .safeAreaInset(edge: .top) {
+            VStack(spacing: 0) {
+            if let pending = sleepRouter.pending {
+                HStack {
+                    Button("Open sleep for \(pending.id)") { deliverSleepRoute() }.accessibilityIdentifier("sleep-pending-route")
+                    Spacer(); Button("Dismiss") { sleepRouter.pending = nil }
+                }.padding(8).background(.bar)
+            }
             if externalRouter.pending != nil {
                 HStack {
                     Button("Open requested Important Day") { deliverImportantDayRoute() }.accessibilityIdentifier("important-day-pending-route")
                     Spacer()
                     Button("Dismiss") { externalRouter.pending = nil }
                 }.padding(8).background(.bar)
+            }
             }
         }
         .sheet(item: $presentedImportantDay) { route in
@@ -117,6 +137,7 @@ struct AppShell: View {
         }
         .onChange(of: captureScenePhase) { _, phase in
             if phase == .active { Task {
+                sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute()
                 await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
                 await todoReminders.reconcile(context: container.modelContainer.mainContext)
             } }
@@ -172,13 +193,22 @@ struct AppShell: View {
                 integrityReport: container.mediaIntegrityReport
             )
         }
+        .environment(sleepWorkspace)
         .environment(todoReminders)
         .environment(widgetPublisher)
     }
 
+    private func deliverSleepRoute() {
+        guard let route = sleepRouter.pending, !isShowingStorage, !isShowingPendingShares,
+              presentedSleep == nil, presentedImportantDay == nil,
+              !ImportantDayExternalRouter.hasPresentedController() else { return }
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        sleepRouter.pending = nil; presentedSleep = route
+    }
+
     private func deliverImportantDayRoute() {
         guard let route = externalRouter.pending, !isShowingStorage, !isShowingPendingShares,
-              presentedImportantDay == nil, !ImportantDayExternalRouter.hasPresentedController() else { return }
+              presentedSleep == nil, presentedImportantDay == nil, !ImportantDayExternalRouter.hasPresentedController() else { return }
         // Present over the existing hierarchy; Record's StateObject and every tab remain mounted.
         // Explicitly end keyboard focus so dismissing the route cannot restore a keyboard over the tabs.
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -415,6 +445,7 @@ private struct TodayView: View {
                 }
             }
             weightSection
+            SleepTodaySection(referenceDate: referenceDate)
             if !activeGoals.isEmpty {
                 Section {
                     ForEach(showsAllGoals ? activeGoals : Array(activeGoals.prefix(2))) { goal in

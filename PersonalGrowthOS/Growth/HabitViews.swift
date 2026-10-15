@@ -55,6 +55,10 @@ struct GrowthView: View {
             }
             .accessibilityIdentifier("growth-weight")
             NavigationLink {
+                SleepHubView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+            } label: { Label("Sleep and Routine", systemImage: "moon.zzz") }
+            .accessibilityIdentifier("growth-sleep")
+            NavigationLink {
                 ImportantDaysView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
                 VStack(alignment: .leading, spacing: 4) {

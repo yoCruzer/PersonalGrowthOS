@@ -102,7 +102,7 @@ struct AppContainer {
                     try autoreleasepool {
                         let readOnly = try PersistenceContainerFactory.makeOnDisk(at: storeURL, allowsSave: false)
                         readOnly.mainContext.autosaveEnabled = false
-                        do { try TodoIntegrity.validate(context: readOnly.mainContext) }
+                        do { try TodoIntegrity.validate(context: readOnly.mainContext); try SleepIntegrity.validate(context: readOnly.mainContext) }
                         catch { throw integrityFailure(error, rootURL: rootURL) }
                     }
                 } else {
@@ -118,7 +118,7 @@ struct AppContainer {
             stage = .integrity
             startupStep = nil
             modelContainer.mainContext.autosaveEnabled = false
-            do { try TodoIntegrity.validate(context: modelContainer.mainContext) }
+            do { try TodoIntegrity.validate(context: modelContainer.mainContext); try SleepIntegrity.validate(context: modelContainer.mainContext) }
             catch {
                 throw integrityFailure(error, rootURL: rootURL)
             }
@@ -151,6 +151,7 @@ struct AppContainer {
             _ = try HabitAnalyticsMigrationBootstrap.apply(context: modelContainer.mainContext)
             try LinkIntegrityService.validate(context: modelContainer.mainContext)
             try ImportantDayIntegrity.validate(context: modelContainer.mainContext)
+            try SleepIntegrity.validate(context: modelContainer.mainContext)
             return AppContainer(
                 configuration: configuration,
                 modelContainer: modelContainer,
@@ -191,7 +192,7 @@ enum StartupStoreProtection {
         guard sqlite3_step(statement) == SQLITE_ROW, let bytes = sqlite3_column_blob(statement, 0) else { return false }
         let data = Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, 0)))
         guard let metadata = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { return false }
-        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV12.versionIdentifier.description]
+        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV13.versionIdentifier.description]
     }
 
     // Content identity ignores SQLite header/checkpoint changes. Equal logical
@@ -320,7 +321,24 @@ struct StartupRetainedData: Sendable {
                     let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
                     let hash = SHA256.hash(data: Data(logical.utf8) + (try encoder.encode(external)))
                     identity = "-" + hash.map { String(format: "%02x", $0) }.joined()
-                } else { identity = "" }
+                } else {
+                    let legacy = recoveryRoot.appendingPathComponent(Purpose.beforeMigration.rawValue)
+                    if fileManager.fileExists(atPath: legacy.path) {
+                        do {
+                            let expected = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: legacy.appendingPathComponent("COMPLETE")))
+                            guard try storeSignature(legacy.appendingPathComponent("Store")) == expected else { throw CocoaError(.fileReadCorruptFile) }
+                            let source = try StartupStoreProtection.fingerprint(at: store.appendingPathComponent("PersonalGrowthOS.sqlite"))
+                            let retained = try StartupStoreProtection.fingerprint(at: legacy.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+                            let sourceExternal = signature.filter { !["PersonalGrowthOS.sqlite", "PersonalGrowthOS.sqlite-wal"].contains($0.key) }
+                            let retainedExternal = expected.filter { !["PersonalGrowthOS.sqlite", "PersonalGrowthOS.sqlite-wal"].contains($0.key) }
+                            if source == retained && sourceExternal == retainedExternal { return Self(rootURL: rootURL, snapshotURL: legacy) }
+                            let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
+                            identity = "-" + SHA256.hash(data: Data(source.utf8) + (try encoder.encode(sourceExternal))).map { String(format: "%02x", $0) }.joined()
+                        } catch {
+                            throw AppDiagnosticFailure(error, stage: .storeOpen, startupStep: .snapshotValidation, protectionStep: .snapshotValidation)
+                        }
+                    } else { identity = "" }
+                }
                 let snapshot = recoveryRoot.appendingPathComponent(purpose.rawValue + identity, isDirectory: true)
                 let completed = snapshot.appendingPathComponent("COMPLETE")
                 if fileManager.fileExists(atPath: snapshot.path) {

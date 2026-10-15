@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+511000000000000000000006 = {isa = PBXBuildFile; fileRef = 510000000000000000000006; };
+511000000000000000000005 = {isa = PBXBuildFile; fileRef = 510000000000000000000005; };
+511000000000000000000004 = {isa = PBXBuildFile; fileRef = 510000000000000000000004; };
+511000000000000000000003 = {isa = PBXBuildFile; fileRef = 510000000000000000000003; };
+SL1000000000000000000002 = {isa = PBXBuildFile; fileRef = SL0000000000000000000002; };
+SL1000000000000000000001 = {isa = PBXBuildFile; fileRef = SL0000000000000000000001; };
 CB0000000000000000000101 = {isa = PBXBuildFile; fileRef = CB0000000000000000000001; };
 CB0000000000000000000102 = {isa = PBXBuildFile; fileRef = CB0000000000000000000001; };
 		B00000000000000000000001 /* PersonalGrowthOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* PersonalGrowthOSApp.swift */; };
@@ -122,6 +128,12 @@ CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H0000
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+510000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sleep/SleepViews.swift"; sourceTree = SOURCE_ROOT; };
+510000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SleepFoundationTests.swift"; sourceTree = SOURCE_ROOT; };
+510000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sleep/SleepReview.swift"; sourceTree = SOURCE_ROOT; };
+510000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sleep/SleepReminders.swift"; sourceTree = SOURCE_ROOT; };
+SL0000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sleep/SleepTransfer.swift"; sourceTree = SOURCE_ROOT; };
+SL0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sleep/SleepFoundation.swift"; sourceTree = SOURCE_ROOT; };
 CB0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedCapture/ShareProviderReader.swift"; sourceTree = SOURCE_ROOT; };
 		A00000000000000000000001 /* PersonalGrowthOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalGrowthOSApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000002 /* AppShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShell.swift; sourceTree = "<group>"; };
@@ -244,6 +256,12 @@ CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+510000000000000000000006,
+510000000000000000000005,
+510000000000000000000004,
+510000000000000000000003,
+SL0000000000000000000002,
+SL0000000000000000000001,
 E366E7EC8D7B082E7CCDC395,
 0A0F5F32558CA5E1660A5759,
 E6E00EA7EEC92C262F5BE071,
@@ -639,6 +657,11 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+511000000000000000000006,
+511000000000000000000004,
+511000000000000000000003,
+SL1000000000000000000002,
+SL1000000000000000000001,
 8E90139A70EDCBE6A8C10513,
 E1ABFBFCDCDA75C6E23B2902,
 905415935BE616FEFD8A8342,
@@ -698,6 +721,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+511000000000000000000005,
 5A5C5E3C350F30DF528BF1B0,
 4A3148B0C9BA77AD8041D1DE,
 807EEF6557A32C9A24EC304C,

@@ -1,3 +1,9 @@
+# 睡眠与作息 V1 — IMPLEMENTING（2026-10-15）
+
+Owner 新授权替代下方旧任务停点。固定基线 5614246、批准文档 1bed2f4；独立工作树和 codex/sleep-routine-v1 实现中。完整范围、门禁和下一动作见 [执行断点](SLEEP_ROUTINE_V1_EXECUTION.md)。尚未通过新功能测试或独立审查，不代表设备验收候选。下方历史原样保留。
+
+---
+
 # PR #10 R3b — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
 从干净 `80cf5b71ba5421d2b38e3a5b206ead847c07cbef` 续接，R3b“未确认历法往返遗留隐藏无效状态”已修复。最终产品/测试 **`11b4cd8b88d18c21ad6aa66cedbd557a0b29f954`**；最后生产代码 `28a67f81ff048f73dcbfacb4b51ba322bfe0ea32`，其后仅UI标题断言/隐藏字段检查修订。交付commit只更新五份交接Docs，完整delivery SHA以Git/原PR head及证据根final-delivery-proof.json核对，不写自引用hash。

@@ -26,6 +26,7 @@ struct TodoReminderRequest: Equatable {
     let title: String
     let fireAt: Date
     var importantDayID: UUID? = nil
+    var sleepWakeDay: String? = nil
 }
 enum TodoNotificationPermission { case allowed, notDetermined, denied }
 @MainActor
@@ -56,8 +57,10 @@ final class SystemTodoNotificationClient: TodoNotificationClient {
     func add(_ request: TodoReminderRequest) async throws {
         let content = UNMutableNotificationContent()
         content.title = request.importantDayID == nil ? String(localized: "Todo Reminder") : String(localized: "Important Day")
+        if request.sleepWakeDay != nil { content.title = String(localized: "Sleep and Routine") }
         content.body = request.title; content.sound = .default
-        if let dayID = request.importantDayID { content.userInfo = ["importantDayID": dayID.uuidString] }
+        if let wakeDay = request.sleepWakeDay { content.userInfo = ["sleepWakeDay": wakeDay] }
+        else if let dayID = request.importantDayID { content.userInfo = ["importantDayID": dayID.uuidString] }
         else { content.userInfo = ["todoTaskID": request.taskID.uuidString] }
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         var components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: request.fireAt)
@@ -73,6 +76,14 @@ final class TodoReminderCoordinator {
     private static let log = Logger(subsystem: "com.yocruzer.PersonalGrowthOS", category: "TodoReminders")
     private let client: any TodoNotificationClient
     private let now: () -> Date
+    private let sleepPreferences: () -> SleepReminderPreferences
+    private(set) var sleepState = ImportantDayReminderState(status: .none)
+    private var confirmedSleepPreferences: SleepReminderPreferences?
+    func sleepStatus() -> ImportantDayReminderState {
+        guard sleepPreferences().enabled else { return .init(status: .none) }
+        if reconciliationFailed { return .init(status: .failed) }
+        return confirmedSleepPreferences == sleepPreferences() ? sleepState : .init(status: .checking)
+    }
     private var running = false
     private var generation = 0
     private var wantsPermission = false
@@ -96,8 +107,8 @@ final class TodoReminderCoordinator {
         if reconciliationFailed { return .init(status: .failed) }
         return dayRevisions[day.id] == day.ruleData + day.preferencesData ? importantDayStates[day.id] ?? .init(status: .checking) : .init(status: .checking)
     }
-    init(client: (any TodoNotificationClient)? = nil, now: @escaping () -> Date = Date.init) {
-        self.client = client ?? SystemTodoNotificationClient(); self.now = now
+    init(client: (any TodoNotificationClient)? = nil, now: @escaping () -> Date = Date.init, sleepPreferences: @escaping () -> SleepReminderPreferences = { .load() }) {
+        self.client = client ?? SystemTodoNotificationClient(); self.now = now; self.sleepPreferences = sleepPreferences
     }
     static func identifier(_ taskID: UUID) -> String { prefix + taskID.uuidString.lowercased() }
     func status(for task: TodoTask) -> TodoReminderStatus {
@@ -136,6 +147,10 @@ final class TodoReminderCoordinator {
                     } catch ImportantDayDateError.unsupportedRange { dayStates[day.id] = .init(status: .unsupportedDateRange) }
                     catch { dayStates[day.id] = .init(status: .failed) }
                 }
+                let sleepSettings = sleepPreferences()
+                let sleepRecords = try ModelContext(context.container).fetch(FetchDescriptor<SleepRecord>())
+                let sleepRequests = SleepReminderPlanner.requests(preferences: sleepSettings, recordedDays: Set(sleepRecords.map(\.wakeDay)), now: now(), zone: .current)
+                requests += sleepRequests
                 var permission = await client.permission()
                 if pass != generation { continue }
                 var authorizationFailed = false
@@ -147,11 +162,22 @@ final class TodoReminderCoordinator {
                 if pass != generation { continue }
                 let pending = await client.pendingIdentifiers()
                 if pass != generation { continue }
-                func managed(_ id: String) -> Bool { id.hasPrefix(Self.prefix) || id.hasPrefix(ImportantDayReminderPlanner.prefix) }
+                func managed(_ id: String) -> Bool { id.hasPrefix(Self.prefix) || id.hasPrefix(ImportantDayReminderPlanner.prefix) || id.hasPrefix(SleepReminderPlanner.prefix) }
                 // Daily/weekly and unknown third-party requests are reserved and never removed by this batch.
                 let capacity = max(0, 60 - pending.filter { !managed($0) }.count)
                 requests.sort { $0.fireAt == $1.fireAt ? $0.id < $1.id : $0.fireAt < $1.fireAt }
-                let selected = permission == .allowed && !authorizationFailed ? Set(requests.prefix(capacity).map(\.id)) : []
+                // When sleep participates, each nonempty category gets a turn in earliest-fire order.
+                // With sleep disabled the existing Todo/day chronology is unchanged.
+                var allocation = requests
+                if !sleepRequests.isEmpty {
+                    var groups = [requests.filter { $0.sleepWakeDay != nil }, requests.filter { $0.importantDayID != nil }, requests.filter { $0.sleepWakeDay == nil && $0.importantDayID == nil }].filter { !$0.isEmpty }
+                    groups.sort { $0[0].fireAt == $1[0].fireAt ? $0[0].id < $1[0].id : $0[0].fireAt < $1[0].fireAt }
+                    allocation = []
+                    while groups.contains(where: { !$0.isEmpty }) {
+                        for index in groups.indices where !groups[index].isEmpty { allocation.append(groups[index].removeFirst()) }
+                    }
+                }
+                let selected = permission == .allowed && !authorizationFailed ? Set(allocation.prefix(capacity).map(\.id)) : []
                 client.remove(Array(pending.filter { managed($0) && !selected.contains($0) }))
                 var requestStatuses: [String: TodoReminderStatus] = [:]
                 for request in requests {
@@ -171,7 +197,7 @@ final class TodoReminderCoordinator {
                 let confirmed = await client.pendingIdentifiers()
                 if pass != generation { continue }
                 for request in requests where requestStatuses[request.id] == .scheduled && !confirmed.contains(request.id) { requestStatuses[request.id] = .failed }
-                for request in requests where request.importantDayID == nil { newStatuses[request.taskID] = requestStatuses[request.id] }
+                for request in requests where request.importantDayID == nil && request.sleepWakeDay == nil { newStatuses[request.taskID] = requestStatuses[request.id] }
                 for day in days {
                     let planned = requests.filter { $0.importantDayID == day.id }
                     guard !planned.isEmpty else { continue }
@@ -181,6 +207,11 @@ final class TodoReminderCoordinator {
                     let status: TodoReminderStatus = states.contains(.failed) ? .failed : states.contains(.denied) ? .denied : states.contains(.permissionRequired) ? .permissionRequired : states.contains(.queueFull) ? .queueFull : .scheduled
                     dayStates[day.id] = .init(status: status, nextFire: scheduled.first, coverageEnd: scheduled.last, scheduledCount: scheduled.count)
                 }
+                let sleepScheduled = sleepRequests.filter { requestStatuses[$0.id] == .scheduled }.map(\.fireAt).sorted()
+                let sleepStatuses = sleepRequests.compactMap { requestStatuses[$0.id] }
+                let sleepStatus: TodoReminderStatus = !sleepSettings.enabled ? .none : sleepRequests.isEmpty ? .elapsed : sleepStatuses.contains(.failed) ? .failed : sleepStatuses.contains(.denied) ? .denied : sleepStatuses.contains(.permissionRequired) ? .permissionRequired : sleepStatuses.contains(.queueFull) ? .queueFull : .scheduled
+                sleepState = .init(status: sleepStatus, nextFire: sleepScheduled.first, coverageEnd: sleepScheduled.last, scheduledCount: sleepScheduled.count)
+                confirmedSleepPreferences = sleepSettings
                 reconciliationFailed = false
                 statuses = newStatuses; revisions = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0.revision) })
                 importantDayStates = dayStates; dayRevisions = Dictionary(uniqueKeysWithValues: days.map { ($0.id, $0.ruleData + $0.preferencesData) })
