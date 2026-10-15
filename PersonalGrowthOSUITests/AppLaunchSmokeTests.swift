@@ -1891,11 +1891,24 @@ extension AppLaunchSmokeTests {
         let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
         safari.terminate()
         safari.launch()
-        let address = safari.textFields["TabBarItemTitle"]
-        XCTAssertTrue(address.waitForExistence(timeout: 10), safari.debugDescription)
-        XCTAssertFalse(address.frame.isEmpty)
-        XCTAssertTrue(safari.frame.contains(address.frame))
-        address.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        func dismissKeyboardIntroductionIfPresent() {
+            let introduction = safari.otherElements["UIContinuousPathIntroductionView"]
+            if introduction.waitForExistence(timeout: 1) {
+                let next = introduction.buttons.matching(NSPredicate(format: "label == 'Continue' OR label == '继续'")).firstMatch
+                XCTAssertTrue(next.waitForExistence(timeout: 3), safari.debugDescription)
+                next.tap()
+            }
+        }
+        dismissKeyboardIntroductionIfPresent()
+        // A new synthetic simulator can restore Safari directly into URL editing.
+        if !safari.textFields["URL"].isHittable {
+            let address = safari.textFields["TabBarItemTitle"]
+            XCTAssertTrue(address.waitForExistence(timeout: 10), safari.debugDescription)
+            XCTAssertFalse(address.frame.isEmpty)
+            XCTAssertTrue(safari.frame.contains(address.frame))
+            address.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
+        dismissKeyboardIntroductionIfPresent()
         XCTAssertTrue(safari.keyboards.firstMatch.waitForExistence(timeout: 5), safari.debugDescription)
         let urlTree = XCTAttachment(string: safari.debugDescription)
         urlTree.name = "Safari URL editing hierarchy"; urlTree.lifetime = .keepAlways; add(urlTree)

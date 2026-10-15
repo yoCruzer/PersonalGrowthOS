@@ -1,6 +1,2035 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Compare with saved record": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Compare with saved record"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "与已保存记录比较"
+        }
+      }
+    }
+  },
+  "Reload saved record and discard this draft": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Reload saved record and discard this draft"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重新载入已保存记录并丢弃此草稿"
+        }
+      }
+    }
+  },
+  "Queue synthetic sleep route": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Queue synthetic sleep route"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "排入合成睡眠路由"
+        }
+      }
+    }
+  },
+  "Good": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Good"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "好"
+        }
+      }
+    }
+  },
+  "Fair": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Fair"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "一般"
+        }
+      }
+    }
+  },
+  "Poor": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Poor"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "较差"
+        }
+      }
+    }
+  },
+  "7 days": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "7 days"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "7 天"
+        }
+      }
+    }
+  },
+  "30 days": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "30 days"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "30 天"
+        }
+      }
+    }
+  },
+  "Field": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Field"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "字段"
+        }
+      }
+    }
+  },
+  "A moment to remember last night's rest.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "A moment to remember last night's rest."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "花一点时间，记一下昨夜的休息。"
+        }
+      }
+    }
+  },
+  "Sleep and Routine": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sleep and Routine"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "睡眠与作息"
+        }
+      }
+    }
+  },
+  "Manually recalled": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Manually recalled"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "手动回忆"
+        }
+      }
+    }
+  },
+  "Very good": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Very good"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "很好"
+        }
+      }
+    }
+  },
+  "Very poor": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Very poor"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "很差"
+        }
+      }
+    }
+  },
+  "Unknown or overlapping ranges; interval cannot be estimated.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unknown or overlapping ranges; interval cannot be estimated."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时间未知或区间重叠，暂不能估计间隔。"
+        }
+      }
+    }
+  },
+  "Record last night's rest": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record last night's rest"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记一下昨夜睡眠"
+        }
+      }
+    }
+  },
+  "Partial record": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Partial record"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "部分记录"
+        }
+      }
+    }
+  },
+  "Wake day: %@": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Wake day: %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "起床日：%@"
+        }
+      }
+    }
+  },
+  "Remember when you began trying to sleep and when you got up. No goal or reminder is required.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Remember when you began trying to sleep and when you got up. No goal or reminder is required."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记下开始尝试入睡与正式起床的时间，无需先设置目标或提醒。"
+        }
+      }
+    }
+  },
+  "Dismiss introduction": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Dismiss introduction"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "关闭功能提示"
+        }
+      }
+    }
+  },
+  "Unable to open sleep record": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unable to open sleep record"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法打开睡眠记录"
+        }
+      }
+    }
+  },
+  "Bedtime means beginning to try to sleep. Getting up means ending your main rest and starting your day.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Bedtime means beginning to try to sleep. Getting up means ending your main rest and starting your day."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "就寝指开始尝试入睡；正式起床指结束本次主睡眠，起身开始一天。"
+        }
+      }
+    }
+  },
+  "Bedtime": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Bedtime"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "开始尝试入睡"
+        }
+      }
+    }
+  },
+  "Getting up": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Getting up"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "正式起床"
+        }
+      }
+    }
+  },
+  "Just got up": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Just got up"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "刚刚起床"
+        }
+      }
+    }
+  },
+  "Overall feeling": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Overall feeling"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "整体感觉"
+        }
+      }
+    }
+  },
+  "Save sleep record": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Save sleep record"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保存睡眠记录"
+        }
+      }
+    }
+  },
+  "Note and date options": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Note and date options"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "备注与日期选项"
+        }
+      }
+    }
+  },
+  "Optional note": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Optional note"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "可选备注"
+        }
+      }
+    }
+  },
+  "Wake date": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Wake date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "起床日期"
+        }
+      }
+    }
+  },
+  "Dates above preview the whole record. An existing wake day cannot be overwritten.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Dates above preview the whole record. An existing wake day cannot be overwritten."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "上方展示整条记录的日期变化，不能覆盖已有起床日记录。"
+        }
+      }
+    }
+  },
+  "Recording time zone": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recording time zone"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录时区"
+        }
+      }
+    }
+  },
+  "Confirm the time zone for recalled dates. Travel does not move saved records.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Confirm the time zone for recalled dates. Travel does not move saved records."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "补记时请核对当时的时区，旅行不会移动已保存记录。"
+        }
+      }
+    }
+  },
+  "Discard draft": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Discard draft"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "丢弃草稿"
+        }
+      }
+    }
+  },
+  "Filling evidence": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Filling evidence"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "填写属性"
+        }
+      }
+    }
+  },
+  "Delete sleep record": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Delete sleep record"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "删除睡眠记录"
+        }
+      }
+    }
+  },
+  "Delete this sleep record?": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Delete this sleep record?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "删除这条睡眠记录？"
+        }
+      }
+    }
+  },
+  "Sleep record saved.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sleep record saved."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "睡眠记录已保存。"
+        }
+      }
+    }
+  },
+  "Record saved. The morning reminder is not fully scheduled.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record saved. The morning reminder is not fully scheduled."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录已保存，晨间提醒尚未完整排期。"
+        }
+      }
+    }
+  },
+  "60 minute ranges": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "60 minute ranges"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "60 分钟区间"
+        }
+      }
+    }
+  },
+  "Other time or exact minute…": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Other time or exact minute…"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "其他时段或具体时间…"
+        }
+      }
+    }
+  },
+  "Civil range retained; absolute time is uncertain due to daylight saving.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Civil range retained; absolute time is uncertain due to daylight saving."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "本地时段已保留；因夏令时，具体时刻尚不确定。"
+        }
+      }
+    }
+  },
+  "Bedtime date": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Bedtime date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "就寝日期"
+        }
+      }
+    }
+  },
+  "Hour": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Hour"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时"
+        }
+      }
+    }
+  },
+  "Minute": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Minute"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "分"
+        }
+      }
+    }
+  },
+  "Precision": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Precision"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时间精度"
+        }
+      }
+    }
+  },
+  "Exact minute · recalled": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Exact minute · recalled"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "具体时间 · 手动回忆"
+        }
+      }
+    }
+  },
+  "15 minutes": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "15 minutes"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "15 分钟"
+        }
+      }
+    }
+  },
+  "30 minutes": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "30 minutes"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "30 分钟"
+        }
+      }
+    }
+  },
+  "60 minutes": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "60 minutes"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "60 分钟"
+        }
+      }
+    }
+  },
+  "Repeated time occurrence": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Repeated time occurrence"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重复时刻的对应次序"
+        }
+      }
+    }
+  },
+  "Not confirmed": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Not confirmed"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "尚未确认"
+        }
+      }
+    }
+  },
+  "UTC offset: %lld min": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "UTC offset: %lld min"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "UTC 偏移：%lld 分钟"
+        }
+      }
+    }
+  },
+  "Use this time": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use this time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "使用此时间"
+        }
+      }
+    }
+  },
+  "7 / 30 day review": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "7 / 30 day review"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "7 / 30 天回顾"
+        }
+      }
+    }
+  },
+  "Sleep settings": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sleep settings"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "睡眠设置"
+        }
+      }
+    }
+  },
+  "Sleep history": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sleep history"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "睡眠历史"
+        }
+      }
+    }
+  },
+  "No sleep records yet. Partial records are welcome.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No sleep records yet. Partial records are welcome."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "还没有睡眠记录，部分记录也可以保存。"
+        }
+      }
+    }
+  },
+  "Contains late-filled or recalled fields": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Contains late-filled or recalled fields"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "含补记或回忆项"
+        }
+      }
+    }
+  },
+  "Review window": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Review window"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "回顾范围"
+        }
+      }
+    }
+  },
+  "Coverage and evidence": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Coverage and evidence"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录覆盖与填写属性"
+        }
+      }
+    }
+  },
+  "%lld recorded wake days / %lld calendar days": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld recorded wake days / %lld calendar days"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已记录 %lld 个起床日 / %lld 个自然日"
+        }
+      }
+    }
+  },
+  "Counts describe filled fields. Recalled and unknown filling times are excluded separately for each metric. Blank days are unknown, not zero.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Counts describe filled fields. Recalled and unknown filling times are excluded separately for each metric. Blank days are unknown, not zero."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "数量按已填写字段计算；各指标独立排除回忆项及填写时间未知项。空白日期表示未知，不记为零。"
+        }
+      }
+    }
+  },
+  "Time ranges and bedtime–getting-up interval": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Time ranges and bedtime–getting-up interval"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时间区间与就寝—起床间隔"
+        }
+      }
+    }
+  },
+  "Bedtime samples: %lld · Getting-up samples: %lld · Interval samples: %lld": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Bedtime samples: %lld · Getting-up samples: %lld · Interval samples: %lld"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "就寝样本：%lld · 起床样本：%lld · 间隔样本：%lld"
+        }
+      }
+    }
+  },
+  "Dates keep the cross-night axis: previous-evening times precede wake-day morning times. This interval includes time awake; it is not measured sleep duration.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Dates keep the cross-night axis: previous-evening times precede wake-day morning times. This interval includes time awake; it is not measured sleep duration."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "按跨夜时间轴显示：前晚时间在起床日凌晨之前。间隔包含清醒时间，不是实际睡眠时长。"
+        }
+      }
+    }
+  },
+  "Civil hour": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Civil hour"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "本地小时"
+        }
+      }
+    }
+  },
+  "Wake day": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Wake day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "起床日"
+        }
+      }
+    }
+  },
+  "Next day": {
+    "localizations": {
+      "en": { "stringUnit": { "state": "translated", "value": "Next day" } },
+      "zh-Hans": { "stringUnit": { "state": "translated", "value": "次日" } }
+    }
+  },
+  "Previous day": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Previous day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "前一日"
+        }
+      }
+    }
+  },
+  "Open plotted nights": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Open plotted nights"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查看图中原始记录"
+        }
+      }
+    }
+  },
+  "Long interval: check the dates in the original record.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Long interval: check the dates in the original record."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "间隔较长，请核对原记录日期。"
+        }
+      }
+    }
+  },
+  "Subjective feeling distribution": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Subjective feeling distribution"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "主观感受分布"
+        }
+      }
+    }
+  },
+  "Valid ratings: %lld": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Valid ratings: %lld"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "有效评分：%lld 条"
+        }
+      }
+    }
+  },
+  "Personal bedtime goal": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Personal bedtime goal"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "个人就寝目标"
+        }
+      }
+    }
+  },
+  "Sleep review": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sleep review"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "睡眠回顾"
+        }
+      }
+    }
+  },
+  "No matching sleep records.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No matching sleep records."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "没有符合条件的睡眠记录。"
+        }
+      }
+    }
+  },
+  "Original sleep records": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Original sleep records"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "原始睡眠记录"
+        }
+      }
+    }
+  },
+  "Today entry": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Today entry"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Today 入口"
+        }
+      }
+    }
+  },
+  "Show sleep on Today": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Show sleep on Today"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "在 Today 显示睡眠入口"
+        }
+      }
+    }
+  },
+  "Hiding this entry keeps history and independently enabled reminders.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Hiding this entry keeps history and independently enabled reminders."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "隐藏入口会保留历史，也不影响独立开启的提醒。"
+        }
+      }
+    }
+  },
+  "Use a personal bedtime goal": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use a personal bedtime goal"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "启用个人就寝目标"
+        }
+      }
+    }
+  },
+  "No later than": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No later than"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "不晚于"
+        }
+      }
+    }
+  },
+  "Effective wake day: %@": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Effective wake day: %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "生效起床日：%@"
+        }
+      }
+    }
+  },
+  "Cutoff: %@ %@": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Cutoff: %@ %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "截止时间：%@ %@"
+        }
+      }
+    }
+  },
+  "First goal starts today. Later changes and disabling start next wake day; past nights keep their rules.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "First goal starts today. Later changes and disabling start next wake day; past nights keep their rules."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "首次开启从今日起床日生效；后续修改和关闭从下一起床日生效，历史夜晚保留原规则。"
+        }
+      }
+    }
+  },
+  "Save bedtime goal": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Save bedtime goal"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保存就寝目标"
+        }
+      }
+    }
+  },
+  "Bedtime goal saved.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Bedtime goal saved."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "就寝目标已保存。"
+        }
+      }
+    }
+  },
+  "Goal disabled": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Goal disabled"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "目标已关闭"
+        }
+      }
+    }
+  },
+  "Morning reminder": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Morning reminder"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "晨间提醒"
+        }
+      }
+    }
+  },
+  "Remind me to record sleep": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Remind me to record sleep"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "提醒我记录睡眠"
+        }
+      }
+    }
+  },
+  "Morning reminder time": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Morning reminder time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "晨间提醒时间"
+        }
+      }
+    }
+  },
+  "Next: %@": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Next: %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "下一次：%@"
+        }
+      }
+    }
+  },
+  "Scheduled through: %@": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Scheduled through: %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已排期至：%@"
+        }
+      }
+    }
+  },
+  "At most one per wake day, planned for up to 7 days. Open the app to refresh coverage. Recorded days are not prompted.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "At most one per wake day, planned for up to 7 days. Open the app to refresh coverage. Recorded days are not prompted."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "每个起床日最多一次，预排最多 7 天；打开 App 刷新覆盖范围。已记录日期不再提醒。"
+        }
+      }
+    }
+  },
+  "Refresh reminder status": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Refresh reminder status"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "刷新提醒状态"
+        }
+      }
+    }
+  },
+  "Existing early-bedtime habits stay independent. Sleep records do not check off habits or change their history.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Existing early-bedtime habits stay independent. Sleep records do not check off habits or change their history."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "原有早睡习惯保持独立；睡眠记录不会自动打卡或修改习惯历史。"
+        }
+      }
+    }
+  },
+  "Manage existing habits": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Manage existing habits"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "管理现有习惯"
+        }
+      }
+    }
+  },
+  "The clock is earlier than a saved observation. Correct the clock before changing bedtime goals; sleep facts can still be recorded with unknown filling time.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "The clock is earlier than a saved observation. Correct the clock before changing bedtime goals; sleep facts can still be recorded with unknown filling time."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "当前时钟早于已保存的时间证据。请校正时钟后修改目标；睡眠事实仍可记录，填写时间将标为未知。"
+        }
+      }
+    }
+  },
+  "Choose a time, feeling or note before saving.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Choose a time, feeling or note before saving."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请至少选择一个时间、感受或填写非空备注后保存。"
+        }
+      }
+    }
+  },
+  "Check the time range and its dates. Wake time must follow bedtime.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Check the time range and its dates. Wake time must follow bedtime."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请核对时间区间及日期，起床不能整体早于就寝。"
+        }
+      }
+    }
+  },
+  "This local time is repeated or does not exist due to daylight saving. Choose an explicit valid time or leave it unknown.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This local time is repeated or does not exist due to daylight saving. Choose an explicit valid time or leave it unknown."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "该本地时刻因夏令时重复或不存在。请确认具体时刻，或保留不确定的本地时段。"
+        }
+      }
+    }
+  },
+  "Check the wake day and recording time zone.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Check the wake day and recording time zone."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请核对起床日和记录时区。"
+        }
+      }
+    }
+  },
+  "A sleep record cannot describe a future wake day or a wholly future time range.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "A sleep record cannot describe a future wake day or a wholly future time range."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "不能把未来起床日或完全位于未来的时段保存为已发生记录。"
+        }
+      }
+    }
+  },
+  "This day already has a record or was changed elsewhere. Your draft is retained; reopen the saved record to compare.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This day already has a record or was changed elsewhere. Your draft is retained; reopen the saved record to compare."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "该日起床记录已存在或已被其他入口修改。草稿已保留，请重新打开已保存记录进行比较。"
+        }
+      }
+    }
+  },
+  "This sleep record is no longer available. Your draft is retained.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This sleep record is no longer available. Your draft is retained."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "该睡眠记录已不存在，草稿已保留。"
+        }
+      }
+    }
+  },
+  "Sleep data could not be verified. Your original data is retained.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sleep data could not be verified. Your original data is retained."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法校验睡眠数据，原始数据已保留。"
+        }
+      }
+    }
+  },
+  "Filled on wake day": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Filled on wake day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "当日填写"
+        }
+      }
+    }
+  },
+  "Filled next day": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Filled next day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "补记"
+        }
+      }
+    }
+  },
+  "Recalled later": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recalled later"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "回忆记录"
+        }
+      }
+    }
+  },
+  "Filling time unknown": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Filling time unknown"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "填写时间未知"
+        }
+      }
+    }
+  },
+  "Clearly met": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Clearly met"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "明确达标"
+        }
+      }
+    }
+  },
+  "Clearly missed": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Clearly missed"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "明确未达标"
+        }
+      }
+    }
+  },
+  "Uncertain at cutoff": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Uncertain at cutoff"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "跨截止区间，不确定"
+        }
+      }
+    }
+  },
+  "Bedtime unknown": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Bedtime unknown"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "就寝未知"
+        }
+      }
+    }
+  },
+  "No goal for this night": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No goal for this night"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "该夜无生效目标"
+        }
+      }
+    }
+  },
+  "Bedtime excluded from basic review": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Bedtime excluded from basic review"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "就寝字段不纳入基础统计"
+        }
+      }
+    }
+  },
+  "Not comparable to a night goal": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Not comparable to a night goal"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法与夜间目标比较"
+        }
+      }
+    }
+  },
+  "%lld h %lld min": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld h %lld min"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld 小时 %lld 分钟"
+        }
+      }
+    }
+  },
+  "Open sleep for %@": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Open sleep for %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "打开 %@ 的睡眠记录"
+        }
+      }
+    }
+  },
     "Quiet Wins": {
       "extractionState": "manual",
       "localizations": {

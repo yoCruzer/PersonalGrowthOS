@@ -141,3 +141,6 @@ Foundation Documents：
 ## 重要日子 V1 批准增量 — 2026-10-14
 
 Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面、公历/农历日期规则、Today 条件摘要、共享本地提醒与两个桌面 Widget（数字/照片/清单）。保持五 Tab、Record 主路径、原 Bundle ID/主库位置及历史数据。允许必要的追加 Schema/备份版本与 Widget target；原 Widgets 后置范围仅被本增量限定替代。完整边界见固定版本 `IMPORTANT_DAYS_V1_GOAL_ZH.md` / `IMPORTANT_DAYS_V1_DESIGN_ZH.md`；不授权发布或操作私人库。
+
+
+睡眠与作息 V1：`SLEEP_ROUTINE_V1_DESIGN_ZH.md` / `SLEEP_ROUTINE_V1_GOAL_ZH.md` 为批准规格与执行授权；`SLEEP_ROUTINE_V1_EXECUTION.md`、`SLEEP_ROUTINE_V1_REVIEW_ZH.md`、`SLEEP_ROUTINE_V1_ACCEPTANCE_ZH.md` 记录本轮进度、独立审查与组合验收，不覆盖重要日子历史证据。

@@ -661,3 +661,8 @@ Owner 批准 Build 9：真实安装包版本显示、体重直接录入与聚焦
 ## 重要日子 V1 批准增量 — 2026-10-14
 
 Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面、公历/农历日期规则、Today 条件摘要、共享本地提醒与两个桌面 Widget（数字/照片/清单）。保持五 Tab、Record 主路径、原 Bundle ID/主库位置及历史数据。允许必要的追加 Schema/备份版本与 Widget target；原 Widgets 后置范围仅被本增量限定替代。完整边界见固定版本 `IMPORTANT_DAYS_V1_GOAL_ZH.md` / `IMPORTANT_DAYS_V1_DESIGN_ZH.md`；不授权发布或操作私人库。
+
+
+## 睡眠与作息 V1 批准增量 — 2026-10-15
+
+批准独立睡眠记录、区间/主观感受/可选备注、可信基础回顾、个人就寝目标及主动开启的晨间提醒。支持旧库安全直接升级与备份恢复；不包含健康检测、HealthKit、AI、医学评分、多段睡眠或跨模块关联分析。 具体契约见 `SLEEP_ROUTINE_V1_DESIGN_ZH.md`，授权与门禁见 `SLEEP_ROUTINE_V1_GOAL_ZH.md`。

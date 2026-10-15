@@ -14,9 +14,17 @@ struct PersonalGrowthOSApp: App {
 
     init() {
         let configuration = AppConfiguration.current()
+        #if DEBUG
+        if configuration.launchMode == .uiTesting, ProcessInfo.processInfo.arguments.contains("-PGOSSleepColdRouteTest") {
+            SleepExternalRouter.shared.receive(day: "2026-01-01")
+        }
+        #endif
         let result = Result<AppContainer, Error> {
             let container = try AppContainer.make(configuration: configuration)
             #if DEBUG
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch {
+                for key in ["sleep.showToday", "sleep.introductionDismissed", "sleep.morningReminder.plannedFires", SleepReminderPreferences.enabledKey, SleepReminderPreferences.minuteKey] { UserDefaults.standard.removeObject(forKey: key) }
+            }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSImportantDaysTest") {
                 try ImportantDayUITestFixture.seed(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)

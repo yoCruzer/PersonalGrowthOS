@@ -14,6 +14,7 @@ final class TodoNotificationStub: TodoNotificationClient {
     var whileCheckingPermission: (() async -> Void)?
     var removed: [String] = []
     var whileAdding: (() throws -> Void)?
+    var afterAdding: ((TodoReminderRequest) async throws -> Void)?
     func permission() async -> TodoNotificationPermission {
         if let operation = whileCheckingPermission { whileCheckingPermission = nil; await operation() }
         return authorization
@@ -30,6 +31,7 @@ final class TodoNotificationStub: TodoNotificationClient {
         if shouldFail { throw Failure.scheduling }
         pending[request.id] = request
         if let operation = whileAdding { whileAdding = nil; try operation() }
+        try await afterAdding?(request)
         await Task.yield()
     }
 }

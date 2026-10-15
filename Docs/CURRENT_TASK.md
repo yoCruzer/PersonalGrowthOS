@@ -1,3 +1,47 @@
+# PR #11 外部限定复审通过 — READY_FOR_OWNER_DEVICE_GATE（2026-10-15）
+
+据 Owner 本次确认，外部限定复审通过固定产品/测试 `9da1ce8758d868145e9b5690611634ccd292e469`，对应交付 `114558f404ced9cffca5517533a11cb10d2d4ec8`：R1、R2、R3 关闭，未发现范围内尚未关闭的确认 P0/P1/P2。
+
+外部复审独立读取固定源码和测试，通知控制流便携探针 **12/12 通过**。这不是 iOS XCTest、原生 UI、SwiftData 迁移或系统递送验证，不加入原 Unit 数量，也不代表真机通过；本次收口仅记录 Owner 转达的结论，未执行探针、测试或构建。
+
+本次只追加五份交接 Markdown 并更新原 Draft PR #11 描述；产品、V13/v9、主库、身份、签名和发布配置不变，旧审查与分轮失败保留。Safari unsigned FAIL、当前签名分享、私人库升级、真实通知/Widget/Photos/VoiceOver 等继续设备 Gate。等待 Owner 另行签名安装或发布授权；不 merge、tag、Archive、发布或操作真实手机/私人库。
+
+组合设备清单（获安装授权后）：先保留备份、不卸载并核对旧数据；Today 记录一晚，回顾内编辑、保存重开核对；重要日子做历法往返与关联冒烟；实际通知/Widget及签名 Safari 分享分别观察。
+
+以下为原交接与审查历史，原文保留。
+
+---
+
+# PR #11 R1–R3 限定修复 — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
+
+批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。
+
+最终产品/测试 **`9da1ce8758d868145e9b5690611634ccd292e469`**；最后生产 `f235d9210bf2bb2a9226fda6156d803c4010cc36`，后续仅R1 UI查询歧义修正与更强分布断言。本批交付只再更新五份交接Markdown，精确delivery SHA见Git/远端PR head及 `/tmp/pgos-sleep-r1-r3-evidence/final-delivery-proof.json`，不写自引用hash。
+
+R1新事实与评价时钟同步、绘图/评分来源读取最新筛选；R2空历史关闭保存service no-op；R3接受/到期/未来missing/失败/真正提前取消及generation证据分开。内部独立只读复审已闭环，无未关闭confirmed范围内P0/P1/P2；原V13/v9/主库/身份/发布配置不变。
+
+本轮Red1四项全红；集中50Unit+R2 UI通过，R1扩展UI有两次经真实现场核实的测试交互失败，未抹去；R3独立补红0/1后41Unit通过，最终R1 UI补验通过。固定clean9da1ce8的Debug Simulator（复用UI3等效构建）与unsigned Release generic iOS均PASS/exit0，六实包身份/1.0(7)/两App provenance同源核验通过，Release仅保留既有AppIntents提取提示。 Safari unsigned FAIL、旧体重warning及全部设备未执行项继续保留；不跑旧全量。
+
+原工作树/分支/upstream与原PR #11普通推送保持，未知dirty未动；最终clean/ref同步见delivery proof。下一步仅外部限定复审本轮R1–R3；通过后再恢复组合设备Gate，不自行进入签名安装或新功能。详见[执行](SLEEP_ROUTINE_V1_EXECUTION.md)、[审查](SLEEP_ROUTINE_V1_REVIEW_ZH.md)、[验收](SLEEP_ROUTINE_V1_ACCEPTANCE_ZH.md)。
+
+---
+
+# 睡眠与作息 V1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-15）
+
+已按Owner新授权在固定重要日子基线 `5614246f98ae63732ccd4fd8a6b66f4a425336f2` 上完成，批准规格固定 `1bed2f46b08c547d52e1ca2f28d74ac0f6696003`。最终产品/测试与最后生产 **`138616cd0970b0f4fba9d0c7d7d44f6ca7d30b53`**，之后仅五份交接Markdown；交付SHA以Git/远端PR head及 `/tmp/pgos-sleep-evidence/final-delivery-proof.json` 核对，不写自引用hash。
+
+Today晨间三项单屏输入、原始区间/时区/字段填写证据、草稿和历史/编辑、7/30自然日独立分母及来源回跳、按生效日的个人目标、共享提醒与过期路由均已接线。追加V13/v9，冻结V1–V12；真实V11/V12磁盘库升级、两模块恢复重开和保护快照通过。唯一独立只读Reviewer多轮发现/反例/修复并终审，无未关闭confirmed范围内P0/P1/P2。
+
+分轮结果：全量Unit406/406；目标持久证据新增后410/410（0SKIP），后续限定取消44/44、图表23/23与最终11/11通过。集中关键UI15/17（原2FAIL保留）；睡眠设置及真实Dark中文最大AX补验2/2，最终图表来源/晨间UI1/1。Safari本轮仍FAIL，已证unsigned扩展缺App Group entitlement；未触及分享源码/配置复用历史有效证据，当前签名分享留Owner Gate。集中保留2条旧体重Invalid frame，后续打开体重补验各1条，不宣称一次全绿。
+
+固定clean138616c的Debug Simulator与unsigned Release generic iOS两构建PASS，App/Share/Widget六实包身份及1.0(7)保持，两App provenance同源；不是可直接安装IPA。独立远端CI NOT_RUN（workflows=0）；真实iPhone/私人库/签名、实际通知/桌面Widget/Photos/VoiceOver未运行。
+
+独立worktree `/Users/himini/.codex/worktrees/sleep-routine-v1/PersonalGrowthOS`，分支/upstream `codex/sleep-routine-v1` / `origin/codex/sleep-routine-v1`，普通推送 [新Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base `codex/important-days-v1`。原workspace project/catalog/xcodecloud未知dirty保持，原PR#8/#9/#10 head/base/OPEN Draft保持。未merge/tag/Archive/发布，不操作真实手机/私库。
+
+下一步仅Owner决定安装并进行睡眠+重要日子组合验收；先保护旧数据、晨间记录并重开、重要日子历法/关联冒烟、实际通知和Widget观察。不得自行进入下一功能或发行。 完整[验收映射](SLEEP_ROUTINE_V1_ACCEPTANCE_ZH.md)、[独立审查](SLEEP_ROUTINE_V1_REVIEW_ZH.md)、[执行证据](SLEEP_ROUTINE_V1_EXECUTION.md)。下方旧停点仅历史，原样保留。
+
+---
+
 # PR #10 R3b — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
 从干净 `80cf5b71ba5421d2b38e3a5b206ead847c07cbef` 续接，R3b“未确认历法往返遗留隐藏无效状态”已修复。最终产品/测试 **`11b4cd8b88d18c21ad6aa66cedbd557a0b29f954`**；最后生产代码 `28a67f81ff048f73dcbfacb4b51ba322bfe0ea32`，其后仅UI标题断言/隐藏字段检查修订。交付commit只更新五份交接Docs，完整delivery SHA以Git/原PR head及证据根final-delivery-proof.json核对，不写自引用hash。
