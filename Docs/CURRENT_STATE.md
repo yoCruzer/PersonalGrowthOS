@@ -1,8 +1,14 @@
-# 重要日子 V1 — IMPLEMENTING
+# 重要日子 V1 — READY_FOR_OWNER_DEVICE_GATE
 
-当前任务已由 Owner 批准的新完整 Goal 替代；旧 PR #9 冻结仅属下方历史。固定产品基线 `20d315a62179ad29a6cbcf76c33c11638412e54e`，固定规格提交 `3365561c5888701ce662ac6c8655ad1629ded6d0`。在独立 `codex/important-days-v1` 工作树自主完成 A/B、独立审查、验证与新 Draft PR，base 为 `codex/quiet-wins-on-d72`。
+Owner批准的完整A/B已实现；产品/测试固定提交 `b3cc408d323e5828e9550decac72ae534f1b0b20`，最后生产代码 `9f34034357ea9329730ab18bfbf6d4b6e426b4b4`。独立数据/产品多轮固定SHA复审已收敛，无未关闭confirmed范围内P0/P1/P2。最后集中53/53备份Unit+17/17关键UI通过，三构建和实际独立复审收敛；只停在Owner设备Gate，不进入发行。
 
-准确进展、验证 SHA 与下一动作见 [执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)。当前尚未实现完成，不进入发布。原记录/主库/身份/五 Tab 保持；旧证据保留如下。
+五Tab/Record、原Bundle/主库/1.0(7)保持；追加V12四实体、v8备份、两Widget与共享提醒协调。9f全量Unit 358PASS/4fixtureFAIL/0SKIP；b3仅修测试夹具后整备份类53/53及17/17关键UI PASS，不重标原全量；集中保留4条Invalid frame dimension警告。Debug/Release sim/Release generic iOS实包均通过且干净b3同源；真实设备/签名/桌面/通知/VoiceOver未运行。
+
+工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`，分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`；新Draft [PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base `codex/quiet-wins-on-d72`=固定产品基线20d315a。原工作区dirty及旧PR#8/#9不动。
+
+当前批次完成并停READY_FOR_OWNER_DEVICE_GATE。产品/测试提交已普通推送；后续文档交付SHA以git/新Draft PR head核对，产品差异保持固定b3。下一边界仅Owner四日子设备验收与另行授权的发行决定。不merge/tag/Archive/TestFlight/证书账号变更，不操作真机或私库。
+
+完整[验收映射](IMPORTANT_DAYS_V1_ACCEPTANCE_ZH.md)、[独立审查](IMPORTANT_DAYS_V1_REVIEW_ZH.md)、[执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)。下方原PR#9冻结/旧交付均为历史，不覆盖本轮批准范围。
 
 ---
 

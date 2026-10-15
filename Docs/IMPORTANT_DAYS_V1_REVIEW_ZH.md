@@ -1,10 +1,10 @@
 # 重要日子 V1 独立审查
 
-状态：待固定首个数据/规则 checkpoint。实现者自测不算独立审查。
+状态：固定产品/测试b3cc408已完成实际独立复审，无未关闭confirmed范围内P0/P1/P2；集中最终53Unit+17UI=70/70通过，三构建通过；审查不代替运行门禁。
 
-计划视角：独立数据/规则（日期、历史Schema、升级/恢复、封面、引用、通知交错）；独立产品/集成（五Tab/Record/Today、Widget隐私/路由/打包/系统渲染）。审查者只读固定SHA，问题由实现者核实、反例修复并请求新SHA复审。
+审查视角：独立数据/规则（日期、历史Schema、升级/恢复、封面、引用、通知交错）；独立产品/集成（五Tab/Record/Today、Widget隐私/路由/打包/系统渲染）。审查者只读固定SHA，问题由实现者核实、反例修复并请求新SHA复审。
 
-首轮测试证据见执行断点。最终结论尚未取得。
+首轮及最终测试证据见执行断点；最终结论见下方固定SHA闭环。
 
 ## R1：独立数据/规则审查
 
@@ -17,3 +17,25 @@
 - Reviewer提醒：保存前还缺offset后的实际提醒日期预览，已在正在开发的UI中补入，待最终审查验证。
 
 后续：B收敛后进行独立产品/集成审查，并对后续数据/提醒差异请求R1复审。
+
+## R2–R5：B 与修复闭环
+
+两名实际独立 agent 只读固定提交，不参与实现，不以实现者自评代替：数据/规则 `/root/important_days_data_review`；产品/集成 `/root/important_days_product_review`。
+
+| 固定范围 | 独立发现、实现者核实与闭环 |
+| --- | --- |
+| 58355a2b7ac5302b31c6a6658624bcc14a1525b0 对 cbd2075 / 产品基线 | 数据reviewer确认P1：仅文字privacySensitive，独立照片背景未保护；产品reviewer确认P3：新关联Todo显示不适用的重新打开/重复说明。其余范围无confirmed新P0/P1/P2。实现者另自查指定年份期次UI缺口，补年份选择/实际日期/禁用无期次。 |
+| 06ce32af659812cd3dda28bfeb748f58ce265352 对58355 | 两reviewer确认P1照片遮罩与P3文案已修；真实SwiftUI隐私正负像素对照通过。两人独立发现P2：编辑起始年或preset后，旧年份/explicit状态残留，可能写出开始前或一次性日子的期次。 |
+| 9017a2c0af1f5b9fcb71e4a7e3380c4e5e9952bb 对06ce | 两人确认P2关闭：统一explicitPeriod验证annual/年范围/原年，规则变化清选择。数据reviewer提出支持范围无next不应误报elapsed，已独立状态修复；时钟回拨/原字节不变反例。25/25 Unit被独立核实，冷启动恢复UI通过；编辑UI实际失败保留。 |
+| 9f34034357ea9329730ab18bfbf6d4b6e426b4b4 对9017 | 实现者追实际UI发现Chinese hydration误触历法确认/可能改已存perspective；以acknowledgedCalendar/lastPreset守加载，真实用户切换仍确认。两reviewer独立检查同task同步初始化与观察顺序，无新confirmed问题。 |
+| b3cc408d323e5828e9550decac72ae534f1b0b20 对9f | 仅备份测试夹具：旧wire不带新空keys，非空新数据不剥除；精确计数增加新四零项，V7负例排除错因，新增V8八反例和V7正反。数据reviewer确认没有弱化生产校验或掩盖缺陷，53/53整类补验通过；产品reviewer核对仅测试变化与真实渲染，无未关闭confirmed P0/P1/P2。 |
+
+审查直接覆盖Schema链/主库保护、v8媒体/关系/旧格式、封面输入/回滚、通知实际适配/gate/容量/时区、Today/五Tab/Record、双向引用、Widget授权快照/隐私/实际provider午夜、稳定路由/恢复排队和target嵌入。产品reviewer实际目视 numeric-small-dark-AX / list-medium-dark-AX / photo-medium-dark / privacy-neutral，确认可读且隐私图无原内容；这是离屏SwiftUI渲染，不是实际系统桌面/tint/VoiceOver证明。
+
+所有reviewer均区分早期失败、对应SHA、运行中结果与通过证据。最终全量9f的358PASS/4fixtureFAIL保留；b3整类53PASS不改写原全量。最后集中UI、实包同源核对、远端PR交付结果以验收报告和执行断点为准。实际通知/桌面/真机保留Owner Gate。
+
+## 最终运行证据独立核对
+
+两reviewer独立核对b3的FinalFocused1原始xcresult/summary/log：53Unit+17UI共70PASS，0FAIL/SKIP，driver四次URL exit0；4条Invalid frame dimension如实保留。数据reviewer另外直接读取三产物目录9个bundle，确认App/Share/Widget版本1.0(7)，三个主App provenance均b3且Dirty=false。无未关闭confirmed范围内P0/P1/P2。
+
+实现者已按审查提示将Today位置文字修正为“目标后、周/月习惯前”，并收尾运行中/活命令口径；原358/362全量失败证据仍保留。系统桌面/tint/通知/VoiceOver及真机仍NOT_RUN/Owner Gate。

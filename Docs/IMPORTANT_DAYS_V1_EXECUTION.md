@@ -1,28 +1,34 @@
 # 重要日子 V1 执行断点
 
-状态：IMPLEMENTING；完整 A/B 均在授权范围内，尚未交付。
+状态：**READY_FOR_OWNER_DEVICE_GATE**。A/B必选实现、集中验证/构建与实际独立修复复审已收敛；产品/测试b3已普通推送，新PR保持Draft，不进入发行。
 
-- 产品基线：`20d315a62179ad29a6cbcf76c33c11638412e54e`
-- 固定 Goal/设计：`3365561c5888701ce662ac6c8655ad1629ded6d0`；已完整读取，祖先核对通过，diff 仅两份新增 Markdown。
-- 工作树：`/private/tmp/PersonalGrowthOS-important-days-v1`；分支 `codex/important-days-v1`；当前已提交 HEAD `cbd2075427c04642876b2d387d00b82c173a5e5f`；upstream `origin/codex/important-days-v1`；Draft PR [#10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base `codex/quiet-wins-on-d72`。后续 B 实现尚在工作树。
-- 原工作区保留 project.pbxproj、Localizable.xcstrings 与未跟踪 xcodecloud 改动。
-- 远端 base 已核对为固定产品基线；未追逐其他本地分支。
+- 产品基线 `20d315a62179ad29a6cbcf76c33c11638412e54e`；固定Goal/设计 `3365561c5888701ce662ac6c8655ad1629ded6d0` 已完整读取，祖先/diff仅两份Markdown核验。
+- 工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`；分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`；产品/测试固定HEAD **b3cc408d323e5828e9550decac72ae534f1b0b20**。最后交付为本文件所在的文档commit：完整delivery SHA由 `git rev-parse HEAD` / PR head及本地 `final-delivery-proof.json`核对，不自引用hash。最后生产代码9f34034357ea9329730ab18bfbf6d4b6e426b4b4；b3只改测试。
+- 新Draft [PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base `codex/quiet-wins-on-d72` 固定20d315a；产品/测试b3已普通push成功；最后文档提交后再核对delivery head。原工作区project/catalog/xcodecloud未知改动保留。
+- 已完成：日期/Today、V12/v8与历史保全、封面/多对多引用、管理/详情/搜索、共享提醒、两Widget/三表达、授权快照/撤销/隐私、外部稳定ID路由、双语与真实视图预览；多轮独立审查关闭P1照片、P2期次与P3文案，无未关闭confirmed范围内P0/P1/P2。
+- 最后验证：全量9f 362项中358PASS/4fixtureFAIL/0SKIP，b3备份整类53/53补验PASS；Debug sim/Release sim/Release generic iOS三构建PASS，实包9bundle干净b3同源。集中17/17 UI PASS（合计70/70、0失败/跳过、exit0），保留4条布局运行警告。
+- 最后集中命令：`python3 Scripts/run_important_day_route_ui.py --simulator EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A --result /private/tmp/pgos-important-days-evidence/FinalFocused1.xcresult --log /private/tmp/pgos-important-days-evidence/final-focused1.log`，selectors为ImportExportRecoveryTests、完整ImportantDayUITests、原App十条关键UI（详下），已exit0，delivered=4，无活测试进程。
+- 环境Xcode27.0(27A266a)/macOS27.0.1/iOS27.0；仅合成专用模拟器；真实32MB HFS+ `/private/tmp/pgos-p1-low-space`在全量前挂载、低空间测试PASS，收尾已正常卸载disk6；DMG保留证据目录。日志/xcresult根 `/private/tmp/pgos-important-days-evidence/`。
+- 外部阻塞：无。远端workflows实际0，独立CI NOT_RUN；实际桌面/通知/VoiceOver/签名/手机/私库均Owner Gate，不称PASS。
+- 下一边界：Owner按验收报告的四个日子决定设备验证；本批次不继续产品/发行。文档交付后核对远端SHA/PR Draft/base并停止；不盲目重跑或换分支。
 
-## 实施与验证顺序
+## 收敛阶段真实记录（不同SHA不混算）
 
-1. 纯日期事实/计算、独立农历样例、Today 排序；追加 V12 实体与 v8 备份，保护历史模型。
-2. 管理/详情/关联/封面/搜索/Today 与共享通知协调；固定 SHA 独立数据风险审查。
-3. Widget target、数字/照片/清单、最小授权快照、路由与隐私；独立产品集成审查与修复复审。
-4. 收敛后一次全量 Unit/集中关键 UI，Debug/无签名 Release/generic device 包含关系；普通 push 与新 Draft PR；停 READY_FOR_OWNER_DEVICE_GATE。
+| 运行/提交 | 结果与根因 |
+| --- | --- |
+| WidgetRenderRoute1，58355 | 7WidgetUnit+1真实热路由UI PASS exit0；Record草稿/当前编辑器原值和失效ID降级均断言，delivered=2。实际SwiftUI PNG目视长名/大数/AX/照片遮罩。 |
+| ReviewFix1，修复工作树 | 8WidgetUnit PASS；往年期次UI FAIL，已成功写入/重开，后段把含当前值的Picker查成仅标签且先滚过头。新增稳定filterID并先执行General负/2024正筛选。 |
+| ReviewFix2，06ce32a | 9WidgetUnit PASS（含privacy实际像素正负/实际provider35午夜DST）；往年农历2024-02-10期次UI PASS，coldRoute UI FAIL：无参数标准冷启动为中文且有unsigned AppGroup收件箱提示，截图cold-route-wait.png显示pending正确未绕过。测试处理提示/locale/pending，不放宽产品路由。 |
+| ReviewFix3，9017a2c | 日期11+新提醒7+旧Todo提醒7=25/25 Unit PASS；cold启动/启动失败不绕过→Retry后交付UI PASS；编辑preset UI FAIL，真实Chinese hydration误触calendar确认导致Save禁用。9f修复加载/用户编辑区分并保留perspective，独立双审通过。 |
+| FinalUnit1，9f34034 | 一次全量362：358PASS/4FAIL/0SKIP exit65，runtimeWarnings=[]；真实低空间PASS。三个旧wire fixture错误携带v8新增空keys被拒，一个expectedCounts漏4新零项。原始失败不删除。 |
+| FinalFocused1，b3cc408 | 仅测试修订后整备份类53/53 PASS；新v8八种missing/null反例、v7新keys反例+合法v7正例通过；集中17/17 UI PASS，合计70/70、0失败/跳过、exit0，四次系统URL送达。4条Invalid frame dimension分别归于QuietWins五来源、每日重复Todo、WeeklyReview、Weight测试（不是根因证明）。没有为test-only修正机械重跑全部旧Unit。 |
+| 三构建，b3cc408 clean | `debug-final.log`、`release-simulator.log`、`release-device.log`，exit0；`final-product-build-proof.json`：App/Share/Widget×3配置均原版本1.0(7)，SHA=b3且Dirty=false；源entitlements同原AppGroup，URL suixinlog；未Archive/签名。 |
 
-## 最后验证与限制
+构建命令：`xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug|Release -destination 'generic/platform=iOS Simulator'|'generic/platform=iOS' -derivedDataPath /private/tmp/pgos-important-days-final-build build CODE_SIGNING_ALLOWED=NO`（Debug仅sim，Release两目标）。
 
-- 启动仅做 Git 与环境核对，未跑旧全量基线。
-- Xcode 27.0 (27A266a) 可用；沙箱内 simctl 无法连接 CoreSimulator，需在已有授权的系统工具通道核对，尚非环境缺失结论。
-- 日期独立真值来源：香港天文台 2023/2024 公农历年历（代码 fixture 固定期望值，测试离线）。
-- 审查 NOT_RUN；测试 NOT_RUN；产品实现进行中。
+全量命令使用下方统一test前缀，selector `-only-testing:PersonalGrowthOSTests`，result FinalUnit1。集中使用driver，selectors：完整ImportExportRecoveryTests、完整ImportantDayUITests、AppLaunchSmokeTests下 `testRecordTabIsTheNativeCaptureDestination`、`testBuild9TodayFirstScreenAndPeriodActions`、`testWeightEntryIsAccessiblePersistsAndShowsLatestValue`、`testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch`、`testPR6FilesPreviewCancelAndRestore`、`testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart`、`testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence`、`testQuietWinsFiveSourcesRangeAndTodoUndoRefresh`、`testQuietWinsOpenPagesRefreshAfterRealBackgroundImportAndRapidRanges`、`testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry`。17条UI，不称全套UI。
 
-下一步：实现日期纯模块与边界测试，然后接入追加 Schema。
+以下为原始开发历史，所述“下一步/尚未”只对当时checkpoint有效；当前接续以上方断点为准。
 
 ## 2026-10-15 数据/规则 checkpoint
 
