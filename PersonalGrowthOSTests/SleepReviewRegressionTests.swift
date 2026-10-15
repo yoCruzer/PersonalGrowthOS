@@ -332,3 +332,25 @@ import XCTest
         client.shouldFail = false; prefs.minute = 660; await co.reconcile(context: c.mainContext); XCTAssertNotNil(client.pending[id])
     }
 }
+
+@MainActor extension SleepReviewRegressionTests {
+    func testR3FailedPrefireReplacementCancellationSurvivesLaterAddCrossingOldFire() async throws {
+        enum SyntheticFailure: Error { case add }
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!, id = SleepReminderPlanner.prefix + day.identifier
+        var clock = fire.addingTimeInterval(-1), prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        let history = SleepReminderHistory(defaults: nil)
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { prefs }, sleepHistory: history)
+        await co.reconcile(context: c.mainContext)
+        prefs.minute = 660
+        client.afterAdding = { request in
+            if request.id == id { throw SyntheticFailure.add }
+            clock = fire.addingTimeInterval(60)
+        }
+        await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(co.sleepStatus().status, .failed); XCTAssertNil(client.pending[id])
+        XCTAssertFalse(history.elapsedDays(now: clock).contains(day.identifier))
+        client.afterAdding = nil; prefs.minute = 720
+        await co.reconcile(context: c.mainContext); XCTAssertNotNil(client.pending[id])
+    }
+}

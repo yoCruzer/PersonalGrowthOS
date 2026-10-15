@@ -174,7 +174,10 @@ extension SleepUITests {
         let ratings = app.staticTexts["Valid ratings: 1"]; reveal(ratings, app: app)
         XCTAssertTrue(ratings.exists, app.debugDescription)
         attachment(app, "R1-immediate-review-after-real-edit")
-        let poor = app.buttons["sleep-review-feeling-2"]; reveal(poor, app: app); poor.tap()
+        app.swipeUp() // Bring the complete row above the native tab bar before tapping.
+        let poor = app.buttons["sleep-review-feeling-2"]; reveal(poor, app: app)
+        XCTAssertLessThan(poor.frame.maxY, app.tabBars.firstMatch.frame.minY)
+        poor.tap()
         let source = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "sleep-source-night-")).firstMatch
         XCTAssertTrue(source.waitForExistence(timeout: 5)); source.tap()
         app.buttons["sleep-feeling-5"].tap(); app.buttons["sleep-save"].tap()
