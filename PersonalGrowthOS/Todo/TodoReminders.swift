@@ -180,7 +180,8 @@ final class TodoReminderCoordinator {
                     }
                 }
                 let selected = permission == .allowed && !authorizationFailed ? Set(allocation.prefix(capacity).map(\.id)) : []
-                client.remove(Array(pending.filter { managed($0) && !selected.contains($0) }))
+                let removedIdentifiers = pending.filter { managed($0) && !selected.contains($0) }
+                client.remove(Array(removedIdentifiers))
                 var requestStatuses: [String: TodoReminderStatus] = [:]
                 for request in requests {
                     guard permission == .allowed && !authorizationFailed else {
@@ -197,6 +198,8 @@ final class TodoReminderCoordinator {
                 }
                 if pass != generation { continue }
                 let confirmed = await client.pendingIdentifiers()
+                sleepHistory.confirmCancellation(removedIdentifiers.subtracting(confirmed), now: now())
+                sleepHistory.confirm(sleepRequests.filter { confirmed.contains($0.id) && requestStatuses[$0.id] == .scheduled }, now: now())
                 if pass != generation { continue }
                 for request in requests where requestStatuses[request.id] == .scheduled && !confirmed.contains(request.id) { requestStatuses[request.id] = .failed }
                 for request in requests where request.importantDayID == nil && request.sleepWakeDay == nil { newStatuses[request.taskID] = requestStatuses[request.id] }

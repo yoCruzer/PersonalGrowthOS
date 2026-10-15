@@ -89,3 +89,61 @@ import XCTest
         }
     }
 }
+
+@MainActor extension SleepReviewRegressionTests {
+    func testTimezoneCivilDayRollbackCannotRewriteAnEffectiveGoal() throws {
+        let c = try PersistenceContainerFactory.makeInMemory()
+        let ny = TimeZone(identifier: "America/New_York")!, la = TimeZone(identifier: "America/Los_Angeles")!
+        var clock = ImportantCivilDay(identifier: "2026-10-15")!.instant(minutes: 30, timeZone: ny)!
+        let service = SleepService(context: c.mainContext, now: { clock })
+        try service.setGoal(cutoffMinute: 1410, timeZone: ny)
+        clock.addTimeInterval(60); try service.setGoal(cutoffMinute: 60, timeZone: la)
+        let rules = try ModelContext(c).fetch(FetchDescriptor<SleepGoalRule>())
+        XCTAssertEqual(rules.first { $0.effectiveDay == "2026-10-15" }?.cutoffMinute, 1410)
+        XCTAssertEqual(rules.first { $0.effectiveDay == "2026-10-16" }?.cutoffMinute, 60)
+    }
+    func testAllPossibleDSTInterpretationsMustNotBeWhollyReversed() throws {
+        let ny = TimeZone(identifier: "America/New_York")!
+        var values = SleepValues(); values.bedtime = .init(day: "2026-11-01", minute: 90, precision: 30)
+        values.wake = .init(day: "2026-11-01", minute: 30, precision: 15); values.feeling = 4
+        XCTAssertThrowsError(try SleepRules.validate(day: "2026-11-01", zoneID: ny.identifier, values: values))
+        values.wake = .init(day: "2026-11-01", minute: 420, precision: 15)
+        XCTAssertNoThrow(try SleepRules.validate(day: "2026-11-01", zoneID: ny.identifier, values: values))
+        XCTAssertNil(SleepRules.interval(values, zone: ny))
+    }
+    func testCancelledBeforeDeliveryDoesNotSuppressLaterUnelapsedReminderAfterDeleteAndReload() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub()
+        let day = ImportantCivilDay(Date()), name = "SleepCancelledSynthetic-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: name)); defer { defaults.removePersistentDomain(forName: name) }
+        var now = day.instant(minutes: 480, timeZone: .current)!, prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        var co = TodoReminderCoordinator(client: client, now: { now }, sleepPreferences: { prefs }, sleepHistory: SleepReminderHistory(defaults: defaults))
+        await co.reconcile(context: c.mainContext)
+        now.addTimeInterval(300)
+        var draft = SleepDraft(day: day.identifier); draft.values.note = "Synthetic cancellation"
+        let service = SleepService(context: c.mainContext, now: { now }); let id = try service.save(draft)
+        await co.reconcile(context: c.mainContext)
+        XCTAssertNil(client.pending[SleepReminderPlanner.prefix + day.identifier])
+        now.addTimeInterval(300); prefs.minute = 600; await co.reconcile(context: c.mainContext)
+        now = day.instant(minutes: 570, timeZone: .current)!
+        let record = try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<SleepRecord>()).first)
+        try service.delete(id: id, revision: record.revision)
+        co = TodoReminderCoordinator(client: client, now: { now }, sleepPreferences: { prefs }, sleepHistory: SleepReminderHistory(defaults: defaults))
+        await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(client.pending[SleepReminderPlanner.prefix + day.identifier]?.fireAt, day.instant(minutes: 600, timeZone: .current))
+    }
+}
+
+@MainActor extension SleepReviewRegressionTests {
+    func testAmbiguousUpperEndpointKeepsEveryPossibleOrdering() throws {
+        let ny = TimeZone(identifier: "America/New_York")!
+        var values = SleepValues()
+        values.bedtime = .init(day: "2026-11-01", minute: 105, precision: 0, utcOffset: -14400)
+        values.wake = .init(day: "2026-11-01", minute: 30, precision: 60)
+        XCTAssertNoThrow(try SleepRules.validate(day: "2026-11-01", zoneID: ny.identifier, values: values))
+        XCTAssertEqual(values.wake!.possibleBounds(zone: ny).count, 2)
+        XCTAssertNil(SleepRules.interval(values, zone: ny))
+        let now = try SleepRange(day: "2026-11-01", minute: 90, precision: 0, utcOffset: -18000).bounds(zone: ny).lowerBound
+        values.bedtime = nil; values.wake = .init(day: "2026-11-01", minute: 105, precision: 0)
+        XCTAssertNoThrow(try SleepRules.validate(day: "2026-11-01", zoneID: ny.identifier, values: values, now: now))
+    }
+}

@@ -20,13 +20,15 @@ struct SleepRecordTransfer: Codable, Equatable {
     }
 }
 struct SleepGoalTransfer: Codable, Equatable {
+    var observationTimeZoneID: String
+    var hasTakenEffect: Bool
     @TodoTransferInstant var observedAt: Date
     var id: UUID
     var effectiveDay: String
     var cutoffMinute: Int?
     @TodoTransferInstant var createdAt: Date
-    init(_ rule: SleepGoalRule) { id = rule.id; effectiveDay = rule.effectiveDay; cutoffMinute = rule.cutoffMinute; createdAt = rule.createdAt; observedAt = rule.observedAt }
-    func model() -> SleepGoalRule { let rule = SleepGoalRule(id: id, effectiveDay: effectiveDay, cutoffMinute: cutoffMinute, createdAt: createdAt); rule.observedAt = observedAt; return rule }
+    init(_ rule: SleepGoalRule) { id = rule.id; effectiveDay = rule.effectiveDay; cutoffMinute = rule.cutoffMinute; createdAt = rule.createdAt; observedAt = rule.observedAt; observationTimeZoneID = rule.observationTimeZoneID; hasTakenEffect = rule.hasTakenEffect }
+    func model() -> SleepGoalRule { let rule = SleepGoalRule(id: id, effectiveDay: effectiveDay, cutoffMinute: cutoffMinute, createdAt: createdAt, observationTimeZoneID: observationTimeZoneID, hasTakenEffect: hasTakenEffect); rule.observedAt = observedAt; return rule }
 }
 extension TransferData {
     func validateSleep(packageVersion: Int) throws {
@@ -47,6 +49,7 @@ extension TransferData {
         }
         for rule in sleepGoals {
             guard ImportantCivilDay(identifier: rule.effectiveDay) != nil, rule.cutoffMinute.map({ (0..<1440).contains($0) }) ?? true,
+                  TimeZone(identifier: rule.observationTimeZoneID) != nil,
                   rule.createdAt.timeIntervalSinceReferenceDate.isFinite, rule.observedAt.timeIntervalSinceReferenceDate.isFinite, rule.observedAt >= rule.createdAt else { throw TransferPackageError.invalidObject("sleep goal") }
         }
     }

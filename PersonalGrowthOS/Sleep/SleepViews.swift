@@ -18,6 +18,7 @@ import Charts
     var loadError: String?
     func refresh(_ context: ModelContext) {
         do {
+            try SleepGoalSemantics.observe(context: context)
             let read = ModelContext(context.container)
             records = try read.fetch(FetchDescriptor<SleepRecord>()).map(SleepRecordTransfer.init).sorted { $0.wakeDay > $1.wakeDay }
             goals = try read.fetch(FetchDescriptor<SleepGoalRule>())
@@ -450,7 +451,7 @@ struct SleepSettingsView: View {
     @State private var goalEnabled = false
     @State private var goalMinute = 1410
     @State private var error: String?
-    private var effective: String { let today = ImportantCivilDay(Date()); return (workspace.goals.isEmpty ? today : today.adding(days: 1)!).identifier }
+    private var effective: String { SleepGoalSemantics.proposedDay(rules: workspace.goals, now: Date(), zone: .current).identifier }
     var body: some View {
         Form {
             Section("Today entry") { Toggle("Show sleep on Today", isOn: $showToday).accessibilityIdentifier("sleep-show-today"); Text("Hiding this entry keeps history and independently enabled reminders.").font(.caption) }

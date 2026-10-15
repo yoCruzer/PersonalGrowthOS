@@ -21,32 +21,41 @@ struct SleepRange: Codable, Equatable {
         guard ImportantCivilDay(identifier: day) != nil, (0..<1440).contains(minute),
               [0, 15, 30, 60].contains(precision), utcOffset.map({ (-86400...86400).contains($0) }) ?? true else { throw SleepFailure.invalidTime }
     }
-    func bounds(zone: TimeZone) throws -> ClosedRange<Date> {
-        guard let civil = ImportantCivilDay(identifier: day), (0..<1440).contains(minute),
-              [0, 15, 30, 60].contains(precision) else { throw SleepFailure.invalidTime }
-        func resolve(_ day: ImportantCivilDay, _ minutes: Int) throws -> Date {
-            var cal = Calendar(identifier: .gregorian); cal.timeZone = zone
-            let components = DateComponents(year: day.year, month: day.month, day: day.day,
-                                            hour: minutes / 60, minute: minutes % 60, second: 0)
-            // Matching strictly avoids Foundation silently normalizing a nonexistent time.
-            let anchor = day.adding(days: -1)!.instant(minutes: 12 * 60, timeZone: zone)!
-            guard let first = cal.nextDate(after: anchor, matching: components, matchingPolicy: .strict,
-                                          repeatedTimePolicy: .first, direction: .forward),
-                  let last = cal.nextDate(after: anchor, matching: components, matchingPolicy: .strict,
-                                         repeatedTimePolicy: .last, direction: .forward),
-                  ImportantCivilDay(first, timeZone: zone) == day else { throw SleepFailure.ambiguousTime }
-            if first != last {
-                guard let utcOffset, let selected = [first, last].first(where: { zone.secondsFromGMT(for: $0) == utcOffset }) else {
-                    throw SleepFailure.ambiguousTime
-                }
-                return selected
-            }
-            return first
-        }
+    private static func candidates(day: ImportantCivilDay, minute: Int, zone: TimeZone) -> [Date] {
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
+        let components = DateComponents(year: day.year, month: day.month, day: day.day,
+                                        hour: minute / 60, minute: minute % 60, second: 0)
+        guard let prior = day.adding(days: -1), let anchor = prior.instant(minutes: 720, timeZone: zone) else { return [] }
+        return Array(Set([Calendar.RepeatedTimePolicy.first, .last].compactMap {
+            calendar.nextDate(after: anchor, matching: components, matchingPolicy: .strict, repeatedTimePolicy: $0, direction: .forward)
+        }.filter { ImportantCivilDay($0, timeZone: zone) == day })).sorted()
+    }
+    private func endpointCandidates(zone: TimeZone) -> (lower: [Date], upper: [Date])? {
+        guard (try? validateCivil()) != nil, let civil = ImportantCivilDay(identifier: day) else { return nil }
         let total = minute + precision
-        let endDay = total >= 1440 ? civil.adding(days: 1)! : civil
-        let lower = try resolve(civil, minute), upper = try resolve(endDay, total % 1440)
-        guard lower <= upper, utcOffset.map({ zone.secondsFromGMT(for: lower) == $0 }) ?? true else { throw SleepFailure.invalidTime }
+        guard let endDay = total >= 1440 ? civil.adding(days: 1) : civil else { return nil }
+        var lower = Self.candidates(day: civil, minute: minute, zone: zone)
+        var upper = Self.candidates(day: endDay, minute: total % 1440, zone: zone)
+        if let utcOffset {
+            lower = lower.filter { zone.secondsFromGMT(for: $0) == utcOffset }
+            if upper.count > 1 { upper = upper.filter { zone.secondsFromGMT(for: $0) == utcOffset } }
+        }
+        return (lower, upper)
+    }
+    func possibleBounds(zone: TimeZone) -> [ClosedRange<Date>] {
+        guard let endpoints = endpointCandidates(zone: zone) else { return [] }
+        return endpoints.lower.flatMap { lower in endpoints.upper.compactMap { upper in (precision == 0 ? lower == upper : lower <= upper) ? lower...upper : nil } }
+    }
+    func bounds(zone: TimeZone) throws -> ClosedRange<Date> {
+        try validateCivil()
+        guard let endpoints = endpointCandidates(zone: zone) else { throw SleepFailure.invalidTime }
+        if utcOffset != nil && endpoints.lower.isEmpty {
+            // A provided offset must match the chosen lower occurrence; it is not decorative evidence.
+            throw SleepFailure.invalidTime
+        }
+        guard endpoints.lower.count == 1, endpoints.upper.count == 1 else { throw SleepFailure.ambiguousTime }
+        let lower = endpoints.lower[0], upper = endpoints.upper[0]
+        guard lower <= upper else { throw SleepFailure.invalidTime }
         return lower...upper
     }
 }
@@ -82,10 +91,14 @@ struct SleepValues: Codable, Equatable {
     @Attribute(.unique) var id: UUID
     @Attribute(.unique) var effectiveDay: String
     var observedAt: Date
+    var observationTimeZoneID: String
+    var hasTakenEffect: Bool
     var cutoffMinute: Int? // nil is a dated disable rule.
     var createdAt: Date
-    init(id: UUID = UUID(), effectiveDay: String, cutoffMinute: Int?, createdAt: Date) {
+    init(id: UUID = UUID(), effectiveDay: String, cutoffMinute: Int?, createdAt: Date,
+         observationTimeZoneID: String = TimeZone.current.identifier, hasTakenEffect: Bool = true) {
         self.id = id; self.effectiveDay = effectiveDay; self.cutoffMinute = cutoffMinute; self.createdAt = createdAt; observedAt = createdAt
+        self.observationTimeZoneID = observationTimeZoneID; self.hasTakenEffect = hasTakenEffect
     }
 }
 
@@ -158,14 +171,21 @@ enum SleepRules {
             catch SleepFailure.ambiguousTime { return nil }
         }
         let bed = try resolved(values.bedtime), wake = try resolved(values.wake)
-        if let bed, let wake, wake.upperBound < bed.lowerBound { throw SleepFailure.invalidTime }
+        let bedPossibilities = values.bedtime.map { $0.possibleBounds(zone: zone) } ?? []
+        let wakePossibilities = values.wake.map { $0.possibleBounds(zone: zone) } ?? []
+        if let earliestBed = bedPossibilities.map(\.lowerBound).min(),
+           let latestWake = wakePossibilities.map(\.upperBound).max(), latestWake < earliestBed { throw SleepFailure.invalidTime }
         if let now {
             let localNow = ImportantCivilDay(now, timeZone: zone)
             var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
             let currentMinute = calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now)
             for range in [values.bedtime, values.wake].compactMap({ $0 }) {
                 if (try? range.bounds(zone: zone)) == nil {
-                    guard range.day < localNow.identifier || (range.day == localNow.identifier && range.minute <= currentMinute) else { throw SleepFailure.future }
+                    if let earliest = range.possibleBounds(zone: zone).map(\.lowerBound).min() {
+                        guard earliest <= now else { throw SleepFailure.future }
+                    } else {
+                        guard range.day < localNow.identifier || (range.day == localNow.identifier && range.minute <= currentMinute) else { throw SleepFailure.future }
+                    }
                 }
             }
             guard civil <= localNow,
@@ -273,12 +293,16 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         let observations = rules.map(\.observedAt) + (try context.fetch(FetchDescriptor<SleepRecord>())).map(\.observedAt)
         guard timestamp >= observations.max() ?? timestamp else { throw SleepFailure.clockRollback }
         let today = ImportantCivilDay(timestamp, timeZone: timeZone)
-        let effective = rules.isEmpty ? today : today.adding(days: 1)!
+        for rule in rules where !rule.hasTakenEffect && SleepGoalSemantics.isEffective(rule, now: timestamp, zone: timeZone) {
+            rule.hasTakenEffect = true; rule.observedAt = max(rule.observedAt, timestamp)
+        }
+        let effective = SleepGoalSemantics.proposedDay(rules: rules, now: timestamp, zone: timeZone)
         if let pending = rules.first(where: { $0.effectiveDay == effective.identifier }) {
-            guard pending.effectiveDay > today.identifier else { throw SleepFailure.clockRollback }
+            guard !SleepGoalSemantics.isEffective(pending, now: timestamp, zone: timeZone) else { throw SleepFailure.clockRollback }
             pending.cutoffMinute = cutoffMinute; pending.observedAt = timestamp
         }
-        else { context.insert(SleepGoalRule(effectiveDay: effective.identifier, cutoffMinute: cutoffMinute, createdAt: now())) }
+        else { context.insert(SleepGoalRule(effectiveDay: effective.identifier, cutoffMinute: cutoffMinute, createdAt: timestamp,
+            observationTimeZoneID: timeZone.identifier, hasTakenEffect: effective <= today)) }
         do { if let commit { try commit(context) } else { try context.save() } }
         catch { context.rollback(); throw error }
         NotificationCenter.default.post(name: .sleepRecordsChanged, object: owner.container)
@@ -303,7 +327,31 @@ enum SleepIntegrity {
         }
         for goal in goals {
             guard ImportantCivilDay(identifier: goal.effectiveDay) != nil, goal.cutoffMinute.map({ (0..<1440).contains($0) }) ?? true,
+                  TimeZone(identifier: goal.observationTimeZoneID) != nil,
                   goal.createdAt.timeIntervalSinceReferenceDate.isFinite, goal.observedAt.timeIntervalSinceReferenceDate.isFinite, goal.observedAt >= goal.createdAt else { throw SleepFailure.corrupt }
         }
+    }
+}
+
+/// A rule that has ever taken effect cannot become editable merely because travel moves the civil day backward.
+enum SleepGoalSemantics {
+    static func isEffective(_ rule: SleepGoalRule, now: Date, zone: TimeZone) -> Bool {
+        rule.hasTakenEffect || rule.effectiveDay <= ImportantCivilDay(now, timeZone: zone).identifier ||
+        TimeZone(identifier: rule.observationTimeZoneID).map { rule.effectiveDay <= ImportantCivilDay(now, timeZone: $0).identifier } == true
+    }
+    static func proposedDay(rules: [SleepGoalRule], now: Date, zone: TimeZone) -> ImportantCivilDay {
+        let today = ImportantCivilDay(now, timeZone: zone)
+        guard !rules.isEmpty else { return today }
+        let lastActive = rules.filter { isEffective($0, now: now, zone: zone) }.compactMap { ImportantCivilDay(identifier: $0.effectiveDay) }.max()
+        return max(today.adding(days: 1)!, lastActive?.adding(days: 1) ?? today)
+    }
+    @MainActor static func observe(context owner: ModelContext, now: Date = Date(), zone: TimeZone = .current) throws {
+        let context = ModelContext(owner.container); context.autosaveEnabled = false
+        let rules = try context.fetch(FetchDescriptor<SleepGoalRule>())
+        var changed = false
+        for rule in rules where !rule.hasTakenEffect && isEffective(rule, now: now, zone: zone) {
+            rule.hasTakenEffect = true; rule.observedAt = max(rule.observedAt, now); changed = true
+        }
+        if changed { try context.save() }
     }
 }

@@ -44,6 +44,13 @@ struct SleepExternalRoute: Identifiable, Equatable { let id: String }
         self.defaults = defaults; fires = defaults?.dictionary(forKey: key) as? [String: Double] ?? [:]
     }
     func elapsedDays(now: Date) -> Set<String> { Set(fires.filter { $0.value <= now.timeIntervalSinceReferenceDate }.map(\.key)) }
+    func confirmCancellation(_ identifiers: Set<String>, now: Date) {
+        for identifier in identifiers where identifier.hasPrefix(SleepReminderPlanner.prefix) {
+            let day = String(identifier.dropFirst(SleepReminderPlanner.prefix.count))
+            if let fire = fires[day], fire > now.timeIntervalSinceReferenceDate { fires.removeValue(forKey: day) }
+        }
+        defaults?.set(fires, forKey: key)
+    }
     func confirm(_ requests: [TodoReminderRequest], now: Date) {
         // An elapsed plan cannot be moved into the future to prompt the same day again.
         let elapsed = elapsedDays(now: now)

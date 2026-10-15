@@ -87,6 +87,7 @@ import XCTest
         draft.values.bedtime = .init(day: "2026-10-14", minute: 1410, precision: 60)
         draft.values.wake = .init(day: "2026-10-15", minute: 420, precision: 15); draft.values.feeling = 3
         _ = try sleep.save(draft); try sleep.setGoal(cutoffMinute: 1410, timeZone: zone)
+        try sleep.setGoal(cutoffMinute: 30, timeZone: zone) // Preserve both active and pending rule evidence.
         var day = ImportantDayDraft(); day.title = "Combined synthetic day"
         _ = try ImportantDayService(context: source.mainContext, mediaStore: MediaStore(rootURL: root)).save(day)
         let expected = try TransferSnapshot.make(context: ModelContext(source))
