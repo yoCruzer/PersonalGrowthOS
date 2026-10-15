@@ -289,6 +289,7 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         guard cutoffMinute.map({ (0..<1440).contains($0) }) ?? true else { throw SleepFailure.invalidTime }
         let context = ModelContext(owner.container); context.autosaveEnabled = false
         let rules = try context.fetch(FetchDescriptor<SleepGoalRule>())
+        guard cutoffMinute != nil || !rules.isEmpty else { return }
         let timestamp = now()
         let observations = rules.map(\.observedAt) + (try context.fetch(FetchDescriptor<SleepRecord>())).map(\.observedAt)
         guard timestamp >= observations.max() ?? timestamp else { throw SleepFailure.clockRollback }

@@ -10,7 +10,7 @@ final class SleepUITests: XCTestCase {
     }
     private func reveal(_ element: XCUIElement, app: XCUIApplication) {
         for _ in 0..<8 { if element.isHittable { return }; app.swipeUp() }
-        XCTAssertTrue(element.isHittable)
+        XCTAssertTrue(element.isHittable, app.debugDescription)
     }
     private func openToday(_ app: XCUIApplication) {
         let entry = app.buttons["today-sleep"]; reveal(entry, app: app); entry.tap()
@@ -174,6 +174,25 @@ extension SleepUITests {
         let ratings = app.staticTexts["Valid ratings: 1"]; reveal(ratings, app: app)
         XCTAssertTrue(ratings.exists, app.debugDescription)
         attachment(app, "R1-immediate-review-after-real-edit")
+        let poor = app.buttons["sleep-review-feeling-2"]; reveal(poor, app: app); poor.tap()
+        let source = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "sleep-source-night-")).firstMatch
+        XCTAssertTrue(source.waitForExistence(timeout: 5)); source.tap()
+        app.buttons["sleep-feeling-5"].tap(); app.buttons["sleep-save"].tap()
+        XCTAssertTrue(app.staticTexts["No matching sleep records."].waitForExistence(timeout: 5), app.debugDescription)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        for _ in 0..<4 { app.swipeDown() }
+        let plotted = app.buttons["Open plotted nights"]; reveal(plotted, app: app); plotted.tap()
+        XCTAssertTrue(source.waitForExistence(timeout: 5)); source.tap()
+        app.buttons["sleep-wake-menu"].tap(); app.buttons["Unknown"].tap(); app.buttons["sleep-save"].tap()
+        XCTAssertTrue(source.waitForExistence(timeout: 5))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        for _ in 0..<4 { app.swipeDown() }
+        let partial = app.staticTexts["Bedtime samples: 1 · Getting-up samples: 0 · Interval samples: 0"]
+        reveal(partial, app: app); XCTAssertTrue(partial.exists, app.debugDescription)
+        for _ in 0..<4 { app.swipeDown() }
+        app.segmentedControls.buttons["30 days"].tap()
+        XCTAssertTrue(app.staticTexts["1 recorded wake days / 30 calendar days"].waitForExistence(timeout: 5))
+        attachment(app, "R1-plot-source-edit-and-thirty-day-review")
     }
     func testR2SavingInitiallyOffGoalDoesNotConsumeFirstTodayActivationInSettings() {
         let app = launch()
@@ -185,6 +204,8 @@ extension SleepUITests {
         enabled.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         XCTAssertEqual(enabled.value as? String, "1")
         app.buttons["sleep-save-goal"].tap()
+        let formatter = DateFormatter(); formatter.dateFormat = "yyyy-MM-dd"; formatter.locale = Locale(identifier: "en_US_POSIX")
+        XCTAssertTrue(app.staticTexts[formatter.string(from: Date()) + " · 23:30"].waitForExistence(timeout: 5), app.debugDescription)
         attachment(app, "R2-first-enabled-goal-after-off-save")
         app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
         app.tabBars.buttons["Growth"].tap(); app.buttons["growth-sleep"].tap(); app.buttons["sleep-settings"].tap()

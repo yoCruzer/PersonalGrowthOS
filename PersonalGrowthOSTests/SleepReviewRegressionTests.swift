@@ -212,3 +212,123 @@ import XCTest
         XCTAssertTrue(SleepReminderHistory(defaults: defaults).elapsedDays(now: clock).contains(day.identifier))
     }
 }
+
+@MainActor extension SleepReviewRegressionTests {
+    func testR1WorkspaceRefreshPairsNewFactsAndEvaluationTimeButNeverClampsFutureOrRecalled() throws {
+        let c = try PersistenceContainerFactory.makeInMemory(); var clock = date("2026-10-15")
+        let service = SleepService(context: c.mainContext, now: { clock }), workspace = SleepWorkspace(now: { clock })
+        var draft = SleepDraft(day: "2026-10-15", zone: zone)
+        draft.values.bedtime = .init(day: "2026-10-14", minute: 1380, precision: 30)
+        draft.values.wake = .init(day: draft.wakeDay, minute: 420, precision: 15); draft.values.feeling = 4
+        _ = try service.save(draft); workspace.refresh(c.mainContext)
+        clock.addTimeInterval(60)
+        var edit = try SleepDraft(XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<SleepRecord>()).first))
+        edit.values.feeling = 2; _ = try service.save(edit); workspace.refresh(c.mainContext)
+        XCTAssertEqual(workspace.reference, clock)
+        XCTAssertEqual(workspace.review(windowDays: 7).feelingCount, 1)
+        XCTAssertEqual(workspace.review(windowDays: 30).count(feeling: 2), 1)
+        let stamp = workspace.records.first?.values.bedtimeFilledAt
+        edit = try SleepDraft(XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<SleepRecord>()).first)); edit.values.note = "Synthetic note"
+        clock.addTimeInterval(60); _ = try service.save(edit); workspace.refresh(c.mainContext)
+        XCTAssertEqual(workspace.records.first?.values.bedtimeFilledAt, stamp)
+        clock.addTimeInterval(-3600); workspace.advanceEvaluationClock()
+        XCTAssertEqual(workspace.review(windowDays: 7).feelingCount, 0)
+        XCTAssertEqual(workspace.records.first?.values.feeling, 2)
+        clock = date("2026-10-18")
+        edit = try SleepDraft(XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<SleepRecord>()).first)); edit.values.feeling = 1
+        _ = try service.save(edit); workspace.refresh(c.mainContext)
+        XCTAssertEqual(workspace.review(windowDays: 7).feelingCount, 0)
+        XCTAssertEqual(workspace.review(windowDays: 7).bedtimeCount, 1)
+        XCTAssertEqual(workspace.review(windowDays: 7).count(timing: .recalled), 1)
+    }
+    func testR3ElapsedAcceptanceSurvivesGenerationChangeBeforeConfirmation() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!, id = SleepReminderPlanner.prefix + day.identifier
+        var clock = fire.addingTimeInterval(-1), prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        let name = "SleepGenerationAccepted-\(UUID())", defaults = try XCTUnwrap(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let history = SleepReminderHistory(defaults: defaults)
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { prefs }, sleepHistory: history)
+        client.whileAdding = {
+            clock = fire.addingTimeInterval(1); client.pending.removeValue(forKey: id); prefs.minute = 660
+            Task { await co.reconcile(context: c.mainContext) }
+        }
+        await co.reconcile(context: c.mainContext); await Task.yield()
+        XCTAssertNil(client.pending[id]); XCTAssertTrue(history.elapsedDays(now: clock).contains(day.identifier))
+        XCTAssertEqual(co.sleepStatus().nextFire, day.adding(days: 1)!.instant(minutes: 660, timeZone: .current))
+        XCTAssertEqual(co.sleepStatus().status, .scheduled)
+    }
+    func testR3FutureMissingIsFailureAndDoesNotCreateElapsedEvidence() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!, id = SleepReminderPlanner.prefix + day.identifier
+        var clock = fire.addingTimeInterval(-60), prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        let history = SleepReminderHistory(defaults: nil)
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { prefs }, sleepHistory: history)
+        client.whileAdding = { client.pending.removeValue(forKey: id) }
+        await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(co.sleepStatus().status, .failed)
+        clock = fire.addingTimeInterval(60); XCTAssertFalse(history.elapsedDays(now: clock).contains(day.identifier))
+        prefs.minute = 660; await co.reconcile(context: c.mainContext)
+        XCTAssertNotNil(client.pending[id]); XCTAssertEqual(co.sleepStatus().status, .scheduled)
+    }
+    func testR3PrefireCancellationIsConfirmedBeforeLaterAddsCrossOldFireAndDeleteCanRequeue() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!, id = SleepReminderPlanner.prefix + day.identifier
+        var clock = fire.addingTimeInterval(-3600), prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        let history = SleepReminderHistory(defaults: nil)
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { prefs }, sleepHistory: history)
+        await co.reconcile(context: c.mainContext)
+        var draft = SleepDraft(day: day.identifier); draft.values.note = "Synthetic cancellation before fire"
+        let service = SleepService(context: c.mainContext, now: { clock }); let saved = try service.save(draft)
+        client.whileAdding = { clock = fire.addingTimeInterval(60) }
+        await co.reconcile(context: c.mainContext)
+        XCTAssertNil(client.pending[id]); XCTAssertFalse(history.elapsedDays(now: clock).contains(day.identifier))
+        let record = try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<SleepRecord>()).first)
+        try service.delete(id: saved, revision: record.revision); prefs.minute = 660
+        await co.reconcile(context: c.mainContext); XCTAssertNotNil(client.pending[id])
+    }
+    func testR3LegacyFutureReplacementAcceptedBeforeOldFireRemainsLegalAcrossBatchExpiry() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!, id = SleepReminderPlanner.prefix + day.identifier
+        var clock = fire.addingTimeInterval(-1)
+        let name = "SleepLegacyFuture-\(UUID())", defaults = try XCTUnwrap(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        defaults.set([day.identifier: fire.timeIntervalSinceReferenceDate], forKey: "sleep.morningReminder.plannedFires")
+        let old = SleepReminderPlanner.requests(preferences: .init(enabled: true, minute: 540), recordedDays: [], now: clock, zone: .current)
+        for request in old { client.pending[request.id] = request }
+        let history = SleepReminderHistory(defaults: defaults)
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { .init(enabled: true, minute: 660) }, sleepHistory: history)
+        client.afterAdding = { request in if request.sleepWakeDay != day.identifier { clock = fire.addingTimeInterval(60) } }
+        await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(client.pending[id]?.fireAt, day.instant(minutes: 660, timeZone: .current))
+        XCTAssertFalse(SleepReminderHistory(defaults: defaults).elapsedDays(now: clock).contains(day.identifier))
+        XCTAssertEqual(co.sleepStatus().scheduledCount, 7)
+    }
+    func testR3LateReplacementKeepsLegacyElapsedEvidenceAndRemovesLaterSameDayPrompt() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!, id = SleepReminderPlanner.prefix + day.identifier
+        var clock = fire.addingTimeInterval(-1)
+        let name = "SleepLegacyElapsed-\(UUID())", defaults = try XCTUnwrap(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        defaults.set([day.identifier: fire.timeIntervalSinceReferenceDate], forKey: "sleep.morningReminder.plannedFires")
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { .init(enabled: true, minute: 660) }, sleepHistory: SleepReminderHistory(defaults: defaults))
+        client.whileAdding = { clock = fire.addingTimeInterval(60) }
+        await co.reconcile(context: c.mainContext)
+        XCTAssertNil(client.pending[id]); XCTAssertEqual(co.sleepStatus().scheduledCount, 6)
+        XCTAssertEqual(co.sleepStatus().status, .scheduled)
+        let restarted = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { .init(enabled: true, minute: 720) }, sleepHistory: SleepReminderHistory(defaults: defaults))
+        await restarted.reconcile(context: c.mainContext); XCTAssertNil(client.pending[id])
+    }
+    func testR3FailedReplacementRemovesPriorFutureLedgerInsteadOfLockingDate() async throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), client = TodoNotificationStub(), day = ImportantCivilDay(Date())
+        let fire = day.instant(minutes: 540, timeZone: .current)!, id = SleepReminderPlanner.prefix + day.identifier
+        var clock = fire.addingTimeInterval(-60), prefs = SleepReminderPreferences(enabled: true, minute: 540)
+        let history = SleepReminderHistory(defaults: nil)
+        let co = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences: { prefs }, sleepHistory: history)
+        await co.reconcile(context: c.mainContext)
+        client.shouldFail = true; prefs.minute = 600; await co.reconcile(context: c.mainContext)
+        XCTAssertEqual(co.sleepStatus().status, .failed); XCTAssertNil(client.pending[id])
+        clock = fire.addingTimeInterval(60); XCTAssertFalse(history.elapsedDays(now: clock).contains(day.identifier))
+        client.shouldFail = false; prefs.minute = 660; await co.reconcile(context: c.mainContext); XCTAssertNotNil(client.pending[id])
+    }
+}

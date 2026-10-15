@@ -11,6 +11,13 @@ import Charts
     init(_ draft: SleepDraft) { self.draft = draft }
 }
 @MainActor @Observable final class SleepWorkspace {
+    private let now: () -> Date
+    private(set) var reference: Date
+    init(now: @escaping () -> Date = Date.init) { self.now = now; reference = now() }
+    func advanceEvaluationClock() { reference = now() }
+    func review(windowDays: Int) -> SleepReviewSnapshot {
+        .init(records: records, goals: goals, windowDays: windowDays, today: ImportantCivilDay(reference), now: reference)
+    }
     var records: [SleepRecordTransfer] = []
     var goals: [SleepGoalRule] = []
     var sessions: [String: SleepDraftSession] = [:]
@@ -18,10 +25,13 @@ import Charts
     var loadError: String?
     func refresh(_ context: ModelContext) {
         do {
-            try SleepGoalSemantics.observe(context: context)
+            let timestamp = now()
+            try SleepGoalSemantics.observe(context: context, now: timestamp)
             let read = ModelContext(context.container)
-            records = try read.fetch(FetchDescriptor<SleepRecord>()).map(SleepRecordTransfer.init).sorted { $0.wakeDay > $1.wakeDay }
-            goals = try read.fetch(FetchDescriptor<SleepGoalRule>())
+            let freshRecords = try read.fetch(FetchDescriptor<SleepRecord>()).map(SleepRecordTransfer.init).sorted { $0.wakeDay > $1.wakeDay }
+            let freshGoals = try read.fetch(FetchDescriptor<SleepGoalRule>())
+            // Publish complete facts and their evaluation instant in the same main-actor turn.
+            records = freshRecords; goals = freshGoals; reference = timestamp
             loadError = nil
         } catch { loadError = SleepFailure.corrupt.localizedDescription }
     }
@@ -359,11 +369,10 @@ struct SleepHubView: View {
 struct SleepReviewView: View {
     @Environment(SleepWorkspace.self) private var workspace
     @State private var window = 7
-    @State private var reference = Date()
     @State private var route: SleepExternalRoute?
     @Environment(\.scenePhase) private var phase
     private var snapshot: SleepReviewSnapshot {
-        .init(records: workspace.records, goals: workspace.goals, windowDays: window, today: ImportantCivilDay(reference), now: reference)
+        workspace.review(windowDays: window)
     }
     var body: some View {
         List {
@@ -397,7 +406,7 @@ struct SleepReviewView: View {
                     } }
                     .frame(height: CGFloat(min(440, max(160, snapshot.nights.count * 24))))
                     .accessibilityIdentifier("sleep-time-trend")
-                    NavigationLink("Open plotted nights") { SleepReviewSourceList(nights: snapshot.nights.filter { $0.bedtime != nil || $0.wake != nil }) }
+                    NavigationLink("Open plotted nights") { SleepReviewSourceList(windowDays: window, matches: { $0.bedtime != nil || $0.wake != nil }) }
                 }
                 ForEach(snapshot.nights) { night in
                     Button { route = .init(id: night.record.wakeDay) } label: {
@@ -413,33 +422,37 @@ struct SleepReviewView: View {
             Section("Subjective feeling distribution") {
                 Text("Valid ratings: \(snapshot.feelingCount)")
                 ForEach((1...5).reversed(), id: \.self) { feeling in
-                    NavigationLink { SleepReviewSourceList(nights: snapshot.nights.filter { $0.feeling == feeling }) } label: {
+                    NavigationLink { SleepReviewSourceList(windowDays: window, matches: { $0.feeling == feeling }) } label: {
                         LabeledContent(SleepFormatting.feeling(feeling), value: String(snapshot.count(feeling: feeling)))
-                    }
+                    }.accessibilityIdentifier("sleep-review-feeling-\(feeling)")
                 }
             }
             Section("Personal bedtime goal") {
                 ForEach(SleepGoalResult.allCases, id: \.rawValue) { result in
-                    NavigationLink { SleepReviewSourceList(nights: snapshot.nights.filter { $0.goal == result }) } label: {
+                    NavigationLink { SleepReviewSourceList(windowDays: window, matches: { $0.goal == result }) } label: {
                         LabeledContent(result.label, value: String(snapshot.count(goal: result)))
                     }
                 }
             }
         }.navigationTitle("Sleep review")
         .sheet(item: $route) { route in SleepEditorLoader(day: route.id) }
-        .onAppear { reference = Date() }
-        .onChange(of: phase) { _, p in if p == .active { reference = Date() } }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in reference = Date() }
+        .onAppear { workspace.advanceEvaluationClock() }
+        .onChange(of: phase) { _, p in if p == .active { workspace.advanceEvaluationClock() } }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in workspace.advanceEvaluationClock() }
     }
 }
 private struct SleepReviewSourceList: View {
-    let nights: [SleepReviewNight]
+    let windowDays: Int
+    let matches: (SleepReviewNight) -> Bool
+    @Environment(SleepWorkspace.self) private var workspace
     @State private var route: SleepExternalRoute?
+    private var nights: [SleepReviewNight] { workspace.review(windowDays: windowDays).nights.filter(matches) }
     var body: some View {
         List {
             if nights.isEmpty { Text("No matching sleep records.") }
-            ForEach(nights) { night in Button(night.record.wakeDay) { route = .init(id: night.record.wakeDay) } }
+            ForEach(nights) { night in Button(night.record.wakeDay) { route = .init(id: night.record.wakeDay) }.accessibilityIdentifier("sleep-source-night-\(night.record.wakeDay)") }
         }.navigationTitle("Original sleep records").sheet(item: $route) { route in SleepEditorLoader(day: route.id) }
+        .onAppear { workspace.advanceEvaluationClock() }
     }
 }
 

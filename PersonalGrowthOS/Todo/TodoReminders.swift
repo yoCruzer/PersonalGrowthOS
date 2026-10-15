@@ -182,6 +182,15 @@ final class TodoReminderCoordinator {
                 let selected = permission == .allowed && !authorizationFailed ? Set(allocation.prefix(capacity).map(\.id)) : []
                 let removedIdentifiers = pending.filter { managed($0) && !selected.contains($0) }
                 client.remove(Array(removedIdentifiers))
+                if !removedIdentifiers.isEmpty {
+                    // Confirm before slow adds can cross the old fire time. An absence observed
+                    // only after expiry is conservatively elapsed, not proof of early cancellation.
+                    let remaining = await client.pendingIdentifiers()
+                    sleepHistory.confirmCancellation(removedIdentifiers.subtracting(remaining), now: now())
+                    if pass != generation { continue }
+                }
+                var failedRemovals: Set<String> = []
+                var elapsedReplacements: Set<String> = []
                 var requestStatuses: [String: TodoReminderStatus] = [:]
                 for request in requests {
                     guard permission == .allowed && !authorizationFailed else {
@@ -189,20 +198,37 @@ final class TodoReminderCoordinator {
                         continue
                     }
                     guard selected.contains(request.id) else { requestStatuses[request.id] = .queueFull; continue }
-                    do { try await client.add(request); requestStatuses[request.id] = .scheduled }
+                    do {
+                        try await client.add(request)
+                        let acceptedAt = now()
+                        sleepHistory.confirm([request], now: acceptedAt)
+                        requestStatuses[request.id] = .scheduled
+                        if let day = request.sleepWakeDay, request.fireAt > acceptedAt,
+                           sleepHistory.elapsedDays(now: acceptedAt).contains(day) {
+                            // Replacement success arrived after an older accepted fire elapsed.
+                            // Do not claim delivery, or leave a later same-day prompt pending.
+                            client.remove([request.id]); elapsedReplacements.insert(request.id)
+                            requestStatuses[request.id] = .elapsed
+                        }
+                    }
                     catch {
                         Self.log.error("Notification scheduling failed code=\((error as NSError).code, privacy: .public)")
-                        client.remove([request.id]); requestStatuses[request.id] = .failed
+                        client.remove([request.id]); failedRemovals.insert(request.id); requestStatuses[request.id] = .failed
                     }
                     if pass != generation { break }
                 }
                 // Cancellation is already a system mutation. Confirm and retain that evidence even
                 // when a newer generation interrupted add; only status publication stays generation-gated.
                 let confirmed = await client.pendingIdentifiers()
-                sleepHistory.confirmCancellation(removedIdentifiers.subtracting(confirmed), now: now())
-                sleepHistory.confirm(sleepRequests.filter { confirmed.contains($0.id) && requestStatuses[$0.id] == .scheduled }, now: now())
+                let checkedAt = now()
+                let missingFuture = Set(requests.filter { requestStatuses[$0.id] == .scheduled && !confirmed.contains($0.id) && $0.fireAt > checkedAt }.map(\.id))
+                sleepHistory.confirmCancellation(removedIdentifiers.union(failedRemovals).union(missingFuture).subtracting(confirmed), now: checkedAt)
                 if pass != generation { continue }
-                for request in requests where requestStatuses[request.id] == .scheduled && !confirmed.contains(request.id) { requestStatuses[request.id] = .failed }
+                for request in requests where requestStatuses[request.id] == .scheduled {
+                    if request.fireAt <= checkedAt { requestStatuses[request.id] = .elapsed }
+                    else if !confirmed.contains(request.id) { requestStatuses[request.id] = .failed }
+                }
+                for id in elapsedReplacements where confirmed.contains(id) { requestStatuses[id] = .failed }
                 for request in requests where request.importantDayID == nil && request.sleepWakeDay == nil { newStatuses[request.taskID] = requestStatuses[request.id] }
                 for day in days {
                     let planned = requests.filter { $0.importantDayID == day.id }
@@ -210,13 +236,12 @@ final class TodoReminderCoordinator {
                     let scheduled = planned.filter { requestStatuses[$0.id] == .scheduled }.map(\.fireAt).sorted()
                     let states = planned.compactMap { requestStatuses[$0.id] }
                     // Partial capacity/failure is not called a fully scheduled reminder preference.
-                    let status: TodoReminderStatus = states.contains(.failed) ? .failed : states.contains(.denied) ? .denied : states.contains(.permissionRequired) ? .permissionRequired : states.contains(.queueFull) ? .queueFull : .scheduled
+                    let status: TodoReminderStatus = states.contains(.failed) ? .failed : states.contains(.denied) ? .denied : states.contains(.permissionRequired) ? .permissionRequired : states.contains(.queueFull) ? .queueFull : scheduled.isEmpty ? .elapsed : .scheduled
                     dayStates[day.id] = .init(status: status, nextFire: scheduled.first, coverageEnd: scheduled.last, scheduledCount: scheduled.count)
                 }
-                sleepHistory.confirm(sleepRequests.filter { requestStatuses[$0.id] == .scheduled }, now: now())
                 let sleepScheduled = sleepRequests.filter { requestStatuses[$0.id] == .scheduled }.map(\.fireAt).sorted()
                 let sleepStatuses = sleepRequests.compactMap { requestStatuses[$0.id] }
-                let sleepStatus: TodoReminderStatus = !sleepSettings.enabled ? .none : sleepRequests.isEmpty ? .elapsed : sleepStatuses.contains(.failed) ? .failed : sleepStatuses.contains(.denied) ? .denied : sleepStatuses.contains(.permissionRequired) ? .permissionRequired : sleepStatuses.contains(.queueFull) ? .queueFull : .scheduled
+                let sleepStatus: TodoReminderStatus = !sleepSettings.enabled ? .none : sleepRequests.isEmpty ? .elapsed : sleepStatuses.contains(.failed) ? .failed : sleepStatuses.contains(.denied) ? .denied : sleepStatuses.contains(.permissionRequired) ? .permissionRequired : sleepStatuses.contains(.queueFull) ? .queueFull : sleepScheduled.isEmpty ? .elapsed : .scheduled
                 sleepState = .init(status: sleepStatus, nextFire: sleepScheduled.first, coverageEnd: sleepScheduled.last, scheduledCount: sleepScheduled.count)
                 confirmedSleepPreferences = sleepSettings
                 reconciliationFailed = false
