@@ -81,6 +81,22 @@ E61A9C440A51B83857CB568B = {isa = PBXBuildFile; fileRef = FE19C984FF57D574A17EAE
 AF848A83A7DA45B7D26C7945 = {isa = PBXBuildFile; fileRef = CECB54375C62A7814B3319A0; };
 807EEF6557A32C9A24EC304C = {isa = PBXBuildFile; fileRef = F75C90D64A285B02950E5009; };
 DE32EF607A5322445E8422C8 = {isa = PBXBuildFile; fileRef = 26A6896DA74B31582319DE7B; };
+0631D265D6BAA952DF3FDC66 = {isa = PBXBuildFile; fileRef = D52FD3ED7133FEC2C1AAA43B; };
+4534BC4156F181E75F3CE564 = {isa = PBXBuildFile; fileRef = 9BC148A0FF5A16E94CEE9210; };
+A3BCEFECF38C552D329F55CC = {isa = PBXBuildFile; fileRef = 3EA303D67677B97C91B4C046; };
+FEE626FEA13270614D006B04 = {isa = PBXBuildFile; fileRef = 66688749661F3FA301197ECD; };
+E40CDA25142AECB201FD83F9 = {isa = PBXBuildFile; fileRef = 9DC0BD12C502337629E07772; };
+6C54C43D4EC9575369E19D83 = {isa = PBXBuildFile; fileRef = D52FD3ED7133FEC2C1AAA43B; };
+10B60046A3B82754AE46640F = {isa = PBXBuildFile; fileRef = A3918C30D00CEB4D17928160; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+FE29425B30F989F0D460B90D = {isa = PBXBuildFile; fileRef = A00000000000000000000036; };
+0C54BA62C9492DA89832DDF0 = {isa = PBXBuildFile; fileRef = E685ACCF5DC146695ABE6A37; };
+4A3148B0C9BA77AD8041D1DE = {isa = PBXBuildFile; fileRef = 9CC1A5AA8DD6E15D9349058A; };
+B54F0C55E35B58035A95D297 = {isa = PBXBuildFile; fileRef = 54E53E4E87AFDF879BBF3E4F; };
+513988A1C45A38D51C60CE31 = {isa = PBXBuildFile; fileRef = 54E53E4E87AFDF879BBF3E4F; };
+905415935BE616FEFD8A8342 = {isa = PBXBuildFile; fileRef = C62D8AC35F2406E265BF31D3; };
+A42DDA385A73347923737E50 = {isa = PBXBuildFile; fileRef = C1553BE8DC30ED799C390711; };
+E1ABFBFCDCDA75C6E23B2902 = {isa = PBXBuildFile; fileRef = F3BCFD372935E01B53550A45; };
+E9A7759A79ECDE4AF3FCEC67 = {isa = PBXBuildFile; fileRef = F3BCFD372935E01B53550A45; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +115,7 @@ DE32EF607A5322445E8422C8 = {isa = PBXBuildFile; fileRef = 26A6896DA74B31582319DE
 			remoteInfo = PersonalGrowthOS;
 		};
 CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H00000000000000000000001; proxyType = 1; remoteGlobalIDString = CA0000000000000000000020; remoteInfo = ShareExtension; };
+52ED8FCF9400F4A5C21C2ABC = {isa = PBXContainerItemProxy; containerPortal = H00000000000000000000001; proxyType = 1; remoteGlobalIDString = 33D624FDC5DFEC2DC6F32BEC; remoteInfo = ImportantDaysWidget; };
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -176,6 +193,16 @@ CDB11E7BBFDAABFE291ED6BD = {isa = PBXFileReference; lastKnownFileType = sourceco
 CECB54375C62A7814B3319A0 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayReminders.swift"; sourceTree = SOURCE_ROOT; };
 F75C90D64A285B02950E5009 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/ImportantDayReminderTests.swift"; sourceTree = SOURCE_ROOT; };
 26A6896DA74B31582319DE7B = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/ImportantDayBaselineV11Fixture"; sourceTree = SOURCE_ROOT; };
+D52FD3ED7133FEC2C1AAA43B = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/ImportantDays/ImportantDayWidgetSnapshot.swift"; sourceTree = SOURCE_ROOT; };
+9BC148A0FF5A16E94CEE9210 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayWidgetPublisher.swift"; sourceTree = SOURCE_ROOT; };
+3EA303D67677B97C91B4C046 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportantDaysWidget/ImportantDaysWidget.swift"; sourceTree = SOURCE_ROOT; };
+A3918C30D00CEB4D17928160 = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = ImportantDaysWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+E685ACCF5DC146695ABE6A37 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayRouting.swift"; sourceTree = SOURCE_ROOT; };
+9CC1A5AA8DD6E15D9349058A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/ImportantDayWidgetTests.swift"; sourceTree = SOURCE_ROOT; };
+54E53E4E87AFDF879BBF3E4F = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/ImportantDays/ImportantDayPhotoView.swift"; sourceTree = SOURCE_ROOT; };
+C62D8AC35F2406E265BF31D3 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayUITestFixture.swift"; sourceTree = SOURCE_ROOT; };
+C1553BE8DC30ED799C390711 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/ImportantDayUITests.swift"; sourceTree = SOURCE_ROOT; };
+F3BCFD372935E01B53550A45 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/ImportantDays/ImportantDayWidgetViews.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,15 +228,25 @@ F75C90D64A285B02950E5009 = {isa = PBXFileReference; lastKnownFileType = sourceco
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 CA0000000000000000000012 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+F7C709AE3765333ADF7E2729 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (CA0000000000000000000106, ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (CA0000000000000000000106, 10B60046A3B82754AE46640F, ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXCopyFilesBuildPhase section */
 /* Begin PBXGroup section */
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+F3BCFD372935E01B53550A45,
+C1553BE8DC30ED799C390711,
+C62D8AC35F2406E265BF31D3,
+54E53E4E87AFDF879BBF3E4F,
+9CC1A5AA8DD6E15D9349058A,
+E685ACCF5DC146695ABE6A37,
+3EA303D67677B97C91B4C046,
+9BC148A0FF5A16E94CEE9210,
+D52FD3ED7133FEC2C1AAA43B,
 26A6896DA74B31582319DE7B,
 F75C90D64A285B02950E5009,
 CECB54375C62A7814B3319A0,
@@ -301,6 +338,7 @@ CB0000000000000000000001,
 		C00000000000000000000005 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+A3918C30D00CEB4D17928160,
 				A00000000000000000000006 /* PersonalGrowthOS.app */,
 				A00000000000000000000007 /* PersonalGrowthOSTests.xctest */,
 				A00000000000000000000008 /* PersonalGrowthOSUITests.xctest */,
@@ -447,7 +485,7 @@ CA0000000000000000000013,
 			);
 			buildRules = (
 			);
-			dependencies = (CA0000000000000000000025,
+			dependencies = (CA0000000000000000000025, 43B44AE516092D7A924BE2AB,
 			);
 			name = PersonalGrowthOS;
 			productName = PersonalGrowthOS;
@@ -491,6 +529,7 @@ CA0000000000000000000013,
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 CA0000000000000000000020 = {isa = PBXNativeTarget; buildConfigurationList = CA0000000000000000000021; buildPhases = (CA0000000000000000000010, CA0000000000000000000012, CA0000000000000000000011, ); buildRules = (); dependencies = (); name = ShareExtension; productName = ShareExtension; productReference = CA0000000000000000000005; productType = "com.apple.product-type.app-extension"; };
+33D624FDC5DFEC2DC6F32BEC = {isa = PBXNativeTarget; buildConfigurationList = 3561479141423C178249A0C3; buildPhases = (66DEEBD434C1C21E7DD17214, F7C709AE3765333ADF7E2729, 2F3AD19101A65448AE429449, ); buildRules = (); dependencies = (); name = ImportantDaysWidget; productName = ImportantDaysWidget; productReference = A3918C30D00CEB4D17928160; productType = "com.apple.product-type.app-extension"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -528,6 +567,7 @@ CA0000000000000000000020 = {isa = PBXNativeTarget; buildConfigurationList = CA00
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+33D624FDC5DFEC2DC6F32BEC,
 CA0000000000000000000020,
 				F00000000000000000000001 /* PersonalGrowthOS */,
 				F00000000000000000000002 /* PersonalGrowthOSTests */,
@@ -567,6 +607,7 @@ RV1000000000000000000001,
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 CA0000000000000000000011 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (CA0000000000000000000104, CA0000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
+2F3AD19101A65448AE429449 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (FE29425B30F989F0D460B90D, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -589,6 +630,12 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+E1ABFBFCDCDA75C6E23B2902,
+905415935BE616FEFD8A8342,
+B54F0C55E35B58035A95D297,
+0C54BA62C9492DA89832DDF0,
+4534BC4156F181E75F3CE564,
+0631D265D6BAA952DF3FDC66,
 AF848A83A7DA45B7D26C7945,
 3C7CB3C1D0A154921EC1160D,
 34E789D4274048666AA614F2,
@@ -641,6 +688,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+4A3148B0C9BA77AD8041D1DE,
 807EEF6557A32C9A24EC304C,
 7D2758FCC8DFCA1C11B6EDB9,
 2F003F7BD4105F6C8A52924E,
@@ -664,11 +712,13 @@ TD1000000000000000000002,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+A42DDA385A73347923737E50,
 				B00000000000000000000005 /* AppLaunchSmokeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 CA0000000000000000000010 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (CB0000000000000000000102, CA0000000000000000000103, CA0000000000000000000105, ); runOnlyForDeploymentPostprocessing = 0; };
+66DEEBD434C1C21E7DD17214 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (E9A7759A79ECDE4AF3FCEC67, 513988A1C45A38D51C60CE31, A3BCEFECF38C552D329F55CC, FEE626FEA13270614D006B04, E40CDA25142AECB201FD83F9, 6C54C43D4EC9575369E19D83, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -683,6 +733,7 @@ CA0000000000000000000010 = {isa = PBXSourcesBuildPhase; buildActionMask = 214748
 			targetProxy = E00000000000000000000003 /* PBXContainerItemProxy */;
 		};
 CA0000000000000000000025 = {isa = PBXTargetDependency; target = CA0000000000000000000020; targetProxy = CA0000000000000000000024; };
+43B44AE516092D7A924BE2AB = {isa = PBXTargetDependency; target = 33D624FDC5DFEC2DC6F32BEC; targetProxy = 52ED8FCF9400F4A5C21C2ABC; };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -723,6 +774,7 @@ CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 83SKX2PM7B;
 				GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = PersonalGrowthOS/App/ImportantDayURLInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "随心log";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -752,6 +804,7 @@ CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 83SKX2PM7B;
 				GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = PersonalGrowthOS/App/ImportantDayURLInfo.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "随心log";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -851,6 +904,8 @@ CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
 		};
 CA0000000000000000000022 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
 CA0000000000000000000023 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+91E59C41253DACDF72E373E9 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ImportantDaysWidget/ImportantDaysWidget.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ImportantDaysWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ImportantDaysWidget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+4E9B0AFC132BEE500A07EEE8 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ImportantDaysWidget/ImportantDaysWidget.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ImportantDaysWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ImportantDaysWidget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -891,6 +946,7 @@ CA0000000000000000000023 = {isa = XCBuildConfiguration; buildSettings = {APPLICA
 			defaultConfigurationName = Release;
 		};
 CA0000000000000000000021 = {isa = XCConfigurationList; buildConfigurations = (CA0000000000000000000022, CA0000000000000000000023, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+3561479141423C178249A0C3 = {isa = XCConfigurationList; buildConfigurations = (91E59C41253DACDF72E373E9, 4E9B0AFC132BEE500A07EEE8, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 	};
 	rootObject = H00000000000000000000001 /* Project object */;

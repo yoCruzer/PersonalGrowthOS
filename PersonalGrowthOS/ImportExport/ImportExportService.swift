@@ -381,6 +381,7 @@ final class ImportExportService {
             try Self.ensureTargetIsEmpty(context)
             try await publish(package: package, importedAt: now())
             NotificationCenter.default.post(name: .todoTasksChanged, object: container)
+            NotificationCenter.default.post(name: .importantDaysChanged, object: container)
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.mediaAssets.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,

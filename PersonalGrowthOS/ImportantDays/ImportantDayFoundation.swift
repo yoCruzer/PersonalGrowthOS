@@ -136,7 +136,8 @@ final class ImportantDayService {
             do {
                 let existing = try context.fetch(FetchDescriptor<ImportantDay>(predicate: #Predicate { $0.id == id })).first
                 let day = try existing ?? ImportantDay(id: id, title: draft.title, rule: draft.rule, createdAt: now())
-                let changedDate = try day.rule() != draft.rule
+                var previousDateRule = try day.rule(); previousDateRule.perspective = draft.rule.perspective
+                let changedDate = previousDateRule != draft.rule
                 day.title = draft.title.trimmingCharacters(in: .whitespacesAndNewlines); day.notes = draft.notes
                 day.ruleData = try JSONEncoder().encode(draft.rule); day.preferencesData = try JSONEncoder().encode(draft.preferences)
                 day.isArchived = draft.archived
@@ -183,6 +184,18 @@ final class ImportantDayService {
         do {
             try context.fetch(FetchDescriptor<ImportantDayEntryLink>(predicate: #Predicate { $0.dayID == dayID && $0.entryID == entryID })).forEach(context.delete)
             try commit()
+        } catch { context.rollback(); throw error }
+    }
+    func reorderFavorites(_ ids: [UUID]) throws {
+        guard Set(ids).count == ids.count else { throw ImportantDayError.invalidData }
+        do {
+            let ordered = try ids.map { try day(id: $0) }
+            for (index, day) in ordered.enumerated() {
+                var preferences = try day.preferences(); preferences.favoriteOrder = index
+                day.preferencesData = try JSONEncoder().encode(preferences)
+                day.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: day.createdAt, previous: day.updatedAt)
+            }
+            try commit(); NotificationCenter.default.post(name: .importantDaysChanged, object: context.container)
         } catch { context.rollback(); throw error }
     }
     func delete(id: UUID) throws {

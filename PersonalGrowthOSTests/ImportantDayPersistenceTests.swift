@@ -143,3 +143,48 @@ extension ImportantDayPersistenceTests {
         }
     }
 }
+
+@MainActor
+extension ImportantDayPersistenceTests {
+    func testLowSpaceCoverSaveAndFavoriteReorderFailuresPreserveCommittedFacts() throws {
+        let (root, media, source) = try fixture(); addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let container = try PersistenceContainerFactory.makeInMemory(), c = container.mainContext
+        let service = ImportantDayService(context: c, mediaStore: media), a = try service.save(draft()), b = try service.save(draft())
+        let lowSpace = MediaStore(rootURL: root, availableCapacity: { 0 })
+        XCTAssertThrowsError(try ImportantDayService(context: c, mediaStore: lowSpace).save(draft(), coverSource: source))
+        XCTAssertEqual(try c.fetchCount(FetchDescriptor<ImportantDay>()), 2)
+        XCTAssertEqual(try c.fetchCount(FetchDescriptor<ImportantDayCover>()), 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: source.url.path))
+        try service.reorderFavorites([a.id, b.id])
+        let failing = ImportantDayService(context: c, mediaStore: media, commit: { throw CocoaError(.fileWriteOutOfSpace) })
+        XCTAssertThrowsError(try failing.reorderFavorites([b.id, a.id]))
+        XCTAssertEqual(try a.preferences().favoriteOrder, 0); XCTAssertEqual(try b.preferences().favoriteOrder, 1)
+        XCTAssertThrowsError(try service.reorderFavorites([a.id, a.id]))
+    }
+    func testDayCreationDecorationAndMultipleLinksDoNotInventQuietWinsOrReclassifyImportedEntry() async throws {
+        let (root, media, source) = try fixture(); addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let container = try PersistenceContainerFactory.makeInMemory(), c = container.mainContext
+        let clock = Date(), service = ImportantDayService(context: c, mediaStore: media, now: { clock })
+        let day = try service.save(draft(), coverSource: source), other = try service.save(draft())
+        let reader = QuietWinsReader(modelContainer: container)
+        let window = QuietWinsWindow(days: 30, asOf: clock.addingTimeInterval(10), timeZone: TimeZone(secondsFromGMT: 0)!)
+        let empty = try await reader.read(window: window); XCTAssertTrue(empty.cards.isEmpty)
+        let direct = try service.createEntry(.init(body: "An actual direct life record"), dayID: day.id)
+        try service.linkEntry(dayID: other.id, entryID: direct.id)
+        let imported = Entry(body: "Synthetic external text", createdAt: clock)
+        c.insert(imported); c.insert(CaptureImportReceipt(id: imported.id, importedAt: clock)); try c.save()
+        try service.linkEntry(dayID: day.id, entryID: imported.id)
+        let actual = try await QuietWinsReader(modelContainer: container).read(window: window)
+        let sources = actual.cards.flatMap(\.sources)
+        XCTAssertTrue(sources.contains { $0.sourceID == direct.id })
+        XCTAssertFalse(sources.contains { $0.sourceID == imported.id })
+        XCTAssertEqual(sources.filter { $0.sourceID == direct.id }.count, 1)
+        var edited = try ImportantDayDraft(day); edited.preferences.favoriteOrder = 0; edited.preferences.photoStyle = true
+        _ = try service.save(edited, id: day.id)
+        let after = try await QuietWinsReader(modelContainer: container).read(window: window)
+        XCTAssertEqual(after.cards, actual.cards)
+        let beforeRevision = day.revision
+        edited.rule.perspective = .elapsed; _ = try service.save(edited, id: day.id)
+        XCTAssertEqual(day.revision, beforeRevision) // A display change does not warn about a Todo date change.
+    }
+}

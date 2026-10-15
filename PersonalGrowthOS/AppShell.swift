@@ -15,6 +15,9 @@ struct AppShell: View {
     let container: AppContainer
 
     @State private var todoReminders = TodoReminderCoordinator()
+    @State private var widgetPublisher = ImportantDayWidgetPublisher()
+    @State private var externalRouter = ImportantDayExternalRouter.shared
+    @State private var presentedImportantDay: ImportantDayExternalRoute?
     @State private var selectedTab: AppTab = .today
     @State private var isShowingStorage = false
     @Environment(\.scenePhase) private var captureScenePhase
@@ -38,7 +41,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Today", systemImage: "sun.max") }
             .tag(AppTab.today)
 
@@ -48,7 +51,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Timeline", systemImage: "clock") }
             .tag(AppTab.timeline)
 
@@ -59,7 +62,7 @@ struct AppShell: View {
             ) { _ in
                 selectedTab = .timeline
             }
-            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Record", systemImage: "plus.circle.fill") }
             .tag(AppTab.record)
 
@@ -69,7 +72,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Growth", systemImage: "leaf") }
             .tag(AppTab.growth)
 
@@ -79,7 +82,7 @@ struct AppShell: View {
                     thumbnailStore: container.thumbnailStore
                 )
             }
-            .safeAreaInset(edge: .bottom) { TodoReminderFeedbackView() }
+            .safeAreaInset(edge: .bottom) { VStack(spacing: 0) { ImportantDayReminderFeedbackView(); TodoReminderFeedbackView() } }
             .tabItem { Label("Library", systemImage: "books.vertical") }
             .tag(AppTab.library)
         }
@@ -91,19 +94,47 @@ struct AppShell: View {
             }
         }
         #endif
-        .task { await importShares(); await todoReminders.reconcile(context: container.modelContainer.mainContext) }
+        .task {
+            await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
+            deliverImportantDayRoute()
+            await todoReminders.reconcile(context: container.modelContainer.mainContext)
+        }
+        .onChange(of: externalRouter.pending) { _, _ in deliverImportantDayRoute() }
+        .safeAreaInset(edge: .top) {
+            if externalRouter.pending != nil {
+                HStack {
+                    Button("Open requested Important Day") { deliverImportantDayRoute() }.accessibilityIdentifier("important-day-pending-route")
+                    Spacer()
+                    Button("Dismiss") { externalRouter.pending = nil }
+                }.padding(8).background(.bar)
+            }
+        }
+        .sheet(item: $presentedImportantDay) { route in
+            NavigationStack {
+                ImportantDayRoutedView(route: route, mediaStore: container.mediaStore, thumbnailStore: container.thumbnailStore)
+                    .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { presentedImportantDay = nil } } }
+            }
+        }
         .onChange(of: captureScenePhase) { _, phase in
-            if phase == .active { Task { await importShares(); await todoReminders.reconcile(context: container.modelContainer.mainContext) } }
+            if phase == .active { Task {
+                await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
+                await todoReminders.reconcile(context: container.modelContainer.mainContext)
+            } }
         }
         .onReceive(NotificationCenter.default.publisher(for: .importantDaysChanged)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
+            widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
         .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
             Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
         .alert("Some shared content could not be imported", isPresented: $captureFailure) {
@@ -142,6 +173,16 @@ struct AppShell: View {
             )
         }
         .environment(todoReminders)
+        .environment(widgetPublisher)
+    }
+
+    private func deliverImportantDayRoute() {
+        guard let route = externalRouter.pending, !isShowingStorage, !isShowingPendingShares,
+              presentedImportantDay == nil, !ImportantDayExternalRouter.hasPresentedController() else { return }
+        // Present over the existing hierarchy; Record's StateObject and every tab remain mounted.
+        // Explicitly end keyboard focus so dismissing the route cannot restore a keyboard over the tabs.
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        externalRouter.pending = nil; presentedImportantDay = route
     }
 
     private func importShares() async {
@@ -433,6 +474,7 @@ private struct TodayView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { referenceDate = Date() } }
         .sheet(isPresented: $isAddingWeight) {
             WeightEditorView(record: nil) { isAddingWeight = false }

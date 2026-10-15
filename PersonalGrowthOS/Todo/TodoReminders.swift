@@ -77,6 +77,7 @@ final class TodoReminderCoordinator {
     private var wantsPermission = false
     private var reconciliationFailed = false
     private var revisions: [UUID: Int] = [:]
+    var savedImportantDayID: UUID?
     var savedTaskID: UUID?
     func reportSavedTask(_ task: TodoTask, affectedOpenSuccessor: TodoTask? = nil) {
         let candidate = task.state == .open ? task : affectedOpenSuccessor

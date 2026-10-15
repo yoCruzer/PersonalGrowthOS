@@ -4,6 +4,7 @@ import UIKit
 
 @main
 struct PersonalGrowthOSApp: App {
+    @UIApplicationDelegateAdaptor(ImportantDayNotificationDelegate.self) private var notificationDelegate
     @State private var startup: Result<AppContainer, Error>
     @State private var isRetrying = false
     @State private var copied = false
@@ -16,6 +17,10 @@ struct PersonalGrowthOSApp: App {
         let result = Result<AppContainer, Error> {
             let container = try AppContainer.make(configuration: configuration)
             #if DEBUG
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSImportantDaysTest") {
+                try ImportantDayUITestFixture.seed(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
+            }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSQuietWinsTest") {
                 try QuietWinsUITestFixture.seed(context: container.modelContainer.mainContext)
@@ -57,6 +62,7 @@ struct PersonalGrowthOSApp: App {
 
     var body: some Scene {
         WindowGroup {
+            Group {
             switch startup {
             case .success(let container):
                 AppShell(container: container)
@@ -111,6 +117,9 @@ struct PersonalGrowthOSApp: App {
                     }
                     .padding()
                 }
+            }
+            }.onOpenURL { url in
+                if let id = ImportantDayRoute.parse(url) { ImportantDayExternalRouter.shared.receive(id: id, source: .widget) }
             }
         }
     }

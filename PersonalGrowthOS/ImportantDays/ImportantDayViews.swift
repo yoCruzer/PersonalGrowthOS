@@ -12,8 +12,12 @@ struct ImportantDaysView: View {
     @State private var query = ""
     @State private var showArchived = false
     @State private var adding = false
+    @AppStorage("ImportantDayHasSavedDay") private var hasSavedDay = false
+    @AppStorage("ImportantDayWidgetTipDismissed") private var tipDismissed = false
     @State private var error: String?
-    private var today: ImportantCivilDay { .init(Date()) }
+    @State private var referenceDate = Date()
+    @Environment(\.scenePhase) private var scenePhase
+    private var today: ImportantCivilDay { .init(referenceDate) }
     private var visible: [ImportantDay] {
         let q = TextSearchNormalizer.normalize(query)
         return days.filter { $0.isArchived == showArchived && (q.isEmpty || TextSearchNormalizer.normalize($0.title + " " + $0.notes).contains(q)) }.sorted { a, b in
@@ -31,6 +35,12 @@ struct ImportantDaysView: View {
     private var others: [ImportantDay] { visible.filter { day in !favorites.contains { $0.id == day.id } } }
     var body: some View {
         List {
+            if hasSavedDay && !tipDismissed {
+                Section {
+                    Text("You can display a chosen day on your Home Screen. Open its details to authorize and prepare a widget.").font(.subheadline)
+                    Button("Dismiss widget tip") { tipDismissed = true }
+                }
+            }
             if visible.isEmpty {
                 ContentUnavailableView {
                     Label("Important Days", systemImage: "calendar")
@@ -43,11 +53,7 @@ struct ImportantDaysView: View {
                     ForEach(favorites) { row($0) }
                         .onMove { offsets, destination in
                             var order = favorites; order.move(fromOffsets: offsets, toOffset: destination)
-                            do {
-                                for (index, day) in order.enumerated() {
-                                    var draft = try ImportantDayDraft(day); draft.preferences.favoriteOrder = index
-                                    _ = try ImportantDayService(context: context, mediaStore: mediaStore).save(draft, id: day.id)
-                                }
+                            do { try ImportantDayService(context: context, mediaStore: mediaStore).reorderFavorites(order.map(\.id))
                             } catch { self.error = String(localized: "The day could not be saved. Your changes are still here.") }
                         }
                 }
@@ -59,6 +65,9 @@ struct ImportantDaysView: View {
                 ForEach(others.filter { (try? $0.rule()).map { $0.preset != .anniversary && (try? ImportantDayDateEngine.evaluate($0, today: today).next) == nil } ?? true }) { row($0) }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
+        .onChange(of: scenePhase) { _, p in if p == .active { referenceDate = Date() } }
         .navigationTitle("Important Days")
         .searchable(text: $query, prompt: "Day name or note")
         .accessibilityIdentifier("important-days-list")
@@ -107,6 +116,7 @@ struct ImportantDayDetailView: View {
     @State private var help = false
     @State private var error: String?
     @Environment(TodoReminderCoordinator.self) private var reminders
+    @Environment(ImportantDayWidgetPublisher.self) private var widgetPublisher
     @State private var occurrenceFilter = "all"
     @State private var explicitOccurrence = false
     @State private var referenceDate = Date()
@@ -127,7 +137,7 @@ struct ImportantDayDetailView: View {
                 List {
                     Section {
                         if let cover = covers.first(where: { $0.dayID == dayID }), let url = try? mediaStore.fileURL(for: cover.relativePath) {
-                            ImportantDayCoverImage(url: url).frame(height: 180).clipped().accessibilityLabel("Independent cover")
+                            ImportantDayCoverImage(url: url, cropX: (try? day.preferences().cropX) ?? 0.5, cropY: (try? day.preferences().cropY) ?? 0.5).frame(height: 180).clipped().accessibilityLabel("Independent cover")
                         }
                         Text(day.title).font(.title2).fixedSize(horizontal: false, vertical: true)
                         if let rule = try? day.rule() {
@@ -190,6 +200,7 @@ struct ImportantDayDetailView: View {
                             Text(p.reminderOffsets.isEmpty ? String(localized: "No reminder") : String(localized: "Reminder preferences saved; device schedule is checked separately."))
                             Text(p.desktopVisible ? String(localized: "Authorized for desktop display") : String(localized: "Private in this app"))
                         }
+                        if widgetPublisher.lastError { Text("The day is saved, but the desktop snapshot could not be updated. Retry when storage is available.").font(.caption).foregroundStyle(.secondary) }
                         Button("Edit Important Day") { editing = true }
                         Button("Add a Home Screen widget") { help = true }
                         Button(day.isArchived ? "Restore" : "Archive") { perform { var draft = try ImportantDayDraft(day); draft.archived.toggle(); _ = try service.save(draft, id: dayID) } }
@@ -207,7 +218,7 @@ struct ImportantDayDetailView: View {
                 .sheet(isPresented: $addingTodo) { TodoEditorView(importantDayID: dayID, importantDayOccurrence: selectedOccurrence) { _ in addingTodo = false } }
                 .sheet(isPresented: $help) {
                     NavigationStack { List {
-                        ImportantDayRow(day: day)
+                        ImportantDayWidgetPreview(day: day, mediaStore: mediaStore)
                         Text("Touch and hold the Home Screen, choose Edit, then Add Widget. Find this app and choose Important Day or Day List. Select the days and their order in Edit Widget.")
                         Text("Only days you authorize for desktop display are available. iOS controls refresh and may retain a rendered view briefly after access is revoked.")
                         Button("Prepare this day for a widget") { perform { var draft = try ImportantDayDraft(day); draft.preferences.desktopVisible = true; _ = try service.save(draft, id: dayID) } }
@@ -255,10 +266,12 @@ struct ImportantDayEntryPicker: View {
 
 struct ImportantDayCoverImage: View {
     let url: URL
+    var cropX = 0.5
+    var cropY = 0.5
     var body: some View {
         if let source = CGImageSourceCreateWithURL(url as CFURL, nil),
            let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceThumbnailMaxPixelSize: 900, kCGImageSourceCreateThumbnailWithTransform: true] as CFDictionary) {
-            Image(uiImage: UIImage(cgImage: image)).resizable().scaledToFill()
+            ImportantDayPhotoView(image: UIImage(cgImage: image), cropX: cropX, cropY: cropY)
         } else { Image(systemName: "photo").foregroundStyle(.secondary).accessibilityLabel("Cover unavailable") }
     }
 }
@@ -271,6 +284,8 @@ struct ImportantDayEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Query private var existingDays: [ImportantDay]
     @State private var draft = ImportantDayDraft()
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var externalRouter = ImportantDayExternalRouter.shared
     @State private var loaded = false
     @State private var submissionID = UUID()
     @State private var confirmedOccurrence = false
@@ -283,9 +298,11 @@ struct ImportantDayEditorView: View {
     @Environment(TodoReminderCoordinator.self) private var reminders
     @State private var calendarChanged = false
     @State private var duplicateConfirmation = false
+    @State private var confirmedActualBeginning = false
     @StateObject private var photoSession = PhotoInputSession()
-    private var today: ImportantCivilDay { .init(Date()) }
-    private var valid: Bool { (try? draft.validate()) != nil && (sourceEntry == nil || confirmedOccurrence) && !calendarChanged }
+    @State private var referenceDate = Date()
+    private var today: ImportantCivilDay { .init(referenceDate) }
+    private var valid: Bool { (try? draft.validate()) != nil && (sourceEntry == nil || confirmedOccurrence) && !calendarChanged && (!(day.flatMap { try? $0.rule().preset } == .anticipated && draft.rule.preset == .beginning) || confirmedActualBeginning) }
     var body: some View {
         NavigationStack {
             Form {
@@ -305,6 +322,9 @@ struct ImportantDayEditorView: View {
                         Toggle("I know the starting year", isOn: Binding(get: { draft.rule.year != nil }, set: { draft.rule.year = $0 ? today.year : nil; if !$0 { draft.rule.perspective = .next } })).accessibilityIdentifier("important-day-known-year")
                     }
                     dateFields
+                    if day.flatMap({ try? $0.rule().preset }) == .anticipated && draft.rule.preset == .beginning {
+                        Toggle("I confirm this beginning actually occurred on the selected day", isOn: $confirmedActualBeginning)
+                    }
                     if let sourceEntry {
                         Text("Suggested from the entry's occurrence time: \(ImportantCivilDay(sourceEntry.occurredAt).identifier). Confirm the actual day; the original local time zone may be unknown.").font(.caption)
                         Toggle("I confirm this actual occurrence date", isOn: $confirmedOccurrence).accessibilityIdentifier("important-day-confirm-occurrence")
@@ -348,6 +368,9 @@ struct ImportantDayEditorView: View {
                             }), displayedComponents: .hourAndMinute)
                             Toggle("Use a general notification description", isOn: $draft.preferences.genericNotification)
                             Text("Time zone: \(TimeZone.current.identifier)").font(.caption)
+                            if let next = try? ImportantDayReminderPlanner.requests(id: submissionID, title: draft.title, rule: draft.rule, preferences: draft.preferences, now: Date(), timeZone: .current).first {
+                                Text("Next reminder: \(next.fireAt.formatted(date: .complete, time: .shortened))").font(.caption).accessibilityIdentifier("important-day-reminder-preview")
+                            } else { Text("No future reminder within the supported date range").font(.caption) }
                         }
                     }
                     Section("Independent cover") {
@@ -357,7 +380,7 @@ struct ImportantDayEditorView: View {
                             if useEntryPhoto { Text("A separate copy is saved. Deleting the source entry will keep this cover.").font(.caption); Text(image.originalFilename).font(.caption) }
                         }
                         if let source = coverSource {
-                            ImportantDayCoverImage(url: source.url).frame(height: 130).clipped()
+                            ImportantDayCoverImage(url: source.url, cropX: draft.preferences.cropX, cropY: draft.preferences.cropY).frame(height: 130).clipped()
                             Button("Cancel selected photo") { photoSession.end(); coverSource = nil; selectedPhoto = nil }
                         }
                         if day != nil { Toggle("Remove saved cover", isOn: $removeCover) }
@@ -369,6 +392,11 @@ struct ImportantDayEditorView: View {
                     Text("This shares only its title, date rules and a small cover with widgets. Your entries and original photos stay in the app.").font(.caption).foregroundStyle(.secondary)
                 }
                 if let error { Section { Text(error).foregroundStyle(.red).accessibilityIdentifier("important-day-save-error") } }
+            }
+            .safeAreaInset(edge: .top) {
+                if externalRouter.pending != nil {
+                    Text("An Important Day is waiting. Finish or cancel this editor, then open the request.").font(.caption).padding(8).background(.bar).accessibilityIdentifier("important-day-editor-route-queued")
+                }
             }
             .navigationTitle(day == nil ? String(localized: "Add Important Day") : String(localized: "Edit Important Day"))
             .toolbar {
@@ -399,6 +427,8 @@ struct ImportantDayEditorView: View {
                 if new != .anniversary && draft.rule.year == nil { draft.rule.year = today.year }
                 draft.rule.perspective = new == .beginning ? .elapsed : .next
             }
+            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
             .onChange(of: selectedPhoto) { _, selected in loadPhoto(selected) }
             .onDisappear { photoSession.end() }
             .confirmationDialog("A day with this name and date already exists", isPresented: $duplicateConfirmation, titleVisibility: .visible) {
@@ -408,10 +438,18 @@ struct ImportantDayEditorView: View {
     }
     @ViewBuilder private var dateFields: some View {
         if draft.rule.calendar == .gregorian && draft.rule.year != nil {
-            DatePicker("Date", selection: Binding(get: { ImportantCivilDay(year: draft.rule.year ?? today.year, month: draft.rule.month, day: draft.rule.day).date ?? Date() }, set: { date in
-                let value = ImportantCivilDay(date, timeZone: .init(secondsFromGMT: 0)!); draft.rule.year = value.year; draft.rule.month = value.month; draft.rule.day = value.day
-            }), in: ImportantCivilDay(year: 1901, month: 1, day: 1).date!...ImportantCivilDay(year: 2100, month: 12, day: 31).date!, displayedComponents: .date)
-                .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!).accessibilityIdentifier("important-day-date")
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Date")
+                    Text(civilDateBinding.wrappedValue, format: .dateTime.year().month().day()).fixedSize(horizontal: false, vertical: true)
+                    DatePicker("Date", selection: civilDateBinding, in: supportedDates, displayedComponents: .date)
+                        .datePickerStyle(.wheel).labelsHidden().frame(maxWidth: .infinity)
+                        .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!).accessibilityIdentifier("important-day-date")
+                }
+            } else {
+                DatePicker("Date", selection: civilDateBinding, in: supportedDates, displayedComponents: .date)
+                    .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!).accessibilityIdentifier("important-day-date")
+            }
         } else {
             if draft.rule.year != nil {
                 Stepper("Starting year: \(draft.rule.year ?? today.year)", value: Binding(get: { draft.rule.year ?? today.year }, set: { draft.rule.year = $0 }), in: 1901...2100)
@@ -420,6 +458,14 @@ struct ImportantDayEditorView: View {
             Picker("Day", selection: $draft.rule.day) { ForEach(1...(draft.rule.calendar == .chinese ? 30 : 31), id: \.self) { Text(String($0)).tag($0) } }
         }
         if draft.rule.calendar == .chinese { Toggle("Lunar leap month", isOn: $draft.rule.isLeapMonth) }
+    }
+    private var supportedDates: ClosedRange<Date> {
+        ImportantCivilDay(year: 1901, month: 1, day: 1).date!...ImportantCivilDay(year: 2100, month: 12, day: 31).date!
+    }
+    private var civilDateBinding: Binding<Date> {
+        Binding(get: { ImportantCivilDay(year: draft.rule.year ?? today.year, month: draft.rule.month, day: draft.rule.day).date ?? Date() }, set: { date in
+            let value = ImportantCivilDay(date, timeZone: .init(secondsFromGMT: 0)!); draft.rule.year = value.year; draft.rule.month = value.month; draft.rule.day = value.day
+        })
     }
     @ViewBuilder private var specialRules: some View {
         if draft.rule.calendar == .gregorian && draft.rule.preset == .anniversary && draft.rule.month == 2 && draft.rule.day == 29 {
@@ -460,6 +506,8 @@ struct ImportantDayEditorView: View {
             }
             _ = try ImportantDayService(context: context, mediaStore: mediaStore).save(draft, id: submissionID, sourceEntryID: sourceEntry?.id, coverSource: photo, removeCover: removeCover)
             let ask = !draft.preferences.reminderOffsets.isEmpty
+            if day == nil { UserDefaults.standard.set(true, forKey: "ImportantDayHasSavedDay") }
+            reminders.savedImportantDayID = ask ? submissionID : nil
             photoSession.end()
             Task { await reminders.reconcile(context: context, requestPermission: ask) }
             dismiss()
@@ -510,6 +558,42 @@ struct ImportantDaysTodaySection: View {
             } header: {
                 HStack { Text("Important Days"); Spacer(); NavigationLink("All") { ImportantDaysView(mediaStore: mediaStore, thumbnailStore: thumbnailStore) } }
             }.accessibilityIdentifier("today-important-days")
+        }
+    }
+}
+
+struct ImportantDayReminderFeedbackView: View {
+    @Environment(TodoReminderCoordinator.self) private var reminders
+    @Query private var days: [ImportantDay]
+    var body: some View {
+        if let id = reminders.savedImportantDayID, let day = days.first(where: { $0.id == id }) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Important day saved").font(.subheadline.bold())
+                    Text(reminders.status(for: day).status.label).font(.caption)
+                }
+                Spacer()
+                Button("Dismiss") { reminders.savedImportantDayID = nil }
+            }.padding(10).background(.regularMaterial).accessibilityIdentifier("important-day-save-feedback")
+        }
+    }
+}
+
+/// Private on-screen preview reuses the extension's real view. It never grants or publishes desktop access.
+struct ImportantDayWidgetPreview: View {
+    let day: ImportantDay
+    let mediaStore: MediaStore
+    @Query private var covers: [ImportantDayCover]
+    var body: some View {
+        if let rule = try? day.rule(), let p = try? day.preferences() {
+            let record = ImportantDayWidgetRecord(id: day.id, title: day.title, rule: rule, photoStyle: p.photoStyle, cropX: p.cropX, cropY: p.cropY, coverFilename: nil)
+            let date = Date(), snapshot = ImportantDayWidgetSnapshot(version: 1, generation: UUID(), generatedAt: date, records: [record])
+            let entry = DayWidgetEntry(date: date, ids: [day.id], snapshot: snapshot, sample: false)
+            let cover = covers.first { $0.dayID == day.id }
+            let image = cover.flatMap { try? mediaStore.fileURL(for: $0.relativePath) }.flatMap(ImportantDayWidgetPublisher.smallImage).flatMap(UIImage.init(data:))
+            SingleDayWidgetView(entry: entry, previewMode: true, previewImage: image)
+                .frame(height: 170).clipShape(RoundedRectangle(cornerRadius: 20))
+                .accessibilityIdentifier("important-day-widget-preview")
         }
     }
 }

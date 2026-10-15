@@ -32,18 +32,41 @@ enum ReminderUpdateResult: Equatable {
 }
 
 @MainActor
+protocol LocalReminderNotificationClient {
+    func authorizationStatus() async -> UNAuthorizationStatus
+    func requestAuthorization() async throws -> Bool
+    func pendingIdentifiers() async -> Set<String>
+    func remove(_ identifiers: [String])
+    func addRepeating(identifier: String, components: DateComponents, title: String, body: String) async throws
+}
+@MainActor
+final class SystemLocalReminderNotificationClient: LocalReminderNotificationClient {
+    private let center: UNUserNotificationCenter
+    init(center: UNUserNotificationCenter = .current()) { self.center = center }
+    func authorizationStatus() async -> UNAuthorizationStatus { await center.notificationSettings().authorizationStatus }
+    func requestAuthorization() async throws -> Bool { try await center.requestAuthorization(options: [.alert, .sound]) }
+    func pendingIdentifiers() async -> Set<String> { Set(await center.pendingNotificationRequests().map(\.identifier)) }
+    func remove(_ identifiers: [String]) { center.removePendingNotificationRequests(withIdentifiers: identifiers) }
+    func addRepeating(identifier: String, components: DateComponents, title: String, body: String) async throws {
+        let content = UNMutableNotificationContent(); content.title = title; content.body = body; content.sound = .default
+        try await center.add(UNNotificationRequest(identifier: identifier, content: content,
+            trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true)))
+    }
+}
+
+@MainActor
 final class LocalReminderScheduler {
     static let dailyIdentifier = "com.yocruzer.PersonalGrowthOS.reminder.daily-recording"
     static let weeklyIdentifier = "com.yocruzer.PersonalGrowthOS.reminder.weekly-review"
 
-    private let center: UNUserNotificationCenter
+    private let client: any LocalReminderNotificationClient
 
-    init(center: UNUserNotificationCenter = .current()) {
-        self.center = center
+    init(center: UNUserNotificationCenter = .current(), client: (any LocalReminderNotificationClient)? = nil) {
+        self.client = client ?? SystemLocalReminderNotificationClient(center: center)
     }
 
     func authorizationIsDenied() async -> Bool {
-        await center.notificationSettings().authorizationStatus == .denied
+        await client.authorizationStatus() == .denied
     }
 
     func updateDaily(
@@ -93,41 +116,28 @@ final class LocalReminderScheduler {
         await NotificationMutationGate.shared.acquire()
         defer { NotificationMutationGate.shared.release() }
         guard enabled else {
-            center.removePendingNotificationRequests(withIdentifiers: [identifier])
+            client.remove([identifier])
             return .removed
         }
 
-        var status = await center.notificationSettings().authorizationStatus
+        var status = await client.authorizationStatus()
         if status == .notDetermined, requestPermission {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound])
+            let granted = try await client.requestAuthorization()
             status = granted ? .authorized : .denied
         }
         try Task.checkCancellation()
 
         switch status {
         case .authorized, .provisional, .ephemeral:
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = .default
-            let request = UNNotificationRequest(
-                identifier: identifier,
-                content: content,
-                trigger: UNCalendarNotificationTrigger(
-                    dateMatching: dateComponents,
-                    repeats: true
-                )
-            )
             try Task.checkCancellation()
-            let pending = await center.pendingNotificationRequests()
-            guard pending.contains(where: { $0.identifier == identifier }) || pending.count < 60 else {
-                throw NotificationQueueError.full
-            }
-            try await center.add(request)
-            guard await center.pendingNotificationRequests().contains(where: { $0.identifier == identifier }) else { throw NotificationQueueError.notConfirmed }
+            let pending = await client.pendingIdentifiers()
+            guard pending.contains(identifier) || pending.count < 60 else { throw NotificationQueueError.full }
+            try Task.checkCancellation()
+            try await client.addRepeating(identifier: identifier, components: dateComponents, title: title, body: body)
+            guard await client.pendingIdentifiers().contains(identifier) else { throw NotificationQueueError.notConfirmed }
             return .scheduled
         case .denied:
-            center.removePendingNotificationRequests(withIdentifiers: [identifier])
+            client.remove([identifier])
             return .permissionDenied
         case .notDetermined:
             return .permissionRequired

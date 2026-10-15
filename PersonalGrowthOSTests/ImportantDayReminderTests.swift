@@ -1,5 +1,6 @@
 import SwiftData
 import XCTest
+import UserNotifications
 @testable import PersonalGrowthOS
 
 @MainActor
@@ -88,5 +89,67 @@ final class ImportantDayReminderTests: XCTestCase {
         let second = Task { @MainActor in await gate.acquire(); trace.append("b-enter"); gate.release() }
         await first.value; await second.value
         XCTAssertEqual(trace, ["a-enter", "a-exit", "b-enter"])
+    }
+}
+
+@MainActor
+private final class MixedReminderClient: TodoNotificationClient, LocalReminderNotificationClient {
+    var records: [String: TodoReminderRequest] = [:]
+    var repeats: Set<String> = []
+    var others: Set<String> = []
+    var allow = true
+    var duringPermission: (() async -> Void)?
+    var trace: [String] = []
+    func permission() async -> TodoNotificationPermission {
+        trace.append("batch-permission")
+        if let duringPermission { self.duringPermission = nil; await duringPermission() }
+        return allow ? .allowed : .denied
+    }
+    func requestPermission() async throws -> Bool { allow }
+    func authorizationStatus() async -> UNAuthorizationStatus { trace.append("repeating-permission"); return allow ? .authorized : .denied }
+    func requestAuthorization() async throws -> Bool { allow }
+    func pendingIdentifiers() async -> Set<String> { Set(records.keys).union(repeats).union(others) }
+    func remove(_ identifiers: [String]) { for id in identifiers { records.removeValue(forKey: id); repeats.remove(id) } }
+    func add(_ request: TodoReminderRequest) async throws { records[request.id] = request; trace.append("batch-add") }
+    func addRepeating(identifier: String, components: DateComponents, title: String, body: String) async throws { repeats.insert(identifier); trace.append("repeating-add") }
+}
+
+@MainActor
+extension ImportantDayReminderTests {
+    func testRealDailyWeeklyAdapterAndCombinedBatchShareCapacityAndSerialBoundary() async throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), c = container.mainContext
+        let client = MixedReminderClient(); client.others = Set((0..<59).map { "unknown-\($0)" })
+        let repeating = LocalReminderScheduler(client: client)
+        let daily = try await repeating.updateDaily(enabled: true, minutesAfterMidnight: 540, requestPermission: false)
+        XCTAssertEqual(daily, .scheduled)
+        let task = try TodoTaskService(context: c).create(.init(title: "Closer", remindAt: now.addingTimeInterval(3600)))
+        let day = try makeDay(c, offsets: [0]), coordinator = TodoReminderCoordinator(client: client, now: { self.now })
+        await coordinator.reconcile(context: c)
+        XCTAssertEqual(coordinator.status(for: task), .queueFull); XCTAssertEqual(coordinator.status(for: day).status, .queueFull)
+        XCTAssertTrue(client.repeats.contains(LocalReminderScheduler.dailyIdentifier))
+        _ = try await repeating.updateDaily(enabled: false, minutesAfterMidnight: 540, requestPermission: false)
+        await coordinator.reconcile(context: c)
+        XCTAssertEqual(coordinator.status(for: task), .scheduled)
+        do {
+            _ = try await repeating.updateWeekly(enabled: true, weekday: 1, minutesAfterMidnight: 540, requestPermission: false)
+            XCTFail("A full shared queue must not silently schedule another request")
+        } catch { XCTAssertTrue(error is NotificationQueueError) }
+        XCTAssertNotNil(client.records[TodoReminderCoordinator.identifier(task.id)])
+        client.others = []
+        var weekly: Task<ReminderUpdateResult, Error>?
+        client.trace = []
+        client.duringPermission = {
+            weekly = Task { try await repeating.updateWeekly(enabled: true, weekday: 1, minutesAfterMidnight: 540, requestPermission: false) }
+            await Task.yield()
+            XCTAssertFalse(client.trace.contains("repeating-permission"))
+        }
+        await coordinator.reconcile(context: c)
+        let result = try await weekly?.value
+        XCTAssertEqual(result, .scheduled)
+        XCTAssertTrue(client.repeats.contains(LocalReminderScheduler.weeklyIdentifier))
+        let lastBatch = try XCTUnwrap(client.trace.lastIndex(of: "batch-add"))
+        let repeatingPermission = try XCTUnwrap(client.trace.firstIndex(of: "repeating-permission"))
+        XCTAssertLessThan(lastBatch, repeatingPermission)
+        XCTAssertEqual(coordinator.status(for: task), .scheduled); XCTAssertEqual(coordinator.status(for: day).status, .scheduled)
     }
 }

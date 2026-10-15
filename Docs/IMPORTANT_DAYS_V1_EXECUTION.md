@@ -4,7 +4,7 @@
 
 - 产品基线：`20d315a62179ad29a6cbcf76c33c11638412e54e`
 - 固定 Goal/设计：`3365561c5888701ce662ac6c8655ad1629ded6d0`；已完整读取，祖先核对通过，diff 仅两份新增 Markdown。
-- 工作树：`/private/tmp/PersonalGrowthOS-important-days-v1`；分支 `codex/important-days-v1`；当前起点 HEAD 同固定 Goal SHA；尚无 upstream/PR。
+- 工作树：`/private/tmp/PersonalGrowthOS-important-days-v1`；分支 `codex/important-days-v1`；当前已提交 HEAD `cbd2075427c04642876b2d387d00b82c173a5e5f`；upstream `origin/codex/important-days-v1`；Draft PR [#10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base `codex/quiet-wins-on-d72`。后续 B 实现尚在工作树。
 - 原工作区保留 project.pbxproj、Localizable.xcstrings 与未跟踪 xcodecloud 改动。
 - 远端 base 已核对为固定产品基线；未追逐其他本地分支。
 
@@ -46,3 +46,21 @@
 农历独立真值：香港天文台 [2023](https://www.hko.gov.hk/en/gts/time/calendar/pdf/files/2023e.pdf)、[2024](https://www.hko.gov.hk/en/gts/time/calendar/pdf/files/2024e.pdf)、[2025](https://www.hko.gov.hk/en/gts/time/calendar/pdf/files/2025e.pdf)。覆盖新年、闰二月、年末和缺三十；全1901–2100年初一遍历为内部一致性测试，不冒充200年逐日独立天文核验。范围外拒绝，不猜测。
 
 当前下一步：固定 checkpoint 并启动独立数据/规则审查；继续Widget target/三种表达/最小授权快照和安全路由，不停在A。
+
+## B 开发中的恢复点
+
+已加入实际 Widget target/scheme/embed、同一 App Group、数字/照片/清单与 AppIntent 配置、原子授权快照/小图、35天时间线、稳定URL与通知路由、恢复后重建、连续裁切预览、实际提醒反馈、组件说明及159个提取键中英翻译。尚未最终审查/完整回归，不能视为完成。
+
+- R1独立数据审查针对固定cbd2075无confirmed新P0/P1/P2，见REVIEW；新差异仍需复审。1cfa漏暂存project注册已追加cbd2075修复并推送。
+- Draft PR #10已建立并附在当前会话。首次gh因正文文件未写入而失败（无PR）；写入后查询无重复再创建。
+- Widget build1/build2 Debug PASS（App/Share/Widget，无签名）；Widget1 **6/6 PASS exit0**。缺图框架输出路径后已补fileExists，避免此日志。
+- ImportantUI1 **2/4 PASS exit65**。最短创建/相关记录重开与中文最大字号通过；确认开关点击落在标签而未切换，录屏明确off。XCTest open(URL)重启进程99226到99234，不能证明热草稿。截图发现紧凑日期控件在最大字号裁切，已改为原生wheel和换行日期；原Dark启动参数无效，不能将原截图当Dark。
+- ImportantUI2 **2/3 PASS exit65**。右侧开关点击和值=1后，日期确认流程PASS；启动专用模拟器并实际simctl appearance dark后，大字号wheel截图PASS。系统openurl已提交，但iOS中文“打开”确认尚未点击，路由未送达；保留route-warm-wait.png。已补系统确认交互，AffectedB1进行中。
+- 当前命令为 `python3 Scripts/run_important_day_route_ui.py --simulator EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A --result /private/tmp/pgos-important-days-evidence/AffectedB1.xcresult --log /private/tmp/pgos-important-days-evidence/affected-b1.log`，选择ImportantDayPersistenceTests、ImportantDayReminderTests、TodoReminderTests、ImportantDayWidgetTests及一项热路由UI。脚本读取XCTest readiness后发真实simctl openurl，测试确认系统弹窗，不用自造router状态代替外部事件。单独Xcode运行热路由测试缺driver会等待失败；集中UI须使用此脚本。
+- 新低空间/收藏排序回滚、QuietWins关联正反对照，以及可注入daily/weekly实际调度适配的共享容量/串行验证已补入，待本轮结果。
+
+下一步：处理AffectedB1实际失败，核验中文Dark截图与桌面实际呈现；固定B SHA，独立产品/集成审查与数据增量复审；之后一次全量Unit/集中关键UI及最终无签名构建。
+
+- AffectedB1：受影响Unit **27/27 PASS**，其中含实际daily/weekly适配共享容量与串行验证。1项热路由UI后段FAIL，真实同进程草稿值断言已经通过；返回后键盘恢复覆盖Tab，导致Growth点击失败。已仅在外部路由呈现前明确结束键盘焦点，不改草稿/Tab。
+- RouteUI3：真实系统URL两次均送达，Record原值及当前编辑器未保存文本断言通过、排队通知通过；末段FAIL因测试把实际StaticText“Day unavailable”查成Other。原始层级1508E875附件证明降级已呈现；已改为精确标题和描述断言，不改产品降级逻辑。
+- Widget真实视图已共享到App帮助页，不再仅用列表行预览；照片裁切、遮罩、数字语义使用同一代码。AX尺寸减少副信息/清单行，固定物理尺寸内将文字缩放上界设为xxxLarge，数字最小缩放0.8，完整名称/距离提供语音标签；不以微小字号塞入全部信息。待真实SwiftUI渲染与人工目视检查。
