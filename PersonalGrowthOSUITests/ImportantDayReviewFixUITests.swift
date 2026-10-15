@@ -99,8 +99,13 @@ final class ImportantDayReviewFixUITests: XCTestCase {
         app.buttons["Cancel"].firstMatch.tap()
         edit()
         let leap = app.switches["Lunar leap month"]; scrollTo(leap, app: app); XCTAssertEqual(leap.value as? String, "1")
-        for _ in 0..<3 { app.swipeDown() }
-        app.buttons["important-day-calendar"].tap(); app.buttons["Gregorian"].tap()
+        let calendar = app.buttons["important-day-calendar"]
+        for _ in 0..<8 {
+            if calendar.isHittable { break }
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.3)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.8)))
+        }
+        XCTAssertTrue(calendar.isHittable)
+        calendar.tap(); app.buttons["Gregorian"].tap()
         app.buttons["Use the date in the selected calendar"].tap(); XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
         app.buttons["important-day-save"].tap()
         app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
