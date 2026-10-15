@@ -13039,6 +13039,86 @@
           }
         }
       }
+    },
+    "Associate with a specific anniversary year": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associate with a specific anniversary year"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关联指定年份的纪念期次"
+          }
+        }
+      }
+    },
+    "Lunar year": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lunar year"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "农历年份"
+          }
+        }
+      }
+    },
+    "Anniversary year": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anniversary year"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "纪念年份"
+          }
+        }
+      }
+    },
+    "Selected date: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selected date: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所选期次日期：%@"
+          }
+        }
+      }
+    },
+    "There is no anniversary occurrence in this year under the saved date rules. Choose another year.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no anniversary occurrence in this year under the saved date rules. Choose another year."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按已保存的日期规则，这一年没有纪念期次。请选择其他年份。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

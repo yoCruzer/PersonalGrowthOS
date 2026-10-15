@@ -37,11 +37,7 @@ private enum DayTimeline {
     }
     static func timeline(ids: [UUID?]) -> Timeline<DayWidgetEntry> {
         let now = Date(), snapshot = try? ImportantDayWidgetSnapshotStore.shared().read()
-        let calendar = Calendar.current
-        var dates = [now]
-        for offset in 1...35 {
-            if let day = calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: now)) { dates.append(day) }
-        }
+        let dates = ImportantDayWidgetTimeline.dates(from: now)
         return Timeline(entries: dates.map { .init(date: $0, ids: ids, snapshot: snapshot, sample: false) }, policy: .atEnd)
     }
     static func sample(list: Bool) -> DayWidgetEntry {

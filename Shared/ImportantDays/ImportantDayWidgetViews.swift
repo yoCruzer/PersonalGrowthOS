@@ -2,6 +2,12 @@ import SwiftUI
 import WidgetKit
 import UIKit
 
+enum ImportantDayWidgetTimeline {
+    static func dates(from now: Date, calendar: Calendar = .current) -> [Date] {
+        [now] + (1...35).compactMap { calendar.date(byAdding: .day, value: $0, to: calendar.startOfDay(for: now)) }
+    }
+}
+
 struct DayWidgetEntry: TimelineEntry {
     let date: Date
     let ids: [UUID?]
@@ -17,6 +23,7 @@ struct SingleDayWidgetView: View {
     var previewMode = false
     var previewImage: UIImage? = nil
     @Environment(\.widgetRenderingMode) private var renderingMode
+    @Environment(\.redactionReasons) private var redactionReasons
     @Environment(\.dynamicTypeSize) private var typeSize
     var body: some View {
         if previewMode { content.padding(16).background { background } }
@@ -24,7 +31,7 @@ struct SingleDayWidgetView: View {
     }
     private var content: some View {
         Group {
-            if let record = entry.record(at: 0), let result = try? ImportantDayDateEngine.evaluate(record.rule, today: .init(entry.date)) {
+            if !redactionReasons.contains(.privacy), let record = entry.record(at: 0), let result = try? ImportantDayDateEngine.evaluate(record.rule, today: .init(entry.date)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.title).font(.headline).lineLimit(typeSize.isAccessibilitySize ? 1 : 2).fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
@@ -49,7 +56,7 @@ struct SingleDayWidgetView: View {
         }
     }
     @ViewBuilder private var background: some View {
-            if let record = entry.record(at: 0), let image = photo(record), renderingMode == .fullColor {
+            if !redactionReasons.contains(.privacy), let record = entry.record(at: 0), let image = photo(record), renderingMode == .fullColor {
                 ImportantDayPhotoView(image: image, cropX: record.cropX, cropY: record.cropY)
                     .overlay(Color.black.opacity(0.58))
             } else { Color(.secondarySystemBackground) }
@@ -67,6 +74,7 @@ struct SingleDayWidgetView: View {
     }
 }
 struct DayListWidgetView: View {
+    @Environment(\.redactionReasons) private var redactionReasons
     let entry: DayWidgetEntry
     var previewMode = false
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -78,7 +86,7 @@ struct DayListWidgetView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Important Days").font(.caption.bold())
             ForEach(0..<(typeSize.isAccessibilitySize ? 2 : 3), id: \.self) { index in
-                if let record = entry.record(at: index) {
+                if !redactionReasons.contains(.privacy), let record = entry.record(at: index) {
                     Link(destination: ImportantDayRoute.url(id: record.id)) {
                         HStack(alignment: .firstTextBaseline) {
                             Text(record.title).font(.subheadline).lineLimit(typeSize.isAccessibilitySize ? 2 : 1)

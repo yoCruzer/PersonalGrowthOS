@@ -119,6 +119,7 @@ struct ImportantDayDetailView: View {
     @Environment(ImportantDayWidgetPublisher.self) private var widgetPublisher
     @State private var occurrenceFilter = "all"
     @State private var explicitOccurrence = false
+    @State private var occurrenceYear: Int?
     @State private var referenceDate = Date()
     @Environment(\.scenePhase) private var scenePhase
     private var day: ImportantDay? { days.first { $0.id == dayID } }
@@ -130,7 +131,17 @@ struct ImportantDayDetailView: View {
         return entries.filter { ids.contains($0.id) }.sorted { $0.occurredAt > $1.occurredAt }
     }
     private var nextOccurrence: ImportantCivilDay? { day.flatMap { try? $0.rule() }.flatMap { try? ImportantDayDateEngine.evaluate($0, today: today) }?.next }
-    private var selectedOccurrence: ImportantCivilDay? { explicitOccurrence ? nextOccurrence : nil }
+    private var selectedYear: Int {
+        if let occurrenceYear { return occurrenceYear }
+        guard let rule = day.flatMap({ try? $0.rule() }), let next = nextOccurrence else { return today.year }
+        // A lunar year's last month can fall in the next Gregorian year.
+        return [next.year - 1, next.year].first { (try? ImportantDayDateEngine.occurrence(rule, in: $0)) == next } ?? today.year
+    }
+    private var selectedOccurrence: ImportantCivilDay? {
+        guard explicitOccurrence, let rule = day.flatMap({ try? $0.rule() }) else { return nil }
+        return try? ImportantDayDateEngine.occurrence(rule, in: selectedYear)
+    }
+    private var invalidPeriod: Bool { explicitOccurrence && selectedOccurrence == nil }
     var body: some View {
         Group {
             if let day {
@@ -155,13 +166,20 @@ struct ImportantDayDetailView: View {
                     }
                     if !day.isArchived {
                         Section {
-                            if nextOccurrence != nil, (try? day.rule().preset) == .anniversary {
-                                Toggle("Associate with the next anniversary date", isOn: $explicitOccurrence)
+                            if let rule = try? day.rule(), rule.preset == .anniversary {
+                                Toggle("Associate with a specific anniversary year", isOn: $explicitOccurrence).accessibilityIdentifier("important-day-explicit-period")
+                                if explicitOccurrence {
+                                    Picker(rule.calendar == .chinese ? "Lunar year" : "Anniversary year", selection: Binding(get: { selectedYear }, set: { occurrenceYear = $0 })) {
+                                        ForEach((rule.year ?? ImportantDayDateEngine.years.lowerBound)...ImportantDayDateEngine.years.upperBound, id: \.self) { Text(String($0)).tag($0) }
+                                    }.pickerStyle(.wheel).frame(height: 120).accessibilityIdentifier("important-day-period-year")
+                                    if let selectedOccurrence { Text("Selected date: \(selectedOccurrence.identifier)").accessibilityIdentifier("important-day-selected-period") }
+                                    else { Text("There is no anniversary occurrence in this year under the saved date rules. Choose another year.").foregroundStyle(.secondary) }
+                                }
                                 Text("Off associates with the day itself. A period is saved only when you choose it.").font(.caption).foregroundStyle(.secondary)
                             }
-                            Button { writing = true } label: { Label("Write a related entry", systemImage: "square.and.pencil") }.accessibilityIdentifier("important-day-write")
-                            Button("Link an existing entry") { linking = true }.accessibilityIdentifier("important-day-link")
-                            Button("Add related Todo") { addingTodo = true }.accessibilityIdentifier("important-day-todo")
+                            Button { writing = true } label: { Label("Write a related entry", systemImage: "square.and.pencil") }.accessibilityIdentifier("important-day-write").disabled(invalidPeriod)
+                            Button("Link an existing entry") { linking = true }.accessibilityIdentifier("important-day-link").disabled(invalidPeriod)
+                            Button("Add related Todo") { addingTodo = true }.accessibilityIdentifier("important-day-todo").disabled(invalidPeriod)
                         }
                     }
                     Section("Related entries") {
@@ -169,7 +187,7 @@ struct ImportantDayDetailView: View {
                             Picker("Anniversary period", selection: $occurrenceFilter) {
                                 Text("All").tag("all"); Text("General entries").tag("general")
                                 ForEach(periods, id: \.self) { Text($0).tag($0) }
-                            }
+                            }.accessibilityIdentifier("important-day-period-filter")
                         }
                         ForEach(relatedEntries) { entry in
                             NavigationLink { EntryDetailView(entry: entry, mediaStore: mediaStore, thumbnailStore: thumbnailStore) } label: { TimelineRow(entry: entry, thumbnailStore: thumbnailStore) }

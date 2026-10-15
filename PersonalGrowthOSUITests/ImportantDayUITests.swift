@@ -44,6 +44,28 @@ final class ImportantDayUITests: XCTestCase {
         let link = app.staticTexts["A synthetic day"].firstMatch; scrollTo(link, app: app); link.tap()
         XCTAssertTrue(app.buttons["important-day-write"].waitForExistence(timeout: 5))
     }
+    func testExplicitPastLunarPeriodSavesActualCivilDateAndFiltersAfterRelaunch() {
+        let app = launch(seed: true)
+        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-important-days"].tap()
+        app.staticTexts["Synthetic lunar birthday · 合成农历生日"].firstMatch.tap()
+        let toggle = app.switches["important-day-explicit-period"]; scrollTo(toggle, app: app)
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        let wheel = app.pickerWheels.firstMatch
+        XCTAssertTrue(wheel.waitForExistence(timeout: 5)); wheel.adjust(toPickerWheelValue: "2024")
+        XCTAssertTrue(app.staticTexts["Selected date: 2024-02-10"].exists)
+        let write = app.buttons["important-day-write"]; scrollTo(write, app: app); write.tap()
+        let body = app.textViews["capture-body"]; body.tap(); body.typeText("Explicit 2024 lunar anniversary memory")
+        app.buttons["capture-save"].tap()
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-important-days"].tap()
+        app.staticTexts["Synthetic lunar birthday · 合成农历生日"].firstMatch.tap()
+        let period = app.buttons["important-day-period-filter"]; scrollTo(period, app: app); period.tap()
+        app.buttons["General entries"].firstMatch.tap()
+        let memory = app.staticTexts["Explicit 2024 lunar anniversary memory"]
+        XCTAssertFalse(memory.exists)
+        period.tap(); app.buttons["2024-02-10"].firstMatch.tap()
+        XCTAssertTrue(memory.exists)
+    }
     func testOldEntryCreationRequiresActualOccurrenceConfirmation() {
         let app = launch(seed: true)
         app.tabBars.buttons["Timeline"].tap(); app.staticTexts["Synthetic memory"].firstMatch.tap()
@@ -80,6 +102,26 @@ final class ImportantDayUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["This day was removed, archived or is no longer authorized for desktop display."].exists)
         app.navigationBars.buttons["Done"].firstMatch.tap()
         app.tabBars.buttons["Record"].tap(); XCTAssertEqual(body.value as? String, "Record draft survives widget route")
+    }
+    func testExternalURLColdLaunchAndStartupFailureRetainsRouteUntilSafeRetry() {
+        let app = launch(seed: true)
+        app.terminate()
+        print("PGOS_ROUTE_UI_READY_3"); fflush(stdout)
+        acceptSystemOpenIfNeeded(app)
+        XCTAssertTrue(app.staticTexts["Day unavailable"].waitForExistence(timeout: 30))
+        app.terminate()
+        app.launchArguments += ["-PGOSStartupFailureTest"]
+        app.launch()
+        let diagnostic = app.staticTexts["startup-diagnostic"]
+        XCTAssertTrue(diagnostic.waitForExistence(timeout: 10))
+        print("PGOS_ROUTE_UI_READY_4"); fflush(stdout)
+        acceptSystemOpenIfNeeded(app)
+        XCTAssertTrue(diagnostic.exists)
+        XCTAssertFalse(app.buttons["important-day-write"].exists)
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        app.buttons["startup-retry"].tap()
+        XCTAssertTrue(app.buttons["important-day-write"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Synthetic trip · 合成旅行"].exists)
     }
     func testChineseDarkLargeTextShowsDaysAndPresets() {
         continueAfterFailure = false

@@ -20,6 +20,8 @@ command = ['xcodebuild', '-project', 'PersonalGrowthOS.xcodeproj', '-scheme', 'P
            '-parallel-testing-enabled', 'NO', *extra, 'test', 'CODE_SIGNING_ALLOWED=NO']
 routes = {
     'PGOS_ROUTE_UI_READY_1': 'suixinlog://important-day/11111111-2222-4333-8444-555555555555',
+    'PGOS_ROUTE_UI_READY_3': 'suixinlog://important-day/00000000-0000-4000-8000-000000000099',
+    'PGOS_ROUTE_UI_READY_4': 'suixinlog://important-day/11111111-2222-4333-8444-555555555555',
     'PGOS_ROUTE_UI_READY_2': 'suixinlog://important-day/00000000-0000-4000-8000-000000000099',
 }
 seen = set()

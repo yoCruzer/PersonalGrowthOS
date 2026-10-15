@@ -101,6 +101,20 @@ final class ImportantDayWidgetTests: XCTestCase {
         XCTAssertEqual(router.pending?.id, id); XCTAssertEqual(router.pending?.source, .notification)
         router.receive(id: id, source: .widget); XCTAssertEqual(router.pending?.source, .widget)
     }
+    func testActualProviderDateSequenceSchedulesThirtyFiveLocalMidnightsAcrossDST() throws {
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        for start in [ImportantCivilDay(year: 2026, month: 3, day: 7), .init(year: 2026, month: 10, day: 31)] {
+            let now = try XCTUnwrap(start.instant(minutes: 720, timeZone: calendar.timeZone))
+            let dates = ImportantDayWidgetTimeline.dates(from: now, calendar: calendar)
+            XCTAssertEqual(dates.count, 36); XCTAssertEqual(dates.first, now)
+            for offset in 1...35 {
+                XCTAssertEqual(ImportantCivilDay(dates[offset], timeZone: calendar.timeZone), start.adding(days: offset))
+                XCTAssertEqual(calendar.component(.hour, from: dates[offset]), 0)
+            }
+            let midnightHours = dates[2].timeIntervalSince(dates[1]) / 3600
+            XCTAssertEqual(midnightHours, start.month == 3 ? 23 : 25)
+        }
+    }
     func testFutureTimelineInputsRecomputeDaysWithoutRepublishing() throws {
         let rule = ImportantDayDateRule(year: 2027, month: 1, day: 1)
         let first = try ImportantDayDateEngine.evaluate(rule, today: .init(year: 2026, month: 12, day: 31))
@@ -112,6 +126,34 @@ final class ImportantDayWidgetTests: XCTestCase {
 
 @MainActor
 extension ImportantDayWidgetTests {
+    func testPrivacyRedactionRemovesPhotoPixelsAndPrivateTextWithNormalPositiveControl() throws {
+        let id = UUID(), date = ImportantCivilDay(year: 2026, month: 6, day: 20).date!
+        func photo(_ color: UIColor) -> UIImage {
+            UIGraphicsImageRenderer(size: CGSize(width: 340, height: 170)).image { c in
+                color.setFill(); c.fill(CGRect(x: 0, y: 0, width: 340, height: 170))
+            }
+        }
+        func render(title: String, image: UIImage, privacy: Bool) throws -> Data {
+            let record = ImportantDayWidgetRecord(id: id, title: title, rule: .init(year: 2027, month: 1, day: 1), photoStyle: true, cropX: 0.5, cropY: 0.5, coverFilename: nil)
+            let entry = DayWidgetEntry(date: date, ids: [id], snapshot: .init(version: 1, generation: UUID(), generatedAt: date, records: [record]), sample: false)
+            let renderer = ImageRenderer(content: SingleDayWidgetView(entry: entry, previewMode: true, previewImage: image)
+                .frame(width: 340, height: 170).environment(\.colorScheme, .dark)
+                .environment(\.redactionReasons, privacy ? .privacy : []))
+            renderer.scale = 1
+            return try XCTUnwrap(renderer.uiImage?.pngData())
+        }
+        let orange = photo(.orange), teal = photo(.systemTeal)
+        let normal = try render(title: "PRIVATE A", image: orange, privacy: false)
+        let privateA = try render(title: "PRIVATE A", image: orange, privacy: true)
+        let privateB = try render(title: "OTHER PRIVATE B", image: teal, privacy: true)
+        XCTAssertNotEqual(normal, try render(title: "OTHER PRIVATE B", image: teal, privacy: false))
+        XCTAssertNotEqual(normal, privateA)
+        XCTAssertEqual(privateA, privateB, "Neither private text nor different cover pixels may survive privacy redaction")
+        let directory = URL(fileURLWithPath: "/tmp/pgos-important-days-evidence/widget-renders")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try normal.write(to: directory.appendingPathComponent("privacy-positive-normal.png"))
+        try privateA.write(to: directory.appendingPathComponent("privacy-neutral.png"))
+    }
     func testActualWidgetViewsRenderNumericPhotoListLongTitlesAndLargeCounts() throws {
         let directory = URL(fileURLWithPath: "/tmp/pgos-important-days-evidence/widget-renders")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

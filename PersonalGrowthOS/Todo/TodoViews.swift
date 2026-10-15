@@ -230,13 +230,15 @@ struct TodoEditorView: View {
                         Text("Dates change only this occurrence. The original repeat rule stays fixed.").font(.caption)
                     } else {
                         Text("Does not repeat")
-                        Text("Reopen this task before converting it to a repeating series.").font(.caption)
+                        if importantDayID == nil { Text("Reopen this task before converting it to a repeating series.").font(.caption) }
                     }
                     if draft.frequency != nil && draft.plannedDay == nil && draft.deadlineDay == nil {
                         Text("Choose a planned day or hard deadline for the first occurrence before saving.").foregroundStyle(.orange).accessibilityIdentifier("todo-repeat-needs-day")
                     }
+                    if importantDayID == nil {
                     Text("Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after.").font(.caption).foregroundStyle(.secondary)
                     Text("Fixed calendar repeats use the original anchor. Missed dates are skipped; completion creates the first future occurrence.").font(.caption).foregroundStyle(.secondary)
+                    }
                 }
             }
             .safeAreaInset(edge: .bottom) {
