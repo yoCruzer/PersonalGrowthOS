@@ -506,3 +506,8 @@ Build 9 增量：Entry 可拥有置顶元数据与单层纯文字后续补充。
 ## 重要日子 V1 批准增量 — 2026-10-14
 
 Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面、公历/农历日期规则、Today 条件摘要、共享本地提醒与两个桌面 Widget（数字/照片/清单）。保持五 Tab、Record 主路径、原 Bundle ID/主库位置及历史数据。允许必要的追加 Schema/备份版本与 Widget target；原 Widgets 后置范围仅被本增量限定替代。完整边界见固定版本 `IMPORTANT_DAYS_V1_GOAL_ZH.md` / `IMPORTANT_DAYS_V1_DESIGN_ZH.md`；不授权发布或操作私人库。
+
+
+## 睡眠与作息 V1 批准增量 — 2026-10-15
+
+SleepRecord 保存按起床民用日防重的独立睡眠事实，保留本地日期、时区、原始区间精度及各字段填写属性；SleepGoalRule 按生效起床日保存个人就寝目标规则。它们不生成 Entry 或 HabitLog，不把未知当零，不将回忆中点当事实。 具体契约见 `SLEEP_ROUTINE_V1_DESIGN_ZH.md`，授权与门禁见 `SLEEP_ROUTINE_V1_GOAL_ZH.md`。

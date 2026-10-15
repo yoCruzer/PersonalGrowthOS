@@ -127,7 +127,7 @@ extension SleepUITests {
         XCTAssertTrue(app.otherElements["sleep-save-feedback"].waitForExistence(timeout: 5) || app.staticTexts["Bedtime goal saved."].exists)
         app.switches["sleep-show-today"].tap()
         let reminder = app.switches["sleep-reminder-enabled"]; reveal(reminder, app: app); reminder.tap()
-        let status = app.staticTexts["sleep-reminder-status"]
+        let status = app.staticTexts["sleep-reminder-status"]; reveal(status, app: app)
         XCTAssertTrue(status.waitForExistence(timeout: 5))
         XCTAssertTrue(status.label.contains("disabled in iOS Settings"))
         app.tabBars.buttons["Today"].tap(); XCTAssertFalse(app.buttons["today-sleep"].exists)
