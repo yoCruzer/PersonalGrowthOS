@@ -155,6 +155,10 @@ extension ImportantDayPersistenceTests {
         XCTAssertEqual(try c.fetchCount(FetchDescriptor<ImportantDay>()), 2)
         XCTAssertEqual(try c.fetchCount(FetchDescriptor<ImportantDayCover>()), 0)
         XCTAssertTrue(FileManager.default.fileExists(atPath: source.url.path))
+        for (index, day) in [a, b].enumerated() {
+            var favorite = try ImportantDayDraft(day); favorite.preferences.favoriteOrder = index
+            _ = try service.save(favorite, id: day.id)
+        }
         try service.reorderFavorites([a.id, b.id])
         let failing = ImportantDayService(context: c, mediaStore: media, commit: { throw CocoaError(.fileWriteOutOfSpace) })
         XCTAssertThrowsError(try failing.reorderFavorites([b.id, a.id]))

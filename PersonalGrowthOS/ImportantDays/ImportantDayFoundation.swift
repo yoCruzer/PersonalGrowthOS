@@ -189,7 +189,16 @@ final class ImportantDayService {
     func reorderFavorites(_ ids: [UUID]) throws {
         guard Set(ids).count == ids.count else { throw ImportantDayError.invalidData }
         do {
-            let ordered = try ids.map { try day(id: $0) }
+            let all = try context.fetch(FetchDescriptor<ImportantDay>()).filter { (try? $0.preferences().favoriteOrder) != nil }.sorted {
+                let a = (try? $0.preferences().favoriteOrder) ?? Int.max, b = (try? $1.preferences().favoriteOrder) ?? Int.max
+                return a == b ? $0.id.uuidString < $1.id.uuidString : a < b
+            }
+            let movedIDs = Set(ids)
+            guard movedIDs.isSubset(of: Set(all.map(\.id))) else { throw ImportantDayError.invalidData }
+            let selected = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
+            var remaining = ids.makeIterator()
+            // Replace only selected slots. Archived/unmatched favorites keep their positions.
+            let ordered = all.map { movedIDs.contains($0.id) ? selected[remaining.next()!]! : $0 }
             for (index, day) in ordered.enumerated() {
                 var preferences = try day.preferences(); preferences.favoriteOrder = index
                 day.preferencesData = try JSONEncoder().encode(preferences)

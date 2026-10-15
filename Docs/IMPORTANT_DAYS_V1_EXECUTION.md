@@ -1,3 +1,21 @@
+# PR #10 限定 Review Fix — IMPLEMENTING
+
+固定输入d98306f219ed5929d38856216cd9af52fa5c7744，基于4e407591，仅五份Docs；已逐文件安全复制，历史探针不改/不注册target。沿用 `/private/tmp/PersonalGrowthOS-important-days-v1` / `codex/important-days-v1` / `origin/codex/important-days-v1`，PR10 OPEN Draft、base固定20d315a。启动HEAD4e407591，原工作树干净；原主workspace的project/catalog/xcodecloud改动保留。Xcode27.0(27A266a)，专用合成sim EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A可用。未重跑旧全量基线。
+
+| 项 | 实际路径与反例计划 |
+| --- | --- |
+| R1 | Detail明确期次→写/关联/Todo操作固定上下文；默认年份跨日红测，保存时目标/日期语义再验证，不改历史关联或Entry当下时间 |
+| R2 | Detail生产筛选状态随关联变化规范化；最后期次消失、另一期次/有效筛选/空态对照及原页UI |
+| R3 | Editor确认历法时清理不适用字段；闰月→公历实际确认/保存/重开，首次加载/perspective/取消/反向非法日期正反 |
+| R4 | 排序服务合并可见排列回完整常看序列，搜索禁拖；全局/隐藏归档/失效重复/失败回滚/重开 |
+| R5 | Editor额外预览复用引擎约束，未来原年/2100/无下一期，不扩范围 |
+
+当前：准备真实生产状态提取与红测；最近验证仅固定输入/Git/环境。剩余：修复、相关回归、独立审查、同源构建、文档/普通push。阻塞无。下一步：运行生产状态/服务反例，保留准确失败，不以历史探针exit0作PASS。最终目标READY_FOR_INDEPENDENT_REVIEW。
+
+---
+
+# 以下为上一轮A/B交付与开发历史
+
 # 重要日子 V1 执行断点
 
 状态：**READY_FOR_OWNER_DEVICE_GATE**。A/B必选实现、集中验证/构建与实际独立修复复审已收敛；产品/测试b3已普通推送，新PR保持Draft，不进入发行。

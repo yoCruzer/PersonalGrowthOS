@@ -15,7 +15,7 @@ struct ImportantDaysView: View {
     @AppStorage("ImportantDayHasSavedDay") private var hasSavedDay = false
     @AppStorage("ImportantDayWidgetTipDismissed") private var tipDismissed = false
     @State private var error: String?
-    @State private var referenceDate = Date()
+    @State private var referenceDate = ImportantDayReferenceClock.now()
     @Environment(\.scenePhase) private var scenePhase
     private var today: ImportantCivilDay { .init(referenceDate) }
     private var visible: [ImportantDay] {
@@ -50,8 +50,10 @@ struct ImportantDaysView: View {
             }
             if !favorites.isEmpty {
                 Section("Frequently viewed") {
-                    ForEach(favorites) { row($0) }
+                    if !ImportantDayFavoritePolicy.canReorder(query: query) { Text("Clear search to reorder frequently viewed days.").font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("important-day-reorder-search-note") }
+                    ForEach(favorites) { row($0).moveDisabled(!ImportantDayFavoritePolicy.canReorder(query: query)) }
                         .onMove { offsets, destination in
+                            guard ImportantDayFavoritePolicy.canReorder(query: query) else { return }
                             var order = favorites; order.move(fromOffsets: offsets, toOffset: destination)
                             do { try ImportantDayService(context: context, mediaStore: mediaStore).reorderFavorites(order.map(\.id))
                             } catch { self.error = String(localized: "The day could not be saved. Your changes are still here.") }
@@ -65,9 +67,9 @@ struct ImportantDaysView: View {
                 ForEach(others.filter { (try? $0.rule()).map { $0.preset != .anniversary && (try? ImportantDayDateEngine.evaluate($0, today: today).next) == nil } ?? true }) { row($0) }
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
-        .onChange(of: scenePhase) { _, p in if p == .active { referenceDate = Date() } }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = ImportantDayReferenceClock.now() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = ImportantDayReferenceClock.now() }
+        .onChange(of: scenePhase) { _, p in if p == .active { referenceDate = ImportantDayReferenceClock.now() } }
         .navigationTitle("Important Days")
         .searchable(text: $query, prompt: "Day name or note")
         .accessibilityIdentifier("important-days-list")
@@ -109,40 +111,28 @@ struct ImportantDayDetailView: View {
     @Query private var tasks: [TodoTask]
     @Query private var covers: [ImportantDayCover]
     @State private var editing = false
-    @State private var writing = false
-    @State private var linking = false
-    @State private var addingTodo = false
+    @State private var association: ImportantDayAssociationOperation?
     @State private var deleting = false
     @State private var help = false
     @State private var error: String?
     @Environment(TodoReminderCoordinator.self) private var reminders
     @Environment(ImportantDayWidgetPublisher.self) private var widgetPublisher
-    @State private var occurrenceFilter = "all"
-    @State private var explicitOccurrence = false
-    @State private var occurrenceYear: Int?
-    @State private var referenceDate = Date()
+    @State private var entryFilter = ImportantDayEntryFilter()
+    @State private var periodSelection = ImportantDayPeriodSelection()
+    @State private var referenceDate = ImportantDayReferenceClock.now()
     @Environment(\.scenePhase) private var scenePhase
     private var day: ImportantDay? { days.first { $0.id == dayID } }
     private var today: ImportantCivilDay { .init(referenceDate) }
     private var relatedLinks: [ImportantDayEntryLink] { links.filter { $0.dayID == dayID } }
     private var periods: [String] { Set(relatedLinks.compactMap(\.occurrenceIdentifier)).sorted().reversed() }
     private var relatedEntries: [Entry] {
+        let occurrenceFilter = entryFilter.effectiveSelection(periods: periods)
         let ids = Set(relatedLinks.filter { occurrenceFilter == "all" || (occurrenceFilter == "general" ? $0.occurrenceIdentifier == nil : $0.occurrenceIdentifier == occurrenceFilter) }.map(\.entryID))
         return entries.filter { ids.contains($0.id) }.sorted { $0.occurredAt > $1.occurredAt }
     }
-    private var nextOccurrence: ImportantCivilDay? { day.flatMap { try? $0.rule() }.flatMap { try? ImportantDayDateEngine.evaluate($0, today: today) }?.next }
-    private var selectedYear: Int {
-        guard let rule = day.flatMap({ try? $0.rule() }) else { return today.year }
-        if let occurrenceYear, ImportantDayDateEngine.years.contains(occurrenceYear), occurrenceYear >= (rule.year ?? 1901) { return occurrenceYear }
-        guard let next = nextOccurrence else { return max(today.year, rule.year ?? today.year) }
-        // A lunar year's last month can fall in the next Gregorian year.
-        return [next.year - 1, next.year].first { (try? ImportantDayDateEngine.occurrence(rule, in: $0)) == next } ?? today.year
-    }
-    private var selectedOccurrence: ImportantCivilDay? {
-        guard explicitOccurrence, let rule = day.flatMap({ try? $0.rule() }) else { return nil }
-        return try? ImportantDayDateEngine.explicitPeriod(rule, year: selectedYear)
-    }
-    private var invalidPeriod: Bool { explicitOccurrence && selectedOccurrence == nil }
+    private var selectedYear: Int { day.flatMap { try? $0.rule() }.map { periodSelection.selectedYear(rule: $0, today: today) } ?? today.year }
+    private var selectedOccurrence: ImportantCivilDay? { day.flatMap { try? $0.rule() }.flatMap { periodSelection.occurrence(rule: $0, today: today) } }
+    private var invalidPeriod: Bool { periodSelection.isExplicit && selectedOccurrence == nil }
     var body: some View {
         Group {
             if let day {
@@ -168,24 +158,16 @@ struct ImportantDayDetailView: View {
                     if !day.isArchived {
                         Section {
                             if let rule = try? day.rule(), rule.preset == .anniversary {
-                                Toggle("Associate with a specific anniversary year", isOn: $explicitOccurrence).accessibilityIdentifier("important-day-explicit-period")
-                                if explicitOccurrence {
-                                    Picker(rule.calendar == .chinese ? "Lunar year" : "Anniversary year", selection: Binding(get: { selectedYear }, set: { occurrenceYear = $0 })) {
-                                        ForEach((rule.year ?? ImportantDayDateEngine.years.lowerBound)...ImportantDayDateEngine.years.upperBound, id: \.self) { Text(String($0)).tag($0) }
-                                    }.pickerStyle(.wheel).frame(height: 120).accessibilityIdentifier("important-day-period-year")
-                                    if let selectedOccurrence { Text("Selected date: \(selectedOccurrence.identifier)").accessibilityIdentifier("important-day-selected-period") }
-                                    else { Text("There is no anniversary occurrence in this year under the saved date rules. Choose another year.").foregroundStyle(.secondary) }
-                                }
-                                Text("Off associates with the day itself. A period is saved only when you choose it.").font(.caption).foregroundStyle(.secondary)
+                                ImportantDayPeriodPicker(rule: rule, selection: $periodSelection, today: today)
                             }
-                            Button { writing = true } label: { Label("Write a related entry", systemImage: "square.and.pencil") }.accessibilityIdentifier("important-day-write").disabled(invalidPeriod)
-                            Button("Link an existing entry") { linking = true }.accessibilityIdentifier("important-day-link").disabled(invalidPeriod)
-                            Button("Add related Todo") { addingTodo = true }.accessibilityIdentifier("important-day-todo").disabled(invalidPeriod)
+                            Button { beginAssociation(.entry) } label: { Label("Write a related entry", systemImage: "square.and.pencil") }.accessibilityIdentifier("important-day-write").disabled(invalidPeriod)
+                            Button("Link an existing entry") { beginAssociation(.existingEntry) }.accessibilityIdentifier("important-day-link").disabled(invalidPeriod)
+                            Button("Add related Todo") { beginAssociation(.todo) }.accessibilityIdentifier("important-day-todo").disabled(invalidPeriod)
                         }
                     }
                     Section("Related entries") {
                         if !periods.isEmpty {
-                            Picker("Anniversary period", selection: $occurrenceFilter) {
+                            Picker("Anniversary period", selection: $entryFilter.selection) {
                                 Text("All").tag("all"); Text("General entries").tag("general")
                                 ForEach(periods, id: \.self) { Text($0).tag($0) }
                             }.accessibilityIdentifier("important-day-period-filter")
@@ -228,13 +210,9 @@ struct ImportantDayDetailView: View {
                 }
                 .navigationTitle("Important Day").navigationBarTitleDisplayMode(.inline)
                 .sheet(isPresented: $editing) { ImportantDayEditorView(mediaStore: mediaStore, day: day) }
-                .sheet(isPresented: $writing) {
-                    QuickCaptureView(mediaStore: mediaStore, navigationTitle: String(localized: "Related entry"), saveDraft: { draft in
-                        try service.createEntry(draft, dayID: dayID, occurrence: selectedOccurrence)
-                    }, didSave: { _ in writing = false })
+                .sheet(item: $association) { operation in
+                    ImportantDayAssociationView(operation: operation, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
                 }
-                .sheet(isPresented: $linking) { ImportantDayEntryPicker(dayID: dayID, occurrence: selectedOccurrence, mediaStore: mediaStore, thumbnailStore: thumbnailStore) }
-                .sheet(isPresented: $addingTodo) { TodoEditorView(importantDayID: dayID, importantDayOccurrence: selectedOccurrence) { _ in addingTodo = false } }
                 .sheet(isPresented: $help) {
                     NavigationStack { List {
                         ImportantDayWidgetPreview(day: day, mediaStore: mediaStore)
@@ -251,11 +229,16 @@ struct ImportantDayDetailView: View {
             }
         }
         .accessibilityIdentifier("important-day-detail")
-        .onChange(of: day?.ruleData) { _, _ in explicitOccurrence = false; occurrenceYear = nil }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
-        .onChange(of: scenePhase) { _, p in if p == .active { referenceDate = Date() } }
+        .onChange(of: periods) { _, values in entryFilter.reconcile(periods: values) }
+        .onChange(of: day.flatMap { try? $0.rule().associationDateRule }) { _, _ in periodSelection = .init() }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = ImportantDayReferenceClock.now() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = ImportantDayReferenceClock.now() }
+        .onChange(of: scenePhase) { _, p in if p == .active { referenceDate = ImportantDayReferenceClock.now() } }
         .alert("Important Day Update", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK", role: .cancel) {} } message: { Text(error ?? "") }
+    }
+    private func beginAssociation(_ kind: ImportantDayAssociationKind) {
+        do { association = try .init(day: service.day(id: dayID), kind: kind, selection: periodSelection, today: today) }
+        catch { self.error = error.localizedDescription }
     }
     private var service: ImportantDayService { .init(context: context, mediaStore: mediaStore) }
     private func perform(_ operation: () throws -> Void) {
@@ -264,22 +247,21 @@ struct ImportantDayDetailView: View {
 }
 
 struct ImportantDayEntryPicker: View {
-    let dayID: UUID
-    let occurrence: ImportantCivilDay?
+    let operation: ImportantDayAssociationOperation
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Query private var entries: [Entry]
     @State private var query = ""
-    @State private var error = false
+    @State private var error: String?
     var body: some View {
         NavigationStack {
             List(entries.filter { query.isEmpty || TextSearchNormalizer.normalize(($0.title ?? "") + " " + ($0.body ?? "")).contains(TextSearchNormalizer.normalize(query)) }.sorted { $0.occurredAt > $1.occurredAt }) { entry in
-                Button { do { try ImportantDayService(context: context, mediaStore: mediaStore).linkEntry(dayID: dayID, entryID: entry.id, occurrence: occurrence); dismiss() } catch { self.error = true } } label: { TimelineRow(entry: entry, thumbnailStore: thumbnailStore) }
+                Button { do { try operation.linkEntry(entry.id, service: ImportantDayService(context: context, mediaStore: mediaStore)); dismiss() } catch { self.error = error.localizedDescription } } label: { TimelineRow(entry: entry, thumbnailStore: thumbnailStore) }
             }.navigationTitle("Link an existing entry").searchable(text: $query)
                 .toolbar { Button("Cancel") { dismiss() } }
-                .alert("Could not link entry", isPresented: $error) { Button("OK", role: .cancel) {} }
+                .alert("Could not link entry", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK", role: .cancel) {} } message: { Text(error ?? "") }
         }
     }
 }
@@ -322,7 +304,7 @@ struct ImportantDayEditorView: View {
     @State private var duplicateConfirmation = false
     @State private var confirmedActualBeginning = false
     @StateObject private var photoSession = PhotoInputSession()
-    @State private var referenceDate = Date()
+    @State private var referenceDate = ImportantDayReferenceClock.now()
     private var today: ImportantCivilDay { .init(referenceDate) }
     private var valid: Bool { (try? draft.validate()) != nil && (sourceEntry == nil || confirmedOccurrence) && !calendarChanged && (!(day.flatMap { try? $0.rule().preset } == .anticipated && draft.rule.preset == .beginning) || confirmedActualBeginning) }
     var body: some View {
@@ -338,7 +320,7 @@ struct ImportantDayEditorView: View {
                     }.accessibilityIdentifier("important-day-calendar")
                     if calendarChanged {
                         Text("Changing the calendar reinterprets these month and day numbers. Check the Gregorian preview before confirming.").font(.caption)
-                        Button("Use the date in the selected calendar") { acknowledgedCalendar = draft.rule.calendar; calendarChanged = false }
+                        Button("Use the date in the selected calendar") { ImportantDayEditorPolicy.confirmCalendar(&draft.rule); acknowledgedCalendar = draft.rule.calendar; calendarChanged = false }
                     }
                     if draft.rule.preset == .anniversary {
                         Toggle("I know the starting year", isOn: Binding(get: { draft.rule.year != nil }, set: { draft.rule.year = $0 ? today.year : nil; if !$0 { draft.rule.perspective = .next } })).accessibilityIdentifier("important-day-known-year")
@@ -451,8 +433,8 @@ struct ImportantDayEditorView: View {
                 if new != .anniversary && draft.rule.year == nil { draft.rule.year = today.year }
                 draft.rule.perspective = new == .beginning ? .elapsed : .next
             }
-            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
+            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = ImportantDayReferenceClock.now() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = ImportantDayReferenceClock.now() }
             .onChange(of: selectedPhoto) { _, selected in loadPhoto(selected) }
             .onDisappear { photoSession.end() }
             .confirmationDialog("A day with this name and date already exists", isPresented: $duplicateConfirmation, titleVisibility: .visible) {
@@ -517,10 +499,7 @@ struct ImportantDayEditorView: View {
             }
         }
     }
-    private var previewDates: [ImportantCivilDay] {
-        guard (try? draft.rule.validate()) != nil else { return [] }
-        return (max(1901, today.year - 1)...min(2100, today.year + 8)).compactMap { try? ImportantDayDateEngine.occurrence(draft.rule, in: $0) }.filter { $0 >= today }.prefix(3).map { $0 }
-    }
+    private var previewDates: [ImportantCivilDay] { ImportantDayEditorPolicy.previewDates(rule: draft.rule, today: today) }
     private func save() {
         guard !saving else { return }; saving = true
         do {
@@ -618,6 +597,89 @@ struct ImportantDayWidgetPreview: View {
             SingleDayWidgetView(entry: entry, previewMode: true, previewImage: image)
                 .frame(height: 170).clipShape(RoundedRectangle(cornerRadius: 20))
                 .accessibilityIdentifier("important-day-widget-preview")
+        }
+    }
+}
+
+struct ImportantDayPeriodPicker: View {
+    let rule: ImportantDayDateRule
+    @Binding var selection: ImportantDayPeriodSelection
+    let today: ImportantCivilDay
+    var body: some View {
+        Toggle("Associate with a specific anniversary year", isOn: Binding(get: { selection.isExplicit }, set: { selection.chooseExplicit($0, rule: rule, today: today) })).accessibilityIdentifier("important-day-explicit-period")
+        if selection.isExplicit {
+            Picker(rule.calendar == .chinese ? "Lunar year" : "Anniversary year", selection: Binding(get: { selection.selectedYear(rule: rule, today: today) }, set: { selection.year = $0 })) {
+                ForEach((rule.year ?? ImportantDayDateEngine.years.lowerBound)...ImportantDayDateEngine.years.upperBound, id: \.self) { Text(String($0)).tag($0) }
+            }.pickerStyle(.wheel).frame(height: 120).accessibilityIdentifier("important-day-period-year")
+            if let date = selection.occurrence(rule: rule, today: today) { Text("Selected date: \(date.identifier)").accessibilityIdentifier("important-day-selected-period") }
+            else { Text("There is no anniversary occurrence in this year under the saved date rules. Choose another year.").foregroundStyle(.secondary) }
+        }
+        Text("Off associates with the day itself. A period is saved only when you choose it.").font(.caption).foregroundStyle(.secondary)
+    }
+}
+
+struct ImportantDayAssociationView: View {
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+    @State private var operation: ImportantDayAssociationOperation
+    @State private var confirmationSelection: ImportantDayPeriodSelection
+    @Query private var days: [ImportantDay]
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    init(operation: ImportantDayAssociationOperation, mediaStore: MediaStore, thumbnailStore: ThumbnailStore) {
+        self.mediaStore = mediaStore; self.thumbnailStore = thumbnailStore
+        _operation = State(initialValue: operation)
+        _confirmationSelection = State(initialValue: .init(isExplicit: operation.selectedYear != nil, year: operation.selectedYear))
+    }
+    private var day: ImportantDay? { days.first { $0.id == operation.dayID } }
+    private var needsConfirmation: Bool {
+        guard let day, !day.isArchived, let rule = try? day.rule() else { return false }
+        return rule.associationDateRule != operation.rule.associationDateRule
+    }
+    private var ready: Bool { (try? operation.validate(day: day)) != nil }
+    var body: some View {
+        Group {
+            switch operation.kind {
+            case .entry:
+                QuickCaptureView(mediaStore: mediaStore, navigationTitle: String(localized: "Related entry"), saveDraft: { draft in
+                    try operation.createEntry(draft, service: .init(context: context, mediaStore: mediaStore))
+                }, didSave: { _ in dismiss() })
+            case .existingEntry:
+                ImportantDayEntryPicker(operation: operation, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+            case .todo:
+                TodoEditorView(importantDayID: operation.dayID, importantDayOccurrence: operation.occurrence, importantDayOperation: operation) { _ in dismiss() }
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            VStack(alignment: .leading, spacing: 8) {
+                if let occurrence = operation.occurrence { Text("Selected date: \(occurrence.identifier)").font(.caption).accessibilityIdentifier("important-day-operation-period") }
+                else { Text("Associated with this day").font(.caption).accessibilityIdentifier("important-day-operation-period") }
+                if needsConfirmation, let day, let rule = try? day.rule() {
+                    Text(ImportantDayAssociationError.dateChanged.localizedDescription).font(.caption).accessibilityIdentifier("important-day-operation-confirmation")
+                    if rule.preset == .anniversary { ImportantDayPeriodPicker(rule: rule, selection: $confirmationSelection, today: .init(ImportantDayReferenceClock.now())) }
+                    else { Text("The association will be to the day itself.").font(.caption) }
+                    Button("Confirm this association and keep my draft") {
+                        let selection = rule.preset == .anniversary ? confirmationSelection : .init()
+                        if let confirmed = try? ImportantDayAssociationOperation(day: day, kind: operation.kind, selection: selection, today: .init(ImportantDayReferenceClock.now()), id: operation.id) { operation = confirmed }
+                    }.disabled(rule.preset == .anniversary && confirmationSelection.isExplicit && confirmationSelection.occurrence(rule: rule, today: .init(ImportantDayReferenceClock.now())) == nil)
+                } else if !ready { Text(ImportantDayAssociationError.unavailable.localizedDescription).font(.caption) }
+                #if DEBUG
+                if ImportantDayUITestFixture.isReviewTest {
+                    HStack {
+                        Button("Advance synthetic day") {
+                            ImportantDayUITestFixture.referenceDateOverride = ImportantCivilDay(year: 2026, month: 10, day: 16).date!
+                            NotificationCenter.default.post(name: .NSCalendarDayChanged, object: nil)
+                        }.accessibilityIdentifier("important-day-test-advance")
+                        Button("Change synthetic date") {
+                            if let day, var draft = try? ImportantDayDraft(day) {
+                                draft.rule.day = 16
+                                _ = try? ImportantDayService(context: context, mediaStore: mediaStore).save(draft, id: day.id)
+                            }
+                        }.accessibilityIdentifier("important-day-test-change-rule")
+                    }.font(.caption)
+                }
+                #endif
+            }.padding(10).frame(maxWidth: .infinity, alignment: .leading).background(.bar)
         }
     }
 }

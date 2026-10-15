@@ -1,3 +1,15 @@
+# PR #10 限定 Review Fix — IMPLEMENTING
+
+本轮固定任务 `d98306f219ed5929d38856216cd9af52fa5c7744` 已完整读取，核验基于4e407591且仅五份Docs。原worktree/分支/upstream/PR10续接，base20d315a不变；原工作区未知改动保留。外部审查R1–R4为待关闭P2，R5局部预览问题一并评估；下方原“全部关闭/设备Gate”为旧阶段历史。
+
+当前HEAD4e407591，先在实际生产状态/服务补反例，然后限定修复、相关集中验证、固定SHA独立复审、Debug sim/unsigned Release generic iOS同源构建及普通push原Draft PR。最终停READY_FOR_INDEPENDENT_REVIEW。保持V12/v8与身份/主库/五Tab/Record/来源/提醒/组件隐私，不进入发行或真机。
+
+准确状态见 [执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)；固定[Goal](IMPORTANT_DAYS_V1_REVIEW_FIX_GOAL_ZH.md)及[外部审查](Reviews/important-days-v1-pr10/PR10_INDEPENDENT_REVIEW_ZH.md)。
+
+---
+
+# 以下为上一轮交付历史
+
 # 重要日子 V1 — READY_FOR_OWNER_DEVICE_GATE
 
 Owner批准的完整A/B已实现；产品/测试固定提交 `b3cc408d323e5828e9550decac72ae534f1b0b20`，最后生产代码 `9f34034357ea9329730ab18bfbf6d4b6e426b4b4`。独立数据/产品多轮固定SHA复审已收敛，无未关闭confirmed范围内P0/P1/P2。最后集中53/53备份Unit+17/17关键UI通过，三构建和实际独立复审收敛；只停在Owner设备Gate，不进入发行。

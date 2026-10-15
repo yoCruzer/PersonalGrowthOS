@@ -179,6 +179,7 @@ struct TodoEditorView: View {
     var sourceEntry: Entry? = nil
     var importantDayID: UUID? = nil
     var importantDayOccurrence: ImportantCivilDay? = nil
+    var importantDayOperation: ImportantDayAssociationOperation? = nil
     let onSaved: (UUID) -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
@@ -293,6 +294,7 @@ struct TodoEditorView: View {
             let service = TodoTaskService(context: context)
             let id: UUID
             if let task { try service.edit(id: task.id, draft: draft, futureSeries: futureSeries); id = task.id }
+            else if let importantDayOperation { id = try importantDayOperation.createTodo(draft, id: submissionID, context: context).id }
             else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID, importantDayID: importantDayID, importantDayOccurrence: importantDayOccurrence).id }
             let saved = try service.task(id: id)
             var affectedOpenSuccessor: TodoTask?

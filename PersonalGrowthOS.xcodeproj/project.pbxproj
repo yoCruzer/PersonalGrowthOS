@@ -97,6 +97,9 @@ B54F0C55E35B58035A95D297 = {isa = PBXBuildFile; fileRef = 54E53E4E87AFDF879BBF3E
 A42DDA385A73347923737E50 = {isa = PBXBuildFile; fileRef = C1553BE8DC30ED799C390711; };
 E1ABFBFCDCDA75C6E23B2902 = {isa = PBXBuildFile; fileRef = F3BCFD372935E01B53550A45; };
 E9A7759A79ECDE4AF3FCEC67 = {isa = PBXBuildFile; fileRef = F3BCFD372935E01B53550A45; };
+8E90139A70EDCBE6A8C10513 = {isa = PBXBuildFile; fileRef = E6E00EA7EEC92C262F5BE071; };
+5A5C5E3C350F30DF528BF1B0 = {isa = PBXBuildFile; fileRef = 0A0F5F32558CA5E1660A5759; };
+A6A3889D8A176ACEAF630B3A = {isa = PBXBuildFile; fileRef = E366E7EC8D7B082E7CCDC395; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -203,6 +206,9 @@ E685ACCF5DC146695ABE6A37 = {isa = PBXFileReference; lastKnownFileType = sourceco
 C62D8AC35F2406E265BF31D3 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayUITestFixture.swift"; sourceTree = SOURCE_ROOT; };
 C1553BE8DC30ED799C390711 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/ImportantDayUITests.swift"; sourceTree = SOURCE_ROOT; };
 F3BCFD372935E01B53550A45 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/ImportantDays/ImportantDayWidgetViews.swift"; sourceTree = SOURCE_ROOT; };
+E6E00EA7EEC92C262F5BE071 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayInteraction.swift"; sourceTree = SOURCE_ROOT; };
+0A0F5F32558CA5E1660A5759 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/ImportantDayReviewFixTests.swift"; sourceTree = SOURCE_ROOT; };
+E366E7EC8D7B082E7CCDC395 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/ImportantDayReviewFixUITests.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -238,6 +244,9 @@ CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+E366E7EC8D7B082E7CCDC395,
+0A0F5F32558CA5E1660A5759,
+E6E00EA7EEC92C262F5BE071,
 F3BCFD372935E01B53550A45,
 C1553BE8DC30ED799C390711,
 C62D8AC35F2406E265BF31D3,
@@ -630,6 +639,7 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+8E90139A70EDCBE6A8C10513,
 E1ABFBFCDCDA75C6E23B2902,
 905415935BE616FEFD8A8342,
 B54F0C55E35B58035A95D297,
@@ -688,6 +698,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+5A5C5E3C350F30DF528BF1B0,
 4A3148B0C9BA77AD8041D1DE,
 807EEF6557A32C9A24EC304C,
 7D2758FCC8DFCA1C11B6EDB9,
@@ -712,6 +723,7 @@ TD1000000000000000000002,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+A6A3889D8A176ACEAF630B3A,
 A42DDA385A73347923737E50,
 				B00000000000000000000005 /* AppLaunchSmokeTests.swift in Sources */,
 			);

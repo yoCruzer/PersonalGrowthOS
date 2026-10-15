@@ -1,0 +1,23 @@
+Fixed delivery SHA: 4e407591868d63c96a647494d5aa8a91a6fcc5b3
+Verified source Git blob: 456a4cca8a78c51f49fd6f263bafd19f9e712163
+Swift version 6.2.1 (swift-6.2.1-RELEASE)
+Target: x86_64-unknown-linux-gnu
+Linux-only compatibility adaptation: qualify original(rule,in:) with Self on one line in the temporary copy.
+
+Environment: Swift Foundation on Linux; no Apple UI or persistence frameworks executed.
+Scope: fixed-source date engine + isolated view/service state expressions.
+
+R1 OBSERVED: opening period=2026-10-15; same nil-year selection after midnight=2027-10-15.
+R1 CONTROL: explicitly frozen year keeps period=2026-10-15.
+
+R2 OBSERVED: remaining links=2, periods=[], filtered entries=[]; Picker is hidden.
+R2 CONTROL: resetting filter to all shows ["general-A", "general-B"].
+
+R3 OBSERVED: Gregorian numeric date valid=true, lunar toggle visible=false, saved-rule valid=false.
+R3 CONTROL: clearing incompatible lunar flag makes identical Gregorian date valid.
+
+R4 OBSERVED: moving filtered [C,D] to [D,C] stores ["A=0", "B=1", "C=1", "D=0"]; full order=["A", "D", "B", "C"].
+R4 EXPECTED with hidden favorites preserved: [A,B,D,C], or disable reorder while filtering.
+
+Additional diagnostic: future origin next=2030-12-01, editor preview rows=["2026-12-01", "2027-12-01", "2028-12-01"].
+All 4 counterexample/control probes completed. Assertions verify observed code behavior, not product correctness.
