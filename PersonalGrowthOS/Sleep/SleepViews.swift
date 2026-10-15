@@ -37,7 +37,7 @@ import Charts
 enum SleepFormatting {
     static func axisHour(_ hour: Int) -> String {
         let day = hour < 0 ? String(localized: "Previous day") : hour < 24 ? String(localized: "Wake day") : String(localized: "Next day")
-        return day + " " + minute(((hour % 24) + 24) % 24 * 60)
+        return day + "\n" + minute(((hour % 24) + 24) % 24 * 60)
     }
     static func minute(_ minute: Int) -> String { String(format: "%02d:%02d", (minute / 60) % 24, minute % 60) }
     static func range(_ range: SleepRange?) -> String {
@@ -392,8 +392,8 @@ struct SleepReviewView: View {
                         }
                     }
                     .chartXScale(domain: snapshot.axisHourDomain)
-                    .chartXAxis { AxisMarks(values: [-24, -12, 0, 12, 24]) { value in
-                        AxisGridLine(); AxisValueLabel { if let hour = value.as(Int.self) { Text(SleepFormatting.axisHour(hour)) } }
+                    .chartXAxis { AxisMarks(values: [-24, 0, 24]) { value in
+                        AxisGridLine(); AxisValueLabel { if let hour = value.as(Int.self) { Text(SleepFormatting.axisHour(hour)).font(.caption2).multilineTextAlignment(.center) } }
                     } }
                     .frame(height: CGFloat(min(440, max(160, snapshot.nights.count * 24))))
                     .accessibilityIdentifier("sleep-time-trend")
