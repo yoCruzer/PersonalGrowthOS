@@ -1,0 +1,11 @@
+{
+  "product_sha": "138616cd0970b0f4fba9d0c7d7d44f6ca7d30b53",
+  "delivery_sha": "5f7dc3eeba4d159d72e03029f487cf67bf77ab1a",
+  "environment": "Swift 6.2.1 / x86_64-unknown-linux-gnu",
+  "method": "Transcribed production pure logic and scheduling tail with DTOs/injected client-state. Not iOS app tests.",
+  "files": {
+    "probe_output.txt": "5b7ac708f923e3a9e77a442f9bd3ec1462d53650ca820100fd81c87b302bcaf3",
+    "review_probe.swift": "8cc56b6f150a84a7dab3f4c1b8786836079fb7ff416063f720f8adb25349568c",
+    "PR11_INDEPENDENT_REVIEW_ZH.md": "290631511bf044068c9cbfaa8c5acf61563655ae17a61b11e47378ced98c299a"
+  }
+}
