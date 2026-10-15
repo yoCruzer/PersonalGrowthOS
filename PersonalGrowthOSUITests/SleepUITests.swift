@@ -26,7 +26,7 @@ final class SleepUITests: XCTestCase {
         app.buttons["sleep-wake-menu"].tap(); app.buttons["sleep-wake-420-15"].tap()
         app.buttons["sleep-feeling-4"].tap()
         XCTAssertTrue(app.buttons["sleep-save"].isHittable)
-        attachment(app, "Sleep-English-light-three-choices")
+        attachment(app, "Sleep-English-three-choices")
         app.buttons["sleep-save"].tap()
         XCTAssertTrue(app.buttons["today-sleep"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["today-sleep"].label.contains("23:00"))
@@ -38,7 +38,9 @@ final class SleepUITests: XCTestCase {
         app.buttons["sleep-feeling-3"].tap(); app.buttons["sleep-save"].tap()
         app.tabBars.buttons["Growth"].tap(); app.buttons["growth-sleep"].tap(); app.buttons["sleep-review"].tap()
         XCTAssertTrue(app.staticTexts["1 recorded wake days / 7 calendar days"].waitForExistence(timeout: 5))
-        attachment(app, "Sleep-seven-day-interval-chart-and-denominators")
+        let chart = app.descendants(matching: .any)["sleep-time-trend"]
+        reveal(chart, app: app)
+        attachment(app, "Sleep-seven-day-visible-interval-chart")
         let night = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "sleep-review-night-")).firstMatch
         reveal(night, app: app); XCTAssertTrue(night.label.contains("7 h 30 min–8 h 15 min")); night.tap()
         let delete = app.buttons["sleep-delete"]; reveal(delete, app: app); delete.tap()
