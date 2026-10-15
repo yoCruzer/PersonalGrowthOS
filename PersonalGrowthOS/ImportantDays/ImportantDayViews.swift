@@ -132,14 +132,15 @@ struct ImportantDayDetailView: View {
     }
     private var nextOccurrence: ImportantCivilDay? { day.flatMap { try? $0.rule() }.flatMap { try? ImportantDayDateEngine.evaluate($0, today: today) }?.next }
     private var selectedYear: Int {
-        if let occurrenceYear { return occurrenceYear }
-        guard let rule = day.flatMap({ try? $0.rule() }), let next = nextOccurrence else { return today.year }
+        guard let rule = day.flatMap({ try? $0.rule() }) else { return today.year }
+        if let occurrenceYear, ImportantDayDateEngine.years.contains(occurrenceYear), occurrenceYear >= (rule.year ?? 1901) { return occurrenceYear }
+        guard let next = nextOccurrence else { return max(today.year, rule.year ?? today.year) }
         // A lunar year's last month can fall in the next Gregorian year.
         return [next.year - 1, next.year].first { (try? ImportantDayDateEngine.occurrence(rule, in: $0)) == next } ?? today.year
     }
     private var selectedOccurrence: ImportantCivilDay? {
         guard explicitOccurrence, let rule = day.flatMap({ try? $0.rule() }) else { return nil }
-        return try? ImportantDayDateEngine.occurrence(rule, in: selectedYear)
+        return try? ImportantDayDateEngine.explicitPeriod(rule, year: selectedYear)
     }
     private var invalidPeriod: Bool { explicitOccurrence && selectedOccurrence == nil }
     var body: some View {
@@ -250,6 +251,7 @@ struct ImportantDayDetailView: View {
             }
         }
         .accessibilityIdentifier("important-day-detail")
+        .onChange(of: day?.ruleData) { _, _ in explicitOccurrence = false; occurrenceYear = nil }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = Date() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in referenceDate = Date() }
         .onChange(of: scenePhase) { _, p in if p == .active { referenceDate = Date() } }

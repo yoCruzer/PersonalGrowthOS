@@ -5,7 +5,7 @@ import SwiftData
 import UserNotifications
 
 enum TodoReminderStatus: Equatable {
-    case none, checking, scheduled, permissionRequired, denied, failed, queueFull, elapsed
+    case none, checking, scheduled, permissionRequired, denied, failed, queueFull, elapsed, unsupportedDateRange
     var label: String {
         switch self {
         case .none: return String(localized: "No reminder")
@@ -15,6 +15,7 @@ enum TodoReminderStatus: Equatable {
         case .denied: return String(localized: "Notifications are disabled in iOS Settings.")
         case .failed: return String(localized: "Reminder could not be scheduled. Retry when the app is active.")
         case .queueFull: return String(localized: "Reminder not queued: device queue is full. It will be retried in the app.")
+        case .unsupportedDateRange: return String(localized: "No next anniversary within the supported date range")
         case .elapsed: return String(localized: "Reminder time has passed")
         }
     }
@@ -132,7 +133,8 @@ final class TodoReminderCoordinator {
                         let planned = try ImportantDayReminderPlanner.requests(id: day.id, title: day.title, rule: day.rule(), preferences: p, now: now(), timeZone: .current)
                         dayStates[day.id] = .init(status: planned.isEmpty ? .elapsed : .checking)
                         requests += planned
-                    } catch { dayStates[day.id] = .init(status: .failed) }
+                    } catch ImportantDayDateError.unsupportedRange { dayStates[day.id] = .init(status: .unsupportedDateRange) }
+                    catch { dayStates[day.id] = .init(status: .failed) }
                 }
                 var permission = await client.permission()
                 if pass != generation { continue }

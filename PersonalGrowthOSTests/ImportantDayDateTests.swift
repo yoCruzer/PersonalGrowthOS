@@ -111,6 +111,17 @@ final class ImportantDayDateTests: XCTestCase {
         XCTAssertEqual(ImportantDayTodaySelector.select([candidates[0]].map { .init(id: $0.id, rule: $0.rule, policy: .automatic, archived: false, stableOrder: 0) }, today: today), [])
         XCTAssertEqual(ImportantDayTodaySelector.select(candidates.reversed(), today: today), [now, old])
     }
+    func testExplicitPeriodRejectsStaleYearAfterEditingOriginAndNonAnnualPreset() throws {
+        var rule = annual(6, 20, year: 2020)
+        XCTAssertEqual(try ImportantDayDateEngine.explicitPeriod(rule, year: 2024), civil(2024, 6, 20))
+        rule.year = 2025
+        XCTAssertThrowsError(try ImportantDayDateEngine.explicitPeriod(rule, year: 2024))
+        XCTAssertEqual(try ImportantDayDateEngine.explicitPeriod(rule, year: 2025), civil(2025, 6, 20))
+        rule.preset = .beginning
+        XCTAssertThrowsError(try ImportantDayDateEngine.explicitPeriod(rule, year: 2025))
+        rule = annual(2, 29); rule.leapDayRule = .leapYearsOnly
+        XCTAssertNil(try ImportantDayDateEngine.explicitPeriod(rule, year: 2025))
+    }
     func testEverySupportedLunarYearHasOneRegularNewYearAndRoundTrips() throws {
         var rule = annual(1, 1); rule.calendar = .chinese
         for year in ImportantDayDateEngine.years {

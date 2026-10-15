@@ -78,6 +78,31 @@ final class ImportantDayReminderTests: XCTestCase {
         XCTAssertTrue(client.pending.isEmpty); XCTAssertNil(coordinator.status(for: day).nextFire)
         XCTAssertEqual(coordinator.status(for: day).status, .none)
     }
+    func testNoSupportedNextPeriodDiffersFromElapsedAndClockRollbackRebuildsWithoutChangingFacts() async throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), c = container.mainContext
+        var p = ImportantDayPreferences(); p.reminderOffsets = [0]
+        let rule = ImportantDayDateRule(preset: .anniversary, year: nil, month: 1, day: 1)
+        let annual = try ImportantDay(title: "Annual range", rule: rule, preferences: p)
+        let once = try ImportantDay(title: "Passed one time", rule: .init(year: 2026, month: 1, day: 1), preferences: p)
+        c.insert(annual); c.insert(once); try c.save()
+        var clock = ImportantCivilDay(year: 2100, month: 12, day: 31).instant(minutes: 720, timeZone: .current)!
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { clock })
+        await coordinator.reconcile(context: c)
+        XCTAssertEqual(coordinator.status(for: annual).status, .unsupportedDateRange)
+        XCTAssertEqual(coordinator.status(for: once).status, .elapsed)
+        let originalBytes = annual.ruleData, revision = annual.revision
+        clock = ImportantCivilDay(year: 2026, month: 12, day: 31).instant(minutes: 720, timeZone: .current)!
+        await coordinator.reconcile(context: c)
+        let first = coordinator.status(for: annual).nextFire
+        XCTAssertEqual(first.map { ImportantCivilDay($0) }, .init(year: 2027, month: 1, day: 1))
+        clock = ImportantCivilDay(year: 2027, month: 1, day: 2).instant(minutes: 720, timeZone: .current)!
+        await coordinator.reconcile(context: c)
+        XCTAssertEqual(coordinator.status(for: annual).nextFire.map { ImportantCivilDay($0) }, .init(year: 2028, month: 1, day: 1))
+        clock = ImportantCivilDay(year: 2026, month: 12, day: 31).instant(minutes: 720, timeZone: .current)!
+        await coordinator.reconcile(context: c)
+        XCTAssertEqual(coordinator.status(for: annual).nextFire, first)
+        XCTAssertEqual(annual.ruleData, originalBytes); XCTAssertEqual(annual.revision, revision)
+    }
     func testGateSerializesIndependentSubmittersAcrossSuspension() async {
         let gate = NotificationMutationGate(), firstEntered = expectation(description: "first")
         var trace: [String] = []

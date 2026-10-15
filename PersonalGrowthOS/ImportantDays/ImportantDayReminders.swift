@@ -39,6 +39,7 @@ enum ImportantDayReminderPlanner {
                 }
             }
         } else if let year = rule.year, let date = try ImportantDayDateEngine.original(rule, in: year) { occurrences = [date] }
+        if rule.preset == .anniversary && occurrences.isEmpty { throw ImportantDayDateError.unsupportedRange }
         var result: [TodoReminderRequest] = []
         for occurrence in occurrences {
             for offset in preferences.reminderOffsets {

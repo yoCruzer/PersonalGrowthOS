@@ -66,6 +66,25 @@ final class ImportantDayUITests: XCTestCase {
         period.tap(); app.buttons["2024-02-10"].firstMatch.tap()
         XCTAssertTrue(memory.exists)
     }
+    func testEditingPresetResetsExplicitPeriodBeforeWritingNewEntry() {
+        let app = launch(seed: true)
+        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-important-days"].tap()
+        app.staticTexts["Synthetic lunar birthday · 合成农历生日"].firstMatch.tap()
+        let toggle = app.switches["important-day-explicit-period"]; scrollTo(toggle, app: app)
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "2024")
+        let edit = app.buttons["Edit Important Day"]; scrollTo(edit, app: app); edit.tap()
+        app.buttons["important-day-preset"].tap(); app.buttons["Remember a beginning"].tap()
+        app.buttons["important-day-save"].tap()
+        for _ in 0..<6 { app.swipeDown() }
+        XCTAssertFalse(app.switches["important-day-explicit-period"].exists)
+        let write = app.buttons["important-day-write"]; scrollTo(write, app: app); write.tap()
+        let body = app.textViews["capture-body"]; body.tap(); body.typeText("General memory after preset edit")
+        app.buttons["capture-save"].tap()
+        let memory = app.staticTexts["General memory after preset edit"]; scrollTo(memory, app: app)
+        XCTAssertTrue(memory.exists)
+        XCTAssertFalse(app.buttons["important-day-period-filter"].exists)
+    }
     func testOldEntryCreationRequiresActualOccurrenceConfirmation() {
         let app = launch(seed: true)
         app.tabBars.buttons["Timeline"].tap(); app.staticTexts["Synthetic memory"].firstMatch.tap()
@@ -108,7 +127,12 @@ final class ImportantDayUITests: XCTestCase {
         app.terminate()
         print("PGOS_ROUTE_UI_READY_3"); fflush(stdout)
         acceptSystemOpenIfNeeded(app)
-        XCTAssertTrue(app.staticTexts["Day unavailable"].waitForExistence(timeout: 30))
+        // Cold launch uses system locale and standard startup, including unsigned App Group warnings.
+        let later = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@", "Keep for Later", "保留稍后处理")).firstMatch
+        if later.waitForExistence(timeout: 5) { later.tap() }
+        let pending = app.buttons["important-day-pending-route"]
+        if pending.waitForExistence(timeout: 3) { pending.tap() }
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@ OR label == %@", "Day unavailable", "日子暂不可用")).firstMatch.waitForExistence(timeout: 30))
         app.terminate()
         app.launchArguments += ["-PGOSStartupFailureTest"]
         app.launch()

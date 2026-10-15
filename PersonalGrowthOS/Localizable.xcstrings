@@ -13119,6 +13119,22 @@
           }
         }
       }
+    },
+    "No next anniversary within the supported date range": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No next anniversary within the supported date range"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "支持的日期范围内没有下一纪念期次"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

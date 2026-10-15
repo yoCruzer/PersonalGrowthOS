@@ -161,6 +161,11 @@ enum ImportantDayDateEngine {
         guard let date = chinese.date(byAdding: .day, value: day - 1, to: chosen.start) else { return nil }
         return ImportantCivilDay(date, timeZone: lunarTimeZone)
     }
+    static func explicitPeriod(_ rule: ImportantDayDateRule, year: Int) throws -> ImportantCivilDay? {
+        try rule.validate()
+        guard rule.preset == .anniversary, years.contains(year), year >= (rule.year ?? years.lowerBound) else { throw ImportantDayDateError.invalidDate }
+        return try occurrence(rule, in: year)
+    }
     static func evaluate(_ rule: ImportantDayDateRule, today: ImportantCivilDay) throws -> ImportantDayDateResult {
         try rule.validate()
         guard years.contains(today.year), today.date != nil else { throw ImportantDayDateError.unsupportedRange }
