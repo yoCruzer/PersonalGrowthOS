@@ -184,9 +184,14 @@ extension SleepUITests {
         XCTAssertTrue(app.staticTexts["No matching sleep records."].waitForExistence(timeout: 5), app.debugDescription)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         for _ in 0..<4 { app.swipeDown() }
+        let newFeeling = app.buttons["sleep-review-feeling-5"]; reveal(newFeeling, app: app)
+        XCTAssertTrue(newFeeling.label.contains("1"), newFeeling.label)
+        for _ in 0..<4 { app.swipeDown() }
         let plotted = app.buttons["Open plotted nights"]; reveal(plotted, app: app); plotted.tap()
         XCTAssertTrue(source.waitForExistence(timeout: 5)); source.tap()
-        app.buttons["sleep-wake-menu"].tap(); app.buttons["Unknown"].tap(); app.buttons["sleep-save"].tap()
+        app.buttons["sleep-wake-menu"].tap()
+        let unknownWake = app.buttons.matching(NSPredicate(format: "label == %@ AND identifier != %@", "Unknown", "sleep-feeling-unknown")).firstMatch
+        XCTAssertTrue(unknownWake.waitForExistence(timeout: 5)); unknownWake.tap(); app.buttons["sleep-save"].tap()
         XCTAssertTrue(source.waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
         for _ in 0..<4 { app.swipeDown() }
