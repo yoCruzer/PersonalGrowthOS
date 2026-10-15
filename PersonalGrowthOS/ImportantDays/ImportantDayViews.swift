@@ -167,7 +167,7 @@ struct ImportantDayDetailView: View {
                     }
                     Section("Related entries") {
                         if !periods.isEmpty {
-                            Picker("Anniversary period", selection: $entryFilter.selection) {
+                            Picker("Anniversary period", selection: Binding(get: { entryFilter.effectiveSelection(periods: periods) }, set: { entryFilter.selection = $0 })) {
                                 Text("All").tag("all"); Text("General entries").tag("general")
                                 ForEach(periods, id: \.self) { Text($0).tag($0) }
                             }.accessibilityIdentifier("important-day-period-filter")
@@ -210,9 +210,6 @@ struct ImportantDayDetailView: View {
                 }
                 .navigationTitle("Important Day").navigationBarTitleDisplayMode(.inline)
                 .sheet(isPresented: $editing) { ImportantDayEditorView(mediaStore: mediaStore, day: day) }
-                .sheet(item: $association) { operation in
-                    ImportantDayAssociationView(operation: operation, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
-                }
                 .sheet(isPresented: $help) {
                     NavigationStack { List {
                         ImportantDayWidgetPreview(day: day, mediaStore: mediaStore)
@@ -229,6 +226,9 @@ struct ImportantDayDetailView: View {
             }
         }
         .accessibilityIdentifier("important-day-detail")
+        .sheet(item: $association) { operation in
+            ImportantDayAssociationView(operation: operation, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+        }
         .onChange(of: periods) { _, values in entryFilter.reconcile(periods: values) }
         .onChange(of: day.flatMap { try? $0.rule().associationDateRule }) { _, _ in periodSelection = .init() }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in referenceDate = ImportantDayReferenceClock.now() }
@@ -651,35 +651,48 @@ struct ImportantDayAssociationView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            VStack(alignment: .leading, spacing: 8) {
-                if let occurrence = operation.occurrence { Text("Selected date: \(occurrence.identifier)").font(.caption).accessibilityIdentifier("important-day-operation-period") }
-                else { Text("Associated with this day").font(.caption).accessibilityIdentifier("important-day-operation-period") }
-                if needsConfirmation, let day, let rule = try? day.rule() {
-                    Text(ImportantDayAssociationError.dateChanged.localizedDescription).font(.caption).accessibilityIdentifier("important-day-operation-confirmation")
-                    if rule.preset == .anniversary { ImportantDayPeriodPicker(rule: rule, selection: $confirmationSelection, today: .init(ImportantDayReferenceClock.now())) }
-                    else { Text("The association will be to the day itself.").font(.caption) }
-                    Button("Confirm this association and keep my draft") {
-                        let selection = rule.preset == .anniversary ? confirmationSelection : .init()
-                        if let confirmed = try? ImportantDayAssociationOperation(day: day, kind: operation.kind, selection: selection, today: .init(ImportantDayReferenceClock.now()), id: operation.id) { operation = confirmed }
-                    }.disabled(rule.preset == .anniversary && confirmationSelection.isExplicit && confirmationSelection.occurrence(rule: rule, today: .init(ImportantDayReferenceClock.now())) == nil)
-                } else if !ready { Text(ImportantDayAssociationError.unavailable.localizedDescription).font(.caption) }
-                #if DEBUG
-                if ImportantDayUITestFixture.isReviewTest {
-                    HStack {
-                        Button("Advance synthetic day") {
-                            ImportantDayUITestFixture.referenceDateOverride = ImportantCivilDay(year: 2026, month: 10, day: 16).date!
-                            NotificationCenter.default.post(name: .NSCalendarDayChanged, object: nil)
-                        }.accessibilityIdentifier("important-day-test-advance")
-                        Button("Change synthetic date") {
-                            if let day, var draft = try? ImportantDayDraft(day) {
-                                draft.rule.day = 16
-                                _ = try? ImportantDayService(context: context, mediaStore: mediaStore).save(draft, id: day.id)
-                            }
-                        }.accessibilityIdentifier("important-day-test-change-rule")
-                    }.font(.caption)
-                }
-                #endif
-            }.padding(10).frame(maxWidth: .infinity, alignment: .leading).background(.bar)
+            if needsConfirmation {
+                ScrollView { associationStatus }
+                    .frame(height: 240)
+                    .accessibilityIdentifier("important-day-confirmation-scroll")
+                    .background(.bar)
+            } else { associationStatus }
         }
+    }
+    private var associationStatus: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let occurrence = operation.occurrence { Text("Selected date: \(occurrence.identifier)").font(.caption).accessibilityIdentifier("important-day-operation-period") }
+            else { Text("Associated with this day").font(.caption).accessibilityIdentifier("important-day-operation-period") }
+            if needsConfirmation, let day, let rule = try? day.rule() {
+                Text(ImportantDayAssociationError.dateChanged.localizedDescription).font(.caption).accessibilityIdentifier("important-day-operation-confirmation")
+                if rule.preset == .anniversary { ImportantDayPeriodPicker(rule: rule, selection: $confirmationSelection, today: .init(ImportantDayReferenceClock.now())) }
+                else { Text("The association will be to the day itself.").font(.caption) }
+                Button("Confirm this association and keep my draft") {
+                    let selection = rule.preset == .anniversary ? confirmationSelection : .init()
+                    if let confirmed = try? ImportantDayAssociationOperation(day: day, kind: operation.kind, selection: selection, today: .init(ImportantDayReferenceClock.now()), id: operation.id) { operation = confirmed }
+                }.accessibilityIdentifier("important-day-confirm-operation").disabled(rule.preset == .anniversary && confirmationSelection.isExplicit && confirmationSelection.occurrence(rule: rule, today: .init(ImportantDayReferenceClock.now())) == nil)
+            } else if !ready { Text(ImportantDayAssociationError.unavailable.localizedDescription).font(.caption) }
+            #if DEBUG
+            if ImportantDayUITestFixture.isReviewTest {
+                HStack {
+                    Button("Advance synthetic day") {
+                        ImportantDayUITestFixture.referenceDateOverride = ImportantCivilDay(year: 2026, month: 10, day: 16).date!
+                        NotificationCenter.default.post(name: .NSCalendarDayChanged, object: nil)
+                    }.accessibilityIdentifier("important-day-test-advance")
+                    Button("Change synthetic date") {
+                        if let day, var draft = try? ImportantDayDraft(day) {
+                            draft.rule.day = 16
+                            _ = try? ImportantDayService(context: context, mediaStore: mediaStore).save(draft, id: day.id)
+                        }
+                    }.accessibilityIdentifier("important-day-test-change-rule")
+                    if ProcessInfo.processInfo.arguments.contains("-PGOSImportantDayDeleteTest") {
+                        Button("Delete synthetic day") {
+                            try? ImportantDayService(context: context, mediaStore: mediaStore).delete(id: operation.dayID)
+                        }.accessibilityIdentifier("important-day-test-delete")
+                    }
+                }.font(.caption)
+            }
+            #endif
+        }.padding(10).frame(maxWidth: .infinity, alignment: .leading).background(.bar)
     }
 }

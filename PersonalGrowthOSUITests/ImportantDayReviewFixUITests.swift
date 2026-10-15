@@ -1,14 +1,19 @@
 import XCTest
 
 final class ImportantDayReviewFixUITests: XCTestCase {
-    private func launch() -> XCUIApplication {
+    private func launch(deleteTest: Bool = false, chineseLarge: Bool = false) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSImportantDaysTest", "-PGOSImportantDaysReviewTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSImportantDaysTest", "-PGOSImportantDaysReviewTest", "-AppleLanguages", chineseLarge ? "(zh-Hans)" : "(en)", "-AppleLocale", chineseLarge ? "zh_CN" : "en_US"]
+        if deleteTest { app.launchArguments.append("-PGOSImportantDayDeleteTest") }
+        if chineseLarge {
+            app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        }
         app.launch(); return app
     }
     private func openDay(_ title: String, app: XCUIApplication) {
-        app.tabBars.buttons["Growth"].tap(); app.buttons["growth-important-days"].tap()
+        (app.tabBars.buttons["Growth"].exists ? app.tabBars.buttons["Growth"] : app.tabBars.buttons["成长"]).tap()
+        let days = app.buttons["growth-important-days"]; scrollTo(days, app: app); days.tap()
         app.staticTexts[title].firstMatch.tap()
     }
     private func scrollTo(_ element: XCUIElement, app: XCUIApplication) {
@@ -105,6 +110,41 @@ final class ImportantDayReviewFixUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Use the date in the selected calendar"].exists)
         XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
         XCTAssertFalse(app.switches["Lunar leap month"].exists)
+    }
+    func testChineseLargeTextConfirmationKeepsSaveAccessibleAndDraftIntact() {
+        let app = launch(chineseLarge: true); openDay("Review annual", app: app); enableDefaultPeriod(app)
+        let write = app.buttons["important-day-write"]; scrollTo(write, app: app); write.tap()
+        let body = app.textViews["capture-body"]; body.tap(); body.typeText("Chinese accessibility draft")
+        app.buttons["important-day-test-change-rule"].tap()
+        XCTAssertTrue(app.staticTexts["important-day-operation-confirmation"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["important-day-operation-confirmation"].label, "这个日子的日期已改变，草稿已保留。请先确认下方关联，再保存。")
+        XCTAssertTrue(app.buttons["capture-save"].isHittable)
+        XCTAssertEqual(body.value as? String, "Chinese accessibility draft")
+        let confirm = app.buttons["important-day-confirm-operation"]
+        for _ in 0..<6 {
+            if confirm.isHittable { break }
+            let scroll = app.scrollViews["important-day-confirmation-scroll"]
+            if scroll.exists { scroll.swipeUp() } else { app.swipeUp() }
+        }
+        XCTAssertTrue(confirm.isHittable); confirm.tap()
+        XCTAssertEqual(body.value as? String, "Chinese accessibility draft")
+        XCTAssertTrue(app.staticTexts["important-day-operation-period"].label.contains("2026-10-16"))
+        let screenshot = XCTAttachment(screenshot: app.screenshot()); screenshot.name = "review-fix-zh-AX-confirmation"; screenshot.lifetime = .keepAlways; add(screenshot)
+        app.buttons["capture-save"].tap()
+        XCTAssertTrue(app.buttons["important-day-write"].waitForExistence(timeout: 5))
+    }
+    func testDeletingTargetPreservesDraftAndExplainsWhySaveCannotProceed() {
+        let app = launch(deleteTest: true); openDay("Review annual", app: app)
+        app.buttons["important-day-write"].tap()
+        let body = app.textViews["capture-body"]; body.tap(); body.typeText("Draft survives target deletion")
+        app.buttons["important-day-test-delete"].tap()
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        XCTAssertEqual(body.value as? String, "Draft survives target deletion")
+        XCTAssertTrue(app.staticTexts["This day was removed or archived. Your draft was kept. Restore the day before saving."].exists)
+        app.buttons["capture-save"].tap()
+        XCTAssertEqual(body.value as? String, "Draft survives target deletion")
+        app.buttons["Cancel"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Day unavailable"].waitForExistence(timeout: 5))
     }
     func testSearchSubsetExplainsDisabledReorderAndClearsWithoutChangingFavorites() {
         let app = launch()

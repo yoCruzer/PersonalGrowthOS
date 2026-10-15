@@ -1,3 +1,11 @@
+# PR #10 限定 Review Fix — IMPLEMENTING
+
+本轮固定输入d98306f219ed5929d38856216cd9af52fa5c7744；外部独立审查确认R1–R4四项P2及R5预览P3，替代下方旧“范围内已收敛/设备Gate”结论。沿原PR10/分支续接，当前候选9538ec7已实现R1–R5并由唯一独立reviewer作代码层复审；集中测试与删除目标宿主边界仍验证中，不宣称最终通过。具体证据见EXECUTION，本轮最终停READY_FOR_INDEPENDENT_REVIEW。
+
+---
+
+# 以下为上一轮交付历史（不覆盖本轮发现）
+
 # 重要日子 V1 验收与 Owner Gate
 
 状态：**READY_FOR_OWNER_DEVICE_GATE**。A/B必选实现、可运行自动化/构建与独立审查已收敛；产品/测试提交已普通推送到新Draft PR。设备门禁仍需Owner决定，不进入发布。

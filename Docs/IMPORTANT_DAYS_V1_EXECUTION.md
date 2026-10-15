@@ -1,6 +1,6 @@
 # PR #10 限定 Review Fix — IMPLEMENTING
 
-固定输入d98306f219ed5929d38856216cd9af52fa5c7744，基于4e407591，仅五份Docs；已逐文件安全复制，历史探针不改/不注册target。沿用 `/private/tmp/PersonalGrowthOS-important-days-v1` / `codex/important-days-v1` / `origin/codex/important-days-v1`，PR10 OPEN Draft、base固定20d315a。启动HEAD4e407591，原工作树干净；原主workspace的project/catalog/xcodecloud改动保留。Xcode27.0(27A266a)，专用合成sim EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A可用。未重跑旧全量基线。
+固定输入d98306f219ed5929d38856216cd9af52fa5c7744，基于4e407591，仅五份Docs；已逐文件安全复制，历史探针不改/不注册target。沿用 `/private/tmp/PersonalGrowthOS-important-days-v1` / `codex/important-days-v1` / `origin/codex/important-days-v1`，PR10 OPEN Draft、base固定20d315a。启动HEAD4e407591，当前候选9538ec700c15d3ee25d9eec41b4a94b45aa1f0f4；启动原工作树干净；原主workspace的project/catalog/xcodecloud改动保留。Xcode27.0(27A266a)，专用合成sim EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A可用。未重跑旧全量基线。
 
 | 项 | 实际路径与反例计划 |
 | --- | --- |
@@ -10,7 +10,7 @@
 | R4 | 排序服务合并可见排列回完整常看序列，搜索禁拖；全局/隐藏归档/失效重复/失败回滚/重开 |
 | R5 | Editor额外预览复用引擎约束，未来原年/2100/无下一期，不扩范围 |
 
-当前：准备真实生产状态提取与红测；最近验证仅固定输入/Git/环境。剩余：修复、相关回归、独立审查、同源构建、文档/普通push。阻塞无。下一步：运行生产状态/服务反例，保留准确失败，不以历史探针exit0作PASS。最终目标READY_FOR_INDEPENDENT_REVIEW。
+当前：R1–R5已在9538实现。Red1五项生产状态/实际排序反例0/5PASS，9断言FAIL；Green1/2编译问题保留。Green3为21PASS/3FAIL（新fixture宿主退出1+顶部提示遮保存栏UI2），9538修正。Focused1固定9538 **31/31Unit+14/14UI=45/45 PASS，0FAIL/SKIP，exit0，driver delivered=4**。唯一独立reviewer代码复审未见其他confirmed P2，并提示删除目标时sheet条件宿主边界；RedEdge1实际2UI均FAIL：删除目标丢Capture草稿，中文最大AX确认遮Save。当前局部修复稳定sheet宿主、240pt滚动确认区，并让Picker始终读取有效筛选。新产品/测试提交随后固定，再补受影响回归与独立delta复审、同源两构建。证据根 `/private/tmp/pgos-important-days-review-fix-evidence/`。未push；阻塞无；最终目标READY_FOR_INDEPENDENT_REVIEW。
 
 ---
 
