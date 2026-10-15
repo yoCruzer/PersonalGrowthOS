@@ -1,6 +1,16 @@
-# PR #10 限定 Review Fix — IMPLEMENTING
+# PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW
 
-本轮固定输入d98306f219ed5929d38856216cd9af52fa5c7744；外部独立审查确认R1–R4四项P2及R5预览P3，替代下方旧“范围内已收敛/设备Gate”结论。沿原PR10/分支续接，当前候选9538ec7已实现R1–R5并由唯一独立reviewer作代码层复审；集中测试与删除目标宿主边界仍验证中，不宣称最终通过。具体证据见EXECUTION，本轮最终停READY_FOR_INDEPENDENT_REVIEW。
+固定任务/历史审查输入d98306f219ed5929d38856216cd9af52fa5c7744，五文件原样保留。最终产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**；最后生产7b4704f，随后只UI测试导航修订。唯一实际独立只读reviewer `/root/review_fix_limited` 对固定SHA、真实diff及原始证据完成限定复审，**R1–R4关闭、R5局部修复关闭，无未关闭confirmed范围内P0/P1/P2**。这替代下方旧阶段“等待设备”的当前结论；外部复审尚未进行。
+
+| 固定复审阶段 | 实际读取与结论 |
+| --- | --- |
+| 9538ec7 | 读取完整固定Goal/外部报告、4e→9538生产/测试diff，独立确认Red1为真实生产状态接线+实际服务5反例/9失败，不是历史探针变绿；R1–R5代码可闭合。提示删除日子会使条件sheet宿主消失的未证边界。 |
+| 7b4704f | 主实现者新增真实UI证实删除丢草稿及最大AX遮Save（RedEdge1 0/2），再最小修复。reviewer核对稳定Group宿主、主体/operation.id保持、240pt滚动确认区与有效筛选Picker；没有改通用QuickCapture/历史Schema/完整性规则。 |
+| 最终6e24212 | 直接核对7b后仅测试导航变化，全部草稿/日期/保存/取消/重开断言保留。读取Focused1 45/45、EdgeFocused1 19/21原失败、历法后续PASS与EdgeUI4原bundle **1/1PASS/0FAIL/SKIP/runtimeWarnings**；目视中文AX PNG，确认草稿及2026-10-16实际保存。六组不动坐标/两失败视频支持键盘预测词遮挡诊断，最终3次拖动坐标移动且year=2026不变；不以假设wheel吞手势作根因结论。直接读取最终两构建日志、6个Info与两App clean6e provenance，原身份/1.0(7)保持。 |
+
+审查者全程只读未改实现，也未重跑自动化；运行者为主实现者。完整命令、SHA、每轮失败与证据根见[EXECUTION](IMPORTANT_DAYS_V1_EXECUTION.md)。无新Schema/迁移/备份/通知/Widget隐私边界变化。历史输入探针及旧报告没有重写，旧失败和已接受限制保留。
+
+本轮新全仓Unit/全套UI、独立远端CI（workflows=0）、实际手机/私库/签名/系统桌面通知/VoiceOver仍NOT_RUN。本批内部限定复审已收敛，普通推送[原Draft PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)并停 **READY_FOR_INDEPENDENT_REVIEW**，等待外部按固定SHA复审；不进入发布或设备操作。
 
 ---
 

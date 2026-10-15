@@ -1,6 +1,23 @@
-# PR #10 限定 Review Fix — IMPLEMENTING
+# PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW
 
-本轮固定输入d98306f219ed5929d38856216cd9af52fa5c7744；外部独立审查确认R1–R4四项P2及R5预览P3，替代下方旧“范围内已收敛/设备Gate”结论。沿原PR10/分支续接，当前候选9538ec7已实现R1–R5并由唯一独立reviewer作代码层复审；集中测试与删除目标宿主边界仍验证中，不宣称最终通过。具体证据见EXECUTION，本轮最终停READY_FOR_INDEPENDENT_REVIEW。
+最终产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**，最后生产7b4704f；本交付仅更新五份约定文档，完整delivery SHA以Git/原PR head/外部final-delivery-proof核对。固定输入d98306f五文件原样保留。沿 `/private/tmp/PersonalGrowthOS-important-days-v1` / `codex/important-days-v1` / `origin/codex/important-days-v1` 更新[原Draft PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base固定20d315a与名称保持，PR#8/#9不改。
+
+| 验收项 | 本轮实际结果 |
+| --- | --- |
+| R1期次/意图 | 默认2026不碰wheel，三入口跨合成日仍保存2026-10-15；真实规则变化保草稿后显式确认，删除目标仍保草稿并说明不能保存。普通nil、往年/农历跨年、取消重开、装饰改动/历史关联与Entry当下时间对照通过。 |
+| R2筛选 | 原页解除最后具体期次后General A/B恢复；实际Entry删除、其他期次/有效/general/零关联生产状态测试通过。 |
+| R3历法 | 闰月农历切公历确认后保存/重开通过，取消不改原事实，隐藏不兼容字段清理；不钳日期、不放宽校验，首次加载/elapsed与旧preset复位保留。 |
+| R4排序 | 搜索禁拖提示/清除恢复；真实完整/子集常看合并A,B,D,C、隐藏归档恢复、无重复dense rank、失效/重复/非favorite安全拒绝、失败回滚及磁盘重开通过。 |
+| R5预览 | 局部复用主引擎，尊重2030原年/2100范围/无有效下一期，有界3项，不扩历法算法。 |
+| 新UI边界 | 删除目标丢草稿和中文最大AX遮Save先真实红；稳定sheet宿主与有界滚动确认区修复，实际UI保存/取消路径验证。最大AX最终确认2026-10-16、草稿保持、Save可点并保存通过。 |
+
+本轮证据分批：9538集中 **45/45 PASS**；7b补验 **19PASS/2FAIL/0SKIP**，后续历法UI PASS，最终6e中文AX UI **1/1 PASS**；不能拼成单次全绿。Red1 5项/9失败、Green编译及宿主/布局失败、两个边界红测、后续测试手势导航失败都保留在[EXECUTION](IMPORTANT_DAYS_V1_EXECUTION.md)。独立reviewer固定6e复审收敛，无未关闭confirmed范围内P0/P1/P2。
+
+最终固定6e Debug sim/unsigned Release generic iOS两构建PASS；App/Share/Widget×2六身份与1.0(7)保持，两App provenance为clean固定SHA；appex由相同源构建图嵌入，无独立provenance文件。原V12/v8、主库/五Tab/Record/来源证据/提醒/组件隐私边界不变。原workspace未知dirty改动保留。
+
+NOT_RUN：本轮全仓Unit/全套UI、远端CI（实际workflows=0）、真实iPhone/私库/签名/实际桌面或通知递送/VoiceOver/Cloud与发布。旧CaptureImportReceipt恢复限制、Goal时钟回拨P2及布局警告仍按原接受边界保留。
+
+本批停 **READY_FOR_INDEPENDENT_REVIEW**，交回固定SHA供外部限定复审。下方四日子设备Gate仅上次交付历史；本轮没有替Owner设备验收或授权任何发布/账号/证书/Archive/TestFlight操作。
 
 ---
 

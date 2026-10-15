@@ -1,10 +1,14 @@
-# PR #10 限定 Review Fix — IMPLEMENTING
+# PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
-本轮固定任务 `d98306f219ed5929d38856216cd9af52fa5c7744` 已完整读取，核验基于4e407591且仅五份Docs。原worktree/分支/upstream/PR10续接，base20d315a不变；原工作区未知改动保留。外部审查R1–R4为待关闭P2，R5局部预览问题一并评估；下方原“全部关闭/设备Gate”为旧阶段历史。
+固定输入 `d98306f219ed5929d38856216cd9af52fa5c7744` 已核验基于4e407591且只增加五份Docs，原样保留、不注册历史探针。产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**，最后生产代码 `7b4704fc734973200c46456a21b81110a8f4a571`；其后仅UI测试导航修订。本次交付commit仅更新五份约定交接文档，完整delivery SHA在Git/原PR head与本地final-delivery-proof.json核对，不写自引用hash。
 
-当前HEAD4e407591，先在实际生产状态/服务补反例，然后限定修复、相关集中验证、固定SHA独立复审、Debug sim/unsigned Release generic iOS同源构建及普通push原Draft PR。最终停READY_FOR_INDEPENDENT_REVIEW。保持V12/v8与身份/主库/五Tab/Record/来源/提醒/组件隐私，不进入发行或真机。
+R1默认年份及三入口操作意图固定、真实规则改动明确确认且保草稿；R2消失期次筛选原页恢复；R3确认历法时清理隐藏字段且保留严格校验；R4搜索禁拖、全域排序合并/回滚；R5有界预览尊重起始年均完成。删除目标草稿与中文最大AX确认另有真实红测及局部修复。唯一独立reviewer `/root/review_fix_limited` 对固定SHA及原始证据只读复审通过，无未关闭confirmed范围内P0/P1/P2。
 
-准确状态见 [执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)；固定[Goal](IMPORTANT_DAYS_V1_REVIEW_FIX_GOAL_ZH.md)及[外部审查](Reviews/important-days-v1-pr10/PR10_INDEPENDENT_REVIEW_ZH.md)。
+实际验证分批记录：9538集中 **45/45 PASS**（31Unit+14UI）；7b边界补验 **19/21 PASS、2FAIL**，两项测试导航问题分别在后续历法UI及最终中文AX UI通过，不改标原失败。最终固定SHA Debug sim与unsigned Release generic iOS两构建PASS，App/Share/Widget原身份与1.0(7)保持，两App provenance为clean固定SHA。新全仓Unit/全套UI、远端CI（workflows=0）、真机/私人库/签名/实际桌面通知/VoiceOver均NOT_RUN。
+
+沿用 `/private/tmp/PersonalGrowthOS-important-days-v1`，`codex/important-days-v1` / `origin/codex/important-days-v1`，[原Draft PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base `codex/quiet-wins-on-d72`=`20d315a62179ad29a6cbcf76c33c11638412e54e`。普通推送本次交付后只核对远端同源；旧PR#8/#9及原workspace未知dirty改动保持。保持V12/v8、原主库/五Tab/Record/来源/提醒/组件隐私边界。
+
+下一边界仅外部限定独立复审，停 **READY_FOR_INDEPENDENT_REVIEW**；旧Owner设备Gate结论见历史，不授权发行或真机。实际命令、失败、证据与限制见[执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)、[限定复审](IMPORTANT_DAYS_V1_REVIEW_ZH.md)、[验收](IMPORTANT_DAYS_V1_ACCEPTANCE_ZH.md)。
 
 ---
 

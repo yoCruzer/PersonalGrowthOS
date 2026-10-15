@@ -1,16 +1,55 @@
-# PR #10 限定 Review Fix — IMPLEMENTING
+# PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW
 
-固定输入d98306f219ed5929d38856216cd9af52fa5c7744，基于4e407591，仅五份Docs；已逐文件安全复制，历史探针不改/不注册target。沿用 `/private/tmp/PersonalGrowthOS-important-days-v1` / `codex/important-days-v1` / `origin/codex/important-days-v1`，PR10 OPEN Draft、base固定20d315a。启动HEAD4e407591，当前候选9538ec700c15d3ee25d9eec41b4a94b45aa1f0f4；启动原工作树干净；原主workspace的project/catalog/xcodecloud改动保留。Xcode27.0(27A266a)，专用合成sim EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A可用。未重跑旧全量基线。
+固定输入 `d98306f219ed5929d38856216cd9af52fa5c7744`，直接父4e407591，增量仅五份Docs；已逐文件原样复制，当前bytes再次核验，历史探针不改、不注册target。启动HEAD4e407591；最后生产7b4704f，最终产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**。交付commit只改本节及另外四份约定交接文档；delivery SHA由Git/PR head和外部proof核对，不自引用。
 
-| 项 | 实际路径与反例计划 |
+工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`，分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`，[原PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)保持OPEN Draft，base `codex/quiet-wins-on-d72`=`20d315a62179ad29a6cbcf76c33c11638412e54e`。已授权普通push原分支和更新PR正文；最后读取远端核对，完整proof位于下述证据根。旧PR#8/#9和原主workspace的project/catalog/xcodecloud未知改动不变。
+
+## R1–R5关闭映射
+
+| 项 | 生产实现与实际证据 |
 | --- | --- |
-| R1 | Detail明确期次→写/关联/Todo操作固定上下文；默认年份跨日红测，保存时目标/日期语义再验证，不改历史关联或Entry当下时间 |
-| R2 | Detail生产筛选状态随关联变化规范化；最后期次消失、另一期次/有效筛选/空态对照及原页UI |
-| R3 | Editor确认历法时清理不适用字段；闰月→公历实际确认/保存/重开，首次加载/perspective/取消/反向非法日期正反 |
-| R4 | 排序服务合并可见排列回完整常看序列，搜索禁拖；全局/隐藏归档/失效重复/失败回滚/重开 |
-| R5 | Editor额外预览复用引擎约束，未来原年/2100/无下一期，不扩范围 |
+| R1 | `ImportantDayInteraction.swift`的瞬态选择在开关开启时物化默认年份；操作结构固定dayID、rule、year、date/nil，写记录/关联记录/Todo实际入口都使用它。保存重查目标存在/未归档/日期语义，装饰或perspective不误报；真实规则改动保留草稿并显式重确认。稳定Group sheet宿主保留被删目标的Capture草稿；底部240pt滚动确认区避免最大AX遮导航。12项新生产状态/实际SwiftData测试覆盖三入口明确/普通nil保存重开、农历2023年末→2024-02-09、取消重开、历史期次不改、元数据正对照、archive/delete拒绝；实际UI证明三个入口跨合成午夜仍存2026-10-15、规则变更保草稿后确认新期次、删除后不丢草稿，中文最大AX确认2026-10-16并保存。Entry occurredAt仍按原记录当下，不回填纪念日。 |
+| R2 | 生产`ImportantDayEntryFilter`+有效Picker binding+关联变化reconcile；最后具体期次消失退回all，保留有效/general。实际unlink/Entry删除、其他期次、零关联正反单测及同页解除后General A/B立即可见UI，不重插Entry。 |
+| R3 | 只在用户明确确认历法时`confirmCalendar`清理不兼容闰月/特殊规则，数字不转换或钳制；首次加载保护与elapsed保留。实际闰月农历→公历确认/取消/保存/重开UI、无隐藏闰月，31号与必需2/29规则仍拒绝单测，旧preset复位UI继续通过。 |
+| R4 | 非空归一化搜索禁拖并给清除搜索提示；实际服务把可见排列合回完整favorites（含隐藏归档）原槽位，统一dense rank并单次提交/回滚。完整/子集A,B,D,C、隐藏B归档恢复、磁盘重开、失败回滚、重复/缺失/非favorite拒绝均真实服务测试；搜索UI证明提示/隐藏/清除恢复。 |
+| R5 | 额外预览复用explicitPeriod，按原年/1901–2100/真实例外规则有界取最多3个。未来2030原年、2100边界与无下一有效期次单测通过，无反转闭区间或第二份历法算法。 |
 
-当前：R1–R5已在9538实现。Red1五项生产状态/实际排序反例0/5PASS，9断言FAIL；Green1/2编译问题保留。Green3为21PASS/3FAIL（新fixture宿主退出1+顶部提示遮保存栏UI2），9538修正。Focused1固定9538 **31/31Unit+14/14UI=45/45 PASS，0FAIL/SKIP，exit0，driver delivered=4**。唯一独立reviewer代码复审未见其他confirmed P2，并提示删除目标时sheet条件宿主边界；RedEdge1实际2UI均FAIL：删除目标丢Capture草稿，中文最大AX确认遮Save。当前局部修复稳定sheet宿主、240pt滚动确认区，并让Picker始终读取有效筛选。新产品/测试提交随后固定，再补受影响回归与独立delta复审、同源两构建。证据根 `/private/tmp/pgos-important-days-review-fix-evidence/`。未push；阻塞无；最终目标READY_FOR_INDEPENDENT_REVIEW。
+无Schema、迁移、备份校验、通知协调、Widget隐私、原身份或通用QuickCapture/AppShell/路由实现改动。Todo编辑器只在新增关联操作时调用验证上下文；原普通Todo路径保持。工程仅注册新生产状态/Unit/UI三个文件，历史探针不进target。DEBUG参考时钟/改规则/删除注入仅在隔离合成fixture双flag及额外删除flag下可用，Release不编入注入控件；真实系统时间和Entry时钟不改。
+
+## 本轮实际运行（不同SHA/批次不拼成一次全绿）
+
+环境：macOS27.0.1 / Xcode27.0(27A266a) / iOS Simulator27.0(24A434)，专用合成iPhone18Pro `EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A`。测试DD `/private/tmp/pgos-important-days-data-build`；最终构建DD `/private/tmp/pgos-important-days-review-fix-final-build`。证据根 **`/private/tmp/pgos-important-days-review-fix-evidence/`**，实际命令还从各log头提取到`actual-test-build-commands.json`。
+
+| 运行 | 实际结果与处理 |
+| --- | --- |
+| Red1，修复前生产接线工作树 | 5项新反例 **0/5 PASS、9断言FAIL，exit65**。生产View已接实际局部状态，但保持旧表达式，排序仍调用旧实际SwiftData服务；保存red1-production-diff.patch及两份测试/状态源。历史逻辑探针不算产品测试。 |
+| Green1 / Green2 | 编译FAIL，零测试执行。依次补测试Entry.createdAt参数、将moveDisabled放每个row以保留ForEach.onMove类型、修正catch中self.error。日志/xcresult保留。 |
+| Green3，9538前工作树 | **21PASS/3FAIL/0SKIP，exit65**。lunar年末fixture宿主退出1；未获得native crash根因栈，保留容器生命周期后后续同测试通过，不冒称已证明底层crash根因。另2UI真实顶部提示遮Save，截图保留；改底部safeAreaInset并保留草稿断言。 |
+| Focused1，精确9538ec7 | **31Unit+14UI=45/45 PASS，0FAIL/SKIP，exit0，runtimeWarnings=[]**；driver delivered=4。Date11+Persistence8+ReviewFix12；新5UI+原ImportantDay7+默认Record与TodoQuick2。包括原往年农历、preset复位、最短创建重开、中文Dark/AX、真实冷热URL/启动失败Retry与保草稿。 |
+| RedEdge1，9538+仅DEBUG/新测试工作树 | **0/2UI PASS、2FAIL，exit65**：目标删除后capture-body不存在；中文最大AX Save不可点。修复前patch、原始bundle/录屏保留。默认failure diagnostics耗600秒后正常结束，不重标环境失败。7b局部稳定sheet宿主并限制确认区。 |
+| EdgeFocused1，精确7b4704f | **12Unit+7UI PASS，2UI FAIL（19/21），0SKIP，exit65**，runtimeWarnings=[]；driver delivered=2，热路由/Record草稿/最短创建重开通过。删除目标保草稿、普通确认、三入口均通过。余2失败：中文AX拖动没到Confirm；历法测试固定3次下滑关闭了本已可见的编辑sheet。 |
+| EdgeUI2，精确fb35428 | **1/2UI PASS，1FAIL，exit65**。历法改控件已可见就不滑后，取消/保存/重开完整通过；中文按AX scroll.frame边缘拖仍在键盘，失败保留。7b之后只改测试导航，产品无delta。 |
+| EdgeUI3，精确9b5fbdf | **0/1UI PASS，exit65**。录屏/六组frame与year=2026表明预测词栏延伸在keyboard AX范围上方，手势仍在预测词区；未移动确认区，不能认作wheel改变年份或产品规则失败。保留截图与失败。 |
+| EdgeUI4，精确6e24212 | **1/1UI PASS，0FAIL/SKIP，exit0，runtimeWarnings=[]**。只按实际可见上半部发拖动，日志Confirm y1245→949→652，wheel始终2026；原中文精确提示、Save可点、草稿不变、Confirm可点、新期次2026-10-16与实际保存全部保留并通过。成功PNG已目视，非离屏mock。 |
+| 最终两构建，精确clean6e24212 | Debug generic iOS Simulator / unsigned Release generic iOS均 **BUILD SUCCEEDED、exit0**。实包App+Share+Widget×2共6身份与1.0(7)正确，两App BuildProvenance为6e/localGit/Dirty=false/Tag空；四appex无独立provenance文件，来源为同一构建图，不伪称各有plist。`final-product-build-proof.json`及命令/log留证；7b/fb较早构建另加前缀保留。 |
+
+集中命令（项目根，完整原样命令也在log头）：
+
+```sh
+python3 Scripts/run_important_day_route_ui.py --simulator EC7758DB-5D1B-4D1C-AA4D-900A9E11B66A --result /private/tmp/pgos-important-days-review-fix-evidence/Focused1.xcresult --log /private/tmp/pgos-important-days-review-fix-evidence/focused1.log -only-testing:PersonalGrowthOSTests/ImportantDayDateTests -only-testing:PersonalGrowthOSTests/ImportantDayPersistenceTests -only-testing:PersonalGrowthOSTests/ImportantDayReviewFixTests -only-testing:PersonalGrowthOSUITests/ImportantDayReviewFixUITests -only-testing:PersonalGrowthOSUITests/ImportantDayUITests -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testRecordTabIsTheNativeCaptureDestination -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoQuickContinuousInputCompletionStatisticsSearchAndRestart
+```
+
+EdgeFocused1复用driver，selectors为完整ReviewFixTests/ReviewFixUITests及原ImportantDayUITests的`testMinimalCreateWriteRelatedEntryAndRelaunch`、`testWidgetRoutePreservesRecordDraftAndQueuesBehindAnExistingEditor`。EdgeUI2只中文最大AX与历法取消保存两项；EdgeUI3/4只中文最大AX一项，名字均在`ImportantDayReviewFixUITests.swift`。driver实际添加`-collect-test-diagnostics never -parallel-testing-enabled NO test CODE_SIGNING_ALLOWED=NO`；RedEdge1为直接xcodebuild Debug选择两个边界UI、未关闭diagnostics，完整命令见red-edge1.log。Red1/Green1–3完整命令见相应log与JSON，不覆盖旧日志。
+
+最终构建命令：`xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug|Release -destination 'generic/platform=iOS Simulator'|'generic/platform=iOS' -derivedDataPath /private/tmp/pgos-important-days-review-fix-final-build build CODE_SIGNING_ALLOWED=NO`，Debug仅sim、Release仅generic iOS，不Archive/签名。
+
+## 独立复审、交付与停点
+
+唯一实际独立只读agent `/root/review_fix_limited`：初审9538核对固定Goal/旧报告、真实Red1接线和45/45；提示删除条件宿主边界，主实现者复现并7b修复；7b代码delta与删除/大字号红测复审通过；最终固定6e审查确认7b后只UI导航变化，直接读EdgeUI4原xcresult、真实PNG/坐标日志及6实包/两App provenance。最终结论 **R1–R4关闭、R5修复，无未关闭confirmed范围内P0/P1/P2**。实现者未冒充reviewer。详细见REVIEW。
+
+NOT_RUN：本轮全仓Unit/全套UI（按风险集中，不重跑旧358/362基线）；独立远端CI（实际workflows=0）；真实iPhone/私人库/签名/实际桌面或通知递送/VoiceOver/Cloud/发行。旧v7/v8 CaptureImportReceipt恢复限制、Goal时钟回拨P2和既有布局警告仍按原边界保留，未扩修或冒称消失。旧验证数字见下方历史，不计入本轮。
+
+正常最终停 **READY_FOR_INDEPENDENT_REVIEW**，下一步只外部限定复审；没有进入旧Owner设备Gate或下个功能。普通commit/push原分支、更新原Draft PR10后核对remote/local/upstream/base/Draft及PR8/9未变，外部proof记录完整delivery SHA；纯交接文档不重复编译。
 
 ---
 
