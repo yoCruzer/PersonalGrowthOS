@@ -71,6 +71,16 @@ QW1000000000000000000001 = {isa = PBXBuildFile; fileRef = QW00000000000000000000
 QW1000000000000000000002 = {isa = PBXBuildFile; fileRef = QW0000000000000000000002; };
 QW1000000000000000000003 = {isa = PBXBuildFile; fileRef = QW0000000000000000000003; };
 QW1000000000000000000004 = {isa = PBXBuildFile; fileRef = QW0000000000000000000004; };
+96BF459EBA90F2F2F1CAC68A = {isa = PBXBuildFile; fileRef = 66688749661F3FA301197ECD; };
+2F003F7BD4105F6C8A52924E = {isa = PBXBuildFile; fileRef = 7282F797418ED6407CF38A27; };
+E61A9C440A51B83857CB568B = {isa = PBXBuildFile; fileRef = FE19C984FF57D574A17EAEB6; };
+65E6593527C3818C1A208299 = {isa = PBXBuildFile; fileRef = 44524768F5AA6746CAEDF5DE; };
+7D2758FCC8DFCA1C11B6EDB9 = {isa = PBXBuildFile; fileRef = BB42BC0F305B9D8D04E1477C; };
+34E789D4274048666AA614F2 = {isa = PBXBuildFile; fileRef = 9DC0BD12C502337629E07772; };
+3C7CB3C1D0A154921EC1160D = {isa = PBXBuildFile; fileRef = CDB11E7BBFDAABFE291ED6BD; };
+AF848A83A7DA45B7D26C7945 = {isa = PBXBuildFile; fileRef = CECB54375C62A7814B3319A0; };
+807EEF6557A32C9A24EC304C = {isa = PBXBuildFile; fileRef = F75C90D64A285B02950E5009; };
+DE32EF607A5322445E8422C8 = {isa = PBXBuildFile; fileRef = 26A6896DA74B31582319DE7B; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -156,6 +166,16 @@ QW0000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourceco
 QW0000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/QuietWins/QuietWinsReader.swift"; sourceTree = SOURCE_ROOT; };
 QW0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/QuietWins/QuietWinsViews.swift"; sourceTree = SOURCE_ROOT; };
 QW0000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/QuietWinsTests.swift"; sourceTree = SOURCE_ROOT; };
+66688749661F3FA301197ECD = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/ImportantDays/ImportantDayDate.swift"; sourceTree = SOURCE_ROOT; };
+7282F797418ED6407CF38A27 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/ImportantDayDateTests.swift"; sourceTree = SOURCE_ROOT; };
+FE19C984FF57D574A17EAEB6 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayFoundation.swift"; sourceTree = SOURCE_ROOT; };
+44524768F5AA6746CAEDF5DE = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayTransfer.swift"; sourceTree = SOURCE_ROOT; };
+BB42BC0F305B9D8D04E1477C = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/ImportantDayPersistenceTests.swift"; sourceTree = SOURCE_ROOT; };
+9DC0BD12C502337629E07772 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/ImportantDays/ImportantDayPresentation.swift"; sourceTree = SOURCE_ROOT; };
+CDB11E7BBFDAABFE291ED6BD = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayViews.swift"; sourceTree = SOURCE_ROOT; };
+CECB54375C62A7814B3319A0 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayReminders.swift"; sourceTree = SOURCE_ROOT; };
+F75C90D64A285B02950E5009 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/ImportantDayReminderTests.swift"; sourceTree = SOURCE_ROOT; };
+26A6896DA74B31582319DE7B = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/ImportantDayBaselineV11Fixture"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -190,6 +210,16 @@ CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+26A6896DA74B31582319DE7B,
+F75C90D64A285B02950E5009,
+CECB54375C62A7814B3319A0,
+CDB11E7BBFDAABFE291ED6BD,
+9DC0BD12C502337629E07772,
+BB42BC0F305B9D8D04E1477C,
+44524768F5AA6746CAEDF5DE,
+FE19C984FF57D574A17EAEB6,
+7282F797418ED6407CF38A27,
+66688749661F3FA301197ECD,
                 QW0000000000000000000001,
                 QW0000000000000000000002,
                 QW0000000000000000000003,
@@ -521,6 +551,7 @@ TD4000000000000000000002,
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+DE32EF607A5322445E8422C8,
 TD4000000000000000000001,
 RV1000000000000000000001,
 				B00000000000000000000041 /* Build7V7Fixture in Resources */,
@@ -558,6 +589,12 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+AF848A83A7DA45B7D26C7945,
+3C7CB3C1D0A154921EC1160D,
+34E789D4274048666AA614F2,
+65E6593527C3818C1A208299,
+E61A9C440A51B83857CB568B,
+96BF459EBA90F2F2F1CAC68A,
                 QW1000000000000000000001,
                 QW1000000000000000000002,
                 QW1000000000000000000003,
@@ -604,6 +641,9 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+807EEF6557A32C9A24EC304C,
+7D2758FCC8DFCA1C11B6EDB9,
+2F003F7BD4105F6C8A52924E,
                 QW1000000000000000000004,
 
 TD1000000000000000000005,
