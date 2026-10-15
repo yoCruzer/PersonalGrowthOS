@@ -30,6 +30,14 @@ struct ImportantDayEntryFilter {
 }
 
 enum ImportantDayEditorPolicy {
+    static func calendarSelectionChanged(_ rule: inout ImportantDayDateRule, acknowledged: ImportantDayCalendar) -> Bool {
+        guard rule.calendar == acknowledged else { return true }
+        // Returning from an unconfirmed excursion keeps the edited numbers and clears only
+        // fields that do not apply to the already acknowledged calendar.
+        confirmCalendar(&rule)
+        return false
+    }
+
     static func confirmCalendar(_ rule: inout ImportantDayDateRule) {
         // Reinterpret the same numbers, never convert the absolute date or clamp invalid days.
         if rule.calendar == .gregorian {

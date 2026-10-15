@@ -1,3 +1,9 @@
+# PR #10 R3b — IMPLEMENTING
+
+本轮从干净80cf5b71ba5421d2b38e3a5b206ead847c07cbef续接，原Draft/base与未知主workspace改动保持。只处理未确认历法往返隐藏无效字段；生产状态两项反例已真实失败（公历回程isLeapMonth残留/校验invalidDate、反向Gregorian-only规则残留）。正在补真实UI和局部规范化，保持年月日/标题/说明/有效编辑、严格校验/首次加载/perspective/取消。证据根 `/private/tmp/pgos-important-days-r3b-evidence/`；尚未交付，最终停READY_FOR_INDEPENDENT_REVIEW。下方上轮R1–R5交付为历史。
+
+---
+
 # PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
 
 固定输入 `d98306f219ed5929d38856216cd9af52fa5c7744` 已核验基于4e407591且只增加五份Docs，原样保留、不注册历史探针。产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**，最后生产代码 `7b4704fc734973200c46456a21b81110a8f4a571`；其后仅UI测试导航修订。本次交付commit仅更新五份约定交接文档，完整delivery SHA在Git/原PR head与本地final-delivery-proof.json核对，不写自引用hash。

@@ -19,7 +19,8 @@ final class ImportantDayReviewFixUITests: XCTestCase {
     private func scrollTo(_ element: XCUIElement, app: XCUIApplication) {
         for _ in 0..<10 {
             if element.isHittable { return }
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.82)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.25)))
+            let startY = app.keyboards.firstMatch.exists ? 0.5 : 0.82
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: startY)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.25)))
         }
         XCTAssertTrue(element.isHittable)
     }
@@ -115,6 +116,67 @@ final class ImportantDayReviewFixUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Use the date in the selected calendar"].exists)
         XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
         XCTAssertFalse(app.switches["Lunar leap month"].exists)
+    }
+    private func selectEditorCalendar(_ name: String, app: XCUIApplication) {
+        let control = app.buttons["important-day-calendar"]
+        for _ in 0..<8 {
+            if control.isHittable { break }
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.3)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.8)))
+        }
+        XCTAssertTrue(control.isHittable); control.tap(); app.buttons[name].tap()
+    }
+    private func openReviewDayEditor(_ app: XCUIApplication) {
+        let edit = app.buttons["Edit Important Day"]; scrollTo(edit, app: app); edit.tap()
+        XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
+        XCTAssertFalse(app.buttons["Use the date in the selected calendar"].exists)
+    }
+    func testUnconfirmedGregorianCalendarRoundTripCanSaveAndReopenWithEditedTitle() {
+        let app = launch(); openDay("Review lunar leap", app: app); openReviewDayEditor(app)
+        // Establish the exact legal Gregorian 2023-02-01 starting state through the real editor.
+        selectEditorCalendar("Gregorian", app: app)
+        app.buttons["Use the date in the selected calendar"].tap(); app.buttons["important-day-save"].tap()
+        openReviewDayEditor(app)
+        let title = app.textFields["important-day-title"]; title.tap(); title.typeText(" R3b")
+        selectEditorCalendar("Chinese lunar · Shanghai", app: app)
+        XCTAssertTrue(app.buttons["Use the date in the selected calendar"].exists)
+        XCTAssertFalse(app.buttons["important-day-save"].isEnabled)
+        let leap = app.switches["Lunar leap month"]; scrollTo(leap, app: app)
+        leap.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap(); XCTAssertEqual(leap.value as? String, "1")
+        selectEditorCalendar("Gregorian", app: app)
+        XCTAssertFalse(app.buttons["Use the date in the selected calendar"].exists)
+        XCTAssertFalse(leap.exists)
+        XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
+        app.buttons["important-day-save"].tap()
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        openDay("Review lunar leap R3b", app: app); openReviewDayEditor(app)
+        XCTAssertEqual(app.textFields["important-day-title"].value as? String, "Review lunar leap R3b")
+        XCTAssertFalse(app.switches["Lunar leap month"].exists)
+        let preview = app.staticTexts["Gregorian date: 2023-02-01"]; scrollTo(preview, app: app); XCTAssertTrue(preview.exists)
+        XCTAssertTrue(app.staticTexts["important-day-preview"].label.contains("elapsed"))
+        XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
+    }
+    func testUnconfirmedReverseCalendarRoundTripAndCancelPreserveSavedLunarFacts() {
+        let app = launch(); openDay("Review lunar leap", app: app); openReviewDayEditor(app)
+        XCTAssertTrue(app.staticTexts["important-day-preview"].label.contains("elapsed"))
+        let title = app.textFields["important-day-title"]; title.tap(); title.typeText(" Cancel me")
+        selectEditorCalendar("Gregorian", app: app)
+        XCTAssertTrue(app.buttons["Use the date in the selected calendar"].exists)
+        XCTAssertFalse(app.buttons["important-day-save"].isEnabled)
+        selectEditorCalendar("Chinese lunar · Shanghai", app: app)
+        XCTAssertFalse(app.buttons["Use the date in the selected calendar"].exists)
+        XCTAssertTrue(app.buttons["important-day-save"].isEnabled)
+        let leap = app.switches["Lunar leap month"]; scrollTo(leap, app: app); XCTAssertEqual(leap.value as? String, "1")
+        app.buttons["Cancel"].firstMatch.tap()
+        openReviewDayEditor(app)
+        XCTAssertEqual(app.textFields["important-day-title"].value as? String, "Review lunar leap")
+        XCTAssertTrue(app.staticTexts["important-day-preview"].label.contains("elapsed"))
+        scrollTo(leap, app: app); XCTAssertEqual(leap.value as? String, "1")
+        app.buttons["important-day-save"].tap()
+        app.terminate(); app.launchArguments.removeAll { $0 == "-PGOSResetData" }; app.launch()
+        openDay("Review lunar leap", app: app); openReviewDayEditor(app)
+        scrollTo(leap, app: app); XCTAssertEqual(leap.value as? String, "1")
+        let original = app.staticTexts["Gregorian date: 2023-03-22"]; scrollTo(original, app: app); XCTAssertTrue(original.exists)
+        XCTAssertTrue(app.staticTexts["important-day-preview"].label.contains("elapsed"))
     }
     func testChineseLargeTextConfirmationKeepsSaveAccessibleAndDraftIntact() {
         let app = launch(chineseLarge: true); openDay("Review annual", app: app); enableDefaultPeriod(app)

@@ -4,6 +4,84 @@ import XCTest
 
 @MainActor
 final class ImportantDayReviewFixTests: XCTestCase {
+    func testUnconfirmedGregorianRoundTripClearsHiddenLunarFieldsAndKeepsEdits() throws {
+        var draft = ImportantDayDraft()
+        draft.title = "Edited title"; draft.notes = "Keep this note"
+        draft.preferences.cropX = 0.3; draft.preferences.today = .always
+        draft.rule = .init(preset: .anniversary, year: 2023, month: 2, day: 1, perspective: .elapsed)
+        draft.rule.calendar = .chinese
+        XCTAssertTrue(ImportantDayEditorPolicy.calendarSelectionChanged(&draft.rule, acknowledged: .gregorian))
+        draft.rule.isLeapMonth = true; draft.rule.leapMonthRule = .regularFallback
+        draft.rule.calendar = .gregorian
+        XCTAssertFalse(ImportantDayEditorPolicy.calendarSelectionChanged(&draft.rule, acknowledged: .gregorian))
+        XCTAssertFalse(draft.rule.isLeapMonth); XCTAssertNil(draft.rule.leapMonthRule)
+        XCTAssertEqual(draft.rule.year, 2023); XCTAssertEqual(draft.rule.month, 2); XCTAssertEqual(draft.rule.day, 1)
+        XCTAssertEqual(draft.rule.perspective, .elapsed)
+        XCTAssertEqual(draft.title, "Edited title"); XCTAssertEqual(draft.notes, "Keep this note")
+        XCTAssertEqual(draft.preferences.cropX, 0.3); XCTAssertEqual(draft.preferences.today, .always)
+        XCTAssertNoThrow(try draft.validate())
+        let (root, container, service) = try store()
+        defer { withExtendedLifetime(container) {} }
+        let day = try service.save(draft)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("store.sqlite"))
+        let saved = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<ImportantDay>()).first { $0.id == day.id })
+        let restored = try ImportantDayDraft(saved)
+        XCTAssertEqual(restored.title, draft.title); XCTAssertEqual(restored.notes, draft.notes)
+        XCTAssertEqual(restored.rule, draft.rule); XCTAssertEqual(restored.preferences, draft.preferences)
+    }
+    func testUnconfirmedLunarRoundTripClearsGregorianOnlyRuleAndPreservesOriginalLunarFacts() throws {
+        var rule = ImportantDayDateRule(preset: .anniversary, calendar: .chinese, year: 2023, month: 2, day: 1, isLeapMonth: true, leapMonthRule: .regularFallback, perspective: .elapsed)
+        let original = rule
+        rule.calendar = .gregorian
+        XCTAssertTrue(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: .chinese))
+        rule.leapDayRule = .february28
+        rule.calendar = .chinese
+        XCTAssertFalse(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: .chinese))
+        XCTAssertEqual(rule, original)
+        XCTAssertNoThrow(try rule.validate())
+    }
+    func testCalendarRoundTripNeverClampsChangedNumbersOrSuppliesLeapDayChoice() throws {
+        var rule = ImportantDayDateRule(preset: .anniversary, calendar: .chinese, year: 2023, month: 2, day: 30, shortMonthRule: .lastDay)
+        rule.calendar = .gregorian
+        XCTAssertFalse(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: .gregorian))
+        XCTAssertEqual(rule.year, 2023); XCTAssertEqual(rule.month, 2); XCTAssertEqual(rule.day, 30)
+        XCTAssertThrowsError(try rule.validate())
+        rule.year = 2024; rule.day = 29; rule.leapDayRule = nil
+        XCTAssertFalse(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: .gregorian))
+        XCTAssertThrowsError(try rule.validate())
+        rule.leapDayRule = .march1; XCTAssertNoThrow(try rule.validate())
+        rule.isLeapMonth = true; XCTAssertThrowsError(try rule.validate())
+    }
+    func testCalendarSelectionStillRequiresExplicitConfirmationForDifferentCalendar() throws {
+        var rule = ImportantDayDateRule(preset: .anniversary, year: 2024, month: 2, day: 29, leapDayRule: .march1, perspective: .elapsed)
+        rule.calendar = .chinese
+        XCTAssertTrue(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: .gregorian))
+        XCTAssertEqual(rule.leapDayRule, .march1) // no implicit confirmation/normalization of another calendar
+        ImportantDayEditorPolicy.confirmCalendar(&rule)
+        XCTAssertNil(rule.leapDayRule); XCTAssertEqual(rule.perspective, .elapsed)
+        XCTAssertNoThrow(try rule.validate())
+        rule.calendar = .gregorian
+        XCTAssertTrue(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: .chinese))
+        ImportantDayEditorPolicy.confirmCalendar(&rule)
+        XCTAssertEqual(rule.day, 29); XCTAssertNil(rule.leapDayRule)
+        XCTAssertThrowsError(try rule.validate()) // needs a fresh explicit leap-day policy
+    }
+    func testCalendarHydrationAndReturnPreserveValidOriginalRules() throws {
+        for original in [
+            ImportantDayDateRule(preset: .anniversary, year: 2024, month: 2, day: 29, leapDayRule: .march1, perspective: .elapsed),
+            ImportantDayDateRule(preset: .anniversary, calendar: .chinese, year: 2023, month: 2, day: 1, isLeapMonth: true, leapMonthRule: .regularFallback, perspective: .elapsed),
+            ImportantDayDateRule(preset: .anniversary, calendar: .chinese, year: 2025, month: 1, day: 30, shortMonthRule: .lastDay)
+        ] {
+            var rule = original; try rule.validate()
+            XCTAssertFalse(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: original.calendar))
+            XCTAssertEqual(rule, original)
+            rule.calendar = original.calendar == .gregorian ? .chinese : .gregorian
+            XCTAssertTrue(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: original.calendar))
+            rule.calendar = original.calendar
+            XCTAssertFalse(ImportantDayEditorPolicy.calendarSelectionChanged(&rule, acknowledged: original.calendar))
+            XCTAssertEqual(rule, original); XCTAssertNoThrow(try rule.validate())
+        }
+    }
     func testDefaultExplicitYearRemainsSelectedAcrossReferenceDayRefresh() throws {
         let rule = ImportantDayDateRule(preset: .anniversary, year: 2020, month: 10, day: 15)
         var selection = ImportantDayPeriodSelection()

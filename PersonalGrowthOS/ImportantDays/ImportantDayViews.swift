@@ -427,7 +427,7 @@ struct ImportantDayEditorView: View {
                     acknowledgedCalendar = draft.rule.calendar; lastPreset = draft.rule.preset
                 } catch { self.error = String(localized: "The day cannot be edited because its saved data is invalid.") }
             }
-            .onChange(of: draft.rule.calendar) { _, new in if loaded { calendarChanged = new != acknowledgedCalendar } }
+            .onChange(of: draft.rule.calendar) { _, _ in if loaded { calendarChanged = ImportantDayEditorPolicy.calendarSelectionChanged(&draft.rule, acknowledged: acknowledgedCalendar) } }
             .onChange(of: draft.rule.preset) { _, new in
                 guard loaded, new != lastPreset else { return }; lastPreset = new
                 if new != .anniversary && draft.rule.year == nil { draft.rule.year = today.year }
