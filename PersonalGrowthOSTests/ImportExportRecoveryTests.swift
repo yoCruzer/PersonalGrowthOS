@@ -1751,7 +1751,8 @@ private final class TransferTestFixture {
                 "weightRecords": 1, "weeklyReviews": 1,
                 "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
                 "entryPins": 0, "entryFollowUps": 0, "entrySources": 0,
-                "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0
+                "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0,
+                "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1896,12 +1897,15 @@ private func mutatePackage(
     if let rewriteJSON {
         (manifest, data) = try rewriteJSON(manifest, data)
         var encodedData = try encoder.encode(data)
+        // Preserve each actual legacy wire format. Never strip a nonempty newer payload.
+        var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: encodedData) as? [String: Any])
         if manifest.packageSchemaVersion < 7 && data.todoTasks.isEmpty && data.todoEvents.isEmpty && data.todoLists.isEmpty && data.todoSeries.isEmpty && data.todoSources.isEmpty {
-            // Emit the actual legacy wire shape. Never strip non-empty new payloads.
-            var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: encodedData) as? [String: Any])
             for key in ["todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources"] { payload.removeValue(forKey: key) }
-            encodedData = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys, .withoutEscapingSlashes])
         }
+        if manifest.packageSchemaVersion < 8 && data.importantDays.isEmpty && data.importantDayEntryLinks.isEmpty && data.importantDayTodoLinks.isEmpty && data.importantDayCovers.isEmpty {
+            for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
+        }
+        encodedData = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys, .withoutEscapingSlashes])
         try encodedData.write(to: dataURL)
         if refreshManifest {
             manifest = ExportManifest(
@@ -2067,8 +2071,8 @@ extension ImportExportRecoveryTests {
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: dataURL)) as? [String: Any])
                 payload.removeValue(forKey: "entryPins")
                 payload.removeValue(forKey: "entryFollowUps")
-                // V4/V5 fixtures must preserve their historical wire format after the V7 exporter adds Todo arrays.
-                for key in ["todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources"] { payload.removeValue(forKey: key) }
+                // V4/V5 fixtures must preserve their historical wire format after newer exporters add arrays.
+                for key in ["todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources", "importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys)
                 try bytes.write(to: dataURL)
                 let changedManifest = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
@@ -2379,6 +2383,40 @@ extension ImportExportRecoveryTests {
         XCTAssertEqual(actual, expected)
     }
 
+    func testV8RequiresAllDayArraysAndV7RejectsEvenEmptyNewKeysWithLegalLegacyPositiveControl() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore()
+        let lease = try await source.service.exportPackage(); defer { lease.cleanup() }
+        let keys = ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"]
+        for scenario in 0..<10 {
+            let package = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("DayWire\(scenario)"), mutation: { root, manifest, data in
+                let version = scenario < 8 ? 8 : 7
+                let url = root.appendingPathComponent("data.json")
+                var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                if scenario < 4 { payload.removeValue(forKey: keys[scenario]) }
+                else if scenario < 8 { payload[keys[scenario - 4]] = NSNull() }
+                else if scenario == 9 { for key in keys { payload.removeValue(forKey: key) } }
+                let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys); try bytes.write(to: url)
+                let changed = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
+                    appVersion: manifest.appVersion, appBuild: manifest.appBuild, exportID: manifest.exportID,
+                    exportedAt: manifest.exportedAt, objectCounts: data.objectCounts(forPackageSchemaVersion: version),
+                    dataFile: ExportFileRecord(path: "data.json", byteCount: Int64(bytes.count),
+                        sha256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()), mediaFiles: manifest.mediaFiles)
+                let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .secondsSince1970
+                try encoder.encode(changed).write(to: root.appendingPathComponent("manifest.json"))
+            })
+            let target = try fixture.makeEmptyStore(named: "DayWireTarget\(scenario)")
+            if scenario == 9 {
+                _ = try await target.service.importPackage(from: package)
+                XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<Entry>()), 2)
+            } else {
+                do { _ = try await target.service.importPackage(from: package); XCTFail("Malformed day wire accepted") }
+                catch { XCTAssertEqual(error as? TransferPackageError, .corruptData) }
+                XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
+            }
+        }
+    }
+
     func testV7RequiresTodoArraysAndLegacyClaimsRejectEvenEmptyNewKeys() async throws {
         let fixture = try TransferTestFixture(); defer { fixture.remove() }
         let source = try fixture.makePopulatedStore()
@@ -2388,6 +2426,7 @@ extension ImportExportRecoveryTests {
                 let version = scenario == 2 ? 6 : 7
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 if scenario == 0 { payload.removeValue(forKey: "todoEvents") }
                 if scenario == 1 { payload["todoTasks"] = NSNull() }
                 let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys); try bytes.write(to: url)
