@@ -502,3 +502,7 @@ Foundation Documents：
 ## Build 9 Approved Scope — 2026-09-16
 
 Build 9 增量：Entry 可拥有置顶元数据与单层纯文字后续补充。两者以稳定 Entry ID 关联；置顶及补充 CRUD 均不改变原 Entry 的 createdAt、occurredAt、updatedAt，也不增加 Entry/记录天数/周回顾统计。归档保留附属内容，永久删除一致清理。
+
+## 重要日子 V1 批准增量 — 2026-10-14
+
+Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面、公历/农历日期规则、Today 条件摘要、共享本地提醒与两个桌面 Widget（数字/照片/清单）。保持五 Tab、Record 主路径、原 Bundle ID/主库位置及历史数据。允许必要的追加 Schema/备份版本与 Widget target；原 Widgets 后置范围仅被本增量限定替代。完整边界见固定版本 `IMPORTANT_DAYS_V1_GOAL_ZH.md` / `IMPORTANT_DAYS_V1_DESIGN_ZH.md`；不授权发布或操作私人库。

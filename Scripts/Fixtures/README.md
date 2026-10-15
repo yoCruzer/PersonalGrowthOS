@@ -11,3 +11,7 @@
 `OriginalV11Fixture` 由本轮起点 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c` 的产品源码生成。生成时只追加 `CreateOriginalV11Fixture.swift` 中的测试至同一 TodoFoundationTests.swift（私有date helper可用），定向运行 `testGenerateOriginalV11CandidateFixture`；实际本轮在任何产品改动前的 s1-red 中生成成功。重现应先将该HEAD用git archive读出到新的临时目录，生成路径改为新空合成目录，禁止覆盖checked-in fixture。退出进程、确认WAL=0后复制store.sqlite/task-id.txt/SOURCE.txt，未复制SHM。数据只有合成月重复、提醒提前一日和完成/后继，没有Owner内容。
 
 原V11 11.0.0模型节点在新代码中冻结；11.1.0只给候选TodoSeries增添可选reminderDayOffset。`testOriginalV11CandidateMigratesWithoutLosingTaskEventBytesAndInfersReminderLead`复制资源后打开/重开、核对原事件传输bytes、后继生成提前一日。旧V10/V7/V8资源不改写。
+
+## 重要日子固定产品基线 V11.1 fixture
+
+`ImportantDayBaselineV11Fixture` 从精确 `20d315a62179ad29a6cbcf76c33c11638412e54e` 的 `git archive` 生成，仅向归档的 PersistenceMediaFoundationTests.swift 追加 `CreateImportantDayBaselineFixture.swift`。Xcode27/iOS27专用合成模拟器定向1/1通过。进程结束后WAL=0，仅复制sqlite、Media、expected-v7.zip、SOURCE.txt，不复制SHM。包含各旧模块、Entry图片/来源/收据、月重复Todo和完成后继；不含私人数据。新测试通过直接磁盘覆盖/重开与独立v7导入比较全部支持事实，并分别断言本地收据保留、备份恢复不含收据的已接受边界。

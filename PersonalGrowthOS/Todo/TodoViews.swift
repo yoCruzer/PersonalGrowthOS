@@ -177,6 +177,9 @@ struct TodoTaskRow: View {
 struct TodoEditorView: View {
     var task: TodoTask? = nil
     var sourceEntry: Entry? = nil
+    var importantDayID: UUID? = nil
+    var importantDayOccurrence: ImportantCivilDay? = nil
+    var importantDayOperation: ImportantDayAssociationOperation? = nil
     let onSaved: (UUID) -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
@@ -217,7 +220,7 @@ struct TodoEditorView: View {
                     }
                 }
                 Section("Repeat") {
-                    if task?.seriesID == nil && (task == nil || task?.state == .open) {
+                    if importantDayID == nil && task?.seriesID == nil && (task == nil || task?.state == .open) {
                         Picker("Repeat", selection: $draft.frequency) {
                             Text("Does not repeat").tag(nil as TodoFrequency?)
                             ForEach(TodoFrequency.allCases, id: \.self) { frequency in Text(frequency.label).tag(Optional(frequency)) }
@@ -228,13 +231,15 @@ struct TodoEditorView: View {
                         Text("Dates change only this occurrence. The original repeat rule stays fixed.").font(.caption)
                     } else {
                         Text("Does not repeat")
-                        Text("Reopen this task before converting it to a repeating series.").font(.caption)
+                        if importantDayID == nil { Text("Reopen this task before converting it to a repeating series.").font(.caption) }
                     }
                     if draft.frequency != nil && draft.plannedDay == nil && draft.deadlineDay == nil {
                         Text("Choose a planned day or hard deadline for the first occurrence before saving.").foregroundStyle(.orange).accessibilityIdentifier("todo-repeat-needs-day")
                     }
+                    if importantDayID == nil {
                     Text("Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after.").font(.caption).foregroundStyle(.secondary)
                     Text("Fixed calendar repeats use the original anchor. Missed dates are skipped; completion creates the first future occurrence.").font(.caption).foregroundStyle(.secondary)
+                    }
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -289,7 +294,8 @@ struct TodoEditorView: View {
             let service = TodoTaskService(context: context)
             let id: UUID
             if let task { try service.edit(id: task.id, draft: draft, futureSeries: futureSeries); id = task.id }
-            else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID).id }
+            else if let importantDayOperation { id = try importantDayOperation.createTodo(draft, id: submissionID, context: context).id }
+            else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID, importantDayID: importantDayID, importantDayOccurrence: importantDayOccurrence).id }
             let saved = try service.task(id: id)
             var affectedOpenSuccessor: TodoTask?
             if futureSeries, saved.state != .open, let seriesID = saved.seriesID {

@@ -1,3 +1,49 @@
+# PR #10 R3b — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
+
+从干净 `80cf5b71ba5421d2b38e3a5b206ead847c07cbef` 续接，R3b“未确认历法往返遗留隐藏无效状态”已修复。最终产品/测试 **`11b4cd8b88d18c21ad6aa66cedbd557a0b29f954`**；最后生产代码 `28a67f81ff048f73dcbfacb4b51ba322bfe0ea32`，其后仅UI标题断言/隐藏字段检查修订。交付commit只更新五份交接Docs，完整delivery SHA以Git/原PR head及证据根final-delivery-proof.json核对，不写自引用hash。
+
+生产只改ImportantDayInteraction/View：返回已确认历法时复用既有规范化，清理不适用字段，年月日/标题/说明/有效编辑和perspective保持；不同目标仍须明确确认，严格校验/首次加载/取消边界保留。两项真实生产反例先红（四处断言），36Unit及三项相邻UI通过；首轮主UI仅重开标题定位失败，最终补验1/1通过，包括保存重开2023-02-01及已保存闰月=false。独立只读reviewer固定SHA复审确认R3b关闭，无未关闭confirmed范围内P0/P1/P2。
+
+固定11b Debug sim/unsigned Release generic iOS两构建PASS，App/Share/Widget六实包原身份与1.0(7)保持，两App provenance为clean固定SHA。历史失败分别记录，未改标一次全绿。真实iPhone/私库/签名/实际桌面通知/VoiceOver、本轮全仓/全套UI及独立远端CI未运行。
+
+工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`，分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`，普通推送[原Draft PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base保持 `codex/quiet-wins-on-d72` / `20d315a62179ad29a6cbcf76c33c11638412e54e`。原workspace未知project/catalog/xcodecloud改动逐字保持，PR#8/#9不变；V12/v8、主库、五Tab/Record、提醒与Widget边界不变。
+
+本批停 **READY_FOR_INDEPENDENT_REVIEW**，下一步只外部限定复审，不进入发布、真机或下一功能。[执行证据与命令](IMPORTANT_DAYS_V1_EXECUTION.md)、[独立复审](IMPORTANT_DAYS_V1_REVIEW_ZH.md)、[验收](IMPORTANT_DAYS_V1_ACCEPTANCE_ZH.md)。
+
+---
+
+# 以下为80cf5b7及更早交付历史
+
+# PR #10 限定 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-15）
+
+固定输入 `d98306f219ed5929d38856216cd9af52fa5c7744` 已核验基于4e407591且只增加五份Docs，原样保留、不注册历史探针。产品/测试 **`6e242128db6edeedff40da59f02e505ae57cc127`**，最后生产代码 `7b4704fc734973200c46456a21b81110a8f4a571`；其后仅UI测试导航修订。本次交付commit仅更新五份约定交接文档，完整delivery SHA在Git/原PR head与本地final-delivery-proof.json核对，不写自引用hash。
+
+R1默认年份及三入口操作意图固定、真实规则改动明确确认且保草稿；R2消失期次筛选原页恢复；R3确认历法时清理隐藏字段且保留严格校验；R4搜索禁拖、全域排序合并/回滚；R5有界预览尊重起始年均完成。删除目标草稿与中文最大AX确认另有真实红测及局部修复。唯一独立reviewer `/root/review_fix_limited` 对固定SHA及原始证据只读复审通过，无未关闭confirmed范围内P0/P1/P2。
+
+实际验证分批记录：9538集中 **45/45 PASS**（31Unit+14UI）；7b边界补验 **19/21 PASS、2FAIL**，两项测试导航问题分别在后续历法UI及最终中文AX UI通过，不改标原失败。最终固定SHA Debug sim与unsigned Release generic iOS两构建PASS，App/Share/Widget原身份与1.0(7)保持，两App provenance为clean固定SHA。新全仓Unit/全套UI、远端CI（workflows=0）、真机/私人库/签名/实际桌面通知/VoiceOver均NOT_RUN。
+
+沿用 `/private/tmp/PersonalGrowthOS-important-days-v1`，`codex/important-days-v1` / `origin/codex/important-days-v1`，[原Draft PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base `codex/quiet-wins-on-d72`=`20d315a62179ad29a6cbcf76c33c11638412e54e`。普通推送本次交付后只核对远端同源；旧PR#8/#9及原workspace未知dirty改动保持。保持V12/v8、原主库/五Tab/Record/来源/提醒/组件隐私边界。
+
+下一边界仅外部限定独立复审，停 **READY_FOR_INDEPENDENT_REVIEW**；旧Owner设备Gate结论见历史，不授权发行或真机。实际命令、失败、证据与限制见[执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)、[限定复审](IMPORTANT_DAYS_V1_REVIEW_ZH.md)、[验收](IMPORTANT_DAYS_V1_ACCEPTANCE_ZH.md)。
+
+---
+
+# 以下为上一轮交付历史
+
+# 重要日子 V1 — READY_FOR_OWNER_DEVICE_GATE
+
+Owner批准的完整A/B已实现；产品/测试固定提交 `b3cc408d323e5828e9550decac72ae534f1b0b20`，最后生产代码 `9f34034357ea9329730ab18bfbf6d4b6e426b4b4`。独立数据/产品多轮固定SHA复审已收敛，无未关闭confirmed范围内P0/P1/P2。最后集中53/53备份Unit+17/17关键UI通过，三构建和实际独立复审收敛；只停在Owner设备Gate，不进入发行。
+
+五Tab/Record、原Bundle/主库/1.0(7)保持；追加V12四实体、v8备份、两Widget与共享提醒协调。9f全量Unit 358PASS/4fixtureFAIL/0SKIP；b3仅修测试夹具后整备份类53/53及17/17关键UI PASS，不重标原全量；集中保留4条Invalid frame dimension警告。Debug/Release sim/Release generic iOS实包均通过且干净b3同源；真实设备/签名/桌面/通知/VoiceOver未运行。
+
+工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`，分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`；新Draft [PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)，base `codex/quiet-wins-on-d72`=固定产品基线20d315a。原工作区dirty及旧PR#8/#9不动。
+
+当前批次完成并停READY_FOR_OWNER_DEVICE_GATE。产品/测试提交已普通推送；后续文档交付SHA以git/新Draft PR head核对，产品差异保持固定b3。下一边界仅Owner四日子设备验收与另行授权的发行决定。不merge/tag/Archive/TestFlight/证书账号变更，不操作真机或私库。
+
+完整[验收映射](IMPORTANT_DAYS_V1_ACCEPTANCE_ZH.md)、[独立审查](IMPORTANT_DAYS_V1_REVIEW_ZH.md)、[执行断点](IMPORTANT_DAYS_V1_EXECUTION.md)。下方原PR#9冻结/旧交付均为历史，不覆盖本轮批准范围。
+
+---
+
 # PR #9 Review Fix — READY_FOR_INDEPENDENT_REVIEW（2026-10-14）
 
 原 Draft [PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9)，head 分支 `codex/quiet-wins-on-d72`、base `codex/todo-v1-personal-actions` 保持。起点 `2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af`；固定产品/测试修复 **`69ad37fc12ddf6fbf15853f0a0174d6f5e5d9218`**，之后仅交接文档，最终完整 SHA 以本地/原PR head/实包构建同源证据为准。任务 worktree 为 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`；原 worktree 及 PR #8 的未提交改动保留，PR #8 head=d72/base不变。

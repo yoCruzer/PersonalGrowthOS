@@ -777,3 +777,7 @@ Build 9 调整：Today 顶部不再重复 Quick Capture，底部 Record 保留�
 ## Todo V1 批准增量 — 2026-10-09
 
 保持现有 Today / Timeline / Record / Growth / Library 五 Tab。Today 导航栏提供紧凑 Todo Hub 与快速新增入口，不挤占习惯/体重/目标主区。Todo Hub 提供今天、即将到来、全部、已完成、已取消、清单过滤和可点击统计；全局搜索可直达待办详情。Record 仍创建 Entry，Entry 详情可主动创建独立待办。设置→关于离线显示真实构建 SHA 并复制完整 SHA。详见 `TODO_V1_SCOPE.md`。
+
+## 重要日子 V1 批准增量 — 2026-10-14
+
+Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面、公历/农历日期规则、Today 条件摘要、共享本地提醒与两个桌面 Widget（数字/照片/清单）。保持五 Tab、Record 主路径、原 Bundle ID/主库位置及历史数据。允许必要的追加 Schema/备份版本与 Widget target；原 Widgets 后置范围仅被本增量限定替代。完整边界见固定版本 `IMPORTANT_DAYS_V1_GOAL_ZH.md` / `IMPORTANT_DAYS_V1_DESIGN_ZH.md`；不授权发布或操作私人库。

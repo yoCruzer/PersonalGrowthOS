@@ -17,6 +17,9 @@ struct GlobalSearchView: View {
                 .navigationTitle("Search")
                 .searchable(text: $query, prompt: "Entries, todos, weekly reviews, habits, goals and tags")
                 .onChange(of: query) { _, _ in search() }
+                .onReceive(NotificationCenter.default.publisher(for: .importantDaysChanged)) { notification in
+                    if notification.object as? ModelContainer === modelContext.container { search() }
+                }
                 .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
                     if notification.object as? ModelContainer === modelContext.container { search() }
                 }
@@ -47,7 +50,7 @@ struct GlobalSearchView: View {
             )
         } else if results.entries.isEmpty && results.tags.isEmpty
             && results.habits.isEmpty && results.goals.isEmpty
-            && results.weeklyReviews.isEmpty && results.todos.isEmpty {
+            && results.weeklyReviews.isEmpty && results.todos.isEmpty && results.importantDays.isEmpty {
             ContentUnavailableView.search(text: query)
         } else {
             SearchResultsList(
@@ -84,6 +87,13 @@ private struct SearchResultsList: View {
 
     var body: some View {
         List {
+            if !results.importantDays.isEmpty {
+                Section("Important Days") {
+                    ForEach(results.importantDays) { day in
+                        NavigationLink { ImportantDayDetailView(dayID: day.id, mediaStore: mediaStore, thumbnailStore: thumbnailStore) } label: { ImportantDayRow(day: day) }
+                    }
+                }
+            }
             if !results.todos.isEmpty {
                 Section("Todos") {
                     ForEach(results.todos) { task in

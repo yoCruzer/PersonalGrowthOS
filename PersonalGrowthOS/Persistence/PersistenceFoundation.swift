@@ -265,6 +265,13 @@ enum PersonalGrowthSchemaV11: VersionedSchema {
     }
 }
 
+enum PersonalGrowthSchemaV12: VersionedSchema {
+    static let versionIdentifier = Schema.Version(12, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        PersonalGrowthSchemaV11.models + [ImportantDay.self, ImportantDayEntryLink.self, ImportantDayTodoLink.self, ImportantDayCover.self]
+    }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -279,7 +286,8 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             PersonalGrowthSchemaV9.self,
             PersonalGrowthSchemaV10.self,
             PersonalGrowthSchemaV11Original.self,
-            PersonalGrowthSchemaV11.self
+            PersonalGrowthSchemaV11.self,
+            PersonalGrowthSchemaV12.self
         ]
     }
 
@@ -322,7 +330,8 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
                 toVersion: PersonalGrowthSchemaV10.self
             ),
             MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV10.self, toVersion: PersonalGrowthSchemaV11Original.self),
-            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV11Original.self, toVersion: PersonalGrowthSchemaV11.self)
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV11Original.self, toVersion: PersonalGrowthSchemaV11.self),
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV11.self, toVersion: PersonalGrowthSchemaV12.self)
         ]
     }
 }
@@ -331,7 +340,7 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV11.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV12.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
@@ -340,7 +349,7 @@ enum PersistenceContainerFactory {
     static func makeOnDisk(at storeURL: URL, allowsSave: Bool = true) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV11.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV12.self),
             url: storeURL,
             allowsSave: allowsSave,
             cloudKitDatabase: .none
@@ -349,7 +358,7 @@ enum PersistenceContainerFactory {
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV11.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV12.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )
@@ -688,6 +697,7 @@ extension EntryDeletingPersistence {
 
 extension ModelContextEntryPersistence: EntryDeletingPersistence {
     func deleteContinuations(entryID: UUID) throws {
+        try context.fetch(FetchDescriptor<ImportantDayEntryLink>(predicate: #Predicate { $0.entryID == entryID })).forEach(context.delete)
         try context.fetch(FetchDescriptor<TodoTaskSource>(predicate: #Predicate { $0.entryID == entryID })).forEach(context.delete)
         try context.fetch(FetchDescriptor<EntryExternalSource>(predicate: #Predicate { $0.entryID == entryID }))
             .forEach(context.delete)

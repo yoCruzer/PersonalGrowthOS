@@ -5,7 +5,7 @@ import SwiftData
 import UserNotifications
 
 enum TodoReminderStatus: Equatable {
-    case none, checking, scheduled, permissionRequired, denied, failed, queueFull, elapsed
+    case none, checking, scheduled, permissionRequired, denied, failed, queueFull, elapsed, unsupportedDateRange
     var label: String {
         switch self {
         case .none: return String(localized: "No reminder")
@@ -15,6 +15,7 @@ enum TodoReminderStatus: Equatable {
         case .denied: return String(localized: "Notifications are disabled in iOS Settings.")
         case .failed: return String(localized: "Reminder could not be scheduled. Retry when the app is active.")
         case .queueFull: return String(localized: "Reminder not queued: device queue is full. It will be retried in the app.")
+        case .unsupportedDateRange: return String(localized: "No next anniversary within the supported date range")
         case .elapsed: return String(localized: "Reminder time has passed")
         }
     }
@@ -24,6 +25,7 @@ struct TodoReminderRequest: Equatable {
     let taskID: UUID
     let title: String
     let fireAt: Date
+    var importantDayID: UUID? = nil
 }
 enum TodoNotificationPermission { case allowed, notDetermined, denied }
 @MainActor
@@ -53,8 +55,10 @@ final class SystemTodoNotificationClient: TodoNotificationClient {
     func remove(_ identifiers: [String]) { center.removePendingNotificationRequests(withIdentifiers: identifiers) }
     func add(_ request: TodoReminderRequest) async throws {
         let content = UNMutableNotificationContent()
-        content.title = String(localized: "Todo Reminder"); content.body = request.title; content.sound = .default
-        content.userInfo = ["todoTaskID": request.taskID.uuidString]
+        content.title = request.importantDayID == nil ? String(localized: "Todo Reminder") : String(localized: "Important Day")
+        content.body = request.title; content.sound = .default
+        if let dayID = request.importantDayID { content.userInfo = ["importantDayID": dayID.uuidString] }
+        else { content.userInfo = ["todoTaskID": request.taskID.uuidString] }
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         var components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: request.fireAt)
         components.calendar = calendar; components.timeZone = calendar.timeZone
@@ -74,6 +78,7 @@ final class TodoReminderCoordinator {
     private var wantsPermission = false
     private var reconciliationFailed = false
     private var revisions: [UUID: Int] = [:]
+    var savedImportantDayID: UUID?
     var savedTaskID: UUID?
     func reportSavedTask(_ task: TodoTask, affectedOpenSuccessor: TodoTask? = nil) {
         let candidate = task.state == .open ? task : affectedOpenSuccessor
@@ -84,6 +89,13 @@ final class TodoReminderCoordinator {
         }
     }
     private(set) var statuses: [UUID: TodoReminderStatus] = [:]
+    private(set) var importantDayStates: [UUID: ImportantDayReminderState] = [:]
+    private var dayRevisions: [UUID: Data] = [:]
+    func status(for day: ImportantDay) -> ImportantDayReminderState {
+        guard !day.isArchived, let p = try? day.preferences(), !p.reminderOffsets.isEmpty else { return .init(status: .none) }
+        if reconciliationFailed { return .init(status: .failed) }
+        return dayRevisions[day.id] == day.ruleData + day.preferencesData ? importantDayStates[day.id] ?? .init(status: .checking) : .init(status: .checking)
+    }
     init(client: (any TodoNotificationClient)? = nil, now: @escaping () -> Date = Date.init) {
         self.client = client ?? SystemTodoNotificationClient(); self.now = now
     }
@@ -97,66 +109,84 @@ final class TodoReminderCoordinator {
         generation += 1; wantsPermission = wantsPermission || requestPermission
         guard !running else { return }
         running = true; defer { running = false }
+        await NotificationMutationGate.shared.acquire()
+        defer { NotificationMutationGate.shared.release() }
         while true {
             let pass = generation, explicitPermission = wantsPermission
             do {
                 try TodoTaskService(context: context).refreshRepeatingReminderTimes()
                 let tasks = try context.fetch(FetchDescriptor<TodoTask>())
-                var requests: [(TodoTask, TodoReminderRequest)] = []
+                let days = try context.fetch(FetchDescriptor<ImportantDay>())
+                var requests: [TodoReminderRequest] = []
                 var newStatuses: [UUID: TodoReminderStatus] = [:]
+                var dayStates: [UUID: ImportantDayReminderState] = [:]
                 for task in tasks {
                     guard task.state == .open, let fire = task.remindAt else { newStatuses[task.id] = TodoReminderStatus.none; continue }
                     guard fire > now() else { newStatuses[task.id] = .elapsed; continue }
-                    requests.append((task, TodoReminderRequest(id: Self.identifier(task.id), taskID: task.id, title: task.title, fireAt: fire)))
+                    requests.append(TodoReminderRequest(id: Self.identifier(task.id), taskID: task.id, title: task.title, fireAt: fire))
+                }
+                for day in days {
+                    guard !day.isArchived else { dayStates[day.id] = .init(status: .none); continue }
+                    do {
+                        let p = try day.preferences()
+                        guard !p.reminderOffsets.isEmpty else { dayStates[day.id] = .init(status: .none); continue }
+                        let planned = try ImportantDayReminderPlanner.requests(id: day.id, title: day.title, rule: day.rule(), preferences: p, now: now(), timeZone: .current)
+                        dayStates[day.id] = .init(status: planned.isEmpty ? .elapsed : .checking)
+                        requests += planned
+                    } catch ImportantDayDateError.unsupportedRange { dayStates[day.id] = .init(status: .unsupportedDateRange) }
+                    catch { dayStates[day.id] = .init(status: .failed) }
                 }
                 var permission = await client.permission()
                 if pass != generation { continue }
+                var authorizationFailed = false
                 if permission == .notDetermined && explicitPermission && !requests.isEmpty {
                     wantsPermission = false
                     do { permission = try await client.requestPermission() ? .allowed : .denied }
-                    catch {
-                        Self.log.error("Notification authorization failed code=\((error as NSError).code, privacy: .public)")
-                        requests.forEach { newStatuses[$0.0.id] = .failed }
-                    }
+                    catch { authorizationFailed = true; Self.log.error("Notification authorization failed code=\((error as NSError).code, privacy: .public)") }
                 }
                 if pass != generation { continue }
                 let pending = await client.pendingIdentifiers()
                 if pass != generation { continue }
-                let wanted = permission == .allowed ? Set(requests.map { $0.1.id }) : []
-                client.remove(Array(pending.filter { $0.hasPrefix(Self.prefix) && !wanted.contains($0) }))
-                // Conservative queue budget includes other categories, which are never removed here.
-                let capacity = max(0, 60 - pending.filter { !$0.hasPrefix(Self.prefix) }.count)
-                requests.sort { $0.1.fireAt == $1.1.fireAt ? $0.1.id < $1.1.id : $0.1.fireAt < $1.1.fireAt }
-                for (index, pair) in requests.enumerated() {
-                    let (task, request) = pair
-                    guard permission == .allowed else {
-                        if newStatuses[task.id] != .failed { newStatuses[task.id] = permission == .denied ? .denied : .permissionRequired }
+                func managed(_ id: String) -> Bool { id.hasPrefix(Self.prefix) || id.hasPrefix(ImportantDayReminderPlanner.prefix) }
+                // Daily/weekly and unknown third-party requests are reserved and never removed by this batch.
+                let capacity = max(0, 60 - pending.filter { !managed($0) }.count)
+                requests.sort { $0.fireAt == $1.fireAt ? $0.id < $1.id : $0.fireAt < $1.fireAt }
+                let selected = permission == .allowed && !authorizationFailed ? Set(requests.prefix(capacity).map(\.id)) : []
+                client.remove(Array(pending.filter { managed($0) && !selected.contains($0) }))
+                var requestStatuses: [String: TodoReminderStatus] = [:]
+                for request in requests {
+                    guard permission == .allowed && !authorizationFailed else {
+                        requestStatuses[request.id] = authorizationFailed ? .failed : permission == .denied ? .denied : .permissionRequired
                         continue
                     }
-                    guard index < capacity else {
-                        client.remove([request.id]); newStatuses[task.id] = .queueFull; continue
-                    }
-                    do { try await client.add(request); newStatuses[task.id] = .scheduled }
+                    guard selected.contains(request.id) else { requestStatuses[request.id] = .queueFull; continue }
+                    do { try await client.add(request); requestStatuses[request.id] = .scheduled }
                     catch {
                         Self.log.error("Notification scheduling failed code=\((error as NSError).code, privacy: .public)")
-                        client.remove([request.id]); newStatuses[task.id] = .failed
+                        client.remove([request.id]); requestStatuses[request.id] = .failed
                     }
                     if pass != generation { break }
                 }
                 if pass != generation { continue }
-                // Confirm actual pending membership before reporting a successful schedule.
                 let confirmed = await client.pendingIdentifiers()
                 if pass != generation { continue }
-                for (task, request) in requests where newStatuses[task.id] == .scheduled && !confirmed.contains(request.id) {
-                    newStatuses[task.id] = .failed
+                for request in requests where requestStatuses[request.id] == .scheduled && !confirmed.contains(request.id) { requestStatuses[request.id] = .failed }
+                for request in requests where request.importantDayID == nil { newStatuses[request.taskID] = requestStatuses[request.id] }
+                for day in days {
+                    let planned = requests.filter { $0.importantDayID == day.id }
+                    guard !planned.isEmpty else { continue }
+                    let scheduled = planned.filter { requestStatuses[$0.id] == .scheduled }.map(\.fireAt).sorted()
+                    let states = planned.compactMap { requestStatuses[$0.id] }
+                    // Partial capacity/failure is not called a fully scheduled reminder preference.
+                    let status: TodoReminderStatus = states.contains(.failed) ? .failed : states.contains(.denied) ? .denied : states.contains(.permissionRequired) ? .permissionRequired : states.contains(.queueFull) ? .queueFull : .scheduled
+                    dayStates[day.id] = .init(status: status, nextFire: scheduled.first, coverageEnd: scheduled.last, scheduledCount: scheduled.count)
                 }
                 reconciliationFailed = false
                 statuses = newStatuses; revisions = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0.revision) })
+                importantDayStates = dayStates; dayRevisions = Dictionary(uniqueKeysWithValues: days.map { ($0.id, $0.ruleData + $0.preferencesData) })
             } catch {
-                // Keep a truthful unresolved status; persistent task data remains intact.
-                reconciliationFailed = true
-                statuses = [:]; revisions = [:]
-                Self.log.error("Todo reconciliation failed code=\((error as NSError).code, privacy: .public)")
+                reconciliationFailed = true; statuses = [:]; revisions = [:]; importantDayStates = [:]; dayRevisions = [:]
+                Self.log.error("Reminder reconciliation failed code=\((error as NSError).code, privacy: .public)")
             }
             if pass == generation { wantsPermission = false; break }
         }

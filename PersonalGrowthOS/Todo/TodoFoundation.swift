@@ -309,9 +309,16 @@ final class TodoTaskService {
         return TodoSeries(frequency: frequency, anchorDay: anchor, draft: draft, reminderMinutes: minutes, reminderDayOffset: offset, createdAt: date)
     }
     @discardableResult
-    func create(_ draft: TodoDraft, sourceEntryID: UUID? = nil, id: UUID = UUID()) throws -> TodoTask {
+    func create(_ draft: TodoDraft, sourceEntryID: UUID? = nil, id: UUID = UUID(), importantDayID: UUID? = nil, importantDayOccurrence: ImportantCivilDay? = nil) throws -> TodoTask {
         try draft.validate(); try requireList(draft.listID)
         if let sourceEntryID, try context.fetchCount(FetchDescriptor<Entry>(predicate: #Predicate { $0.id == sourceEntryID })) != 1 { throw TodoFailure.missingSource }
+        var relatedDay: ImportantDay?
+        if let importantDayID {
+            guard draft.frequency == nil, importantDayOccurrence.map({ $0.date != nil }) ?? true,
+                  let day = try context.fetch(FetchDescriptor<ImportantDay>(predicate: #Predicate { $0.id == importantDayID })).first,
+                  !day.isArchived else { throw TodoFailure.missingSource }
+            relatedDay = day
+        }
         // A caller retry uses the same identity; never overwrite its already committed content.
         if let existing = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == id })).first { return existing }
         let date = now()
@@ -328,6 +335,8 @@ final class TodoTaskService {
             context.insert(task)
             try record(task, kind: .created, before: nil, at: date)
             if let sourceEntryID { context.insert(TodoTaskSource(taskID: task.id, entryID: sourceEntryID)) }
+            if let relatedDay { context.insert(ImportantDayTodoLink(dayID: relatedDay.id, taskID: task.id,
+                occurrence: importantDayOccurrence, dayRevisionAtLink: relatedDay.revision, createdAt: date)) }
             return task
         }
     }
@@ -511,6 +520,7 @@ final class TodoTaskService {
             }
             try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
             try context.fetch(FetchDescriptor<TodoTaskSource>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
+            try context.fetch(FetchDescriptor<ImportantDayTodoLink>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
             context.delete(task)
         }
     }

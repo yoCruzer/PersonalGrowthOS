@@ -132,9 +132,10 @@ final class ImportExportService {
                         UUID(uuidString: directory.lastPathComponent).map { !receipts.contains($0) } ?? true
                     }.count
                     try LinkIntegrityService.validate(context: snapshotContext)
+                    try ImportantDayIntegrity.validate(context: snapshotContext)
                     let transfer = try TransferSnapshot.make(context: snapshotContext)
                     try snapshotCheckpoint?()
-                    let inputs = try transfer.images.map { record in
+                    let inputs = try transfer.mediaAssets.map { record in
                         ExportMediaInput(
                             record: record,
                             sourceURL: try Self.mediaURL(root: mediaRoot, relativePath: record.relativePath)
@@ -153,7 +154,7 @@ final class ImportExportService {
                     return ExportBuildResult(
                         destination: destination,
                         objectCount: transfer.totalObjectCount,
-                        mediaCount: transfer.images.count,
+                        mediaCount: transfer.mediaAssets.count,
                         pendingShareCount: pendingShareCount
                     )
                 }
@@ -178,7 +179,7 @@ final class ImportExportService {
     }
 
     private struct ExportMediaInput {
-        let record: ImageTransfer
+        let record: any TransferMediaAsset
         let sourceURL: URL
     }
 
@@ -349,7 +350,7 @@ final class ImportExportService {
         }
         let package = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
         try Task.checkCancellation()
-        return ImportResult(objectCounts: package.data.objectCounts, restoredMediaCount: package.data.images.count)
+        return ImportResult(objectCounts: package.data.objectCounts, restoredMediaCount: package.data.mediaAssets.count)
     }
 
     func importPackage(from selectedURL: URL) async throws -> ImportResult {
@@ -380,10 +381,11 @@ final class ImportExportService {
             try Self.ensureTargetIsEmpty(context)
             try await publish(package: package, importedAt: now())
             NotificationCenter.default.post(name: .todoTasksChanged, object: container)
-            log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.images.count)")
+            NotificationCenter.default.post(name: .importantDaysChanged, object: container)
+            log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.mediaAssets.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
-                restoredMediaCount: package.data.images.count
+                restoredMediaCount: package.data.mediaAssets.count
             )
         } catch {
             log("import.failed")
@@ -504,6 +506,13 @@ final class ImportExportService {
                     guard payload?[key] == nil else { throw TransferPackageError.corruptData }
                 }
             }
+            for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] {
+                if manifest.packageSchemaVersion >= 8 {
+                    guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
+                } else {
+                    guard payload?[key] == nil else { throw TransferPackageError.corruptData }
+                }
+            }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
             throw TransferPackageError.corruptData
@@ -605,7 +614,7 @@ final class ImportExportService {
         do {
             try fileManager.createDirectory(at: publicationRoot, withIntermediateDirectories: true)
             var copiedCount = 0
-            for record in package.data.images.sorted(by: { $0.sortOrder < $1.sortOrder }) {
+            for record in package.data.mediaAssets.sorted(by: { $0.id.uuidString < $1.id.uuidString }) {
                 _ = try copyMedia(
                     record,
                     packageRoot: package.extractedRoot,
@@ -663,7 +672,7 @@ final class ImportExportService {
         } catch {
             publicationContext.rollback()
             if installedOriginals && !didSave {
-                for image in package.data.images {
+                for image in package.data.mediaAssets {
                     try? activeStore.removeOriginal(at: image.relativePath)
                 }
             }
@@ -689,7 +698,7 @@ final class ImportExportService {
     }
 
     nonisolated private static func copyMedia(
-        _ record: ImageTransfer,
+        _ record: any TransferMediaAsset,
         packageRoot: URL,
         mediaRoot: URL
     ) throws -> String {
@@ -945,6 +954,10 @@ final class ImportExportService {
                     createdAt: record.createdAt
                 ))
             }
+            for cover in package.data.importantDayCovers where copyOriginals {
+                restoredPaths.append(try copyMedia(cover, packageRoot: package.extractedRoot, mediaRoot: mediaStore.rootURL))
+            }
+            try package.data.insertImportantDays(into: context)
             try package.data.insertTodos(into: context)
             return restoredPaths
         } catch {
@@ -960,7 +973,7 @@ final class ImportExportService {
     ) throws {
         let actual = try TransferSnapshot.make(context: context)
         guard actual == expected else { throw TransferPackageError.verificationFailed }
-        for image in actual.images {
+        for image in actual.mediaAssets {
             let measured = try Hasher.sha256AndSize(fileAt: mediaStore.fileURL(for: image.relativePath))
             guard measured.size == image.byteCount, measured.sha256 == image.checksum else {
                 throw TransferPackageError.mediaMismatch
@@ -990,6 +1003,10 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<TodoList>())
             + context.fetchCount(FetchDescriptor<TodoSeries>())
             + context.fetchCount(FetchDescriptor<TodoTaskSource>())
+            + context.fetchCount(FetchDescriptor<ImportantDay>())
+            + context.fetchCount(FetchDescriptor<ImportantDayEntryLink>())
+            + context.fetchCount(FetchDescriptor<ImportantDayTodoLink>())
+            + context.fetchCount(FetchDescriptor<ImportantDayCover>())
 
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
@@ -1030,7 +1047,7 @@ private enum Hasher {
     }
 }
 
-private enum TransferSnapshot {
+enum TransferSnapshot {
     static func make(context: ModelContext) throws -> TransferData {
         try Task.checkCancellation()
         let entries = try context.fetch(FetchDescriptor<Entry>())
@@ -1233,7 +1250,11 @@ private enum TransferSnapshot {
             todoEvents: try cancellableMap(context.fetch(FetchDescriptor<TodoTaskEvent>())) { TodoTaskEventTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             todoLists: try cancellableMap(context.fetch(FetchDescriptor<TodoList>())) { TodoListTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             todoSeries: try cancellableMap(context.fetch(FetchDescriptor<TodoSeries>())) { TodoSeriesTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            todoSources: try cancellableMap(context.fetch(FetchDescriptor<TodoTaskSource>())) { TodoTaskSourceTransfer($0) }.sorted { sortUUID($0.id, $1.id) }
+            todoSources: try cancellableMap(context.fetch(FetchDescriptor<TodoTaskSource>())) { TodoTaskSourceTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDays: try cancellableMap(context.fetch(FetchDescriptor<ImportantDay>())) { try ImportantDayTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDayEntryLinks: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayEntryLink>())) { ImportantDayEntryLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDayTodoLinks: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayTodoLink>())) { ImportantDayTodoLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDayCovers: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayCover>())) { ImportantDayCoverTransfer($0) }.sorted { sortUUID($0.id, $1.id) }
         )
     }
 
