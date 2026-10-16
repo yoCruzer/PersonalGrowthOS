@@ -1,6 +1,6 @@
 # 时间投入 V1 验收与设备门禁
 
-当前状态：**BLOCKED_ENVIRONMENT / REVIEW_IN_PROGRESS**，尚未达到READY_FOR_OWNER_DEVICE_GATE。规格固定GOAL_SHA `72ee8bdf954a5628806db867682a6b021e63545b`，BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`；产品工作树 `codex/time-investment-v1`。固定产品/测试检查点及对应实际命令见[执行记录](TIME_INVESTMENT_V1_EXECUTION.md)，真实独立Reviewer报告见[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。
+当前状态：**BLOCKED_ENVIRONMENT（代码层独立审查已闭环）**，尚未达到READY_FOR_OWNER_DEVICE_GATE。规格固定GOAL_SHA `72ee8bdf954a5628806db867682a6b021e63545b`，BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`；产品工作树 `codex/time-investment-v1`。固定产品/测试检查点及对应实际命令见[执行记录](TIME_INVESTMENT_V1_EXECUTION.md)，真实独立Reviewer报告见[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。
 
 `PASS_MAC`只表示未改写的生产核心及相同XCTest在临时macOS内存Schema中的补充运行，不代表iOS V14、历史磁盘升级、ZIP/UI或真机通过。`COMPILED`只证明编译。以下未执行项不写成PASS，旧模块历史证据不当作新代码全测。
 
@@ -10,14 +10,14 @@
 | --- | --- | --- |
 | S1 | Growth/Today→InvestmentHub/TimerView；InvestmentService.start/command/saveTimer；InvestmentUITests计时前后台/冷启动 | 核心PASS_MAC；实际iOS UI NOT_RUN |
 | S2 | AppShell前后台checkpoint、跨进程待复核、壁钟/uptime校验，InvestmentFoundationTests T7 | 固定时钟核心PASS_MAC；真实iOS回收/锁屏/设备NOT_RUN |
-| S3 | targetReached/pendingSave/幂等终态；T2/T3/T4、R2/R3/R4；R5 Workspace继续确认 | 核心已有PASS_MAC，最新限定修复按执行日志补验；原生ZIP/冷启动NOT_RUN |
+| S3 | targetReached/pendingSave/幂等终态；T2/T3/T4、R2/R3/R4；R5 Workspace继续确认 | 核心及Workspace PASS_MAC，固定0abe补充共24/24；原生ZIP/冷启动NOT_RUN |
 | S4 | EditorState/storeDraft独立草稿、saveManual、可选反馈/区间降级、确认删除 | 核心草稿/错误/幂等PASS_MAC；真实UI/睡眠组合NOT_RUN |
 | S5 | 惰性Participant、独立recorderID、服务显式participantID、Activity归档改名 | 双参与者与ID核心PASS_MAC；实际设置恢复稳定身份NOT_RUN |
 | S6 | InvestmentReview原时区自然日、Session去重、History/Detail共享Workspace快照 | 纯/服务反例PASS_MAC；同页编辑/删除UI与视觉NOT_RUN |
 | S7 | V14/v10；TransferSnapshot/Validator/materialize/verifySnapshot/空库复核/StorePublication/Startup保护 | 全链代码与原生测试COMPILED；iOS磁盘/包/真实入口NOT_RUN |
 | S8 | 五Tab/Record/Today原路径；新增仅Growth/条件状态；无签名/身份配置变化 | Debug实包静态核验；联合运行/Share/Widget系统行为NOT_RUN |
 | S9 | 94新双语键、937原键值不变；原生语义控件与44pt主要目标、Light/Dark/AX UI测试 | 静态PASS，实际语言/大字号/VoiceOver/离线操作NOT_RUN |
-| S10 | 干净固定提交Debug及unsigned Release、独立只读复审、普通推送新Draft PR | 分阶段进行中，最终通过尚未成立；不合并/发行 |
+| S10 | 干净固定提交Debug及unsigned Release、独立只读复审、普通推送新Draft PR | 固定0abe Debug/unsigned Release实包通过，R1–R7代码层独立闭环；原生运行未完成，最终通过尚未成立 |
 
 ## T1–T14
 
@@ -35,7 +35,7 @@
 | T10 | testT10TimerTransactionsNeitherSaveNorRollbackForeignDraft / ManualDraftPersistsRawInputFailure / RecordDraftSurvivesManualActivitySaveAndChineseDarkAX | 核心PASS_MAC；Record/睡眠实际组合NOT_RUN |
 | T11 | testT11BrowsingDoesNotCreateParticipant / testPR6FilesPreviewCancelAndRestore已增加新装时间投入浏览 | 裸容器PASS_MAC；真实设置Files路径/旧包组合NOT_RUN |
 | T12 | testT12AllUnfinishedStatesExportRestoreReopenWithoutAdvancingOriginal，四状态真实ZIP；R3核心恢复继续 | 核心恢复模型PASS_MAC；实际完整包/七日后恢复iOS NOT_RUN |
-| T13 | PreviewThenTimerCreationAndRepeatImportRejectWithoutMutation / PublicationFailureLeavesEmptyStoreAndRetry / InvestmentV10MalformedPackagesRejectWithoutChangingTarget（16类） | 原生代码COMPILED，实际磁盘/ZIP NOT_RUN；R7核心技术上界配对另补验 |
+| T13 | PreviewThenTimerCreationAndRepeatImportRejectWithoutMutation / PublicationFailureLeavesEmptyStoreAndRetry / InvestmentV10MalformedPackagesRejectWithoutChangingTarget（16类） | 原生代码COMPILED，实际磁盘/ZIP NOT_RUN；R7核心技术上界配对PASS_MAC |
 | T14 | FiveHistoricalDiskSchemasDirectStartupUpgradeKeepsOriginalFactsAndMedia / V13DiskUpgrade，沿用原V10/OriginalV11/11.1历史fixture测试 | 全部iOS运行NOT_RUN，不以Mac适配器替代原Schema保护 |
 
 ## 旧数据与身份边界

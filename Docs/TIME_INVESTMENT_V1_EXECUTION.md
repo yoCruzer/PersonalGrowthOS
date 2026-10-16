@@ -48,3 +48,17 @@
 产品/测试固定 `3c1116a09d90cd0c851d48c8d9599ce33b2de50f`：testcompile8及xcresult为TEST BUILD SUCCEEDED/exit0，仍有CoreSimulator版本警告；mac-probe5为24项中23PASS/1FAIL、exit1。失败为R6测试假定补零的`00:20`，实际Foundation输出 `31/12/2026, 23:50:00 → 01/01/2027, 0:20:00`；原时区前后相等断言通过。增加失败值的diagnostic定向run仍1/1失败，日志`mac-r6-diagnostic.log`。只调整对可变格式补零的断言为`0:20:00`，保留跨设备默认时区前后相等及23:50/次日00:20事实检查，不改生产格式化算法。
 
 探针扩展仅原样提取生产EditorState/Workspace/Formatting声明与原R5/R6测试方法（去除未引用UI imports）；它验证实际共享工作区控制流、反馈保留和日期格式化，仍不代表原生SwiftUI渲染或实际iOS生命周期。R5关闭确认→继续→再结束的生产Workspace反例已在mac-probe5通过；22项核心（含R7合法回拨/未来伪造配对）均通过。补零修正后另记录定向/完整探针结果，不把本轮失败改成全绿。
+
+## 固定干净产品/测试检查点 0abe55f
+
+完整SHA `0abe55f0f722b920a73ecedf6e1fc395181994a5`。
+
+- `swift test --package-path /tmp/pgos-time-investment-mac-probe`：mac-probe6-0abe55f.log，24/24 PASS、0FAIL、exit0；22核心＋2原样Workspace/格式化方法。源清单 `/tmp/pgos-time-investment-evidence/0abe55f-mac-source-manifest.json` 与固定提交逐项核对，生成先于日志。此为补充macOS内存Schema，绝不代替iOS迁移/ZIP/UI门禁。
+- `xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -sdk iphonesimulator -arch arm64 -derivedDataPath /tmp/pgos-time-investment-derived -resultBundlePath /tmp/pgos-time-investment-testcompile9.xcresult CODE_SIGNING_ALLOWED=NO build-for-testing`：exit0 / TEST BUILD SUCCEEDED，原始同名.log。只编译，不运行测试。
+- `xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS' -derivedDataPath /tmp/pgos-time-investment-release-derived -resultBundlePath /tmp/pgos-time-investment-release1.xcresult CODE_SIGNING_ALLOWED=NO build`：exit0 / BUILD SUCCEEDED，release1.log。unsigned generic iOS不是可安装IPA，没有签名、Archive或安装。
+- 两构建均保留CoreSimulator过旧/目的地禁用警告与既有AppIntents提取提示；不能把构建成功当作环境已恢复。旧NoUsage仅返回值提示已用正常discardable API标注处理；没有改变断言。
+- 实包检查 `/tmp/pgos-time-investment-evidence/0abe55f-bundle-proof.json`：Debug及Release各App/Share/ImportantDaysWidget六包均原Bundle ID与1.0(7)，两App provenance为clean/full0abe/localGit/空Tag。历史V1–V13 Schema定义前缀逐字相等，原entitlements、URL身份、Share导入、App主启动及Development Contract源码未变。
+- 第三轮真正独立只读Reviewer确认R1–R7代码层闭环，无新增confirmed范围内问题。iOS完整运行与最终READY依然被环境阻塞。
+- R7另保留原a873生产验证器的定向反例：mac-r7-red.log，1项失败/exit1（未来事实未抛错）；24/24修复绿测在此前已保存。探针生产Transfer已恢复固定0abe，不用混合源码红测结果冒称整提交运行。
+
+后续交接仅Markdown，不再改固定产品/测试。新PR保持Draft和BLOCKED_ENVIRONMENT；环境恢复后按验收文档补齐所有本地必选门禁，再固定新产品/测试提交复审。当前Goal未完成，不进入READY或下一模块。
