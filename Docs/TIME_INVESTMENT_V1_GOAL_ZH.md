@@ -1,58 +1,125 @@
 # Codex Goal — 随心log「时间投入 V1」完整实现与独立审查闭环
 
-- 授权版本：1.0（2026-10-16）
+- 授权版本：1.1（2026-10-16，独立规划复审后修订）
 - 仓库：yoCruzer/PersonalGrowthOS
-- 固定产品基线：ad0720ad743f495ac6f2ee3e97b16577266351db
-- 固定 base：codex/sleep-routine-v1 / Draft PR #11
-- Goal 承载分支：plan/time-investment-v1-goal
+- 固定产品基线 BASE：ad0720ad743f495ac6f2ee3e97b16577266351db
+- 原始规划提交 PLAN_ROOT：043a2673c2463cb4f2259dbd27f58dc998b62bc5
+- Goal 承载分支：plan/time-investment-v1-goal；实际执行输入 GOAL_SHA 以 Owner 最新引导 prompt 提供的完整 SHA 为准，不追随浮动分支。
 - 产品工作分支：codex/time-investment-v1
-- 新 Draft PR base：codex/sleep-routine-v1，不从过期 main 或 Todo worktree 开始
-- 产品契约：Docs/TIME_INVESTMENT_V1_DESIGN_ZH.md；须读取全文
+- 新 Draft PR base：codex/sleep-routine-v1 / 现有 Draft PR #11；不从过期 main 或 Todo worktree 开始。
+- 产品契约：同一 GOAL_SHA 下 Docs/TIME_INVESTMENT_V1_DESIGN_ZH.md 的 1.1 版，必须读取全文。
 
-目标：在个人真机候选上实现一个真正可以日常使用的时间投入记录模块，优先低摩擦计时、手工活动记录、可选体验反馈，并在第一天就把参与者归属建模正确，为未来家长代记录/独立 App 保留边界。Codex 负责实现、验证、独立只读 Review、限定修复、普通 push 与新 Draft PR，最后停 Owner 真机测试 Gate。
+目标：在个人使用候选上实现真正可日常使用的时间投入模块，包含正/倒计时、手工活动记录、可选体验反馈、长期累计及 7/30 日回顾；从第一天区分活动参与者与记录者，为未来家长代记录保留边界。Codex 负责实现、验证、真实独立只读 Review、限定修复、普通 push 与新 Draft PR，最后停 Owner 真机测试 Gate。仅完成计划、第一条路径或中期审查不算完成本 Goal。
 
-## 一、启动与分支保护
+本次 Owner 已授权继续开发。基线 CURRENT 中「等待上一模块 Owner Gate、不开新模块」是原交接停点，不应机械阻止本次新授权；但旧失败、NOT_RUN 和私人数据/签名/发布边界仍保留。Owner 对 ad0720a 首轮安装使用正常的报告，不等于当前新代码已通过真机验收，也不将历史所有设备项目一概改成 PASS。
 
-1. 按用户提供的 Goal 文档 SHA 获取这两份固定 Markdown，核实其直接以 ad0720ad 为父、只新增预期文档。先读取 AGENTS.md / INDEX 中适用 Foundation、DEVELOPMENT_CONTRACT、CURRENT_STATE/CURRENT_TASK 和相关现行源码。
-2. 轻量核对真实仓库、worktree、dirty、branch/upstream/PR。Codex 主工作区的 project.pbxproj、Localizable.xcstrings、xcshareddata/xcodecloud 未提交变动仍需保留，不擅自 stash/reset/restore/clean/覆盖/吸收。
-3. 从精确 Goal 文档提交（它包含最新已安装产品基线）开独立 worktree / codex/time-investment-v1；若同名 branch/PR 已存在，先核验再安全续接；不可盲目 pull/rebase/merge。
-4. 现有 PR #8→#9→#10→#11 仍是依赖链，不擅自合并、修改 base、强推或把新功能提交进旧 PR。重要日子/睡眠已通过的真实机版本为基线；新功能只能追加最小契约和适配。
+## 一、启动、固定输入与分支保护
 
-## 二、开发职责与分批节奏
+1. 读取 AGENTS.md、INDEX 及适用 Foundation、DEVELOPMENT_CONTRACT、CURRENT_STATE/CURRENT_TASK，再读取同一 GOAL_SHA 下两份时间投入文档全文及相关现行源码。两份文档须均为 1.1；不要只依据这段引导或旧对话实现。
+2. 轻量核对实际仓库、worktree、dirty、branch/upstream/PR。原工作区任何未提交/未跟踪内容均保留，包括曾报告的 project.pbxproj、Localizable.xcstrings、xcshareddata/xcodecloud；这些历史 dirty 提示不是当前状态证明，重新只读核对。不 stash/reset/restore/clean/覆盖/吸收未知改动。
+3. 验证 BASE 是 PLAN_ROOT 和 GOAL_SHA 的祖先，PLAN_ROOT 是 GOAL_SHA 的祖先；验证 BASE..GOAL_SHA 的累计文件差异严格只有下列两份 Markdown，产品/工程/测试树不变：
+   - Docs/TIME_INVESTMENT_V1_DESIGN_ZH.md
+   - Docs/TIME_INVESTMENT_V1_GOAL_ZH.md
+   原始 PLAN_ROOT 确为 BASE 的直接文档子提交；1.1 修订会追加文档提交，因此不得再要求 GOAL_SHA 的直接父提交等于 BASE。核验示意为 git merge-base --is-ancestor 与 git diff --name-status，不盲信分支名。
+4. 从固定 GOAL_SHA 创建独立 worktree 和 codex/time-investment-v1；规划分支只承载文档，不向其提交产品代码。同名产品分支/worktree/PR 若已存在，先核验来源与未完成工作再安全续接；不擅自删除重建，不盲目 pull/rebase/merge。若已有实现基于 1.0，保留实现提交，通过受审查的仅文档增量纳入 1.1，并在交接记录实际祖先关系，不为追求相同拓扑重写历史。
+5. 保持旧 PR #8/#9/#10/#11 的 head/base/状态，不合并、不改 base、不强推、不把新功能提交进旧 PR。新 PR 以 codex/sleep-routine-v1 为 base；若实际 base 已漂移，记录新旧 SHA 和差异，不自行吸收或把无关差异算作本功能。可以继续固定输入下的安全工作，集成决策确有冲突时说明，不悄悄切到 main。
+6. 本期时间投入是新批准增量；仅在新产品分支给 INDEX/必要 Foundation/CURRENT 添加最小对应说明及下一停点，保留原历史证据，不改 DEVELOPMENT_CONTRACT 的长期权威规则。
 
-先检查当前 SwiftData 最新 Schema/备份、Today/Growth 接线、分享/Widget target 以及主模型生命周期，不做全面重构。
+## 二、先核对的实际接入点
 
-阶段 A（优先先跑通的真实路径）：
-- 正计时/简易倒计时、暂停恢复/结束；切 App、锁屏后继续可靠计时，非后台循环计数；发生回拨或进程终止时有可靠恢复或手工确认，不假装精确。
-- 默认唯一参与者「我」的稳定 participantID，Activity 身份独立；一名参与者不能双活；Session 时长、来源、反馈、备注、事实/填写/技术时间边界正确。
-- 手工补记时长/日期/可选时间、5档体验和说明，保存/编辑/删除/取消/中断重开；仅填日期+时长时不虚构时刻。
-- Growth 入口、简单进行中状态与必要 Today 紧凑入口，保持其它原页面不回归。
+固定基线已经核对到下列入口，实际编辑前仍须读全相关生产路径及局部 AGENTS：
+- PersonalGrowthOS/Persistence/PersistenceFoundation.swift：当前 V13；迁移链同时含 V11Original=11.0 与 V11=11.1，多个旧版本复用旧模型类型。
+- PersonalGrowthOS/ImportExport/TransferModels.swift：当前包版本 9，快照、解码、计数、引用验证须一起覆盖新实体。
+- PersonalGrowthOS/ImportExport/ImportExportService.swift：预览与发布前均检查空目标；通过隔离验证与 StorePublication 发布；导出使用异步独立快照。不能只在 DTO 中新增数组就宣告备份完成。
+- PersonalGrowthOS/PersonalGrowthOSApp.swift、AppShell.swift 及 Growth/Today/编辑器接线：核对上下文生命周期、未提交草稿、存储初始化和恢复入口。
+- 现有迁移保护、StorePublication、Share/ImportantDaysWidget 和相关测试：沿用实际机制，不重建第二套主库或调度架构。
 
-阶段 B（完整 V1 门禁）：
-- 7/30 天/按活动基础汇总和详情回跳；跨日、归档、重复/部分记录、时区与系统时间异常按产品契约处理。
-- 历史 Schema/备份版本链更新、旧盘库直接升级与新包空库恢复重开；合成来源图片/外部收据/重要日子、睡眠、Todo、Habit、Weight 保持。
-- 中文/英文、Light/Dark、大字号、基础 VoiceOver、错误/取消与离线。
-- 产品契约全部必选实现；不能以阶段 A 通过就停止或请 Owner 逐批批准。普通可逆实现细节自主决定。
+重点接缝：默认「我」惰性初始化不能使新装 App 失去空库恢复资格；所有新增实体进入实际空库/引用/快照/发布检查；计时提交不能连带保存或回滚旧模块草稿；导出计时 checkpointAt 必须与真实快照一致；恢复活计时不得沿用旧设备锚点自动继续。
 
-## 三、不可逾越的产品边界
+## 三、实施顺序：连续推进 A/B，不逐阶段等 Owner 批准
 
-不引入家庭协作/孩子管理 UI、不做独立 App、不锁手机、不要求使用者只停留在计时画面；无需 Apple Intelligence、服务器、网络、云账户。现有 Record 仍是一键图文入口，不增第六个 Tab，不把 Session 当 Entry/HabitLog/Todo 伪写，也不自动产生 Quiet Wins 成果或将睡眠计时搬过来。
+### 阶段 A：最短可用路径及高风险基础
 
-优先可用、可靠和真实使用路径，不为了未来重构通用计时框架、复杂监控平台或多应用同步架构。不能牺牲旧数据保存和新增字段的来源真实性。
+- 先写最小状态表和真实反例测试，固定 running/paused/targetReached/pendingSave/recoveryRequired 及保存/放弃的语义；名称可变，契约不能变。
+- 实现参与者/活动/Session/未完成计时的独立模型与服务；每个参与者最多一个未完成操作，模型不限制整个 App 只能有一个计时器；V1 UI 仅「我」。
+- 正计时、简单倒计时、暂停/继续、结束后冻结待确认、幂等保存、失败和冷启动恢复。25 分钟目标晚到 50 分钟回来默认只建议 25 分钟；不能隐式累计超时，也不能在确认卡上继续计时。
+- 手工日期+时长、可选精确区间、五档未填写/后补、文字反馈、编辑/取消/删除；用户仅改时长时正确降级精度，不制造起止时间。
+- Growth 页面、常用活动直接开始/记录活动、紧凑未完成状态；保持 Record、Today 和其他草稿原路径。
+- 同步推进最小 V13 磁盘库升级、新装空库恢复、新包未完成计时导出/恢复的集成测试，不到最后才发现无法迁移。新增模型和包版本在本阶段确定，后续只做范围内细化。
 
-## 四、测试与独立审查
+### 阶段 B：完整 V1 门禁
 
-- 不在起点重复旧完整测试。代码改动阶段只跑受影响 Unit/集成/UI，并尽快对后台/恢复状态、V13迁移、备份数据做固定时钟合成路径测试；全量 Unit/集中关键 UI 在功能及主要 Review 问题收敛后择一次执行，局部修复只补受影响项。不要为了“全绿”删断言/跳过失败，也不要拼接不同轮的 PASS。
-- 真实实现者 + 独立只读 Reviewer；早期审查数据、计时/参与者身份、跨日/中断、迁移/恢复；后期审查 Today/Record/旧模块影响、实包身份、故障和真机路径。
-- Reviewer 读固定提交 diff、生产代码与原始测试证据，不自己改代码；主 agent 验证发现、先红后绿限定修复，再请求复审。关闭范围内新 P0/P1，影响必选路径/数据可信度的 P2 也关闭。
-- 测试至少覆盖设计文件 S1–S10：真实背景锁屏/进程恢复的模拟状态与可用 UI，计时重复防护、纯时长补记、体验后补、个人 participant ID、Activity 改名/归档、统计归属、V11/V12/V13→新库、备份导出/恢复以及 Sleep/ImportantDays/Todo/QuietWins/Record/Share/Widget 相邻回归。开发环境无真机时未运行必须写 NOT_RUN。
-- 只有一个活跃 Xcode 测试队列，不并行启动多个重复构建；固定产品/测试 SHA 做最终 Debug 与 unsigned Release 构建，核对 App/Share/Widget 嵌入、Bundle ID、provenance；无签名产物不是已可安装 IPA。
-- 关键 run 写清精确 SHA、selector、结果/失败/跳过数、日志/xcresult；失败原证据保留。诊断脱敏且不含活动正文、时长私密笔记或孩子信息。
+- 全部累计、7/30 自然日、活动筛选、历史详情、精确区间跨日有效时长分摊、次数按 Session 去重；数据修改后同页刷新一致。
+- 活动改名/归档、弱重复提示、异常时钟/恢复、完整备份快照和严格验证；日期+时长不套用伪精确重叠规则。
+- V10/11.0/11.1/V12/V13 合成磁盘库直接升级、历史支持包导入、新包空库恢复重开、失败回滚及原记录/图片/来源/收据/重要日子/睡眠保护。
+- 中文/英文、Light/Dark、大字号、基础 VoiceOver、单手流程和离线；真实入口与相邻模块冒烟。
+- 在范围内修复并完成独立 Review 闭环；不能因为阶段 A 可用就停止，也不能将首版缺失项全部改成后续优化。
 
-## 五、交付与停点
+## 四、不可逾越的产品和环境边界
 
-授权在新工作分支合理 commit、普通 push、新建一个 Draft PR（base 固定 codex/sleep-routine-v1），不影响既有 PR #8/#9/#10/#11，不 merge、tag、force push、Archive、TestFlight 或真实手机操作。允许新分支对 Foundation/CURRENT/INDEX 做必要且最小的批准增量，不能回写旧阶段真实证据或悄悄降低历史 Schema/恢复保护。
+严格遵守规格 1.1：不开发家庭/孩子 UI、独立 App、云同步、锁机、后台使用监控、Live Activity/时间投入 Widget、AI 分析、照片/音视频、复杂目标/排程。周目标/长期规划与跨模块引用明确后置，不因此自动增加工程范围。
 
-建立精简交付文档：Docs/TIME_INVESTMENT_V1_EXECUTION.md、Docs/TIME_INVESTMENT_V1_REVIEW_ZH.md、Docs/TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md，写明固定 Goal SHA、当前分支、实际产品/测试/交付 SHA、真实验证范围、旧数据保护与后续真机清单。文档-only 最终提交不重复耗时构建。
+保持五 Tab，Record 仍直接图文记录；不把 Session 伪写为 Entry/HabitLog/Todo/Sleep，不自动产生 Quiet Wins 成果。正式事实与未完成计时/草稿分开，未完成不计入累计；反馈未填不等于中档评分。
 
-内部开发/独立审查闭环后正常停 READY_FOR_OWNER_DEVICE_GATE；只有确实受阻才报 REVIEW_BLOCKED/BLOCKED_ENVIRONMENT/BLOCKED_AUTH，说明可完成部分与具体障碍。不要在完成计划、中期 commit、首轮 Review、普通 push 后等待批准。所有用户沟通和验收记录默认中文。不开下一个功能模块。
+主 Bundle ID/存储路径/App Group/Share/ImportantDaysWidget 身份及 Xcode Cloud/签名/发布配置不变。不引入依赖网络、账号或 Apple Intelligence 的核心路径。不以假权限、改身份、清库、删除旧数据或削弱保护快照来绕过问题。
+
+所有验证使用合成数据与明确属于本任务的隔离模拟器/临时库/证据路径；不得启动或自动操作 Owner 真实私人数据路径，不扫描私人目录寻找测试样本，不终止/清理其他任务的进程或产物。本机没有 Xcode 时可完成安全实现与可执行的非 iOS 验证，但不能把它标为原生 App、SwiftData 或真机通过。
+
+## 五、必须实现并核对的验收反例
+
+这些是规格 S1–S10 的具体化，不是预写的 PASS。测试应调用真实生产服务/存储/页面，而不是另写一套只为测试通过的计时算法。
+
+| 编号 | 场景 | 预期 |
+| --- | --- | --- |
+| T1 | 正计时 30 分钟，暂停共 5 分钟，切 App/锁屏后恢复 | 有效 25 分钟；暂停不计；无后台循环依赖 |
+| T2 | 倒计时目标 25 分钟，无暂停，50 分钟后回来 | 到目标待确认，默认 25 分钟；显式继续只从点击时开始新段；提前结束不补满目标 |
+| T3 | 20 分钟时结束，确认卡停留 10 分钟/关闭/重开 | 仍为待保存的 20 分钟；不是 30 分钟；未确认不进历史 |
+| T4 | 双击开始/结束/保存、重复旧回调、提交前后故障与冷启动 | 每个操作至多一笔正式 Session；不双活、不丢全部状态、不复活已删除/放弃记录 |
+| T5 | 手工只有日期+45 分钟；或把精确 60 分钟改成纯时长 45 分钟 | 不造具体时刻/不拉伸旧区间；来源/修正标记正确；只改备注不改发生时间 |
+| T6 | 23:50–00:20，23:55–00:05 暂停 | 前日 5 分钟、次日 15 分钟、总计 20 分钟；跨两日期间记录数 1；点击明细可解释分摊 |
+| T7 | 跨月/年、闰日、时区切换、夏令时、壁钟前跳/回拨与重启 | 自然日范围和原时区事实稳定；有效秒数可信；无法证明的恢复待确认，不填零/负数/巨大时长 |
+| T8 | 两个合成 participantID，各有活动/未完成计时 | 各自可操作且统计隔离；同一参与者不能开第二个；不增加家庭 UI |
+| T9 | 五档留空/后补、活动改名/归档、同一回顾页编辑/删除、超过30天旧记录 | nil 不被当中档；全部累计/7/30/明细同步；归档历史仍在，旧记录可找回 |
+| T10 | Record 或睡眠有未保存编辑时，计时保存失败/取消/正常持久化 | 不提交、不撤销其他草稿；本次失败输入仍可处理；持久化重开一致 |
+| T11 | 新装后只浏览页面，再从实际设置入口恢复旧包/新包 | 默认「我」/示例不提前污染空库；恢复后 ID 稳定且不重复初始化；旧事实保持 |
+| T12 | 导出时运行 12 分钟，7 天后恢复；另测 paused/targetReached/pendingSave | 恢复后待确认，只有导出检查点可信时长；不自动跑7天，不算正式历史；导出未改变原计时 |
+| T13 | 预览恢复后另建计时；重复导入；新包漏字段/坏引用/重复ID/非法时长 | 发布前拒绝且目标原样；不覆写新计时、不默认丢字段成功、不放宽非空保护 |
+| T14 | V10/11.0/11.1/V12/V13 的真实磁盘夹具升级、新包恢复、失败注入后重开 | 原事实/媒体/关联/收据保持；新事实完整；不改历史模型校验和、不清库或使用过期快照假冒保护 |
+
+同时完成 S8/S9 的真实 UI 和实包身份检查。恢复检查点、时钟、写入/导出/导入故障点可注入；不要用等待几十分钟的脆弱测试代替固定时钟，也不要仅用注入状态冒充真实 App 生命周期。
+
+## 六、测试节奏、证据与独立审查
+
+- 不在起点重跑旧完整测试。改动时跑受影响 Unit/磁盘集成/关键 UI，尽早验证上述高风险反例；功能和主要 Review 问题收敛后跑一次全量 Unit 与集中关键 UI。后续局部修复只补影响矩阵，若改到共享 Schema/导入/核心状态机，则按实际波及面扩大补验。
+- 同一任务最多一个活跃 Xcode 测试队列；不并行启动重复构建，不循环重跑已确认环境失败。不得通过删断言、跳过新必选路径、重新命名失败或合并不同轮 PASS 来制造全绿。
+- 分开记录：纯函数/固定时钟、真实磁盘 SwiftData、模拟器实际前后台/冷启动/UI、真实设备。模拟器 kill/relaunch 不是所有系统回收路径证明；无真实锁屏/设备证据就保留 NOT_RUN 与 Owner 清单。
+- 独立 Reviewer 必须是真正不同、只读的 agent/会话，读取固定提交 diff、生产调用链、原始日志/xcresult 与必要截图；不得靠主 agent 自称切换角色来冒充。早期审查身份、计时状态/原子性、跨日、恢复及迁移；最终审查统计刷新、UI、旧模块影响与实包身份。
+- 实现者复现发现，保留红测并做限定修复，再让独立 Reviewer 复核受影响结果与最终差异。关闭范围内确认的 P0/P1，以及影响必选路径、数据可信度或旧数据保护的 P2；无关旧问题记录，不借机全面重构。
+- 若独立 Reviewer 不可用，交付已完成部分并报 REVIEW_BLOCKED，不伪造独立通过。真正环境/认证阻塞分别报 BLOCKED_ENVIRONMENT/BLOCKED_AUTH；先完成不依赖该阻塞的安全事项，不反复消耗测试队列。
+- 原已确认的 unsigned Safari/App Group 限制不通过修改签名或身份绕过；受本轮影响的逻辑补足可执行回归，系统签名路径明确留 Owner Gate。不修改相关源码不自动等于新 Schema 下无需考虑该路径，新出现或扩大的回归必须处理。
+- 每个关键 run 写精确产品/测试 SHA、selector/命令、通过/失败/跳过数及原始证据位置；失败记录保留。基线复用证据注明原 SHA 和未变更依据，不能标为新 SHA 全测。NOT_RUN 不填 PASS。
+- 最终固定干净产品/测试提交进行 Debug Simulator 和 unsigned Release generic iOS 构建，核对 App/Share/Widget 嵌入、Bundle ID/版本/entitlements 与真实 provenance。无签名产物不是可安装 IPA；仅文档最终提交可复用其前一产品提交的构建，但说明差异。
+- 诊断只含脱敏状态、阶段、计数与错误类别，不含真实活动正文、反馈、成员信息或私人样本。证据只用合成数据。
+
+## 七、交付与明确停点
+
+授权仅在新产品工作分支合理 commit、普通 push，并创建或更新该功能唯一的新 Draft PR（base 为 codex/sleep-routine-v1）。不 merge、不 force push、不 tag、不 Archive、不 TestFlight/发行，不安装或操作真实手机/私人库；旧 PR 与原 dirty 工作区保持。
+
+建立精简交付文档：
+- Docs/TIME_INVESTMENT_V1_EXECUTION.md：实际阶段、命令/失败/限定修复、固定输入与 Git 状态。
+- Docs/TIME_INVESTMENT_V1_REVIEW_ZH.md：独立 Reviewer 身份/会话、固定审查 SHA、发现、复现、修复及最终状态。
+- Docs/TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md：S1–S10/T1–T14 对应的实际生产路径、测试证据、PASS/FAIL/NOT_RUN、旧数据保护、剩余 Owner 清单。
+
+新分支 CURRENT_STATE/CURRENT_TASK 与 INDEX/必要 Foundation 添加本次最小增量；不覆盖旧模块历史证明。交付注明固定 GOAL_SHA、BASE、实际 branch/base/head、产品/测试提交和最终文档交付提交；不在同一文件写无法成立的自引用提交 SHA。普通推送后复核远端文件、branch/PR head 和仅本任务工作区干净；未知原 workspace 状态不能笼统宣称 clean。
+
+仅当必选实现、本地可执行门禁及真实独立审查完成、无范围内阻断问题时，停 READY_FOR_OWNER_DEVICE_GATE。预先保留的真实设备/签名/系统表现 NOT_RUN 可以作为这个停点的下一阶段，但缺失本地核心实现或可执行验证不能包装成 Owner 才能解决的问题。
+
+Owner 清单至少包含：不卸载覆盖升级前后旧数据核对；锁屏/正常使用其他 App 后结束；倒计时晚返回；待确认重开；手工后补/跨日/长期累计下钻；Record/睡眠/重要日子/分享/Widget 组合检查。测试包/签名/安装需后续另行授权。
+
+正常可逆实现细节自主完成，不在计划、中期 commit、第一次 Review 或普通 push 后等待批准。真正阻塞时报告已完成部分、精确证据和最小缺口。用户沟通与验收默认中文；完成本 Goal 后不开下一个模块。
+
+## 八、1.1 执行契约修订说明
+
+本次独立规划复审保留初始产品方向、固定产品基线和叠加 PR 路线，仅补齐：祖先/累计 diff 验证、旧停点与新授权关系、长期累计、保守倒计时、持久待确认/幂等提交、日期精度/跨日统计、草稿隔离、空库惰性初始化、活计时备份恢复、11.0/11.1 迁移及可复现反例。
+
+本文件是执行要求，不是任何测试或独立实现审查已经通过的证明。执行必须以 Owner 最新 prompt 指定的、同时含两份 1.1 文档的完整固定 SHA 为准，不使用只更新了其中一份的中间提交。
