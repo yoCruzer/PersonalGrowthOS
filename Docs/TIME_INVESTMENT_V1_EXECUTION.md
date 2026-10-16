@@ -40,3 +40,5 @@
 - `swift test --package-path /tmp/pgos-time-investment-mac-probe`：`mac-probe1.log` 16/16、`mac-probe2.log` 20/20 PASS/exit0；它们是不同轮次，不能相加。对应当时源码在探针manifest记录；后续新修改仍需补验。
 - 用审查固定d21f8fa的原生产Foundation替换探针对应文件，运行相同R1/R2反例：`mac-review-red1.log` 2测试失败、5断言/错误（1unexpected），exit1。明确复现原问题，不删断言。
 - 新增94个双语键；静态逐项比较937个原键值未变，git diff --check通过。界面真实视觉/无障碍验证仍NOT_RUN。
+
+固定a873b5f后追加限定修复R5–R7，不扩产品范围。`testcompile6.log`成功，`mac-probe3.log`21/21通过，但其运行早于a873最终两处校验；不能冒称完整a873运行。为此保存 `a873b5f-mac-source-manifest.json`，独立run `mac-probe4-a873b5f.log`和`testcompile7.log`；后续最终限定修复仍需对应新提交证据。

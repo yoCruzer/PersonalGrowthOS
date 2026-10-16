@@ -66,7 +66,7 @@ extension TransferData {
         }
         for s in investmentSessions {
             guard participants.contains(s.recorderID) else { throw InvestmentFailure.invalid }
-            try validateIdentity(s.participantID, s.activityID, s.createdAt, s.updatedAt, s.revision); try s.values.validate()
+            try validateIdentity(s.participantID, s.activityID, s.createdAt, s.updatedAt, s.revision); try s.values.validate(now:max(s.createdAt,s.updatedAt))
             guard let op = operations[s.id], op.timer.state == .saved, op.participantID == s.participantID,
                   op.activityID == s.activityID, op.recorderID == s.recorderID, op.timer.values == s.values else { throw InvestmentFailure.invalid }
         }

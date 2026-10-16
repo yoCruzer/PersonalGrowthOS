@@ -70,6 +70,19 @@ import UIKit
             refresh(context)
         } catch { self.error = error.localizedDescription }
     }
+    func resume(id: UUID, context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current) throws {
+        // Explicitly continuing consumes the old confirmation editor, after preserving its feedback.
+        if let editor = editors[id], !editor.finished {
+            editor.persist(context)
+            if let error = editor.error { throw InvestmentEditorPersistenceFailure(message:error) }
+        }
+        refresh(context)
+        guard let op = operations.first(where: { $0.id == id }) else { throw InvestmentFailure.missing }
+        try InvestmentService(context:context,clock:clock).command(.resume,id:id,revision:op.revision)
+        editors[id]?.finished = true
+        editors.removeValue(forKey:id)
+        refresh(context)
+    }
     func editor(for op: InvestmentOperationSnapshot) -> InvestmentEditorState {
         if let existing = editors[op.id], !existing.finished { return existing }
         let timer = op.timer
@@ -97,7 +110,17 @@ import UIKit
     func name(_ id: UUID) -> String { activities.first { $0.id == id }?.name ?? String(localized:"Activity") }
 }
 
+struct InvestmentEditorPersistenceFailure: Error, LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
+}
+
 enum InvestmentFormatting {
+    static func span(_ span: InvestmentSpan, zoneID: String, locale: Locale = .current) -> String {
+        var style = Date.FormatStyle(date:.numeric,time:.standard)
+        style.timeZone = TimeZone(identifier:zoneID) ?? .current; style.locale = locale
+        return span.start.formatted(style) + " → " + span.end.formatted(style)
+    }
     static func duration(_ seconds: Double) -> String {
         guard seconds.isFinite, seconds >= 0, seconds < Double(Int.max) else { return "—" }
         if seconds > 0 && seconds < 1 { return String(localized:"Less than 1 second") }
@@ -289,7 +312,11 @@ struct InvestmentTimerView: View {
     }
     private func command(_ action: InvestmentService.Command) {
         guard let op else { return }
-        do { try InvestmentService(context:context).command(action,id:id,revision:op.revision); error = nil; workspace.refresh(context) }
+        do {
+            if case .resume = action { try workspace.resume(id:id,context:context) }
+            else { try InvestmentService(context:context).command(action,id:id,revision:op.revision) }
+            error = nil; workspace.refresh(context)
+        }
         catch { self.error = error.localizedDescription; workspace.refresh(context) }
     }
     private func openConfirmation() { if error == nil, let op, [.pendingSave,.targetReached,.recoveryRequired].contains(op.timer.state) { editor = workspace.editor(for:op) } }
@@ -493,7 +520,7 @@ struct InvestmentSessionDetailView: View {
                 if !session.values.spans.isEmpty {
                     Section("Effective time intervals") {
                         ForEach(Array(session.values.spans.enumerated()),id:\.offset) { _, span in
-                            Text(span.start.formatted(date:.numeric,time:.standard) + " → " + span.end.formatted(date:.numeric,time:.standard))
+                            Text(InvestmentFormatting.span(span,zoneID:session.values.timeZoneID))
                         }
                     }.environment(\.timeZone,TimeZone(identifier:session.values.timeZoneID)!)
                 }

@@ -148,6 +148,7 @@ struct InvestmentTimer: Codable, Equatable {
         guard state.unfinished, state != .running else { throw InvestmentFailure.conflict }
         if asStopwatch || state == .targetReached || restoredState == .targetReached || target.map({ values.seconds >= $0 }) == true { target = nil }
         guard values.spans.last.map({ $0.end <= clock.wall }) ?? true else { throw InvestmentFailure.invalid }
+        durationText = nil
         state = .running; anchor = clock.wall; anchorUptime = clock.uptime; processID = clock.processID; checkpointAt = clock.wall
     }
     // Pure projection used by foreground display, checkpoints and the export snapshot.
@@ -326,7 +327,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             guard values.source == .timer else { throw InvestmentFailure.invalid }
             try duplicates(values: values, participantID: op.participantID, excluding: id, context: context, confirmed: confirmDuplicate)
             context.insert(try InvestmentSession(id: id, participantID: op.participantID, activityID: op.activityID, values: values, now: max(now.wall, op.createdAt, op.updatedAt), recorderID: op.recorderID))
-            timer.values = values; timer.state = .saved; timer.clearAnchor()
+            timer.values = values; timer.state = .saved; timer.clearAnchor(); timer.checkpointAt = max(timer.checkpointAt, now.wall)
             op.payload = try JSONEncoder().encode(timer); op.revision += 1; op.updatedAt = max(op.updatedAt, now.wall)
             return id
         }
@@ -369,7 +370,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             } else { context.insert(try InvestmentSession(id: id, participantID: participantID, activityID: activityID, values: values, now: now.wall, recorderID: try participant(nil, in: context))) }
             if let op = operations.first(where: { $0.id == id }) {
                 op.activityID = activityID
-                var timer = try op.timer(); timer.state = .saved; timer.values = values; timer.clearAnchor()
+                var timer = try op.timer(); timer.state = .saved; timer.values = values; timer.clearAnchor(); timer.checkpointAt = max(timer.checkpointAt, now.wall)
                 op.payload = try JSONEncoder().encode(timer); op.revision += 1; op.updatedAt = max(op.updatedAt, now.wall)
             } else {
                 context.insert(try InvestmentOperation(id: id, participantID: participantID, activityID: activityID,

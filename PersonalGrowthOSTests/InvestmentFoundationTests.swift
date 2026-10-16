@@ -235,4 +235,23 @@ import XCTest
         XCTAssertThrowsError(try s.saveManual(id:id,participantID:p,activityID:a,values:v,expectedRevision:saved.revision))
     }
 
+    func testReviewerR7FutureFormalFactRejectsUsingTechnicalObservationButRetainsClockRollback() throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),(s,a,p,old)=try setup(c);try command(s,old,.discard)
+        let id=UUID(),v=InvestmentValues(day:ImportantCivilDay(clock.wall,timeZone:zone).identifier,timeZoneID:zone.identifier,seconds:45,evidence:.dateDuration,source:.manual)
+        try s.saveManual(id:id,participantID:p,activityID:a,values:v)
+        let read=ModelContext(c)
+        let participants=try read.fetch(FetchDescriptor<InvestmentParticipant>()).map(InvestmentParticipantTransfer.init)
+        let activities=try read.fetch(FetchDescriptor<InvestmentActivity>()).map(InvestmentActivityTransfer.init)
+        let sessions=try read.fetch(FetchDescriptor<InvestmentSession>()).map(InvestmentSessionTransfer.init)
+        let operations=try read.fetch(FetchDescriptor<InvestmentOperation>()).map {try InvestmentOperationTransfer($0)}
+        func data(_ sessions:[InvestmentSessionTransfer],_ operations:[InvestmentOperationTransfer]) -> TransferData {
+            .init(entries:[],images:[],tags:[],links:[],habits:[],habitLogs:[],goals:[],goalEvents:[],investmentParticipants:participants,investmentActivities:activities,investmentSessions:sessions,investmentOperations:operations)
+        }
+        clock.wall.addTimeInterval(-86400)
+        XCTAssertNoThrow(try data(sessions,operations).validateInvestment(packageVersion:10))
+        var forged=sessions,changedOps=operations;forged[0].values.day="2099-12-31"
+        let index=try XCTUnwrap(changedOps.firstIndex {$0.id == id});changedOps[index].timer.values=forged[0].values
+        XCTAssertThrowsError(try data(forged,changedOps).validateInvestment(packageVersion:10))
+    }
+
 }

@@ -183,4 +183,34 @@ import UIKit
         }
     }
 
+    func testReviewerR5CloseConfirmationContinueFinishReopensFreshTimeAndRevision() throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),s=InvestmentService(context:c.mainContext,clock:{self.clock})
+        let a=try s.createActivity(name:"Synthetic editor lifecycle"),p=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id,id=UUID()
+        try s.start(activityID:a,participantID:p,operationID:id,zone:zone)
+        clock.wall.addTimeInterval(1200);clock.uptime += 1200
+        var op=try XCTUnwrap(s.operations().first);try s.command(.finish,id:id,revision:op.revision)
+        let workspace=InvestmentWorkspace();workspace.refresh(c.mainContext)
+        let oldEditor=workspace.editor(for:try XCTUnwrap(workspace.unfinished.first));oldEditor.values.note="Synthetic retained feedback";oldEditor.persist(c.mainContext)
+        try workspace.resume(id:id,context:c.mainContext,clock:{self.clock})
+        clock.wall.addTimeInterval(60);clock.uptime += 60
+        op=try XCTUnwrap(s.operations().first);try s.command(.finish,id:id,revision:op.revision);workspace.refresh(c.mainContext)
+        let fresh=workspace.editor(for:try XCTUnwrap(workspace.unfinished.first))
+        XCTAssertFalse(oldEditor === fresh);XCTAssertTrue(oldEditor.finished)
+        XCTAssertEqual(fresh.values.seconds,1260);XCTAssertEqual(fresh.values.note,"Synthetic retained feedback")
+        XCTAssertEqual(Double(fresh.durationText),21)
+        try s.saveTimer(id:id,revision:try XCTUnwrap(fresh.operationRevision),values:fresh.values)
+        XCTAssertEqual(try ModelContext(c).fetchCount(FetchDescriptor<InvestmentSession>()),1)
+    }
+
+    func testReviewerR6DetailUsesOriginalZoneAfterDeviceZoneChanges() {
+        let old=NSTimeZone.default;defer {NSTimeZone.default=old}
+        let start=ImportantCivilDay(identifier:"2026-12-31")!.instant(minutes:1430,timeZone:zone)!
+        let span=InvestmentSpan(start:start,end:start.addingTimeInterval(1800))
+        NSTimeZone.default=zone
+        let before=InvestmentFormatting.span(span,zoneID:zone.identifier,locale:Locale(identifier:"en_GB"))
+        NSTimeZone.default=TimeZone(identifier:"America/New_York")!
+        let after=InvestmentFormatting.span(span,zoneID:zone.identifier,locale:Locale(identifier:"en_GB"))
+        XCTAssertEqual(before,after);XCTAssertTrue(after.contains("23:50"));XCTAssertTrue(after.contains("00:20"))
+    }
+
 }

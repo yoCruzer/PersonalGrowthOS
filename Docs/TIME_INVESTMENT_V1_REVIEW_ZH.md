@@ -18,3 +18,11 @@
 源码审查不能替代原生运行。首轮Reviewer确认两份编译日志成功，同时明确CoreSimulator版本不匹配，未将iOS Unit/磁盘/UI列PASS。现有macOS探针只补核心生产服务证据，不关闭iOS迁移、实际设置恢复或视觉门禁。
 
 下一步：对新的固定产品/测试提交复核全部修复、UI/统计/草稿与备份调用链；环境更新后执行iOS反例及受影响/完整门禁。未完成前不标READY_FOR_OWNER_DEVICE_GATE。
+
+## 第二轮固定提交 a873b5f
+
+Reviewer只读复审 `a873b5ffa5a959e165c69110577014f86ce832f5`：R1–R4的原缺陷在代码层修正；macOS探针含对应核心回归通过。新增R5/P2为关闭确认→继续→再结束后旧编辑器复用；R6/P2为详情Date格式化未显式原时区；R7/P2为纯日期未来正式事实可伪造进入新包。
+
+限定修复：继续前先保全反馈，成功后失效旧确认编辑器并清除旧时长文本；区间格式化显式使用Session原时区；正式事实以createdAt/updatedAt技术观察上界验证，保留时钟回拨后的既有事实。补Workspace真实路径、原时区格式化、合法回拨/未来伪造配对及16类实际坏ZIP测试。尚待第三轮固定提交复核和运行，不列已关闭。
+
+Reviewer还核对clean a873 Debug App/Share/Widget身份1.0(7)和provenance。明确指出probe3日志早于后续manifest，不能倒推运行了a873新增校验。为此另跑固定a873的probe4及testcompile7，结果/文件以执行记录为准；不覆盖之前证据。
