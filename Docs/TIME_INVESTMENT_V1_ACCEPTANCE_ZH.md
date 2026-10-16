@@ -1,6 +1,6 @@
 # 时间投入 V1 验收与设备门禁
 
-当前状态：**BLOCKED_ENVIRONMENT（代码层独立审查已闭环）**，尚未达到READY_FOR_OWNER_DEVICE_GATE。规格固定GOAL_SHA `72ee8bdf954a5628806db867682a6b021e63545b`，BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`；产品工作树 `codex/time-investment-v1`。固定产品/测试检查点及对应实际命令见[执行记录](TIME_INVESTMENT_V1_EXECUTION.md)，真实独立Reviewer报告见[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。
+当前状态：**BLOCKED_ENVIRONMENT（代码层独立审查已闭环）**，尚未达到READY_FOR_OWNER_DEVICE_GATE。规格固定GOAL_SHA `72ee8bdf954a5628806db867682a6b021e63545b`，BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`；产品工作树 `codex/time-investment-v1`，唯一新 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)，base为 `codex/sleep-routine-v1`。固定产品/测试检查点及对应实际命令见[执行记录](TIME_INVESTMENT_V1_EXECUTION.md)，真实独立Reviewer报告见[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。
 
 `PASS_MAC`只表示未改写的生产核心及相同XCTest在临时macOS内存Schema中的补充运行，不代表iOS V14、历史磁盘升级、ZIP/UI或真机通过。`COMPILED`只证明编译。以下未执行项不写成PASS，旧模块历史证据不当作新代码全测。
 

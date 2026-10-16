@@ -62,3 +62,13 @@
 - R7另保留原a873生产验证器的定向反例：mac-r7-red.log，1项失败/exit1（未来事实未抛错）；24/24修复绿测在此前已保存。探针生产Transfer已恢复固定0abe，不用混合源码红测结果冒称整提交运行。
 
 后续交接仅Markdown，不再改固定产品/测试。新PR保持Draft和BLOCKED_ENVIRONMENT；环境恢复后按验收文档补齐所有本地必选门禁，再固定新产品/测试提交复审。当前Goal未完成，不进入READY或下一模块。
+
+## 普通推送与唯一新Draft PR
+
+已普通推送 `codex/time-investment-v1`，upstream为 `origin/codex/time-investment-v1`；唯一新 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)，base `codex/sleep-routine-v1`，实际base复核仍为固定BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`。未变旧PR head/base/OPEN Draft；前后快照在证据根。远端workflows实际为0，独立CI NOT_RUN；空checks不代表通过。
+
+产品/测试固定 `0abe55f0f722b920a73ecedf6e1fc395181994a5`；最后交接只改Markdown，交付HEAD以Git/PR实时head和证据根delivery-proof.json为准，不在同文件写自引用提交SHA。最终源与远端内容/工作树核对随后完成。
+
+结束前重新只读核实安装的CoreSimulator为1171.7（日志显示1171.7.0），仍小于Xcode包装器要求的1174.9.2。Owner未报告完成组件更新，未循环启动已知失败的原生队列。Goal保持active，明确未达到READY_FOR_OWNER_DEVICE_GATE；当前阻塞为本机Xcode组件更新/管理员认证环境，非产品验收已完成。
+
+恢复执行：先只读核实组件更新，然后复用本任务隔离模拟器540825BC-D0D4-4D71-B8DF-D73B243C3726，单一队列运行InvestmentFoundationTests/InvestmentPersistenceTests/ImportExportRecoveryTests和相邻原迁移路径；使用新日志/result名，保留unit1真实exit70。失败则按生产路径限定修复并交同一独立Reviewer复核；核心与UI收敛后跑一次全量Unit及集中联合UI，再固定产品/测试构建/审查。不能跳过原生门禁直接把本Draft标READY。

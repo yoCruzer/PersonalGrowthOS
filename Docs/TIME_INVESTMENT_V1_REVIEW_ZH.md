@@ -32,3 +32,5 @@ Reviewer还核对clean a873 Debug App/Share/Widget身份1.0(7)和provenance。�
 固定产品/测试 `0abe55f0f722b920a73ecedf6e1fc395181994a5`。同一真正独立Reviewer确认：R5–R7可在代码层关闭，本轮无新增confirmed范围内问题；R1–R4维持代码修复结论。逐项核对7份源码/声明切片hash与固定提交相等，manifest先于日志；mac-probe6为24/24 PASS，testcompile9为TEST BUILD SUCCEEDED。
 
 **代码层独立审查闭环不等于原生验收完成。** iOS V14、历史磁盘迁移、实际ZIP/发布故障、设置恢复、生命周期、UI及组合行为全部仍NOT_RUN。Reviewer要求状态保持BLOCKED_ENVIRONMENT，不能标READY_FOR_OWNER_DEVICE_GATE。unsigned Release后补静态复核记录于后续交接，不改变此原生限制。
+
+第三轮静态补验：Reviewer独立读取release1原日志及六个实际包，确认generic iOS / CODE_SIGNING_ALLOWED=NO / BUILD SUCCEEDED、原Bundle与1.0(7)、两App clean0abe provenance、历史Schema和指定身份源码未变。R7原验证器定向红测1项失败也已复核。此补验只关闭编译/实包身份的静态检查，原生运行继续NOT_RUN，状态仍BLOCKED_ENVIRONMENT。

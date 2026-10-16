@@ -2,7 +2,9 @@
 
 Owner新Goal固定 `72ee8bdf954a5628806db867682a6b021e63545b`，两份1.1规格替代旧引导；产品基线 `ad0720ad743f495ac6f2ee3e97b16577266351db`。独立worktree与 `codex/time-investment-v1` 已建立，原工作区和PR#8/#9/#10/#11保留。V14/v10、UI/持久草稿/完整回顾已实现，新增测试持续编译。真正独立只读Reviewer三轮R1–R7代码层闭环；固定产品/测试 `0abe55f0f722b920a73ecedf6e1fc395181994a5` 的macOS隔离核心/Workspace 24/24通过，Debug全部target与unsigned Release generic iOS构建通过，六实包身份/两App clean provenance核对。iOS运行因Xcode27.1/CoreSimulator版本不匹配退出70、运行0项，磁盘/ZIP恢复/UI/联合及全量回归仍NOT_RUN，不标READY。
 
-下一步连续完成A/B、S1–S10/T1–T14及真实只读独立审查；不在中期等待Owner批准。当前本机Xcode27.1与CoreSimulator版本不匹配，原生测试暂NOT_RUN；Debug核心已编译，详细命令和失败见[TIME_INVESTMENT_V1_EXECUTION.md](TIME_INVESTMENT_V1_EXECUTION.md)。最终停点仍为READY_FOR_OWNER_DEVICE_GATE，禁止合并/强推/tag/Archive/发行/真机私人库操作。
+已普通推送唯一新 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)，base `codex/sleep-routine-v1` 仍为固定BASE。交付HEAD以Git/PR及证据根为准，最后只改Markdown。旧PR#8/#9/#10/#11保持，原工作区未知dirty未吸收。
+
+下一步等待本机Xcode组件更新后继续原生S1–S10/T1–T14及受影响/全量门禁，保持单一Xcode队列，复用本任务隔离模拟器540825BC-D0D4-4D71-B8DF-D73B243C3726。详细实际命令/每轮失败见[TIME_INVESTMENT_V1_EXECUTION.md](TIME_INVESTMENT_V1_EXECUTION.md)，证据矩阵见[TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)。当前Goal未完成、保持active；最终停点仍为READY_FOR_OWNER_DEVICE_GATE。禁止合并/强推/tag/Archive/发行/真机私人库操作。
 
 以下历史证据原样保留，不再阻止本次新授权。
 
