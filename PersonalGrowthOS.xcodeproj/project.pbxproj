@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+711000000000000000000003 = {isa = PBXBuildFile; fileRef = 710000000000000000000003; };
+711000000000000000000002 = {isa = PBXBuildFile; fileRef = 710000000000000000000002; };
+711000000000000000000001 = {isa = PBXBuildFile; fileRef = 710000000000000000000001; };
 51100000000000000000000A = {isa = PBXBuildFile; fileRef = 51000000000000000000000A; };
 511000000000000000000009 = {isa = PBXBuildFile; fileRef = 510000000000000000000009; };
 511000000000000000000008 = {isa = PBXBuildFile; fileRef = 510000000000000000000008; };
@@ -132,6 +135,9 @@ CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H0000
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+710000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/InvestmentFoundationTests.swift"; sourceTree = SOURCE_ROOT; };
+710000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/TimeInvestment/InvestmentTransfer.swift"; sourceTree = SOURCE_ROOT; };
+710000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/TimeInvestment/InvestmentFoundation.swift"; sourceTree = SOURCE_ROOT; };
 51000000000000000000000A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SleepReviewRegressionTests.swift"; sourceTree = SOURCE_ROOT; };
 510000000000000000000009 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/SleepUITests.swift"; sourceTree = SOURCE_ROOT; };
 510000000000000000000008 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SleepReminderTests.swift"; sourceTree = SOURCE_ROOT; };
@@ -669,6 +675,8 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+711000000000000000000002,
+711000000000000000000001,
 511000000000000000000006,
 511000000000000000000004,
 511000000000000000000003,
@@ -733,6 +741,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+711000000000000000000003,
 51100000000000000000000A,
 511000000000000000000008,
 511000000000000000000007,

@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 9
+    static let currentPackageSchemaVersion = 10
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -52,6 +52,11 @@ struct TransferData: Codable, Equatable {
     let todoSeries: [TodoSeriesTransfer]
     let todoSources: [TodoTaskSourceTransfer]
 
+    let investmentParticipants: [InvestmentParticipantTransfer]
+    let investmentActivities: [InvestmentActivityTransfer]
+    let investmentSessions: [InvestmentSessionTransfer]
+    let investmentOperations: [InvestmentOperationTransfer]
+
     let sleepRecords: [SleepRecordTransfer]
     let sleepGoals: [SleepGoalTransfer]
 
@@ -86,7 +91,11 @@ struct TransferData: Codable, Equatable {
         importantDayTodoLinks: [ImportantDayTodoLinkTransfer] = [],
         importantDayCovers: [ImportantDayCoverTransfer] = [],
         sleepRecords: [SleepRecordTransfer] = [],
-        sleepGoals: [SleepGoalTransfer] = []
+        sleepGoals: [SleepGoalTransfer] = [],
+        investmentParticipants: [InvestmentParticipantTransfer] = [],
+        investmentActivities: [InvestmentActivityTransfer] = [],
+        investmentSessions: [InvestmentSessionTransfer] = [],
+        investmentOperations: [InvestmentOperationTransfer] = []
     ) {
         self.entries = entries
         self.images = images
@@ -112,6 +121,10 @@ struct TransferData: Codable, Equatable {
         self.importantDayEntryLinks = importantDayEntryLinks
         self.importantDayTodoLinks = importantDayTodoLinks
         self.importantDayCovers = importantDayCovers
+        self.investmentParticipants = investmentParticipants
+        self.investmentActivities = investmentActivities
+        self.investmentSessions = investmentSessions
+        self.investmentOperations = investmentOperations
         self.sleepRecords = sleepRecords; self.sleepGoals = sleepGoals
 
 
@@ -142,6 +155,7 @@ struct TransferData: Codable, Equatable {
         case importantDayEntryLinks
         case importantDayTodoLinks
         case importantDayCovers
+        case investmentParticipants, investmentActivities, investmentSessions, investmentOperations
         case sleepRecords, sleepGoals
 
     }
@@ -178,6 +192,10 @@ struct TransferData: Codable, Equatable {
         todoLists = try container.decodeIfPresent([TodoListTransfer].self, forKey: .todoLists) ?? []
         todoSeries = try container.decodeIfPresent([TodoSeriesTransfer].self, forKey: .todoSeries) ?? []
         todoSources = try container.decodeIfPresent([TodoTaskSourceTransfer].self, forKey: .todoSources) ?? []
+        investmentParticipants = try container.decodeIfPresent([InvestmentParticipantTransfer].self, forKey: .investmentParticipants) ?? []
+        investmentActivities = try container.decodeIfPresent([InvestmentActivityTransfer].self, forKey: .investmentActivities) ?? []
+        investmentSessions = try container.decodeIfPresent([InvestmentSessionTransfer].self, forKey: .investmentSessions) ?? []
+        investmentOperations = try container.decodeIfPresent([InvestmentOperationTransfer].self, forKey: .investmentOperations) ?? []
         sleepRecords = try container.decodeIfPresent([SleepRecordTransfer].self, forKey: .sleepRecords) ?? []
         sleepGoals = try container.decodeIfPresent([SleepGoalTransfer].self, forKey: .sleepGoals) ?? []
         importantDays = try container.decodeIfPresent([ImportantDayTransfer].self, forKey: .importantDays) ?? []
@@ -214,6 +232,10 @@ struct TransferData: Codable, Equatable {
             "importantDayEntryLinks": importantDayEntryLinks.count,
             "importantDayTodoLinks": importantDayTodoLinks.count,
             "importantDayCovers": importantDayCovers.count,
+            "investmentParticipants": investmentParticipants.count,
+            "investmentActivities": investmentActivities.count,
+            "investmentSessions": investmentSessions.count,
+            "investmentOperations": investmentOperations.count,
             "sleepRecords": sleepRecords.count, "sleepGoals": sleepGoals.count
         ]
     }
@@ -224,6 +246,7 @@ struct TransferData: Codable, Equatable {
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
                 && (version >= 7 || !key.hasPrefix("todo"))
+                && (version >= 10 || !key.hasPrefix("investment"))
                 && (version >= 9 || !key.hasPrefix("sleep"))
                 && (version >= 8 || !key.hasPrefix("importantDay"))
                 && (version >= 6 || key != "entrySources")
@@ -467,6 +490,7 @@ enum TransferValidator {
                 (data.todoTasks.isEmpty && data.todoEvents.isEmpty && data.todoLists.isEmpty && data.todoSeries.isEmpty && data.todoSources.isEmpty) else {
             throw TransferPackageError.invalidObject("todo schema")
         }
+        try data.validateInvestment(packageVersion: manifest.packageSchemaVersion)
         try data.validateSleep(packageVersion: manifest.packageSchemaVersion)
         try data.validateImportantDays(packageVersion: manifest.packageSchemaVersion, manifest: manifest)
         do { try data.validateTodos() }

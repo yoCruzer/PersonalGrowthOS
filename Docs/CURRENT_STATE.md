@@ -1,3 +1,13 @@
+# 时间投入 V1 — IMPLEMENTING_A（2026-10-16）
+
+Owner新Goal固定 `72ee8bdf954a5628806db867682a6b021e63545b`，两份1.1规格替代旧引导；产品基线 `ad0720ad743f495ac6f2ee3e97b16577266351db`。独立worktree与 `codex/time-investment-v1` 已建立，原工作区和PR#8/#9/#10/#11保留。当前实现追加V14/v10核心实体、计时状态机、独立事务、跨日统计及备份路径；UI/持久草稿/完整验证/独立审查尚未完成，不标READY。
+
+下一步连续完成A/B、S1–S10/T1–T14及真实只读独立审查；不在中期等待Owner批准。当前本机Xcode27.1与CoreSimulator版本不匹配，原生测试暂NOT_RUN；Debug核心已编译，详细命令和失败见[TIME_INVESTMENT_V1_EXECUTION.md](TIME_INVESTMENT_V1_EXECUTION.md)。最终停点仍为READY_FOR_OWNER_DEVICE_GATE，禁止合并/强推/tag/Archive/发行/真机私人库操作。
+
+以下历史证据原样保留，不再阻止本次新授权。
+
+---
+
 # PR #11 外部限定复审通过 — READY_FOR_OWNER_DEVICE_GATE（2026-10-15）
 
 据 Owner 本次确认，外部限定复审通过固定产品/测试 `9da1ce8758d868145e9b5690611634ccd292e469`，对应交付 `114558f404ced9cffca5517533a11cb10d2d4ec8`：R1、R2、R3 关闭，未发现范围内尚未关闭的确认 P0/P1/P2。

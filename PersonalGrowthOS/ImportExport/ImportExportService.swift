@@ -133,7 +133,7 @@ final class ImportExportService {
                     }.count
                     try LinkIntegrityService.validate(context: snapshotContext)
                     try ImportantDayIntegrity.validate(context: snapshotContext)
-                    let transfer = try TransferSnapshot.make(context: snapshotContext)
+                    let transfer = try TransferSnapshot.make(context: snapshotContext, investmentClock: InvestmentClock.current())
                     try snapshotCheckpoint?()
                     let inputs = try transfer.mediaAssets.map { record in
                         ExportMediaInput(
@@ -383,6 +383,7 @@ final class ImportExportService {
             NotificationCenter.default.post(name: .todoTasksChanged, object: container)
             NotificationCenter.default.post(name: .importantDaysChanged, object: container)
             NotificationCenter.default.post(name: .sleepRecordsChanged, object: container)
+            NotificationCenter.default.post(name: .investmentChanged, object: container)
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.mediaAssets.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
@@ -516,6 +517,11 @@ final class ImportExportService {
             }
             for key in ["sleepRecords", "sleepGoals"] {
                 if manifest.packageSchemaVersion >= 9 {
+                    guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
+                } else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
+            }
+            for key in ["investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations"] {
+                if manifest.packageSchemaVersion >= 10 {
                     guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
                 } else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
             }
@@ -964,6 +970,7 @@ final class ImportExportService {
                 restoredPaths.append(try copyMedia(cover, packageRoot: package.extractedRoot, mediaRoot: mediaStore.rootURL))
             }
             try package.data.insertSleep(into: context)
+            try package.data.insertInvestment(into: context)
             try package.data.insertImportantDays(into: context)
             try package.data.insertTodos(into: context)
             return restoredPaths
@@ -1016,6 +1023,10 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<ImportantDayCover>())
             + context.fetchCount(FetchDescriptor<SleepRecord>())
             + context.fetchCount(FetchDescriptor<SleepGoalRule>())
+            + context.fetchCount(FetchDescriptor<InvestmentParticipant>())
+            + context.fetchCount(FetchDescriptor<InvestmentActivity>())
+            + context.fetchCount(FetchDescriptor<InvestmentSession>())
+            + context.fetchCount(FetchDescriptor<InvestmentOperation>())
 
         guard count == 0 else { throw TransferPackageError.targetNotEmpty }
     }
@@ -1057,7 +1068,7 @@ private enum Hasher {
 }
 
 enum TransferSnapshot {
-    static func make(context: ModelContext) throws -> TransferData {
+    static func make(context: ModelContext, investmentClock: InvestmentClock? = nil) throws -> TransferData {
         try Task.checkCancellation()
         let entries = try context.fetch(FetchDescriptor<Entry>())
         try Task.checkCancellation()
@@ -1265,7 +1276,11 @@ enum TransferSnapshot {
             importantDayTodoLinks: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayTodoLink>())) { ImportantDayTodoLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             importantDayCovers: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayCover>())) { ImportantDayCoverTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             sleepRecords: try cancellableMap(context.fetch(FetchDescriptor<SleepRecord>())) { try SleepRecordTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            sleepGoals: try cancellableMap(context.fetch(FetchDescriptor<SleepGoalRule>())) { SleepGoalTransfer($0) }.sorted { sortUUID($0.id, $1.id) }
+            sleepGoals: try cancellableMap(context.fetch(FetchDescriptor<SleepGoalRule>())) { SleepGoalTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentParticipants: try cancellableMap(context.fetch(FetchDescriptor<InvestmentParticipant>())) { InvestmentParticipantTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentActivities: try cancellableMap(context.fetch(FetchDescriptor<InvestmentActivity>())) { InvestmentActivityTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentSessions: try cancellableMap(context.fetch(FetchDescriptor<InvestmentSession>())) { try InvestmentSessionTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) }
         )
     }
 

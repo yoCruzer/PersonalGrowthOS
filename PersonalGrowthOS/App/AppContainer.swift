@@ -102,7 +102,7 @@ struct AppContainer {
                     try autoreleasepool {
                         let readOnly = try PersistenceContainerFactory.makeOnDisk(at: storeURL, allowsSave: false)
                         readOnly.mainContext.autosaveEnabled = false
-                        do { try TodoIntegrity.validate(context: readOnly.mainContext); try SleepIntegrity.validate(context: readOnly.mainContext) }
+                        do { try TodoIntegrity.validate(context: readOnly.mainContext); try SleepIntegrity.validate(context: readOnly.mainContext); try InvestmentIntegrity.validate(context: readOnly.mainContext) }
                         catch { throw integrityFailure(error, rootURL: rootURL) }
                     }
                 } else {
@@ -118,7 +118,7 @@ struct AppContainer {
             stage = .integrity
             startupStep = nil
             modelContainer.mainContext.autosaveEnabled = false
-            do { try TodoIntegrity.validate(context: modelContainer.mainContext); try SleepIntegrity.validate(context: modelContainer.mainContext) }
+            do { try TodoIntegrity.validate(context: modelContainer.mainContext); try SleepIntegrity.validate(context: modelContainer.mainContext); try InvestmentIntegrity.validate(context: modelContainer.mainContext) }
             catch {
                 throw integrityFailure(error, rootURL: rootURL)
             }
@@ -151,7 +151,7 @@ struct AppContainer {
             _ = try HabitAnalyticsMigrationBootstrap.apply(context: modelContainer.mainContext)
             try LinkIntegrityService.validate(context: modelContainer.mainContext)
             try ImportantDayIntegrity.validate(context: modelContainer.mainContext)
-            try SleepIntegrity.validate(context: modelContainer.mainContext)
+            try SleepIntegrity.validate(context: modelContainer.mainContext); try InvestmentIntegrity.validate(context: modelContainer.mainContext)
             return AppContainer(
                 configuration: configuration,
                 modelContainer: modelContainer,
@@ -192,7 +192,7 @@ enum StartupStoreProtection {
         guard sqlite3_step(statement) == SQLITE_ROW, let bytes = sqlite3_column_blob(statement, 0) else { return false }
         let data = Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, 0)))
         guard let metadata = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { return false }
-        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV13.versionIdentifier.description]
+        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV14.versionIdentifier.description]
     }
 
     // Content identity ignores SQLite header/checkpoint changes. Equal logical
