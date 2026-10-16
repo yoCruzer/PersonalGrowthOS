@@ -253,7 +253,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         if let existing = defaults.first { return existing.id }
         let model = InvestmentParticipant(isDefault: true); context.insert(model); return model.id
     }
-    func createActivity(name: String, participantID: UUID? = nil, id: UUID = UUID()) throws -> UUID {
+    @discardableResult func createActivity(name: String, participantID: UUID? = nil, id: UUID = UUID()) throws -> UUID {
         try transaction { context, _ in
             let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty, name.count <= 100 else { throw InvestmentFailure.invalid }
@@ -272,7 +272,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
     func operations() throws -> [InvestmentOperationSnapshot] {
         try ModelContext(container).fetch(FetchDescriptor<InvestmentOperation>()).map(InvestmentOperationSnapshot.init)
     }
-    func start(activityID: UUID, participantID: UUID, operationID: UUID, target: Double? = nil, zone: TimeZone = .current) throws -> UUID {
+    @discardableResult func start(activityID: UUID, participantID: UUID, operationID: UUID, target: Double? = nil, zone: TimeZone = .current) throws -> UUID {
         try transaction { context, now in
             let all = try context.fetch(FetchDescriptor<InvestmentOperation>())
             if let existing = all.first(where: { $0.id == operationID }) {

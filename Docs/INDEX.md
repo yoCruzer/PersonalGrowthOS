@@ -144,3 +144,8 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 
 
 睡眠与作息 V1：`SLEEP_ROUTINE_V1_DESIGN_ZH.md` / `SLEEP_ROUTINE_V1_GOAL_ZH.md` 为批准规格与执行授权；`SLEEP_ROUTINE_V1_EXECUTION.md`、`SLEEP_ROUTINE_V1_REVIEW_ZH.md`、`SLEEP_ROUTINE_V1_ACCEPTANCE_ZH.md` 记录本轮进度、独立审查与组合验收，不覆盖重要日子历史证据。
+
+
+## 时间投入 V1 批准增量 — 2026-10-16
+
+时间投入 V1：`TIME_INVESTMENT_V1_DESIGN_ZH.md` / `TIME_INVESTMENT_V1_GOAL_ZH.md` 为固定1.1批准增量；执行、独立审查及验收分别见 `TIME_INVESTMENT_V1_EXECUTION.md`、`TIME_INVESTMENT_V1_REVIEW_ZH.md`、`TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md`。当前原生运行门禁受环境阻塞，不代表设备或发行通过。

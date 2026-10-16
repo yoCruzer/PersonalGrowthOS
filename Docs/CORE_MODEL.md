@@ -511,3 +511,8 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## 睡眠与作息 V1 批准增量 — 2026-10-15
 
 SleepRecord 保存按起床民用日防重的独立睡眠事实，保留本地日期、时区、原始区间精度及各字段填写属性；SleepGoalRule 按生效起床日保存个人就寝目标规则。它们不生成 Entry 或 HabitLog，不把未知当零，不将回忆中点当事实。 具体契约见 `SLEEP_ROUTINE_V1_DESIGN_ZH.md`，授权与门禁见 `SLEEP_ROUTINE_V1_GOAL_ZH.md`。
+
+
+## 时间投入 V1 批准增量 — 2026-10-16
+
+时间投入使用独立参与者、活动项目、正式Session与未完成操作；记录者身份和参与者分别保存。正式时长只有一份权威事实，保留区间或纯日期时长精度，体验可为空；不生成Entry/HabitLog/Todo/Sleep/QuietWins。固定1.1契约见 `TIME_INVESTMENT_V1_DESIGN_ZH.md`。

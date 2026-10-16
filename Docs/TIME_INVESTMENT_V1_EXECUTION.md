@@ -42,3 +42,9 @@
 - 新增94个双语键；静态逐项比较937个原键值未变，git diff --check通过。界面真实视觉/无障碍验证仍NOT_RUN。
 
 固定a873b5f后追加限定修复R5–R7，不扩产品范围。`testcompile6.log`成功，`mac-probe3.log`21/21通过，但其运行早于a873最终两处校验；不能冒称完整a873运行。为此保存 `a873b5f-mac-source-manifest.json`，独立run `mac-probe4-a873b5f.log`和`testcompile7.log`；后续最终限定修复仍需对应新提交证据。
+
+## R5–R7 补充运行与失败保留
+
+产品/测试固定 `3c1116a09d90cd0c851d48c8d9599ce33b2de50f`：testcompile8及xcresult为TEST BUILD SUCCEEDED/exit0，仍有CoreSimulator版本警告；mac-probe5为24项中23PASS/1FAIL、exit1。失败为R6测试假定补零的`00:20`，实际Foundation输出 `31/12/2026, 23:50:00 → 01/01/2027, 0:20:00`；原时区前后相等断言通过。增加失败值的diagnostic定向run仍1/1失败，日志`mac-r6-diagnostic.log`。只调整对可变格式补零的断言为`0:20:00`，保留跨设备默认时区前后相等及23:50/次日00:20事实检查，不改生产格式化算法。
+
+探针扩展仅原样提取生产EditorState/Workspace/Formatting声明与原R5/R6测试方法（去除未引用UI imports）；它验证实际共享工作区控制流、反馈保留和日期格式化，仍不代表原生SwiftUI渲染或实际iOS生命周期。R5关闭确认→继续→再结束的生产Workspace反例已在mac-probe5通过；22项核心（含R7合法回拨/未来伪造配对）均通过。补零修正后另记录定向/完整探针结果，不把本轮失败改成全绿。

@@ -210,7 +210,7 @@ import UIKit
         let before=InvestmentFormatting.span(span,zoneID:zone.identifier,locale:Locale(identifier:"en_GB"))
         NSTimeZone.default=TimeZone(identifier:"America/New_York")!
         let after=InvestmentFormatting.span(span,zoneID:zone.identifier,locale:Locale(identifier:"en_GB"))
-        XCTAssertEqual(before,after);XCTAssertTrue(after.contains("23:50"));XCTAssertTrue(after.contains("00:20"))
+        XCTAssertEqual(before,after);XCTAssertTrue(after.contains("23:50"),after);XCTAssertTrue(after.contains("0:20:00"),after)
     }
 
 }
