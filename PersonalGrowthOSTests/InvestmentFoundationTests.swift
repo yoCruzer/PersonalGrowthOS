@@ -120,6 +120,8 @@ import XCTest
         let a2 = try s.createActivity(name:"Synthetic activity",participantID:p2.id)
         try s.start(activityID:a2,participantID:p2.id,operationID:UUID(),zone:zone)
         XCTAssertEqual(try s.operations().filter { $0.timer.state.unfinished }.count,2)
+        let recorders=try ModelContext(c).fetch(FetchDescriptor<InvestmentOperation>()).map(\.recorderID)
+        XCTAssertEqual(Set(recorders),[p])
         XCTAssertThrowsError(try s.start(activityID:a2,participantID:p,operationID:UUID(),zone:zone))
     }
     func testT9NilFeedbackArchiveLongTermAndSameSnapshotEdits() throws {
@@ -154,4 +156,83 @@ import XCTest
         XCTAssertEqual(try ModelContext(c).fetchCount(FetchDescriptor<InvestmentParticipant>()),1)
         XCTAssertEqual(try ModelContext(c).fetchCount(FetchDescriptor<InvestmentActivity>()),2)
     }
+    func testReviewerR1MovingSessionToAnotherActivityKeepsOperationIdentityConsistent() throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), (s,a,p,old) = try setup(c); try command(s,old,.discard)
+        let id = UUID(), values = InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:600,evidence:.dateDuration,source:.manual)
+        try s.saveManual(id:id,participantID:p,activityID:a,values:values)
+        let other = try s.createActivity(name:"Other synthetic activity")
+        let session = try XCTUnwrap(sessions(c).first)
+        try s.saveManual(id:id,participantID:p,activityID:other,values:values,expectedRevision:session.revision,confirmDuplicate:true)
+        XCTAssertEqual(try op(s,id).activityID,other)
+        try InvestmentIntegrity.validate(context:ModelContext(c))
+    }
+
+    func testReviewerR2ClockDriftHasConsistentSpansOrRequiresReview() throws {
+        let c = try PersistenceContainerFactory.makeInMemory(), (s,_,_,id) = try setup(c)
+        clock.wall.addTimeInterval(60.000001); clock.uptime += 60
+        try command(s,id,.checkpoint); advance(60); try command(s,id,.finish)
+        let values = try op(s,id).timer.values; try values.validate(now:clock.wall)
+        XCTAssertEqual(values.spans[0].end,values.spans[1].start)
+        let c2 = try PersistenceContainerFactory.makeInMemory(), (s2,_,_,id2) = try setup(c2)
+        clock.wall.addTimeInterval(59); clock.uptime += 60; try command(s2,id2,.checkpoint)
+        XCTAssertEqual(try op(s2,id2).timer.state,.recoveryRequired)
+        XCTAssertEqual(try op(s2,id2).timer.values.seconds,0)
+    }
+
+    func testReviewerR3RestoredTargetReachedExplicitContinueRecordsNewSegment() throws {
+        let source = try PersistenceContainerFactory.makeInMemory(), (s,a,p,old) = try setup(source); try command(s,old,.discard)
+        let id=UUID();try s.start(activityID:a,participantID:p,operationID:id,target:1500,zone:zone)
+        advance(1500);try command(s,id,.checkpoint)
+        let read=ModelContext(source), transfer=try InvestmentOperationTransfer(XCTUnwrap(read.fetch(FetchDescriptor<InvestmentOperation>()).first { $0.id == id }))
+        let target=try PersistenceContainerFactory.makeInMemory()
+        for participant in try read.fetch(FetchDescriptor<InvestmentParticipant>()) {target.mainContext.insert(InvestmentParticipantTransfer(participant).model())}
+        for activity in try read.fetch(FetchDescriptor<InvestmentActivity>()) {target.mainContext.insert(InvestmentActivityTransfer(activity).model())}
+        target.mainContext.insert(try transfer.model(restoring:true));try target.mainContext.save()
+        advance(7*86400);let resumed=service(target);try command(resumed,id,.resume);advance(60);try command(resumed,id,.finish)
+        XCTAssertEqual(try op(resumed,id).timer.values.seconds,1560)
+        XCTAssertEqual(try op(s,id).timer.values.seconds,1500)
+    }
+    func testReviewerR4FirstEffectiveSpanAfterZeroSecondPauseUsesActualDay() throws {
+        let c=try PersistenceContainerFactory.makeInMemory()
+        clock.wall=ImportantCivilDay(identifier:"2026-10-15")!.instant(minutes:1439,timeZone:zone)!
+        let (s,_,_,id)=try setup(c);try command(s,id,.pause);advance(120);try command(s,id,.resume);advance(0.125);try command(s,id,.finish)
+        let values=try op(s,id).timer.values
+        XCTAssertEqual(values.day,"2026-10-16");XCTAssertEqual(values.seconds,0.125);try values.validate(now:clock.wall)
+    }
+    func testManualDraftPersistsRawInputFailureKeepsOldDraftAndCancelCreatesNoFact() throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),(s,a,p,old)=try setup(c);try command(s,old,.discard)
+        let id=UUID();var values=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual)
+        let revision=try s.storeDraft(id:id,participantID:p,activityID:a,values:values,durationText:"45")
+        values.note="Synthetic failed draft update"
+        let failing=InvestmentService(context:c.mainContext,clock:{self.clock},commit:{_ in throw CocoaError(.fileWriteOutOfSpace)})
+        XCTAssertThrowsError(try failing.storeDraft(id:id,participantID:p,activityID:a,values:values,durationText:"-",expectedRevision:revision))
+        XCTAssertEqual(try op(s,id).timer.values.note,"");XCTAssertEqual(values.note,"Synthetic failed draft update")
+        let updated=try s.storeDraft(id:id,participantID:p,activityID:a,values:values,durationText:"-",expectedRevision:revision)
+        XCTAssertEqual(try op(s,id).timer.durationText,"-")
+        try s.command(.discard,id:id,revision:updated);XCTAssertTrue(try sessions(c).isEmpty)
+    }
+    func testManualAfterCommitRetryAndNoOpDoNotDuplicateOrMoveFactTime() throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),(s,a,p,old)=try setup(c);try command(s,old,.discard)
+        let id=UUID(),values=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual)
+        let failing=InvestmentService(context:c.mainContext,clock:{self.clock},commit:{try $0.save();throw CocoaError(.fileWriteUnknown)})
+        XCTAssertThrowsError(try failing.saveManual(id:id,participantID:p,activityID:a,values:values))
+        let original=try XCTUnwrap(sessions(c).first);let stamp=original.updatedAt
+        advance(600);try s.saveManual(id:id,participantID:p,activityID:a,values:values)
+        let saved=try XCTUnwrap(sessions(c).first);XCTAssertEqual(saved.updatedAt,stamp);XCTAssertEqual(saved.revision,0);XCTAssertEqual(try sessions(c).count,1)
+    }
+
+    func testClockRollbackNoteEditRetainsKnownOccurrenceAndMonotonicTechnicalTime() throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),(s,a,p,old)=try setup(c);try command(s,old,.discard)
+        let id=UUID();var v=InvestmentValues(day:ImportantCivilDay(clock.wall,timeZone:zone).identifier,timeZoneID:zone.identifier,seconds:45,evidence:.dateDuration,source:.manual)
+        try s.saveManual(id:id,participantID:p,activityID:a,values:v)
+        let before=try XCTUnwrap(sessions(c).first);let timestamp=before.updatedAt
+        clock.wall.addTimeInterval(-86400);v.note="Synthetic note after clock rollback"
+        try s.saveManual(id:id,participantID:p,activityID:a,values:v,expectedRevision:before.revision)
+        let saved=try XCTUnwrap(sessions(c).first)
+        XCTAssertEqual(try saved.values().day,v.day);XCTAssertEqual(saved.updatedAt,timestamp)
+        XCTAssertEqual(try saved.values().note,v.note)
+        v.seconds += 60
+        XCTAssertThrowsError(try s.saveManual(id:id,participantID:p,activityID:a,values:v,expectedRevision:saved.revision))
+    }
+
 }

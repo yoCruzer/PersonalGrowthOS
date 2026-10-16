@@ -1620,6 +1620,13 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(filename.waitForNonExistence(timeout: 20))
         app.terminate()
         app.launch() // Resets only the dedicated UITesting database, preserving the Files copy.
+        // A real new-install browse must not create the default participant or recommended activities.
+        app.tabBars.buttons["Growth"].tap()
+        let investment = app.buttons["growth-investment"]
+        for _ in 0..<5 where !investment.isHittable { app.swipeUp() }
+        investment.tap()
+        XCTAssertTrue(app.navigationBars["Time investment"].waitForExistence(timeout:5))
+        app.tabBars.buttons["Today"].tap()
         func selectBackup() {
             app.buttons["settings-button"].tap()
             let restore = app.buttons["settings-import-button"]

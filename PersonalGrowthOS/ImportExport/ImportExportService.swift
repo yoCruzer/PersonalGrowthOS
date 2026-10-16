@@ -59,6 +59,7 @@ final class ImportExportService {
     private let appVersion: () -> (version: String, build: String)
     private let log: Log
     private let publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
+    private let investmentClock: () -> InvestmentClock
     private let exportCheckpoint: (() throws -> Void)?
 
     init(
@@ -75,6 +76,7 @@ final class ImportExportService {
         },
         log: @escaping Log = { _ in },
         publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil,
+        investmentClock: @escaping () -> InvestmentClock = InvestmentClock.current,
         exportCheckpoint: (() throws -> Void)? = nil
     ) {
         self.context = context
@@ -89,6 +91,7 @@ final class ImportExportService {
         self.log = log
         self.publicationCheckpoint = publicationCheckpoint
         self.exportCheckpoint = exportCheckpoint
+        self.investmentClock = investmentClock
         self.availableCapacity = availableCapacity ?? {
             let values = try mediaStore.rootURL.resourceValues(forKeys: [
                 .volumeAvailableCapacityForImportantUsageKey,
@@ -123,6 +126,7 @@ final class ImportExportService {
         let exportWorkspaceRoot = workspaceRoot
         let exportLimits = limits
         let snapshotCheckpoint = exportCheckpoint
+        let timerClock = investmentClock
         do {
             let worker = Task.detached {
                 return try StorePublication.perform(at: mediaRoot) {
@@ -133,7 +137,7 @@ final class ImportExportService {
                     }.count
                     try LinkIntegrityService.validate(context: snapshotContext)
                     try ImportantDayIntegrity.validate(context: snapshotContext)
-                    let transfer = try TransferSnapshot.make(context: snapshotContext, investmentClock: InvestmentClock.current())
+                    let transfer = try TransferSnapshot.make(context: snapshotContext, investmentClock: timerClock())
                     try snapshotCheckpoint?()
                     let inputs = try transfer.mediaAssets.map { record in
                         ExportMediaInput(
@@ -520,7 +524,7 @@ final class ImportExportService {
                     guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
                 } else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
             }
-            for key in ["investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations"] {
+            for key in ["captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations"] {
                 if manifest.packageSchemaVersion >= 10 {
                     guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
                 } else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
@@ -678,6 +682,7 @@ final class ImportExportService {
             try Task.checkCancellation()
             try publicationCheckpoint?(.beforeSave)
             try LinkIntegrityService.validate(context: publicationContext)
+            try InvestmentIntegrity.validate(context: publicationContext)
             try Task.checkCancellation()
             try publicationContext.save()
             didSave = true
@@ -986,7 +991,11 @@ final class ImportExportService {
         mediaStore: MediaStore
     ) throws {
         let actual = try TransferSnapshot.make(context: context)
-        guard actual == expected else { throw TransferPackageError.verificationFailed }
+        var restoredExpected = expected
+        restoredExpected.investmentOperations = expected.investmentOperations.map { original in
+            var value = original; value.timer = original.timer.forRestore(); return value
+        }
+        guard actual == restoredExpected else { throw TransferPackageError.verificationFailed }
         for image in actual.mediaAssets {
             let measured = try Hasher.sha256AndSize(fileAt: mediaStore.fileURL(for: image.relativePath))
             guard measured.size == image.byteCount, measured.sha256 == image.checksum else {
@@ -1023,6 +1032,7 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<ImportantDayCover>())
             + context.fetchCount(FetchDescriptor<SleepRecord>())
             + context.fetchCount(FetchDescriptor<SleepGoalRule>())
+            + context.fetchCount(FetchDescriptor<CaptureImportReceipt>())
             + context.fetchCount(FetchDescriptor<InvestmentParticipant>())
             + context.fetchCount(FetchDescriptor<InvestmentActivity>())
             + context.fetchCount(FetchDescriptor<InvestmentSession>())
@@ -1277,6 +1287,7 @@ enum TransferSnapshot {
             importantDayCovers: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayCover>())) { ImportantDayCoverTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             sleepRecords: try cancellableMap(context.fetch(FetchDescriptor<SleepRecord>())) { try SleepRecordTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             sleepGoals: try cancellableMap(context.fetch(FetchDescriptor<SleepGoalRule>())) { SleepGoalTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            captureReceipts: try cancellableMap(context.fetch(FetchDescriptor<CaptureImportReceipt>())) { CaptureReceiptTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentParticipants: try cancellableMap(context.fetch(FetchDescriptor<InvestmentParticipant>())) { InvestmentParticipantTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentActivities: try cancellableMap(context.fetch(FetchDescriptor<InvestmentActivity>())) { InvestmentActivityTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentSessions: try cancellableMap(context.fetch(FetchDescriptor<InvestmentSession>())) { try InvestmentSessionTransfer($0) }.sorted { sortUUID($0.id, $1.id) },

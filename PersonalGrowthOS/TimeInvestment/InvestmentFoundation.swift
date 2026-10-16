@@ -25,12 +25,13 @@ import SwiftData
     @Attribute(.unique) var id: UUID // Stable operation identity, also after deletion.
     var participantID: UUID
     var activityID: UUID
+    var recorderID: UUID // Actor identity is independent of the activity participant.
     var valueData: Data
     var createdAt: Date
     var updatedAt: Date
     var revision: Int
-    init(id: UUID, participantID: UUID, activityID: UUID, values: InvestmentValues, now: Date) throws {
-        self.id = id; self.participantID = participantID; self.activityID = activityID
+    init(id: UUID, participantID: UUID, activityID: UUID, values: InvestmentValues, now: Date, recorderID: UUID? = nil) throws {
+        self.id = id; self.participantID = participantID; self.activityID = activityID; self.recorderID = recorderID ?? participantID
         valueData = try JSONEncoder().encode(values); createdAt = now; updatedAt = now; revision = 0
     }
     func values() throws -> InvestmentValues { try JSONDecoder().decode(InvestmentValues.self, from: valueData) }
@@ -39,12 +40,13 @@ import SwiftData
     @Attribute(.unique) var id: UUID
     var participantID: UUID
     var activityID: UUID
+    var recorderID: UUID
     var payload: Data
     var revision: Int
     var createdAt: Date
     var updatedAt: Date
-    init(id: UUID, participantID: UUID, activityID: UUID, timer: InvestmentTimer, now: Date) throws {
-        self.id = id; self.participantID = participantID; self.activityID = activityID
+    init(id: UUID, participantID: UUID, activityID: UUID, timer: InvestmentTimer, now: Date, recorderID: UUID? = nil) throws {
+        self.id = id; self.participantID = participantID; self.activityID = activityID; self.recorderID = recorderID ?? participantID
         payload = try JSONEncoder().encode(timer); revision = 0; createdAt = now; updatedAt = now
     }
     func timer() throws -> InvestmentTimer { try JSONDecoder().decode(InvestmentTimer.self, from: payload) }
@@ -85,8 +87,14 @@ struct InvestmentValues: Codable, Equatable {
     var feedbackSource = "selfReport"
 
     mutating func changeDuration(_ seconds: Double) {
-        guard self.seconds != seconds else { return }
-        self.seconds = seconds; spans = []; evidence = .correctedDuration; corrected = true
+        guard abs(self.seconds - seconds) > 0.000001 else { return }
+        let needsCorrection = !spans.isEmpty || source == .timer || evidence == .correctedDuration
+        self.seconds = seconds; spans = []
+        if needsCorrection { evidence = .correctedDuration; corrected = true }
+        else { evidence = .dateDuration }
+    }
+    func sameTimeEvidence(as other: Self) -> Bool {
+        day == other.day && timeZoneID == other.timeZoneID && seconds == other.seconds && evidence == other.evidence && source == other.source && spans == other.spans && corrected == other.corrected
     }
     func validate(now: Date? = nil) throws {
         guard let zone = TimeZone(identifier: timeZoneID), let civil = ImportantCivilDay(identifier: day),
@@ -131,11 +139,14 @@ struct InvestmentTimer: Codable, Equatable {
     var processID: String? = nil
     @TodoTransferInstant var checkpointAt: Date
     var restoredState: InvestmentTimerState? = nil
+    var editingSessionID: UUID? = nil
+    var editingRevision: Int? = nil
+    var durationText: String? = nil
 
     mutating func clearAnchor() { anchor = nil; anchorUptime = nil; processID = nil }
     mutating func resume(at clock: InvestmentClock, asStopwatch: Bool = false) throws {
         guard state.unfinished, state != .running else { throw InvestmentFailure.conflict }
-        if asStopwatch || state == .targetReached { target = nil }
+        if asStopwatch || state == .targetReached || restoredState == .targetReached || target.map({ values.seconds >= $0 }) == true { target = nil }
         guard values.spans.last.map({ $0.end <= clock.wall }) ?? true else { throw InvestmentFailure.invalid }
         state = .running; anchor = clock.wall; anchorUptime = clock.uptime; processID = clock.processID; checkpointAt = clock.wall
     }
@@ -149,15 +160,18 @@ struct InvestmentTimer: Codable, Equatable {
             result.state = .recoveryRequired; result.clearAnchor(); return result
         }
         let delta = clock.uptime - anchorUptime
-        guard abs(clock.wall.timeIntervalSince(anchor) - delta) <= 2, delta <= 18 * 3600,
+        let wallDelta = clock.wall.timeIntervalSince(anchor)
+        guard wallDelta >= 0, abs(wallDelta - delta) <= 0.05, delta <= 18 * 3600,
               values.seconds + delta <= 18 * 3600 else {
             result.state = .recoveryRequired; result.clearAnchor(); return result
         }
-        let credited = min(delta, max(0, (target ?? .greatestFiniteMagnitude) - values.seconds))
+        let credited = min(wallDelta, max(0, (target ?? .greatestFiniteMagnitude) - values.seconds))
         if credited > 0 {
-            result.values.spans.append(.init(start: anchor, end: anchor.addingTimeInterval(credited)))
+            if result.values.evidence == .intervals {
+                if result.values.spans.isEmpty { result.values.day = ImportantCivilDay(anchor, timeZone: TimeZone(identifier: result.values.timeZoneID)!).identifier }
+                result.values.spans.append(.init(start: anchor, end: anchor.addingTimeInterval(credited)))
+            }
             result.values.seconds += credited
-            result.values.evidence = .intervals
         }
         result.checkpointAt = clock.wall
         if let target, result.values.seconds >= target {
@@ -173,12 +187,20 @@ struct InvestmentTimer: Codable, Equatable {
     func validate() throws {
         guard checkpointAt.timeIntervalSinceReferenceDate.isFinite,
               target.map({ $0.isFinite && $0 > 0 && $0 <= 18 * 3600 }) ?? true,
-              values.seconds.isFinite, values.seconds >= 0,
+              values.seconds.isFinite, values.seconds >= 0, values.seconds <= 366 * 86400,
+              values.feedbackSource == "selfReport", values.feeling.map({ (1...5).contains($0) }) ?? true,
+              values.note.count <= 4000, durationText.map({ $0.count <= 50 }) ?? true,
               TimeZone(identifier: values.timeZoneID) != nil,
               ImportantCivilDay(identifier: values.day) != nil else { throw InvestmentFailure.invalid }
-        if values.seconds > 0 { try values.validate() }
+        if state == .draft {
+            guard values.note.count <= 4000, durationText.map({ $0.count <= 50 }) ?? true else { throw InvestmentFailure.invalid }
+            if values.seconds > 0 { try values.validate() }
+            else { guard values.spans.isEmpty else { throw InvestmentFailure.invalid } }
+        } else if values.seconds > 0 { try values.validate() }
         else { guard values.spans.isEmpty, values.feeling.map({ (1...5).contains($0) }) ?? true,
                      values.note.count <= 4000 else { throw InvestmentFailure.invalid } }
+        if state.unfinished { guard values.source == .timer else { throw InvestmentFailure.invalid } }
+        if let last = values.spans.last { guard last.end <= checkpointAt else { throw InvestmentFailure.invalid } }
         if state == .running {
             guard let anchor, let anchorUptime, let processID, !processID.isEmpty,
                   anchor.timeIntervalSinceReferenceDate.isFinite, anchorUptime.isFinite, anchorUptime >= 0,
@@ -261,7 +283,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             var timer = InvestmentTimer(state: .paused, values: .init(day: ImportantCivilDay(now.wall, timeZone: zone).identifier,
                 timeZoneID: zone.identifier, seconds: 0, evidence: .intervals, source: .timer), target: target, checkpointAt: now.wall)
             try timer.resume(at: now); try timer.validate()
-            context.insert(try InvestmentOperation(id: operationID, participantID: participantID, activityID: activityID, timer: timer, now: now.wall))
+            context.insert(try InvestmentOperation(id: operationID, participantID: participantID, activityID: activityID, timer: timer, now: now.wall, recorderID: try participant(nil, in: context)))
             return operationID
         }
     }
@@ -276,6 +298,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             var timer = try op.timer()
             guard !timer.state.terminal else { return }
             guard op.revision == revision else { throw InvestmentFailure.conflict }
+            if case .checkpoint = command, timer.state != .running { return }
             timer = timer.projected(at: clock)
             switch command {
             case .checkpoint: break
@@ -302,7 +325,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             try values.validate(now: now.wall)
             guard values.source == .timer else { throw InvestmentFailure.invalid }
             try duplicates(values: values, participantID: op.participantID, excluding: id, context: context, confirmed: confirmDuplicate)
-            context.insert(try InvestmentSession(id: id, participantID: op.participantID, activityID: op.activityID, values: values, now: now.wall))
+            context.insert(try InvestmentSession(id: id, participantID: op.participantID, activityID: op.activityID, values: values, now: max(now.wall, op.createdAt, op.updatedAt), recorderID: op.recorderID))
             timer.values = values; timer.state = .saved; timer.clearAnchor()
             op.payload = try JSONEncoder().encode(timer); op.revision += 1; op.updatedAt = max(op.updatedAt, now.wall)
             return id
@@ -317,31 +340,78 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             } else if values.day == other.day && values.seconds == other.seconds { throw InvestmentFailure.duplicate }
         }
     }
-    @discardableResult func saveManual(id: UUID, participantID: UUID, activityID: UUID, values: InvestmentValues, expectedRevision: Int? = nil, confirmDuplicate: Bool = false) throws -> UUID {
+    @discardableResult func saveManual(id: UUID, participantID: UUID, activityID: UUID, values: InvestmentValues, expectedRevision: Int? = nil, confirmDuplicate: Bool = false, draftID: UUID? = nil) throws -> UUID {
         try transaction { context, now in
             let records = try context.fetch(FetchDescriptor<InvestmentSession>())
             let operations = try context.fetch(FetchDescriptor<InvestmentOperation>())
             let existing = records.first { $0.id == id }
-            if existing == nil, let consumed = operations.first(where: { $0.id == id }), try consumed.timer().state.terminal { throw InvestmentFailure.conflict }
-            if let existing { guard existing.revision == expectedRevision else { throw InvestmentFailure.conflict } }
-            else { guard expectedRevision == nil else { throw InvestmentFailure.missing } }
+            if existing == nil, let consumed = operations.first(where: { $0.id == id }), try consumed.timer().state != .draft { throw InvestmentFailure.conflict }
+            if let existing {
+                let identical = try existing.values() == values && existing.activityID == activityID && existing.participantID == participantID
+                guard existing.revision == expectedRevision || identical else { throw InvestmentFailure.conflict }
+            } else { guard expectedRevision == nil else { throw InvestmentFailure.missing } }
             try activity(activityID, participantID: participantID, context: context, allowArchived: existing?.activityID == activityID)
-            try values.validate(now: now.wall)
-            if let existing, try existing.values() == values, existing.activityID == activityID { return id }
+            let retainedTime = try existing.map { values.sameTimeEvidence(as: try $0.values()) } ?? false
+            try values.validate(now: retainedTime ? nil : now.wall)
+            if let existing, try existing.values() == values, existing.activityID == activityID {
+                if let draftID, draftID != id {
+                    guard let draft = operations.first(where: { $0.id == draftID }), [.draft,.discarded].contains(try draft.timer().state) else { throw InvestmentFailure.conflict }
+                    var payload = try draft.timer(); payload.state = .discarded; payload.values.note = ""; payload.values.feeling = nil
+                    draft.payload = try JSONEncoder().encode(payload); draft.revision += 1; draft.updatedAt = max(draft.updatedAt, now.wall)
+                }
+                return id
+            }
             try duplicates(values: values, participantID: participantID, excluding: id, context: context, confirmed: confirmDuplicate)
             if let existing {
                 guard existing.participantID == participantID else { throw InvestmentFailure.conflict }
                 existing.activityID = activityID; existing.valueData = try JSONEncoder().encode(values); existing.revision += 1
                 existing.updatedAt = max(existing.updatedAt, existing.createdAt, now.wall)
-            } else { context.insert(try InvestmentSession(id: id, participantID: participantID, activityID: activityID, values: values, now: now.wall)) }
+            } else { context.insert(try InvestmentSession(id: id, participantID: participantID, activityID: activityID, values: values, now: now.wall, recorderID: try participant(nil, in: context))) }
             if let op = operations.first(where: { $0.id == id }) {
+                op.activityID = activityID
                 var timer = try op.timer(); timer.state = .saved; timer.values = values; timer.clearAnchor()
                 op.payload = try JSONEncoder().encode(timer); op.revision += 1; op.updatedAt = max(op.updatedAt, now.wall)
             } else {
                 context.insert(try InvestmentOperation(id: id, participantID: participantID, activityID: activityID,
-                    timer: .init(state: .saved, values: values, target: nil, checkpointAt: now.wall), now: now.wall))
+                    timer: .init(state: .saved, values: values, target: nil, checkpointAt: now.wall), now: now.wall, recorderID: try participant(nil, in: context)))
+            }
+            if let draftID, draftID != id {
+                guard let draft = operations.first(where: { $0.id == draftID }), try draft.timer().state == .draft else { throw InvestmentFailure.conflict }
+                var payload = try draft.timer(); payload.state = .discarded; payload.values.note = ""; payload.values.feeling = nil
+                draft.payload = try JSONEncoder().encode(payload); draft.revision += 1; draft.updatedAt = max(draft.updatedAt, now.wall)
             }
             return id
+        }
+    }
+    @discardableResult func storeDraft(id: UUID, participantID: UUID, activityID: UUID, values: InvestmentValues,
+        durationText: String, editingSessionID: UUID? = nil, editingRevision: Int? = nil,
+        expectedRevision: Int? = nil, timerConfirmation: Bool = false) throws -> Int {
+        try transaction { context, now in
+            try activity(activityID, participantID: participantID, context: context, allowArchived: true)
+            guard values.seconds.isFinite, values.seconds >= 0, values.seconds <= 366 * 86400,
+                  durationText.count <= 50, values.note.count <= 4000, values.feeling.map({ (1...5).contains($0) }) ?? true,
+                  TimeZone(identifier: values.timeZoneID) != nil, ImportantCivilDay(identifier: values.day) != nil else { throw InvestmentFailure.invalid }
+            let all = try context.fetch(FetchDescriptor<InvestmentOperation>())
+            let model: InvestmentOperation
+            if let existing = all.first(where: { $0.id == id }) {
+                guard existing.revision == expectedRevision, existing.participantID == participantID else { throw InvestmentFailure.conflict }
+                model = existing
+            } else {
+                guard expectedRevision == nil, !timerConfirmation else { throw InvestmentFailure.missing }
+                model = try InvestmentOperation(id: id, participantID: participantID, activityID: activityID,
+                    timer: .init(state: .draft, values: values, target: nil, checkpointAt: now.wall), now: now.wall, recorderID: try participant(nil, in: context))
+                context.insert(model)
+            }
+            var timer = try model.timer()
+            if timerConfirmation {
+                guard [.pendingSave, .targetReached, .recoveryRequired].contains(timer.state) else { throw InvestmentFailure.conflict }
+                // Retain the recovery flag until an explicit Save/Continue decision.
+                if timer.state != .recoveryRequired { timer.state = .pendingSave }
+            } else { guard timer.state == .draft else { throw InvestmentFailure.conflict } }
+            timer.values = values; timer.checkpointAt = max(timer.checkpointAt, now.wall); timer.durationText = durationText; timer.editingSessionID = editingSessionID; timer.editingRevision = editingRevision
+            try timer.validate()
+            model.activityID = activityID; model.payload = try JSONEncoder().encode(timer); model.revision += 1; model.updatedAt = max(model.updatedAt, now.wall)
+            return model.revision
         }
     }
     func delete(id: UUID, revision: Int) throws {

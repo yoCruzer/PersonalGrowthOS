@@ -54,6 +54,8 @@ struct GrowthView: View {
                 }
             }
             .accessibilityIdentifier("growth-weight")
+            NavigationLink { InvestmentHubView() } label: { Label("Time investment", systemImage: "timer") }
+            .accessibilityIdentifier("growth-investment")
             NavigationLink {
                 SleepHubView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: { Label("Sleep and Routine", systemImage: "moon.zzz") }

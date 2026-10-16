@@ -52,10 +52,11 @@ struct TransferData: Codable, Equatable {
     let todoSeries: [TodoSeriesTransfer]
     let todoSources: [TodoTaskSourceTransfer]
 
+    let captureReceipts: [CaptureReceiptTransfer]
     let investmentParticipants: [InvestmentParticipantTransfer]
     let investmentActivities: [InvestmentActivityTransfer]
     let investmentSessions: [InvestmentSessionTransfer]
-    let investmentOperations: [InvestmentOperationTransfer]
+    var investmentOperations: [InvestmentOperationTransfer]
 
     let sleepRecords: [SleepRecordTransfer]
     let sleepGoals: [SleepGoalTransfer]
@@ -92,6 +93,7 @@ struct TransferData: Codable, Equatable {
         importantDayCovers: [ImportantDayCoverTransfer] = [],
         sleepRecords: [SleepRecordTransfer] = [],
         sleepGoals: [SleepGoalTransfer] = [],
+        captureReceipts: [CaptureReceiptTransfer] = [],
         investmentParticipants: [InvestmentParticipantTransfer] = [],
         investmentActivities: [InvestmentActivityTransfer] = [],
         investmentSessions: [InvestmentSessionTransfer] = [],
@@ -121,6 +123,7 @@ struct TransferData: Codable, Equatable {
         self.importantDayEntryLinks = importantDayEntryLinks
         self.importantDayTodoLinks = importantDayTodoLinks
         self.importantDayCovers = importantDayCovers
+        self.captureReceipts = captureReceipts
         self.investmentParticipants = investmentParticipants
         self.investmentActivities = investmentActivities
         self.investmentSessions = investmentSessions
@@ -155,6 +158,7 @@ struct TransferData: Codable, Equatable {
         case importantDayEntryLinks
         case importantDayTodoLinks
         case importantDayCovers
+        case captureReceipts
         case investmentParticipants, investmentActivities, investmentSessions, investmentOperations
         case sleepRecords, sleepGoals
 
@@ -192,6 +196,7 @@ struct TransferData: Codable, Equatable {
         todoLists = try container.decodeIfPresent([TodoListTransfer].self, forKey: .todoLists) ?? []
         todoSeries = try container.decodeIfPresent([TodoSeriesTransfer].self, forKey: .todoSeries) ?? []
         todoSources = try container.decodeIfPresent([TodoTaskSourceTransfer].self, forKey: .todoSources) ?? []
+        captureReceipts = try container.decodeIfPresent([CaptureReceiptTransfer].self, forKey: .captureReceipts) ?? []
         investmentParticipants = try container.decodeIfPresent([InvestmentParticipantTransfer].self, forKey: .investmentParticipants) ?? []
         investmentActivities = try container.decodeIfPresent([InvestmentActivityTransfer].self, forKey: .investmentActivities) ?? []
         investmentSessions = try container.decodeIfPresent([InvestmentSessionTransfer].self, forKey: .investmentSessions) ?? []
@@ -232,6 +237,7 @@ struct TransferData: Codable, Equatable {
             "importantDayEntryLinks": importantDayEntryLinks.count,
             "importantDayTodoLinks": importantDayTodoLinks.count,
             "importantDayCovers": importantDayCovers.count,
+            "captureReceipts": captureReceipts.count,
             "investmentParticipants": investmentParticipants.count,
             "investmentActivities": investmentActivities.count,
             "investmentSessions": investmentSessions.count,
@@ -246,7 +252,7 @@ struct TransferData: Codable, Equatable {
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
                 && (version >= 7 || !key.hasPrefix("todo"))
-                && (version >= 10 || !key.hasPrefix("investment"))
+                && (version >= 10 || (!key.hasPrefix("investment") && key != "captureReceipts"))
                 && (version >= 9 || !key.hasPrefix("sleep"))
                 && (version >= 8 || !key.hasPrefix("importantDay"))
                 && (version >= 6 || key != "entrySources")

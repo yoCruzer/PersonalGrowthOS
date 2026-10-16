@@ -1,6 +1,12 @@
 import Foundation
 import SwiftData
 
+struct CaptureReceiptTransfer: Codable, Equatable {
+    var id: UUID
+    @TodoTransferInstant var importedAt: Date
+    init(_ model: CaptureImportReceipt) { id = model.id; importedAt = model.importedAt }
+    func model() -> CaptureImportReceipt { CaptureImportReceipt(id: id, importedAt: importedAt) }
+}
 struct InvestmentParticipantTransfer: Codable, Equatable {
     var id: UUID; var name: String; var isDefault: Bool; var isArchived: Bool; var sortOrder: Int
     init(_ m: InvestmentParticipant) { id = m.id; name = m.name; isDefault = m.isDefault; isArchived = m.isArchived; sortOrder = m.sortOrder }
@@ -12,36 +18,38 @@ struct InvestmentActivityTransfer: Codable, Equatable {
     func model() -> InvestmentActivity { let m = InvestmentActivity(id: id, participantID: participantID, name: name); m.isArchived = isArchived; return m }
 }
 struct InvestmentSessionTransfer: Codable, Equatable {
-    var id: UUID; var participantID: UUID; var activityID: UUID; var values: InvestmentValues; var revision: Int
+    var id: UUID; var participantID: UUID; var recorderID: UUID; var activityID: UUID; var values: InvestmentValues; var revision: Int
     @TodoTransferInstant var createdAt: Date
     @TodoTransferInstant var updatedAt: Date
     init(_ m: InvestmentSession) throws {
-        id = m.id; participantID = m.participantID; activityID = m.activityID; values = try m.values(); revision = m.revision; createdAt = m.createdAt; updatedAt = m.updatedAt
+        id = m.id; participantID = m.participantID; recorderID = m.recorderID; activityID = m.activityID; values = try m.values(); revision = m.revision; createdAt = m.createdAt; updatedAt = m.updatedAt
     }
     func model() throws -> InvestmentSession {
-        let m = try InvestmentSession(id: id, participantID: participantID, activityID: activityID, values: values, now: createdAt)
+        let m = try InvestmentSession(id: id, participantID: participantID, activityID: activityID, values: values, now: createdAt, recorderID: recorderID)
         m.updatedAt = updatedAt; m.revision = revision; return m
     }
 }
 struct InvestmentOperationTransfer: Codable, Equatable {
-    var id: UUID; var participantID: UUID; var activityID: UUID; var timer: InvestmentTimer; var revision: Int
+    var id: UUID; var participantID: UUID; var recorderID: UUID; var activityID: UUID; var timer: InvestmentTimer; var revision: Int
     @TodoTransferInstant var createdAt: Date
     @TodoTransferInstant var updatedAt: Date
     init(_ m: InvestmentOperation, clock: InvestmentClock? = nil) throws {
-        id = m.id; participantID = m.participantID; activityID = m.activityID; revision = m.revision
+        id = m.id; participantID = m.participantID; recorderID = m.recorderID; activityID = m.activityID; revision = m.revision
         let stored = try m.timer(); timer = clock.map { stored.projected(at: $0) } ?? stored
         createdAt = m.createdAt; updatedAt = m.updatedAt
     }
     func model(restoring: Bool) throws -> InvestmentOperation {
         let m = try InvestmentOperation(id: id, participantID: participantID, activityID: activityID,
-            timer: restoring ? timer.forRestore() : timer, now: createdAt)
+            timer: restoring ? timer.forRestore() : timer, now: createdAt, recorderID: recorderID)
         m.updatedAt = updatedAt; m.revision = revision; return m
     }
 }
 extension TransferData {
     func validateInvestment(packageVersion: Int) throws {
         func unique(_ ids: [UUID]) -> Bool { Set(ids).count == ids.count }
-        guard packageVersion >= 10 || (investmentParticipants.isEmpty && investmentActivities.isEmpty && investmentSessions.isEmpty && investmentOperations.isEmpty),
+        guard (packageVersion >= 10 || captureReceipts.isEmpty), unique(captureReceipts.map(\.id)),
+              captureReceipts.allSatisfy({ $0.importedAt.timeIntervalSinceReferenceDate.isFinite }),
+              packageVersion >= 10 || (investmentParticipants.isEmpty && investmentActivities.isEmpty && investmentSessions.isEmpty && investmentOperations.isEmpty),
               unique(investmentParticipants.map(\.id)), unique(investmentActivities.map(\.id)),
               unique(investmentSessions.map(\.id)), unique(investmentOperations.map(\.id)),
               investmentParticipants.filter(\.isDefault).count <= 1 else { throw InvestmentFailure.invalid }
@@ -57,12 +65,14 @@ extension TransferData {
                   updatedAt >= createdAt, revision >= 0 else { throw InvestmentFailure.invalid }
         }
         for s in investmentSessions {
+            guard participants.contains(s.recorderID) else { throw InvestmentFailure.invalid }
             try validateIdentity(s.participantID, s.activityID, s.createdAt, s.updatedAt, s.revision); try s.values.validate()
             guard let op = operations[s.id], op.timer.state == .saved, op.participantID == s.participantID,
-                  op.activityID == s.activityID, op.timer.values == s.values else { throw InvestmentFailure.invalid }
+                  op.activityID == s.activityID, op.recorderID == s.recorderID, op.timer.values == s.values else { throw InvestmentFailure.invalid }
         }
         var busy = Set<UUID>()
         for op in investmentOperations {
+            guard participants.contains(op.recorderID) else { throw InvestmentFailure.invalid }
             try validateIdentity(op.participantID, op.activityID, op.createdAt, op.updatedAt, op.revision); try op.timer.validate()
             if op.timer.state.unfinished { guard busy.insert(op.participantID).inserted else { throw InvestmentFailure.invalid } }
             if op.timer.state == .saved { guard sessions[op.id] != nil else { throw InvestmentFailure.invalid } }
@@ -70,6 +80,7 @@ extension TransferData {
         }
     }
     func insertInvestment(into context: ModelContext) throws {
+        for receipt in captureReceipts { try Task.checkCancellation(); context.insert(receipt.model()) }
         for p in investmentParticipants { try Task.checkCancellation(); context.insert(p.model()) }
         for a in investmentActivities { try Task.checkCancellation(); context.insert(a.model()) }
         for s in investmentSessions { try Task.checkCancellation(); context.insert(try s.model()) }

@@ -1752,7 +1752,7 @@ private final class TransferTestFixture {
                 "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
                 "entryPins": 0, "entryFollowUps": 0, "entrySources": 0,
                 "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0,
-                "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0, "sleepRecords": 0, "sleepGoals": 0
+                "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0, "sleepRecords": 0, "sleepGoals": 0, "captureReceipts": 0, "investmentParticipants": 0, "investmentActivities": 0, "investmentSessions": 0, "investmentOperations": 0
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1905,8 +1905,11 @@ private func mutatePackage(
         if manifest.packageSchemaVersion < 8 && data.importantDays.isEmpty && data.importantDayEntryLinks.isEmpty && data.importantDayTodoLinks.isEmpty && data.importantDayCovers.isEmpty {
             for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
         }
+        if manifest.packageSchemaVersion < 10 && data.investmentParticipants.isEmpty && data.investmentActivities.isEmpty && data.investmentSessions.isEmpty && data.investmentOperations.isEmpty && data.captureReceipts.isEmpty {
+            for key in ["captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations"] { payload.removeValue(forKey: key) }
+        }
         if manifest.packageSchemaVersion < 9 && data.sleepRecords.isEmpty && data.sleepGoals.isEmpty {
-            for key in ["sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
+            for key in ["captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
         }
         encodedData = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys, .withoutEscapingSlashes])
         try encodedData.write(to: dataURL)
@@ -2075,7 +2078,7 @@ extension ImportExportRecoveryTests {
                 payload.removeValue(forKey: "entryPins")
                 payload.removeValue(forKey: "entryFollowUps")
                 // V4/V5 fixtures must preserve their historical wire format after newer exporters add arrays.
-                for key in ["sleepRecords", "sleepGoals", "todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources", "importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
+                for key in ["captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals", "todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources", "importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys)
                 try bytes.write(to: dataURL)
                 let changedManifest = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
@@ -2396,7 +2399,7 @@ extension ImportExportRecoveryTests {
                 let version = scenario < 8 ? 8 : 7
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
-                for key in ["sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
+                for key in ["captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
                 if scenario < 4 { payload.removeValue(forKey: keys[scenario]) }
                 else if scenario < 8 { payload[keys[scenario - 4]] = NSNull() }
                 else if scenario == 9 { for key in keys { payload.removeValue(forKey: key) } }
@@ -2430,7 +2433,7 @@ extension ImportExportRecoveryTests {
                 let version = scenario == 2 ? 6 : 7
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
-                for key in ["sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
+                for key in ["captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
                 for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 if scenario == 0 { payload.removeValue(forKey: "todoEvents") }
                 if scenario == 1 { payload["todoTasks"] = NSNull() }
@@ -2525,6 +2528,7 @@ private extension TransferData {
             let package = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("SleepWire\(scenario)"), mutation: { root, manifest, data in
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+                for key in ["captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations"] { payload.removeValue(forKey:key) }
                 var records = try XCTUnwrap(payload["sleepRecords"] as? [[String: Any]])
                 var first = try XCTUnwrap(records.first)
                 var values = try XCTUnwrap(first["values"] as? [String: Any])
@@ -2564,6 +2568,67 @@ private extension TransferData {
                 XCTAssertEqual(try target.container.mainContext.fetchCount(FetchDescriptor<ImportantDay>()), 0)
                 XCTAssertEqual(try totalObjectCount(in: target.container.mainContext), 0)
             }
+        }
+    }
+}
+
+@MainActor extension ImportExportRecoveryTests {
+    func testInvestmentV10MalformedPackagesRejectWithoutChangingTarget() async throws {
+        let fixture = try TransferTestFixture(); defer { fixture.remove() }
+        let source = try fixture.makePopulatedStore(onDisk:true)
+        var clock = InvestmentClock(wall:Date(),uptime:1000,processID:"wire-synthetic")
+        let s = InvestmentService(context:source.container.mainContext,clock:{clock}), activity = try s.createActivity(name:"Synthetic wire activity")
+        let participant = try XCTUnwrap(ModelContext(source.container).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        try s.saveManual(id:UUID(),participantID:participant,activityID:activity,
+            values:.init(day:ImportantCivilDay(clock.wall).identifier,timeZoneID:TimeZone.current.identifier,seconds:45,evidence:.dateDuration,source:.manual))
+        let unfinishedID = UUID(); try s.start(activityID:activity,participantID:participant,operationID:unfinishedID)
+        clock.wall.addTimeInterval(12); clock.uptime += 12
+        let unfinished = try XCTUnwrap(s.operations().first { $0.id == unfinishedID })
+        try s.command(.pause,id:unfinishedID,revision:unfinished.revision)
+        let lease = try await source.service.exportPackage(); defer {lease.cleanup()}
+        for scenario in 0..<15 {
+            let archive = try mutatePackage(lease.url,under:fixture.root.appendingPathComponent("InvestmentWire\(scenario)"),mutation:{ root, manifest, _ in
+                let dataURL = root.appendingPathComponent("data.json")
+                var payload = try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:dataURL)) as? [String:Any])
+                var sessions = try XCTUnwrap(payload["investmentSessions"] as? [[String:Any]])
+                var ops = try XCTUnwrap(payload["investmentOperations"] as? [[String:Any]])
+                var first = try XCTUnwrap(sessions.first), values = try XCTUnwrap(first["values"] as? [String:Any])
+                var version = 10
+                switch scenario {
+                case 0: payload.removeValue(forKey:"investmentParticipants")
+                case 1: payload["investmentActivities"] = NSNull()
+                case 2: payload["investmentSessions"] = sessions + sessions
+                case 3: first["activityID"] = UUID().uuidString; sessions[0] = first; payload["investmentSessions"] = sessions
+                case 4: values["seconds"] = -45; first["values"] = values; payload["investmentSessions"] = [first]
+                case 5: values["evidence"] = "unknown"; first["values"] = values; payload["investmentSessions"] = [first]
+                case 6: values["feeling"] = 0; first["values"] = values; payload["investmentSessions"] = [first]
+                case 7: values["source"] = "automaticMonitoring"; first["values"] = values; payload["investmentSessions"] = [first]
+                case 8:
+                    let index = try XCTUnwrap(ops.firstIndex { ($0["id"] as? String)?.lowercased() == unfinishedID.uuidString.lowercased() })
+                    var duplicate = ops[index]; duplicate["id"] = UUID().uuidString; ops.append(duplicate); payload["investmentOperations"] = ops
+                case 9:
+                    var timer = try XCTUnwrap(ops[0]["timer"] as? [String:Any]); timer["state"] = "unknown"; ops[0]["timer"] = timer; payload["investmentOperations"] = ops
+                case 10: first["revision"] = -1; payload["investmentSessions"] = [first]
+                case 11: values["spans"] = [["start":1.0,"end":46.0]]; first["values"] = values; payload["investmentSessions"] = [first]
+                case 12: payload.removeValue(forKey:"investmentOperations")
+                case 13: payload.removeValue(forKey:"captureReceipts")
+                default: version = 9 // Reject even empty new-version keys in a legacy package.
+                }
+                let bytes = try JSONSerialization.data(withJSONObject:payload,options:.sortedKeys); try bytes.write(to:dataURL)
+                var counts = manifest.objectCounts
+                for (key,value) in payload { if counts[key] != nil, let array = value as? [Any] { counts[key] = array.count } }
+                let changed = ExportManifest(formatIdentifier:manifest.formatIdentifier,packageSchemaVersion:version,appVersion:manifest.appVersion,
+                    appBuild:manifest.appBuild,exportID:manifest.exportID,exportedAt:manifest.exportedAt,objectCounts:counts,
+                    dataFile:.init(path:"data.json",byteCount:Int64(bytes.count),sha256:SHA256.hash(data:bytes).map {String(format:"%02x",$0)}.joined()),mediaFiles:manifest.mediaFiles)
+                let encoder=JSONEncoder();encoder.dateEncodingStrategy = .secondsSince1970
+                try encoder.encode(changed).write(to:root.appendingPathComponent("manifest.json"))
+            })
+            let target = try fixture.makeEmptyStore(named:"InvestmentWireTarget\(scenario)",onDisk:true)
+            do { _ = try await target.service.importPackage(from:archive); XCTFail("Malformed V10 accepted \(scenario)") }
+            catch { XCTAssertFalse(error is CancellationError) }
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(target.container)).totalObjectCount,0)
+            let reopened = try PersistenceContainerFactory.makeOnDisk(at:try XCTUnwrap(target.storeURL))
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(reopened)).totalObjectCount,0)
         }
     }
 }
