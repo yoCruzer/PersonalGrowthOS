@@ -4,7 +4,7 @@ Owner新Goal固定 `72ee8bdf954a5628806db867682a6b021e63545b`，两份1.1规格�
 
 已普通推送唯一新 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)，base `codex/sleep-routine-v1` 仍为固定BASE。交付HEAD以Git/PR及证据根为准，最后只改Markdown。旧PR#8/#9/#10/#11保持，原工作区未知dirty未吸收。
 
-下一步等待本机Xcode组件更新后继续原生S1–S10/T1–T14及受影响/全量门禁，保持单一Xcode队列，复用本任务隔离模拟器540825BC-D0D4-4D71-B8DF-D73B243C3726。详细实际命令/每轮失败见[TIME_INVESTMENT_V1_EXECUTION.md](TIME_INVESTMENT_V1_EXECUTION.md)，证据矩阵见[TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)。当前Goal未完成、保持active；最终停点仍为READY_FOR_OWNER_DEVICE_GATE。禁止合并/强推/tag/Archive/发行/真机私人库操作。
+下一步等待本机Xcode组件更新后继续原生S1–S10/T1–T14及受影响/全量门禁，保持单一Xcode队列，复用本任务隔离模拟器540825BC-D0D4-4D71-B8DF-D73B243C3726。详细实际命令/每轮失败见[TIME_INVESTMENT_V1_EXECUTION.md](TIME_INVESTMENT_V1_EXECUTION.md)，证据矩阵见[TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)。当前Goal未完成；同一环境阻塞已连续三轮复核，现标记blocked，待本机组件更新后从现有分支安全续接；最终停点仍为READY_FOR_OWNER_DEVICE_GATE。禁止合并/强推/tag/Archive/发行/真机私人库操作。
 
 以下历史证据原样保留，不再阻止本次新授权。
 
