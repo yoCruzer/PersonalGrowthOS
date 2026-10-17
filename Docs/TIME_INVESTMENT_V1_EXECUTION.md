@@ -119,3 +119,8 @@ Reviewer独立只读immutable SQLite确认旧夹具收据恰好1条，ID `c71ad9
 
 
 固定06acdc3 `native-review1`：全部InvestmentPersistence9 + 增强Manual UI1，exit0，10/10 PASS、0SKIP。9项含亚秒备注编辑重开初版；Manual完成同回顾日贡献45分钟→编辑30分钟→7/30/全部30分钟/1次→删除0/0真实UI。Reviewer额外发现合法极小正秒被固定8位格式化为0会阻止仅备注保存，故追加正数回退（含Double最小正值）与实际UI共享hasValidDuration校验；不会改权威秒值。测试扩展三种秒数，no-op后用全新Context重取防缓存虚绿。中文AX补展开Start/End截图与专用活动标签断言，仍需后续最终固定提交运行。
+
+
+固定ced1a4ff1eb9c172f4e3a31646967f8546c2edc1：testcompile15 PASS。`native-fullunit1`同test-without-building前缀，selector仅`-only-testing:PersonalGrowthOSTests`，exit65：455项451PASS/3FAIL/1SKIP，共7断言。新R9三种极小正数及全部Investment持久9通过。独立Reviewer确认三处旧测试oracle问题：Todo两V10磁盘迁移预期来自v6包，缺独立已知收据；QuietWins导出已是v10却仍断言v7恢复缺收据。限定测试修正保持生产不动：immutable V10中唯一ID c3dcb188-3715-4ce3-afd9-edb3bfeafae6、ref811692800补入完整旧JSON预期；QuietWins新增完整v10恢复/重开/精确快照及3收据，再构造真实v7 wire（删除不支持数组、计数/版本/数据哈希/ZIP同步更新）保留旧accepted limitation与全媒体比较。原失败不抹去。
+
+该轮唯一SQLite unlink在DayOperations旧test helper活库teardown，不是Verification或投资root复发，Reviewer独立核对来源；限定延后该合成根清理。唯一SKIP=`TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`，未挂载专用32MB HFS+卷；不擅自挂载或填满主盘，该物理低空间场景NOT_RUN，注入低空间/备份/迁移/回滚路径均运行。结构化摘要`/tmp/pgos-time-investment-evidence/native-fullunit1-summary.json`。新的测试oracle/配对覆盖及失败需要后续补验；未因结果FAIL修改任何生产事实或Reader。
