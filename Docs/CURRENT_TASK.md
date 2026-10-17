@@ -1,3 +1,18 @@
+# 时间投入 V1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+已沿原分支 `codex/time-investment-v1` 与 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 安全续接，base仍为 `codex/sleep-routine-v1` / `ad0720ad743f495ac6f2ee3e97b16577266351db`，固定Goal 1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 未改。工作树 `/Users/himini/.codex/worktrees/time-investment-v1/PersonalGrowthOS`；原工作区三项未知dirty和旧PR#8/#9/#10/#11保留。
+
+Xcode27.1/CoreSimulator1174.9.2环境已恢复，只读首检exit0后复用专用模拟器运行。最终产品/测试与最后生产 **`2ae01f3d2af2117a3f957ee6cd275d50e19b892d`**：完整Unit **458 PASS / 0 FAIL / 1 SKIP（459项）**；最终四项时间投入UI **4 PASS / 0 FAIL / 0 SKIP，exit0**；另有受控英文Light补验1/1 PASS（1条焦点warning），实际浅色截图核实；V14五历史磁盘升级、真实ZIP/Files恢复、故障回滚、后台/冷启动、统计、相邻模块有实际原生证据。真正独立只读Reviewer已逐轮复核，新增按钮联动、AX排版、revision溢出与显式双参与者汇总均闭环。独立终审确认必选本地门禁完成，无范围内尚未关闭confirmed P0/P1/P2；最终交付同步以原PR及final-delivery-proof.json为准。
+
+最终clean同SHA Debug Simulator及unsigned generic iOS Release **PASS / exit0**，六App/Share/Widget实包保持原身份1.0(7)，两App provenance同源。后续交付只更新六份Markdown（五份交接文档及INDEX一句状态指引），delivery SHA以Git/PR head及 `/tmp/pgos-time-investment-evidence/final-delivery-proof.json` 核对，不写自引用hash。完整命令/原失败见[执行](TIME_INVESTMENT_V1_EXECUTION.md)，逐项[S1–S10/T1–T14验收](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)，[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。
+
+Safari当前unsigned App Group缺entitlement仍 **FAIL**；专用32MB HFS+低空间场景 **SKIP/NOT_RUN**；真实iPhone/私人库/签名、实际通知/桌面Widget/Photos/VoiceOver与独立远端CI（workflows=0） **NOT_RUN**。不拼成一次全绿，旧警告/失败保留。本地可执行门禁已完成，下一边界仅Owner另行授权签名/不卸载覆盖安装并做组合设备验收：先独立备份/核对旧数据，再锁屏计时、晚返回倒计时、待确认重开、手工/跨日/长期回顾及Record/Sleep/ImportantDay/Share/Widget。设备Gate尚未通过；不merge、强推、tag、Archive、TestFlight或新模块。
+
+---
+## 以下为原生续接及更早交接历史
+
+下方RUNNING/BLOCKED为当时记录，不覆盖上方当前结论。
+
 # 时间投入 V1 — RUNNING_NATIVE_GATES（2026-10-17）
 
 沿现有 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接，固定 Goal 1.1、BASE 和原工作区边界不变。只读检查确认 Xcode 27.1 / 27A9275、CoreSimulator 1174.9.2；`xcodebuild -checkFirstLaunchStatus`、可用设备/运行时列表均 exit0。复用任务隔离模拟器与固定 0abe55f 编译产物，未执行 sudo、系统修改或删除模拟器。

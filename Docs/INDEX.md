@@ -148,4 +148,4 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 
 ## 时间投入 V1 批准增量 — 2026-10-16
 
-时间投入 V1：`TIME_INVESTMENT_V1_DESIGN_ZH.md` / `TIME_INVESTMENT_V1_GOAL_ZH.md` 为固定1.1批准增量；执行、独立审查及验收分别见 `TIME_INVESTMENT_V1_EXECUTION.md`、`TIME_INVESTMENT_V1_REVIEW_ZH.md`、`TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md`。当前原生运行门禁受环境阻塞，不代表设备或发行通过。
+时间投入 V1：`TIME_INVESTMENT_V1_DESIGN_ZH.md` / `TIME_INVESTMENT_V1_GOAL_ZH.md` 为固定1.1批准增量；执行、独立审查及验收分别见 `TIME_INVESTMENT_V1_EXECUTION.md`、`TIME_INVESTMENT_V1_REVIEW_ZH.md`、`TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md`。当前状态以 `CURRENT_STATE.md` / `CURRENT_TASK.md` 及验收记录为准，不代表设备或发行通过。

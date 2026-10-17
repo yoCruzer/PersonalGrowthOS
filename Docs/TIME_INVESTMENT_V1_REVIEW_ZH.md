@@ -1,3 +1,30 @@
+# 时间投入 V1 — 最终独立审查（2026-10-17）
+
+当前：**READY_FOR_OWNER_DEVICE_GATE**。固定Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b`、BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`，最终产品/测试与最后生产 `2ae01f3d2af2117a3f957ee6cd275d50e19b892d`。
+
+真正独立只读Reviewer沿用 `/root/time_investment_reviewer`；实现者 `/root`。Reviewer读取固定diff、真实生产调用链、不可变fixture、原始日志/xcresult、实际截图和实包，从未编辑、构建、操作设备或由实现者扮演角色。独立终审确认必选本地门禁完成，无范围内尚未关闭confirmed P0/P1/P2；最终交付同步以原PR及final-delivery-proof.json为准。
+
+| 问题 | 实际发现与限定修复 | 原生及独立结论 |
+| --- | --- | --- |
+| R1–R7 | 原审查的Operation身份同步、可信时钟区间、目标恢复继续、零秒跨日、确认Editor缓存、原时区、未来正式事实校验 | 原红测保留；最终23核心/12持久及完整Unit均通过，原代码闭环现有原生补证 |
+| R8 P1 | Timer Form单cell多个automatic Button串触发，Pause实际进入pendingSave；显式bordered | 原ui1失败截图保留；每步paused/running且无提前确认、显式Finish、关闭/继续/冷重开最终UI通过，关闭 |
+| R9 P2 | 中文最大AX日期横排裁切、旧Activity误译；日期wheel分行/专用双语键。分钟格式化极小正数被变成0，阻止备注保存 | 真实日期/起止截图可读；1.23456789123、1e-8及leastNonzero原始秒数备注编辑/磁盘重开不变，关闭 |
+| R10 P2 | AX2自动1/1通过但实际按日日期/时长挤压拼接；ViewThatFits纵向fallback | 原视觉失败图保留；af377f2按日A6441B99及详情贡献2A15B495独立看图完整可读，最终同路径UI补验，关闭；不将“不相交”断言冒充原缺陷必红 |
+| R11 P2 | v10接受Session/Operation Int.max，8处revision+=1可trap | 05f2c4a真实坏ZIP接受两类、6断言红；统一checked next及有效范围，20坏包拒绝，max-1包可恢复但所有实际变更受控报错/独立磁盘快照不变；先改Session后Op失败也回滚，2ae01f3复核关闭 |
+| R12 规格/证据缺口 | 原T8仅两个unfinished，无可指定第二参与者的核心汇总；补显式participantID入口，UI仍仅“我” | 两人真实保存90/60秒、各1次/不同明细、recorder仍“我”、未知ID空与跨活动拒绝；Reviewer固定2ae01f3关闭 |
+| T4 证据补强 | 旧提交前后故障只用内存；补真实磁盘独立重开 | beforeSave故障仍pending/0事实，actualSave后throw仍恰1事实，重试幂等/删除不复活，外部未保存草稿不提交不撤销；红测轮已PASS，最终完整Unit再PASS |
+
+旧迁移oracle修正由Reviewer独立查询immutable V10/V11 SQLite的固定收据ID/时间，不根据actual输出生成预期；其他旧字段、保护字节、媒体及完整快照比较保留。QuietWins实际v10恢复保全3收据，与重新封装的真正v7缺收据限制配对，不改accepted limitation。验证容器两个autoreleasepool与合成根延后清理未放宽验证；host退出后白名单239根清理manifest保留。
+
+最终完整 `native-fullunit3`：459项458PASS/0FAIL/1SKIP；最终UI：4 PASS / 0 FAIL / 0 SKIP，exit0。英文Light专用补验 native-light-final1 为1/1 PASS，实际白底30分钟/1次截图核实，另保留1条duration聚焦Invalid frame；最终四UI的英文截图实际是Dark，不根据启动参数假定Light。Debug testcompile23 / unsigned generic iOS release3：PASS / exit0。六实包/两App同SHA clean provenance、冻结V1–V13/原937文案/签名设置、交付Docs范围及远端原PR证据逐项核对。
+
+Safari仍FAIL（真实扩展client is not entitled）；物理HFS+低空间SKIP/NOT_RUN，真实设备/私人库/签名/系统表现及远端CI NOT_RUN。Goal99保留的unsigned边界没有通过改签名/身份规避。原14UI总12PASS/2FAIL、targeted13总12PASS/1FAIL、早期各轮失败及warning不改标全绿。
+
+---
+## 以下为逐轮独立审查原始记录
+
+下方“尚未原生/未完成”只描述对应历史时点。
+
 # 时间投入 V1 独立审查
 
 状态：REVIEW_IN_PROGRESS，2026-10-17环境恢复并执行原生门禁；不是最终通过。

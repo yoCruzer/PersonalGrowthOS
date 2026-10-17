@@ -1,3 +1,86 @@
+# 时间投入 V1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+固定 Goal 1.1：`72ee8bdf954a5628806db867682a6b021e63545b`；BASE：`ad0720ad743f495ac6f2ee3e97b16577266351db`。沿原 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接，base 保持 `codex/sleep-routine-v1`。最终产品/测试与最后生产提交均为 **`2ae01f3d2af2117a3f957ee6cd275d50e19b892d`**；之后交付只改六份Markdown（五份交接文档及INDEX一句状态指引）。delivery SHA 以 Git、远端 PR head 与本地 final-delivery-proof.json 为准，避免自引用。
+
+本机 Xcode 27.1/27A9275、CoreSimulator 1174.9.2 已恢复；checkFirstLaunchStatus、可用设备和运行时列表 exit0。使用既有任务专用模拟器 `540825BC-D0D4-4D71-B8DF-D73B243C3726` / iOS 27.0，单一 Xcode 队列，仅合成数据。未执行 sudo、系统修复或删除模拟器。
+
+## 当前原生证据
+
+| Run / 固定编译提交 | 结果 | 覆盖及限制 |
+| --- | --- | --- |
+| native-affected2 / c84a680 | 98 PASS / 0 FAIL / 0 SKIP，exit0 | 完整 ImportExport55、新核心22/持久8、Sleep/ImportantDay/原始V11相邻迁移 |
+| native-fullunit2 / 47fc0b2 | 454 PASS / 0 FAIL / 1 SKIP（455项），exit0 | 旧迁移收据 oracle 及真实 v7/v10 配对闭环；不是最终提交全测 |
+| native-concentrated-ui1 / 47fc0b2 | 12 PASS / 2 FAIL / 0 SKIP（14项），exit65 | 五Tab、Record、Habit、Goal、Todo/Library、QuietWins、实际Files恢复、ImportantDay、Sleep/Weight、计时/统计；Safari URL提交交互失败，Widget缺外部driver失败均保留 |
+| native-targeted-final1 / 473f456 | 12 PASS / 1 FAIL / 0 SKIP（13项），exit65 | 持久化10、真实running冷重开/手工草稿、实际两次URL路由通过；Safari进入扩展后缺App Group entitlement失败 |
+| native-final-scope1 / af377f2 | 36 PASS / 0 FAIL / 0 SKIP，exit0 | 核心22/持久10/四UI；中文Dark最大AX按日与原时区贡献截图可读 |
+| native-revision-red1 / 05f2c4a | 1 PASS / 1 FAIL / 0 SKIP，exit65 | T4真实磁盘提交前后故障通过；非法session/op Int.max包被接受，6断言失败，作为修复前红测保留 |
+| **native-fullunit3 / 2ae01f3** | **458 PASS / 0 FAIL / 1 SKIP（459项），exit0** | 最终完整Unit；核心23、持久12、20类坏ZIP，revision所有写路径及显式双参与者汇总 |
+| **native-final-ui1 / 2ae01f3** | **4 PASS / 0 FAIL / 0 SKIP，exit0** | 四项最终时间投入UI，覆盖计时/后台与两类冷重开、手工统计编辑删除、Record草稿、中文Dark最大AX |
+| **native-light-final1 / 2ae01f3** | **1 PASS / 0 FAIL / 0 SKIP，exit0；1条duration聚焦Invalid frame** | 单独受控Light英文手工记录/统计/编辑删除UI，实际白底截图核验；不依据外观启动参数推定Light |
+| testcompile23 / release3 / 2ae01f3 | PASS / exit0 | Debug Simulator及unsigned generic iOS；六实包原身份1.0(7)，两App clean同SHA provenance |
+
+每轮准确命令、selector、原始.log/.xcresult及对应SHA见[执行记录](TIME_INVESTMENT_V1_EXECUTION.md)和 `/tmp/pgos-time-investment-evidence/native-run-index.json`。不将不同轮通过数累加成一次全绿。原环境exit70、迁移oracle失败、UI交互失败、R8按钮串触发、AX视觉失败和revision红测均保留。
+
+## S1–S10 当前映射
+
+| 门槛 | 真实生产路径 / 本地结论 | 保留边界 |
+| --- | --- | --- |
+| S1 | Growth/条件Today→Hub/Timer，start/command/saveTimer；最终四UI及23核心 PASS | 真实iPhone锁屏/硬件后台 NOT_RUN |
+| S2 | AppShell生命周期checkpoint、不同process/单调时钟异常→复核；固定时钟原生及真实Home/kill/relaunch PASS | 所有系统回收、旅行/硬件重启 NOT_RUN |
+| S3 | 目标封顶、显式继续、冻结pendingSave、幂等终态；核心/磁盘故障/四状态ZIP/冷启动确认 PASS | 真机倒计时晚返回留Owner |
+| S4 | 独立EditorState/持久草稿，手工/可选反馈/区间降级/确认删除；原生磁盘、ZIP和UI PASS | 私人库真实输入 NOT_RUN |
+| S5 | 惰性Participant、独立recorderID、显式participantID汇总；双参与者90/60秒、各1次/不同明细、未知ID空、越界活动拒绝 PASS | 本期无家庭UI；不由记录者代替参与者 |
+| S6 | 原时区自然日分摊、Session去重、全部/7/30天、同页编辑30分钟/删除0刷新；Unit和UI PASS | 真实长期个人样本 NOT_RUN |
+| S7 | 同库V14/v10、五历史磁盘直升、原收据/媒体、真实ZIP、回滚/竞态/20类坏包、Files入口 PASS | 专用HFS+真实低空间 SKIP；注入低空间已执行 |
+| S8 | 五Tab/Record与相邻模块集中UI、外部导入27Unit、Widget真实URL路由 PASS；六实包原身份保持 | 当前 unsigned Safari **FAIL**；实际签名分享/桌面Widget/通知 NOT_RUN |
+| S9 | 95新双语键、937旧键值不变；英文Light、中文Dark最大AX、日期轮/起止/回顾/贡献/详情截图及语义控件 PASS | 真实VoiceOver/单手硬件/飞行模式 NOT_RUN；计时无网络或通知授权依赖，无新增后台通知 |
+| S10 | 最终Debug/unsigned Release与实包同源、真正独立只读复核、原Draft PR普通推送 | Owner设备Gate尚未通过；远端CI NOT_RUN（workflows=0） |
+
+## T1–T14 当前映射
+
+| 反例 | 原生真实路径 / 结果 |
+| --- | --- |
+| T1 | testT1PauseExcludesFiveMinutesAndDoesNotDependOnTicks：30分钟含暂停5分钟→有效1500秒 PASS；Home/activate暂停继续UI PASS；硬件锁屏 NOT_RUN |
+| T2 | CountdownCapsAtTargetAndExplicitContinueOmitsLateGap / EarlyEndDoesNotFillTargetAndPausedTargetDoesNotRun PASS；固定时钟25分钟目标/50分钟晚返回，继续不补空白 |
+| T3 | FinishRemainsFrozenAcrossConfirmationDelayAndNewService +真实关闭确认/继续再结束/冷启动保存 PASS |
+| T4 | RepeatedStartFinishSaveAndDeletedCallbacksNeverResurrect、CommitBeforeAndAfterFailure、DiskCommitFailuresReopenAsPendingOrExactlyOneFactAndNeverSaveForeignDraft PASS；磁盘新container独立重开0或1事实、幂等重试、删除墓碑、不提交或撤销外部草稿 |
+| T5 | DurationCorrectionDropsIntervalsButPreservesTimerOrigin 原生 PASS；手工45→30分钟UI及精确起止控件展开截图 PASS |
+| T6 | CrossDayPauseAllocationAndCountUseOriginalZone：5/15分钟、总次数1 PASS；真实按日下钻、回顾切换/编辑刷新UI PASS |
+| T7 | DST/闰日/自然窗、壁钟跳变/回拨/重启/跨process、原时区详情、零秒跨日均原生 PASS；真实设备旅行/回拨/硬件重启 NOT_RUN |
+| T8 | TwoParticipantsAreIsolatedAndSameParticipantCannotDoubleStart 及显式participantID汇总 PASS；两个计时、90/60秒、各一次/独立明细、记录者仍“我”、无第三人事实 |
+| T9 | NilFeedbackArchiveLongTermAndSameSnapshotEdits +真实同页45→30分钟/全部7/30天/删除0 PASS |
+| T10 | TimerTransactionsNeitherSaveNorRollbackForeignDraft、T4真实磁盘外部草稿、raw无效手工草稿ZIP/冷重开、实际Record草稿与Sleep相邻UI PASS |
+| T11 | BrowsingDoesNotCreateParticipantAndActualCreationIsIdempotent +实际Settings Files导出/预览取消/浏览时间投入后空目标恢复 PASS；新包稳定身份在磁盘ZIP中验证 |
+| T12 | AllUnfinishedStatesExportRestoreReopenWithoutAdvancingOriginal PASS：running/paused/targetReached/pendingSave，7天后只恢复720秒检查点、无正式事实、显式继续新增60秒；源快照不变 |
+| T13 | PreviewThenTimerCreationAndRepeatImportRejectWithoutMutation / PublicationFailureLeavesEmptyStoreAndRetry / 20类MalformedPackages PASS；非法revision拒绝，合法max-1包可恢复，实际变更受控报错且每次独立磁盘重开快照不变，不崩溃或丢事实 |
+| T14 | FiveHistoricalDiskSchemasDirectStartupUpgradeKeepsOriginalFactsAndMedia / V13DiskUpgrade及完整Unit相邻迁移 PASS；V10/OriginalV11=11.0/V11=11.1/V12/V13真实磁盘/媒体/关联/收据保全；V1–V13定义逐字冻结 |
+
+## FAIL、SKIP、NOT_RUN 与旧数据边界
+
+当前 Safari 补验真实进入扩展后仍 **FAIL**。系统日志19:00:56.657明确 ShareExtension client is not entitled，实际unsigned包无App Group entitlement；先打开ShareInbox失败导致编辑器为空/保存禁用，后续取消/保存/导入未通过。Share源码、App Group/身份/签名配置相对BASE不变；本轮V14外部导入Unit已执行。依据Goal第99行的既有unsigned边界，系统签名路径留Owner，未绕过容器或更改签名。最初URL提交交互失败是另一条失败，不冒充entitlement根因。
+
+完整Unit唯一 **SKIP**：TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure，要求未挂载的专用32MB HFS+卷/marker；物理低空间场景 **NOT_RUN**。注入低空间、保护/迁移/回滚通过；未挂载卷或填满主盘。远端workflows=0，独立CI **NOT_RUN**，空checks不算PASS。
+
+原始运行警告保留：fullunit2旧GoalFixture PGOS-S7 SQLite unlink/invalidated，集中UI三条Invalid frame，targeted一条；最终轮实际警告见执行文档。正常磁盘写失败不承诺未落盘输入跨强杀零丢失。合法但耗尽的max-1 revision保持可验证/可导出，实际变更提示受控错误、原事实不变；不会wrap或生成无效Int.max。
+
+原V1–V13、主库路径、五Tab/Record、原Bundle/Share/Widget/AppGroup、版本1.0(7)、签名及发行配置保持；project仅新增六个生产/测试文件引用及membership。默认参与者仅实际写入时惰性初始化，旧v1–v9没有的收据不伪造。原工作区未知dirty、旧PR#8/#9/#10/#11保留。
+
+## Owner设备清单（需后续另行签名/安装授权）
+
+- 先保留独立备份，不卸载覆盖升级；核对旧Entry/图片、Habit/Goal/Weight/Todo/重要日子/Sleep/来源/收据，重开再核对。
+- 正计时锁屏/切其他App→暂停/继续/结束；确认等待不增长，关闭/强退重开仍待处理。
+- 25分钟倒计时晚返回默认25分钟；显式继续只算点击后的新段，提前结束不补满目标。
+- 手工日期时长/后补反馈/精确与修正精度、跨日暂停、30天前旧事实、全部累计与日贡献下钻。
+- Record草稿、睡眠编辑、重要日子、实际签名Safari分享、桌面Widget及通知组合；中文/英文/深浅色/大字体/VoiceOver/单手/飞行模式。
+- 用主动备份在明确空目标验证未完成检查点不自动补入设备间间隔；不把私人库当夹具。
+
+真实iPhone/私人库/签名、实际系统通知/桌面Widget、Photos/VoiceOver与发行均 **NOT_RUN**。停点只表示可进入Owner设备验收；未merge、force push、tag、Archive或TestFlight，不继续下一模块。
+
+---
+## 以下为续接前验收历史
+
+下方旧NOT_RUN/状态是当时原始记录，由上方逐项原生结果更新；保留历史失败，不作为当前待执行指令。
+
 # 时间投入 V1 验收与设备门禁
 
 当前状态：**RUNNING_NATIVE_GATES（2026-10-17，环境已恢复）**，尚未达到READY_FOR_OWNER_DEVICE_GATE。规格固定GOAL_SHA `72ee8bdf954a5628806db867682a6b021e63545b`，BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`；产品工作树 `codex/time-investment-v1`，唯一新 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)，base为 `codex/sleep-routine-v1`。固定产品/测试检查点及对应实际命令见[执行记录](TIME_INVESTMENT_V1_EXECUTION.md)，真实独立Reviewer报告见[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。

@@ -1,3 +1,59 @@
+# 时间投入 V1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+本节是当前交付证据，下方旧IMPLEMENTING/BLOCKED/RUNNING保留为历史。固定Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b`、PLAN_ROOT `043a2673c2463cb4f2259dbd27f58dc998b62bc5`、BASE `ad0720ad743f495ac6f2ee3e97b16577266351db` 均未重建。最终产品/测试与最后生产 **`2ae01f3d2af2117a3f957ee6cd275d50e19b892d`**；之后仅五份交接Docs及INDEX一句状态指引（六份Markdown）。最终delivery SHA以Git/原PR12和 `/tmp/pgos-time-investment-evidence/final-delivery-proof.json` 为准。
+
+原工作树 `/Users/himini/.codex/worktrees/time-investment-v1/PersonalGrowthOS`、原分支/upstream `codex/time-investment-v1` / `origin/codex/time-investment-v1`；PR12保持OPEN Draft，base为 `codex/sleep-routine-v1` / BASE。原workspace仍有project/catalog/xcodecloud三项未知dirty，未吸收；旧PR8–11保持。普通push，不merge/force/tag/Archive/TestFlight，不读取真实私库或操作手机。
+
+## 当前环境与命令
+
+恢复首步只读执行 `xcodebuild -checkFirstLaunchStatus`、`xcrun simctl list devices available` / runtimes，均exit0；Xcode27.1/27A9275、CoreSimulator1174.9.2，iOS27.0/24A434。只启动既有专用PGOS-TimeInvestment-V1模拟器 `540825BC-D0D4-4D71-B8DF-D73B243C3726`（bootstatus21s）。未sudo、删模拟器、改系统配置。Dark截图只切专用sim appearance，运行后恢复light；没有改全机字号/网络。结束尾检一次未提升权限的simctl被沙盒拒绝访问用户目录；随后以授权的只读同项返回light，未修复系统或重跑原生队列。
+
+下列均在上述worktree，单一Xcode队列；每轮完整命令均在同名log首部。日志/result均为 `/tmp/pgos-time-investment-<run>.log/.xcresult`，摘要及SHA索引在 `/tmp/pgos-time-investment-evidence/native-run-index.json`。
+
+```sh
+xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -sdk iphonesimulator -arch arm64 -derivedDataPath /tmp/pgos-time-investment-derived -resultBundlePath /tmp/pgos-time-investment-testcompile23.xcresult CODE_SIGNING_ALLOWED=NO build-for-testing
+
+xcodebuild test-without-building -xctestrun /tmp/pgos-time-investment-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=540825BC-D0D4-4D71-B8DF-D73B243C3726' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-time-investment-native-fullunit3.xcresult -only-testing:PersonalGrowthOSTests
+
+xcodebuild test-without-building -xctestrun /tmp/pgos-time-investment-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=540825BC-D0D4-4D71-B8DF-D73B243C3726' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-time-investment-native-final-ui1.xcresult -only-testing:PersonalGrowthOSUITests/InvestmentUITests
+
+xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS' -derivedDataPath /tmp/pgos-time-investment-release-derived -resultBundlePath /tmp/pgos-time-investment-release3.xcresult CODE_SIGNING_ALLOWED=NO build
+```
+
+## 收敛的最后几轮
+
+| 固定SHA / run | 实际结果 | 说明 |
+| --- | --- | --- |
+| 02b1858 / testcompile18、native-ax-final2 | 编译PASS；1/1 UI PASS、exit0 | 原滑动拨错wheel修正后，日期未变/起止/回顾/详情/草稿断言过；但主agent和Reviewer实际看图确认按日横排数字拼接，S9视觉FAIL，未提前READY |
+| 02b1858 / release2 | BUILD SUCCEEDED/exit0 | 当时unsigned产物，后续AX修复后已被release3取代；capture见release2-and-debug23-bundle-capture.json |
+| 38e7919 / testcompile19；af377f2 / testcompile20 | TEST BUILD SUCCEEDED/exit0 | 按日ViewThatFits仅布局；后者只补详情贡献截图 |
+| af377f2 / native-final-scope1 | 36/36 PASS、0SKIP、exit0 | 核心22/持久10/四UI；实际日期与0:45:00纵排、详情LabeledContent贡献可读。两agent独立查看A6441B99/2A15B495截图；记录“不相交”断言不等于原问题必红 |
+| 525526d / 新T4磁盘测试 | test-only提交 | 补旧内存故障证据缺口，随后真实运行，不把旧内存证据冒充磁盘重开 |
+| d49829b / testcompile21 | TEST BUILD SUCCEEDED/exit0，测试NOT_RUN | 初拟max-1为坏包；经独立Reviewer确认采用合法耗尽/受控报错配对，不随意降低技术上界，下一test-only调整为max/min坏包 |
+| 05f2c4a / testcompile22、native-revision-red1 | 编译PASS；2项1PASS/1FAIL、exit65 | 新T4磁盘PASS；真正Int.max Session及Operation ZIP被错误接受（scenario16/18），各三断言/共6处FAIL，target及独立磁盘重开各22对象而非0 |
+| 2ae01f3 / testcompile23 | TEST BUILD SUCCEEDED/exit0 | 最终干净生产/测试编译，所有target |
+| 2ae01f3 / native-fullunit3 | **459项458PASS/0FAIL/1SKIP，exit0** | 核心23/持久12、完整ImportExport55含20坏包、全部相邻Unit。唯一SKIP为专用32MB HFS+；原始结果及summary保存 |
+| 2ae01f3 / native-final-ui1 | **4 PASS / 0 FAIL / 0 SKIP，exit0** | 四项完整时间投入UI；没有重复跑已确认unsigned Safari失败 |
+| 2ae01f3 / native-light-final1 | **1 PASS / 0 FAIL / 0 SKIP，exit0；1条duration聚焦Invalid frame** | 最终四UI英文截图实际仍Dark，启动参数不能证明Light；专用sim明确设Light后复用既有构建，仅补英文Manual UI与实际白底截图 |
+| 2ae01f3 / release3 | **PASS / exit0** | unsigned generic iOS，六包/版本/两App clean fullSHA provenance核验；不是可安装IPA |
+
+最终核心限定修复：8处revision增量统一checked next，非法Int.max/负数包拒绝；合法max-1可验证/备份恢复，但实际写入受控报错，不wrap、不生成非法max、不丢事实。磁盘配对逐写路径/新container重开，含先改Session后Op耗尽回滚。补显式participantID贡献入口，UI只传“我”；真实两参与者90/60秒、次数/明细独立、recorder仍“我”。无家庭UI、历史Schema或签名变更。Reviewer固定2ae01f3复核两问题及T4证据闭环。独立终审确认必选本地门禁完成，无范围内尚未关闭confirmed P0/P1/P2；最终交付同步以原PR及final-delivery-proof.json为准。
+
+## 保留的失败、警告及未执行项
+
+最初native-affected1的自动诊断收尾卡在本任务 `simctl diagnose --timeout600`，测试已结束；仅终止诊断子进程PID69484，保留xcresult，未杀系统服务/模拟器。其后使用 `-collect-test-diagnostics never`，仍保留原生结果、失败截图和录像。
+
+早期各原生/编译/mac探针红测和exit70均在下方历史及run-index；不删除、改名或拼接绿数。fullunit2一条旧GoalFixture PGOS-S7 SQLite unlink/invalidated保留；集中14UI三条Invalid frame（QuietWins/Manual decimal焦点/Sleep Weight），targeted13一条；最终fullunit3无unlink/invalidated/Invalid frame，summary runtimeWarnings为空，但保留注入provider错误/IOSurface提示。最终四UI警告：3条Invalid frame，分别在duration聚焦、中文AX轮外滚动到Save前、冷重开手工note聚焦；数据与导航断言通过，保留原始记录，未将warning当作零。release3未记录warning或error；历史AppIntents提示仍见对应原log。
+
+Safari：最初URL提交交互错误另记；473f测试调整为真实Go后进入扩展，19:00:56.657系统明确client is not entitled，真实unsigned包无App Group entitlement，空编辑器/保存禁用截图 `safari-current-failure.png`。后续取消/保存/导入没有通过，保持FAIL。Share源码/身份/签名设置相对BASE不变，V14外部导入Unit已跑；依Goal99保留签名系统路径给Owner，不绕过、不改签名。
+
+唯一SKIP：`TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`，未挂载专用32MB HFS+卷和marker，物理低空间NOT_RUN；注入故障门禁已跑，不填满主盘。远端workflows=0，独立CI NOT_RUN。真实iPhone/私库/签名、实际通知/桌面Widget/Photos/VoiceOver/飞行模式/发行 NOT_RUN。
+
+仅host72665确认退出后清理专用task App tmp白名单239合成根，manifest `post-host-synthetic-cleanup.json`；不删模拟器、原fixture或其他容器。其余证据保留。固定输入/历史Schema/原937文案/目标签名配置/最终六包证明见final-static-proof.json、final-bundle-proof.json。远端普通push后核对原PRhead、全文件blob和旧PR/原workspace边界，见final-delivery-proof.json；不把未知原workspace宣称clean。
+
+---
+## 以下为逐轮执行历史
+
 # 时间投入 V1 执行证据
 
 状态：IMPLEMENTING_A；不是交付或验收通过。执行日期 2026-10-16。
