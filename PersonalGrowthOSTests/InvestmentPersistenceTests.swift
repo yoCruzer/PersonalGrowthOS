@@ -75,7 +75,7 @@ import UIKit
         let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
         let editor=InvestmentEditorState(participantID:participant,activityID:activity,values:.init(day:"2026-10-15",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual))
         editor.persist(c.mainContext);XCTAssertNil(editor.error)
-        c.mainContext.autosaveEnabled=false;let foreign=Entry(body:"Synthetic foreign unsaved");c.mainContext.insert(foreign)
+        c.mainContext.autosaveEnabled=false;let foreign=Entry(body:"Synthetic foreign unsaved",createdAt:clock.wall);c.mainContext.insert(foreign)
         editor.values.note="Synthetic latest unsaved input";editor.durationText="invalid raw duration"
         editor.persist(c.mainContext,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)})
         XCTAssertNotNil(editor.error);XCTAssertFalse(editor.finished)
