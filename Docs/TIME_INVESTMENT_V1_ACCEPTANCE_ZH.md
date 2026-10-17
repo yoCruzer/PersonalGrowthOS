@@ -10,7 +10,7 @@
 
 完整Unit在clean d5db223实际 **466 PASS / 0 FAIL / 1 SKIP（467项）**；同轮额外AXUI失败使整轮468项 **466 PASS/1 FAIL/1 SKIP**，保持FAIL。之后仅确认UI及驱动变化，42份Unit源/fixture相同、确认块外生产逐字同源，复用并补a722fe9核心23＋磁盘20 **43/43 PASS**。a722fe9相邻中文Record独立草稿AX **1/1 PASS**；最终f077598中文Dark最大AX **1/1 PASS**、英文Light R2/R3 **2/2 PASS**；不同轮次不相加成一次全绿。最终warning分别Dark 1、Light 2条Invalid frame，保留原始记录。原计时生命周期、后台/冷重开、统计、Files真实ZIP、历史五磁盘schema升级及相邻模块证据复用，见[执行](TIME_INVESTMENT_V1_EXECUTION.md)。
 
-clean f077598 Debug compile10、unsigned generic iOS release2 **PASS/exit0**；六实包原Bundle身份/1.0(7)、两App fullSHA clean localGit provenance核对；V14/v10、旧schema/原文案/项目与签名配置不变。独立Reviewer未发现范围内未关闭confirmed P0/P1/P2。最后仅五份交接Markdown，原Draft PR12普通push；delivery SHA见Git/PR与新证据根final-delivery-proof.json。
+clean 2c5b4c5 Debug compile10、unsigned generic iOS release2 **PASS/exit0**；六实包原Bundle身份/1.0(7)、两App fullSHA clean localGit provenance核对；V14/v10、旧schema/原文案/项目与签名配置不变。独立Reviewer未发现范围内未关闭confirmed P0/P1/P2。最后仅五份交接Markdown，原Draft PR12普通push；delivery SHA见Git/PR与新证据根final-delivery-proof.json。
 
 Safari unsigned **FAIL**；HFS+物理低空间 **SKIP/NOT_RUN**；真实设备/私人库/签名、实际通知/桌面Widget/Photos/VoiceOver/飞行模式及独立远端CI **NOT_RUN**。状态仅 **READY_FOR_OWNER_DEVICE_GATE**，设备Gate尚未通过。下一步只允许Owner另行授权的不卸载签名覆盖安装与组合设备验收；不merge/force/tag/Archive/TestFlight，不进入新产品范围。
 
