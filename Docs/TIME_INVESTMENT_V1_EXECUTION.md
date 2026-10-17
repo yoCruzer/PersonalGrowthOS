@@ -124,3 +124,18 @@ Reviewer独立只读immutable SQLite确认旧夹具收据恰好1条，ID `c71ad9
 固定ced1a4ff1eb9c172f4e3a31646967f8546c2edc1：testcompile15 PASS。`native-fullunit1`同test-without-building前缀，selector仅`-only-testing:PersonalGrowthOSTests`，exit65：455项451PASS/3FAIL/1SKIP，共7断言。新R9三种极小正数及全部Investment持久9通过。独立Reviewer确认三处旧测试oracle问题：Todo两V10磁盘迁移预期来自v6包，缺独立已知收据；QuietWins导出已是v10却仍断言v7恢复缺收据。限定测试修正保持生产不动：immutable V10中唯一ID c3dcb188-3715-4ce3-afd9-edb3bfeafae6、ref811692800补入完整旧JSON预期；QuietWins新增完整v10恢复/重开/精确快照及3收据，再构造真实v7 wire（删除不支持数组、计数/版本/数据哈希/ZIP同步更新）保留旧accepted limitation与全媒体比较。原失败不抹去。
 
 该轮唯一SQLite unlink在DayOperations旧test helper活库teardown，不是Verification或投资root复发，Reviewer独立核对来源；限定延后该合成根清理。唯一SKIP=`TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`，未挂载专用32MB HFS+卷；不擅自挂载或填满主盘，该物理低空间场景NOT_RUN，注入低空间/备份/迁移/回滚路径均运行。结构化摘要`/tmp/pgos-time-investment-evidence/native-fullunit1-summary.json`。新的测试oracle/配对覆盖及失败需要后续补验；未因结果FAIL修改任何生产事实或Reader。
+
+
+## 2026-10-17 完整回归与最终覆盖补验
+
+固定47fc0b250b084a921b03438d2954a9d9da9bf452：testcompile16 PASS；native-fullunit2全部PersonalGrowthOSTests，exit0，455项454PASS/0FAIL/1SKIP。原三失败和真实v7/v10配对全部闭环；唯一SKIP仍为未挂载的专用32MB HFS+物理低空间场景，NOT_RUN，不擅自挂载。该轮一条旧GoalFixture PGOS-S7活库teardown unlink及对应invalidated fd保留，不是Verification或投资根复发；独立Reviewer核对BASE已存在，不扩大生产改动。host72665确认退出后限定清理239个task App tmp白名单合成根，manifest /tmp/pgos-time-investment-evidence/post-host-synthetic-cleanup.json。
+
+固定47fc native-concentrated-ui1：14UI，exit65，12PASS/2FAIL/0SKIP。完整命令在同名.log首行。通过投资Manual统计/Timer生命周期、五Tab/Record重开/Habit/Goal+Flag/Todo+Library搜索/QuietWins五来源、真实Settings Files导出预览取消/浏览投资空库恢复、ImportantDay创建关联、Sleep晨间/Weight/Record草稿/R1图表刷新。Safari失败停URL编辑态，不归为unsigned；Widget热路由因主agent遗漏项目既有外部URL driver而失败，保留执行配置错误。该轮3条Invalid frame分别QuietWins、Manual聚焦decimal文本框、Sleep/Weight聚焦；断言通过但不宣称零warning。
+
+最终覆盖固定473f456cc892339b16bd4330879318d7bfba004d，仅三份测试文件新增，生产/配置与47fc相同；testcompile17 PASS。native-targeted-final1通过 /tmp/pgos-time-investment-evidence/run-route-without-building.py 运行（命令在.log/.driver.log）：10项InvestmentPersistence + 3UI，exit65，12PASS/1FAIL/0SKIP。真实running Home/kill/relaunch转待复核、手工草稿后台/冷重开保持且不入历史PASS；真实v10 ZIP无效手工草稿保留原输入/备注/nil、源库不变、纠正后仅1正式事实PASS。Widget由原marker逻辑实际发出两次simctl openurl，均exit0，UI PASS。
+
+Safari补验已加载fixture并进入扩展，仍FAIL于share-text为空。当前系统日志 /tmp/pgos-time-investment-evidence/safari-current-system.log 的19:00:56.657明确ShareExtension[79409] client is not entitled；当前codesign无App Group entitlement。原生产先ShareInbox.shared()成功才读取provider，和空编辑器/禁用保存现场一致；Share/SharedCapture/签名配置相对BASE未变。独立Reviewer确认这是既有unsigned边界；保留FAIL，后续取消/保存/导入没有通过，不绕过容器，不执行签名。实际末帧 safari-current-failure.png；当前签名路径留Owner Gate，非当前PASS。
+
+native-ax-final1固定473f，真实Dark/最大AX，exit65，0PASS/1FAIL。初始截图已正确显示投入活动及完整发生日期/三列wheel；失败在generic中心swipeUp拨动日期轮（10月变4月），Form仍0%，不是日期裁切复发。限定仅测试reveal新增avoidingWheel，按已核实wheel x41..361、Form宽402的外侧拖动；普通交互不变，并补保存发生日等于初始picker日期断言。完整展开起止/回顾/详情视觉仍待新补验。实际截图 /tmp/pgos-time-investment-evidence/ax-final1-attachments/EA2FD65F-2359-47F4-B3BD-BC44370EF37D.png。
+
+原455全量证据按未变生产和原测试等价复用，新增持久化与UI定向执行，不冒称456全量。全轮索引 /tmp/pgos-time-investment-evidence/native-run-index.json（后续结果另补）。此前试图追加本节的一次Python stdin编码错误未写文件；没有影响产品或测试，现补全实际记录。

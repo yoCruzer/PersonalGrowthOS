@@ -9,8 +9,15 @@ final class InvestmentUITests: XCTestCase {
                                 "-UIPreferredContentSizeCategoryName",darkLarge ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL"]
         app.launch();return app
     }
-    func reveal(_ element: XCUIElement,_ app: XCUIApplication) {
-        for _ in 0..<10 { if element.isHittable {return};app.swipeUp() }
+    func reveal(_ element: XCUIElement,_ app: XCUIApplication,avoidingWheel: Bool = false) {
+        for _ in 0..<10 {
+            if element.isHittable {return}
+            if avoidingWheel {
+                // The observed wheel occupies x=41...361 in a 402pt Form. Scroll its outer gutter.
+                app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.80)).press(forDuration:0.05,
+                    thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.30)))
+            } else {app.swipeUp()}
+        }
         XCTAssertTrue(element.isHittable,app.debugDescription)
     }
     func button(_ prefix: String,_ app: XCUIApplication) -> XCUIElement { app.buttons.matching(NSPredicate(format:"identifier BEGINSWITH %@",prefix)).firstMatch }
@@ -96,7 +103,7 @@ final class InvestmentUITests: XCTestCase {
         app.buttons["investment-review-save"].tap();let save=app.buttons["investment-save"];reveal(save,app);save.tap()
         XCTAssertFalse(app.staticTexts["investment-save-error"].exists)
     }
-    func testRecordDraftSurvivesManualActivitySaveAndChineseDarkAX() {
+    func testRecordDraftSurvivesManualActivitySaveAndChineseDarkAX() throws {
         let app=launch(chinese:true,darkLarge:true)
         app.tabBars.buttons["记录"].tap();let body=app.textViews["capture-body"];body.tap();body.typeText("Synthetic independent Record draft")
         body.swipeDown()
@@ -105,13 +112,17 @@ final class InvestmentUITests: XCTestCase {
         let record=button("investment-record-",app);reveal(record,app);record.tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format:"label BEGINSWITH %@","投入活动")).firstMatch.exists)
         XCTAssertGreaterThanOrEqual(app.pickerWheels.count,3)
+        let dateParts=(0..<3).map { index in
+            Int((app.pickerWheels.element(boundBy:index).value as? String ?? "").prefix(while:{$0.isNumber}))
+        }
+        let originalDay=String(format:"%04d-%02d-%02d",try XCTUnwrap(dateParts[0]),try XCTUnwrap(dateParts[1]),try XCTUnwrap(dateParts[2]))
         screenshot(app,"Investment-Chinese-Dark-AX-editor")
-        let exact=app.buttons["精确起止（选填）"];reveal(exact,app);exact.tap()
-        let startLabel=app.staticTexts["开始"];reveal(startLabel,app)
+        let exact=app.buttons["精确起止（选填）"];reveal(exact,app,avoidingWheel:true);exact.tap()
+        let startLabel=app.staticTexts["开始"];reveal(startLabel,app,avoidingWheel:true)
         screenshot(app,"Investment-Chinese-Dark-AX-exact-start")
-        let endLabel=app.staticTexts["结束"];reveal(endLabel,app)
+        let endLabel=app.staticTexts["结束"];reveal(endLabel,app,avoidingWheel:true)
         screenshot(app,"Investment-Chinese-Dark-AX-exact-end")
-        let save=app.buttons["investment-save"];reveal(save,app);save.tap()
+        let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
         app.tabBars.buttons["记录"].tap();XCTAssertEqual(body.value as? String,"Synthetic independent Record draft")
         screenshot(app,"Investment-Record-draft-retained")
         app.tabBars.buttons["成长"].tap()
@@ -121,7 +132,7 @@ final class InvestmentUITests: XCTestCase {
         let count=app.staticTexts["investment-review-count"];reveal(count,app)
         XCTAssertTrue(count.label.contains("1"),count.label)
         screenshot(app,"Investment-Chinese-Dark-AX-review-summary")
-        let day=button("investment-day-",app);reveal(day,app);day.tap()
+        let day=app.buttons["investment-day-"+originalDay];reveal(day,app);day.tap()
         screenshot(app,"Investment-Chinese-Dark-AX-review-chart-and-day")
         let row=button("investment-session-",app);reveal(row,app);row.tap()
         screenshot(app,"Investment-Chinese-Dark-AX-saved-detail")
