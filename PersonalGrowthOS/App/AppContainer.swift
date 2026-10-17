@@ -152,6 +152,7 @@ struct AppContainer {
             try LinkIntegrityService.validate(context: modelContainer.mainContext)
             try ImportantDayIntegrity.validate(context: modelContainer.mainContext)
             try SleepIntegrity.validate(context: modelContainer.mainContext); try InvestmentIntegrity.validate(context: modelContainer.mainContext)
+            try InvestmentService(context:modelContainer.mainContext).erasePreviouslyConsumedContent()
             return AppContainer(
                 configuration: configuration,
                 modelContainer: modelContainer,

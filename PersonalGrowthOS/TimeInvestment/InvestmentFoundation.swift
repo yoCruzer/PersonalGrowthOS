@@ -153,6 +153,11 @@ struct InvestmentTimer: Codable, Equatable {
     var editingRevision: Int? = nil
     var durationText: String? = nil
 
+    var erasesContent: Bool {state == .deleted || state == .discarded}
+    func erasingConsumedContent() -> Self {
+        guard erasesContent else {return self}
+        return .init(state:state,values:.init(day:"1970-01-01",timeZoneID:"UTC",seconds:0,evidence:.dateDuration,source:.manual),target:nil,checkpointAt:Date(timeIntervalSince1970:0))
+    }
     mutating func clearAnchor() { anchor = nil; anchorUptime = nil; processID = nil }
     mutating func resume(at clock: InvestmentClock, asStopwatch: Bool = false) throws {
         guard state.unfinished, state != .running else { throw InvestmentFailure.conflict }
@@ -191,6 +196,7 @@ struct InvestmentTimer: Codable, Equatable {
         return result
     }
     func forRestore() -> Self {
+        if erasesContent {return erasingConsumedContent()}
         guard state.unfinished else { return self }
         var value = self; value.restoredState = restoredState ?? state
         value.state = .recoveryRequired; value.clearAnchor(); return value
@@ -229,7 +235,7 @@ struct InvestmentOperationSnapshot: Identifiable, Equatable {
     var timer: InvestmentTimer
     init(_ model: InvestmentOperation) throws {
         id = model.id; participantID = model.participantID; activityID = model.activityID
-        revision = model.revision; timer = try model.timer()
+        revision = model.revision; timer = try model.timer().erasingConsumedContent()
     }
 }
 extension Notification.Name { static let investmentChanged = Notification.Name("investmentChanged") }
@@ -254,6 +260,27 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         }
         NotificationCenter.default.post(name: .investmentChanged, object: container)
         return result
+    }
+    /// Cleanup only after successful startup integrity checks. Fresh context and the same
+    /// publication lock keep unrelated editor drafts outside this logical privacy rewrite.
+    func erasePreviouslyConsumedContent() throws {
+        func changes(in context: ModelContext) throws -> [(InvestmentOperation,InvestmentTimer)] {
+            let models=try context.fetch(FetchDescriptor<InvestmentOperation>())
+            let timers=try models.map {try $0.timer()}
+            let deleted=Dictionary(uniqueKeysWithValues:zip(models,timers).filter {$0.1.state == .deleted}.map {($0.0.id,$0.0.participantID)})
+            return try zip(models,timers).compactMap {model,stored in
+                var timer=stored
+                if timer.state == .draft,let linked=timer.editingSessionID,deleted[linked] == model.participantID {timer.state = .discarded}
+                guard timer.erasesContent else {return nil}
+                try stored.validate()
+                timer=timer.erasingConsumedContent()
+                return timer == stored ? nil : (model,timer)
+            }
+        }
+        guard try !changes(in:ModelContext(container)).isEmpty else {return}
+        try transaction {context,_ in
+            for (model,timer) in try changes(in:context) {model.payload=try JSONEncoder().encode(timer)}
+        }
     }
     private func participant(_ id: UUID?, in context: ModelContext) throws -> UUID {
         let all = try context.fetch(FetchDescriptor<InvestmentParticipant>())
@@ -323,7 +350,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
                 timer.clearAnchor()
             case .discard: timer.state = .discarded; timer.clearAnchor()
             }
-            try timer.validate(); op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision)
+            try timer.validate(); timer = timer.erasingConsumedContent(); op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision)
             op.updatedAt = max(op.updatedAt, clock.wall)
         }
     }
@@ -366,8 +393,8 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             try values.validate(now: retainedTime ? nil : now.wall)
             if let existing, try existing.values() == values, existing.activityID == activityID {
                 if let draftID, draftID != id {
-                    guard let draft = operations.first(where: { $0.id == draftID }), [.draft,.discarded].contains(try draft.timer().state) else { throw InvestmentFailure.conflict }
-                    var payload = try draft.timer(); payload.state = .discarded; payload.values.note = ""; payload.values.feeling = nil
+                    guard let draft = operations.first(where: { $0.id == draftID }), draft.participantID == participantID, [.draft,.discarded].contains(try draft.timer().state) else { throw InvestmentFailure.conflict }
+                    var payload = try draft.timer(); payload.state = .discarded; payload = payload.erasingConsumedContent()
                     draft.payload = try JSONEncoder().encode(payload); draft.revision = try InvestmentRevision.next(draft.revision); draft.updatedAt = max(draft.updatedAt, now.wall)
                 }
                 return id
@@ -387,8 +414,8 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
                     timer: .init(state: .saved, values: values, target: nil, checkpointAt: now.wall), now: now.wall, recorderID: try participant(nil, in: context)))
             }
             if let draftID, draftID != id {
-                guard let draft = operations.first(where: { $0.id == draftID }), try draft.timer().state == .draft else { throw InvestmentFailure.conflict }
-                var payload = try draft.timer(); payload.state = .discarded; payload.values.note = ""; payload.values.feeling = nil
+                guard let draft = operations.first(where: { $0.id == draftID }), draft.participantID == participantID, try draft.timer().state == .draft else { throw InvestmentFailure.conflict }
+                var payload = try draft.timer(); payload.state = .discarded; payload = payload.erasingConsumedContent()
                 draft.payload = try JSONEncoder().encode(payload); draft.revision = try InvestmentRevision.next(draft.revision); draft.updatedAt = max(draft.updatedAt, now.wall)
             }
             return id
@@ -402,10 +429,21 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             guard values.seconds.isFinite, values.seconds >= 0, values.seconds <= 366 * 86400,
                   durationText.count <= 50, values.note.count <= 4000, values.feeling.map({ (1...5).contains($0) }) ?? true,
                   TimeZone(identifier: values.timeZoneID) != nil, ImportantCivilDay(identifier: values.day) != nil else { throw InvestmentFailure.invalid }
+            if let editingSessionID {
+                guard try context.fetch(FetchDescriptor<InvestmentSession>()).contains(where: {$0.id == editingSessionID && $0.participantID == participantID}) else {throw InvestmentFailure.missing}
+            }
             let all = try context.fetch(FetchDescriptor<InvestmentOperation>())
             let model: InvestmentOperation
             if let existing = all.first(where: { $0.id == id }) {
-                guard existing.revision == expectedRevision, existing.participantID == participantID else { throw InvestmentFailure.conflict }
+                guard existing.participantID == participantID else {throw InvestmentFailure.conflict}
+                let stored=try existing.timer()
+                let eligible=timerConfirmation ? [InvestmentTimerState.pendingSave,.targetReached,.recoveryRequired].contains(stored.state) : stored.state == .draft
+                guard eligible else {throw InvestmentFailure.conflict}
+                if existing.revision != expectedRevision {
+                    guard existing.activityID == activityID,stored.values == values,stored.durationText == durationText,
+                          stored.editingSessionID == editingSessionID,stored.editingRevision == editingRevision else {throw InvestmentFailure.conflict}
+                    return existing.revision // A prior actual commit is proven, without changing its state or clocks.
+                }
                 model = existing
             } else {
                 guard expectedRevision == nil, !timerConfirmation else { throw InvestmentFailure.missing }
@@ -430,8 +468,17 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             guard let model = try context.fetch(FetchDescriptor<InvestmentSession>()).first(where: { $0.id == id }) else { throw InvestmentFailure.missing }
             guard model.revision == revision else { throw InvestmentFailure.conflict }
             guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>()).first(where: { $0.id == id }) else { throw InvestmentFailure.invalid }
-            var timer = try op.timer(); timer.state = .deleted; timer.clearAnchor(); timer.values.note = ""; timer.values.feeling = nil
+            var timer = try op.timer(); timer.state = .deleted; timer = timer.erasingConsumedContent()
             op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision); op.updatedAt = max(op.updatedAt, clock.wall); context.delete(model)
+            for draft in try context.fetch(FetchDescriptor<InvestmentOperation>()) where draft.id != id {
+                var payload=try draft.timer()
+                if payload.state == .draft,payload.editingSessionID == id,draft.participantID == model.participantID {
+                    payload.state = .discarded
+                    draft.payload=try JSONEncoder().encode(payload.erasingConsumedContent())
+                    draft.revision=try InvestmentRevision.next(draft.revision)
+                    draft.updatedAt=max(draft.updatedAt,clock.wall)
+                }
+            }
         }
     }
 }

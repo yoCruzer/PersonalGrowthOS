@@ -993,8 +993,8 @@ final class ImportExportService {
         mediaStore: MediaStore
     ) throws {
         let actual = try TransferSnapshot.make(context: context)
-        var restoredExpected = expected
-        restoredExpected.investmentOperations = expected.investmentOperations.map { original in
+        var restoredExpected = try expected.redactingConsumedInvestmentContent()
+        restoredExpected.investmentOperations = restoredExpected.investmentOperations.map { original in
             var value = original; value.timer = original.timer.forRestore(); return value
         }
         guard actual == restoredExpected else { throw TransferPackageError.verificationFailed }
@@ -1114,7 +1114,7 @@ enum TransferSnapshot {
         let habitLifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
         let metadataByLogID = HabitLogDayResolver.metadataByLogID(logDayMetadata)
         let sortUUID: (UUID, UUID) -> Bool = { $0.uuidString < $1.uuidString }
-        return TransferData(
+        return try TransferData(
             entries: try cancellableMap(entries) {
                 EntryTransfer(
                     id: $0.id,
@@ -1294,7 +1294,7 @@ enum TransferSnapshot {
             investmentActivities: try cancellableMap(context.fetch(FetchDescriptor<InvestmentActivity>())) { InvestmentActivityTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentSessions: try cancellableMap(context.fetch(FetchDescriptor<InvestmentSession>())) { try InvestmentSessionTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) }
-        )
+        ).redactingConsumedInvestmentContent()
     }
 
     private static func cancellableMap<Input, Output>(

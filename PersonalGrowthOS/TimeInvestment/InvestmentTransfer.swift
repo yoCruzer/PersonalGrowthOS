@@ -35,12 +35,14 @@ struct InvestmentOperationTransfer: Codable, Equatable {
     @TodoTransferInstant var updatedAt: Date
     init(_ m: InvestmentOperation, clock: InvestmentClock? = nil) throws {
         id = m.id; participantID = m.participantID; recorderID = m.recorderID; activityID = m.activityID; revision = m.revision
-        let stored = try m.timer(); timer = clock.map { stored.projected(at: $0) } ?? stored
+        let stored = try m.timer()
+        if stored.erasesContent {try stored.validate()}
+        timer = (clock.map { stored.projected(at: $0) } ?? stored).erasingConsumedContent()
         createdAt = m.createdAt; updatedAt = m.updatedAt
     }
     func model(restoring: Bool) throws -> InvestmentOperation {
         let m = try InvestmentOperation(id: id, participantID: participantID, activityID: activityID,
-            timer: restoring ? timer.forRestore() : timer, now: createdAt, recorderID: recorderID)
+            timer: restoring ? timer.forRestore() : timer.erasingConsumedContent(), now: createdAt, recorderID: recorderID)
         m.updatedAt = updatedAt; m.revision = revision; return m
     }
 }
@@ -79,12 +81,23 @@ extension TransferData {
             else { guard sessions[op.id] == nil else { throw InvestmentFailure.invalid } }
         }
     }
+    func redactingConsumedInvestmentContent() throws -> Self {
+        var copy=self
+        let deleted=Dictionary(uniqueKeysWithValues:investmentOperations.filter {$0.timer.state == .deleted}.map {($0.id,$0.participantID)})
+        copy.investmentOperations=try investmentOperations.map { original in
+            var op=original
+            if op.timer.state == .draft,let linked=op.timer.editingSessionID,deleted[linked] == op.participantID {try op.timer.validate();op.timer.state = .discarded}
+            op.timer=op.timer.erasingConsumedContent()
+            return op
+        }
+        return copy
+    }
     func insertInvestment(into context: ModelContext) throws {
         for receipt in captureReceipts { try Task.checkCancellation(); context.insert(receipt.model()) }
         for p in investmentParticipants { try Task.checkCancellation(); context.insert(p.model()) }
         for a in investmentActivities { try Task.checkCancellation(); context.insert(a.model()) }
         for s in investmentSessions { try Task.checkCancellation(); context.insert(try s.model()) }
-        for op in investmentOperations { try Task.checkCancellation(); context.insert(try op.model(restoring: true)) }
+        for op in try redactingConsumedInvestmentContent().investmentOperations { try Task.checkCancellation(); context.insert(try op.model(restoring: true)) }
     }
 }
 enum InvestmentIntegrity {

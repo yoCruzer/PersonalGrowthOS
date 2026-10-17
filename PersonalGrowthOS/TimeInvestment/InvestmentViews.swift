@@ -19,6 +19,8 @@ import UIKit
     var duplicate = false
     var showDuplicateDialog = false
     var finished = false
+    private(set) var pendingExactInterval: InvestmentValues?
+    private var exactBaseline: InvestmentValues?
     init(id: UUID = UUID(), participantID: UUID, activityID: UUID, values: InvestmentValues,
          editingSessionID: UUID? = nil, editingRevision: Int? = nil, operationRevision: Int? = nil,
          timerConfirmation: Bool = false, durationText: String? = nil) {
@@ -34,22 +36,31 @@ import UIKit
         proposed.evidence = .intervals
         if proposed.source == .timer {proposed.corrected=true}
         try proposed.validate(now:now)
+        if values.spans.count > 1 {exactBaseline=values;pendingExactInterval=proposed;return false}
+        cancelExactIntervalReplacement()
         values=proposed;durationText=InvestmentFormatting.minutes(values.seconds)
         return true
+    }
+    func cancelExactIntervalReplacement() {pendingExactInterval=nil;exactBaseline=nil}
+    func confirmExactIntervalReplacement(now: Date) throws {
+        guard let proposed=pendingExactInterval,exactBaseline == values else {throw InvestmentFailure.conflict}
+        try proposed.validate(now:now)
+        values=proposed;durationText=InvestmentFormatting.minutes(values.seconds)
+        cancelExactIntervalReplacement()
     }
     var hasValidDuration: Bool {
         guard values.seconds.isFinite, values.seconds > 0,
               let minutes = Double(durationText), minutes.isFinite, minutes > 0 else { return false }
         return abs(minutes * 60 - values.seconds) < 0.01
     }
-    func persist(_ context: ModelContext,commit: @escaping (ModelContext) throws -> Void = {try $0.save()}) {
-        guard !finished else { return }
+    @discardableResult func persist(_ context: ModelContext,commit: @escaping (ModelContext) throws -> Void = {try $0.save()}) -> Bool {
+        guard !finished else { return true }
         do {
             operationRevision = try InvestmentService(context:context,commit:commit).storeDraft(id:id,participantID:participantID,
                 activityID:activityID,values:values,durationText:durationText,editingSessionID:editingSessionID,
                 editingRevision:editingRevision,expectedRevision:operationRevision,timerConfirmation:timerConfirmation)
-            error = nil
-        } catch { self.error = error.localizedDescription }
+            error = nil;return true
+        } catch { self.error = error.localizedDescription;return false }
     }
 }
 
@@ -72,6 +83,12 @@ import UIKit
             let a = try read.fetch(FetchDescriptor<InvestmentActivity>()).map(InvestmentActivityTransfer.init)
             let s = try read.fetch(FetchDescriptor<InvestmentSession>()).map(InvestmentSessionTransfer.init)
             let o = try read.fetch(FetchDescriptor<InvestmentOperation>()).map(InvestmentOperationSnapshot.init)
+            let erasedIDs=Set(o.filter {$0.timer.erasesContent}.map(\.id))
+            for (id,editor) in editors where erasedIDs.contains(id) || editor.editingSessionID.map({erasedIDs.contains($0)}) == true {
+                editor.finished=true
+                editor.values=InvestmentTimer(state:.discarded,values:editor.values,target:nil,checkpointAt:Date()).erasingConsumedContent().values
+                editor.durationText="";editors.removeValue(forKey:id)
+            }
             participants = p; activities = a; sessions = s; operations = o; reference = Date(); error = nil
         } catch { self.error = error.localizedDescription }
     }
@@ -81,7 +98,9 @@ import UIKit
             for op in try service.operations() where op.timer.state == .running {
                 try service.command(.checkpoint,id:op.id,revision:op.revision)
             }
-            for editor in editors.values where !editor.finished { editor.persist(context) }
+            for editor in editors.values where !editor.finished {
+                guard editor.persist(context) else {throw InvestmentEditorPersistenceFailure(message:editor.error ?? InvestmentFailure.invalid.localizedDescription)}
+            }
             refresh(context)
         } catch { self.error = error.localizedDescription }
     }
@@ -382,6 +401,7 @@ struct InvestmentEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var phase
     @State private var cancel = false
+    @State private var confirmExact = false
     @State private var start = Date().addingTimeInterval(-2700)
     @State private var end = Date()
     private var zone: TimeZone { TimeZone(identifier:editor.values.timeZoneID) ?? .current }
@@ -401,10 +421,14 @@ struct InvestmentEditorView: View {
                 Text(InvestmentFormatting.evidence(editor.values.evidence)).font(.caption)
                 Text(editor.values.timeZoneID).font(.caption).foregroundStyle(.secondary)
                 DisclosureGroup("Optional exact interval") {
+                    if editor.values.spans.count > 1 {
+                        Text("This record contains separate effective segments. A continuous interval may include paused time.").font(.caption)
+                        ForEach(Array(editor.values.spans.enumerated()),id:\.offset) {_,span in Text(InvestmentFormatting.span(span,zoneID:editor.values.timeZoneID)).font(.caption)}
+                    }
                     InvestmentDateField("Start",selection:$start).environment(\.timeZone,zone)
                     InvestmentDateField("End",selection:$end).environment(\.timeZone,zone)
                     Button("Use this exact interval") {
-                        do {if try editor.requestExactInterval(start:start,end:end,now:Date()) {persist()}}
+                        do {if try editor.requestExactInterval(start:start,end:end,now:Date()) {persist()} else {confirmExact=true}}
                         catch {editor.error=error.localizedDescription}
                     }
                 }
@@ -432,10 +456,11 @@ struct InvestmentEditorView: View {
             }
             Section {
                 Button("Save activity") { save(false) }.accessibilityIdentifier("investment-save")
-                Button(editor.timerConfirmation ? "Close and keep pending" : "Close and keep draft") { persist(isClosing:true); dismiss() }
+                Button(editor.timerConfirmation ? "Close and keep pending" : "Close and keep draft") { if persist(isClosing:true) {dismiss()} }
                 if !editor.timerConfirmation { Button("Cancel draft",role:.destructive) { cancel = true } }
             }
         }.navigationTitle(editor.timerConfirmation ? "Confirm time investment" : "Record activity")
+        .interactiveDismissDisabled(!editor.finished)
         .toolbar { ToolbarItemGroup(placement:.keyboard) { Spacer(); Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),to:nil,from:nil,for:nil) } } }
         .confirmationDialog("Cancel this draft?",isPresented:$cancel,titleVisibility:.visible) {
             Button("Cancel draft",role:.destructive) {
@@ -445,22 +470,32 @@ struct InvestmentEditorView: View {
                 } catch { editor.error = error.localizedDescription }
             }
         }
+        .confirmationDialog("Replace effective segments?",isPresented:$confirmExact,titleVisibility:.visible) {
+            Button("Replace effective segments",role:.destructive) {
+                do {try editor.confirmExactIntervalReplacement(now:Date());persist()}
+                catch {editor.error=error.localizedDescription;editor.cancelExactIntervalReplacement()}
+            }
+            Button("Keep effective segments",role:.cancel) {editor.cancelExactIntervalReplacement()}
+        } message: {
+            Text("A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm.")
+            Text(InvestmentFormatting.duration(editor.values.seconds)+" → "+InvestmentFormatting.duration(editor.pendingExactInterval?.seconds ?? editor.values.seconds))
+        }
         .confirmationDialog("Review possible duplicate time",isPresented:$editor.showDuplicateDialog,titleVisibility:.visible) {
             Button("Save anyway") { save(true) }
             Button("Keep editing",role:.cancel) { }
         } message: { Text("Matching records remain unchanged. You can close this form and inspect History before deciding.") }
         .onChange(of:editor.activityID) { _, _ in persist() }
         .onChange(of:phase) { _, value in if value == .background { persist() } }
-        .onDisappear { persist() }
+        .onDisappear { editor.cancelExactIntervalReplacement();persist() }
         .task {
             if let first = editor.values.spans.first, let last = editor.values.spans.last { start = first.start; end = last.end }
         }
     }
-    private func persist(isClosing: Bool = false) {
+    @discardableResult private func persist(isClosing: Bool = false) -> Bool {
 #if DEBUG
-        if isClosing {editor.persist(context,commit:InvestmentReviewTestSupport.closeCommit);return}
+        if isClosing {return editor.persist(context,commit:InvestmentReviewTestSupport.closeCommit)}
 #endif
-        editor.persist(context)
+        return editor.persist(context)
     }
     private func save(_ confirmed: Bool) {
         guard editor.hasValidDuration else { editor.error = InvestmentFailure.invalid.localizedDescription; return }
