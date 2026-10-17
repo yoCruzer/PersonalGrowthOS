@@ -133,8 +133,12 @@ final class InvestmentUITests: XCTestCase {
         reveal(apply,app,avoidingWheel:true);apply.tap();reveal(replace,app);replace.tap()
         revealMinutesAbove();XCTAssertEqual(minutes.value as? String,"25")
         let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
-        let duration=app.staticTexts["0:25:00"];reveal(duration,app);XCTAssertTrue(duration.exists)
-        screenshot(app,"External-R3-Chinese-Dark-AX-confirmed-duration")
+        XCTAssertTrue(save.waitForNonExistence(timeout:5))
+        app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData"};app.launch();openHub(app,chinese:true)
+        let restoredHistory=app.buttons["investment-history"];reveal(restoredHistory,app);restoredHistory.tap()
+        let total=app.staticTexts["investment-review-total"];reveal(total,app);XCTAssertTrue(total.label.contains("0:25:00"))
+        let count=app.staticTexts["investment-review-count"];reveal(count,app);XCTAssertTrue(count.label.contains("1"))
+        screenshot(app,"External-R3-Chinese-Dark-AX-confirmed-duration-reopened-statistics")
     }
     func testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview() {
         let app=launch();openHub(app);create(app)
