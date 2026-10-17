@@ -98,6 +98,27 @@ final class InvestmentUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("1"))
         screenshot(app,"External-R3-explicit-replacement-reopened-statistics")
     }
+    func testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments() {
+        let app=launch(chinese:true,darkLarge:true,extra:["-PGOSInvestmentSegmentReview"]);openHub(app,chinese:true)
+        let history=app.buttons["investment-history"];reveal(history,app);history.tap()
+        let row=button("investment-session-",app);reveal(row,app);row.tap()
+        let edit=app.buttons["investment-edit-session"];reveal(edit,app);edit.tap()
+        let exact=app.buttons["精确起止（选填）"];reveal(exact,app,avoidingWheel:true);exact.tap()
+        let warning=app.staticTexts["这条记录含多段有效时间。改为连续区间可能把暂停时间算入投入。"]
+        reveal(warning,app,avoidingWheel:true);screenshot(app,"External-R3-Chinese-Dark-AX-original-segment-warning")
+        let apply=app.buttons["采用此精确区间"];reveal(apply,app,avoidingWheel:true);apply.tap()
+        let alert=app.alerts.firstMatch;XCTAssertTrue(alert.waitForExistence(timeout:3))
+        let keep=alert.buttons["保留原有效时间段"],replace=alert.buttons["确认替换有效时间段"]
+        XCTAssertTrue(keep.isHittable);XCTAssertTrue(replace.isHittable)
+        XCTAssertTrue(alert.staticTexts.matching(NSPredicate(format:"label CONTAINS %@ AND label CONTAINS %@","0:20:00","0:25:00")).firstMatch.exists)
+        screenshot(app,"External-R3-Chinese-Dark-AX-explicit-two-choice-warning");keep.tap()
+        let minutes=app.textFields["investment-duration"];reveal(minutes,app,avoidingWheel:true);XCTAssertEqual(minutes.value as? String,"20")
+        reveal(apply,app,avoidingWheel:true);apply.tap();XCTAssertTrue(replace.waitForExistence(timeout:3));replace.tap()
+        reveal(minutes,app,avoidingWheel:true);XCTAssertEqual(minutes.value as? String,"25")
+        let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
+        let duration=app.staticTexts["0:25:00"];reveal(duration,app);XCTAssertTrue(duration.exists)
+        screenshot(app,"External-R3-Chinese-Dark-AX-confirmed-duration")
+    }
     func testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview() {
         let app=launch();openHub(app);create(app)
         let record=button("investment-record-",app);reveal(record,app);record.tap()

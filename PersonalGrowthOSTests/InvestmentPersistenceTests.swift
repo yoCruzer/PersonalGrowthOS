@@ -24,6 +24,47 @@ import CryptoKit
         let decoder=JSONDecoder();decoder.dateDecodingStrategy = .secondsSince1970
         return (try decoder.decode(TransferData.self,from:Data(contentsOf:extracted.appendingPathComponent("data.json"))),extracted)
     }
+    func testExternalR1DeleteAndLinkedDraftFaultsReopenAtomicallyAndRejectNewStaleEditors() throws {
+        for afterSave in [false,true] {
+            let folder=try root(),url=folder.appendingPathComponent("delete-fault.sqlite"),c=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let service=InvestmentService(context:c.mainContext,clock:{self.clock}),activity=try service.createActivity(name:"Synthetic atomic deletion")
+            let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+            var values=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:600,evidence:.dateDuration,source:.manual)
+            values.note="Synthetic fact and linked draft secret";values.feeling=4
+            let id=UUID(),linked=[UUID(),UUID()],healthy=UUID()
+            try service.saveManual(id:id,participantID:participant,activityID:activity,values:values)
+            var revisions=[UUID:Int]()
+            for draft in linked {revisions[draft]=try service.storeDraft(id:draft,participantID:participant,activityID:activity,values:values,durationText:"Synthetic linked raw",editingSessionID:id,editingRevision:0)}
+            try service.storeDraft(id:healthy,participantID:participant,activityID:activity,values:values,durationText:"10")
+            let foreign=InvestmentParticipant(name:"Synthetic foreign editor");c.mainContext.insert(foreign);try c.mainContext.save()
+            let foreignActivity=try service.createActivity(name:"Synthetic foreign activity",participantID:foreign.id)
+            let before=try TransferSnapshot.make(context:ModelContext(c))
+            XCTAssertThrowsError(try service.storeDraft(id:UUID(),participantID:foreign.id,activityID:foreignActivity,values:values,durationText:"10",editingSessionID:id,editingRevision:0))
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+            let failing=InvestmentService(context:c.mainContext,clock:{self.clock},commit:{context in if afterSave {try context.save()};throw CocoaError(.fileWriteOutOfSpace)})
+            XCTAssertThrowsError(try failing.delete(id:id,revision:0))
+            let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+            if !afterSave {
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(reopened)),before,"Before-save failure must preserve fact and every draft/revision")
+                try InvestmentService(context:reopened.mainContext,clock:{self.clock}).delete(id:id,revision:0)
+            }
+            let final=try PersistenceContainerFactory.makeOnDisk(at:url),read=ModelContext(final)
+            XCTAssertEqual(try read.fetchCount(FetchDescriptor<InvestmentSession>()),0)
+            let rows=try read.fetch(FetchDescriptor<InvestmentOperation>())
+            XCTAssertEqual(rows.count,4)
+            for row in rows {
+                let timer=try row.timer()
+                if row.id == healthy {XCTAssertEqual(timer.values,values);XCTAssertEqual(timer.state,.draft)}
+                else {XCTAssertEqual(timer,timer.erasingConsumedContent());XCTAssertTrue(timer.erasesContent);XCTAssertEqual(timer.values.seconds,0);XCTAssertTrue(timer.values.note.isEmpty);XCTAssertNil(timer.durationText)}
+            }
+            let finalService=InvestmentService(context:final.mainContext,clock:{self.clock}),erased=try TransferSnapshot.make(context:read)
+            XCTAssertThrowsError(try finalService.delete(id:id,revision:0))
+            XCTAssertThrowsError(try finalService.saveManual(id:id,participantID:participant,activityID:activity,values:values))
+            for draft in linked {XCTAssertThrowsError(try finalService.storeDraft(id:draft,participantID:participant,activityID:activity,values:values,durationText:"10",editingSessionID:id,editingRevision:0,expectedRevision:revisions[draft]))}
+            XCTAssertThrowsError(try finalService.storeDraft(id:UUID(),participantID:participant,activityID:activity,values:values,durationText:"10",editingSessionID:id,editingRevision:0))
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(final)),erased,"No stale callback may recreate or alter erased content")
+        }
+    }
     func testExternalR1LegacyDiskStartupAndLegacyZIPRestoreEraseOnlyConsumedContent() async throws {
         let folder=try root(),store=folder.appendingPathComponent("Store")
         try FileManager.default.createDirectory(at:store,withIntermediateDirectories:true)
