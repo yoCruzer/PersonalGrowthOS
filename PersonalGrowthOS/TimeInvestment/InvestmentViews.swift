@@ -495,7 +495,8 @@ struct InvestmentEditorView: View {
                         }.buttonStyle(.bordered)
                     }.frame(maxWidth:.infinity,alignment:.leading).padding()
                 }.navigationTitle("Optional exact interval").navigationBarTitleDisplayMode(.inline)
-            }.presentationDetents([.large])
+            }.presentationDetents([.large]).presentationDragIndicator(.visible)
+                .interactiveDismissDisabled(false)
         }
         .confirmationDialog("Review possible duplicate time",isPresented:$editor.showDuplicateDialog,titleVisibility:.visible) {
             Button("Save anyway") { save(true) }
