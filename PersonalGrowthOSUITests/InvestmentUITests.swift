@@ -43,7 +43,8 @@ final class InvestmentUITests: XCTestCase {
         XCUIDevice.shared.press(.home);app.activate()
         XCTAssertTrue(app.navigationBars["Record activity"].waitForExistence(timeout:5))
         let nav=app.navigationBars["Record activity"]
-        nav.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.5)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.85)))
+        // Pair the same observed sheet grabber region with R3's successful dismissal.
+        app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.09)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.95)))
         XCTAssertTrue(nav.exists,"Interactive dismissal must not lose a failed draft")
         screenshot(app,"External-R2-background-and-interactive-failure-retained")
         let close=app.buttons["Close and keep draft"];reveal(close,app);close.tap()
