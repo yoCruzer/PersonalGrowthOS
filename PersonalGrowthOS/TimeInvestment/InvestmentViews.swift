@@ -295,7 +295,7 @@ struct InvestmentTimerView: View {
                             } else if current.state.unfinished {
                                 Button("Review and save") { command(.checkpoint); openConfirmation() }.accessibilityIdentifier("investment-review-save")
                             }
-                        }
+                        }.buttonStyle(.bordered)
                     }
                     if op.timer.state == .recoveryRequired { Text("Only the last trusted checkpoint is suggested. Review or correct it; time since the checkpoint is not added automatically.").font(.caption) }
                 }
