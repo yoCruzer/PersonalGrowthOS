@@ -53,10 +53,17 @@ import UIKit
               let minutes = Double(durationText), minutes.isFinite, minutes > 0 else { return false }
         return abs(minutes * 60 - values.seconds) < 0.01
     }
-    @discardableResult func persist(_ context: ModelContext,commit: @escaping (ModelContext) throws -> Void = {try $0.save()}) -> Bool {
+    @discardableResult func persist(_ context: ModelContext,commit: ((ModelContext) throws -> Void)? = nil) -> Bool {
         guard !finished else { return true }
         do {
-            operationRevision = try InvestmentService(context:context,commit:commit).storeDraft(id:id,participantID:participantID,
+            let save: (ModelContext) throws -> Void = commit ?? {context in
+#if DEBUG
+                try InvestmentReviewTestSupport.draftCommit(context)
+#else
+                try context.save()
+#endif
+            }
+            operationRevision = try InvestmentService(context:context,commit:save).storeDraft(id:id,participantID:participantID,
                 activityID:activityID,values:values,durationText:durationText,editingSessionID:editingSessionID,
                 editingRevision:editingRevision,expectedRevision:operationRevision,timerConfirmation:timerConfirmation)
             error = nil;return true
@@ -470,15 +477,14 @@ struct InvestmentEditorView: View {
                 } catch { editor.error = error.localizedDescription }
             }
         }
-        .confirmationDialog("Replace effective segments?",isPresented:$confirmExact,titleVisibility:.visible) {
+        .alert("Replace effective segments?",isPresented:$confirmExact) {
             Button("Replace effective segments",role:.destructive) {
                 do {try editor.confirmExactIntervalReplacement(now:Date());persist()}
                 catch {editor.error=error.localizedDescription;editor.cancelExactIntervalReplacement()}
             }
             Button("Keep effective segments",role:.cancel) {editor.cancelExactIntervalReplacement()}
         } message: {
-            Text("A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm.")
-            Text(InvestmentFormatting.duration(editor.values.seconds)+" → "+InvestmentFormatting.duration(editor.pendingExactInterval?.seconds ?? editor.values.seconds))
+            Text("A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm.") + Text("\n"+InvestmentFormatting.duration(editor.values.seconds)+" → "+InvestmentFormatting.duration(editor.pendingExactInterval?.seconds ?? editor.values.seconds))
         }
         .confirmationDialog("Review possible duplicate time",isPresented:$editor.showDuplicateDialog,titleVisibility:.visible) {
             Button("Save anyway") { save(true) }
@@ -642,6 +648,11 @@ struct InvestmentSessionDetailView: View {
 #if DEBUG
 @MainActor private enum InvestmentReviewTestSupport {
     static var closeFailureConsumed=false
+    static func draftCommit(_ context: ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentCloseWriteFailure"),!closeFailureConsumed {throw CocoaError(.fileWriteOutOfSpace)}
+        try context.save()
+    }
     static func closeCommit(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
         if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentCloseWriteFailure"),!closeFailureConsumed {

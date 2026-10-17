@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import XCTest
 import UIKit
+import CryptoKit
 @testable import PersonalGrowthOS
 
 @MainActor final class InvestmentPersistenceTests: XCTestCase {
@@ -17,6 +18,134 @@ import UIKit
     func transfer(_ c: ModelContainer,_ root: URL,checkpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil) -> ImportExportService {
         .init(context:c.mainContext,mediaStore:MediaStore(rootURL:root),availableCapacity:{.max},now:{self.clock.wall},
               publicationCheckpoint:checkpoint,investmentClock:{self.clock})
+    }
+    func zipData(_ archive: URL) throws -> (TransferData,URL) {
+        let extracted=try root();try ZIPArchiveReader(archiveURL:archive,availableCapacity:.max).extractAll(to:extracted)
+        let decoder=JSONDecoder();decoder.dateDecodingStrategy = .secondsSince1970
+        return (try decoder.decode(TransferData.self,from:Data(contentsOf:extracted.appendingPathComponent("data.json"))),extracted)
+    }
+    func testExternalR1LegacyDiskStartupAndLegacyZIPRestoreEraseOnlyConsumedContent() async throws {
+        let folder=try root(),store=folder.appendingPathComponent("Store")
+        try FileManager.default.createDirectory(at:store,withIntermediateDirectories:true)
+        let url=store.appendingPathComponent("PersonalGrowthOS.sqlite"),c=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let service=InvestmentService(context:c.mainContext,clock:{self.clock}),activity=try service.createActivity(name:"Synthetic legacy privacy")
+        let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        var values=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:600,evidence:.dateDuration,source:.manual)
+        values.note="Synthetic legacy deleted secret";values.feeling=5
+        let deletedID=UUID(),linkedID=UUID(),healthyID=UUID()
+        var terminal=InvestmentTimer(state:.deleted,values:values,target:1500,checkpointAt:clock.wall)
+        terminal.durationText="Synthetic legacy raw text";terminal.editingSessionID=UUID();terminal.editingRevision=3;terminal.restoredState = .paused
+        let deleted=try InvestmentOperation(id:deletedID,participantID:participant,activityID:activity,timer:terminal,now:clock.wall)
+        deleted.revision=7
+        var linkedTimer=InvestmentTimer(state:.draft,values:values,target:nil,checkpointAt:clock.wall)
+        linkedTimer.editingSessionID=deletedID;linkedTimer.editingRevision=0;linkedTimer.durationText="Synthetic linked legacy raw"
+        let linked=try InvestmentOperation(id:linkedID,participantID:participant,activityID:activity,timer:linkedTimer,now:clock.wall)
+        var healthyValues=values;healthyValues.note="Synthetic healthy draft retained"
+        let healthy=try InvestmentOperation(id:healthyID,participantID:participant,activityID:activity,timer:.init(state:.draft,values:healthyValues,target:nil,checkpointAt:clock.wall),now:clock.wall)
+        for model in [deleted,linked,healthy] {c.mainContext.insert(model)}
+        try c.mainContext.save()
+        let originalPayload=deleted.payload,originalLinked=linked.payload
+        let lease=try await transfer(c,folder).exportPackage();defer {lease.cleanup()}
+        let (exported,extracted)=try zipData(lease.url)
+        for op in exported.investmentOperations where op.id != healthyID {XCTAssertTrue(op.timer.erasesContent);XCTAssertEqual(op.timer.values.seconds,0);XCTAssertTrue(op.timer.values.note.isEmpty)}
+        XCTAssertEqual(deleted.payload,originalPayload,"Export must not mutate the source")
+        XCTAssertEqual(linked.payload,originalLinked)
+        // Rebuild an actual pre-fix v10 ZIP with valid original legacy terminal payloads.
+        var legacy=exported
+        legacy.investmentOperations=try [deleted,linked,healthy].map {model in
+            var op=try InvestmentOperationTransfer(model);op.timer=try model.timer();return op
+        }.sorted {$0.id.uuidString < $1.id.uuidString}
+        let encoder=JSONEncoder();encoder.dateEncodingStrategy = .secondsSince1970
+        let bytes=try encoder.encode(legacy);try bytes.write(to:extracted.appendingPathComponent("data.json"))
+        let manifestURL=extracted.appendingPathComponent("manifest.json")
+        var manifest=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:manifestURL)) as? [String:Any])
+        var dataFile=try XCTUnwrap(manifest["dataFile"] as? [String:Any]);dataFile["byteCount"]=bytes.count;dataFile["sha256"]=SHA256.hash(data:bytes).map {String(format:"%02x",$0)}.joined();manifest["dataFile"]=dataFile
+        try JSONSerialization.data(withJSONObject:manifest,options:.sortedKeys).write(to:manifestURL)
+        let archive=folder.appendingPathComponent("legacy-terminal.zip")
+        try ZIPArchiveWriter.write(sources:[.init(path:"manifest.json",fileURL:manifestURL),.init(path:"data.json",fileURL:extracted.appendingPathComponent("data.json"))],to:archive)
+        let targetRoot=try root(),targetURL=targetRoot.appendingPathComponent("target.sqlite"),target=try PersistenceContainerFactory.makeOnDisk(at:targetURL)
+        _ = try await transfer(target,targetRoot).importPackage(from:archive)
+        let restored=try PersistenceContainerFactory.makeOnDisk(at:targetURL)
+        for model in try ModelContext(restored).fetch(FetchDescriptor<InvestmentOperation>()) {
+            let timer=try model.timer()
+            if model.id == healthyID {XCTAssertEqual(timer.values,healthyValues)}
+            else {XCTAssertTrue(timer.erasesContent);XCTAssertEqual(timer.values.seconds,0);XCTAssertTrue(timer.values.note.isEmpty);XCTAssertNil(timer.durationText)}
+        }
+        let reexport=try await transfer(restored,targetRoot).exportPackage();defer {reexport.cleanup()}
+        let (_,restoredExtracted)=try zipData(reexport.url)
+        let restoredText=String(decoding:try Data(contentsOf:restoredExtracted.appendingPathComponent("data.json")),as:UTF8.self)
+        XCTAssertFalse(restoredText.contains("Synthetic legacy deleted secret"));XCTAssertFalse(restoredText.contains("Synthetic linked legacy raw"));XCTAssertTrue(restoredText.contains("Synthetic healthy draft retained"))
+        let app=try AppContainer.make(configuration:.init(launchMode:.uiTesting,resetDataOnLaunch:false),rootURLOverride:folder)
+        let appRead=ModelContext(app.modelContainer)
+        for model in try appRead.fetch(FetchDescriptor<InvestmentOperation>()) {
+            let timer=try model.timer()
+            if model.id == healthyID {XCTAssertEqual(timer.values,healthyValues)}
+            else {XCTAssertTrue(timer.erasesContent);XCTAssertEqual(timer.values.seconds,0);XCTAssertTrue(timer.values.note.isEmpty);XCTAssertNil(timer.editingSessionID)}
+            if model.id == deletedID {XCTAssertEqual(model.revision,7);XCTAssertEqual(model.createdAt,clock.wall)}
+        }
+    }
+    func testExternalR1CleanupFaultsAreAtomicAndInvalidLegacyPayloadStillRejects() throws {
+        for mode in ["before","after","invalid"] {
+            let folder=try root(),store=folder.appendingPathComponent("Store");try FileManager.default.createDirectory(at:store,withIntermediateDirectories:true)
+            let url=store.appendingPathComponent("PersonalGrowthOS.sqlite"),c=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let service=InvestmentService(context:c.mainContext,clock:{self.clock}),activity=try service.createActivity(name:"Synthetic cleanup fault")
+            let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+            var value=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:mode == "invalid" ? -1 : 600,evidence:.dateDuration,source:.manual);value.note="Synthetic old consumed content"
+            let model=try InvestmentOperation(id:UUID(),participantID:participant,activityID:activity,timer:.init(state:.discarded,values:value,target:nil,checkpointAt:clock.wall),now:clock.wall)
+            c.mainContext.insert(model);try c.mainContext.save();let before=model.payload
+            let failing=InvestmentService(context:c.mainContext,commit:{context in if mode == "after" {try context.save()};throw CocoaError(.fileWriteOutOfSpace)})
+            XCTAssertThrowsError(try failing.erasePreviouslyConsumedContent())
+            let read=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let row=try XCTUnwrap(ModelContext(read).fetch(FetchDescriptor<InvestmentOperation>()).first)
+            if mode == "after" {XCTAssertEqual(try row.timer().values.seconds,0);XCTAssertTrue(try row.timer().values.note.isEmpty)}
+            else {XCTAssertEqual(row.payload,before)}
+            if mode == "invalid" {
+                XCTAssertThrowsError(try InvestmentIntegrity.validate(context:ModelContext(read)))
+                XCTAssertThrowsError(try AppContainer.make(configuration:.init(launchMode:.uiTesting,resetDataOnLaunch:false),rootURLOverride:folder))
+                XCTAssertEqual(try XCTUnwrap(ModelContext(read).fetch(FetchDescriptor<InvestmentOperation>()).first).payload,before)
+            } else {
+                try service.erasePreviouslyConsumedContent()
+                var commits=0
+                try InvestmentService(context:c.mainContext,commit:{_ in commits += 1}).erasePreviouslyConsumedContent()
+                XCTAssertEqual(commits,0,"Already erased stores must not be saved again")
+            }
+        }
+    }
+    func testExternalR1ConsumedEditDraftIsErasedWhileSavedFactAndForeignParticipantRemain() throws {
+        let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("consume.sqlite"))
+        let service=InvestmentService(context:c.mainContext,clock:{self.clock}),activity=try service.createActivity(name:"Synthetic consumed editor")
+        let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        var values=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:600,evidence:.dateDuration,source:.manual);values.note="Synthetic saved fact retained"
+        let id=UUID();try service.saveManual(id:id,participantID:participant,activityID:activity,values:values)
+        for changed in [false,true] {
+            let draft=UUID(),session=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentSession>()).first)
+            if changed {values.note="Synthetic changed fact retained"}
+            try service.storeDraft(id:draft,participantID:participant,activityID:activity,values:values,durationText:"Synthetic consumed raw duration",editingSessionID:id,editingRevision:session.revision)
+            try service.saveManual(id:id,participantID:participant,activityID:activity,values:values,expectedRevision:session.revision,draftID:draft)
+            let row=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentOperation>()).first {$0.id == draft})
+            XCTAssertEqual(try row.timer().state,.discarded);XCTAssertEqual(try row.timer().values.seconds,0);XCTAssertNil(try row.timer().durationText)
+            XCTAssertEqual(try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentSession>()).first).values(),values)
+        }
+        let second=InvestmentParticipant(name:"Synthetic second");c.mainContext.insert(second);try c.mainContext.save()
+        let secondActivity=try service.createActivity(name:"Synthetic foreign activity",participantID:second.id),foreignID=UUID()
+        try service.storeDraft(id:foreignID,participantID:second.id,activityID:secondActivity,values:values,durationText:"10")
+        let before=try TransferSnapshot.make(context:ModelContext(c))
+        let record=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentSession>()).first)
+        XCTAssertThrowsError(try service.saveManual(id:id,participantID:participant,activityID:activity,values:values,expectedRevision:record.revision,draftID:foreignID))
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+    }
+    func testExternalR2FirstAmbiguousCommitReconcilesOnlyExactInput() throws {
+        let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("first-draft.sqlite"))
+        let service=InvestmentService(context:c.mainContext),activity=try service.createActivity(name:"Synthetic first commit")
+        let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        let editor=InvestmentEditorState(participantID:participant,activityID:activity,values:.init(day:"2026-10-15",timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual))
+        XCTAssertFalse(editor.persist(c.mainContext,commit:{try $0.save();throw CocoaError(.fileWriteUnknown)}));XCTAssertNil(editor.operationRevision)
+        let committed=try TransferSnapshot.make(context:ModelContext(c))
+        editor.values.note="Synthetic changed after ambiguous commit"
+        XCTAssertFalse(editor.persist(c.mainContext));XCTAssertEqual(editor.values.note,"Synthetic changed after ambiguous commit")
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),committed)
+        editor.values.note=""
+        XCTAssertTrue(editor.persist(c.mainContext));XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),committed)
     }
     func testExternalR1DeletedAndDiscardedContentIsAbsentFromDiskAndZIPAndCannotResurrect() async throws {
         let folder=try root(),url=folder.appendingPathComponent("privacy.sqlite")
@@ -121,6 +250,23 @@ import UIKit
         _ = try await transfer(target,targetRoot).importPackage(from:lease.url)
         let restored=try XCTUnwrap(ModelContext(target).fetch(FetchDescriptor<InvestmentSession>()).first).values()
         XCTAssertEqual(restored.seconds,1200);XCTAssertEqual(restored.spans,original.spans)
+        editor.cancelExactIntervalReplacement()
+        XCTAssertFalse(try editor.requestExactInterval(start:XCTUnwrap(original.spans.first).start,end:XCTUnwrap(original.spans.last).end,now:clock.wall))
+        editor.values.note="Synthetic changed while confirmation pending"
+        XCTAssertThrowsError(try editor.confirmExactIntervalReplacement(now:clock.wall))
+        XCTAssertEqual(editor.values.spans,original.spans)
+        editor.cancelExactIntervalReplacement()
+        XCTAssertFalse(try editor.requestExactInterval(start:XCTUnwrap(original.spans.first).start,end:XCTUnwrap(original.spans.last).end,now:clock.wall))
+        try editor.confirmExactIntervalReplacement(now:clock.wall)
+        XCTAssertEqual(editor.values.seconds,1500);XCTAssertEqual(editor.values.spans.count,1);XCTAssertTrue(editor.values.corrected)
+        let current=try XCTUnwrap(ModelContext(reopened).fetch(FetchDescriptor<InvestmentSession>()).first)
+        try InvestmentService(context:reopened.mainContext,clock:{self.clock}).saveManual(id:id,participantID:participant,activityID:activity,values:editor.values,expectedRevision:current.revision)
+        let final=try PersistenceContainerFactory.makeOnDisk(at:url)
+        XCTAssertEqual(try XCTUnwrap(ModelContext(final).fetch(FetchDescriptor<InvestmentSession>()).first).values(),editor.values)
+        let finalLease=try await transfer(final,folder).exportPackage();defer {finalLease.cleanup()}
+        let (finalData,_)=try zipData(finalLease.url)
+        XCTAssertEqual(finalData.investmentSessions.first?.values.seconds,1500)
+        XCTAssertEqual(finalData.investmentSessions.first?.values.spans.count,1)
     }
     func testT4DiskCommitFailuresReopenAsPendingOrExactlyOneFactAndNeverSaveForeignDraft() throws {
         let url=try root().appendingPathComponent("commit.sqlite")
