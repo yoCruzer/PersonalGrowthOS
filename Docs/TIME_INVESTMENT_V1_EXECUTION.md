@@ -108,3 +108,8 @@ Reviewer独立只读immutable SQLite确认旧夹具收据恰好1条，ID `c71ad9
 固定 b091a5b0f3a470e6476f4b2c6998f55e181b21e1：testcompile11 exit0；`native-ui2`仅Timer/Manual两方法，exit65，1PASS/1FAIL。Timer逐步paused/running且无提前确认、明确结束、关闭继续再结束、Home/activate、冷启动保存完整通过；Reviewer确认R8/P1同row默认automatic按钮联动，统一bordered修复可关闭，未改核心状态机。Manual失败仍未进入History（独立review录屏末帧、层级确认导航栏Time investment、Hub累计0:45:00），不误称统计缺陷。该轮Invalid-frame=0，原UI1警告仍保留。
 
 `native-ui3-dark`同b091，只运行中文AX/Record方法，先只对本任务模拟器设appearance dark，结束恢复原light（原content_size=large未修改），exit65，0PASS/1FAIL，body.swipeDown仍未收键盘。没有反复点击绕开；新限定修正QuickCapture Form的scrollDismissesKeyboard(.immediately)，保持draft/保存/消失清理行为；InvestmentHub仅创建成功后清空名称并FocusState=false，失败保留输入/焦点。Reviewer只读认可这是S8相邻导航接缝。测试显式等待keyboard消失、save卡消失及History导航栏，普通启动明确默认字号；不放宽数值或状态断言。后续原生与受影响Record/分享路径仍需补验。
+
+
+固定cc09f9c `native-ui4` Timer/Manual：exit65，1PASS/1FAIL；Timer完整继续通过。Manual已成功History/1次/45分钟/日贡献，新增编辑时长后decimal键盘遮住备注；失败保留，测试改为使用现有原生Done后再编辑备注，并补返回同一review逐项7/30/全部累计30分钟/1次，删除0数值。不改生产算法或跳过断言。
+
+固定cc09f9c `native-ui5-dark` 中文最大AX/Record：exit0，1/1 PASS、0SKIP；受控task simulator appearance dark结束还原light。新滚动确实收起Record键盘，浏览/活动保存后Record原草稿逐字保留。实际截图已导出`/tmp/pgos-time-investment-evidence/ui5-dark-attachments`（Chinese-Dark-AX-editor、Record-draft-retained）；不要用测试后的Springboard live截图当产品视觉证据。后续仅UITest增强，不改cc09生产源码。

@@ -48,11 +48,22 @@ final class InvestmentUITests: XCTestCase {
         let editedMinutes=app.textFields["investment-duration"]; reveal(editedMinutes,app); editedMinutes.tap()
         let old = editedMinutes.value as? String ?? ""
         editedMinutes.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:old.count)+"30")
+        app.buttons["Done"].tap()
         let note=app.textFields["investment-note"];reveal(note,app);note.tap();note.typeText("Synthetic edited experience")
         if app.buttons["Done"].exists {app.buttons["Done"].tap()}
         let editedSave=app.buttons["investment-save"];reveal(editedSave,app);editedSave.tap()
         XCTAssertTrue(app.staticTexts["Synthetic edited experience"].waitForExistence(timeout:5))
         XCTAssertTrue(app.staticTexts["0:30:00"].exists)
+        app.navigationBars.buttons.element(boundBy:0).tap()
+        for _ in 0..<5 {app.swipeDown()}
+        let period=app.segmentedControls["investment-review-period"]
+        for title in ["7 days","30 days","All time"] {
+            period.buttons[title].tap()
+            XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:30:00"))
+            XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("1"))
+        }
+        screenshot(app,"Investment-English-edited-review-thirty-minutes")
+        let editedRow=button("investment-session-",app);reveal(editedRow,app);editedRow.tap()
         let delete=app.buttons["investment-delete-session"];reveal(delete,app);delete.tap();app.sheets.buttons["Delete record"].tap()
         XCTAssertTrue(app.staticTexts["No records in this selection"].waitForExistence(timeout:5))
         for _ in 0..<5 {app.swipeDown()}

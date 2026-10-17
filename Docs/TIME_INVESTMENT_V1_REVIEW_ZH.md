@@ -1,6 +1,6 @@
 # 时间投入 V1 独立审查
 
-状态：REVIEW_IN_PROGRESS，原生运行被环境阻塞；不是最终通过。
+状态：REVIEW_IN_PROGRESS，2026-10-17环境恢复并执行原生门禁；不是最终通过。
 
 审查规格固定 `72ee8bdf954a5628806db867682a6b021e63545b` 的两份1.1，BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`。
 
@@ -34,3 +34,12 @@ Reviewer还核对clean a873 Debug App/Share/Widget身份1.0(7)和provenance。�
 **代码层独立审查闭环不等于原生验收完成。** iOS V14、历史磁盘迁移、实际ZIP/发布故障、设置恢复、生命周期、UI及组合行为全部仍NOT_RUN。Reviewer要求状态保持BLOCKED_ENVIRONMENT，不能标READY_FOR_OWNER_DEVICE_GATE。unsigned Release后补静态复核记录于后续交接，不改变此原生限制。
 
 第三轮静态补验：Reviewer独立读取release1原日志及六个实际包，确认generic iOS / CODE_SIGNING_ALLOWED=NO / BUILD SUCCEEDED、原Bundle与1.0(7)、两App clean0abe provenance、历史Schema和指定身份源码未变。R7原验证器定向红测1项失败也已复核。此补验只关闭编译/实包身份的静态检查，原生运行继续NOT_RUN，状态仍BLOCKED_ENVIRONMENT。
+
+
+## 2026-10-17 原生续接限定复审
+
+真正独立只读Reviewer沿现有agent续接，未启动设备/构建/测试。c84a680的两个旧fixture收据oracle由immutable SQLite独立核对ID/原时间；完整快照/媒体/保护字节/重开比较保留。两个autoreleasepool保持落盘与重开验证，测试合成根不在host内unlink。实际affected2 98/98 PASS、0SKIP，本轮unlink/invalidated/Invalid-frame均0；原红不抹去。
+
+新R8/P1：原native-ui1点击Pause后意外出现pendingSave确认卡，尚未成功点击Finish；Timer同Form cell多个automatic Button联动。b091限定加统一bordered，逐步paused/running且不提前确认、真正Finish/再次继续/冷启动完整UI通过，Reviewer代码/原日志只读复核关闭。UI1总1PASS/2FAIL及一条Invalid frame保留；UI2总1PASS/1FAIL，不改成全绿。
+
+cc09f9c限定相邻键盘导航：QuickCapture仅滚动立即收键盘，Record cleansUpOnDisappear=false/草稿/保存保持；Hub创建成功后名称清空并焦点false，失败保留输入。Reviewer确认最小范围、未发现新增confirmed问题，原生后续UI仍待结果。最终统计/中英视觉/联合及完整门禁、六包身份与远端交付仍须最终独立审查，当前不得标READY。
