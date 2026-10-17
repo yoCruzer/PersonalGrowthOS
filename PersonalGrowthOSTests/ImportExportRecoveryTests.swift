@@ -2587,7 +2587,7 @@ private extension TransferData {
         let unfinished = try XCTUnwrap(s.operations().first { $0.id == unfinishedID })
         try s.command(.pause,id:unfinishedID,revision:unfinished.revision)
         let lease = try await source.service.exportPackage(); defer {lease.cleanup()}
-        for scenario in 0..<16 {
+        for scenario in 0..<20 {
             let archive = try mutatePackage(lease.url,under:fixture.root.appendingPathComponent("InvestmentWire\(scenario)"),mutation:{ root, manifest, _ in
                 let dataURL = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:dataURL)) as? [String:Any])
@@ -2617,6 +2617,13 @@ private extension TransferData {
                     values["day"] = "2099-12-31"; first["values"] = values; payload["investmentSessions"] = [first]
                     let matching = try XCTUnwrap(ops.firstIndex { ($0["id"] as? String) == (first["id"] as? String) })
                     var timer = try XCTUnwrap(ops[matching]["timer"] as? [String:Any]);timer["values"] = values;ops[matching]["timer"] = timer;payload["investmentOperations"] = ops
+                case 16,17:
+                    first["revision"] = scenario == 16 ? Int.max : Int.max - 1
+                    payload["investmentSessions"] = [first]
+                case 18,19:
+                    let index = try XCTUnwrap(ops.firstIndex { ($0["id"] as? String)?.lowercased() == unfinishedID.uuidString.lowercased() })
+                    ops[index]["revision"] = scenario == 18 ? Int.max : Int.max - 1
+                    payload["investmentOperations"] = ops
                 default: version = 9 // Reject even empty new-version keys in a legacy package.
                 }
                 let bytes = try JSONSerialization.data(withJSONObject:payload,options:.sortedKeys); try bytes.write(to:dataURL)
