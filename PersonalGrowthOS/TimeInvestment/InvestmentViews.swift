@@ -167,6 +167,7 @@ struct InvestmentHubView: View {
     @AppStorage("investment.introductionDismissed") private var introduced = false
     @State private var search = ""
     @State private var activityName = ""
+    @FocusState private var activityNameFocused: Bool
     @State private var target = 0
     @State private var operationID: UUID?
     @State private var editor: InvestmentEditorState?
@@ -227,11 +228,11 @@ struct InvestmentHubView: View {
                 }
             }
             Section("New activity") {
-                TextField("Activity name",text:$activityName).accessibilityIdentifier("investment-activity-name")
+                TextField("Activity name",text:$activityName).focused($activityNameFocused).accessibilityIdentifier("investment-activity-name")
                 if workspace.myActivities.contains(where: { $0.name.localizedStandardCompare(activityName.trimmingCharacters(in:.whitespacesAndNewlines)) == .orderedSame }) {
                     Text("An activity with a similar name already exists. You can still create a separate activity.").font(.caption)
                 }
-                Button("Create activity") { run { _ = try InvestmentService(context:context).createActivity(name:activityName); activityName = "" } }
+                Button("Create activity") { run { _ = try InvestmentService(context:context).createActivity(name:activityName); activityName = ""; activityNameFocused = false } }
                     .accessibilityIdentifier("investment-create-activity").disabled(activityName.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)
                 if workspace.myActivities.isEmpty {
                     ForEach([String(localized:"Reading"),String(localized:"Learning"),String(localized:"Exercise"),String(localized:"Coding")],id:\.self) { name in

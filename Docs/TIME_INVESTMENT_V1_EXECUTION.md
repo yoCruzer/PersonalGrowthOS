@@ -103,3 +103,8 @@ Reviewer独立只读immutable SQLite确认旧夹具收据恰好1条，ID `c71ad9
 
 
 `native-ui1`固定c84a680，selector `-only-testing:PersonalGrowthOSUITests/InvestmentUITests`，其余沿affected2前缀：exit65，3项1PASS/2FAIL/0SKIP。手工保存/编辑/删除同页刷新PASS。中文AX失败在Record键盘遮挡Tab时导航，现场只读截图`/tmp/pgos-time-investment-ui1-live.png`确认；Dark启动参数未使现场变深色，本轮不能列Dark PASS。计时失败在pause后已出现pendingSave与确认sheet，resume点击坐标无效，随后finish不存在；同List行VStack默认buttonStyle可能串触发多动作。限定修正timer controls显式bordered样式，保留首轮红测，并加入pause/resume状态和不出现确认sheet断言；统计UI补日贡献下钻/45分钟、编辑30分钟、删除0计数/时长。原日志含1条Invalid frame dimension，不改标全绿。全部失败层级/截图导出`/tmp/pgos-time-investment-evidence/ui1-attachments`，摘要`native-ui1-summary.json`。
+
+
+固定 b091a5b0f3a470e6476f4b2c6998f55e181b21e1：testcompile11 exit0；`native-ui2`仅Timer/Manual两方法，exit65，1PASS/1FAIL。Timer逐步paused/running且无提前确认、明确结束、关闭继续再结束、Home/activate、冷启动保存完整通过；Reviewer确认R8/P1同row默认automatic按钮联动，统一bordered修复可关闭，未改核心状态机。Manual失败仍未进入History（独立review录屏末帧、层级确认导航栏Time investment、Hub累计0:45:00），不误称统计缺陷。该轮Invalid-frame=0，原UI1警告仍保留。
+
+`native-ui3-dark`同b091，只运行中文AX/Record方法，先只对本任务模拟器设appearance dark，结束恢复原light（原content_size=large未修改），exit65，0PASS/1FAIL，body.swipeDown仍未收键盘。没有反复点击绕开；新限定修正QuickCapture Form的scrollDismissesKeyboard(.immediately)，保持draft/保存/消失清理行为；InvestmentHub仅创建成功后清空名称并FocusState=false，失败保留输入/焦点。Reviewer只读认可这是S8相邻导航接缝。测试显式等待keyboard消失、save卡消失及History导航栏，普通启动明确默认字号；不放宽数值或状态断言。后续原生与受影响Record/分享路径仍需补验。

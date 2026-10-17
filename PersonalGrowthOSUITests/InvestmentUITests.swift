@@ -5,7 +5,8 @@ final class InvestmentUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting","-PGOSResetData","-AppleLanguages",chinese ? "(zh-Hans)" : "(en)","-AppleLocale",chinese ? "zh_CN" : "en_US"]
-        if darkLarge { app.launchArguments += ["-AppleInterfaceStyle","Dark","-UIPreferredContentSizeCategoryName","UICTContentSizeCategoryAccessibilityXXXL"] }
+        app.launchArguments += ["-AppleInterfaceStyle",darkLarge ? "Dark" : "Light",
+                                "-UIPreferredContentSizeCategoryName",darkLarge ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL"]
         app.launch();return app
     }
     func reveal(_ element: XCUIElement,_ app: XCUIApplication) {
@@ -22,6 +23,7 @@ final class InvestmentUITests: XCTestCase {
     func create(_ app: XCUIApplication) {
         let field=app.textFields["investment-activity-name"];reveal(field,app);field.tap();field.typeText("Synthetic Reading")
         app.buttons["investment-create-activity"].tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout:5))
         for _ in 0..<5 {app.swipeDown()}
     }
     func screenshot(_ app: XCUIApplication,_ name: String) {let shot=XCTAttachment(screenshot:app.screenshot());shot.name=name;shot.lifetime = .keepAlways;add(shot)}
@@ -31,7 +33,9 @@ final class InvestmentUITests: XCTestCase {
         let minutes=app.textFields["investment-duration"];XCTAssertTrue(minutes.waitForExistence(timeout:5))
         XCTAssertEqual(Double(minutes.value as? String ?? ""),45)
         let save=app.buttons["investment-save"];reveal(save,app);save.tap()
+        XCTAssertTrue(save.waitForNonExistence(timeout:5))
         let history=app.buttons["investment-history"];reveal(history,app);history.tap()
+        XCTAssertTrue(app.navigationBars["History and review"].waitForExistence(timeout:5))
         let count = app.staticTexts["investment-review-count"]
         XCTAssertTrue(count.waitForExistence(timeout:5))
         XCTAssertTrue(count.label.contains("1"), count.label)
@@ -85,6 +89,7 @@ final class InvestmentUITests: XCTestCase {
         let app=launch(chinese:true,darkLarge:true)
         app.tabBars.buttons["记录"].tap();let body=app.textViews["capture-body"];body.tap();body.typeText("Synthetic independent Record draft")
         body.swipeDown()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout:5))
         openHub(app,chinese:true);create(app)
         let record=button("investment-record-",app);reveal(record,app);record.tap()
         screenshot(app,"Investment-Chinese-Dark-AX-editor")
