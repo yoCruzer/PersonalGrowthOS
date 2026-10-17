@@ -126,7 +126,8 @@ final class InvestmentUITests: XCTestCase {
         reveal(apply,app,avoidingWheel:true);apply.tap()
         let confirmationNav=app.navigationBars["精确起止（选填）"]
         XCTAssertTrue(confirmationNav.waitForExistence(timeout:3))
-        confirmationNav.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.5)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.95)))
+        // The recorded large sheet grabber is at y=79 on this 402x874 fixture.
+        app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.09)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.95)))
         XCTAssertTrue(confirmationNav.waitForNonExistence(timeout:5))
         revealMinutesAbove();XCTAssertEqual(minutes.value as? String,"20","Interactive cancellation must preserve effective segments")
         reveal(apply,app,avoidingWheel:true);apply.tap();reveal(replace,app);replace.tap()
