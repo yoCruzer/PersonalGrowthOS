@@ -62,7 +62,7 @@ extension TransferData {
         func validateIdentity(_ participantID: UUID, _ activityID: UUID, _ createdAt: Date, _ updatedAt: Date, _ revision: Int) throws {
             guard participants.contains(participantID), activities[activityID]?.participantID == participantID,
                   createdAt.timeIntervalSinceReferenceDate.isFinite, updatedAt.timeIntervalSinceReferenceDate.isFinite,
-                  updatedAt >= createdAt, revision >= 0 else { throw InvestmentFailure.invalid }
+                  updatedAt >= createdAt, InvestmentRevision.isValid(revision) else { throw InvestmentFailure.invalid }
         }
         for s in investmentSessions {
             guard participants.contains(s.recorderID) else { throw InvestmentFailure.invalid }

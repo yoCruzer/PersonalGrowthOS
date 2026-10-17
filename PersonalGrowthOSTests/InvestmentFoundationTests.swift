@@ -118,11 +118,37 @@ import XCTest
         let c = try PersistenceContainerFactory.makeInMemory(), (s,_,p,_) = try setup(c)
         let p2 = InvestmentParticipant(name:"Synthetic second participant"); c.mainContext.insert(p2); try c.mainContext.save()
         let a2 = try s.createActivity(name:"Synthetic activity",participantID:p2.id)
-        try s.start(activityID:a2,participantID:p2.id,operationID:UUID(),zone:zone)
+        advance(30)
+        let secondID=UUID()
+        try s.start(activityID:a2,participantID:p2.id,operationID:secondID,zone:zone)
         XCTAssertEqual(try s.operations().filter { $0.timer.state.unfinished }.count,2)
         let recorders=try ModelContext(c).fetch(FetchDescriptor<InvestmentOperation>()).map(\.recorderID)
         XCTAssertEqual(Set(recorders),[p])
         XCTAssertThrowsError(try s.start(activityID:a2,participantID:p,operationID:UUID(),zone:zone))
+        advance(60)
+        let identities=try s.operations().map { $0.id }
+        for id in identities {
+            try command(s,id,.finish)
+            let pending=try op(s,id)
+            try s.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+        }
+        let facts=try sessions(c).map(InvestmentSessionTransfer.init)
+        let firstRows=try InvestmentReview.contributions(sessions:facts,participantID:p)
+        let secondRows=try InvestmentReview.contributions(sessions:facts,participantID:p2.id)
+        XCTAssertEqual(firstRows.reduce(0) { $0+$1.seconds },90)
+        XCTAssertEqual(secondRows.reduce(0) { $0+$1.seconds },60)
+        XCTAssertEqual(InvestmentReview.count(firstRows),1)
+        XCTAssertEqual(InvestmentReview.count(secondRows),1)
+        XCTAssertEqual(Set(firstRows.map(\.sessionID)),Set(identities.filter { $0 != secondID }))
+        XCTAssertEqual(Set(secondRows.map(\.sessionID)),[secondID])
+        XCTAssertTrue(try InvestmentReview.contributions(sessions:facts,participantID:UUID()).isEmpty)
+        XCTAssertEqual(Set(facts.map(\.recorderID)),[p])
+        let workspace=InvestmentWorkspace();workspace.refresh(c.mainContext)
+        XCTAssertEqual(try workspace.contributions(),firstRows)
+        let invalid=InvestmentValues(day:"2026-10-16",timeZoneID:zone.identifier,seconds:45,evidence:.dateDuration,source:.manual)
+        XCTAssertThrowsError(try s.saveManual(id:UUID(),participantID:p,activityID:a2,values:invalid,confirmDuplicate:true)) {
+            XCTAssertEqual($0 as? InvestmentFailure,.missing)
+        }
     }
     func testT9NilFeedbackArchiveLongTermAndSameSnapshotEdits() throws {
         let c = try PersistenceContainerFactory.makeInMemory(), (s,a,p,old) = try setup(c); try command(s,old,.discard)
@@ -235,6 +261,16 @@ import XCTest
         XCTAssertThrowsError(try s.saveManual(id:id,participantID:p,activityID:a,values:v,expectedRevision:saved.revision))
     }
 
+    func testRevisionAdvancesWithoutOverflowAndNeverProducesInvalidRevision() throws {
+        for value in [Int.min,-1,Int.max] {
+            XCTAssertFalse(InvestmentRevision.isValid(value))
+            XCTAssertThrowsError(try InvestmentRevision.next(value))
+        }
+        XCTAssertEqual(try InvestmentRevision.next(0),1)
+        XCTAssertEqual(try InvestmentRevision.next(Int.max-2),Int.max-1)
+        XCTAssertTrue(InvestmentRevision.isValid(Int.max-1))
+        XCTAssertThrowsError(try InvestmentRevision.next(Int.max-1))
+    }
     func testReviewerR7FutureFormalFactRejectsUsingTechnicalObservationButRetainsClockRollback() throws {
         let c=try PersistenceContainerFactory.makeInMemory(),(s,a,p,old)=try setup(c);try command(s,old,.discard)
         let id=UUID(),v=InvestmentValues(day:ImportantCivilDay(clock.wall,timeZone:zone).identifier,timeZoneID:zone.identifier,seconds:45,evidence:.dateDuration,source:.manual)

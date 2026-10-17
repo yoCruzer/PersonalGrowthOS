@@ -64,6 +64,61 @@ import UIKit
         XCTAssertEqual(try InvestmentService(context:final.mainContext).operations().first?.timer.state,.deleted)
         XCTAssertEqual(try ModelContext(final).fetchCount(FetchDescriptor<Entry>()),0)
     }
+    func testRevisionExhaustionZIPReopensAndEveryMutationFailsWithoutLosingFacts() async throws {
+        let sourceRoot=try root(),source=try PersistenceContainerFactory.makeOnDisk(at:sourceRoot.appendingPathComponent("source.sqlite"))
+        let service=InvestmentService(context:source.mainContext,clock:{self.clock})
+        let activity=try service.createActivity(name:"Synthetic revision boundary")
+        let participant=try XCTUnwrap(ModelContext(source).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        let recordID=UUID(),pendingID=UUID(),draftID=UUID()
+        let values=InvestmentValues(day:ImportantCivilDay(clock.wall,timeZone:zone).identifier,timeZoneID:zone.identifier,seconds:45,evidence:.dateDuration,source:.manual)
+        try service.saveManual(id:recordID,participantID:participant,activityID:activity,values:values)
+        try service.start(activityID:activity,participantID:participant,operationID:pendingID,zone:zone)
+        clock.wall.addTimeInterval(60);clock.uptime += 60
+        let running=try XCTUnwrap(service.operations().first { $0.id == pendingID })
+        try service.command(.finish,id:pendingID,revision:running.revision)
+        try service.storeDraft(id:draftID,participantID:participant,activityID:activity,values:values,durationText:"0.75")
+        let boundary=ModelContext(source)
+        for op in try boundary.fetch(FetchDescriptor<InvestmentOperation>()) {op.revision=Int.max-1}
+        try boundary.save()
+        let sourceBefore=try TransferSnapshot.make(context:ModelContext(source))
+        let lease=try await transfer(source,sourceRoot).exportPackage();defer {lease.cleanup()}
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(source)),sourceBefore)
+        let targetRoot=try root(),url=targetRoot.appendingPathComponent("restored.sqlite")
+        let target=try PersistenceContainerFactory.makeOnDisk(at:url)
+        _ = try await transfer(target,targetRoot).importPackage(from:lease.url)
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let restored=InvestmentService(context:reopened.mainContext,clock:{self.clock})
+        let pending=try XCTUnwrap(restored.operations().first { $0.id == pendingID })
+        XCTAssertEqual(pending.timer.state,.recoveryRequired)
+        XCTAssertEqual(pending.timer.values.seconds,60)
+        var baseline=try TransferSnapshot.make(context:ModelContext(reopened))
+        XCTAssertEqual(baseline.investmentSessions.count,1)
+        func unchanged(_ action: () throws -> Void) throws {
+            XCTAssertThrowsError(try action()) {XCTAssertEqual($0 as? InvestmentFailure,.invalid)}
+            let disk=try PersistenceContainerFactory.makeOnDisk(at:url)
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(disk)),baseline)
+            try InvestmentIntegrity.validate(context:ModelContext(disk))
+        }
+        for command in [InvestmentService.Command.pause,.resume,.finish,.discard,.checkpoint] {
+            // A non-running checkpoint is deliberately a no-op; it consumes no revision.
+            if case .checkpoint=command {
+                try restored.command(command,id:pendingID,revision:Int.max-1)
+            } else {try unchanged {try restored.command(command,id:pendingID,revision:Int.max-1)}}
+        }
+        try unchanged {try restored.saveTimer(id:pendingID,revision:Int.max-1,values:pending.timer.values,confirmDuplicate:true)}
+        try unchanged {try restored.storeDraft(id:draftID,participantID:participant,activityID:activity,values:values,durationText:"0.75",expectedRevision:Int.max-1)}
+        var edited=values;edited.note="Synthetic edit at boundary"
+        try unchanged {try restored.saveManual(id:recordID,participantID:participant,activityID:activity,values:edited,expectedRevision:0,confirmDuplicate:true)}
+        try unchanged {try restored.saveManual(id:recordID,participantID:participant,activityID:activity,values:values,expectedRevision:0,draftID:draftID)}
+        try unchanged {try restored.saveManual(id:UUID(),participantID:participant,activityID:activity,values:values,confirmDuplicate:true,draftID:draftID)}
+        try unchanged {try restored.saveManual(id:draftID,participantID:participant,activityID:activity,values:values,confirmDuplicate:true)}
+        try unchanged {try restored.delete(id:recordID,revision:0)}
+        let editContext=ModelContext(reopened)
+        let fact=try XCTUnwrap(editContext.fetch(FetchDescriptor<InvestmentSession>()).first)
+        fact.revision=Int.max-1;try editContext.save()
+        baseline=try TransferSnapshot.make(context:ModelContext(reopened))
+        try unchanged {try restored.saveManual(id:recordID,participantID:participant,activityID:activity,values:edited,expectedRevision:Int.max-1,confirmDuplicate:true)}
+    }
     func testT12AllUnfinishedStatesExportRestoreReopenWithoutAdvancingOriginal() async throws {
         for desired in [InvestmentTimerState.running,.paused,.targetReached,.pendingSave] {
             let sourceRoot = try root(), source = try PersistenceContainerFactory.makeOnDisk(at:sourceRoot.appendingPathComponent("source.sqlite"))

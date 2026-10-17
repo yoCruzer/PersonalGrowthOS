@@ -110,7 +110,8 @@ import UIKit
         editors[editor.id] = editor; return editor
     }
     func contributions() throws -> [InvestmentContribution] {
-        try sessions.filter { $0.participantID == me }.flatMap { try InvestmentReview.contributions(id:$0.id,activityID:$0.activityID,values:$0.values) }
+        guard let me else { return [] }
+        return try InvestmentReview.contributions(sessions:sessions,participantID:me)
     }
     func name(_ id: UUID) -> String { activities.first { $0.id == id }?.name ?? String(localized:"Investment activity") }
 }

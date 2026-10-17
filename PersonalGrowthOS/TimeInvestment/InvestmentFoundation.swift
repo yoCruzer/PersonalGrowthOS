@@ -66,6 +66,16 @@ enum InvestmentFailure: Error, LocalizedError {
     }
 }
 
+enum InvestmentRevision {
+    static func isValid(_ value: Int) -> Bool { value >= 0 && value < Int.max }
+    static func next(_ value: Int) throws -> Int {
+        guard isValid(value) else { throw InvestmentFailure.invalid }
+        let (next,overflow)=value.addingReportingOverflow(1)
+        guard !overflow,isValid(next) else { throw InvestmentFailure.invalid }
+        return next
+    }
+}
+
 struct InvestmentSpan: Codable, Equatable {
     @TodoTransferInstant var start: Date
     @TodoTransferInstant var end: Date
@@ -313,7 +323,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
                 timer.clearAnchor()
             case .discard: timer.state = .discarded; timer.clearAnchor()
             }
-            try timer.validate(); op.payload = try JSONEncoder().encode(timer); op.revision += 1
+            try timer.validate(); op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision)
             op.updatedAt = max(op.updatedAt, clock.wall)
         }
     }
@@ -328,7 +338,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             try duplicates(values: values, participantID: op.participantID, excluding: id, context: context, confirmed: confirmDuplicate)
             context.insert(try InvestmentSession(id: id, participantID: op.participantID, activityID: op.activityID, values: values, now: max(now.wall, op.createdAt, op.updatedAt), recorderID: op.recorderID))
             timer.values = values; timer.state = .saved; timer.clearAnchor(); timer.checkpointAt = max(timer.checkpointAt, now.wall)
-            op.payload = try JSONEncoder().encode(timer); op.revision += 1; op.updatedAt = max(op.updatedAt, now.wall)
+            op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision); op.updatedAt = max(op.updatedAt, now.wall)
             return id
         }
     }
@@ -358,20 +368,20 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
                 if let draftID, draftID != id {
                     guard let draft = operations.first(where: { $0.id == draftID }), [.draft,.discarded].contains(try draft.timer().state) else { throw InvestmentFailure.conflict }
                     var payload = try draft.timer(); payload.state = .discarded; payload.values.note = ""; payload.values.feeling = nil
-                    draft.payload = try JSONEncoder().encode(payload); draft.revision += 1; draft.updatedAt = max(draft.updatedAt, now.wall)
+                    draft.payload = try JSONEncoder().encode(payload); draft.revision = try InvestmentRevision.next(draft.revision); draft.updatedAt = max(draft.updatedAt, now.wall)
                 }
                 return id
             }
             try duplicates(values: values, participantID: participantID, excluding: id, context: context, confirmed: confirmDuplicate)
             if let existing {
                 guard existing.participantID == participantID else { throw InvestmentFailure.conflict }
-                existing.activityID = activityID; existing.valueData = try JSONEncoder().encode(values); existing.revision += 1
+                existing.activityID = activityID; existing.valueData = try JSONEncoder().encode(values); existing.revision = try InvestmentRevision.next(existing.revision)
                 existing.updatedAt = max(existing.updatedAt, existing.createdAt, now.wall)
             } else { context.insert(try InvestmentSession(id: id, participantID: participantID, activityID: activityID, values: values, now: now.wall, recorderID: try participant(nil, in: context))) }
             if let op = operations.first(where: { $0.id == id }) {
                 op.activityID = activityID
                 var timer = try op.timer(); timer.state = .saved; timer.values = values; timer.clearAnchor(); timer.checkpointAt = max(timer.checkpointAt, now.wall)
-                op.payload = try JSONEncoder().encode(timer); op.revision += 1; op.updatedAt = max(op.updatedAt, now.wall)
+                op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision); op.updatedAt = max(op.updatedAt, now.wall)
             } else {
                 context.insert(try InvestmentOperation(id: id, participantID: participantID, activityID: activityID,
                     timer: .init(state: .saved, values: values, target: nil, checkpointAt: now.wall), now: now.wall, recorderID: try participant(nil, in: context)))
@@ -379,7 +389,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             if let draftID, draftID != id {
                 guard let draft = operations.first(where: { $0.id == draftID }), try draft.timer().state == .draft else { throw InvestmentFailure.conflict }
                 var payload = try draft.timer(); payload.state = .discarded; payload.values.note = ""; payload.values.feeling = nil
-                draft.payload = try JSONEncoder().encode(payload); draft.revision += 1; draft.updatedAt = max(draft.updatedAt, now.wall)
+                draft.payload = try JSONEncoder().encode(payload); draft.revision = try InvestmentRevision.next(draft.revision); draft.updatedAt = max(draft.updatedAt, now.wall)
             }
             return id
         }
@@ -411,7 +421,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             } else { guard timer.state == .draft else { throw InvestmentFailure.conflict } }
             timer.values = values; timer.checkpointAt = max(timer.checkpointAt, now.wall); timer.durationText = durationText; timer.editingSessionID = editingSessionID; timer.editingRevision = editingRevision
             try timer.validate()
-            model.activityID = activityID; model.payload = try JSONEncoder().encode(timer); model.revision += 1; model.updatedAt = max(model.updatedAt, now.wall)
+            model.activityID = activityID; model.payload = try JSONEncoder().encode(timer); model.revision = try InvestmentRevision.next(model.revision); model.updatedAt = max(model.updatedAt, now.wall)
             return model.revision
         }
     }
@@ -421,7 +431,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             guard model.revision == revision else { throw InvestmentFailure.conflict }
             guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>()).first(where: { $0.id == id }) else { throw InvestmentFailure.invalid }
             var timer = try op.timer(); timer.state = .deleted; timer.clearAnchor(); timer.values.note = ""; timer.values.feeling = nil
-            op.payload = try JSONEncoder().encode(timer); op.revision += 1; op.updatedAt = max(op.updatedAt, clock.wall); context.delete(model)
+            op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision); op.updatedAt = max(op.updatedAt, clock.wall); context.delete(model)
         }
     }
 }
@@ -434,6 +444,11 @@ struct InvestmentContribution: Identifiable, Equatable {
     var id: String { sessionID.uuidString + day }
 }
 enum InvestmentReview {
+    static func contributions(sessions: [InvestmentSessionTransfer],participantID: UUID) throws -> [InvestmentContribution] {
+        try sessions.filter { $0.participantID == participantID }.flatMap {
+            try contributions(id:$0.id,activityID:$0.activityID,values:$0.values)
+        }
+    }
     static func contributions(id: UUID, activityID: UUID, values: InvestmentValues) throws -> [InvestmentContribution] {
         try values.validate()
         if values.evidence != .intervals { return [.init(sessionID: id, activityID: activityID, day: values.day, seconds: values.seconds)] }
