@@ -18,6 +18,52 @@ import UIKit
         .init(context:c.mainContext,mediaStore:MediaStore(rootURL:root),availableCapacity:{.max},now:{self.clock.wall},
               publicationCheckpoint:checkpoint,investmentClock:{self.clock})
     }
+    func testT4DiskCommitFailuresReopenAsPendingOrExactlyOneFactAndNeverSaveForeignDraft() throws {
+        let url=try root().appendingPathComponent("commit.sqlite")
+        let original=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let service=InvestmentService(context:original.mainContext,clock:{self.clock})
+        let activity=try service.createActivity(name:"Synthetic commit boundary")
+        let participant=try XCTUnwrap(ModelContext(original).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        let id=UUID()
+        try service.start(activityID:activity,participantID:participant,operationID:id,zone:zone)
+        clock.wall.addTimeInterval(60);clock.uptime += 60
+        let running=try XCTUnwrap(service.operations().first)
+        try service.command(.finish,id:id,revision:running.revision)
+        let pending=try XCTUnwrap(service.operations().first)
+        XCTAssertEqual(pending.timer.values.seconds,60)
+        XCTAssertEqual(pending.timer.state,.pendingSave)
+        original.mainContext.autosaveEnabled=false
+        let foreign=Entry(body:"Synthetic unsaved foreign draft",createdAt:clock.wall)
+        original.mainContext.insert(foreign)
+        let failBefore=InvestmentService(context:original.mainContext,clock:{self.clock},commit:{ _ in throw CocoaError(.fileWriteOutOfSpace) })
+        XCTAssertThrowsError(try failBefore.saveTimer(id:id,revision:pending.revision,values:pending.timer.values))
+        let before=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let beforeService=InvestmentService(context:before.mainContext,clock:{self.clock})
+        XCTAssertEqual(try beforeService.operations().first,pending)
+        XCTAssertEqual(try ModelContext(before).fetchCount(FetchDescriptor<InvestmentSession>()),0)
+        XCTAssertEqual(try ModelContext(before).fetchCount(FetchDescriptor<Entry>()),0)
+        XCTAssertEqual(foreign.body,"Synthetic unsaved foreign draft")
+        XCTAssertTrue(original.mainContext.hasChanges)
+        let failAfter=InvestmentService(context:original.mainContext,clock:{self.clock},commit:{ try $0.save();throw CocoaError(.fileWriteUnknown) })
+        XCTAssertThrowsError(try failAfter.saveTimer(id:id,revision:pending.revision,values:pending.timer.values))
+        let after=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let afterService=InvestmentService(context:after.mainContext,clock:{self.clock})
+        XCTAssertEqual(try afterService.operations().first?.timer.state,.saved)
+        let saved=try XCTUnwrap(ModelContext(after).fetch(FetchDescriptor<InvestmentSession>()).first)
+        XCTAssertEqual(saved.id,id)
+        XCTAssertEqual(try saved.values(),pending.timer.values)
+        try afterService.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+        XCTAssertEqual(try ModelContext(after).fetchCount(FetchDescriptor<InvestmentSession>()),1)
+        XCTAssertEqual(try ModelContext(after).fetchCount(FetchDescriptor<Entry>()),0)
+        XCTAssertEqual(foreign.body,"Synthetic unsaved foreign draft")
+        XCTAssertTrue(original.mainContext.hasChanges)
+        try afterService.delete(id:id,revision:saved.revision)
+        XCTAssertThrowsError(try afterService.saveTimer(id:id,revision:pending.revision,values:pending.timer.values))
+        let final=try PersistenceContainerFactory.makeOnDisk(at:url)
+        XCTAssertEqual(try ModelContext(final).fetchCount(FetchDescriptor<InvestmentSession>()),0)
+        XCTAssertEqual(try InvestmentService(context:final.mainContext).operations().first?.timer.state,.deleted)
+        XCTAssertEqual(try ModelContext(final).fetchCount(FetchDescriptor<Entry>()),0)
+    }
     func testT12AllUnfinishedStatesExportRestoreReopenWithoutAdvancingOriginal() async throws {
         for desired in [InvestmentTimerState.running,.paused,.targetReached,.pendingSave] {
             let sourceRoot = try root(), source = try PersistenceContainerFactory.makeOnDisk(at:sourceRoot.appendingPathComponent("source.sqlite"))
