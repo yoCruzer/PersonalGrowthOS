@@ -107,14 +107,30 @@ final class InvestmentUITests: XCTestCase {
         let warning=app.staticTexts["这条记录含多段有效时间。改为连续区间可能把暂停时间算入投入。"]
         reveal(warning,app,avoidingWheel:true);screenshot(app,"External-R3-Chinese-Dark-AX-original-segment-warning")
         let apply=app.buttons["采用此精确区间"];reveal(apply,app,avoidingWheel:true);apply.tap()
-        let alert=app.alerts.firstMatch;XCTAssertTrue(alert.waitForExistence(timeout:3))
-        let keep=alert.buttons["保留原有效时间段"],replace=alert.buttons["确认替换有效时间段"]
-        XCTAssertTrue(keep.isHittable);XCTAssertTrue(replace.isHittable)
-        XCTAssertTrue(alert.staticTexts.matching(NSPredicate(format:"label CONTAINS %@ AND label CONTAINS %@","0:20:00","0:25:00")).firstMatch.exists)
+        screenshot(app,"External-R3-Chinese-Dark-AX-confirmation-top")
+        let change=app.staticTexts["investment-interval-change"]
+        reveal(change,app);XCTAssertEqual(change.label,"0:20:00 \u{2192} 0:25:00")
+        screenshot(app,"External-R3-Chinese-Dark-AX-full-warning-and-duration")
+        let keep=app.buttons["保留原有效时间段"],replace=app.buttons["确认替换有效时间段"]
+        reveal(replace,app);XCTAssertTrue(keep.isHittable);XCTAssertTrue(replace.isHittable)
         screenshot(app,"External-R3-Chinese-Dark-AX-explicit-two-choice-warning");keep.tap()
-        let minutes=app.textFields["investment-duration"];reveal(minutes,app,avoidingWheel:true);XCTAssertEqual(minutes.value as? String,"20")
-        reveal(apply,app,avoidingWheel:true);apply.tap();XCTAssertTrue(replace.waitForExistence(timeout:3));replace.tap()
-        reveal(minutes,app,avoidingWheel:true);XCTAssertEqual(minutes.value as? String,"25")
+        let minutes=app.textFields["investment-duration"]
+        func revealMinutesAbove() {
+            for _ in 0..<12 {
+                if minutes.isHittable {break}
+                app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.30)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.80)))
+            }
+            XCTAssertTrue(minutes.isHittable,app.debugDescription)
+        }
+        revealMinutesAbove();XCTAssertEqual(minutes.value as? String,"20")
+        reveal(apply,app,avoidingWheel:true);apply.tap()
+        let confirmationNav=app.navigationBars["精确起止（选填）"]
+        XCTAssertTrue(confirmationNav.waitForExistence(timeout:3))
+        confirmationNav.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.5)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.95)))
+        XCTAssertTrue(confirmationNav.waitForNonExistence(timeout:5))
+        revealMinutesAbove();XCTAssertEqual(minutes.value as? String,"20","Interactive cancellation must preserve effective segments")
+        reveal(apply,app,avoidingWheel:true);apply.tap();reveal(replace,app);replace.tap()
+        revealMinutesAbove();XCTAssertEqual(minutes.value as? String,"25")
         let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
         let duration=app.staticTexts["0:25:00"];reveal(duration,app);XCTAssertTrue(duration.exists)
         screenshot(app,"External-R3-Chinese-Dark-AX-confirmed-duration")

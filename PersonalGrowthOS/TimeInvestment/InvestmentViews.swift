@@ -477,14 +477,25 @@ struct InvestmentEditorView: View {
                 } catch { editor.error = error.localizedDescription }
             }
         }
-        .alert("Replace effective segments?",isPresented:$confirmExact) {
-            Button("Replace effective segments",role:.destructive) {
-                do {try editor.confirmExactIntervalReplacement(now:Date());persist()}
-                catch {editor.error=error.localizedDescription;editor.cancelExactIntervalReplacement()}
-            }
-            Button("Keep effective segments",role:.cancel) {editor.cancelExactIntervalReplacement()}
-        } message: {
-            Text("A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm.") + Text("\n"+InvestmentFormatting.duration(editor.values.seconds)+" → "+InvestmentFormatting.duration(editor.pendingExactInterval?.seconds ?? editor.values.seconds))
+        .sheet(isPresented:$confirmExact,onDismiss:{editor.cancelExactIntervalReplacement()}) {
+            NavigationStack {
+                ScrollView {
+                    VStack(alignment:.leading,spacing:20) {
+                        Text("Replace effective segments?").font(.title2).bold()
+                        Text("A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm.")
+                        Text(InvestmentFormatting.duration(editor.values.seconds)+" \u{2192} "+InvestmentFormatting.duration(editor.pendingExactInterval?.seconds ?? editor.values.seconds))
+                            .monospacedDigit().accessibilityIdentifier("investment-interval-change")
+                        Button("Keep effective segments",role:.cancel) {
+                            editor.cancelExactIntervalReplacement();confirmExact=false
+                        }.buttonStyle(.borderedProminent)
+                        Button("Replace effective segments",role:.destructive) {
+                            do {try editor.confirmExactIntervalReplacement(now:Date());persist()}
+                            catch {editor.error=error.localizedDescription;editor.cancelExactIntervalReplacement()}
+                            confirmExact=false
+                        }.buttonStyle(.bordered)
+                    }.frame(maxWidth:.infinity,alignment:.leading).padding()
+                }.navigationTitle("Optional exact interval").navigationBarTitleDisplayMode(.inline)
+            }.presentationDetents([.large])
         }
         .confirmationDialog("Review possible duplicate time",isPresented:$editor.showDuplicateDialog,titleVisibility:.visible) {
             Button("Save anyway") { save(true) }
