@@ -79,3 +79,17 @@
 初始实现交接、第一次自动续接及本次第二次自动续接均确认同一阻塞：系统CoreSimulator仍1171.7，低于Xcode27.1包装器要求1174.9.2；两次只读 `xcodebuild -checkFirstLaunchStatus` 均exit69。上轮属于阻塞重核、未完成新产品工作，不是活进程等待；当前没有本任务仍在运行的构建/测试句柄。未把旧进程文件或历史日志当作活任务，也没有重启已确认环境失败的测试。
 
 可独立执行的实现、编译、补充核心验证、真正只读审查和Draft交接已完成；余下必选iOS磁盘迁移、真实ZIP、UI及联合/全量回归依赖组件更新，不能用macOS探针替代。已满足连续三轮同一真正阻塞条件，Goal现标记blocked（非complete、非READY）。组件更新后按上节从现有分支/唯一Draft PR #12安全续接，不重建分支或覆盖旧工作。最后产品/测试仍为0abe55f，后续仅交接Markdown。
+
+
+## 2026-10-17 安全续接与原生首轮
+
+交付起点 4c83c8441c6e129e07cc7c49469455f59ab623df；产品/测试源码与固定 0abe55f 完全相同，故复用 `/tmp/pgos-time-investment-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun`，没有为文档重建。原工作区未知 dirty、旧 PR 与原 Draft PR #12 base/head 已只读核对，未吸收其他工作。
+
+只读 `xcodebuild -version`、`xcodebuild -checkFirstLaunchStatus`、`xcrun simctl list devices available`、`xcrun simctl list runtimes` 均正常（Xcode27.1/27A9275，CoreSimulator1174.9.2，iOS27.0/24A434）。仅启动已有任务隔离模拟器 `540825BC-D0D4-4D71-B8DF-D73B243C3726`，bootstatus完成；无 sudo/删除模拟器/系统配置操作。
+
+以下共同命令前缀：`xcodebuild test-without-building -xctestrun /tmp/pgos-time-investment-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=540825BC-D0D4-4D71-B8DF-D73B243C3726' -parallel-testing-enabled NO`，串行队列。
+
+1. 加 `-resultBundlePath /tmp/pgos-time-investment-native-persistence1.xcresult -only-testing:PersonalGrowthOSTests/InvestmentPersistenceTests -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testInvestmentV10MalformedPackagesRejectWithoutChangingTarget`，同名.log：exit0，9/9 PASS。涵盖五历史磁盘Schema直升V14、四计时未完状态真实ZIP恢复重开、故障回滚/竞态、16种坏ZIP。结构化摘要 `/tmp/pgos-time-investment-evidence/native-persistence1-summary.json`。存在SQLite unlink警告，不能将功能PASS写成零警告。
+2. 加 `-resultBundlePath /tmp/pgos-time-investment-native-affected1.xcresult -only-testing:PersonalGrowthOSTests/InvestmentFoundationTests -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests -only-testing:PersonalGrowthOSTests/SleepPersistenceTests -only-testing:PersonalGrowthOSTests/ImportantDayPersistenceTests -only-testing:PersonalGrowthOSTests/TodoFoundationTests/testOriginalV11CandidateMigratesWithoutLosingTaskEventBytesAndInfersReminderLead`，同名.log：测试执行90项、4断言FAIL/0unexpected（86通过、2测试方法失败各2断言）；xcodebuild仍在失败诊断收尾时记录此节，最终退出码/xcresult待收尾。两个旧V11迁移测试用v7恢复oracle比较新快照，actual含1条原收据而oracle为空；原测试已另行确认迁移收据1/旧包0。
+
+Reviewer独立只读immutable SQLite确认旧夹具收据恰好1条，ID `c71ad985-c3a0-45f3-879a-b23c5760d10c`，ZIMPORTEDAT=811692800（2001参考纪元）。修正先断言旧包0收据，再将此独立常量补入oracle，保留全部字段、媒体、保护原字节及重开比较；不从actual反填、不删生产收据。测试根/TransferTestFixture不再于host仍活时删除磁盘；仅合成数据保留至退出后。Reviewer区分原生产Verification库立即删除的警告，故两个同步autoreleasepool完整包住首次落盘及独立重开验证；未加等待/过滤/跳校验，效果待补跑。

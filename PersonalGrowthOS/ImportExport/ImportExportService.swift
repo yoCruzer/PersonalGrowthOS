@@ -561,7 +561,7 @@ final class ImportExportService {
     ) throws {
         try fileManager.createDirectory(at: rootURL, withIntermediateDirectories: true)
         let storeURL = rootURL.appendingPathComponent("Store.sqlite")
-        do {
+        try autoreleasepool {
             let container = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
             let verificationContext = ModelContext(container)
             let temporaryMedia = MediaStore(
@@ -573,14 +573,16 @@ final class ImportExportService {
             try verificationContext.save()
             try verifySnapshot(package.data, context: verificationContext, mediaStore: temporaryMedia)
         }
-        let reopened = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
-        let reopenedContext = ModelContext(reopened)
-        let reopenedMedia = MediaStore(
-            rootURL: rootURL.appendingPathComponent("MediaRoot", isDirectory: true),
-            fileManager: fileManager,
-            availableCapacity: { .max }
-        )
-        try verifySnapshot(package.data, context: reopenedContext, mediaStore: reopenedMedia)
+        try autoreleasepool {
+            let reopened = try PersistenceContainerFactory.makeOnDisk(at: storeURL)
+            let reopenedContext = ModelContext(reopened)
+            let reopenedMedia = MediaStore(
+                rootURL: rootURL.appendingPathComponent("MediaRoot", isDirectory: true),
+                fileManager: fileManager,
+                availableCapacity: { .max }
+            )
+            try verifySnapshot(package.data, context: reopenedContext, mediaStore: reopenedMedia)
+        }
     }
 
     private func publish(package: ValidatedPackage, importedAt: Date) async throws {

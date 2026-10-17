@@ -1,3 +1,15 @@
+# 时间投入 V1 — RUNNING_NATIVE_GATES（2026-10-17）
+
+沿现有 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接，固定 Goal 1.1、BASE 和原工作区边界不变。只读检查确认 Xcode 27.1 / 27A9275、CoreSimulator 1174.9.2；`xcodebuild -checkFirstLaunchStatus`、可用设备/运行时列表均 exit0。复用任务隔离模拟器与固定 0abe55f 编译产物，未执行 sudo、系统修改或删除模拟器。
+
+首轮原生持久化/真实 ZIP 门禁 9/9 PASS；相邻回归执行 90 项、4 断言 FAIL（2 个旧迁移测试的 v7 oracle 缺少新快照已保全的收据），原始失败及 SQLite 清理警告保留。限定修正使用不可变 V11 夹具的独立固定收据补全预期；保留其他字段完整比较。同步收紧隔离验证容器 autorelease 生命周期，合成磁盘根留到 host 退出后清理，尚待新构建补跑证明效果。独立只读 Reviewer 已核验夹具与方案；不是最终通过。
+
+下一步：复验修正、继续计时/后台重开/统计/UI、相邻模块及必要完整 Unit 和集中 UI，再独立终审并普通推送原 PR。未满足全部本地门禁，当前不标 READY_FOR_OWNER_DEVICE_GATE。设备/私人数据/签名/实际通知/Widget/VoiceOver 与远端 CI（workflows=0）仍 NOT_RUN；不 merge、tag、Archive 或发布。实际命令与每轮证据见 [执行文档](TIME_INVESTMENT_V1_EXECUTION.md)，验收状态见 [验收文档](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)。
+
+以下为历史，原样保留。
+
+---
+
 # 时间投入 V1 — IMPLEMENTING_B / BLOCKED_ENVIRONMENT（2026-10-16）
 
 Owner新Goal固定 `72ee8bdf954a5628806db867682a6b021e63545b`，两份1.1规格替代旧引导；产品基线 `ad0720ad743f495ac6f2ee3e97b16577266351db`。独立worktree与 `codex/time-investment-v1` 已建立，原工作区和PR#8/#9/#10/#11保留。V14/v10、UI/持久草稿/完整回顾已实现，新增测试持续编译。真正独立只读Reviewer三轮R1–R7代码层闭环；固定产品/测试 `0abe55f0f722b920a73ecedf6e1fc395181994a5` 的macOS隔离核心/Workspace 24/24通过，Debug全部target与unsigned Release generic iOS构建通过，六实包身份/两App clean provenance核对。iOS运行因Xcode27.1/CoreSimulator版本不匹配退出70、运行0项，磁盘/ZIP恢复/UI/联合及全量回归仍NOT_RUN，不标READY。

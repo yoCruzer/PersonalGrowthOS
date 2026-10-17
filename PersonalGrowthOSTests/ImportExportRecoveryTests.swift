@@ -1793,7 +1793,8 @@ private final class TransferTestFixture {
     }
 
     func remove() {
-        try? FileManager.default.removeItem(at: root)
+        // The fixture owns live SwiftData contexts. Keep its unique synthetic disk root
+        // for cleanup after the test host exits, rather than unlinking open SQLite files.
     }
 }
 

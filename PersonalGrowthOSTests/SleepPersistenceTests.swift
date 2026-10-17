@@ -9,7 +9,9 @@ import XCTest
     func root() throws -> URL {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("SleepSynthetic-\(UUID())")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        addTeardownBlock { try? FileManager.default.removeItem(at: root) }; return root
+        // SwiftData may retain SQLite handles beyond XCTest teardown. Retain this synthetic
+        // root until the test host exits; external evidence cleanup can then remove it safely.
+        return root
     }
     func testActualV11FixtureDirectUpgradeThroughStartupProtectionPreservesAllBackupFactsAndReceipt() async throws {
         let source = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "ImportantDayBaselineV11Fixture", withExtension: nil))
@@ -20,6 +22,13 @@ import XCTest
         let before = try Data(contentsOf: store)
         let legacyRoot = try self.root(), legacy = try PersistenceContainerFactory.makeOnDisk(at: legacyRoot.appendingPathComponent("store.sqlite"))
         _ = try await ImportExportService(context: legacy.mainContext, mediaStore: MediaStore(rootURL: legacyRoot), availableCapacity: { .max }).importPackage(from: root.appendingPathComponent("expected-v7.zip"))
+        XCTAssertEqual(try legacy.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
+        // v7 omitted receipts. Independently read from the immutable baseline SQLite fixture
+        // (ZID/ZIMPORTEDAT), rather than taking this expected identity from the upgraded store.
+        legacy.mainContext.insert(CaptureImportReceipt(
+            id: UUID(uuidString: "C71AD985-C3A0-45F3-879A-B23C5760D10C")!,
+            importedAt: Date(timeIntervalSinceReferenceDate: 811692800)))
+        try legacy.mainContext.save()
         let expected = try TransferSnapshot.make(context: legacy.mainContext)
         let app = try AppContainer.make(configuration: .init(launchMode: .uiTesting, resetDataOnLaunch: false), rootURLOverride: root)
         XCTAssertEqual(try TransferSnapshot.make(context: app.modelContainer.mainContext), expected)

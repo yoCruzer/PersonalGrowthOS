@@ -10,7 +10,9 @@ import UIKit
     func root() throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("InvestmentTests-"+UUID().uuidString)
         try FileManager.default.createDirectory(at:url,withIntermediateDirectories:true)
-        addTeardownBlock { try? FileManager.default.removeItem(at:url) }; return url
+        // Retain synthetic disk stores until the test host exits; deleting them during
+        // teardown can unlink SQLite/WAL/SHM while CoreData still holds open handles.
+        return url
     }
     func transfer(_ c: ModelContainer,_ root: URL,checkpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil) -> ImportExportService {
         .init(context:c.mainContext,mediaStore:MediaStore(rootURL:root),availableCapacity:{.max},now:{self.clock.wall},
