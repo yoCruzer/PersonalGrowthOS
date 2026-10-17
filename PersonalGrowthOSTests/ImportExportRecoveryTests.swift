@@ -2618,11 +2618,11 @@ private extension TransferData {
                     let matching = try XCTUnwrap(ops.firstIndex { ($0["id"] as? String) == (first["id"] as? String) })
                     var timer = try XCTUnwrap(ops[matching]["timer"] as? [String:Any]);timer["values"] = values;ops[matching]["timer"] = timer;payload["investmentOperations"] = ops
                 case 16,17:
-                    first["revision"] = scenario == 16 ? Int.max : Int.max - 1
+                    first["revision"] = scenario == 16 ? Int.max : Int.min
                     payload["investmentSessions"] = [first]
                 case 18,19:
                     let index = try XCTUnwrap(ops.firstIndex { ($0["id"] as? String)?.lowercased() == unfinishedID.uuidString.lowercased() })
-                    ops[index]["revision"] = scenario == 18 ? Int.max : Int.max - 1
+                    ops[index]["revision"] = scenario == 18 ? Int.max : Int.min
                     payload["investmentOperations"] = ops
                 default: version = 9 // Reject even empty new-version keys in a legacy package.
                 }
