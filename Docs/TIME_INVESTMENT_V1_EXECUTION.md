@@ -116,3 +116,6 @@ Reviewer独立只读immutable SQLite确认旧夹具收据恰好1条，ID `c71ad9
 
 
 视觉复核新增R9/P2：UI5自动PASS截图实际Occurrence date标签/长中文日期在最大AX横向裁切，且复用旧Activity键导致中文显示“本周动态”。独立Reviewer确认不能以自动PASS关闭S9。限定改日期控件：正常字号保持原生默认，AX独立纵向标签+原生wheel（含可展开Start/End），不缩放整张表单；新增专用Investment activity中英键、旧值保持；展示分钟统一trim尾零，原有8位小数精度与权威Double秒值保留，不将展示值回写。补真实磁盘亚秒/只改备注/重开/no-op精度反例；待新构建/运行/截图验证。固定486bdc3 testcompile13已PASS，但没有冒称运行新增强UI；后续因本轮视觉修正继续编译。
+
+
+固定06acdc3 `native-review1`：全部InvestmentPersistence9 + 增强Manual UI1，exit0，10/10 PASS、0SKIP。9项含亚秒备注编辑重开初版；Manual完成同回顾日贡献45分钟→编辑30分钟→7/30/全部30分钟/1次→删除0/0真实UI。Reviewer额外发现合法极小正秒被固定8位格式化为0会阻止仅备注保存，故追加正数回退（含Double最小正值）与实际UI共享hasValidDuration校验；不会改权威秒值。测试扩展三种秒数，no-op后用全新Context重取防缓存虚绿。中文AX补展开Start/End截图与专用活动标签断言，仍需后续最终固定提交运行。

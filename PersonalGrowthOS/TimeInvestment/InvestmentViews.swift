@@ -27,6 +27,11 @@ import UIKit
         self.operationRevision = operationRevision; self.timerConfirmation = timerConfirmation
         self.durationText = durationText ?? InvestmentFormatting.minutes(values.seconds)
     }
+    var hasValidDuration: Bool {
+        guard values.seconds.isFinite, values.seconds > 0,
+              let minutes = Double(durationText), minutes.isFinite, minutes > 0 else { return false }
+        return abs(minutes * 60 - values.seconds) < 0.01
+    }
     func persist(_ context: ModelContext) {
         guard !finished else { return }
         do {
@@ -120,6 +125,9 @@ enum InvestmentFormatting {
         var text = String(format:"%.8f",locale:Locale(identifier:"en_US_POSIX"),seconds / 60)
         while text.hasSuffix("0") { text.removeLast() }
         if text.hasSuffix(".") { text.removeLast() }
+        if seconds > 0, Double(text) == 0 {
+            return String(max(seconds / 60,Double.leastNonzeroMagnitude))
+        }
         return text
     }
     static func span(_ span: InvestmentSpan, zoneID: String, locale: Locale = .current) -> String {
@@ -440,8 +448,7 @@ struct InvestmentEditorView: View {
     }
     private func persist() { editor.persist(context) }
     private func save(_ confirmed: Bool) {
-        guard let minutes = Double(editor.durationText), minutes.isFinite, minutes > 0,
-              abs(minutes * 60 - editor.values.seconds) < 0.01 else { editor.error = InvestmentFailure.invalid.localizedDescription; return }
+        guard editor.hasValidDuration else { editor.error = InvestmentFailure.invalid.localizedDescription; return }
         do {
             let service = InvestmentService(context:context)
             if editor.timerConfirmation {

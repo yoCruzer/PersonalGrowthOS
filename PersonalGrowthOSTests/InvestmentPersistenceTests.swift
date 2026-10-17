@@ -216,18 +216,21 @@ import UIKit
     }
 
     func testReviewerR9ReadableMinutesPreserveSubsecondFactThroughNoteEditAndReopen() throws {
+        for seconds in [1.23456789123,1e-8,Double.leastNonzeroMagnitude] {
         let root = try root(), url = root.appendingPathComponent("precision.sqlite")
         let c = try PersistenceContainerFactory.makeOnDisk(at:url)
         let service = InvestmentService(context:c.mainContext)
         let activity = try service.createActivity(name:"Synthetic precision")
         let participant = try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
-        let id = UUID(), seconds = 1.23456789123
+        let id = UUID()
         let values = InvestmentValues(day:ImportantCivilDay(Date(),timeZone:zone).identifier,
             timeZoneID:zone.identifier,seconds:seconds,evidence:.dateDuration,source:.manual)
         try service.saveManual(id:id,participantID:participant,activityID:activity,values:values)
         let workspace = InvestmentWorkspace(); workspace.refresh(c.mainContext)
         let editor = workspace.edit(try XCTUnwrap(workspace.sessions.first))
         XCTAssertEqual(InvestmentFormatting.minutes(2700),"45")
+        XCTAssertTrue(editor.hasValidDuration,editor.durationText)
+        XCTAssertGreaterThan(try XCTUnwrap(Double(editor.durationText)),0)
         XCTAssertEqual(try XCTUnwrap(Double(editor.durationText))*60,seconds,accuracy:0.000001)
         editor.values.note = "Synthetic note only"; editor.persist(c.mainContext)
         try service.saveManual(id:id,participantID:participant,activityID:activity,values:editor.values,
@@ -239,8 +242,12 @@ import UIKit
         let revision = saved.revision, timestamp = saved.updatedAt
         try InvestmentService(context:reopened.mainContext).saveManual(id:id,
             participantID:participant,activityID:activity,values:try saved.values(),expectedRevision:revision)
-        XCTAssertEqual(saved.revision,revision); XCTAssertEqual(saved.updatedAt,timestamp)
-        XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<InvestmentSession>()),1)
+        let fresh = ModelContext(reopened)
+        let afterNoOp = try XCTUnwrap(fresh.fetch(FetchDescriptor<InvestmentSession>()).first)
+        XCTAssertEqual(afterNoOp.revision,revision); XCTAssertEqual(afterNoOp.updatedAt,timestamp)
+        XCTAssertEqual(try afterNoOp.values().seconds,seconds)
+        XCTAssertEqual(try fresh.fetchCount(FetchDescriptor<InvestmentSession>()),1)
+        }
     }
 
 }
