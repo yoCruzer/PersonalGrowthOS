@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import Darwin
 import SwiftData
 import UIKit
@@ -210,8 +211,8 @@ final class QuietWinsTests: XCTestCase {
 @MainActor
 final class QuietWinsReaderTests: XCTestCase {
     func testSourceNilRealImportsAreExcludedAndFrozenV7RestoreBoundaryIsExplicit() async throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        defer { try? FileManager.default.removeItem(at: root) }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("QuietWinsWire-"+UUID().uuidString)
+        // Retain this synthetic disk root until the test host exits.
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         let container = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("source.sqlite"))
         let context = container.mainContext
@@ -274,6 +275,46 @@ final class QuietWinsReaderTests: XCTestCase {
         let importedPicture = try XCTUnwrap(verification.fetch(FetchDescriptor<Entry>()).first { $0.id == picture.id })
         XCTAssertEqual(try Data(contentsOf: media.fileURL(for: importedPicture.images[0].relativePath)), png)
         XCTAssertEqual(try Data(contentsOf: media.fileURL(for: directPicture.images[0].relativePath)), png)
+        // Current v10 preserves all three receipts and their exact times through reopen.
+        let currentRoot = root.appendingPathComponent("CurrentV10")
+        let currentURL = currentRoot.appendingPathComponent("store.sqlite")
+        let currentMedia = MediaStore(rootURL:currentRoot)
+        let current = try PersistenceContainerFactory.makeOnDisk(at:currentURL)
+        _ = try await ImportExportService(context:current.mainContext,mediaStore:currentMedia,availableCapacity:{.max}).importPackage(from:beforeLease.url)
+        assertDirect(try await read(current))
+        let currentReopened = try PersistenceContainerFactory.makeOnDisk(at:currentURL)
+        assertDirect(try await read(currentReopened))
+        XCTAssertEqual(try currentReopened.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()),3)
+        let currentLease = try await ImportExportService(context:currentReopened.mainContext,mediaStore:currentMedia,availableCapacity:{.max}).exportPackage()
+        defer {currentLease.cleanup()}
+        XCTAssertEqual(before,try exportData(currentLease))
+
+        // Derive the actual historical v7 wire shape, retaining every supported field/media.
+        let legacyRoot = root.appendingPathComponent("LegacyV7Wire")
+        try ZIPArchiveReader(archiveURL:beforeLease.url,availableCapacity:.max).extractAll(to:legacyRoot)
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
+        let manifest = try decoder.decode(ExportManifest.self,from:Data(contentsOf:legacyRoot.appendingPathComponent("manifest.json")))
+        var payload = try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:legacyRoot.appendingPathComponent("data.json"))) as? [String:Any])
+        for key in ["importantDays","importantDayEntryLinks","importantDayTodoLinks","importantDayCovers","sleepRecords","sleepGoals","investmentParticipants","investmentActivities","investmentSessions","investmentOperations"] {
+            XCTAssertEqual((payload[key] as? [Any])?.count,0); payload.removeValue(forKey:key)
+        }
+        XCTAssertEqual((payload["captureReceipts"] as? [Any])?.count,3)
+        payload.removeValue(forKey:"captureReceipts")
+        let legacyBytes = try JSONSerialization.data(withJSONObject:payload,options:[.sortedKeys,.withoutEscapingSlashes])
+        try legacyBytes.write(to:legacyRoot.appendingPathComponent("data.json"))
+        let legacyData = try decoder.decode(TransferData.self,from:legacyBytes)
+        let legacyManifest = ExportManifest(formatIdentifier:manifest.formatIdentifier,packageSchemaVersion:7,
+            appVersion:manifest.appVersion,appBuild:manifest.appBuild,exportID:manifest.exportID,exportedAt:manifest.exportedAt,
+            objectCounts:legacyData.objectCounts(forPackageSchemaVersion:7),
+            dataFile:.init(path:"data.json",byteCount:Int64(legacyBytes.count),sha256:SHA256.hash(data:legacyBytes).map {String(format:"%02x",$0)}.joined()),mediaFiles:manifest.mediaFiles)
+        let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .secondsSince1970
+        try encoder.encode(legacyManifest).write(to:legacyRoot.appendingPathComponent("manifest.json"))
+        let files = try XCTUnwrap(FileManager.default.enumerator(at:legacyRoot,includingPropertiesForKeys:[.isRegularFileKey])?.allObjects as? [URL])
+        let sources = try files.filter {try $0.resourceValues(forKeys:[.isRegularFileKey]).isRegularFile == true}.map {
+            ZIPSource(path:String($0.path.dropFirst(legacyRoot.path.count+1)),fileURL:$0)
+        }
+        let legacyArchive = root.appendingPathComponent("frozen-v7.zip")
+        try ZIPArchiveWriter.write(sources:sources,to:legacyArchive)
         let restoredMedia = MediaStore(rootURL: root.appendingPathComponent("RestoredMedia"))
         let restoredURL = root.appendingPathComponent("restored.sqlite")
         func assertFrozenRestore(_ result: QuietWinsProjection) {
@@ -287,7 +328,7 @@ final class QuietWinsReaderTests: XCTestCase {
         }
         func restore() async throws {
             let target = try PersistenceContainerFactory.makeOnDisk(at: restoredURL)
-            _ = try await ImportExportService(context: target.mainContext, mediaStore: restoredMedia, availableCapacity: { .max }).importPackage(from: beforeLease.url)
+            _ = try await ImportExportService(context: target.mainContext, mediaStore: restoredMedia, availableCapacity: { .max }).importPackage(from: legacyArchive)
             assertFrozenRestore(try await read(target))
         }
         try await restore()
@@ -296,7 +337,7 @@ final class QuietWinsReaderTests: XCTestCase {
         XCTAssertTrue(try reopened.mainContext.fetch(FetchDescriptor<CaptureImportReceipt>()).isEmpty)
         let restoredExporter = ImportExportService(context: reopened.mainContext, mediaStore: restoredMedia, availableCapacity: { .max }, now: { now })
         let reopenedLease = try await restoredExporter.exportPackage(); defer { reopenedLease.cleanup() }
-        XCTAssertEqual(before, try exportData(reopenedLease))
+        XCTAssertEqual(legacyData, try exportData(reopenedLease))
         // Delete actual imports, retaining durable receipts, then retry the same share.
         let deletion = EntryDeletionService(persistence: ModelContextEntryPersistence(context: verification), mediaStore: media)
         for entry in try verification.fetch(FetchDescriptor<Entry>()) where [text.id, picture.id, web.id].contains(entry.id) {

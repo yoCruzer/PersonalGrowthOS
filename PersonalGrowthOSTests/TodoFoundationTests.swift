@@ -206,13 +206,13 @@ extension TodoFoundationTests {
 extension TodoFoundationTests {
     func testExactBuild12V10FixtureMigratesAndReopensPreservingAllOldFactsAndMedia() async throws {
         let source = try XCTUnwrap(Bundle(for: TodoFoundationTests.self).url(forResource: "Build12V10Fixture", withExtension: nil))
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("TodoV10Upgrade-"+UUID().uuidString)
         try FileManager.default.copyItem(at: source, to: root)
-        defer { try? FileManager.default.removeItem(at: root) }
+        // Retain the synthetic disk root until the test host exits.
         let expectedRoot = root.appendingPathComponent("Expected")
         try ZIPArchiveReader(archiveURL: root.appendingPathComponent("expected-v6.zip"), availableCapacity: .max).extractAll(to: expectedRoot)
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
-        let expected = try decoder.decode(TransferData.self, from: Data(contentsOf: expectedRoot.appendingPathComponent("data.json")))
+        let expected = try build12V10ExpectedTransfer(at: expectedRoot.appendingPathComponent("data.json"))
         let store = root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
         try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
         try FileManager.default.moveItem(at: root.appendingPathComponent("PersonalGrowthOS.sqlite"), to: store)
@@ -1035,8 +1035,8 @@ extension TodoFoundationTests {
     func testBuild12V10ContainerAliasMigratesWithoutFalseMissingStore259() async throws {
         let fm = FileManager.default
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Build12V10Fixture", withExtension: nil))
-        let work = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        defer { try? fm.removeItem(at: work) }
+        let work = fm.temporaryDirectory.appendingPathComponent("TodoV10Alias-"+UUID().uuidString)
+        // Retain the synthetic disk root until the test host exits.
         let physical = work.appendingPathComponent("Physical")
         let alias = work.appendingPathComponent("LongContainerAlias")
         try fm.createDirectory(at: work, withIntermediateDirectories: true)
@@ -1049,7 +1049,7 @@ extension TodoFoundationTests {
         let expectedRoot = work.appendingPathComponent("Expected")
         try ZIPArchiveReader(archiveURL: fixture.appendingPathComponent("expected-v6.zip"), availableCapacity: .max).extractAll(to: expectedRoot)
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
-        let expected = try decoder.decode(TransferData.self, from: Data(contentsOf: expectedRoot.appendingPathComponent("data.json")))
+        let expected = try build12V10ExpectedTransfer(at: expectedRoot.appendingPathComponent("data.json"))
         // Foundation returns physical child URLs even when enumeration starts
         // from an alias. The old signature code truncated using alias length.
         let aliasStore = alias.appendingPathComponent("Store", isDirectory: true)
@@ -1230,4 +1230,18 @@ extension TodoFoundationTests {
         XCTAssertTrue(FileManager.default.fileExists(atPath: second.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite").path))
         XCTAssertEqual(try Data(contentsOf: first.snapshotURL.appendingPathComponent("Store/PersonalGrowthOS.sqlite")), original)
     }
+}
+
+
+@MainActor
+private func build12V10ExpectedTransfer(at legacyDataURL: URL) throws -> TransferData {
+    var payload = try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:legacyDataURL)) as? [String:Any])
+    XCTAssertNil(payload["captureReceipts"]) // Immutable v6 wire boundary.
+    // Independent ZID/ZIMPORTEDAT in the immutable Build12V10 SQLite fixture.
+    let receipt = CaptureReceiptTransfer(CaptureImportReceipt(
+        id:UUID(uuidString:"C3DCB188-3715-4CE3-AFD9-EDB3BFEAFAE6")!,
+        importedAt:Date(timeIntervalSinceReferenceDate:811692800)))
+    payload["captureReceipts"] = try JSONSerialization.jsonObject(with:JSONEncoder().encode([receipt]))
+    let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
+    return try decoder.decode(TransferData.self,from:JSONSerialization.data(withJSONObject:payload))
 }

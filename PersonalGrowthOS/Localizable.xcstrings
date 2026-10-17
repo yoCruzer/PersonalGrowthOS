@@ -1,6 +1,1681 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "连续区间会替换所有原有效时间段，并可能计入暂停时间。确认前仍保留原分段证据。"
+        }
+      }
+    }
+  },
+  "Keep effective segments": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Keep effective segments"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保留原有效时间段"
+        }
+      }
+    }
+  },
+  "Replace effective segments": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Replace effective segments"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "确认替换有效时间段"
+        }
+      }
+    }
+  },
+  "Replace effective segments?": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Replace effective segments?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "替换原有效时间段？"
+        }
+      }
+    }
+  },
+  "This record contains separate effective segments. A continuous interval may include paused time.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This record contains separate effective segments. A continuous interval may include paused time."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "这条记录含多段有效时间。改为连续区间可能把暂停时间算入投入。"
+        }
+      }
+    }
+  },
+  "Investment activity": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": { "stringUnit": { "state": "translated", "value": "Activity" } },
+      "zh-Hans": { "stringUnit": { "state": "translated", "value": "投入活动" } }
+    }
+  },
+  "Less than 1 second": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": { "stringUnit": { "state": "translated", "value": "Less than 1 second" } },
+      "zh-Hans": { "stringUnit": { "state": "translated", "value": "不足 1 秒" } }
+    }
+  },
+  "Time investment": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Time investment"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时间投入"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Time investment detail": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Time investment detail"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "投入详情"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Timer": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Timer"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "计时"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Confirm time investment": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Confirm time investment"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "确认本次投入"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Activities": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Activities"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "活动项目"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Activity drafts": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Activity drafts"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "活动草稿"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Activity filter": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Activity filter"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "筛选活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Activity name": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Activity name"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "活动名称"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "All activities": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "All activities"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "全部活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "All time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "All time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "全部累计"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "An activity with a similar name already exists. You can still create a separate activity.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "An activity with a similar name already exists. You can still create a separate activity."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已有相近名称的活动，仍可创建独立项目。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Cancel draft": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Cancel draft"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "取消草稿"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Check the activity, date, duration and time evidence.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Check the activity, date, duration and time evidence."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请检查活动、日期、时长和时间依据。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Coding": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Coding"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "编程"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Continue from now": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Continue from now"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "从现在继续"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Contribution by original local day": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Contribution by original local day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "按原时区日期分摊"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Corrected duration — no exact interval": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Corrected duration — no exact interval"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "修正后的纯时长，无精确区间"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Countdown target": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Countdown target"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "倒计时目标"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Create activity": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Create activity"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "创建活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Daily recorded investment": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Daily recorded investment"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "每日已记录投入"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Date and duration only": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Date and duration only"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "仅日期和时长"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Delete record": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Delete record"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "删除记录"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Discard timer": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Discard timer"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "放弃本次计时"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Discarded": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Discarded"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已放弃"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Duration in minutes": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Duration in minutes"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "投入分钟数"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Edit activity": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Edit activity"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "编辑活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Edit record": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Edit record"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "编辑记录"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Effective time intervals": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Effective time intervals"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "有效计时区间"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Exercise": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Exercise"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "运动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Experience": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Experience"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "体验"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Experience (optional)": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Experience (optional)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "体验（选填）"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Experience not filled": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Experience not filled"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "体验未填写"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Finish timing": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Finish timing"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "结束计时"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Finished — waiting to save": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Finished — waiting to save"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已结束，待保存"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Got it": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Got it"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "知道了"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Handle the unfinished timer before starting another.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Handle the unfinished timer before starting another."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请先处理尚未完成的计时，再开始新的计时。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "History and review": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "History and review"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "历史与回顾"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Include archived activities": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Include archived activities"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "包含已归档活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Keep editing": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Keep editing"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "继续编辑"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Learning": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Learning"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "学习"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Matching records remain unchanged. You can close this form and inspect History before deciding.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Matching records remain unchanged. You can close this form and inspect History before deciding."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已有记录会保留。可先查看匹配记录，再决定是否保存。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "New activity": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "New activity"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "新活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "No records in this selection": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No records in this selection"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "此范围暂无记录"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Not filled": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Not filled"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "未填写"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Occurrence date": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Occurrence date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "发生日期"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Only the last trusted checkpoint is suggested. Review or correct it; time since the checkpoint is not added automatically.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Only the last trusted checkpoint is suggested. Review or correct it; time since the checkpoint is not added automatically."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "仅建议最后可信检查点的时长。请核对或修正，检查点之后的时间不会自动补入。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Optional exact interval": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Optional exact interval"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "精确起止（选填）"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Possible duplicate or overlapping time. Review the matching records or explicitly confirm.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Possible duplicate or overlapping time. Review the matching records or explicitly confirm."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "可能重复或时间重叠。请查看匹配记录，或明确确认保存。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Possible matching records": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Possible matching records"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "可能匹配的记录"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Reading": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Reading"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "阅读"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Record activity": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record activity"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Recorded duration": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recorded duration"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已记录时长"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Recorded investment is not a measure of skill. Days without records mean no record, not proven zero effort.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recorded investment is not a measure of skill. Days without records mean no record, not proven zero effort."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已记录投入不代表技能水平。无记录日期仅表示未记录，不代表没有投入。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Recovered time — review required": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recovered time — review required"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已恢复，待核对"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Restore this activity before starting or recording.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Restore this activity before starting or recording."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请先恢复此活动，再开始计时或补记。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Review and save": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Review and save"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "核对并保存"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Review period": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Review period"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "回顾范围"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Save activity": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Save activity"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保存投入"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Save anyway": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Save anyway"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "仍然保存"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Save name": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Save name"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保存名称"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Saved sessions": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Saved sessions"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已保存记录"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Select a day below to inspect its contribution. Cross-day sessions count once in each review period.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Select a day below to inspect its contribution. Cross-day sessions count once in each review period."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "选择下方日期查看当日分摊。跨日记录在整个回顾范围内只算一次。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Sessions": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sessions"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录次数"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Show whole period": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Show whole period"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "显示整个范围"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Start timing": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Start timing"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "开始计时"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Stopwatch": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Stopwatch"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "正计时"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Target reached — confirm time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Target reached — confirm time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已到目标，待确认"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "This fact is later than the current clock; it is retained as recorded.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This fact is later than the current clock; it is retained as recorded."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "此记录晚于当前时钟，仍保留原事实。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "This item changed elsewhere. Your input is retained; reopen it to compare.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This item changed elsewhere. Your input is retained; reopen it to compare."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "内容已在其他入口改变，输入仍保留，请重新打开核对。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "This item is no longer available.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This item is no longer available."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "此内容已不存在。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Time evidence was explicitly corrected": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Time evidence was explicitly corrected"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时间依据已由用户修正"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Timer paused": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Timer paused"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已暂停"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Timer running": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Timer running"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "计时中"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Total recorded investment": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Total recorded investment"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "全部已记录投入"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Unfinished time investment": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unfinished time investment"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时间投入待处理"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Unfinished timer": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unfinished timer"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "未完成计时"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Unsaved activity draft": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unsaved activity draft"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "未保存活动草稿"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Use this exact interval": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use this exact interval"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "采用此精确区间"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "What did you do or feel?": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "What did you do or feel?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "做了什么，有何感受？"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "You can lock the screen or use other apps while timing. This records self-reported investment, not proof of participation.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "You can lock the screen or use other apps while timing. This records self-reported investment, not proof of participation."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "计时期间可锁屏或使用其他 App。这是自报的投入记录，不能自动证明实际参与。"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Close and keep pending": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Close and keep pending"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "关闭并保留待处理"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Close and keep draft": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Close and keep draft"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "关闭并保留草稿"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Discard this unfinished timer?": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Discard this unfinished timer?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "放弃这次未完成计时？"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Cancel this draft?": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Cancel this draft?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "取消这份草稿？"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Review possible duplicate time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Review possible duplicate time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "核对可能重复的投入"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Delete this time investment record?": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Delete this time investment record?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "删除这条时间投入记录？"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Find activities": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Find activities"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查找活动"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Recorded with timer": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recorded with timer"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "来自计时"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Manually recorded": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Manually recorded"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "手工补记"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "25 min": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "25 min"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "25 分钟"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "40 min": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "40 min"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "40 分钟"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "60 min": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "60 min"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "60 分钟"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
+  "Contribution in selection: %@": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Contribution in selection: %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "所选范围分摊：%@"
+        }
+      }
+    },
+    "extractionState": "manual"
+  },
   "Compare with saved record": {
     "extractionState": "manual",
     "localizations": {

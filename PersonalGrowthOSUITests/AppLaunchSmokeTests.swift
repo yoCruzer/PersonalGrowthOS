@@ -1620,6 +1620,13 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(filename.waitForNonExistence(timeout: 20))
         app.terminate()
         app.launch() // Resets only the dedicated UITesting database, preserving the Files copy.
+        // A real new-install browse must not create the default participant or recommended activities.
+        app.tabBars.buttons["Growth"].tap()
+        let investment = app.buttons["growth-investment"]
+        for _ in 0..<5 where !investment.isHittable { app.swipeUp() }
+        investment.tap()
+        XCTAssertTrue(app.navigationBars["Time investment"].waitForExistence(timeout:5))
+        app.tabBars.buttons["Today"].tap()
         func selectBackup() {
             app.buttons["settings-button"].tap()
             let restore = app.buttons["settings-import-button"]
@@ -1930,8 +1937,9 @@ extension AppLaunchSmokeTests {
         XCTAssertEqual(addressInput.value as? String, "http://127.0.0.1:18763/capture.html")
         let go = safari.keyboards.buttons["Go"]
         XCTAssertTrue(go.isEnabled, safari.debugDescription)
-        // Use the native Return action after Paste; this Go AX frame can also lie outside the viewport.
-        addressInput.typeText("\n")
+        // Prefer the visible native Go control; retain Return for runtimes with an offscreen AX frame.
+        if go.isHittable && !go.frame.isEmpty && safari.frame.contains(go.frame) { go.tap() }
+        else { addressInput.typeText("\n") }
         XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10), safari.debugDescription)
         let moreMenu = safari.buttons["MoreMenuButton"]
         XCTAssertTrue(moreMenu.waitForExistence(timeout: 5))

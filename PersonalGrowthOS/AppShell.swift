@@ -14,6 +14,7 @@ enum AppTab: Hashable {
 struct AppShell: View {
     let container: AppContainer
 
+    @State private var investmentWorkspace = InvestmentWorkspace()
     @State private var sleepWorkspace = SleepWorkspace()
     @State private var sleepRouter = SleepExternalRouter.shared
     @State private var presentedSleep: SleepExternalRoute?
@@ -103,11 +104,16 @@ struct AppShell: View {
         }
         #endif
         .task {
+            investmentWorkspace.checkpoint(container.modelContainer.mainContext)
             sleepWorkspace.refresh(container.modelContainer.mainContext)
             deliverSleepRoute()
             await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             deliverImportantDayRoute()
             await todoReminders.reconcile(context: container.modelContainer.mainContext)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .investmentChanged).receive(on: RunLoop.main)) { notification in
+            guard notification.object as? ModelContainer === container.modelContainer else { return }
+            investmentWorkspace.refresh(container.modelContainer.mainContext)
         }
         .onChange(of: sleepRouter.pending) { _, _ in deliverSleepRoute() }
         .sheet(item: $presentedSleep) { route in SleepEditorLoader(day: route.id) }
@@ -141,6 +147,7 @@ struct AppShell: View {
             }
         }
         .onChange(of: captureScenePhase) { _, phase in
+            if phase == .background || phase == .active { investmentWorkspace.checkpoint(container.modelContainer.mainContext) }
             #if DEBUG
             if phase == .background, ProcessInfo.processInfo.arguments.contains("-PGOSSleepQueueOnBackgroundTest") { sleepRouter.receive(day: "2026-01-01") }
             #endif
@@ -201,6 +208,7 @@ struct AppShell: View {
                 integrityReport: container.mediaIntegrityReport
             )
         }
+        .environment(investmentWorkspace)
         .environment(sleepWorkspace)
         .environment(todoReminders)
         .environment(widgetPublisher)
@@ -454,6 +462,7 @@ private struct TodayView: View {
                 }
             }
             weightSection
+            InvestmentTodaySection()
             SleepTodaySection(open: { sleepRoute = .init(id: $0) }, referenceDate: referenceDate)
             if !activeGoals.isEmpty {
                 Section {

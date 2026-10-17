@@ -108,7 +108,7 @@ final class ImportantDayPersistenceTests: XCTestCase {
         XCTAssertEqual(try TransferSnapshot.make(context: reopened.mainContext), before)
         let cover = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<ImportantDayCover>()).first)
         XCTAssertEqual(try Data(contentsOf: restoredMedia.fileURL(for: cover.relativePath)), try Data(contentsOf: image.url))
-        XCTAssertEqual(ExportManifest.currentPackageSchemaVersion, 9) // Current export; v8 compatibility is separately verified.
+        XCTAssertEqual(ExportManifest.currentPackageSchemaVersion, 10) // Current export; v8 compatibility is separately verified.
         try ImportantDayIntegrity.validate(context: reopened.mainContext)
         XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
     }
@@ -120,18 +120,23 @@ extension ImportantDayPersistenceTests {
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "ImportantDayBaselineV11Fixture", withExtension: nil))
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("ImportantDayUpgrade-\(UUID())")
         try FileManager.default.copyItem(at: fixture, to: root)
-        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        // Retain the synthetic disk root until the test host releases its SQLite handles.
         // Compare through a separate legacy import, then verify the on-disk overlay independently.
         let legacyRoot = root.appendingPathComponent("LegacyRestored")
         try FileManager.default.createDirectory(at: legacyRoot, withIntermediateDirectories: true)
         let legacyContainer = try PersistenceContainerFactory.makeOnDisk(at: legacyRoot.appendingPathComponent("store.sqlite"))
         let legacyMedia = MediaStore(rootURL: legacyRoot)
         _ = try await ImportExportService(context: legacyContainer.mainContext, mediaStore: legacyMedia, availableCapacity: { .max }).importPackage(from: root.appendingPathComponent("expected-v7.zip"))
+        XCTAssertEqual(try legacyContainer.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0) // v7 boundary
+        // Independent fixed identity/time from the immutable V11 fixture, absent from v7.
+        legacyContainer.mainContext.insert(CaptureImportReceipt(
+            id: UUID(uuidString: "C71AD985-C3A0-45F3-879A-B23C5760D10C")!,
+            importedAt: Date(timeIntervalSinceReferenceDate: 811692800)))
+        try legacyContainer.mainContext.save()
         let expected = try TransferSnapshot.make(context: legacyContainer.mainContext)
         let migrated = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("PersonalGrowthOS.sqlite"))
         XCTAssertEqual(try TransferSnapshot.make(context: migrated.mainContext), expected)
         XCTAssertEqual(try migrated.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 1)
-        XCTAssertEqual(try legacyContainer.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0) // inherited accepted backup boundary
         XCTAssertEqual(try migrated.mainContext.fetchCount(FetchDescriptor<ImportantDay>()), 0)
         let reopened = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("PersonalGrowthOS.sqlite"))
         XCTAssertEqual(try TransferSnapshot.make(context: reopened.mainContext), expected)
