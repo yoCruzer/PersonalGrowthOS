@@ -215,4 +215,32 @@ import UIKit
         XCTAssertEqual(before,after);XCTAssertTrue(after.contains("23:50"),after);XCTAssertTrue(after.contains("0:20:00"),after)
     }
 
+    func testReviewerR9ReadableMinutesPreserveSubsecondFactThroughNoteEditAndReopen() throws {
+        let root = try root(), url = root.appendingPathComponent("precision.sqlite")
+        let c = try PersistenceContainerFactory.makeOnDisk(at:url)
+        let service = InvestmentService(context:c.mainContext)
+        let activity = try service.createActivity(name:"Synthetic precision")
+        let participant = try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        let id = UUID(), seconds = 1.23456789123
+        let values = InvestmentValues(day:ImportantCivilDay(Date(),timeZone:zone).identifier,
+            timeZoneID:zone.identifier,seconds:seconds,evidence:.dateDuration,source:.manual)
+        try service.saveManual(id:id,participantID:participant,activityID:activity,values:values)
+        let workspace = InvestmentWorkspace(); workspace.refresh(c.mainContext)
+        let editor = workspace.edit(try XCTUnwrap(workspace.sessions.first))
+        XCTAssertEqual(InvestmentFormatting.minutes(2700),"45")
+        XCTAssertEqual(try XCTUnwrap(Double(editor.durationText))*60,seconds,accuracy:0.000001)
+        editor.values.note = "Synthetic note only"; editor.persist(c.mainContext)
+        try service.saveManual(id:id,participantID:participant,activityID:activity,values:editor.values,
+            expectedRevision:editor.editingRevision,draftID:editor.id)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at:url)
+        let saved = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<InvestmentSession>()).first)
+        XCTAssertEqual(try saved.values().seconds,seconds)
+        XCTAssertEqual(try saved.values().note,"Synthetic note only")
+        let revision = saved.revision, timestamp = saved.updatedAt
+        try InvestmentService(context:reopened.mainContext).saveManual(id:id,
+            participantID:participant,activityID:activity,values:try saved.values(),expectedRevision:revision)
+        XCTAssertEqual(saved.revision,revision); XCTAssertEqual(saved.updatedAt,timestamp)
+        XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<InvestmentSession>()),1)
+    }
+
 }

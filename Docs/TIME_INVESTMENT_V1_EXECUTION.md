@@ -113,3 +113,6 @@ Reviewer独立只读immutable SQLite确认旧夹具收据恰好1条，ID `c71ad9
 固定cc09f9c `native-ui4` Timer/Manual：exit65，1PASS/1FAIL；Timer完整继续通过。Manual已成功History/1次/45分钟/日贡献，新增编辑时长后decimal键盘遮住备注；失败保留，测试改为使用现有原生Done后再编辑备注，并补返回同一review逐项7/30/全部累计30分钟/1次，删除0数值。不改生产算法或跳过断言。
 
 固定cc09f9c `native-ui5-dark` 中文最大AX/Record：exit0，1/1 PASS、0SKIP；受控task simulator appearance dark结束还原light。新滚动确实收起Record键盘，浏览/活动保存后Record原草稿逐字保留。实际截图已导出`/tmp/pgos-time-investment-evidence/ui5-dark-attachments`（Chinese-Dark-AX-editor、Record-draft-retained）；不要用测试后的Springboard live截图当产品视觉证据。后续仅UITest增强，不改cc09生产源码。
+
+
+视觉复核新增R9/P2：UI5自动PASS截图实际Occurrence date标签/长中文日期在最大AX横向裁切，且复用旧Activity键导致中文显示“本周动态”。独立Reviewer确认不能以自动PASS关闭S9。限定改日期控件：正常字号保持原生默认，AX独立纵向标签+原生wheel（含可展开Start/End），不缩放整张表单；新增专用Investment activity中英键、旧值保持；展示分钟统一trim尾零，原有8位小数精度与权威Double秒值保留，不将展示值回写。补真实磁盘亚秒/只改备注/重开/no-op精度反例；待新构建/运行/截图验证。固定486bdc3 testcompile13已PASS，但没有冒称运行新增强UI；后续因本轮视觉修正继续编译。

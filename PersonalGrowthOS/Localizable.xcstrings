@@ -1,6 +1,13 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Investment activity": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": { "stringUnit": { "state": "translated", "value": "Activity" } },
+      "zh-Hans": { "stringUnit": { "state": "translated", "value": "投入活动" } }
+    }
+  },
   "Less than 1 second": {
     "extractionState": "manual",
     "localizations": {

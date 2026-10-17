@@ -25,7 +25,7 @@ import UIKit
         self.id = id; self.participantID = participantID; self.activityID = activityID; self.values = values
         self.editingSessionID = editingSessionID; self.editingRevision = editingRevision
         self.operationRevision = operationRevision; self.timerConfirmation = timerConfirmation
-        self.durationText = durationText ?? String(format:"%.8f",values.seconds / 60)
+        self.durationText = durationText ?? InvestmentFormatting.minutes(values.seconds)
     }
     func persist(_ context: ModelContext) {
         guard !finished else { return }
@@ -107,7 +107,7 @@ import UIKit
     func contributions() throws -> [InvestmentContribution] {
         try sessions.filter { $0.participantID == me }.flatMap { try InvestmentReview.contributions(id:$0.id,activityID:$0.activityID,values:$0.values) }
     }
-    func name(_ id: UUID) -> String { activities.first { $0.id == id }?.name ?? String(localized:"Activity") }
+    func name(_ id: UUID) -> String { activities.first { $0.id == id }?.name ?? String(localized:"Investment activity") }
 }
 
 struct InvestmentEditorPersistenceFailure: Error, LocalizedError {
@@ -116,6 +116,12 @@ struct InvestmentEditorPersistenceFailure: Error, LocalizedError {
 }
 
 enum InvestmentFormatting {
+    static func minutes(_ seconds: Double) -> String {
+        var text = String(format:"%.8f",locale:Locale(identifier:"en_US_POSIX"),seconds / 60)
+        while text.hasSuffix("0") { text.removeLast() }
+        if text.hasSuffix(".") { text.removeLast() }
+        return text
+    }
     static func span(_ span: InvestmentSpan, zoneID: String, locale: Locale = .current) -> String {
         var style = Date.FormatStyle(date:.numeric,time:.standard)
         style.timeZone = TimeZone(identifier:zoneID) ?? .current; style.locale = locale
@@ -323,6 +329,28 @@ struct InvestmentTimerView: View {
     private func openConfirmation() { if error == nil, let op, [.pendingSave,.targetReached,.recoveryRequired].contains(op.timer.state) { editor = workspace.editor(for:op) } }
 }
 
+private struct InvestmentDateField: View {
+    let title: LocalizedStringKey
+    @Binding var selection: Date
+    var displayedComponents: DatePickerComponents
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    init(_ title: LocalizedStringKey, selection: Binding<Date>, displayedComponents: DatePickerComponents = [.date,.hourAndMinute]) {
+        self.title = title; _selection = selection; self.displayedComponents = displayedComponents
+    }
+    var body: some View {
+        if typeSize.isAccessibilitySize {
+            VStack(alignment:.leading) {
+                Text(title)
+                DatePicker(title,selection:$selection,displayedComponents:displayedComponents)
+                    .labelsHidden().datePickerStyle(.wheel).frame(maxWidth:.infinity)
+            }
+        } else {
+            DatePicker(title,selection:$selection,displayedComponents:displayedComponents)
+        }
+    }
+}
+
 struct InvestmentEditorView: View {
     @Bindable var editor: InvestmentEditorState
     @Environment(InvestmentWorkspace.self) private var workspace
@@ -336,10 +364,10 @@ struct InvestmentEditorView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Activity",selection:$editor.activityID) {
+                Picker("Investment activity",selection:$editor.activityID) {
                     ForEach(workspace.myActivities.filter { !$0.isArchived || $0.id == editor.activityID },id:\.id) { Text($0.name).tag($0.id) }
                 }.disabled(editor.timerConfirmation)
-                DatePicker("Occurrence date",selection:Binding(get:{ImportantCivilDay(identifier:editor.values.day)?.instant(minutes:720,timeZone:zone) ?? Date()},set:{ editor.values.day = ImportantCivilDay($0,timeZone:zone).identifier; if editor.values.evidence == .intervals { editor.values.spans = []; editor.values.evidence = .correctedDuration; editor.values.corrected = true }; persist() }),displayedComponents:.date)
+                InvestmentDateField("Occurrence date",selection:Binding(get:{ImportantCivilDay(identifier:editor.values.day)?.instant(minutes:720,timeZone:zone) ?? Date()},set:{ editor.values.day = ImportantCivilDay($0,timeZone:zone).identifier; if editor.values.evidence == .intervals { editor.values.spans = []; editor.values.evidence = .correctedDuration; editor.values.corrected = true }; persist() }),displayedComponents:.date)
                     .environment(\.timeZone,zone).accessibilityIdentifier("investment-date")
                 TextField("Duration in minutes",text:$editor.durationText).keyboardType(.decimalPad).accessibilityIdentifier("investment-duration")
                     .onChange(of:editor.durationText) { _, text in
@@ -349,8 +377,8 @@ struct InvestmentEditorView: View {
                 Text(InvestmentFormatting.evidence(editor.values.evidence)).font(.caption)
                 Text(editor.values.timeZoneID).font(.caption).foregroundStyle(.secondary)
                 DisclosureGroup("Optional exact interval") {
-                    DatePicker("Start",selection:$start).environment(\.timeZone,zone)
-                    DatePicker("End",selection:$end).environment(\.timeZone,zone)
+                    InvestmentDateField("Start",selection:$start).environment(\.timeZone,zone)
+                    InvestmentDateField("End",selection:$end).environment(\.timeZone,zone)
                     Button("Use this exact interval") {
                         var proposed = editor.values
                         proposed.spans = [.init(start:start,end:end)]; proposed.seconds = end.timeIntervalSince(start)
@@ -358,7 +386,7 @@ struct InvestmentEditorView: View {
                         if proposed.source == .timer { proposed.corrected = true }
                         do {
                             try proposed.validate(now:Date()); editor.values = proposed
-                            editor.durationText = String(format:"%.8f",editor.values.seconds/60); persist()
+                            editor.durationText = InvestmentFormatting.minutes(editor.values.seconds); persist()
                         } catch { editor.error = error.localizedDescription }
                     }
                 }
