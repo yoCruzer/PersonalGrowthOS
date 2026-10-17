@@ -1,3 +1,21 @@
+# 时间投入 V1 外部 Review 修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+固定审查输入 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 R1/P1、R2/P2、R3/P2](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)已完成限定修复、修复前反例和真正独立只读复核。本轮 R1–R3 与下方旧阶段同编号问题分开。沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)；BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。
+
+最终产品/测试 **`2c5b4c52edbf69c1562ff9eae491616335b97472`**，最后生产 **`c91866e6abfef0241ae4ae266ee8f02f51f76393`**。完整 Unit 在固定 `d5db223` 实际执行 467 项：**466 PASS / 0 FAIL / 1 SKIP**；同轮额外 AX UI 失败，整轮 468 项为 466 PASS / 1 FAIL / 1 SKIP，未改标全绿。其后仅确认页展示与 UI 驱动变化，42 份 Unit 源码/夹具 blob 相同，确认展示块外生产源码相同；复用完整证据，另在 `a722fe9` 跑 23 核心＋20 磁盘 **43/43 PASS**。最终 `f077598` 中文 Dark 最大 AX 1/1、英文 Light R2/R3 2/2 **PASS/exit0**，相邻中文 Record 独立草稿 AX 在 `a722fe9` 1/1 PASS。原四项计时/后台/冷重开/回顾 UI 及真实 Files ZIP 证据保留，不把不同轮次相加成一次全绿。
+
+R1：删除/丢弃/已消费编辑草稿只留稳定 ID、revision/state 等技术终态；旧库在原始完整性检查通过后清理，新 ZIP 及旧 ZIP 恢复均清除已消费内容；关联草稿同事务处理，同参与者校验，旧回调和新 ID 编辑已删事实不能复活。这里是逻辑持久模型与新备份的清除，不声称 SQLite/WAL 取证级擦除，也不删除历史备份。R2：持久化失败保留外层输入、错误与重试，成功落盘才关闭；实际提交后报错仅对完整身份/内容/编辑指针一致的重试幂等确认，改变输入仍冲突；未落盘输入不承诺强杀保存。R3：多段原有效时间默认保留；明确可滚动警告展示 20→25 分钟，取消/抓手关闭仍 20，明确确认后才替换、保存并冷启动统计为 25 分钟/1 条。
+
+独立 Reviewer `/root/time_investment_reviewer` 只读复核固定源码、原始红绿日志、磁盘/ZIP测试、真实截图、实包与交付依据；无范围内未关闭的 confirmed P0/P1/P2。系统 alert 最大 AX 截字和测试导航条手势/单向滚动失败均保留；最终 Dark/Light 分别保留 **1 / 2** 条 Invalid frame warning。Debug `compile10` 与 unsigned generic iOS `release2` **PASS/exit0**，六实包原 Bundle 身份/1.0(7)及两 App clean 同 SHA provenance 核对。V14/v10、全部历史 schema、项目/签名配置及原 1032 文案条目不变，仅新增五条完整中英警告文案。
+
+新证据根 `/tmp/pgos-time-investment-review-fixes-evidence`，分轮命令/固定 SHA/原始计数见 `native-run-index.json`，完整 Unit 复用见 `full-unit-reuse-proof.json`。本轮交付在最终产品/测试后仅五份交接 Markdown；delivery SHA 以 Git/原 PR head 和 `final-delivery-proof.json` 核对，不写自引用 hash。原工作区三项未知 dirty、原分支/upstream及旧 PR8–11 保持。
+
+Safari unsigned **FAIL**；专用 HFS+ 物理低空间 **SKIP/NOT_RUN**；真实 iPhone/私人库/签名、实际通知/桌面 Widget/Photos/VoiceOver/飞行模式及独立远端 CI（workflows=0） **NOT_RUN**。设备 Gate 尚未通过。下一边界仅 Owner 另行决定并授权签名、不卸载覆盖安装和组合设备验收：先独立备份并核对旧数据，再锁屏/后台/晚返回倒计时、待确认重开、手工/跨日/长期回顾及 Record/Sleep/ImportantDay/Share/Widget。未 merge、强推、tag、Archive 或发布 TestFlight；停在本批边界。
+
+最终 test-only `2c5b4c5` 另以 R3 已成功的同一顶部区域 `(.5,.09)→(.5,.95)` 补跑 R2（`final-dismiss1`）**1/1 PASS/exit0**，外层仍在、失败后输入/错误保留、重试关闭并真正冷启动同草稿；产品与 `c91866e` 完全相同。该补验另保留 1 条 Invalid frame，不把旧导航条拖动当作抓手保护实证。
+
+---
+
 # 时间投入 V1 外部 Review — FIXES_IN_PROGRESS（2026-10-17）
 
 本轮按 Owner 新授权处理固定 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 Review](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)，仅 R1/P1、R2/P2、R3/P2 及关联数据安全/可靠性。原 `codex/time-investment-v1` / Draft PR #12 与固定 Goal1.1/BASE 保持；真实独立只读 Reviewer 已确认三项。当前不能沿用旧 READY 结论，先补修复前反例，再限定修复、原生磁盘/ZIP/UI及独立复核。旧失败/警告/Safari unsigned FAIL、物理低空间 SKIP、真实设备/签名/CI NOT_RUN 保持。

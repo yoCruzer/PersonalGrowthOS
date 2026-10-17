@@ -1,3 +1,26 @@
+# 时间投入 V1 外部 Review 修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+本轮审查对象是[外部评论6234984209](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)在固定 `92dc10a47add519604546e597672af9afb87d10e` 指出的R1/P1、R2/P2、R3/P2，不是下方旧阶段同编号问题。最终产品/测试 `2c5b4c52edbf69c1562ff9eae491616335b97472`，最后生产 `c91866e6abfef0241ae4ae266ee8f02f51f76393`；完整Unit源固定d5db223，Goal1.1/BASE未改。
+
+真正独立只读Reviewer沿用agent `/root/time_investment_reviewer`；实现者为 `/root`。Reviewer独立读固定diff、原始生产调用链、指定评论原文、原生log/xcresult摘要、真实截图/事件/实包及交付核查；没有编辑、启动测试队列或操作设备，也没有由实现者切换角色冒充独立审查。
+
+| 问题及独立新增要求 | 独立核对与结论 |
+| --- | --- |
+| R1/P1 内容仍在终态/新备份 | 确认最小canonical终态、delete关联draft同事务同participant、saveManual两条消费路径清除；旧库在原始完整性通过后清理且清洁/空库不save；旧ZIP先原始验证再规范化，expected/actual同规则；坏原始payload不能被清理掩盖。真实磁盘/ZIP/健康对照及新增两个linked草稿save前/后故障、新UUID旧回调/跨participant拒绝已运行，关闭 |
+| R2/P2 保存失败后关闭 | bool成功才dismiss、外层交互关闭保护、后台/Workspace保留错误；ambiguous commit先reject终态，再完整identity/content/pointers一致才return已有revision，改输入仍conflict；不消费原时钟/revision或外部未保存Entry。首个及更新draft配对/真实UI重试冷启动、最终内外层手势保护已核，关闭 |
+| R3/P2 暂停被默认算入 | proposal/baseline与真实values分开，取消/默认不改原段；confirm重验baseline及now；明确确认才corrected连续段。原型系统dialog省略Cancel，alert最大AX截断，均真实失败后修正为large可滚动sheet。全文/20→25/两按钮逐屏核读；最终Keep/抓手取消20、确认25及冷启动统计通过，关闭 |
+| R3关联AX与测试驱动证据 | Reviewer独立看原D7E783D0图确认截字，未以AX exists当可读。新28224/9803951E/765949FA图完整。dark2原二进制事件从(201,115)导航栏，实际抓手约y80，未证“父禁用继承”为根因；test-only按现场改grabber，断言保留。dark3最后是combined AX label+单向滚动查询失败，test-only加强冷启动稳定统计，不削弱断言 |
+
+red1真实0PASS/5FAIL；green1真实4PASS1FAIL；green2 21PASS但不能证明最大AX；d5完整Unit467=466PASS1SKIP，额外AX失败使整轮468=466PASS1FAIL1SKIP；a722 final-dark1=44PASS1FAIL，含43核心持久及1相邻Record AX通过；c918 dark2与89c dark3仍各0PASS1FAIL。最终f077598 dark4=1/1PASS，Light R2/R3=2/2PASS，原失败完整保留。Dark/Light最终分别1/2条Invalid frame未隐藏。
+
+Reviewer核对d5→最终仅确认展示块及UITest不同，42份Unit源/fixture相同，确认块外生产完全相同，完整Unit复用合理，不能宣称最终SHA重新全量。最终Debug/unsigned generic Release及六包身份1.0(7)/两App clean同源、保护输入/原文案/签名、普通推送原Draft PR和Docs-only交付范围按证据复核。结论：本轮范围内无尚未关闭confirmed P0/P1/P2，本地可执行验收成立，**READY_FOR_OWNER_DEVICE_GATE**；设备或签名Gate未执行。
+
+Safari unsigned FAIL、物理HFS+低空间SKIP、真实iPhone/私库/签名及系统表现/独立远端CI NOT_RUN保持。新证据根 `/tmp/pgos-time-investment-review-fixes-evidence`；最终交付SHA/远端blob/旧PR及原workspace边界见final-delivery-proof.json，不写自引用hash。后续仅五份交接Markdown，不再改产品；未merge/force/tag/Archive/TestFlight。
+
+独立终审另补 `2c5b4c5` 顶部区域配对：R2 与 R3 真正成功的抓手起终点相同，`final-dismiss1` 1/1 PASS，外层输入和错误保留、重试关闭/冷草稿仍通过；额外 1 条 warning 保留。该提交仅加强测试，生产与c918完全同源；其余证据按各自SHA复用。
+
+---
+
 # 时间投入 V1 外部 Review — FIXES_IN_PROGRESS（2026-10-17）
 
 本轮按 Owner 新授权处理固定 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 Review](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)，仅 R1/P1、R2/P2、R3/P2 及关联数据安全/可靠性。原 `codex/time-investment-v1` / Draft PR #12 与固定 Goal1.1/BASE 保持；真实独立只读 Reviewer 已确认三项。当前不能沿用旧 READY 结论，先补修复前反例，再限定修复、原生磁盘/ZIP/UI及独立复核。旧失败/警告/Safari unsigned FAIL、物理低空间 SKIP、真实设备/签名/CI NOT_RUN 保持。

@@ -1,3 +1,62 @@
+# 时间投入 V1 外部 Review 修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+本节覆盖本轮外部 Review 修复，后文原始阶段记录完整保留。固定输入/最终 SHA/剩余设备边界见 [CURRENT_STATE](CURRENT_STATE.md)。指定评论原文已完整保存为 `external-review-6234984209.json`，SHA-256 `2493c7dc5742fb359143a8cc865e346426c8cdc8c484966333d4764a7a680e3d`。
+
+## 环境、固定对象与命令
+
+本轮从 clean92dc 沿原 worktree `/Users/himini/.codex/worktrees/time-investment-v1/PersonalGrowthOS` 安全续接；不是重建分支。只读首检 `xcodebuild -checkFirstLaunchStatus` 与 `xcrun simctl list devices available` / runtimes 均 exit0。Xcode27.1/27A9275、CoreSimulator1174.9.2、专用 sim `540825BC-D0D4-4D71-B8DF-D73B243C3726` / iOS27.0/24A434。无 sudo、系统修复、删模拟器或真实私库访问。仅对该合成 sim 显式设 Dark/Light；最终恢复 Light，不根据 launch 参数推断外观。始终单一 Xcode 队列。
+
+最终产品/测试 `2c5b4c52edbf69c1562ff9eae491616335b97472`；最后生产 `c91866e6abfef0241ae4ae266ee8f02f51f76393`；固定 BASE/Goal1.1、V14/v10及所有历史 schema 不变。新日志/result 均 `/tmp/pgos-ti-review-<run>.log/.xcresult`；SHA、完整命令、计数、log SHA-256 和 warnings 在新证据根 `native-run-index.json`。旧证据 `/tmp/pgos-time-investment-evidence` 原样保留。
+
+```sh
+xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -sdk iphonesimulator -arch arm64 -derivedDataPath /tmp/pgos-time-investment-derived -resultBundlePath /tmp/pgos-ti-review-compile10.xcresult CODE_SIGNING_ALLOWED=NO build-for-testing
+
+xcodebuild test-without-building -xctestrun /tmp/pgos-time-investment-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=540825BC-D0D4-4D71-B8DF-D73B243C3726' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-ti-review-final-unit-ax1.xcresult -only-testing:PersonalGrowthOSTests -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments
+
+xcodebuild test-without-building -xctestrun /tmp/pgos-time-investment-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=540825BC-D0D4-4D71-B8DF-D73B243C3726' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-ti-review-final-dark4.xcresult -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments
+
+xcodebuild test-without-building -xctestrun /tmp/pgos-time-investment-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=540825BC-D0D4-4D71-B8DF-D73B243C3726' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-ti-review-final-light1.xcresult -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR2FailedCloseKeepsEditorAndRetrySurvivesColdLaunch -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR3MultipleSegmentsRequireExplicitContinuousReplacement
+
+xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS' -derivedDataPath /tmp/pgos-time-investment-release-derived -resultBundlePath /tmp/pgos-ti-review-release2.xcresult CODE_SIGNING_ALLOWED=NO build
+```
+
+第二条完整 Unit 命令实际执行于 clean d5db223/compile5；不能拿本节最终 compile10 倒推它的源码。其后逐候选有独立 build-for-testing，最后两条 UI 用同一 f077598 产物 test-without-building，不重复构建。该 Release 仅编译验证，不是可安装签名 IPA。
+
+## 分轮真实结果
+
+| SHA / run | 实际结果 | 解释 |
+| --- | --- | --- |
+| 39c162b / compile1 | FAIL | 新测试缺 Entry.createdAt 参数；原 log 保留，精确 exit 未单独保存，未写假数字 |
+| c8b6b54 / compile2、red1 | 编译 PASS；5 项 **0 PASS/5 FAIL/0 SKIP，exit65** | 原生产行为经注入 seam/等价提取真实复现，三磁盘＋两 UI；不是先修复再声称红测 |
+| 499e75d / compile3、green1 | 编译 PASS；**4 PASS/1 FAIL，exit65** | R1/R2/R3磁盘及R2UI过；native confirmationDialog 只显示替换，取消按钮缺失，保留失败 |
+| 0200511 / compile4、green2 | 编译 PASS；**21/21 PASS，exit0** | 19持久＋R2/R3UI；原型alert在英文Light完整可读，2条Invalid frame。后续新增AX发现不能沿用这一视觉结论 |
+| d5db223 / compile5、final-unit-ax1 | Unit467项 **466 PASS/0 FAIL/1 SKIP**；整轮468项 **466 PASS/1 FAIL/1 SKIP，exit65** | 完整相邻回归；独立Reviewer要求新增delete前后故障/新UUID/参与者反例PASS。额外中文AXUI失败：系统alert截断warning/20→25，测试取消后只向下找上方minutes也失败 |
+| a722fe9 / compile6、final-dark1 | **44 PASS/1 FAIL/0 SKIP，exit65** | 核心23＋持久20全PASS，相邻中文Record草稿AX1PASS；可滚动确认页内容完整，但内层导航条手势未关闭，UI余下步骤NOT_RUN |
+| c91866e / compile7、final-dark2 | 编译 PASS；UI **0 PASS/1 FAIL，exit65** | 显式内层false未解决相同导航条手势，不声称继承禁用根因已证实 |
+| 89c4754 / compile8、final-dark3 | 编译 PASS；UI **0 PASS/1 FAIL，exit65** | 按录屏/二进制事件定位真实grabber后，手势关闭/仍20/确认25/Save成功；最后单向滚动精确查独立时长失败，实际AX已是组合“日期、0:25:00” |
+| f077598 / compile9、final-dark4 | 编译 PASS；中文Dark最大AX **1/1 PASS，exit0** | 保留全部取消/手势/确认断言，将末尾加强为真正冷启动稳定统计25分钟/1条；实图核读 |
+| f077598 / final-light1 | 英文Light R2/R3 **2/2 PASS，exit0** | 原导航栏拖动后仍在（非抓手实证）；明确关闭失败保留/成功冷重开；内层sheet取消20/明确替换25及冷重开统计 |
+| 2c5b4c5 / compile10、final-dismiss1 | 编译 PASS；Light R2 **1/1 PASS，exit0** | 同 R3 成功的顶部区域正/负配对，外层不关闭，失败/重试/冷启动断言全部保留；仅测试增量 |
+| 2c5b4c5 / release2 | **BUILD SUCCEEDED / exit0** | unsigned generic iOS；六真实App/Share/Widget包与两App clean fullSHA provenance验证 |
+
+八项本轮新增持久测试覆盖逻辑删除/丢弃/消费、两关联草稿同事务 beforeSave/actualSave后throw、健康草稿不动、外部未保存Entry不提交、旧库合法清理与坏原始payload拒绝、真实旧v10 ZIP恢复与重导出、新UUID旧编辑/跨参与者拒绝、首个及更新draft实际提交后报错精确重试、原20分钟分段默认/取消/备注保存/重开/ZIP保持及确认25分钟正向。未放宽坏包、完整快照、历史保护/媒体或回滚断言。
+
+完整 Unit 在 d5db223 已覆盖 ImportExport55、InvestmentFoundation23/Persistence20及全部邻接模块；最终只改确认展示块与UI驱动，42份Unit源/fixture blob相同，移除该展示块后的生产文件逐字相同，复用理由与具体 SHA 见 `full-unit-reuse-proof.json`。不把467项写成f077598或最终2c5b4c5重新执行。旧计时/后台/冷重开/统计及Files真实ZIP门禁按原证据复用；本轮原生相邻Record AX另过。
+
+## 原失败、警告、边界及交付
+
+所有红测/系统框失败/AX截字/手势与查询驱动失败均留原 log/xcresult/summary/attachments。dark2录屏由只读AVFoundation提帧，实际导航条起点(201,115)、抓手约y80；没有从未改变的失败盲目重试。修复前测试 seam 默认仍真实context.save；DEBUG合成夹具仅PGOSUITesting加专用参数启用，不影响Release或私人数据。
+
+green2两条、final-dark1两条 Invalid frame 保留；最终 Dark/Light **1 / 2** 条仍在原日志/summary。注入损坏库的CoreData错误及宿主SDK诊断不删除，不与测试失败数混淆。
+
+Safari unsigned仍FAIL（旧真实扩展client is not entitled/无App Group entitlement），未重跑已证失败或改签名绕过。唯一UnitSKIP仍专用32MB HFS+镜像/marker缺失，物理低空间NOT_RUN；不填满主盘。真实iPhone/私库/签名、实际通知/桌面Widget/Photos/VoiceOver/飞行模式、远端独立CI（workflows=0）NOT_RUN。
+
+`final-static-proof.json` 核对完整项目/签名/历史schema文件不变、原1032文案逐条不变及五条新中英键；`final-bundle-proof.json` 核六包身份1.0(7)/两App clean同SHA。最终产品后仅五份Markdown；普通push后原PR/全远端blob/旧PR8–11和原workspace三项未知dirty由 `final-delivery-proof.json` 核对。真正独立Reviewer逐轮闭环范围内问题，停在READY_FOR_OWNER_DEVICE_GATE，不代表设备或签名通过。
+
+最终 test-only `2c5b4c5` 另以 R3 已成功的同一顶部区域 `(.5,.09)→(.5,.95)` 补跑 R2（`final-dismiss1`）**1/1 PASS/exit0**，外层仍在、失败后输入/错误保留、重试关闭并真正冷启动同草稿；产品与 `c91866e` 完全相同。该补验另保留 1 条 Invalid frame，不把旧导航条拖动当作抓手保护实证。
+
+---
+
 # 时间投入 V1 外部 Review — FIXES_IN_PROGRESS（2026-10-17）
 
 本轮按 Owner 新授权处理固定 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 Review](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)，仅 R1/P1、R2/P2、R3/P2 及关联数据安全/可靠性。原 `codex/time-investment-v1` / Draft PR #12 与固定 Goal1.1/BASE 保持；真实独立只读 Reviewer 已确认三项。当前不能沿用旧 READY 结论，先补修复前反例，再限定修复、原生磁盘/ZIP/UI及独立复核。旧失败/警告/Safari unsigned FAIL、物理低空间 SKIP、真实设备/签名/CI NOT_RUN 保持。
