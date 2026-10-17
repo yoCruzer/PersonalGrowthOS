@@ -505,7 +505,13 @@ struct InvestmentHistoryView: View {
                     if selectedDay != nil { Button("Show whole period") { selectedDay = nil } }
                     ForEach(totals.reversed(),id:\.day) { value in
                         Button { selectedDay = selectedDay == value.day ? nil : value.day } label: {
-                            HStack { Text(value.day); Spacer(); Text(InvestmentFormatting.duration(value.seconds)).monospacedDigit() }
+                            ViewThatFits(in:.horizontal) {
+                                HStack { Text(value.day); Spacer(); Text(InvestmentFormatting.duration(value.seconds)).monospacedDigit() }
+                                VStack(alignment:.leading,spacing:4) {
+                                    Text(value.day)
+                                    Text(InvestmentFormatting.duration(value.seconds)).monospacedDigit()
+                                }
+                            }
                         }.accessibilityIdentifier("investment-day-\(value.day)")
                     }
                 }

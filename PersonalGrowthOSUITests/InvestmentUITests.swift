@@ -134,6 +134,11 @@ final class InvestmentUITests: XCTestCase {
         screenshot(app,"Investment-Chinese-Dark-AX-review-summary")
         let day=app.buttons["investment-day-"+originalDay];reveal(day,app);day.tap()
         screenshot(app,"Investment-Chinese-Dark-AX-review-chart-and-day")
+        let dayText=day.staticTexts[originalDay]
+        let dayDuration=day.staticTexts["0:45:00"]
+        XCTAssertTrue(dayText.exists)
+        XCTAssertTrue(dayDuration.exists)
+        XCTAssertFalse(dayText.frame.intersects(dayDuration.frame),"Daily date and duration must remain separately readable")
         let row=button("investment-session-",app);reveal(row,app);row.tap()
         screenshot(app,"Investment-Chinese-Dark-AX-saved-detail")
     }
