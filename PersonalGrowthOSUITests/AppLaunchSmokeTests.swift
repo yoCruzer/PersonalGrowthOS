@@ -1937,8 +1937,9 @@ extension AppLaunchSmokeTests {
         XCTAssertEqual(addressInput.value as? String, "http://127.0.0.1:18763/capture.html")
         let go = safari.keyboards.buttons["Go"]
         XCTAssertTrue(go.isEnabled, safari.debugDescription)
-        // Use the native Return action after Paste; this Go AX frame can also lie outside the viewport.
-        addressInput.typeText("\n")
+        // Prefer the visible native Go control; retain Return for runtimes with an offscreen AX frame.
+        if go.isHittable && !go.frame.isEmpty && safari.frame.contains(go.frame) { go.tap() }
+        else { addressInput.typeText("\n") }
         XCTAssertTrue(safari.staticTexts["External Capture Fixture"].firstMatch.waitForExistence(timeout: 10), safari.debugDescription)
         let moreMenu = safari.buttons["MoreMenuButton"]
         XCTAssertTrue(moreMenu.waitForExistence(timeout: 5))

@@ -250,4 +250,38 @@ import UIKit
         }
     }
 
+    func testManualDraftActualZIPRetainsInvalidInputWithoutCreatingFormalFact() async throws {
+        let sourceRoot=try root(),source=try PersistenceContainerFactory.makeOnDisk(at:sourceRoot.appendingPathComponent("source.sqlite"))
+        let service=InvestmentService(context:source.mainContext)
+        let activity=try service.createActivity(name:"Synthetic draft transfer")
+        let workspace=InvestmentWorkspace();workspace.refresh(source.mainContext)
+        let editor=try workspace.newEditor(activityID:activity)
+        editor.durationText="invalid synthetic duration";editor.values.note="Synthetic unsaved note";editor.persist(source.mainContext)
+        XCTAssertNil(editor.error)
+        let before=try TransferSnapshot.make(context:ModelContext(source))
+        let lease=try await ImportExportService(context:source.mainContext,mediaStore:MediaStore(rootURL:sourceRoot),availableCapacity:{.max}).exportPackage()
+        defer {lease.cleanup()}
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(source)),before)
+        let targetRoot=try root(),url=targetRoot.appendingPathComponent("target.sqlite")
+        let target=try PersistenceContainerFactory.makeOnDisk(at:url)
+        _ = try await ImportExportService(context:target.mainContext,mediaStore:MediaStore(rootURL:targetRoot),availableCapacity:{.max}).importPackage(from:lease.url)
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let restored=InvestmentWorkspace();restored.refresh(reopened.mainContext)
+        XCTAssertTrue(restored.sessions.isEmpty)
+        let draft=try XCTUnwrap(restored.drafts.first);XCTAssertEqual(draft.id,editor.id)
+        let restoredEditor=restored.editor(for:draft)
+        XCTAssertEqual(restoredEditor.durationText,"invalid synthetic duration")
+        XCTAssertEqual(restoredEditor.values.note,"Synthetic unsaved note");XCTAssertNil(restoredEditor.values.feeling)
+        XCTAssertFalse(restoredEditor.hasValidDuration)
+        restoredEditor.durationText="30";restoredEditor.values.changeDuration(1800);restoredEditor.persist(reopened.mainContext)
+        XCTAssertNil(restoredEditor.error)
+        try InvestmentService(context:reopened.mainContext).saveManual(id:restoredEditor.id,
+            participantID:restoredEditor.participantID,activityID:restoredEditor.activityID,
+            values:restoredEditor.values,draftID:restoredEditor.id)
+        let saved=try PersistenceContainerFactory.makeOnDisk(at:url)
+        XCTAssertEqual(try saved.mainContext.fetchCount(FetchDescriptor<InvestmentSession>()),1)
+        XCTAssertEqual(try XCTUnwrap(saved.mainContext.fetch(FetchDescriptor<InvestmentSession>()).first).values().seconds,1800)
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(source)),before)
+    }
+
 }
