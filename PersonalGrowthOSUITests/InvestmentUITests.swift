@@ -141,6 +141,8 @@ final class InvestmentUITests: XCTestCase {
         XCTAssertFalse(dayText.frame.intersects(dayDuration.frame),"Daily date and duration must remain separately readable")
         let row=button("investment-session-",app);reveal(row,app);row.tap()
         screenshot(app,"Investment-Chinese-Dark-AX-saved-detail")
+        let detailEdit=app.buttons["investment-edit-session"];reveal(detailEdit,app)
+        screenshot(app,"Investment-Chinese-Dark-AX-original-day-contribution")
     }
     func testRunningColdRelaunchRequiresReviewAndManualDraftStaysOutsideHistory() {
         let app=launch();openHub(app);create(app)
