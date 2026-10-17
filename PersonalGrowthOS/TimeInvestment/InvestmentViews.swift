@@ -27,15 +27,25 @@ import UIKit
         self.operationRevision = operationRevision; self.timerConfirmation = timerConfirmation
         self.durationText = durationText ?? InvestmentFormatting.minutes(values.seconds)
     }
+    @discardableResult func requestExactInterval(start: Date,end: Date,now: Date) throws -> Bool {
+        var proposed=values
+        proposed.spans=[.init(start:start,end:end)];proposed.seconds=end.timeIntervalSince(start)
+        proposed.day=ImportantCivilDay(start,timeZone:TimeZone(identifier:values.timeZoneID)!).identifier
+        proposed.evidence = .intervals
+        if proposed.source == .timer {proposed.corrected=true}
+        try proposed.validate(now:now)
+        values=proposed;durationText=InvestmentFormatting.minutes(values.seconds)
+        return true
+    }
     var hasValidDuration: Bool {
         guard values.seconds.isFinite, values.seconds > 0,
               let minutes = Double(durationText), minutes.isFinite, minutes > 0 else { return false }
         return abs(minutes * 60 - values.seconds) < 0.01
     }
-    func persist(_ context: ModelContext) {
+    func persist(_ context: ModelContext,commit: @escaping (ModelContext) throws -> Void = {try $0.save()}) {
         guard !finished else { return }
         do {
-            operationRevision = try InvestmentService(context:context).storeDraft(id:id,participantID:participantID,
+            operationRevision = try InvestmentService(context:context,commit:commit).storeDraft(id:id,participantID:participantID,
                 activityID:activityID,values:values,durationText:durationText,editingSessionID:editingSessionID,
                 editingRevision:editingRevision,expectedRevision:operationRevision,timerConfirmation:timerConfirmation)
             error = nil
@@ -258,7 +268,12 @@ struct InvestmentHubView: View {
         }
         .navigationTitle("Time investment").accessibilityIdentifier("investment-hub")
         .searchable(text:$search,prompt:"Find activities")
-        .task { workspace.refresh(context) }
+        .task {
+#if DEBUG
+            do {try InvestmentReviewTestSupport.seedSegmentsIfRequested(context)} catch {workspace.error=error.localizedDescription}
+#endif
+            workspace.refresh(context)
+        }
         .sheet(isPresented:Binding(get:{operationID != nil},set:{if !$0 {operationID = nil}})) {
             if let operationID { NavigationStack { InvestmentTimerView(id:operationID) } }
         }
@@ -389,14 +404,8 @@ struct InvestmentEditorView: View {
                     InvestmentDateField("Start",selection:$start).environment(\.timeZone,zone)
                     InvestmentDateField("End",selection:$end).environment(\.timeZone,zone)
                     Button("Use this exact interval") {
-                        var proposed = editor.values
-                        proposed.spans = [.init(start:start,end:end)]; proposed.seconds = end.timeIntervalSince(start)
-                        proposed.day = ImportantCivilDay(start,timeZone:zone).identifier; proposed.evidence = .intervals
-                        if proposed.source == .timer { proposed.corrected = true }
-                        do {
-                            try proposed.validate(now:Date()); editor.values = proposed
-                            editor.durationText = InvestmentFormatting.minutes(editor.values.seconds); persist()
-                        } catch { editor.error = error.localizedDescription }
+                        do {if try editor.requestExactInterval(start:start,end:end,now:Date()) {persist()}}
+                        catch {editor.error=error.localizedDescription}
                     }
                 }
             }
@@ -423,7 +432,7 @@ struct InvestmentEditorView: View {
             }
             Section {
                 Button("Save activity") { save(false) }.accessibilityIdentifier("investment-save")
-                Button(editor.timerConfirmation ? "Close and keep pending" : "Close and keep draft") { persist(); dismiss() }
+                Button(editor.timerConfirmation ? "Close and keep pending" : "Close and keep draft") { persist(isClosing:true); dismiss() }
                 if !editor.timerConfirmation { Button("Cancel draft",role:.destructive) { cancel = true } }
             }
         }.navigationTitle(editor.timerConfirmation ? "Confirm time investment" : "Record activity")
@@ -447,7 +456,12 @@ struct InvestmentEditorView: View {
             if let first = editor.values.spans.first, let last = editor.values.spans.last { start = first.start; end = last.end }
         }
     }
-    private func persist() { editor.persist(context) }
+    private func persist(isClosing: Bool = false) {
+#if DEBUG
+        if isClosing {editor.persist(context,commit:InvestmentReviewTestSupport.closeCommit);return}
+#endif
+        editor.persist(context)
+    }
     private func save(_ confirmed: Bool) {
         guard editor.hasValidDuration else { editor.error = InvestmentFailure.invalid.localizedDescription; return }
         do {
@@ -589,3 +603,37 @@ struct InvestmentSessionDetailView: View {
         }
     }
 }
+
+#if DEBUG
+@MainActor private enum InvestmentReviewTestSupport {
+    static var closeFailureConsumed=false
+    static func closeCommit(_ context: ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentCloseWriteFailure"),!closeFailureConsumed {
+            closeFailureConsumed=true
+            throw CocoaError(.fileWriteOutOfSpace)
+        }
+        try context.save()
+    }
+    static func seedSegmentsIfRequested(_ context: ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        guard args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentSegmentReview") else {return}
+        let id=UUID(uuidString:"20000000-1111-4222-8333-444444444444")!
+        guard !(try context.fetch(FetchDescriptor<InvestmentOperation>()).contains {$0.id == id}) else {return}
+        var clock=InvestmentClock(wall:Date().addingTimeInterval(-1800),uptime:1000,processID:"synthetic-review-process")
+        let service=InvestmentService(context:context,clock:{clock})
+        let activity=try service.createActivity(name:"Synthetic segment review")
+        let participant=try context.fetch(FetchDescriptor<InvestmentParticipant>()).first!.id
+        try service.start(activityID:activity,participantID:participant,operationID:id,zone:TimeZone(identifier:"Asia/Shanghai")!)
+        func command(_ action: InvestmentService.Command) throws {
+            let op=try service.operations().first {$0.id == id}!
+            try service.command(action,id:id,revision:op.revision)
+        }
+        clock.wall.addTimeInterval(600);clock.uptime += 600;try command(.pause)
+        clock.wall.addTimeInterval(300);clock.uptime += 300;try command(.resume)
+        clock.wall.addTimeInterval(600);clock.uptime += 600;try command(.finish)
+        let pending=try service.operations().first {$0.id == id}!
+        try service.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+    }
+}
+#endif

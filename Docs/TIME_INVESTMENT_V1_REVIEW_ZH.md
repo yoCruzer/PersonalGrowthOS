@@ -1,3 +1,11 @@
+# 时间投入 V1 外部 Review — FIXES_IN_PROGRESS（2026-10-17）
+
+本轮按 Owner 新授权处理固定 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 Review](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)，仅 R1/P1、R2/P2、R3/P2 及关联数据安全/可靠性。原 `codex/time-investment-v1` / Draft PR #12 与固定 Goal1.1/BASE 保持；真实独立只读 Reviewer 已确认三项。当前不能沿用旧 READY 结论，先补修复前反例，再限定修复、原生磁盘/ZIP/UI及独立复核。旧失败/警告/Safari unsigned FAIL、物理低空间 SKIP、真实设备/签名/CI NOT_RUN 保持。
+
+新证据根 `/tmp/pgos-time-investment-review-fixes-evidence`；指定评论原文已完整读取并保存独立副本。原工作区三项未知dirty保留，任务工作树从clean92dc续接；不重建分支，不操作真实私人数据，不合并/tag/Archive/TestFlight。下方为前轮交付与历史原始记录，不代表本轮三项已关闭。
+
+---
+
 # 时间投入 V1 — 最终独立审查（2026-10-17）
 
 当前：**READY_FOR_OWNER_DEVICE_GATE**。固定Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b`、BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`，最终产品/测试与最后生产 `2ae01f3d2af2117a3f957ee6cd275d50e19b892d`。

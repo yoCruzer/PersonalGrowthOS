@@ -1,12 +1,13 @@
 import XCTest
 
 final class InvestmentUITests: XCTestCase {
-    func launch(chinese: Bool = false, darkLarge: Bool = false) -> XCUIApplication {
+    func launch(chinese: Bool = false, darkLarge: Bool = false,extra: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting","-PGOSResetData","-AppleLanguages",chinese ? "(zh-Hans)" : "(en)","-AppleLocale",chinese ? "zh_CN" : "en_US"]
         app.launchArguments += ["-AppleInterfaceStyle",darkLarge ? "Dark" : "Light",
                                 "-UIPreferredContentSizeCategoryName",darkLarge ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL"]
+        app.launchArguments += extra
         app.launch();return app
     }
     func reveal(_ element: XCUIElement,_ app: XCUIApplication,avoidingWheel: Bool = false) {
@@ -34,6 +35,41 @@ final class InvestmentUITests: XCTestCase {
         for _ in 0..<5 {app.swipeDown()}
     }
     func screenshot(_ app: XCUIApplication,_ name: String) {let shot=XCTAttachment(screenshot:app.screenshot());shot.name=name;shot.lifetime = .keepAlways;add(shot)}
+    func testExternalR2FailedCloseKeepsEditorAndRetrySurvivesColdLaunch() {
+        let app=launch(extra:["-PGOSInvestmentCloseWriteFailure"]);openHub(app);create(app)
+        let record=button("investment-record-",app);reveal(record,app);record.tap()
+        let note=app.textFields["investment-note"];reveal(note,app);note.tap();note.typeText("Synthetic retry draft")
+        app.buttons["Done"].tap()
+        let close=app.buttons["Close and keep draft"];reveal(close,app);close.tap()
+        XCTAssertTrue(app.navigationBars["Record activity"].exists,"Failed keep must not dismiss the editor")
+        let error=app.staticTexts["investment-save-error"];reveal(error,app)
+        screenshot(app,"External-R2-close-failure-retains-editor")
+        reveal(note,app);XCTAssertEqual(note.value as? String,"Synthetic retry draft")
+        let retry=app.buttons["Close and keep draft"];reveal(retry,app);retry.tap()
+        XCTAssertTrue(retry.waitForNonExistence(timeout:5))
+        app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData"};app.launch();openHub(app)
+        let draft=app.buttons["Synthetic Reading"];reveal(draft,app);draft.tap()
+        let restored=app.textFields["investment-note"];reveal(restored,app)
+        XCTAssertEqual(restored.value as? String,"Synthetic retry draft")
+        screenshot(app,"External-R2-draft-reopened-after-success")
+    }
+    func testExternalR3MultipleSegmentsRequireExplicitContinuousReplacement() {
+        let app=launch(extra:["-PGOSInvestmentSegmentReview"]);openHub(app)
+        let history=app.buttons["investment-history"];reveal(history,app);history.tap()
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:20:00"))
+        let row=button("investment-session-",app);reveal(row,app);row.tap()
+        let edit=app.buttons["investment-edit-session"];reveal(edit,app);edit.tap()
+        let minutes=app.textFields["investment-duration"];XCTAssertEqual(minutes.value as? String,"20")
+        let exact=app.buttons["Optional exact interval"];reveal(exact,app);exact.tap()
+        let apply=app.buttons["Use this exact interval"];reveal(apply,app);apply.tap()
+        screenshot(app,"External-R3-continuous-replacement-request")
+        let keep=app.buttons["Keep effective segments"]
+        let offered=keep.waitForExistence(timeout:2)
+        if offered {keep.tap()}
+        reveal(minutes,app)
+        XCTAssertEqual(minutes.value as? String,"20","Unconfirmed envelope must not include the pause")
+        XCTAssertTrue(offered,"Multiple segments require a separate explicit decision")
+    }
     func testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview() {
         let app=launch();openHub(app);create(app)
         let record=button("investment-record-",app);reveal(record,app);record.tap()
