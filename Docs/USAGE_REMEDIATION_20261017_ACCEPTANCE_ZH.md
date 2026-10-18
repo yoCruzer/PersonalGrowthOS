@@ -152,3 +152,56 @@ N3–N6生命周期及共享额度 affected-c11 **31PASS**；后续DST/旧修订
 - AlarmKit真实requestAuthorization进入系统后拒绝，权限拒绝/保存任务/设置反馈已验，正向schedule/stop/open及真实响铃仍D1 NOT_RUN；Debug弱链接存在不等于系统递送通过。
 
 本段为过程证据，不是最终READY；仍须最终clean Debug、unsigned generic Release、六实包provenance/身份、独立review闭环、普通push和唯一新Draft PR。
+
+
+## 最终本地实现验收（2026-10-18）
+
+状态：**LOCAL_VERIFIED_PENDING_DRAFT_PR**。最终产品/测试、独立审查及双构建固定 `9601ff211fbdafc954e32f9e25206a38479e972b`。这是本地实现完成、可提交设备门禁的结论，**完整Goal的原生/签名/真机/CI验收没有全部通过**。原失败/警告保留；下表“本地通过”不覆盖D1–D4。
+
+| 项目 | 实际结果与主要实现 | 原始证据及限制 |
+| --- | --- | --- |
+| U01 | 本地通过。TodoViews清单新建/自动选中/取消/管理改名/删除回未分类，整行44pt命中，原草稿保存重开 | ui-a3、ui-d5真实编辑器往返PASS |
+| U02、N1–N2 | 本地通过。TodoSeriesPreferences ISO星期、工作日/周末/自选；下一期/跳过/截止相对偏移/民用日DST保留 | TodoTask/Reminder/历史升级纯Unit与磁盘通过；ui-d5中文真Dark最大AX星期保存；实际响铃留D1 |
+| U03 | 本地通过。保存事实与提醒结果分开，知道了只收起反馈，查看待办可回原事项 | AppComposition/TodoReminder及权限拒绝保存UI；无自动完成或重排 |
+| U04、N3 | 本地通过。本次未来重设使用独立持久化事务/expectedRevision；旧系列±366天校验不放松，不改计划/截止/系列 | 长期过期、屏幕过期、冷启动及终态/旧回调反例；final-ui1过期UI PASS |
+| U05、Q1–Q3 | 本地通过。QuietWins按保存LocalDay汇总真实2天6次、每日4/2次并下钻每条原始事实；撤销/删除/导入刷新 | ui-q5、final-ui1、ui-d5后台导入PASS；原身份不按相同值去重、不造时间/分母 |
+| U06、T1 | 本地通过。Growth统计有单位、范围/参与者一致，失败不是0，浏览不初始化持久默认值 | affected-d5完整AppComposition18及Files新装浏览→预览取消/恢复；ui-d5后台保存主线程更新无警告 |
+| U07、W1–W6 | 本地通过。五范围/四等权日均/动态轴与缺口、记录覆盖连续性、最近5/日50分页/编辑删除/时区选择 | Weight完整17＋AppComposition18=35PASS；ui-d5日期编辑删PASS；一万条/1826日0.054404458s；未测Instruments/RSS/峰值内存 |
+| U08、B1–B3 | 本地通过。可选身高、中国/WHO阈值使用未舍入BMI、近界提示、来源/成人一般参考、编辑清除冷启动/新包恢复 | Unit边界和ZIP/迁移；final-ui1及ui-d5真实175cm→24.5/中文Dark maxAX；不是诊断或儿童建议 |
+| U09、T2–T4 | 本地通过。共享文字列/20pt装饰图标与24pt列/完整行命中，Today混合真实习惯/Weight/running Investment/Sleep/active Goal/ImportantDay/WeeklyReview | ui-d8同clean9601 **1PASS、warnings=[]**，默认英文和中文真Dark最大AX；正文仍缩放、原动作/计时不变 |
+| T5–T7 | 本地通过。全历史累计/明确7或30自然日与月预览、日期/20条原始分页、快照复用/失败态、评价日参与加载key | 完整InvestmentFoundation31PASS；ui-d6历史范围/月分页/5+15分钟同Session下钻PASS；一万Session＋一万Operation0.224274039s；未测Instruments/RSS |
+| T8、F1/R1–R3 | 本地保护回归通过。ContinuousClock/进程域/50ms/18h/暂停/倒计时/检查点，已消费内容清除、成功落盘才关闭、多段显式替换保持 | full-unit1相关案例通过；31基础Unit；final-ui1 R2/R3真Dark AX和Record独立草稿PASS，ui-d5 Timer/冷重开、ui-d6手工草稿0场0秒PASS；硬件睡眠仍D2 |
+| N4–N6 | 生产接线与可注入生命周期通过；原生正向 **NOT_RUN**。真实AlarmKit适配器/权限/普通通知共享容量/本机持久设备账本/取消确认/终态不复活/旧回调/停止不完成及打开待办路由 | 红绿双通道、并发、取消失败/恢复/共享预算和真实ZIP验证；原生requestAuthorization确到mobiletimerd后denied，final-ui1正向例SKIP；不能称真实schedule/stop/open/递送通过 |
+| 迁移/备份 | 本地通过。仅新增未发布V15四模型；V1–V14不改；v11严格新数组、旧包严格拒绝越版字段，设备账本/权限/成功状态不进备份 | full-unit1各历史升级/重开通过；修正fixture后完整ImportExportRecoveryTests＋QuietWinsReaderTests60PASS；实际ZIP/空库恢复/预览失效/失败回滚/设置非空守卫保持 |
+| 相邻组合 | 本地可执行路径通过：Record独立草稿、Sleep两路径、ImportantDay三路径、实际URL与生产intent路由、Files预览取消恢复、WeeklyReview多字段/冷重开 | final-ui1及ui-d5/ui-d6分轮原始结果；Public share为环境FAIL，原生Widget桌面/Photos/VoiceOver不冒称模拟器通过 |
+
+### 集中运行与证据复用
+
+证据根 `/tmp/pgos-usage-remediation-evidence`，本机macOS27.0.1/26A434、Xcode27.1/27A9275、SDK27.1、专用iPhone18Pro Simulator iOS27.0/24A434。
+
+| 运行 | 实际结果 |
+| --- | --- |
+| final-unit1 / clean c909 | 517项：512PASS4FAIL1SKIP，exit65，runtimeWarnings=[]；四FAIL为旧测试夹具假设，未放松生产校验 |
+| final-unit-fix1 / clean50e9 | 受影响完整ImportExportRecoveryTests＋QuietWinsReaderTests60PASS，exit0，warnings=[]；79生产文件与c909相同 |
+| affected-d5 / 精确candidate-d6 dirty快照 | Weight17＋AppComposition18=35PASS，exit0，warnings=[] |
+| affected-d7 / clean1bfceef | 完整InvestmentFoundation31PASS，exit0，warnings=[] |
+| final-ui1 / clean50e9 | 27=21PASS5FAIL1SKIP，exit65、3条warnings；后续只补受影响项，不改写本轮 |
+| ui-d5 / 精确candidate-d6 dirty快照 | 10=7PASS3FAIL，exit65、1条frame warning；两条后台State警告已消失 |
+| ui-d6 / clean1bfceef | 6=4PASS2FAIL，exit65、warnings=[]；Public环境FAIL/mixed旧视口断言FAIL，业务四路径PASS |
+| ui-d7 / clean531ccba | mixed1FAIL，真实共享行点击空白未导航，保留原树/图；并非已被放宽的测试 |
+| ui-d8 / clean9601 | mixed1PASS0FAIL0SKIP，exit0、warnings=[]；共享图标/整行命中及严格Goals导航闭环 |
+| final-debug8 / clean9601 | Debug Simulator build-for-testing PASS/exit0 |
+| final-release1 / clean9601 | unsigned generic iOS Release build PASS/exit0；不是Archive/签名安装 |
+
+`native-run-index.json`记录实际命令、主轮退出码、各log SHA256及分轮summary；`full-unit-reuse-proof-final.json`列完整Unit后七个生产文件的影响/补验，不冒称新全绿517；`final-ui-coverage.json`仅逐selector给最新原始轮次，不将其拼成一次全量运行。六实包身份/provenance/真实debug库与Release executable哈希在`debug-bundle-proof-9601ff2.json`、`release-bundle-proof-9601ff2.json`，实际Mach-O弱链接在对应文本。两App clean同完整SHA/localGit/Tag空、原IDs/1.0(7)/min17。Release的metadata warning明确仅ShareExtension无AppIntents依赖；Xcode SDK/debugger元数据和unsigned App Group/Widget诊断保留，不声称所有原始log无警告。
+
+独立只读reviewer `/root/usage_remediation_independent_review` 的完整终审原文见 `USAGE_REMEDIATION_20261017_REVIEW_ZH.md`：R1–R8关闭，无范围内仍未关闭的已确认P0/P1/P2；未证实的主context缓存假设已撤回。该结论不等于完整原生/签名/真机验收通过。
+
+### Owner下一步设备清单（全部NOT_RUN，须另行授权）
+
+1. **D1 闹钟/通知**：签名设备允许/拒绝/撤回AlarmKit；只排当前期次。安排未来闹钟，在锁屏/静音/专注下真实递送；系统Stop不完成任务、不因回前台重排；Open在冷启动和已有Record草稿/modal上进入正确Todo。改标题/时间/切渠道、完成/跳过/删除后核对旧请求实际消失；取消失败应待处理且可重试，未确认前不出现冲突后继。若可用，iOS17普通通知fallback也需实机验证。
+2. **D2 时间投入**：秒表实际锁屏/硬件睡眠后结束应包含睡眠；暂停锁屏不累计；25分钟倒计时晚返回封顶25，显式继续才累计新段；切其他App、结束冻结、强杀冷重开待确认、手工/跨日/回顾不影响Record草稿。模拟器home/relaunch和合成时钟不能替代此项。
+3. **D3 私人库升级/恢复**：先独立备份并核对计数/图片/原记录，再授权签名、不卸载覆盖升级；核对旧Entry/Habit/Goal/Todo/ImportantDay/Sleep/Investment、未完成计时、星期与提醒意图、可选身高；在隔离目标验证新包导出/空库恢复，勿无备份覆盖私人库。本轮没有操作真实手机或私人数据。
+4. **D4 实际交互组合**：单手44pt触控、VoiceOver真实朗读/状态值、默认及最大动态字体Light/Dark；签名后Safari/Public NSItemProvider文字/URL/照片分享并确认只导入一次、Photos、桌面Widget路由、飞行模式下Record/本地Files备份恢复及相邻模块组合。
+
+**保留状态**：AlarmKit正向schedule/cancel/响铃/原生Stop/Open NOT_RUN（真实授权denied）；Public mixed provider **FAIL/environment**（实际copied diagnostic category=appGroup），unsigned Safari **FAIL**，签名Share/Safari正向NOT_RUN；独立32MB HFS+物理低空间 **SKIP/NOT_RUN**；远端workflows=0，独立CI **NOT_RUN**。本地实现完成不授权merge、force push、tag、Archive或TestFlight。

@@ -1,3 +1,19 @@
+# 使用反馈统一整改 — LOCAL_VERIFIED_PENDING_DRAFT_PR（2026-10-18）
+
+固定BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24`、GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73`；最终产品/测试与实包 `9601ff211fbdafc954e32f9e25206a38479e972b`。A/B/C实现及本地可执行D门完成，普通push/唯一新Draft PR是最后交付步骤。完整原生/签名/真机/CI验收没有全部通过；READY只会表示停在Owner设备门，不会把这些限制改成PASS。
+
+最终clean Debug Simulator和unsigned generic iOS Release通过，实际App/Share/Widget保持原IDs/1.0(7)/min17，两个App provenance完整同9601/Dirty=false/localGit/Tag空，AlarmKit弱链接已核对。独立只读reviewer `/root/usage_remediation_independent_review` R1–R8关闭，无范围内仍未关闭的已确认P0/P1/P2；完整原文在USAGE_REMEDIATION_20261017_REVIEW_ZH.md。
+
+全Unit首轮517=512PASS4FAIL1SKIP，旧fixture修正后受影响完整两类60PASS；后续完整Weight/AppComposition35及InvestmentFoundation31PASS。最终混合默认英文/中文真Dark最大AX ui-d8 1PASS、warnings=[]；其他影响路径逐轮补验，未冒称新一次全量全绿。逐项U/N/Q/W/B/T、实际命令/分轮计数、迁移/备份/性能边界见ACCEPTANCE与EXECUTION末段；原失败及warning保留。
+
+AlarmKit真实授权到系统后denied，正向schedule/cancel/递送/原生Stop/Open NOT_RUN；Public mixed provider FAIL/environment（真实AppGroup报告）、unsigned Safari FAIL；签名Share正向、物理低空间、独立远端CI（workflows=0）及D1–D4真实设备均未通过。下一边界：Owner另行授权后先独立备份，再签名不卸载覆盖升级，实际锁屏/静音/专注闹钟、硬件睡眠计时、VoiceOver/Photos/分享/Widget/离线组合；具体操作清单在ACCEPTANCE末段。
+
+独立执行分支codex/usage-remediation-20261017，PR base codex/time-investment-v1；原工作区三项未知dirty、旧PR #1–#12保持。不merge/force/tag/Archive/TestFlight，不进入新模块或操作真实手机/私人库。证据根/tmp/pgos-usage-remediation-evidence；最终文档相对产品仅Markdown，无需重建同一产品。
+
+以下为前序过程历史；当前结论以上段及最终验收矩阵为准。
+
+---
+
 # 使用反馈统一整改 D 收口 — IN_PROGRESS（2026-10-18）
 
 产品/测试检查点50e9cfa，独立审查三项提醒/星期P2已修复，新增时区日选择和Today最大字体P2及Growth后台订阅已限定修复，受影响35 Unit通过；十项真实UI补验进行中。完整Unit首轮517=512PASS4FAIL1SKIP；仅测试夹具修正后受影响完整两类60PASS，生产blob相同证明保留。实际外观最终UI首轮27=21PASS5FAIL1SKIP；原失败、3条warning和原生权限拒绝保留，不能沿用旧READY。最终Release、独立review闭环、普通push及唯一新Draft PR待完成。详见USAGE_REMEDIATION_20261017_EXECUTION.md最新D段。

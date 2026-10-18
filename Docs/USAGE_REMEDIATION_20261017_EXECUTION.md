@@ -1,6 +1,6 @@
 # 使用反馈统一整改执行记录
 
-状态：**IN_PROGRESS**。本文件记录实际工作，不替代固定 1.0 规格，不代表集中门禁或设备通过。
+状态：**LOCAL_VERIFIED_PENDING_DRAFT_PR**。本地实现、受影响补验、最终双构建/实包及独立review已完成；最后普通push/唯一Draft PR待创建。下文是原始分轮历史，最终矩阵见ACCEPTANCE末段；不代表原生/签名/真机/CI全部通过。
 
 ## 固定输入与隔离
 
@@ -243,3 +243,12 @@ ui-d6中QFiveSources与原WeeklyReview多字段/收键盘/保存/冷启动均PAS
 
 
 `ui-d7`单mixed **FAIL / exit65**，并非滚回Goal阶段：在中文Growth点击Goals中央后仍留成长页，`new-goal-title`不存在。实际树`ui-d7-attachments/2FEA3B5C-F8CE-43A2-AABE-485B368EC883.txt`明确navigationBar=成长且growth-goals仍在；原生log点击坐标目标正确。共享ModuleEntryRow标签的空白未定义整行命中区，与前清单/回顾已证实接缝一致；补`.contentShape(.rect)`到共享行完整frame，保持原NavigationLink/action；测试增加真实Goals目的导航断言，不以点文字坐标绕过问题。与图标20pt一起仅补mixed实际路径。
+
+
+## 最终本地收口
+
+最终产品/测试`9601ff211fbdafc954e32f9e25206a38479e972b`，工作树clean。final-debug8 PASS，ui-d8单mixed1/1PASS且runtimeWarnings=[]，final-release1 unsigned generic iOS PASS，均exit0。实际六包原Bundle IDs、1.0(7)/min17，两App provenance clean同完整9601/localGit/Tag空；实际Debug实现库与Release Mach-O的AlarmKit弱链接、中英权限说明及哈希已核验。Release仅ShareExtension无AppIntents依赖metadata warning，原log不抹去。
+
+真正独立只读reviewer `/root/usage_remediation_independent_review` 已直接核对源码/红绿反例/原始测试和截图/实包，R1–R8关闭，无范围内仍未关闭的已确认P0/P1/P2。原文完整写入REVIEW。未证实的主context缓存假设撤回，未冒称缺陷。review明确完整原生/签名/真机/CI尚有缺口，详见ACCEPTANCE末段具体D1–D4清单。
+
+最终证据索引native-run-index.json（143 log）、full-unit-reuse-proof-final.json、final-ui-coverage.json，以及debug/release-bundle-proof-9601ff2.json；不同轮次不拼新全绿全量。全Unit原517=512/4/1，四个旧fixture修正后受影响完整两类60PASS，后续35/31完整受影响类通过；Public环境FAIL/AlarmKit SKIP及旧Safari FAIL/低空间SKIP/CI NOT_RUN始终保留。最终仅文档交付提交不重建相同产品，普通push/唯一Draft PR完成后记录远端身份，停Owner设备门禁。
