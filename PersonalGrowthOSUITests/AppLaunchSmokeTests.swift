@@ -3,6 +3,38 @@ import Network
 import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testUsageHabitDailyFourAndTwoFactsExpandAndOpenExactOriginal() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSQuietWinsTest", "-PGOSUsageHabitDaysTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch(); app.tabBars.buttons["Growth"].tap(); app.buttons["growth-quiet-wins"].tap()
+        let card = app.buttons["quiet-wins-card-habit"]
+        for _ in 0..<8 where !card.isHittable { app.swipeUp() }
+        XCTAssertTrue(card.label.contains("2 · Check-ins: 6"), card.label); card.tap()
+        let formatter = DateFormatter(); formatter.calendar = Calendar(identifier: .gregorian); formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.dateFormat = "yyyy-MM-dd"
+        let todayID = formatter.string(from: Date()), yesterdayID = formatter.string(from: Calendar(identifier: .gregorian).date(byAdding: .day, value: -1, to: Date())!)
+        let today = app.buttons["quiet-wins-habit-day-" + todayID], yesterday = app.buttons["quiet-wins-habit-day-" + yesterdayID]
+        XCTAssertTrue(today.waitForExistence(timeout: 5)); XCTAssertTrue(today.label.contains("4 check-ins"), today.label)
+        XCTAssertTrue(yesterday.label.contains("2 check-ins"), yesterday.label)
+        let sources = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-source-habitLog-"))
+        today.tap()
+        let firstHierarchy = XCTAttachment(string: app.debugDescription); firstHierarchy.name = "Usage-habit-first-day-expanded"; firstHierarchy.lifetime = .keepAlways; add(firstHierarchy)
+        let firstShot = XCTAttachment(screenshot: app.screenshot()); firstShot.name = "Usage-habit-first-day-expanded"; firstShot.lifetime = .keepAlways; add(firstShot)
+        XCTAssertEqual(sources.count, 4, app.debugDescription)
+        let todayIDs = Set(sources.allElementsBoundByIndex.map(\.identifier)); XCTAssertEqual(todayIDs.count, 4)
+        today.tap(); yesterday.tap(); XCTAssertEqual(sources.count, 2)
+        let yesterdayIDs = Set(sources.allElementsBoundByIndex.map(\.identifier)); XCTAssertEqual(yesterdayIDs.count, 2)
+        XCTAssertTrue(todayIDs.isDisjoint(with: yesterdayIDs)); XCTAssertEqual(todayIDs.union(yesterdayIDs).count, 6)
+        yesterday.tap(); today.tap()
+        let hierarchy = XCTAttachment(string: app.debugDescription); hierarchy.name = "Usage-habit-expanded-hierarchy"; hierarchy.lifetime = .keepAlways; add(hierarchy)
+        let expanded = XCTAttachment(screenshot: app.screenshot()); expanded.name = "Usage-habit-expanded-four-plus-two"; expanded.lifetime = .keepAlways; add(expanded)
+        sources.firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quiet-wins-habit-log-detail"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["quiet-wins-habit-log-day"].label, todayID)
+        XCTAssertEqual(app.staticTexts["quiet-wins-habit-log-result"].label, "Synthetic check-in 1")
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "Usage-habit-exact-original-day-and-result"; shot.lifetime = .keepAlways; add(shot)
+    }
+
     func testUsageWeightDailyMeansRangesAndDateHistoryEditDeleteRefresh() {
         continueAfterFailure = false
         let app = XCUIApplication()
@@ -2505,14 +2537,20 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(habitCard.waitForExistence(timeout: 10))
         XCTAssertTrue(habitCard.label.contains("Quiet reading")); XCTAssertTrue(habitCard.label.contains("2"))
         habitCard.tap()
-        let sources = app.buttons.matching(identifier: "quiet-wins-source-habitLog")
+        let sources = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-source-habitLog-"))
+        let daily = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-habit-day-"))
+        XCTAssertEqual(daily.count, 2); daily.element(boundBy: 0).tap(); daily.element(boundBy: 1).tap()
         XCTAssertTrue(sources.firstMatch.waitForExistence(timeout: 10)); XCTAssertEqual(sources.count, 2)
         sources.firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quiet-wins-habit-log-detail"].firstMatch.waitForExistence(timeout: 5))
+        app.buttons["quiet-wins-open-habit"].tap()
         let decrease = app.buttons["habit-detail-counter-decrease"]
         XCTAssertTrue(decrease.waitForExistence(timeout: 10)); decrease.tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.staticTexts["Evidence No Longer Available"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(sources.firstMatch.waitForExistence(timeout: 10)); XCTAssertEqual(sources.count, 1)
-        XCTAssertTrue(app.staticTexts["Days with check-ins for “Quiet reading”: 1"].exists)
+        XCTAssertTrue(app.staticTexts["Days with check-ins for “Quiet reading”: 1 · Check-ins: 1"].exists)
         XCTAssertFalse(app.staticTexts["Evidence No Longer Available"].exists)
         let yesterday = Calendar(identifier: .gregorian).date(byAdding: .day, value: -1, to: Date())!
         let formatter = DateFormatter(); formatter.calendar = Calendar(identifier: .gregorian)
@@ -2520,12 +2558,13 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(sources.firstMatch.label.contains(formatter.string(from: yesterday)))
         let image = XCTAttachment(screenshot: app.screenshot()); image.name = "Ranking changed, yesterday still valid"; image.lifetime = .keepAlways; add(image)
         // Remove the remaining real source through existing Habit deletion controls.
-        sources.firstMatch.tap(); app.buttons["habit-actions"].tap(); app.buttons["Delete Permanently"].tap()
+        sources.firstMatch.tap(); app.buttons["quiet-wins-open-habit"].tap(); app.buttons["habit-actions"].tap(); app.buttons["Delete Permanently"].tap()
         app.alerts["Delete this Habit permanently?"].buttons["Delete"].tap()
         XCTAssertTrue(app.staticTexts["Evidence No Longer Available"].waitForExistence(timeout: 10))
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(habitCard.waitForExistence(timeout: 10)); XCTAssertTrue(habitCard.label.contains("Quiet walking"))
-        habitCard.tap(); XCTAssertEqual(sources.count, 1)
+        habitCard.tap(); XCTAssertEqual(daily.count, 1); daily.firstMatch.tap(); XCTAssertEqual(sources.count, 1)
         XCTAssertTrue(sources.firstMatch.label.contains("Quiet walking"))
     }
 
@@ -2591,13 +2630,17 @@ extension AppLaunchSmokeTests {
         }
         let screen = XCTAttachment(screenshot: app.screenshot()); screen.name = "Quiet Wins English light evidence cards"; screen.lifetime = .keepAlways; add(screen)
         for (kind, sourceKind, destination) in [
-            ("goal", "goal", "goal-edit"), ("habit", "habitLog", "habit-edit"),
+            ("goal", "goal", "goal-edit"), ("habit", "habitLog", "quiet-wins-habit-log-detail"),
             ("entries", "entry", "entry-edit"), ("reviews", "review", "weekly-review-view")
         ] {
             let card = app.buttons["quiet-wins-card-\(kind)"]
             for _ in 0..<8 where !card.isHittable { app.swipeUp() }
             XCTAssertTrue(card.waitForExistence(timeout: 5)); card.tap()
-            let source = app.buttons["quiet-wins-source-\(sourceKind)"]
+            if kind == "habit" {
+                let day = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-habit-day-")).firstMatch
+                XCTAssertTrue(day.waitForExistence(timeout: 5)); day.tap()
+            }
+            let source = kind == "habit" ? app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-source-habitLog-")).firstMatch : app.buttons["quiet-wins-source-\(sourceKind)"]
             XCTAssertTrue(source.waitForExistence(timeout: 10)); source.tap()
             XCTAssertTrue(app.descendants(matching: .any)[destination].firstMatch.waitForExistence(timeout: 10))
             if kind == "entries" { XCTAssertTrue(app.staticTexts["A real synthetic record for source navigation."].exists) }

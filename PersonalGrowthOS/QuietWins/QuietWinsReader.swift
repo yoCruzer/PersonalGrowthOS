@@ -98,11 +98,22 @@ enum QuietWinsUITestFixture {
         let todo = try TodoTaskService(context: context, now: { created }).create(TodoDraft(title: "Quiet task"))
         try TodoTaskService(context: context, now: { completed }).transition(id: todo.id, to: .completed)
         let ranking = ProcessInfo.processInfo.arguments.contains("-PGOSQuietWinsRankingTest")
-        let habit = try HabitService(context: context, now: { created }).create(name: "Quiet reading", recordingMode: ranking ? .multiplePerDay : .oncePerDay)
+        let usageDays = ProcessInfo.processInfo.arguments.contains("-PGOSUsageHabitDaysTest")
+        let habit = try HabitService(context: context, now: { created }).create(name: "Quiet reading", recordingMode: ranking || usageDays ? .multiplePerDay : .oncePerDay)
         let log = HabitLog(habitID: habit.id, occurredAt: completed, isCompleted: true, createdAt: completed)
+        if usageDays { log.result = "Synthetic check-in 1" }
         context.insert(log)
         context.insert(HabitLogDayMetadata(habitLogID: log.id, localDayIdentifier: HabitLocalDay(date: completed).description,
             localTimeZoneIdentifier: TimeZone.current.identifier, provenance: .capturedAtWrite))
+        if usageDays {
+            for index in 1..<6 {
+                let stamp = index < 4 ? completed.addingTimeInterval(-Double(index)) : WeeklyReviewCalendarPolicy.calendar().date(byAdding: .day, value: -1, to: completed)!
+                let record = HabitLog(habitID: habit.id, occurredAt: stamp, isCompleted: true, result: "Synthetic check-in \(index + 1)", createdAt: stamp)
+                context.insert(record)
+                context.insert(HabitLogDayMetadata(habitLogID: record.id, localDayIdentifier: HabitLocalDay(date: stamp).description,
+                    localTimeZoneIdentifier: TimeZone.current.identifier, provenance: .capturedAtWrite))
+            }
+        }
         if ranking {
             let yesterday = WeeklyReviewCalendarPolicy.calendar().date(byAdding: .day, value: -1, to: completed)!
             let previous = HabitLog(habitID: habit.id, occurredAt: yesterday, isCompleted: true, createdAt: yesterday)

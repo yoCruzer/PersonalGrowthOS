@@ -105,3 +105,21 @@ WeightReviewReader 是 detached ModelActor 的只读生产读取，SwiftData enu
 提示：时间投入原R2/R3所见键盘frame warning仍须按接缝查因，不能借本次Weight零warning抹去。主工作区2026-10-18尾检仍为原三项未知dirty，未碰私人库/真实手机或旧PR。固定GOAL_SHA相对原主工作区Foundation追加的ImportantDay/Sleep/TimeInvestment段已另行核读，版本职责/身份与独立事实约束保持。
 
 B1 后续UI核查明确保留：历史截至日期无样本时，空态应说明截至所选日期，不能误称全库为空；新加入的当前时区/前台/午夜刷新、图点选择、中文最大字号与多年份实际页面仍在D组合验收。当前“历史期间无样本”标题细节与完整历史可选日期范围需随该路径核验收口，未标全部W5通过。
+
+## B2 成长回顾日聚合与精确事实
+
+只改只读聚合/导航，无新持久字段。习惯摘要分别显示不同记录日与真实打卡总次；按保存LocalDay形成稳定日汇总，可展开原始条目，身份不按相同值合并。每条直达该HabitLog的业务日/数量/结果/可选关联Entry；没有精度契约时只写当天记录，不造不同钟点。另设“查看习惯”进入原管理页，避免以习惯首页冒充原事实详情。不新增达标率/今日目标倒算，不把时间投入加入Quiet Wins。来源撤销/删除后原始事实失效，父页重读当前事实，展开状态按card+LocalDay保持。
+
+- `compile-q1` 同前述build-for-testing前缀，exit65：SwiftData #Predicate不能直接用UUID与可选UUID比较；改为准确linkedID集合（nil为空集合，不造替代身份）。`compile-q2/q3/q4/q5/q6/q7/q8` 各exit0。
+- `affected-q1` 同串行test前缀，selectors=`PersonalGrowthOSTests/QuietWinsTests`、`PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageHabitDailyFourAndTwoFactsExpandAndOpenExactOriginal`、`.../testQuietWinsHabitRankingKeepsSurvivingEvidenceAndDeletionInvalidatesIt`：**12 Unit PASS / 2 UI FAIL / 0 SKIP，exit65，runtimeWarnings=[]**。全文件有多个测试类，此selector只跑QuietWinsTests的12项，未冒称ReaderTests另5项已跑。stdout保留unsigned App Group/Widget projection诊断，不称其系统能力通过。
+- 初次原生失败为展开后找不到原始条目ID；`ui-q2` 仅同新4+2 selector，0PASS1FAIL/exit65，额外保存实际图/树。已看 `ui-q2-attachments/CCCB7AD2-5386-404C-AE8F-09E03053682B.png` 和 `F853A444-90E2-4E3B-B291-A63604E1C1CB.txt`：原始条目确实显示，DisclosureGroup父ID却覆盖各子NavigationLink ID，不是丢数据。改独立展开按钮和只供定位的UUID后缀ID，不让VoiceOver朗读技术UUID。
+- `ui-q3` 两UI仍0PASS2FAIL/exit65；`ui-q4` 单新UI诊断0PASS1FAIL/exit65，原生树显示中心点击后仍Collapsed。plain按钮标签左右分布，中间空白未定义contentShape；在标签内部明确44pt矩形命中区，而不是把测试改为点文字坐标。
+- `ui-q5` 两原selector **2PASS0FAIL0SKIP / exit0，runtimeWarnings=[]**。原生按日分别展开4/2条，读取互不相交的原始身份集合且并集6，再进入精确当天记录与Synthetic check-in 1；撤销今天后昨日仍有证据、删除后原来源失效、卡片转为另一有效习惯也通过。用每日4/2身份并集验证6条，符合List有限实现，不要求离屏6条同一时刻全部实例化。原失败不覆盖。
+- 真图/层级在 `ui-q5-attachments`：已看原始详情 `DB4DECD1-B2F2-4571-9F5D-925BACE02D1E.png`；还有稳定展开与昨日来源截图、两份实际树。
+- q8 只补Query.fetchError与来源失效的区别，按本机公开SDK接口检查并编译；未额外重跑纯Unit或同一成功UI，D集中组合将覆盖最终source。精确差异 `candidate-q8-product.patch` / `candidate-q8-source.json`。没有把q7 UI冒称q8干净实包门禁。
+
+B2内部检查点已收敛，不表示完整B或Goal完成。Q1的4+2/去重边界与Q3保存LocalDay/失效路径有本轮证据；不同历史计划/追踪模式不显示虚假分母，数量只在原事实显示，不把数量当次数。跨时区实际页面、补记/导入/更广关联及双语大字在D集中补足，未改源事实/计划。
+
+远端只读 `git ls-remote --heads origin refs/heads/codex/usage-remediation-20261017 refs/heads/plan/usage-remediation-20261017-goal refs/heads/codex/time-investment-v1`：新整改远端分支不存在；规划仍GOAL_SHA，时间投入仍BASE。尚未push/建PR。
+
+下一步仍在同一Goal：时间投入快照复用/明确7/30自然日与全部预览月份/有界明细/失败态，再完成BMI和C联合持久化与系统渠道，最后D。考虑提醒设计时必须把用户意图、设备本地排程账本和授权分离；取消未确认不新增冲突请求，含糊排程后缺失请求不能冷启动自动重响；停响不完成任务；这是后续实现注意项，不是已完成证据。

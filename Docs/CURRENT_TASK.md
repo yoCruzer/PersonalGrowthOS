@@ -6,6 +6,8 @@ A 阶段在实现：Today/Growth 共用文字列与图标、准确带单位的�
 
 B1 内部检查点：体重冻结公历/时区快照、五范围/四日等权均值、动态轴/缺口、全历史覆盖/连续性、最近5条/按日50条分页和单条前次参考已实现。最终 compile-b9 通过；affected-b3 为 **14 Unit + 2 原生 UI = 16/16 PASS，0FAIL/SKIP、runtimeWarnings=[]**。包含午夜DST自然日边界、五年一万条真实磁盘读取（单次聚合0.054404458秒，未测Instruments/RSS）、快速新建冷启动、范围/日期/编辑/确认删除/无记录日/返回72.5kg。此前日明细任务自取消、不可见父页确认和测试滚动方向失败完整保留；Weight键盘frame接缝已有修复与配对零warning，其他页面警告未抹去。
 
+B2 成长回顾日聚合/具体事实下钻已实现：12项纯Unit通过；真实4+2身份/精确原始结果及撤销删除刷新UI 2/2通过，runtimeWarnings=[]。DisclosureGroup标识覆盖和plain按钮中间空白命中失败已凭原生树/图复现修复，失败原样保留。q8仅补fetchError/来源失效区分并编译通过；Reader另5项、最终多源/双语/大字/导入组合在D，不冒称全量。当前下一编码接点是时间投入统计复用与有界日期历史。
+
 **整体 Goal 未完成，不是 READY 或阶段停点。** A1/B1 已有编译和受影响通过证据。继续 A 的过期提醒动作与 C 的独立本次覆盖，B 余项（成长回顾按日聚合/具体事实下钻、时间投入历史/统计复用、可选 BMI），C 星期重复和真实 AlarmKit，以及 D 集中验证/独立只读审查/普通 push/唯一新 Draft PR。长期过期提醒不能删除 ±366 校验或改写系列锚点；必要字段联合评估 V14/v10 后追加模型/备份，真实升级、快照/空库恢复/回滚一起完成。
 
 实际命令与影响矩阵见 [本轮执行记录](USAGE_REMEDIATION_20261017_EXECUTION.md)，[独立审查](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)仍 NOT_RUN。证据根 `/tmp/pgos-usage-remediation-evidence`；本轮专用 iPhone 18 Pro 模拟器 `42609456-859D-41F8-8977-4B2D85A74082` / iOS27.0，Xcode27.1。设备 D1–D4 全 NOT_RUN，不操作真实手机/私人库，不 merge/force/tag/Archive/TestFlight。历史 FAIL/SKIP/NOT_RUN 不改标。

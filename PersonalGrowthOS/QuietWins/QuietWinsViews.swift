@@ -7,7 +7,7 @@ extension QuietWinsCard {
         switch kind {
         case .goal: String(localized: "Completed “\(title)”")
         case .todos: String(localized: "Tasks completed: \(count)")
-        case .habit: String(localized: "Days with check-ins for “\(title)”: \(count)")
+        case .habit: String(localized: "Days with check-ins for “\(title)”: \(count) · Check-ins: \(sources.count)")
         case .entries: String(localized: "Days with life records: \(count)")
         case .reviews: String(localized: "Calendar weeks with completed reviews: \(count)")
         }
@@ -126,6 +126,7 @@ struct QuietWinsEvidenceView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var card: QuietWinsCard?
     @State private var loadedWindow: QuietWinsWindow?
+    @State private var expandedDays: Set<String> = []
     @State private var loaded = false
     @State private var failed = false
     @State private var refresh = 0
@@ -146,16 +147,23 @@ struct QuietWinsEvidenceView: View {
                     }
                 }
                 Section("Sources") {
-                    ForEach(card.sources) { source in
-                        NavigationLink {
-                            QuietWinsSourceView(source: source, window: loadedWindow ?? window,
-                                mediaStore: mediaStore, thumbnailStore: thumbnailStore)
-                        } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(source.title).fixedSize(horizontal: false, vertical: true)
-                                Text(verbatim: source.day.description).font(.caption).foregroundStyle(.secondary)
-                            }
-                        }.accessibilityIdentifier("quiet-wins-source-\(source.kind.rawValue)")
+                    if card.kind == .habit {
+                        Text("Recorded days and check-ins are counted separately.").font(.caption).foregroundStyle(.secondary)
+                        ForEach(card.habitDays) { day in
+                            let expanded = expandedDays.contains(day.id)
+                            Button {
+                                if expanded { expandedDays.remove(day.id) } else { expandedDays.insert(day.id) }
+                            } label: {
+                                ModuleEntryRow(title: day.day.description, systemImage: expanded ? "chevron.down" : "chevron.right",
+                                    value: String(localized: "\(day.sources.count) check-ins"))
+                                    .frame(minHeight: 44).contentShape(.rect)
+                            }.buttonStyle(.plain)
+                                .accessibilityIdentifier("quiet-wins-habit-day-\(day.day.description)")
+                                .accessibilityValue(expanded ? String(localized: "Expanded") : String(localized: "Collapsed"))
+                            if expanded { ForEach(day.sources) { source in sourceLink(source) } }
+                        }
+                    } else {
+                        ForEach(card.sources) { source in sourceLink(source) }
                     }
                 }
             } else if loaded {
@@ -173,6 +181,19 @@ struct QuietWinsEvidenceView: View {
         .onAppear { refresh += 1 }
         .onChange(of: scenePhase) { _, phase in if phase == .active { refresh += 1 } }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: DispatchQueue.main)) { _ in refresh += 1 }
+    }
+
+    private func sourceLink(_ source: QuietWinsSource) -> some View {
+        NavigationLink {
+            QuietWinsSourceView(source: source, window: loadedWindow ?? window,
+                mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+        } label: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(source.title).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: source.day.description + (source.kind == .habitLog ? " · " + String(localized: "Recorded that day") : ""))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }.accessibilityIdentifier(source.kind == .habitLog ? "quiet-wins-source-habitLog-\(source.sourceID)" : "quiet-wins-source-\(source.kind.rawValue)")
     }
 
     @MainActor private func load() async {
@@ -245,6 +266,10 @@ struct QuietWinsSourceView: View {
 
     var body: some View {
         Group {
+            if hasReadFailure {
+                ContentUnavailableView("Unable to Load Evidence", systemImage: "exclamationmark.triangle",
+                    description: Text("Your records are unchanged. Try opening this page again."))
+            } else {
             switch source.kind {
             case .goal:
                 if let goal = goals.first, goal.status == .completed, let date = goal.completedAt, window.contains(date) {
@@ -256,7 +281,8 @@ struct QuietWinsSourceView: View {
                 } else { unavailable }
             case .habitLog:
                 if let habit = habits.first, let log = logs.first, log.isCompleted, log.habitID == habit.id {
-                    HabitDetailView(habit: habit, mediaStore: mediaStore, thumbnailStore: thumbnailStore)
+                    QuietWinsHabitLogDetailView(source: source, habit: habit, log: log,
+                        mediaStore: mediaStore, thumbnailStore: thumbnailStore)
                 } else { unavailable }
             case .entry:
                 if let entry = entries.first, entry.kind == .quickNote, window.contains(entry.occurredAt) {
@@ -267,10 +293,62 @@ struct QuietWinsSourceView: View {
                     WeeklyReviewView(weekIdentifier: review.weekIdentifier)
                 } else { unavailable }
             }
+            }
         }
+    }
+    private var hasReadFailure: Bool {
+        _goals.fetchError != nil || _todos.fetchError != nil || _habits.fetchError != nil || _logs.fetchError != nil || _entries.fetchError != nil || _reviews.fetchError != nil
     }
     private var unavailable: some View {
         ContentUnavailableView("Evidence No Longer Available", systemImage: "leaf",
             description: Text("The current source records determine this reflection."))
+    }
+}
+
+/// Exact source resolution is above; revalidate the saved business day before displaying this fact.
+private struct QuietWinsHabitLogDetailView: View {
+    let source: QuietWinsSource
+    let habit: Habit
+    let log: HabitLog
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+    @Query private var metadata: [HabitLogDayMetadata]
+    @Query private var entries: [Entry]
+    init(source: QuietWinsSource, habit: Habit, log: HabitLog, mediaStore: MediaStore, thumbnailStore: ThumbnailStore) {
+        self.source = source; self.habit = habit; self.log = log; self.mediaStore = mediaStore; self.thumbnailStore = thumbnailStore
+        let id = log.id, linkedIDs = log.linkedEntryID.map { [$0] } ?? []
+        _metadata = Query(filter: #Predicate<HabitLogDayMetadata> { $0.habitLogID == id })
+        _entries = Query(filter: #Predicate<Entry> { linkedIDs.contains($0.id) })
+    }
+    var body: some View {
+        List {
+            if _metadata.fetchError != nil || _entries.fetchError != nil {
+                ContentUnavailableView("Unable to Load Evidence", systemImage: "exclamationmark.triangle",
+                    description: Text("Your records are unchanged. Try opening this page again."))
+            } else if metadata.first?.localDayIdentifier == source.day.description && log.isCompleted {
+                Section {
+                    Text(habit.name).font(.headline)
+                    Text(verbatim: source.day.description).accessibilityIdentifier("quiet-wins-habit-log-day")
+                    Text("Recorded that day. A precise occurrence time is not inferred.").font(.caption).foregroundStyle(.secondary)
+                    if let quantity = log.quantity {
+                        LabeledContent("Quantity", value: quantity.formatted() + (log.unit.map { " " + $0 } ?? ""))
+                    }
+                    if let result = log.result { Text(result).textSelection(.enabled).accessibilityIdentifier("quiet-wins-habit-log-result") }
+                }
+                if let entry = entries.first {
+                    Section("Linked Entry") {
+                        NavigationLink { EntryDetailView(entry: entry, mediaStore: mediaStore, thumbnailStore: thumbnailStore) } label: {
+                            Text(entry.title ?? entry.body ?? String(localized: "Entry"))
+                        }
+                    }
+                }
+                Section {
+                    NavigationLink("Open Habit") { HabitDetailView(habit: habit, mediaStore: mediaStore, thumbnailStore: thumbnailStore) }
+                        .accessibilityIdentifier("quiet-wins-open-habit")
+                }
+            } else {
+                ContentUnavailableView("Evidence No Longer Available", systemImage: "leaf")
+            }
+        }.navigationTitle("Habit check-in").accessibilityIdentifier("quiet-wins-habit-log-detail")
     }
 }

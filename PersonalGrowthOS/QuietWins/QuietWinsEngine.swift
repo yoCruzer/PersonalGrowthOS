@@ -87,6 +87,21 @@ struct QuietWinsCard: Identifiable, Equatable, Sendable {
     var latestDay: HabitLocalDay { sources.map(\.day).max()! }
 }
 
+struct QuietWinsHabitDay: Identifiable, Equatable, Sendable {
+    let id: String
+    let day: HabitLocalDay
+    let sources: [QuietWinsSource]
+}
+extension QuietWinsCard {
+    /// Group identities, never distinct records with matching values. Source order remains factual and stable.
+    var habitDays: [QuietWinsHabitDay] {
+        guard kind == .habit else { return [] }
+        return Dictionary(grouping: sources, by: \.day).map { day, sources in
+            QuietWinsHabitDay(id: id + ":" + day.description, day: day, sources: sources)
+        }.sorted { $0.day > $1.day }
+    }
+}
+
 struct QuietWinsProjection: Equatable, Sendable {
     let window: QuietWinsWindow
     let cards: [QuietWinsCard]

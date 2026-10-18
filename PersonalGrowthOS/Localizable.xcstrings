@@ -1,6 +1,134 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Expanded": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Expanded"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已展开"
+        }
+      }
+    }
+  },
+  "Collapsed": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Collapsed"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已收起"
+        }
+      }
+    }
+  },
+  "Days with check-ins for “%@”: %lld · Check-ins: %lld": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Days with check-ins for “%@”: %lld · Check-ins: %lld"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "「%@」有记录 %lld 天 · 共打卡 %lld 次"
+        }
+      }
+    }
+  },
+  "Recorded days and check-ins are counted separately.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recorded days and check-ins are counted separately."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录天数与打卡次数分别统计。"
+        }
+      }
+    }
+  },
+  "Recorded that day": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recorded that day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "当天记录"
+        }
+      }
+    }
+  },
+  "Recorded that day. A precise occurrence time is not inferred.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recorded that day. A precise occurrence time is not inferred."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "当天记录，未推断具体发生时刻。"
+        }
+      }
+    }
+  },
+  "Open Habit": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Open Habit"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查看习惯"
+        }
+      }
+    }
+  },
+  "Habit check-in": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Habit check-in"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "习惯记录"
+        }
+      }
+    }
+  },
 "Newest first": {
   "localizations": {
     "en": {
