@@ -16,7 +16,23 @@ import UIKit
     var operationRevision: Int?
     var timerConfirmation: Bool
     var error: String?
+    private(set) var duplicateValues: InvestmentValues?
+    private(set) var duplicateActivity: UUID?
+    private(set) var duplicateDuration: String?
     var duplicateIDs: [UUID] = []
+    func showDuplicates(_ ids: [UUID]) {
+        duplicateIDs=ids;duplicateValues=values;duplicateActivity=activityID;duplicateDuration=durationText
+        duplicate=true;showDuplicateDialog=true
+    }
+    func clearDuplicateCandidates() {
+        duplicateValues=nil;duplicateActivity=nil;duplicateDuration=nil
+        duplicateIDs=[];duplicate=false;showDuplicateDialog=false
+    }
+    func eraseConsumedContent() {
+        finished=true
+        values=InvestmentTimer(state:.discarded,values:values,target:nil,checkpointAt:Date()).erasingConsumedContent().values
+        durationText="";clearDuplicateCandidates();cancelExactIntervalReplacement()
+    }
     var duplicate = false
     var showDuplicateDialog = false
     var finished = false
@@ -56,6 +72,9 @@ import UIKit
     }
     @discardableResult func persist(_ context: ModelContext,commit: ((ModelContext) throws -> Void)? = nil) -> Bool {
         guard !finished else { return true }
+        if duplicate && (duplicateValues != values || duplicateActivity != activityID || duplicateDuration != durationText) {
+            clearDuplicateCandidates()
+        }
         do {
             let save: (ModelContext) throws -> Void = commit ?? {context in
 #if DEBUG
@@ -93,39 +112,47 @@ import UIKit
     private var metadataVersion = -1
     private var operationsVersion = -1
     init(reader: InvestmentUIReader? = nil) {self.reader=reader ?? InvestmentUIReader()}
-    func refresh(_ context: ModelContext) {
+    private var metadataError: String?
+    private var operationsError: String?
+    func refresh(_ context: ModelContext, retry: Bool = false) {
         let container=context.container,version=InvestmentChanges.version(context.container)
-        let newStore=storeID != ObjectIdentifier(container)
-        let retry=error != nil || review == nil
-        do {
-            if newStore || retry || metadataVersion != version.metadata {
-                let (p,a)=try reader.metadata(container)
-                participants=p;activities=a;metadataVersion=version.metadata
-            }
-            if newStore || retry || factsVersion != version.facts {
-                review=try reader.review(container,participantID:me)
-                factsVersion=version.facts;reviewGeneration += 1;reviewError=nil
-            }
-            let ids=Set(version.operationIDs.filter {$0.value > seenSequence}.map(\.key))
-            if newStore || retry || operationsVersion != version.operations || !ids.isEmpty {
-                let full=newStore || retry || operationsVersion != version.operations
+        let newStore=storeID != ObjectIdentifier(container),previousMe=me
+        if newStore {
+            participants=[];activities=[];operations=[];review=nil
+            metadataError=nil;operationsError=nil;reviewError=nil
+            metadataVersion = -1;factsVersion = -1;operationsVersion = -1;seenSequence = -1
+            storeID=ObjectIdentifier(container)
+        }
+        if metadataVersion != version.metadata || (retry && metadataError != nil) {
+            metadataVersion=version.metadata
+            do {let (p,a)=try reader.metadata(container);participants=p;activities=a;metadataError=nil}
+            catch {participants=[];activities=[];metadataError=error.localizedDescription}
+        }
+        let ids=Set(version.operationIDs.filter {$0.value > seenSequence}.map(\.key))
+        let full=operationsVersion != version.operations || (retry && operationsError != nil)
+        if full || (!ids.isEmpty && operationsError == nil) {
+            operationsVersion=version.operations
+            do {
                 let update=try reader.operations(container,ids:full ? nil:ids)
                 let removed=full ? Set(operations.map(\.id)):ids
-                operations.removeAll {removed.contains($0.id)}
-                operations += update.active
+                operations.removeAll {removed.contains($0.id)};operations += update.active
                 for (id,editor) in editors where update.erased.contains(id) || editor.editingSessionID.map({update.erased.contains($0)}) == true {
-                    editor.finished=true
-                    editor.values=InvestmentTimer(state:.discarded,values:editor.values,target:nil,checkpointAt:Date()).erasingConsumedContent().values
-                    editor.durationText="";editors.removeValue(forKey:id)
+                    editor.eraseConsumedContent();editors.removeValue(forKey:id)
                 }
-                operationsVersion=version.operations
-            }
-            storeID=ObjectIdentifier(container);seenSequence=version.sequence
-            reference=Date();error=nil
-        } catch {
-            self.error=error.localizedDescription;reviewError=error.localizedDescription;review=nil
-            reviewGeneration += 1
+                operationsError=nil
+            } catch {operationsError=error.localizedDescription}
         }
+        if factsVersion != version.facts || previousMe != me || (retry && review == nil) {
+            // Record the attempted version even on failure. Draft events cannot implicitly
+            // retry an expensive failed history scan; explicit Retry or new formal facts can.
+            factsVersion=version.facts;reviewGeneration += 1
+            do {
+                if let metadataError {throw InvestmentEditorPersistenceFailure(message:metadataError)}
+                review=try reader.review(container,participantID:me);reviewError=nil
+            } catch {review=nil;reviewError=error.localizedDescription}
+        }
+        seenSequence=version.sequence;reference=Date()
+        error=metadataError ?? operationsError ?? reviewError
     }
     func receive(_ notification: Notification, context: ModelContext) {
         guard notification.object as? ModelContainer === context.container else {return}
@@ -138,7 +165,7 @@ import UIKit
         let service = InvestmentService(context:context,clock:clock)
         do {
             refresh(context)
-            guard error == nil else {return}
+            guard operationsError == nil else {return}
             for op in operations where op.timer.state == .running {
                 try service.command(.checkpoint,id:op.id,revision:op.revision)
             }
@@ -284,7 +311,12 @@ struct InvestmentHubView: View {
                     Button("Got it") { introduced = true }
                 }
             }
-            if let message = error ?? workspace.error { Section { Text(message).foregroundStyle(.red).accessibilityIdentifier("investment-error") } }
+            if let message = error ?? workspace.error {
+                Section {
+                    Text(message).foregroundStyle(.red).accessibilityIdentifier("investment-error")
+                    Button("Retry") {workspace.refresh(context,retry:true)}
+                }
+            }
             if !workspace.unfinished.isEmpty {
                 Section("Unfinished timer") {
                     ForEach(workspace.unfinished) { op in
@@ -319,7 +351,7 @@ struct InvestmentHubView: View {
                             Text("Total recorded: \(InvestmentFormatting.accumulated(review.activitySeconds[activity.id,default:0]))").monospacedDigit().accessibilityLabel("Total recorded investment")
                         } else {
                             Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
-                            Button("Retry") { workspace.refresh(context) }
+                            Button("Retry") { workspace.refresh(context,retry:true) }
                         }
                         if activity.isArchived { Text("Archived").font(.caption) }
                         else {
@@ -519,9 +551,7 @@ struct InvestmentEditorView: View {
             }
             if let error = editor.error { Section { Text(error).foregroundStyle(.red).accessibilityIdentifier("investment-save-error") } }
             if editor.duplicate {
-                Section("Possible matching records") {
-                    InvestmentSessionPage(selection:.init(rows:[],daySeconds:[:],orderedSessionIDs:editor.duplicateIDs),generation:workspace.reviewGeneration,key:editor.id.uuidString)
-                }
+                InvestmentSessionPage(selection:.init(rows:[],daySeconds:[:],orderedSessionIDs:editor.duplicateIDs),generation:workspace.reviewGeneration,key:editor.id.uuidString,title:"Possible matching records",showsContribution:false)
             }
             Section {
                 Button("Save activity") { save(false) }.accessibilityIdentifier("investment-save")
@@ -597,8 +627,7 @@ struct InvestmentEditorView: View {
             }
             editor.finished = true; workspace.refresh(context); dismiss()
         } catch InvestmentFailure.duplicate {
-            editor.duplicate = true;editor.showDuplicateDialog = true
-            do {editor.duplicateIDs=try InvestmentService(context:context).matchingSessionIDs(values:editor.values,participantID:editor.participantID,excluding:editor.editingSessionID ?? editor.id)}
+            do {editor.showDuplicates(try InvestmentService(context:context).matchingSessionIDs(values:editor.values,participantID:editor.participantID,excluding:editor.editingSessionID ?? editor.id))}
             catch {editor.error=error.localizedDescription;return}
             editor.error = InvestmentFailure.duplicate.localizedDescription
         }
@@ -690,7 +719,7 @@ struct InvestmentHistoryView: View {
             } else {
                 Section {
                     Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
-                    Button("Retry") { workspace.refresh(context) }
+                    Button("Retry") { workspace.refresh(context,retry:true) }
                 }
             }
         }.navigationTitle("History and review")
@@ -705,6 +734,8 @@ private struct InvestmentSessionPage: View {
     let selection: InvestmentReviewSelection
     let generation: Int
     let key: String
+    var title: LocalizedStringKey = "Saved sessions"
+    var showsContribution = true
     @Environment(InvestmentWorkspace.self) private var workspace
     @Environment(\.modelContext) private var context
     @State private var offset = 0
@@ -714,7 +745,7 @@ private struct InvestmentSessionPage: View {
     @State private var retry = 0
     private var loadKey: String { "\(generation)-\(key)-\(offset)-\(retry)" }
     var body: some View {
-        Section("Saved sessions") {
+        Section(title) {
             Text("Newest first · 20 records per page").font(.caption).task(id:loadKey) { load() }
             if let error { Text(error).foregroundStyle(.red); Button("Retry") { retry += 1 } }
             else if loadedKey != loadKey { ProgressView() }
@@ -726,7 +757,7 @@ private struct InvestmentSessionPage: View {
                             Text(workspace.name(session.activityID))
                             Text(session.values.day + " · " + InvestmentFormatting.duration(session.values.seconds)).font(.caption)
                             let contribution = selection.rows.filter { $0.sessionID == session.id }.reduce(0) { $0 + $1.seconds }
-                            if abs(contribution-session.values.seconds) > 0.001 { Text("Contribution in selection: \(InvestmentFormatting.duration(contribution))").font(.caption) }
+                            if showsContribution && abs(contribution-session.values.seconds) > 0.001 { Text("Contribution in selection: \(InvestmentFormatting.duration(contribution))").font(.caption) }
                         }
                     }.accessibilityIdentifier("investment-session-\(session.id)")
                 }
@@ -786,7 +817,7 @@ struct InvestmentSessionDetailView: View {
                         }
                     } else {
                         Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
-                        Button("Retry") { workspace.refresh(context) }
+                        Button("Retry") { workspace.refresh(context,retry:true) }
                     }
                 }
                 Section {

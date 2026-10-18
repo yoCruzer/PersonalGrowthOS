@@ -253,13 +253,13 @@ struct TodoIntentSchedulingResult {
             try Task.checkCancellation()
             let target=desired[record.taskID]
             let changedFutureTitle=target?.active == true && record.fireAt > now() && record.title != target?.title
-            if record.matches(target),[.accepted,.prepared].contains(record.phase),!changedFutureTitle {
+            if record.channel == .notification,record.matches(target),record.phase == .accepted,!changedFutureTitle {
                 do {
                     if try await !present(record) {
                         var retired=record;retired.phase = .retired
                         try write(retired,container)
                     }
-                } catch {blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending}
+                } catch {result.states[record.taskID] = .confirmationRequired}
             }
             if !record.matches(target) || record.phase == .cancellationPending || record.phase == .retired || changedFutureTitle {
                 let sameGeneration=target?.generation == record.generation

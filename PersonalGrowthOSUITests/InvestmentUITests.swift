@@ -362,3 +362,34 @@ extension InvestmentUITests {
         screenshot(app,"ReviewFix-UX1-by-ID-detail")
     }
 }
+
+extension InvestmentUITests {
+    func testReviewFixDuplicateCandidatesShowActualDurationAndClearAfterInputChanges() {
+        let app=launch();openHub(app);create(app)
+        let record=button("investment-record-",app);reveal(record,app);record.tap()
+        let note=app.textFields["investment-note"];reveal(note,app);note.tap();note.typeText("Synthetic matching detail")
+        app.buttons["Done"].tap()
+        let save=app.buttons["investment-save"];reveal(save,app);save.tap()
+        XCTAssertTrue(save.waitForNonExistence(timeout:5))
+        for _ in 0..<12 where !record.isHittable {app.swipeDown()}
+        record.tap();reveal(save,app);save.tap()
+        let keep=app.buttons["Keep editing"],confirm=app.buttons["Save anyway"]
+        XCTAssertTrue(confirm.waitForExistence(timeout:5))
+        if keep.exists {keep.tap()} else {app.coordinate(withNormalizedOffset:CGVector(dx:0.05,dy:0.30)).tap()}
+        XCTAssertTrue(confirm.waitForNonExistence(timeout:5))
+        let candidate=button("investment-session-",app);reveal(candidate,app)
+        XCTAssertTrue(candidate.label.contains("0:45:00"),candidate.label)
+        XCTAssertFalse(candidate.label.contains("0:00:00"),candidate.label)
+        screenshot(app,"ReviewFix-duplicate-candidate-real-duration")
+        candidate.tap()
+        let detail=app.staticTexts["Synthetic matching detail"];reveal(detail,app);XCTAssertTrue(detail.exists)
+        app.navigationBars.buttons.firstMatch.tap()
+        let minutes=app.textFields["investment-duration"]
+        for _ in 0..<15 where !minutes.isHittable {app.swipeDown()}
+        minutes.tap();minutes.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:2)+"46")
+        app.buttons["Done"].tap()
+        XCTAssertFalse(candidate.exists,"Time input change invalidates matching IDs without rescanning history")
+        reveal(save,app);save.tap()
+        XCTAssertTrue(save.waitForNonExistence(timeout:5))
+    }
+}

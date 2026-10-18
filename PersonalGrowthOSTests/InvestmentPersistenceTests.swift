@@ -4,6 +4,7 @@ import XCTest
 import UIKit
 import CryptoKit
 import Combine
+import Darwin
 @testable import PersonalGrowthOS
 
 @MainActor final class InvestmentPersistenceTests: XCTestCase {
@@ -823,11 +824,14 @@ import Combine
         try context.save();try InvestmentIntegrity.validate(context:ModelContext(container))
         var events: [InvestmentReadEvent] = [],readFailure=false
         let reader=InvestmentUIReader(observe:{event in
+            events.append(event) // Count attempts before any injected read failure.
             if readFailure && event.purpose == .factBatch {throw CocoaError(.fileReadUnknown)}
-            events.append(event)
         })
+        func peakResidentBytes() -> Int64 {var value=rusage();getrusage(RUSAGE_SELF,&value);return Int64(value.ru_maxrss)}
+        let peakBefore=peakResidentBytes()
         let workspace=InvestmentWorkspace(reader:reader),start=Date();workspace.refresh(context)
         print("USAGE_INVESTMENT_10000_DISK_REFRESH_SECONDS=\(Date().timeIntervalSince(start))")
+        print("REVIEW_F5_HOST_PEAK_RSS_BYTES beforeRefresh=\(peakBefore) afterRefresh=\(peakResidentBytes()) includesFixtureAndTestHost=true")
         XCTAssertNil(workspace.reviewError)
         let snapshot=try XCTUnwrap(workspace.review)
         XCTAssertEqual(snapshot.activitySeconds[a.id],600000)
@@ -835,17 +839,24 @@ import Combine
         XCTAssertEqual(events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded},10000)
         XCTAssertEqual(events.filter {$0.purpose == .operationBatch}.reduce(0) {$0+$1.decoded},10000)
         XCTAssertTrue(workspace.operations.isEmpty) // no saved Operation payloads are retained
-        var delivered: XCTestExpectation?
+        var delivered: XCTestExpectation?,awaitedSequences=Set<Int>()
         let subscription=NotificationCenter.default.publisher(for:.investmentChanged).receive(on:RunLoop.main).sink {notification in
             MainActor.assumeIsolated {
+                guard notification.object as? ModelContainer === container else {return}
                 workspace.receive(notification,context:context)
-                delivered?.fulfill()
+                if let sequence=notification.userInfo?["sequence"] as? Int,awaitedSequences.remove(sequence) != nil {delivered?.fulfill()}
             }
         }
         defer {subscription.cancel()}
         func event(count: Int = 1,_ action: () throws -> Void) async throws {
             let expected=expectation(description:"Service → event → Workspace")
-            expected.expectedFulfillmentCount=count;delivered=expected;try action();await fulfillment(of:[expected],timeout:5);delivered=nil
+            expected.expectedFulfillmentCount=count;delivered=expected
+            let before=InvestmentChanges.version(container).sequence
+            try action()
+            let after=InvestmentChanges.version(container).sequence
+            XCTAssertEqual(after-before,count)
+            awaitedSequences=Set((before+1)...after)
+            await fulfillment(of:[expected],timeout:5);delivered=nil
         }
         var time=InvestmentClock(wall:Date(),uptime:100,processID:"review-f5-continuous")
         let live=InvestmentService(context:context,clock:{time})
@@ -909,7 +920,14 @@ import Combine
         XCTAssertNil(workspace.reviewError);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
         readFailure=true;InvestmentChanges.publish(.all,container:container);workspace.refresh(context)
         XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
-        readFailure=false;workspace.refresh(context)
+        let failedReads=events.filter {$0.purpose == .factBatch}.count
+        for index in 0..<2 {
+            draft.values.note="Draft while statistics unavailable \(index)"
+            try await event {XCTAssertTrue(draft.persist(context))}
+        }
+        XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
+        XCTAssertEqual(events.filter {$0.purpose == .factBatch}.count,failedReads)
+        readFailure=false;workspace.refresh(context,retry:true)
         XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
         let export=try await transfer(container,folder).exportPackage();defer {export.cleanup()}
         let targetRoot=try root(),target=try PersistenceContainerFactory.makeOnDisk(at:targetRoot.appendingPathComponent("imported.sqlite"))
@@ -929,7 +947,7 @@ import Combine
         XCTAssertNil(try imported.session(id:edit.id,context:target.mainContext))
         let importedIDs=Array(try XCTUnwrap(imported.review?.orderedSessionIDs).prefix(20))
         XCTAssertEqual(try imported.reader.page(target,ids:importedIDs).map(\.id),importedIDs)
-        print("REVIEW_F5_PAGE pageDecoded=40 detailDecodedBeforeEdits=1 initialSavedPayloadsRetained=0 batchesOfAtMost=256 RSS_NOT_MEASURED")
+        print("REVIEW_F5_PAGE pageDecoded=40 detailDecodedBeforeEdits=1 initialSavedPayloadsRetained=0 batchesOfAtMost=256 peakRSSScope=wholeHostIncludingFixture")
     }
 
     func testUsageV14StartupMigrationKeepsLatestProtectionAndAddsNoDefaultSettings() throws {
@@ -1060,10 +1078,13 @@ extension InvestmentPersistenceTests {
         let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("cache-errors.sqlite"))
         let service=InvestmentService(context:c.mainContext),a=try service.createActivity(name:"Synthetic cache")
         let p=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentParticipant>()).first).id,id=UUID()
-        let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual,note:"Synthetic detail to erase")
+        let start=ImportantCivilDay(identifier:"2026-09-01")!.instant(minutes:600,timeZone:zone)!
+        let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.intervals,source:.manual,
+            spans:[.init(start:start,end:start.addingTimeInterval(1200)),.init(start:start.addingTimeInterval(1500),end:start.addingTimeInterval(3000))],note:"Synthetic detail to erase")
         try service.saveManual(id:id,participantID:p,activityID:a,values:values)
-        var failing=false
+        var failing=false,metadataFailure=false
         let reader=InvestmentUIReader(observe:{event in
+            if metadataFailure && event.purpose == .metadata {throw CocoaError(.fileReadUnknown)}
             if failing && [.page,.detail].contains(event.purpose) {throw CocoaError(.fileReadUnknown)}
         })
         let workspace=InvestmentWorkspace(reader:reader);workspace.refresh(c.mainContext)
@@ -1071,8 +1092,21 @@ extension InvestmentPersistenceTests {
         XCTAssertThrowsError(try reader.page(c,ids:[id]))
         XCTAssertThrowsError(try workspace.session(id:id,context:c.mainContext))
         failing=false
+        metadataFailure=true;InvestmentChanges.publish(.metadata,container:c);workspace.refresh(c.mainContext)
+        XCTAssertNotNil(workspace.error);XCTAssertTrue(workspace.activities.isEmpty)
+        metadataFailure=false;workspace.refresh(c.mainContext)
+        XCTAssertNotNil(workspace.error)
+        workspace.refresh(c.mainContext,retry:true)
+        XCTAssertNil(workspace.error);XCTAssertEqual(workspace.myActivities.count,1)
         XCTAssertEqual(try reader.page(c,ids:[id]).map(\.id),[id])
         let editor=workspace.edit(try XCTUnwrap(workspace.session(id:id,context:c.mainContext)))
+        editor.showDuplicates([id]);editor.values.note="Changed input invalidates candidate cache"
+        XCTAssertTrue(editor.persist(c.mainContext))
+        XCTAssertFalse(editor.duplicate);XCTAssertNil(editor.duplicateValues)
+        editor.showDuplicates([id])
+        XCTAssertFalse(try editor.requestExactInterval(start:start,end:start.addingTimeInterval(3000),now:Date()))
+        XCTAssertNotNil(editor.pendingExactInterval)
+        XCTAssertNotNil(editor.duplicateValues)
         XCTAssertTrue(editor.persist(c.mainContext));workspace.refresh(c.mainContext)
         XCTAssertEqual(workspace.drafts.count,1)
         try service.delete(id:id,revision:0);workspace.refresh(c.mainContext)
@@ -1080,5 +1114,7 @@ extension InvestmentPersistenceTests {
         XCTAssertTrue(workspace.drafts.isEmpty);XCTAssertTrue(workspace.editors.isEmpty)
         XCTAssertTrue(editor.finished);XCTAssertEqual(editor.values.note,"");XCTAssertTrue(editor.values.spans.isEmpty)
         XCTAssertEqual(editor.durationText,"")
+        XCTAssertNil(editor.duplicateValues);XCTAssertNil(editor.duplicateDuration);XCTAssertNil(editor.duplicateActivity)
+        XCTAssertTrue(editor.duplicateIDs.isEmpty);XCTAssertFalse(editor.duplicate);XCTAssertNil(editor.pendingExactInterval)
     }
 }

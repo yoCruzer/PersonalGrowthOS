@@ -390,15 +390,19 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         try matchingSessionIDs(values:values,participantID:participantID,excluding:excluding,context:ModelContext(container))
     }
     private func matchingSessionIDs(values: InvestmentValues,participantID: UUID,excluding: UUID,context: ModelContext) throws -> [UUID] {
-        var ids: [UUID] = []
+        var matches: [(UUID,String,Date)] = []
         try context.enumerate(FetchDescriptor<InvestmentSession>(predicate:#Predicate {$0.participantID == participantID}),batchSize:256) {model in
             guard model.id != excluding else {return}
             let other=try model.values()
             if values.evidence == .intervals && other.evidence == .intervals {
-                if values.spans.contains(where:{a in other.spans.contains {b in a.start < b.end && b.start < a.end}}) {ids.append(model.id)}
-            } else if values.day == other.day && values.seconds == other.seconds {ids.append(model.id)}
+                if values.spans.contains(where:{a in other.spans.contains {b in a.start < b.end && b.start < a.end}}) {matches.append((model.id,other.day,model.createdAt))}
+            } else if values.day == other.day && values.seconds == other.seconds {matches.append((model.id,other.day,model.createdAt))}
         }
-        return ids.sorted {$0.uuidString < $1.uuidString}
+        return matches.sorted {
+            if $0.1 != $1.1 {return $0.1 > $1.1}
+            if $0.2 != $1.2 {return $0.2 > $1.2}
+            return $0.0.uuidString < $1.0.uuidString
+        }.map {$0.0}
     }
     private func duplicates(values: InvestmentValues, participantID: UUID, excluding: UUID, context: ModelContext, confirmed: Bool) throws {
         guard !confirmed else {return}
@@ -614,7 +618,7 @@ enum InvestmentChange {
         case .metadata: value.metadata=value.sequence
         case .operation(let id): value.operationIDs[id]=value.sequence
         }
-        NotificationCenter.default.post(name:.investmentChanged,object:container)
+        NotificationCenter.default.post(name:.investmentChanged,object:container,userInfo:["sequence":value.sequence])
     }
 }
 

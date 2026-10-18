@@ -1,6 +1,22 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Recent measurements through %@": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recent measurements through %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "截至 %@ 的最近记录"
+        }
+      }
+    }
+  },
   "A stronger system alarm. Requires iOS 26 and alarm permission; stopping it does not complete the todo.": {
     "localizations": {
       "en": {
