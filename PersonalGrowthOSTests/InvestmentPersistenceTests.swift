@@ -1179,3 +1179,30 @@ extension InvestmentPersistenceTests {
         }
     }
 }
+
+extension InvestmentPersistenceTests {
+    func testFix2OBS01BusinessDuplicateRejectionKeepsCandidatesAfterRealEventDelivery() async throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),s=InvestmentService(context:c.mainContext)
+        let a=try s.createActivity(name:"Duplicate event scope"),p=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentParticipant>()).first).id,b=UUID()
+        let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual)
+        try s.saveManual(id:b,participantID:p,activityID:a,values:values)
+        let w=InvestmentWorkspace();w.refresh(c.mainContext)
+        let editor=try w.newEditor(activityID:a);editor.values=values;editor.durationText="45"
+        XCTAssertTrue(editor.persist(c.mainContext));w.refresh(c.mainContext)
+        let beforeFacts=InvestmentChanges.version(c).facts,beforeSequence=InvestmentChanges.version(c).sequence
+        let subscription=NotificationCenter.default.publisher(for:.investmentChanged).receive(on:RunLoop.main).sink {notification in
+            MainActor.assumeIsolated {w.receive(notification,context:c.mainContext)}
+        }
+        defer {subscription.cancel()}
+        XCTAssertThrowsError(try s.saveManual(id:editor.id,participantID:p,activityID:a,values:values,draftID:editor.id))
+        editor.showDuplicates(try s.matchingSessionIDs(values:values,participantID:p,excluding:editor.id))
+        editor.error=InvestmentFailure.duplicate.localizedDescription
+        let after=InvestmentChanges.version(c)
+        XCTAssertEqual(after.facts,beforeFacts);XCTAssertEqual(after.sequence,beforeSequence,"No commit was attempted: business rejection must not publish a fact invalidation")
+        let delivered=expectation(description:"Drain actual main RunLoop event delivery")
+        RunLoop.main.perform {delivered.fulfill()}
+        await fulfillment(of:[delivered],timeout:5)
+        XCTAssertEqual(editor.duplicateIDs,[b]);XCTAssertTrue(editor.duplicate);XCTAssertTrue(editor.showDuplicateDialog)
+        XCTAssertEqual(editor.error,InvestmentFailure.duplicate.localizedDescription)
+    }
+}

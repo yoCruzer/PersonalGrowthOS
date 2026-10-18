@@ -267,10 +267,16 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         let store = container.configurations.first!.url
         let parent = store.deletingLastPathComponent()
         let root = parent.lastPathComponent == "Store" ? parent.deletingLastPathComponent() : parent
+        var commitAttempted=false
         do {
             let result = try StorePublication.perform(at: root) {
                 let context = ModelContext(container); context.autosaveEnabled = false
-                do { let result = try body(context, clock()); try commit(context); return result }
+                do {
+                    let result = try body(context, clock())
+                    commitAttempted=true
+                    try commit(context)
+                    return result
+                }
                 catch { context.rollback(); throw error }
             }
             InvestmentChanges.publish(change,container:container)
@@ -279,7 +285,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             // A transport/commit error can follow a durable write in the injected
             // fault contract. Invalidate the same scope and let canonical reads
             // determine what committed; still report the original command failure.
-            InvestmentChanges.publish(change,container:container)
+            if commitAttempted {InvestmentChanges.publish(change,container:container)}
             throw error
         }
     }
