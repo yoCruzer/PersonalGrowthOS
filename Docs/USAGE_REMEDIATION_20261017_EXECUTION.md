@@ -259,3 +259,53 @@ ui-d6中QFiveSources与原WeeklyReview多字段/收键盘/保存/冷启动均PAS
 普通push成功；`gh pr list --head ... --state all`确认此前为空后，仅创建一次[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base=codex/time-investment-v1/baseRefOid=固定BASE，head=codex/usage-remediation-20261017。已调用attach_artifact附到本任务。没有更改旧PR。
 
 创建后回读isDraft=true/state=OPEN/statusCheckRollup=[]；最终文档更新再普通push同分支，实际远端SHA及仅Markdown差异记`final-delivery-proof.json`。最终code/test及六实包仍9601ff2；所有后续交付仅五份Markdown，按验收契约复用双构建，不为了文档再重建。当前停READY_FOR_OWNER_DEVICE_GATE；此状态只表示本地授权批次和Draft交付完成，完整原生/签名/真机/CI门没有全部通过。具体D1–D4与环境FAIL/SKIP/NOT_RUN保持，下一步由Owner另行授权。
+
+
+## PR #13 2026-10-18 独立复核修复批次（F1–F5 / UX1–UX2）
+
+固定规格 `2add10b0c67d064b7e77478fb18a11479d3c94dc`；最终产品/测试 `597552a020eab22673feed108d8676359efd8822`（其中生产及Unit与f946相同，最后一提交仅UI驱动/补验）。原已审交付 f1b52b5 / 产品9601仅作历史，不作为本轮通过证明。沿同一原worktree和分支续接；2add相对f1仅六份Markdown，原BASE和FIX_GOAL均为本候选祖先；主工作区未知三项dirty保持，未reset/clean/stash/重建/新建PR。远端base仍5a70f01，PR #13 Draft/base原分支未变。
+
+| 编号 | 本地实现与有区分力证据 |
+| --- | --- |
+| F1 | 仅successorWithdrawn重新启用的后继在applyTemplate换代，期次身份保持。真实磁盘两渠道协调器、确认取消与取消失败再完成、重复reconcile和重开通过；主动停止/已消费负例保持。fake不是AlarmKit原生正向证明。 |
+| F2 | 单次覆盖前在同一事务冻结真旧nil系列偏移，普通单实例编辑同样保护。V11.0真实Schema创建单一open实例与原created事件，升级后nil；实际v7 ZIP恢复后同样nil，无早期完成线索。0/-1、短期/800天、同分钟/改分钟、complete/skip参数化；失败全部回滚，无设备账本；重开、新v11实际导出恢复与原事件bytes通过。 |
+| F3 | accepted普通通知继续参加共享时间/类别规划；预算取消待确认与capacityWaiting区别于retired/stopped。实际查队确认后释放名额，legacy与新Todo/ImportantDay/Sleep共存。59保留项+L→E置换/完成E恢复L、跨类别、取消失败/恢复、停止项早/晚E都通过。Alarm/prepared读取失败仍confirmationRequired。 |
+| F4 | shared WeightMeasurementLoader持有当前query/generation和任务；初始/更多/重试同一归属。可控reader挂起A第二页/重试，让B先返回再放A，B不改写；refresh/返回A及表头再出现保留页通过。 |
+| F5 / 原T7 | typed process-local invalidation仅保存版本/ID；草稿与计时事件只读相关operation；正式变更/导入允许一次必要重建。每256条新context临时解码，workspace不常驻完整Session/已保存Operation；真实20条页和ID详情，重复候选同有界reader；保留必要业务冲突/重叠/完整性扫描。错误保持且显式重试；R1同时清values/重复候选baseline/待确认精确区间，R2失败输入与最后成功草稿可恢复。 |
+| UX1 | 窗口外inspect自动全部累计，保留日/月/活动；主动期间切换才清日。固定2026-10-18/9-1的45分钟1条、窗口内/无记录/活动/清除语义Unit和中文Dark最大AX原生路径通过。 |
+| UX2 | 主页面最近5条上界endExclusive且recordedAt<=snapshot.now，不强加趋势下界，日期选择<=asOf；历史截止标题中英。独立AllRecords仍全历史；10-10截止只显示10-1、AllRecords可查10-17，50→60分页/切日返回通过。 |
+
+### 最终受影响验证
+
+环境：macOS27.0.1/26A434；Xcode27.1/27A9275，SDK27.1；专用iPhone18Pro Simulator42609456-859D-41F8-8977-4B2D85A74082、iOS27.0/24A434。未操作其他模拟器数据或私人库。新原始证据 `/tmp/pgos-pr13-review-fix-evidence`；完整命令/SHA/dirty/exit/elapsed见各run JSON和native-run-index.json，原log/xcresult保留。
+
+- final-unit2，同clean 597552a（final-unit1在clean f946相同241/0/1）：242=241PASS/0FAIL/1SKIP、exit0，runtimeWarnings=[]。九完整类：TodoFoundation48、TodoReminder29、SleepReminder4、ImportantDayReminder7、Weight19、InvestmentFoundation32、InvestmentPersistence29、ImportExportRecovery56、AppComposition18。SKIP为隔离32MB HFS+物理低空间环境，未改标。不是重跑全仓517。原始CoreData负例/Widget projection failed code0/Xcode版本解析诊断和两次构建的AppIntents metadata extraction skipped warning保留，不以warnings=[]抹去原日志。
+- F5真实落盘10,000 Session与成对Operation，100条含长备注和两段。初始0.317755103秒，Session/Operation各40批fetch、各10000次decode；真实Service→带sequence通知→与AppShell共用Workspace.receive连续4次草稿、checkpoint(含草稿)/pause/resume后仍40/40与10000/10000，仅9条按ID operation decode。不是helper/generation反证；后台发布调度用同receive(on:RunLoop.main)。第二页与第一页共40decode，单ID详情1decode；正式edit/delete、实际ZIP import、读取故障、失败后草稿无隐式重扫和显式Retry恢复通过。Darwin ru_maxrss前后553107456 bytes（包括10k夹具和整个test host，不能解释为workspace峰值或节省比例）；不另做任意硬件阈值或Instruments批次。
+- final-ui1：clean f946为10=8PASS2FAIL，未改写为整套通过；final-ui-supp1：clean597552a为4/4PASS（中文Weight最大AX截止、mixed默认/中文Dark最大AX整行导航、旧Weight编辑删除刷新、duplicate候选修改后清除/保存46分钟）。前轮8个PASS方法和生产/Unit源码与597完全不变，逐方法与blob复用证明见ui-evidence-reuse-proof.json；原失败与新补验分开记录。截图及manifest在final-ui1-attachments、final-ui-supp1-attachments，对应map列出名字/绝对路径。
+- final-debug2：clean 597552a Debug build-for-testing exit0，App provenance与三包IDs/1.0(7)/min17及真实debug dylib哈希/AlarmKit弱链接核对；final-release1同clean597552a unsigned generic iOS Release exit0；两配置实际App/Share/Widget均保持原Bundle IDs、1.0(7)/minOS17，App provenance Commit=597552a、Dirty=false、Source=localGit、Tag为空。真实Debug dylib和Release executable均有LC_LOAD_WEAK_DYLIB AlarmKit.framework；中英usage描述均存在。精确哈希和原始otool在final-debug2/final-release1-bundle-proof.json与-mach-o.txt。
+
+### 真实失败与补验（分轮保留）
+
+| 运行 | 真实结果与后续 |
+| --- | --- |
+| red-a / red-a2 | 首次fixture有区分力不足：F1时区变化走另一换代路径而通过，F2提醒不晚于测试clock而invalidReminder；F3确证不能置换。修夹具后再红测，不把夹具错误冒称产品反例。 |
+| red-a3 | 原Todo产品源码来自固定2add；同区/正确future后F1退役代次与F2偏移污染红测成立，原始assertions全部保留。 |
+| green-ab | 30/30PASS：当时TodoReminder27+F2一项+Weight两项；工作树候选，非最终gate。 |
+| focused-c1 | 4/4PASS：真V11.0/v7、停止负例/跨类别、10k真实链首轮；未包含后续review修复。 |
+| focused-ui1 / ui2 | 各0PASS2FAIL：虚拟可见行5误当50、计数标签未在viewport、最大AX滚动落入wheel或详情未滚动。修实际same-query表头重现重载问题，并修正常视口驱动；原图树与失败保留。 |
+| focused-ui3 | 2PASS1FAIL：Weight与UX1通过，新重复用例系统popover不提供Cancel仅Save anyway，改为原生外点取消。原始AX树保留，候选含驱动补验。 |
+| candidate-unit1 / c2ddf18 | 242=240PASS1FAIL1SKIP；三条失败断言在同一个native read failure用例，修预检只针对accepted普通通知，保留Alarm/prepared语义，不改旧断言。 |
+| review-fix-unit1 | 109=108PASS1FAIL；新增故障链test expectation被此前queued通知多fulfill，按每条通知sequence精确配对，所有通知仍送生产receive。计attempt先append再注入失败，使失败后无重扫断言有区分力。 |
+| review-fix-unit2 | 109/109PASS；工作树候选。最终f946/597552a集中final-unit1/2均含全部后续assertions和补验。 |
+| final-ui1 / f946 | 10=8PASS2FAIL。Weight cutoff/50→60/切日返回、UX1中文Dark最大AX、自然期间/跨日事实、手工编辑删除、R2失败关闭重试冷启、R3显式替换、Record独立草稿、running冷启均通过。mixed失败时目标整行被底栏覆盖；duplicate已验证候选45分钟和ID详情，返回后输入框在导航栏下未聚焦。原截图/AX树与失败保留；597552a仅改驱动可见性/键盘断言并新增中文体重用例，不改生产/Unit。 |
+| final-ui-supp1 / 597552a | 4/4PASS exit0，原两个失败项以完整视口/键盘断言补验闭环；另补中文Weight Dark最大AX与旧Weight编辑删除刷新。不是同一轮10项全绿。 |
+
+### 独立复核、兼容与设备门
+
+Reviewer `/root/pr13_fix_independent_reviewer` 没有编写本轮代码，读取固定规格/源码diff/生产路径/测试及原始证据，提出并复核：预算停止/空位边界、查队不确定语义、重复候选伪零/排序/过期、所有Editor内容副本清除、中文截止标题和失败重试可达性。原始终审结论见REVIEW本轮追加章节，不由作者代写独立通过。
+
+持久Schema V1–V15、V11.0/11.1历史模型、v11备份wire与工程/身份/签名/minOS均未改变；设备账本仅新增本地取消原因phase，不进备份。兼容路径blob与祖先/原工作区保全在source-compatibility-proof.json（changedCompatibilityPaths=[]，四条checked路径blob全部相同）；实际迁移/ZIP和回滚由最终相关完整类复验。
+
+本轮不授权D1–D4/私人设备与库/签名安装/merge/force/tag/Archive/TestFlight。原AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、签名/真机/远端CI NOT_RUN继续保留。全部本地门通过才恢复READY_FOR_OWNER_DEVICE_GATE，设备门本身不因此通过。
+
+本轮交付提交在固定产品597552a之后只更新五份Markdown；交付SHA以本次交付commit/PR head和外部final-delivery-proof.json核对，避免文件自引用。普通push后核对Draft/base/head和workflows=0、checks=[]；远端CI仍NOT_RUN。
