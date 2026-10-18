@@ -439,7 +439,7 @@ extension InvestmentUITests {
             screenshot(app,"Fix2-CR05-after-save-landing-\(chinese)")
             XCTAssertTrue(app.navigationBars[chinese ? "计时":"Timer"].waitForNonExistence(timeout:5),"Outer Timer must close after successful confirmation")
             XCTAssertTrue(app.navigationBars[chinese ? "时间投入":"Time investment"].waitForExistence(timeout:5))
-            let history=app.buttons["investment-history"];reveal(history,app);XCTAssertTrue(history.isHittable);screenshot(app,"Fix2-CR05-stable-Hub-\(chinese)");history.tap()
+            let history=app.buttons["investment-history"];for _ in 0..<12 where !history.isHittable {app.swipeDown()};reveal(history,app);XCTAssertTrue(history.isHittable);screenshot(app,"Fix2-CR05-stable-Hub-\(chinese)");history.tap()
             let total=app.staticTexts["investment-review-total"];reveal(total,app)
             XCTAssertTrue(total.label.contains("0:03:00"),total.label)
             XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("1"))

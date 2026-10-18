@@ -2745,20 +2745,23 @@ extension ImportExportRecoveryTests {
             let url=f.root.appendingPathComponent("legacy.sqlite"),id=UUID(),sid=UUID()
             let day=try TodoRecurrence.reminderDay(occurrence:TodoDay("2020-01-01")!,offset:offset)
             let fire=TodoRecurrence.reminder(day:day,minutes:600,timeZone:zone)!
-            let draft=TodoDraft(title:"Legacy already overridden",plannedDay:"2020-01-01",deadlineDay:"2020-01-02",remindAt:fire,frequency:.daily)
+            let listID=UUID()
+            let draft=TodoDraft(title:"Legacy already overridden",plannedDay:"2020-01-01",deadlineDay:"2020-01-02",remindAt:fire,listID:listID,frequency:.daily)
             try autoreleasepool {
                 let schema=Schema(versionedSchema:PersonalGrowthSchemaV11Original.self)
                 let old=try ModelContainer(for:schema,configurations:[ModelConfiguration("PersonalGrowthOSV1",schema:schema,url:url,cloudKitDatabase:.none)])
-                let task=TodoTask(id:id,title:draft.title,plannedDay:draft.plannedDay,deadlineDay:draft.deadlineDay,remindAt:fire,seriesID:sid,occurrenceIndex:0,createdAt:origin)
+                let task=TodoTask(id:id,title:draft.title,plannedDay:draft.plannedDay,deadlineDay:draft.deadlineDay,remindAt:fire,listID:listID,seriesID:sid,occurrenceIndex:0,createdAt:origin)
                 task.reminderLocalDay=day.description;task.reminderMinutes=600;task.reminderTimeZoneID=zone.identifier
-                old.mainContext.insert(task);old.mainContext.insert(PersonalGrowthSchemaV11Original.TodoSeries(id:sid,frequency:.daily,anchorDay:"2020-01-01",draft:draft,reminderMinutes:600,createdAt:origin))
+                old.mainContext.insert(TodoList(id:listID,name:"Legacy list",createdAt:origin));old.mainContext.insert(task);old.mainContext.insert(PersonalGrowthSchemaV11Original.TodoSeries(id:sid,frequency:.daily,anchorDay:"2020-01-01",draft:draft,reminderMinutes:600,createdAt:origin))
                 old.mainContext.insert(TodoTaskEvent(taskID:id,sequence:0,kind:.created,occurredAt:origin,createdAt:origin,beforeValue:nil,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
                 try old.mainContext.save()
             }
             let migrated=try PersistenceContainerFactory.makeOnDisk(at:url),now=origin.addingTimeInterval(Double(elapsed)*86400)
             // An unrelated title edit precedes the old one-off override; it is not a rule edit.
             let oldService=TodoTaskService(context:migrated.mainContext,now:{origin.addingTimeInterval(1)},timeZone:{zone})
-            var title=try oldService.draft(id:id);title.title="Legacy title edit";try oldService.edit(id:id,draft:title)
+            var title=try oldService.draft(id:id);title.title="Legacy title edit"
+            if elapsed == 800 && offset == -1 {title.listID=nil} // Only the rule still belongs to the deleted list.
+            try oldService.edit(id:id,draft:title)
             let override=TodoRecurrence.reminder(day:TodoDay(date:now.addingTimeInterval(86400),timeZone:zone),minutes:minute,timeZone:zone)!
             try fix2OldF1Override(migrated,id:id,fire:override,now:now,zone:zone)
             XCTAssertNil(try ModelContext(migrated).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset)
@@ -2773,8 +2776,25 @@ extension ImportExportRecoveryTests {
                 XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
                 let service=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{zone})
                 if index == 1 {
-                    XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:override.addingTimeInterval(120),commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                    // A valid old override must remain recoverable after current-version
+                    // metadata, timezone and list operations. Freeze before new evidence.
+                    func continuation(_ writer: TodoTaskService) throws {
+                        if elapsed == 3 && offset == 0 {
+                            var metadata=try writer.draft(id:id);metadata.notes="Current metadata";metadata.title="Current title"
+                            try writer.edit(id:id,draft:metadata)
+                        } else if elapsed == 3 {
+                            try writer.refreshRepeatingReminderTimes()
+                        } else {try writer.deleteList(id:listID)}
+                    }
+                    let travelZone = elapsed == 3 && offset == -1 ? TimeZone(identifier:"America/Los_Angeles")!:zone
+                    let failingContinuation=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{travelZone},save:{throw CocoaError(.fileWriteOutOfSpace)})
+                    XCTAssertThrowsError(try continuation(failingContinuation))
                     XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+                    try continuation(TodoTaskService(context:ModelContext(c),now:{now},timeZone:{travelZone}))
+                    XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset,offset)
+                    let afterContinuation=try TransferSnapshot.make(context:ModelContext(c))
+                    XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:override.addingTimeInterval(120),commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                    XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),afterContinuation)
                     try service.rescheduleReminder(id:id,to:override.addingTimeInterval(120))
                     XCTAssertEqual(try service.task(id:id).remindAt,override.addingTimeInterval(120))
                 } else {XCTAssertEqual(try service.task(id:id).remindAt,override)}

@@ -530,7 +530,7 @@ final class TodoTaskService {
         let reminderChanged=task.remindAt != draft.remindAt
         let retainOverride=previousIntent?.isInstanceOverride == true && !reminderChanged && !futureSeries && draft.remindAt != nil
         try transaction {
-            if reminderChanged && !futureSeries {try preserveLegacyReminderOffset(task)}
+            if !futureSeries && (reminderChanged || previousIntent?.isInstanceOverride == true) {try preserveLegacyReminderOffset(task)}
             let before = try TodoEventValue(task)
             if draft.frequency != nil {
                 let rule = try makeSeries(draft, at: now())
@@ -660,6 +660,7 @@ final class TodoTaskService {
         guard !tasks.isEmpty else { return }
         try transaction {
             for task in tasks {
+                try preserveLegacyReminderOffset(task)
                 guard let dayString = task.reminderLocalDay, let day = TodoDay(dayString),
                       let minutes = task.reminderMinutes else { throw TodoFailure.corruptData }
                 let before = try TodoEventValue(task)
@@ -707,7 +708,15 @@ final class TodoTaskService {
     func deleteList(id: UUID) throws {
         guard let list = try context.fetch(FetchDescriptor<TodoList>(predicate: #Predicate { $0.id == id })).first else { throw TodoFailure.missingList }
         try transaction {
-            for task in try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.listID == id })) {
+            let tasks=try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.listID == id }))
+            let taskSeriesIDs=Set(tasks.compactMap(\.seriesID))
+            let rules=try context.fetch(FetchDescriptor<TodoSeries>()).filter {$0.listID == id || taskSeriesIDs.contains($0.id)}
+            // Freeze before either task history or the rule timestamp changes. A
+            // single-occurrence list edit can leave task and rule lists different.
+            for rule in rules where rule.reminderDayOffset == nil && rule.reminderMinutes != nil {
+                rule.reminderDayOffset=try reminderOffset(for:rule)
+            }
+            for task in tasks {
                 let before = try TodoEventValue(task); task.listID = nil
                 try record(task, kind: .edited, before: before, at: now())
             }
