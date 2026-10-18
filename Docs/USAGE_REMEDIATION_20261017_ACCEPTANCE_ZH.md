@@ -156,7 +156,7 @@ N3–N6生命周期及共享额度 affected-c11 **31PASS**；后续DST/旧修订
 
 ## 最终本地实现验收（2026-10-18）
 
-状态：**LOCAL_VERIFIED_PENDING_DRAFT_PR**。最终产品/测试、独立审查及双构建固定 `9601ff211fbdafc954e32f9e25206a38479e972b`。这是本地实现完成、可提交设备门禁的结论，**完整Goal的原生/签名/真机/CI验收没有全部通过**。原失败/警告保留；下表“本地通过”不覆盖D1–D4。
+状态：**READY_FOR_OWNER_DEVICE_GATE**。最终产品/测试、独立审查及双构建固定 `9601ff211fbdafc954e32f9e25206a38479e972b`。这是本地实现完成、可提交设备门禁的结论，**完整Goal的原生/签名/真机/CI验收没有全部通过**。原失败/警告保留；下表“本地通过”不覆盖D1–D4。
 
 | 项目 | 实际结果与主要实现 | 原始证据及限制 |
 | --- | --- | --- |
@@ -205,3 +205,8 @@ N3–N6生命周期及共享额度 affected-c11 **31PASS**；后续DST/旧修订
 4. **D4 实际交互组合**：单手44pt触控、VoiceOver真实朗读/状态值、默认及最大动态字体Light/Dark；签名后Safari/Public NSItemProvider文字/URL/照片分享并确认只导入一次、Photos、桌面Widget路由、飞行模式下Record/本地Files备份恢复及相邻模块组合。
 
 **保留状态**：AlarmKit正向schedule/cancel/响铃/原生Stop/Open NOT_RUN（真实授权denied）；Public mixed provider **FAIL/environment**（实际copied diagnostic category=appGroup），unsigned Safari **FAIL**，签名Share/Safari正向NOT_RUN；独立32MB HFS+物理低空间 **SKIP/NOT_RUN**；远端workflows=0，独立CI **NOT_RUN**。本地实现完成不授权merge、force push、tag、Archive或TestFlight。
+
+
+### 实际交付身份
+
+已普通push `codex/usage-remediation-20261017`，唯一新[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base=`codex/time-investment-v1`，baseRefOid仍固定BASE。最终产品/测试/实包/独立审查SHA仍`9601ff211fbdafc954e32f9e25206a38479e972b`，后续仅本轮五份Markdown交付记录；交付SHA以PR当前head和证据`final-delivery-proof.json`为准，避免自引用SHA。旧PR #1–#12及原工作区三项未知dirty保持；没有merge/force/tag/Archive/TestFlight。独立远端CI未执行（workflows=0、statusCheckRollup=[]），不能将空检查当通过。停在本轮边界，下一步仅Owner另行授权D1–D4。

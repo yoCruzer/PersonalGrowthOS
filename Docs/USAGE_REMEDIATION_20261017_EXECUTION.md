@@ -1,6 +1,6 @@
 # 使用反馈统一整改执行记录
 
-状态：**LOCAL_VERIFIED_PENDING_DRAFT_PR**。本地实现、受影响补验、最终双构建/实包及独立review已完成；最后普通push/唯一Draft PR待创建。下文是原始分轮历史，最终矩阵见ACCEPTANCE末段；不代表原生/签名/真机/CI全部通过。
+状态：**READY_FOR_OWNER_DEVICE_GATE**。本地实现、受影响补验、最终双构建/实包、独立review、普通push及唯一新Draft PR #13已完成。下文是原始分轮历史，最终矩阵见ACCEPTANCE末段；不代表原生/签名/真机/CI全部通过。
 
 ## 固定输入与隔离
 
@@ -252,3 +252,10 @@ ui-d6中QFiveSources与原WeeklyReview多字段/收键盘/保存/冷启动均PAS
 真正独立只读reviewer `/root/usage_remediation_independent_review` 已直接核对源码/红绿反例/原始测试和截图/实包，R1–R8关闭，无范围内仍未关闭的已确认P0/P1/P2。原文完整写入REVIEW。未证实的主context缓存假设撤回，未冒称缺陷。review明确完整原生/签名/真机/CI尚有缺口，详见ACCEPTANCE末段具体D1–D4清单。
 
 最终证据索引native-run-index.json（143 log）、full-unit-reuse-proof-final.json、final-ui-coverage.json，以及debug/release-bundle-proof-9601ff2.json；不同轮次不拼新全绿全量。全Unit原517=512/4/1，四个旧fixture修正后受影响完整两类60PASS，后续35/31完整受影响类通过；Public环境FAIL/AlarmKit SKIP及旧Safari FAIL/低空间SKIP/CI NOT_RUN始终保留。最终仅文档交付提交不重建相同产品，普通push/唯一Draft PR完成后记录远端身份，停Owner设备门禁。
+
+
+## 实际交付与停止边界
+
+普通push成功；`gh pr list --head ... --state all`确认此前为空后，仅创建一次[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base=codex/time-investment-v1/baseRefOid=固定BASE，head=codex/usage-remediation-20261017。已调用attach_artifact附到本任务。没有更改旧PR。
+
+创建后回读isDraft=true/state=OPEN/statusCheckRollup=[]；最终文档更新再普通push同分支，实际远端SHA及仅Markdown差异记`final-delivery-proof.json`。最终code/test及六实包仍9601ff2；所有后续交付仅五份Markdown，按验收契约复用双构建，不为了文档再重建。当前停READY_FOR_OWNER_DEVICE_GATE；此状态只表示本地授权批次和Draft交付完成，完整原生/签名/真机/CI门没有全部通过。具体D1–D4与环境FAIL/SKIP/NOT_RUN保持，下一步由Owner另行授权。
