@@ -108,7 +108,7 @@ final class ImportantDayPersistenceTests: XCTestCase {
         XCTAssertEqual(try TransferSnapshot.make(context: reopened.mainContext), before)
         let cover = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<ImportantDayCover>()).first)
         XCTAssertEqual(try Data(contentsOf: restoredMedia.fileURL(for: cover.relativePath)), try Data(contentsOf: image.url))
-        XCTAssertEqual(ExportManifest.currentPackageSchemaVersion, 10) // Current export; v8 compatibility is separately verified.
+        XCTAssertEqual(ExportManifest.currentPackageSchemaVersion, 11) // Current export; v8 compatibility is separately verified.
         try ImportantDayIntegrity.validate(context: reopened.mainContext)
         XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<CaptureImportReceipt>()), 0)
     }

@@ -1,6 +1,1254 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "A stronger system alarm. Requires iOS 26 and alarm permission; stopping it does not complete the todo.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "A stronger system alarm. Requires iOS 26 and alarm permission; stopping it does not complete the todo."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "更强的系统闹钟提醒，需要 iOS 26 及闹钟授权；停止响铃不会完成待办。"
+        }
+      }
+    }
+  },
+  "Add a weight measurement to calculate BMI.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Add a weight measurement to calculate BMI."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录体重后可计算BMI。"
+        }
+      }
+    }
+  },
+  "Add optional height to see BMI. Weight recording works without it.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Add optional height to see BMI. Weight recording works without it."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "可自愿填写身高以查看BMI，不填也可记录体重。"
+        }
+      }
+    }
+  },
+  "Adult reference": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Adult reference"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "成人参照"
+        }
+      }
+    }
+  },
+  "Alarm": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Alarm"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "闹钟"
+        }
+      }
+    }
+  },
+  "Alarm not queued: waiting for an available system slot.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Alarm not queued: waiting for an available system slot."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "闹钟尚未排程：等待系统空余名额。"
+        }
+      }
+    }
+  },
+  "Alarm reminder": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Alarm reminder"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "闹钟提醒"
+        }
+      }
+    }
+  },
+  "Alarm reminder needs permission": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Alarm reminder needs permission"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "闹钟提醒需要授权"
+        }
+      }
+    }
+  },
+  "Alarm reminders are disabled in iOS Settings.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Alarm reminders are disabled in iOS Settings."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "闹钟提醒已在 iOS 设置中关闭。"
+        }
+      }
+    }
+  },
+  "Alarm reminders require iOS 26 or later.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Alarm reminders require iOS 26 or later."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "闹钟提醒需要 iOS 26 或更高版本。"
+        }
+      }
+    }
+  },
+  "BMI (optional)": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "BMI (optional)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "BMI（可选）"
+        }
+      }
+    }
+  },
+  "BMI reference and limits": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "BMI reference and limits"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "BMI参照与局限"
+        }
+      }
+    }
+  },
+  "BMI settings": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "BMI settings"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "BMI设置"
+        }
+      }
+    }
+  },
+  "CDC: About BMI": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "CDC: About BMI"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "CDC：BMI说明"
+        }
+      }
+    }
+  },
+  "Calculated from this historical weight using your current height.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Calculated from this historical weight using your current height."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "使用当前身高与这次历史体重计算。"
+        }
+      }
+    }
+  },
+  "Change reminder method or time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Change reminder method or time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "更改提醒方式或时间"
+        }
+      }
+    }
+  },
+  "China adult reference": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "China adult reference"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "中国成人参照"
+        }
+      }
+    }
+  },
+  "China: Core Knowledge (2024)": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "China: Core Knowledge (2024)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "国家卫健委：体重管理核心知识（2024年版）"
+        }
+      }
+    }
+  },
+  "China: Weight Management Guideline (2024)": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "China: Weight Management Guideline (2024)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "国家卫健委：体重管理指导原则（2024年版）"
+        }
+      }
+    }
+  },
+  "Choose at least one weekday.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Choose at least one weekday."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请至少选择一个星期。"
+        }
+      }
+    }
+  },
+  "Choose reminder time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Choose reminder time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "选择提醒时间"
+        }
+      }
+    }
+  },
+  "Clear height": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Clear height"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "清除身高"
+        }
+      }
+    }
+  },
+  "Could not read BMI settings. Retry before changing them.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Could not read BMI settings. Retry before changing them."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法读取BMI设置，请重试后再修改。"
+        }
+      }
+    }
+  },
+  "Could not read reminder settings.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Could not read reminder settings."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法读取提醒设置。"
+        }
+      }
+    }
+  },
+  "Current height: %@ cm": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Current height: %@ cm"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "当前身高：%@ cm"
+        }
+      }
+    }
+  },
+  "Edit or clear height": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Edit or clear height"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "修改或清除身高"
+        }
+      }
+    }
+  },
+  "Enable reminder": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Enable reminder"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "启用提醒"
+        }
+      }
+    }
+  },
+  "Enter a height from 50 to 300 cm. Use a decimal point or comma.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Enter a height from 50 to 300 cm. Use a decimal point or comma."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请输入50至300 cm的身高，小数可用点或逗号。"
+        }
+      }
+    }
+  },
+  "Every Monday through Friday": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Every Monday through Friday"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "每周一至周五"
+        }
+      }
+    }
+  },
+  "Every Saturday and Sunday": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Every Saturday and Sunday"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "每周六、周日"
+        }
+      }
+    }
+  },
+  "General adult screening reference, not a diagnosis. These ranges do not apply directly to children or pregnancy. Muscle mass and older age also affect interpretation.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "General adult screening reference, not a diagnosis. These ranges do not apply directly to children or pregnancy. Muscle mass and older age also affect interpretation."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "成人一般筛查参考，不是诊断。这些范围不能直接用于儿童或孕期；肌肉量和高龄等也会影响解释。"
+        }
+      }
+    }
+  },
+  "Height (cm)": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Height (cm)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "身高（cm）"
+        }
+      }
+    }
+  },
+  "Height is optional and saved on this device with your backup settings.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Height is optional and saved on this device with your backup settings."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "身高自愿填写，在本地保存并纳入统一备份。"
+        }
+      }
+    }
+  },
+  "In 10 minutes": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "In 10 minutes"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "10 分钟后"
+        }
+      }
+    }
+  },
+  "Input range: 50–300 cm. Leave blank to remove height.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Input range: 50–300 cm. Leave blank to remove height."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "输入范围：50–300 cm。留空可移除身高。"
+        }
+      }
+    }
+  },
+  "Modify reminder time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Modify reminder time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "修改提醒时间"
+        }
+      }
+    }
+  },
+  "Next occurrence: %@": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Next occurrence: %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "下一次预计：%@"
+        }
+      }
+    }
+  },
+  "No records through selected date": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No records through selected date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "截至所选日期暂无记录"
+        }
+      }
+    }
+  },
+  "Notification reminder": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Notification reminder"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "普通通知提醒"
+        }
+      }
+    }
+  },
+  "Obesity reference range": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Obesity reference range"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "肥胖参照范围"
+        }
+      }
+    }
+  },
+  "Obesity reference: ≥%@": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Obesity reference: ≥%@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "肥胖参照：≥%@"
+        }
+      }
+    }
+  },
+  "Observe changes over time, keep regular meals and activity, and consult a qualified professional if you have concerns.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Observe changes over time, keep regular meals and activity, and consult a qualified professional if you have concerns."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "持续观察变化，保持规律饮食与活动；如有担忧，可咨询专业人员。"
+        }
+      }
+    }
+  },
+  "Old reminders may still sound until cancellation is confirmed.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Old reminders may still sound until cancellation is confirmed."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "确认取消前，旧提醒仍可能响起。"
+        }
+      }
+    }
+  },
+  "Open Todo": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Open Todo"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "打开待办"
+        }
+      }
+    }
+  },
+  "Open requested Todo": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Open requested Todo"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "打开请求的待办"
+        }
+      }
+    }
+  },
+  "Optional height": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Optional height"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "可选身高"
+        }
+      }
+    }
+  },
+  "Overweight reference range": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Overweight reference range"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "超重参照范围"
+        }
+      }
+    }
+  },
+  "Overweight reference: ≥%@ and <%@": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Overweight reference: ≥%@ and <%@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "超重参照：≥%@且<%@"
+        }
+      }
+    }
+  },
+  "Recheck available slots": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recheck available slots"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重新检查空余名额"
+        }
+      }
+    }
+  },
+  "Recheck reminder": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recheck reminder"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重新核查提醒"
+        }
+      }
+    }
+  },
+  "Recheck reminder cancellation": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recheck reminder cancellation"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重新核查取消结果"
+        }
+      }
+    }
+  },
+  "Reload reminder settings": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Reload reminder settings"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重新读取提醒设置"
+        }
+      }
+    }
+  },
+  "Reminder method": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Reminder method"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "提醒方式"
+        }
+      }
+    }
+  },
+  "Retry": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Retry"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重试"
+        }
+      }
+    }
+  },
+  "Retry setting reminder": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Retry setting reminder"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重试设置提醒"
+        }
+      }
+    }
+  },
+  "Selected weekdays": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Selected weekdays"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "自选星期"
+        }
+      }
+    }
+  },
+  "Set height (optional)": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Set height (optional)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "填写身高（可选）"
+        }
+      }
+    }
+  },
+  "Set reminder again": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Set reminder again"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重新设置提醒"
+        }
+      }
+    }
+  },
+  "Stop Todo alarm": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Stop Todo alarm"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "停止待办闹钟"
+        }
+      }
+    }
+  },
+  "Stop alarm": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Stop alarm"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "停止闹钟"
+        }
+      }
+    }
+  },
+  "System confirmation is unavailable. Recheck this reminder before changing it.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "System confirmation is unavailable. Recheck this reminder before changing it."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "暂时无法确认系统状态。更改前请重新核查此提醒。"
+        }
+      }
+    }
+  },
+  "The old reminder has not been confirmed canceled. Recheck before setting another.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "The old reminder has not been confirmed canceled. Recheck before setting another."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "尚未确认旧提醒已取消。设置新提醒前请重新核查。"
+        }
+      }
+    }
+  },
+  "The unrounded BMI is below %@. The displayed value is rounded.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "The unrounded BMI is below %@. The displayed value is rounded."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "未舍入的BMI低于%@，显示值经过四舍五入。"
+        }
+      }
+    }
+  },
+  "This alarm request is no longer available.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This alarm request is no longer available."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "此闹钟请求已不可用。"
+        }
+      }
+    }
+  },
+  "This changes only this occurrence's reminder. Its plan, deadline and future series stay the same.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This changes only this occurrence's reminder. Its plan, deadline and future series stay the same."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "只更改本次提醒；原计划日、截止日和后续重复规则保持不变。"
+        }
+      }
+    }
+  },
+  "This reminder is no longer queued. Set a new reminder to notify again.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This reminder is no longer queued. Set a new reminder to notify again."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "此提醒已不在系统队列中。如需再次提醒，请重新设置。"
+        }
+      }
+    }
+  },
+  "This todo is no longer open for reminders. Refresh its details.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This todo is no longer open for reminders. Refresh its details."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "此待办当前不能设置提醒，请刷新详情。"
+        }
+      }
+    }
+  },
+  "Tomorrow at the same reminder time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Tomorrow at the same reminder time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "明天同一提醒时刻"
+        }
+      }
+    }
+  },
+  "Tomorrow follows Gregorian local days. Missing clock times move to the next valid time; repeated times use the first occurrence.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Tomorrow follows Gregorian local days. Missing clock times move to the next valid time; repeated times use the first occurrence."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "明天按本地公历自然日计算。遇到不存在的时刻顺延至下一个有效时刻；重复时刻采用第一次。"
+        }
+      }
+    }
+  },
+  "Underweight reference range": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Underweight reference range"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "体重偏低参照范围"
+        }
+      }
+    }
+  },
+  "Underweight: <18.5": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Underweight: <18.5"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "体重偏低：<18.5"
+        }
+      }
+    }
+  },
+  "Unknown repeat rule": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unknown repeat rule"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法识别的重复规则"
+        }
+      }
+    }
+  },
+  "Use selected time": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use selected time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "使用所选时间"
+        }
+      }
+    }
+  },
+  "Usual adult range: ≥18.5 and <%@": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Usual adult range: ≥18.5 and <%@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "成人常用正常范围：≥18.5且<%@"
+        }
+      }
+    }
+  },
+  "Usual adult reference range": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Usual adult reference range"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "成人常用正常参照范围"
+        }
+      }
+    }
+  },
+  "WHO adult BMI definitions": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "WHO adult BMI definitions"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "WHO成人BMI定义"
+        }
+      }
+    }
+  },
+  "WHO adult reference": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "WHO adult reference"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "WHO成人参照"
+        }
+      }
+    }
+  },
+  "Weekday rules do not adjust for public holidays or make-up workdays. The current occurrence keeps its chosen date.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Weekday rules do not adjust for public holidays or make-up workdays. The current occurrence keeps its chosen date."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "星期规则不自动调整法定节假日或补班。本次期次保留已选日期。"
+        }
+      }
+    }
+  },
   "Unable to read investment statistics": {
     "localizations": {
       "en": {

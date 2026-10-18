@@ -192,7 +192,8 @@ extension TransferData {
     func validateTodos() throws {
         try TodoIntegrity.validate(tasks: todoTasks.map { try $0.model() }, events: todoEvents.map { try $0.model() },
             lists: todoLists.map { try $0.model() }, series: todoSeries.map { try $0.model() },
-            sources: todoSources.map { try $0.model() }, entryIDs: Set(entries.map(\.id)))
+            sources: todoSources.map { try $0.model() }, entryIDs: Set(entries.map(\.id)),
+            preferences:todoSeriesPreferences.map {try $0.model()})
     }
     func insertTodos(into context: ModelContext) throws {
         for value in todoLists { context.insert(try value.model()) }
@@ -200,5 +201,102 @@ extension TransferData {
         for value in todoTasks { context.insert(try value.model()) }
         for value in todoEvents { context.insert(try value.model()) }
         for value in todoSources { context.insert(try value.model()) }
+    }
+}
+
+struct TodoSeriesPreferencesTransfer: Codable, Equatable {
+    var id: UUID
+    var weekdaysMask: Int?
+    var reminderChannelRawValue: String
+    init(_ value: TodoSeriesPreferences) {
+        id=value.id;weekdaysMask=value.weekdaysMask;reminderChannelRawValue=value.reminderChannelRawValue
+    }
+    func model() throws -> TodoSeriesPreferences {
+        guard let channel=TodoReminderChannel(rawValue:reminderChannelRawValue) else {throw TodoFailure.corruptData}
+        return TodoSeriesPreferences(seriesID:id,weekdaysMask:weekdaysMask,channel:channel)
+    }
+}
+struct TodoReminderIntentTransfer: Codable, Equatable {
+    var id: UUID
+    var generation: UUID
+    var revision: Int
+    var channelRawValue: String
+    var isInstanceOverride: Bool
+    init(_ value: TodoReminderIntent) {
+        id=value.id;generation=value.generation;revision=value.revision
+        channelRawValue=value.channelRawValue;isInstanceOverride=value.isInstanceOverride
+    }
+    func model() throws -> TodoReminderIntent {
+        guard let channel=TodoReminderChannel(rawValue:channelRawValue) else {throw TodoFailure.corruptData}
+        return TodoReminderIntent(taskID:id,channel:channel,isInstanceOverride:isInstanceOverride,generation:generation,revision:revision)
+    }
+}
+struct BodyReferenceSettingsTransfer: Codable, Equatable {
+    var id: UUID
+    var heightCentimeters: Double?
+    var referenceRawValue: String
+    init(_ value: BodyReferenceSettings) {id=value.id;heightCentimeters=value.heightCentimeters;referenceRawValue=value.referenceRawValue}
+    func model() throws -> BodyReferenceSettings {
+        guard id == BodyReferenceSettings.singletonID,let reference=BMIReference(rawValue:referenceRawValue) else {throw TodoFailure.corruptData}
+        return BodyReferenceSettings(heightCentimeters:heightCentimeters,reference:reference)
+    }
+}
+extension TransferData {
+    func validateUsagePreferences(packageVersion: Int) throws {
+        func require(_ value: Bool) throws {if !value {throw TodoFailure.corruptData}}
+        func unique(_ ids: [UUID]) -> Bool {Set(ids).count == ids.count}
+        let newRules=Set(["weekdays","weekends","customWeekdays"])
+        if packageVersion < 11 {
+            try require(todoSeriesPreferences.isEmpty && todoReminderIntents.isEmpty && bodyReferenceSettings.isEmpty)
+            try require(!todoSeries.contains {newRules.contains($0.frequencyRawValue)})
+        }
+        try require(unique(todoSeriesPreferences.map(\.id)) && unique(todoReminderIntents.map(\.id)))
+        try require(unique(todoReminderIntents.map(\.generation)))
+        let tasks=Dictionary(grouping:todoTasks,by:\.id),series=Dictionary(grouping:todoSeries,by:\.id)
+        let preferences=Dictionary(grouping:todoSeriesPreferences,by:\.id)
+        for rule in todoSeries {
+            try Task.checkCancellation()
+            if rule.frequencyRawValue == "customWeekdays" {try require(preferences[rule.id]?.count == 1 && preferences[rule.id]?.first?.weekdaysMask != nil)}
+        }
+        for value in todoSeriesPreferences {
+            try Task.checkCancellation()
+            try require(series[value.id]?.count == 1 && TodoReminderChannel(rawValue:value.reminderChannelRawValue) != nil)
+            if let mask=value.weekdaysMask {try require((1...127).contains(mask) && series[value.id]?.first?.frequencyRawValue == "customWeekdays")}
+            else {try require(series[value.id]?.first?.frequencyRawValue != "customWeekdays")}
+        }
+        for value in todoReminderIntents {
+            try Task.checkCancellation()
+            try require(tasks[value.id]?.count == 1 && TodoReminderChannel(rawValue:value.channelRawValue) != nil && value.revision >= 0 && value.revision < Int.max)
+            if value.isInstanceOverride {try require(tasks[value.id]?.first?.seriesID != nil && tasks[value.id]?.first?.remindAt != nil)}
+        }
+        try require(bodyReferenceSettings.count <= 1)
+        for value in bodyReferenceSettings {
+            try Task.checkCancellation()
+            try require(value.id == BodyReferenceSettings.singletonID && BMIReference(rawValue:value.referenceRawValue) != nil)
+            if let height=value.heightCentimeters {try require(height.isFinite && BMICalculation.heightRange.contains(height))}
+        }
+    }
+    func insertUsagePreferences(into context: ModelContext) throws {
+        for value in todoSeriesPreferences {
+            try Task.checkCancellation();context.insert(try value.model())}
+        for value in todoReminderIntents {
+            try Task.checkCancellation();context.insert(try value.model())}
+        for value in bodyReferenceSettings {
+            try Task.checkCancellation();context.insert(try value.model())}
+    }
+}
+enum UsagePreferencesIntegrity {
+    static func validate(context: ModelContext) throws {
+        let data=TransferData(entries:[],images:[],tags:[],links:[],habits:[],habitLogs:[],goals:[],goalEvents:[],
+            todoTasks:try context.fetch(FetchDescriptor<TodoTask>()).map(TodoTaskTransfer.init),
+            todoSeries:try context.fetch(FetchDescriptor<TodoSeries>()).map(TodoSeriesTransfer.init),
+            todoSeriesPreferences:try context.fetch(FetchDescriptor<TodoSeriesPreferences>()).map(TodoSeriesPreferencesTransfer.init),
+            todoReminderIntents:try context.fetch(FetchDescriptor<TodoReminderIntent>()).map(TodoReminderIntentTransfer.init),
+            bodyReferenceSettings:try context.fetch(FetchDescriptor<BodyReferenceSettings>()).map(BodyReferenceSettingsTransfer.init))
+        try data.validateUsagePreferences(packageVersion:11)
+        for record in try context.fetch(FetchDescriptor<TodoReminderDeviceRecord>()) {
+            guard TodoReminderChannel(rawValue:record.channelRawValue) != nil,
+                  TodoReminderDevicePhase(rawValue:record.phaseRawValue) != nil,record.fireAt.timeIntervalSinceReferenceDate.isFinite else {throw TodoFailure.corruptData}
+        }
     }
 }

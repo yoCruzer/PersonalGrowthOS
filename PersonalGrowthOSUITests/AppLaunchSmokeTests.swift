@@ -35,6 +35,218 @@ final class AppLaunchSmokeTests: XCTestCase {
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "Usage-habit-exact-original-day-and-result"; shot.lifetime = .keepAlways; add(shot)
     }
 
+    func testUsageChineseDarkMaximumTextBMIAndWeekdayControls() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSUsageWeightTest","-AppleLanguages","(zh-Hans)","-AppleLocale","zh_CN","-AppleInterfaceStyle","Dark","-UIPreferredContentSizeCategoryName",UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        app.launch();app.buttons["today-weight"].tap()
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<18 where !element.isHittable {app.swipeUp()}
+            XCTAssertTrue(element.isHittable,app.debugDescription)
+        }
+        let edit=app.buttons["bmi-edit"];reveal(edit);edit.tap()
+        let height=app.textFields["bmi-height-input"];XCTAssertTrue(height.waitForExistence(timeout:5));height.tap();height.typeText("175")
+        app.buttons["完成"].tap()
+        let save=app.buttons["bmi-save"];reveal(save);save.tap()
+        let value=app.staticTexts["bmi-value"];reveal(value);XCTAssertTrue(value.label.contains("24.5"))
+        let bmi=XCTAttachment(screenshot:app.screenshot());bmi.name="Usage-Chinese-Dark-maxAX-BMI";bmi.lifetime = .keepAlways;add(bmi)
+        app.navigationBars.buttons.firstMatch.tap();app.buttons["today-todo-add"].tap()
+        let title=app.descendants(matching:.any)["todo-title"];XCTAssertTrue(title.waitForExistence(timeout:5));title.typeText("合成自选星期的大字待办")
+        app.buttons["todo-dismiss-keyboard"].tap()
+        let planned=app.switches["todo-planned-toggle"];reveal(planned);planned.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        let frequency=app.buttons["todo-repeat"];reveal(frequency);frequency.tap();app.buttons["自选星期"].tap()
+        let sunday=app.buttons["todo-weekday-7"];reveal(sunday);XCTAssertGreaterThanOrEqual(sunday.frame.height,44);sunday.tap()
+        let summary=app.staticTexts["todo-repeat-summary"];reveal(summary)
+        let weekdays=XCTAttachment(screenshot:app.screenshot());weekdays.name="Usage-Chinese-Dark-maxAX-weekdays";weekdays.lifetime = .keepAlways;add(weekdays)
+        XCTAssertTrue(app.buttons["todo-save"].isHittable);app.buttons["取消"].tap()
+    }
+
+    func testUsageMixedTodayAndGrowthDefaultAndChineseMaximumText() {
+        continueAfterFailure=false
+        for large in [false,true] {
+            let app=XCUIApplication()
+            app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSQuietWinsTest","-PGOSUsageWeightTest","-PGOSImportantDaysTest","-PGOSInvestmentSegmentReview","-AppleLanguages",large ? "(zh-Hans)" : "(en)","-AppleLocale",large ? "zh_CN" : "en_US","-AppleInterfaceStyle",large ? "Dark" : "Light","-UIPreferredContentSizeCategoryName",large ? UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue : UIContentSizeCategory.large.rawValue]
+            app.launch()
+            func shot(_ name: String) {let a=XCTAttachment(screenshot:app.screenshot());a.name="Usage-mixed-\(large ? "Chinese-Dark-maxAX" : "English-Light-default")-"+name;a.lifetime = .keepAlways;add(a)}
+            app.tabBars.buttons[large ? "成长" : "Growth"].tap()
+            for id in ["growth-habits","growth-goals","growth-weight","growth-sleep","growth-investment","growth-important-days","growth-quiet-wins"] {
+                let row=app.buttons[id]
+                for _ in 0..<12 where !row.isHittable {app.swipeUp()}
+                XCTAssertTrue(row.isHittable,app.debugDescription);XCTAssertGreaterThanOrEqual(row.frame.height,44);shot(id)
+            }
+            app.tabBars.buttons[large ? "今天" : "Today"].tap()
+            for index in 0..<7 {shot("Today-\(index)");app.swipeUp()}
+            XCTAssertTrue(app.buttons["today-weekly-review"].exists)
+            app.terminate()
+        }
+    }
+
+    func testUsageOpenTodoIntentPreservesRecordDraft() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSUsageElapsedTodoTest","-PGOSTodoReminderDeniedTest","-PGOSUsageTodoRouteTest","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        app.launch();app.tabBars.buttons["Record"].tap()
+        let body=app.textViews["capture-body"];XCTAssertTrue(body.waitForExistence(timeout:5));body.tap();body.typeText("Synthetic Record draft survives Todo intent")
+        app.buttons["todo-test-open-intent"].tap()
+        XCTAssertTrue(app.staticTexts["Synthetic long elapsed reminder"].firstMatch.waitForExistence(timeout:5))
+        app.buttons["Done"].tap()
+        XCTAssertEqual(body.value as? String,"Synthetic Record draft survives Todo intent")
+        app.tabBars.buttons["Today"].tap();app.buttons["today-todo-add"].tap()
+        let title=app.descendants(matching:.any)["todo-title"];XCTAssertTrue(title.waitForExistence(timeout:5));title.typeText("Synthetic editor draft survives queued intent")
+        if app.buttons["todo-dismiss-keyboard"].exists {app.buttons["todo-dismiss-keyboard"].tap()}
+        app.buttons["todo-editor-test-open-intent"].tap()
+        XCTAssertTrue(app.navigationBars["Add Todo"].exists)
+        XCTAssertEqual(title.value as? String,"Synthetic editor draft survives queued intent")
+        app.buttons["Cancel"].tap()
+        let pending=app.buttons["todo-pending-route"];XCTAssertTrue(pending.waitForExistence(timeout:5));pending.tap()
+        XCTAssertTrue(app.staticTexts["Synthetic long elapsed reminder"].firstMatch.waitForExistence(timeout:5));app.buttons["Done"].tap()
+        app.tabBars.buttons["Record"].tap();XCTAssertEqual(body.value as? String,"Synthetic Record draft survives Todo intent")
+    }
+
+    func testUsageNativeAlarmAuthorizationScheduleColdLaunchAndConfirmedCancellation() throws {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        let monitor=addUIInterruptionMonitor(withDescription:"Explicit synthetic AlarmKit authorization") {alert in
+            let text=alert.staticTexts.allElementsBoundByIndex.map(\.label).joined(separator:" ").lowercased()
+            guard text.contains("alarm") || text.contains("闹钟") else {return false}
+            if alert.buttons["Allow"].exists {alert.buttons["Allow"].tap();return true}
+            if alert.buttons["允许"].exists {alert.buttons["允许"].tap();return true}
+            return false
+        }
+        defer {removeUIInterruptionMonitor(monitor)}
+        app.launch();app.buttons["today-todo-add"].tap()
+        let title=app.descendants(matching:.any)["todo-title"];XCTAssertTrue(title.waitForExistence(timeout:5));title.typeText("Synthetic native alarm lifecycle")
+        if app.buttons["todo-dismiss-keyboard"].exists {app.buttons["todo-dismiss-keyboard"].tap()}
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<12 where !element.isHittable {app.swipeUp()}
+            XCTAssertTrue(element.isHittable,app.debugDescription)
+        }
+        let reminder=app.switches["todo-reminder-toggle"];reveal(reminder);reminder.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        let method=app.buttons["todo-reminder-method"];reveal(method);method.tap();app.buttons["Alarm reminder"].tap()
+        app.buttons["todo-save"].tap()
+        let springboard=XCUIApplication(bundleIdentifier:"com.apple.springboard")
+        if springboard.alerts.firstMatch.waitForExistence(timeout:5) {
+            let alert=springboard.alerts.firstMatch
+            let description=XCTAttachment(string:alert.debugDescription);description.name="Usage-native-AlarmKit-authorization";description.lifetime = .keepAlways;add(description)
+            let text=alert.staticTexts.allElementsBoundByIndex.map(\.label).joined(separator:" ").lowercased()
+            XCTAssertTrue(text.contains("alarm") || text.contains("闹钟"),alert.debugDescription)
+            if alert.buttons["Allow"].exists {alert.buttons["Allow"].tap()}
+            else if alert.buttons["允许"].exists {alert.buttons["允许"].tap()}
+            else {XCTFail(alert.debugDescription)}
+        }
+        let status=app.staticTexts["todo-saved-reminder-status"]
+        XCTAssertTrue(status.waitForExistence(timeout:10),app.debugDescription)
+        if status.label == "Alarm reminders are disabled in iOS Settings." {
+            XCTAssertTrue(app.buttons["Open iOS Settings"].exists)
+            let denial=XCTAttachment(screenshot:app.screenshot());denial.name="Usage-native-AlarmKit-system-denied";denial.lifetime = .keepAlways;add(denial)
+            app.buttons["todo-feedback-view-task"].tap()
+            XCTAssertTrue(app.staticTexts["Synthetic native alarm lifecycle"].firstMatch.waitForExistence(timeout:5))
+            app.buttons["todo-detail-toggle"].tap()
+            throw XCTSkip("Real AlarmKit requestAuthorization returned denied without an authorization alert on this disposable simulator, including after fresh app install. Positive native schedule/cancel and delivery remain NOT_RUN; see mobiletimerd denial log.")
+        }
+        let scheduled=NSPredicate(format:"label == %@","Reminder scheduled on this device")
+        expectation(for:scheduled,evaluatedWith:status);waitForExpectations(timeout:20)
+        let before=XCTAttachment(screenshot:app.screenshot());before.name="Usage-native-AlarmKit-accepted";before.lifetime = .keepAlways;add(before)
+        app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData"};app.launch()
+        app.buttons["today-todo-hub"].tap();app.buttons["todo-stat-open"].tap()
+        let row=app.staticTexts["Synthetic native alarm lifecycle"].firstMatch;reveal(row);row.tap()
+        let detailStatus=app.staticTexts["todo-reminder-status"];reveal(detailStatus)
+        expectation(for:scheduled,evaluatedWith:detailStatus);waitForExpectations(timeout:15)
+        for _ in 0..<8 where !app.buttons["todo-detail-toggle"].isHittable {app.swipeDown()}
+        app.buttons["todo-detail-toggle"].tap();reveal(detailStatus)
+        expectation(for:NSPredicate(format:"label == %@","No reminder"),evaluatedWith:detailStatus);waitForExpectations(timeout:15)
+        let after=XCTAttachment(screenshot:app.screenshot());after.name="Usage-native-AlarmKit-cancellation-confirmed";after.lifetime = .keepAlways;add(after)
+    }
+
+    func testUsageLongElapsedReminderOffersFutureResetAndPreservesSeriesDatesAcrossColdLaunch() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSUsageElapsedTodoTest","-PGOSTodoReminderDeniedTest","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        app.launch();app.buttons["today-todo-hub"].tap();app.buttons["todo-stat-open"].tap()
+        let row=app.staticTexts["Synthetic long elapsed reminder"].firstMatch
+        for _ in 0..<10 where !row.isHittable {app.swipeUp()}
+        XCTAssertTrue(row.isHittable,app.debugDescription);row.tap()
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<12 where !element.isHittable {app.swipeUp()}
+            XCTAssertTrue(element.isHittable,app.debugDescription)
+        }
+        let status=app.staticTexts["todo-reminder-status"];reveal(status);XCTAssertTrue(status.label.contains("passed"),status.label)
+        XCTAssertFalse(app.buttons["Retry Reminder"].exists)
+        let reset=app.buttons["todo-reminder-reset"];reveal(reset);reset.tap()
+        XCTAssertTrue(app.navigationBars["Set reminder again"].waitForExistence(timeout:5))
+        let quick=app.buttons["todo-reminder-ten-minutes"];reveal(quick);quick.tap()
+        XCTAssertTrue(quick.waitForNonExistence(timeout:5))
+        reveal(status);XCTAssertEqual(status.label,"Notifications are disabled in iOS Settings.")
+        XCTAssertTrue(app.buttons["Open iOS Settings"].exists)
+        for _ in 0..<6 {app.swipeDown()}
+        XCTAssertTrue(app.staticTexts["Planned: 2020-01-01"].exists);XCTAssertTrue(app.staticTexts["Hard deadline: 2020-01-02"].exists)
+        let shot=XCTAttachment(screenshot:app.screenshot());shot.name="Usage-Todo-long-elapsed-reset-preserves-original-dates";shot.lifetime = .keepAlways;add(shot)
+        app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData" || $0 == "-PGOSUsageElapsedTodoTest"};app.launch();app.buttons["today-todo-hub"].tap();app.buttons["todo-stat-open"].tap()
+        for _ in 0..<10 where !row.isHittable {app.swipeUp()};XCTAssertTrue(row.isHittable);row.tap()
+        reveal(status);XCTAssertEqual(status.label,"Notifications are disabled in iOS Settings.")
+        XCTAssertFalse(app.buttons["Set reminder again"].exists)
+    }
+
+    func testUsageSelectedWeekdaysDraftValidationSaveAndCurrentOccurrenceSkip() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        app.launch();app.buttons["today-todo-add"].tap()
+        let title=app.descendants(matching:.any)["todo-title"];XCTAssertTrue(title.waitForExistence(timeout:5));title.typeText("Synthetic Tuesday Sunday")
+        if app.buttons["todo-dismiss-keyboard"].exists {app.buttons["todo-dismiss-keyboard"].tap()}
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<12 where !element.isHittable {app.swipeUp()}
+            XCTAssertTrue(element.isHittable,app.debugDescription)
+        }
+        let planned=app.switches["todo-planned-toggle"];reveal(planned);planned.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        let repeatPicker=app.buttons["todo-repeat"];reveal(repeatPicker);repeatPicker.tap();app.buttons["Selected weekdays"].tap()
+        for day in 1...5 {let button=app.buttons["todo-weekday-\(day)"];reveal(button);button.tap()}
+        XCTAssertFalse(app.buttons["todo-save"].isEnabled)
+        let tuesday=app.buttons["todo-weekday-2"];reveal(tuesday);tuesday.tap()
+        let sunday=app.buttons["todo-weekday-7"];reveal(sunday);sunday.tap()
+        XCTAssertTrue(app.buttons["todo-save"].isEnabled)
+        let summary=app.staticTexts["todo-repeat-summary"];reveal(summary)
+        XCTAssertTrue(summary.label.contains("Tuesday") && summary.label.contains("Sunday"),summary.label)
+        let next=app.staticTexts["todo-next-occurrence"];reveal(next);XCTAssertTrue(next.label.contains("Next occurrence:"))
+        app.buttons["todo-save"].tap()
+        let view=app.buttons["todo-feedback-view-task"];XCTAssertTrue(view.waitForExistence(timeout:5));view.tap()
+        XCTAssertTrue(app.buttons["todo-skip"].waitForExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format:"label CONTAINS %@ AND label CONTAINS %@","Tuesday","Sunday")).firstMatch.exists)
+        let shot=XCTAttachment(screenshot:app.screenshot());shot.name="Usage-Todo-selected-weekdays-source-detail";shot.lifetime = .keepAlways;add(shot)
+        app.buttons["todo-skip"].tap()
+        XCTAssertTrue(app.buttons["todo-detail-toggle"].waitForExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["Canceled"].exists)
+    }
+
+    func testUsageOptionalBMIHeightValidationReferenceColdLaunchAndClear() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSUsageWeightTest","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        app.launch();app.buttons["today-weight"].tap()
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<12 where !element.isHittable {app.swipeUp()}
+            XCTAssertTrue(element.isHittable,app.debugDescription)
+        }
+        let edit=app.buttons["bmi-edit"];reveal(edit);edit.tap()
+        XCTAssertTrue(app.navigationBars["BMI settings"].waitForExistence(timeout:5),app.debugDescription)
+        let height=app.textFields["bmi-height-input"];XCTAssertTrue(height.waitForExistence(timeout:5),app.debugDescription)
+        height.tap();height.typeText("0");app.buttons["Done"].tap();app.buttons["bmi-save"].tap()
+        XCTAssertTrue(app.staticTexts["bmi-error"].waitForExistence(timeout:5))
+        height.tap();height.typeText(XCUIKeyboardKey.delete.rawValue+"175");app.buttons["Done"].tap();app.buttons["bmi-save"].tap()
+        let bmi=app.staticTexts["bmi-value"];reveal(bmi);XCTAssertTrue(bmi.label.contains("24.5"))
+        XCTAssertEqual(app.staticTexts["bmi-category"].label,"Overweight reference range")
+        edit.tap();app.buttons["bmi-reference"].tap();app.buttons["WHO adult reference"].tap();app.buttons["bmi-save"].tap()
+        reveal(bmi);XCTAssertEqual(app.staticTexts["bmi-category"].label,"Usual adult reference range")
+        let shot=XCTAttachment(screenshot:app.screenshot());shot.name="Usage-BMI-current-height-WHO-reference";shot.lifetime = .keepAlways;add(shot)
+        app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData" || $0 == "-PGOSUsageWeightTest"};app.launch();app.buttons["today-weight"].tap()
+        XCTAssertEqual(app.staticTexts["weight-latest-value"].label,"75.0 kg")
+        reveal(bmi);XCTAssertTrue(bmi.label.contains("24.5"));XCTAssertEqual(app.staticTexts["bmi-category"].label,"Usual adult reference range")
+        reveal(edit);edit.tap();app.buttons["bmi-clear"].tap()
+        reveal(edit);XCTAssertFalse(app.staticTexts["bmi-value"].exists)
+        XCTAssertTrue(app.staticTexts["WHO adult reference"].exists)
+    }
+
     func testUsageWeightDailyMeansRangesAndDateHistoryEditDeleteRefresh() {
         continueAfterFailure = false
         let app = XCUIApplication()

@@ -529,6 +529,10 @@ final class ImportExportService {
                     guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
                 } else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
             }
+            for key in ["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {
+                if manifest.packageSchemaVersion >= 11 {guard payload?[key] is [Any] else {throw TransferPackageError.corruptData}}
+                else {guard payload?[key] == nil else {throw TransferPackageError.corruptData}}
+            }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
             throw TransferPackageError.corruptData
@@ -685,6 +689,7 @@ final class ImportExportService {
             try publicationCheckpoint?(.beforeSave)
             try LinkIntegrityService.validate(context: publicationContext)
             try InvestmentIntegrity.validate(context: publicationContext)
+            try UsagePreferencesIntegrity.validate(context:publicationContext)
             try Task.checkCancellation()
             try publicationContext.save()
             didSave = true
@@ -980,6 +985,7 @@ final class ImportExportService {
             try package.data.insertInvestment(into: context)
             try package.data.insertImportantDays(into: context)
             try package.data.insertTodos(into: context)
+            try package.data.insertUsagePreferences(into: context)
             return restoredPaths
         } catch {
             for path in restoredPaths { try? mediaStore.removeOriginal(at: path) }
@@ -1034,6 +1040,9 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<ImportantDayCover>())
             + context.fetchCount(FetchDescriptor<SleepRecord>())
             + context.fetchCount(FetchDescriptor<SleepGoalRule>())
+            + context.fetchCount(FetchDescriptor<TodoSeriesPreferences>())
+            + context.fetchCount(FetchDescriptor<TodoReminderIntent>())
+            + context.fetchCount(FetchDescriptor<BodyReferenceSettings>())
             + context.fetchCount(FetchDescriptor<CaptureImportReceipt>())
             + context.fetchCount(FetchDescriptor<InvestmentParticipant>())
             + context.fetchCount(FetchDescriptor<InvestmentActivity>())
@@ -1293,7 +1302,10 @@ enum TransferSnapshot {
             investmentParticipants: try cancellableMap(context.fetch(FetchDescriptor<InvestmentParticipant>())) { InvestmentParticipantTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentActivities: try cancellableMap(context.fetch(FetchDescriptor<InvestmentActivity>())) { InvestmentActivityTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentSessions: try cancellableMap(context.fetch(FetchDescriptor<InvestmentSession>())) { try InvestmentSessionTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) }
+            investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) },
+            todoSeriesPreferences:try cancellableMap(context.fetch(FetchDescriptor<TodoSeriesPreferences>())) {TodoSeriesPreferencesTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            todoReminderIntents:try cancellableMap(context.fetch(FetchDescriptor<TodoReminderIntent>())) {TodoReminderIntentTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            bodyReferenceSettings:try cancellableMap(context.fetch(FetchDescriptor<BodyReferenceSettings>())) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)}
         ).redactingConsumedInvestmentContent()
     }
 

@@ -159,7 +159,8 @@ extension ImportantDayReminderTests {
             _ = try await repeating.updateWeekly(enabled: true, weekday: 1, minutesAfterMidnight: 540, requestPermission: false)
             XCTFail("A full shared queue must not silently schedule another request")
         } catch { XCTAssertTrue(error is NotificationQueueError) }
-        XCTAssertNotNil(client.records[TodoReminderCoordinator.identifier(task.id)])
+        XCTAssertEqual(client.records.values.filter {$0.taskID == task.id}.count,1)
+        XCTAssertFalse(client.records.keys.contains {$0.hasPrefix(TodoIntentScheduling.budgetPrefix)})
         client.others = []
         var weekly: Task<ReminderUpdateResult, Error>?
         client.trace = []

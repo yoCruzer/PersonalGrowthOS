@@ -1,0 +1,22 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSAlarmKitUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedule alarm reminders that you explicitly enable for your todos."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "为你明确开启闹钟提醒的待办安排系统闹钟。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+A15100000000000000000001 = {isa = PBXBuildFile; fileRef = A15000000000000000000001; };
+A15100000000000000000002 = {isa = PBXBuildFile; fileRef = A15000000000000000000002; };
 711000000000000000000006 = {isa = PBXBuildFile; fileRef = 710000000000000000000006; };
 711000000000000000000005 = {isa = PBXBuildFile; fileRef = 710000000000000000000005; };
 711000000000000000000004 = {isa = PBXBuildFile; fileRef = 710000000000000000000004; };
@@ -138,6 +140,8 @@ CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H0000
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+A15000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoAlarmReminders.swift"; sourceTree = SOURCE_ROOT; };
+A15000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = "PersonalGrowthOS/InfoPlist.xcstrings"; sourceTree = SOURCE_ROOT; };
 710000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/InvestmentUITests.swift"; sourceTree = SOURCE_ROOT; };
 710000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/InvestmentPersistenceTests.swift"; sourceTree = SOURCE_ROOT; };
 710000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/TimeInvestment/InvestmentViews.swift"; sourceTree = SOURCE_ROOT; };
@@ -317,6 +321,8 @@ TD0000000000000000000006,
 TD0000000000000000000005,
 TD0000000000000000000004,
 TD0000000000000000000003,
+A15000000000000000000001,
+A15000000000000000000002,
 TD3000000000000000000002,
 TD3000000000000000000001,
 RV0000000000000000000001,
@@ -635,6 +641,7 @@ CA0000000000000000000020,
 TD4000000000000000000002,
 				B00000000000000000000003 /* Assets.xcassets in Resources */,
 				B00000000000000000000033 /* Localizable.xcstrings in Resources */,
+A15100000000000000000002,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -709,6 +716,7 @@ E61A9C440A51B83857CB568B,
 TD1000000000000000000006,
 TD1000000000000000000004,
 TD1000000000000000000003,
+A15100000000000000000001,
 TD1000000000000000000001,
 CA0000000000000000000102,
 CA0000000000000000000101,

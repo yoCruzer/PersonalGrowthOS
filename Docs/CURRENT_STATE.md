@@ -10,11 +10,15 @@ B2 成长回顾日聚合/具体事实下钻已实现：12项纯Unit通过；真�
 
 B3 时间投入统计快照复用、明确自然日/月份预览和20条真实查询分页已实现。核心30+磁盘1+编辑删除UI1在affected-t1为32/32通过（1条键盘frame warning保留）；导航键盘按钮修复后ui-t2的R2/编辑删除2项通过、runtimeWarnings=[]，同轮新月份UI失败。开关命中/滚动顺序及分日合并标签定位失败均保留；最终compile-t6后完整配对正式事实/操作并通过生产完整性校验的1万条磁盘＋月份/分页/7日27分钟8场/选日16分钟2场/清选择/5+15分钟精确原始下钻，affected-t2 **2/2 PASS、runtimeWarnings=[]**。首次完整刷新0.224274039秒，未测Instruments/RSS。没有修改F1/R1–R3事实、时钟或保存事务，B3没新增Schema。下一步完成可选BMI及C联合追加持久化/备份，再做D集中门禁。
 
+B4/C联合持久化正在实现（尚未提交）：追加V15系列设置、本次提醒意图、设备本地账本和BMI设置；备份v11仅保全用户设置，不复制设备排程结论。compile-c3后真实V14启动/最新保护副本/无默认写入、v11 ZIP往返/回滚/空库保护、v10消费态与V1–V6兼容及BMI未舍入边界5/5 Unit PASS，runtimeWarnings=[]。BMI两Unit及相邻体重UI通过，入口呈现失败后改原生导航，ui-c3完整BMI 1/1通过且无运行warning。星期服务核心9/9通过，ui-c5空集合禁用/选择/保存/跳过1/1通过；实际新旧ZIP字段/新星期恢复生成及清单草稿已通过。AlarmKit原生适配器/Intent/观察和设备账本已接入；c6协调14项为9PASS/5FAIL，修复授权撤销清理及按新身份/显式重试规范更新旧断言后c7为14/14PASS。独立提醒写入又暴露旧对象状态缓存，c8为11PASS/4FAIL（6断言），最新事实状态/统一动作/渠道/过期时间选择已编译，正在继续验证。真实原生系统排程、更多失败/并发、最终组合门禁未完成，整体仍IN_PROGRESS。
+
 **整体 Goal 未完成，不是 READY 或阶段停点。** A1/B1 已有编译和受影响通过证据。继续 A 的过期提醒动作与 C 的独立本次覆盖，B 余项（可选 BMI及集中组合回归），C 星期重复和真实 AlarmKit，以及 D 集中验证/独立只读审查/普通 push/唯一新 Draft PR。长期过期提醒不能删除 ±366 校验或改写系列锚点；必要字段联合评估 V14/v10 后追加模型/备份，真实升级、快照/空库恢复/回滚一起完成。
 
 实际命令与影响矩阵见 [本轮执行记录](USAGE_REMEDIATION_20261017_EXECUTION.md)，[独立审查](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)仍 NOT_RUN。证据根 `/tmp/pgos-usage-remediation-evidence`；本轮专用 iPhone 18 Pro 模拟器 `42609456-859D-41F8-8977-4B2D85A74082` / iOS27.0，Xcode27.1。设备 D1–D4 全 NOT_RUN，不操作真实手机/私人库，不 merge/force/tag/Archive/TestFlight。历史 FAIL/SKIP/NOT_RUN 不改标。
 
 以下为原规划与历史交接，保留原文；当前执行以上方为准。
+
+C内部验证继续收敛：新增本次提醒独立写入/修订守卫、ready/prepared/accepted/取消待确认的磁盘所有权和真实系统查队、旧回调/写失败/停止/权限/同系列阻挡。共享额度先确认取消再分配，affected-c11整类Todo20＋Sleep4＋ImportantDays7 **31/31PASS、零runtime warning**。c28的actual ZIP本次Alarm覆盖/设备账本排除、DST/修订守卫、生产Open Intent保留Record和modal编辑草稿，affected-c13 **4PASS0FAIL1SKIP、零runtime warning**。原生授权API两次到达mobiletimerd但无弹窗立即Denial；首两次正向UI失败保留，正向native schedule/cancel/系统Stop/Open及真机递送仍NOT_RUN，不把fake绿标为集成PASS。c29双语混合与最大字号UI正在运行，D全量/Release/独立review/普通push/唯一DraftPR尚未完成。
 
 ---
 

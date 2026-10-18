@@ -1245,3 +1245,128 @@ private func build12V10ExpectedTransfer(at legacyDataURL: URL) throws -> Transfe
     let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
     return try decoder.decode(TransferData.self,from:JSONSerialization.data(withJSONObject:payload))
 }
+
+
+extension TodoFoundationTests {
+    func testUsageWeekdayPolicyStableISOAndFirstFutureWithoutBacklog() throws {
+        let monday=TodoDay("2026-10-12")!,friday=TodoDay("2026-10-16")!,saturday=TodoDay("2026-10-17")!
+        XCTAssertEqual(try TodoRecurrence.day(anchor:friday.description,frequency:.weekdays,index:1).description,"2026-10-19")
+        XCTAssertEqual(try TodoRecurrence.day(anchor:friday.description,frequency:.weekends,index:1),saturday)
+        XCTAssertEqual(try TodoRecurrence.day(anchor:friday.description,frequency:.weekends,index:2).description,"2026-10-18")
+        let mask=try TodoWeekdayRule.mask([1,3,7]);XCTAssertEqual(mask,69)
+        XCTAssertEqual(try TodoWeekdayRule.weekdays(mask),[1,3,7])
+        XCTAssertEqual(try (0...4).map {try TodoRecurrence.day(anchor:monday.description,frequency:.customWeekdays,index:$0,weekdaysMask:mask).description},["2026-10-12","2026-10-14","2026-10-18","2026-10-19","2026-10-21"])
+        let today=TodoDay("2031-10-18")!
+        let index=try TodoRecurrence.nextIndex(anchor:monday.description,frequency:.customWeekdays,after:0,today:today,weekdaysMask:mask)
+        XCTAssertGreaterThan(try TodoRecurrence.day(anchor:monday.description,frequency:.customWeekdays,index:index,weekdaysMask:mask),today)
+        XCTAssertLessThanOrEqual(try TodoRecurrence.day(anchor:monday.description,frequency:.customWeekdays,index:index-1,weekdaysMask:mask),today)
+        for invalid in [0,128,-1] {XCTAssertThrowsError(try TodoWeekdayRule.weekdays(invalid))}
+        XCTAssertThrowsError(try TodoWeekdayRule.mask([]));XCTAssertThrowsError(try TodoWeekdayRule.mask([0,1]))
+        XCTAssertThrowsError(try TodoRecurrence.day(anchor:monday.description,frequency:.customWeekdays,index:0))
+        XCTAssertThrowsError(try JSONDecoder().decode(TodoFrequency.self,from:Data("\"future-rule\"".utf8)))
+    }
+}
+
+
+extension TodoFoundationTests {
+    func testUsageCustomWeekdayServiceKeepsCalendarOffsetsSourceAndOneFutureOccurrence() throws {
+        let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext
+        var clock=date("2026-10-12")
+        let source=Entry(body:"Synthetic weekday source",createdAt:clock);context.insert(source);try context.save()
+        let service=TodoTaskService(context:context,now:{clock},timeZone:{self.zone})
+        let draft=TodoDraft(title:"Synthetic weekdays",plannedDay:"2026-10-12",deadlineDay:"2026-10-14",frequency:.customWeekdays,weekdays:[1,3,7])
+        let first=try service.create(draft,sourceEntryID:source.id)
+        let seriesID=try XCTUnwrap(first.seriesID),preference=try XCTUnwrap(service.preferences(for:seriesID))
+        XCTAssertEqual(preference.weekdaysMask,69)
+        clock=date("2026-10-19");try service.transition(id:first.id,to:.completed)
+        let all=try context.fetch(FetchDescriptor<TodoTask>())
+        XCTAssertEqual(all.count,2)
+        let successor=try XCTUnwrap(all.first {$0.state == .open})
+        XCTAssertEqual(successor.plannedDay,"2026-10-21");XCTAssertEqual(successor.deadlineDay,"2026-10-23")
+        XCTAssertEqual(successor.occurrenceIndex,4)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<TodoTaskSource>()).filter {$0.taskID == successor.id}.first?.entryID,source.id)
+        try TodoIntegrity.validate(context:context);try UsagePreferencesIntegrity.validate(context:context)
+        let snapshot=try TransferSnapshot.make(context:ModelContext(container));try snapshot.validateUsagePreferences(packageVersion:11);try snapshot.validateTodos()
+        XCTAssertThrowsError(try snapshot.validateUsagePreferences(packageVersion:10))
+        try service.transition(id:successor.id,to:.canceled,skip:true)
+        let third=try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+        XCTAssertEqual(third.plannedDay,"2026-10-25")
+        try service.stopSeries(taskID:third.id);try service.transition(id:third.id,to:.completed)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()),3)
+        XCTAssertFalse(try context.fetch(FetchDescriptor<TodoTask>()).contains {$0.state == .open})
+        var invalid=draft;invalid.weekdays=[]
+        XCTAssertThrowsError(try service.create(invalid));XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoSeriesPreferences>()),1)
+    }
+}
+
+
+extension TodoFoundationTests {
+    func testUsageLongElapsedReminderOverridePreservesSeriesAndRejectsTerminalOrFailedWrites() throws {
+        let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext
+        var clock=date("2020-01-01")
+        let service=TodoTaskService(context:context,now:{clock},timeZone:{self.zone})
+        let first=try service.create(.init(title:"Synthetic long elapsed",plannedDay:"2020-01-01",deadlineDay:"2020-01-02",remindAt:clock.addingTimeInterval(3600),frequency:.daily))
+        let id=first.id,seriesID=try XCTUnwrap(first.seriesID)
+        let before=try TransferSnapshot.make(context:ModelContext(container))
+        clock=date("2026-10-19");let fire=clock.addingTimeInterval(600)
+        var ordinary=TodoDraft(first);ordinary.remindAt=fire
+        XCTAssertThrowsError(try service.edit(id:id,draft:ordinary))
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(container)),before)
+        try service.rescheduleReminder(id:id,to:fire,channel:.alarm)
+        let updated=try service.task(id:id),intent=try XCTUnwrap(service.reminderIntent(for:id))
+        XCTAssertEqual(updated.plannedDay,"2020-01-01");XCTAssertEqual(updated.deadlineDay,"2020-01-02")
+        XCTAssertEqual(updated.remindAt,fire);XCTAssertTrue(intent.isInstanceOverride);XCTAssertEqual(intent.channelRawValue,"alarm")
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoTask>()),1)
+        let rule=try XCTUnwrap(context.fetch(FetchDescriptor<TodoSeries>()).first)
+        XCTAssertEqual(rule.id,seriesID);XCTAssertEqual(rule.anchorDay,"2020-01-01");XCTAssertEqual(rule.reminderDayOffset,0)
+        let generation=intent.generation
+        var notes=TodoDraft(updated);notes.notes="Synthetic unrelated edit"
+        try service.edit(id:id,draft:notes)
+        XCTAssertEqual(try service.reminderIntent(for:id)?.generation,generation)
+        XCTAssertEqual(try service.reminderIntent(for:id)?.channelRawValue,"alarm")
+        XCTAssertThrowsError(try service.edit(id:id,draft:notes,futureSeries:true))
+        let persisted=try TransferSnapshot.make(context:ModelContext(container))
+        XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:fire.addingTimeInterval(60),channel:.notification,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(container)),persisted)
+        try TodoIntegrity.validate(context:context);try UsagePreferencesIntegrity.validate(context:context)
+        try service.transition(id:id,to:.completed)
+        XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:fire))
+        let successor=try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+        XCTAssertEqual(successor.plannedDay,"2026-10-20")
+        XCTAssertEqual(try service.reminderIntent(for:successor.id)?.channelRawValue,"notification")
+        let journal=TodoReminderDeviceRecord(taskID:id,intentGeneration:generation,channel:.alarm,fireAt:fire,phase:.accepted)
+        context.insert(journal);try context.save()
+        try service.delete(id:id)
+        XCTAssertNil(try service.reminderIntent(for:id))
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<TodoReminderDeviceRecord>()),1,"Cancellation ownership survives fact deletion")
+    }
+}
+
+
+extension TodoFoundationTests {
+    func testUsageReminderTomorrowUsesCivilDayAcrossDSTAndStableWallTime() throws {
+        let zone=try XCTUnwrap(TimeZone(identifier:"America/New_York"))
+        let iso=ISO8601DateFormatter()
+        for (now,minutes,expected) in [
+            ("2026-03-07T17:00:00Z",150,"2026-03-08T07:00:00Z"),
+            ("2026-10-31T16:00:00Z",90,"2026-11-01T05:30:00Z"),
+            ("2026-12-31T17:00:00Z",60,"2027-01-01T06:00:00Z")
+        ] {
+            XCTAssertEqual(TodoRescheduleDate.tomorrow(reminder:iso.date(from:"2020-01-01T12:00:00Z"),wallMinutes:minutes,now:try XCTUnwrap(iso.date(from:now)),zone:zone),iso.date(from:expected))
+        }
+        XCTAssertNil(TodoRescheduleDate.tomorrow(reminder:nil,wallMinutes:60,now:Date(),zone:zone))
+    }
+    func testUsageReminderRescheduleRejectsStaleRevisionWithoutCommittingUnrelatedDraft() throws {
+        let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
+        let service=TodoTaskService(context:context,now:{now})
+        let task=try service.create(.init(title:"Synthetic revision guard",remindAt:now.addingTimeInterval(600)))
+        let revision=task.revision,id=task.id
+        context.autosaveEnabled=false;context.insert(Entry(body:"Synthetic independent draft",createdAt:now))
+        try service.rescheduleReminder(id:id,to:now.addingTimeInterval(1200),channel:.alarm,expectedRevision:revision)
+        let persisted=try TransferSnapshot.make(context:ModelContext(container))
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<Entry>()),0);XCTAssertTrue(context.hasChanges)
+        XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:now.addingTimeInterval(1800),channel:.notification,expectedRevision:revision)) {XCTAssertEqual($0 as? TodoFailure,.staleTask)}
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(container)),persisted)
+        XCTAssertTrue(context.hasChanges)
+    }
+}

@@ -41,6 +41,8 @@ struct AppShell: View {
 
     @State private var investmentWorkspace = InvestmentWorkspace()
     @State private var sleepWorkspace = SleepWorkspace()
+    @State private var todoRouter=TodoExternalRouter.shared
+    @State private var presentedTodo: TodoExternalRoute?
     @State private var sleepRouter = SleepExternalRouter.shared
     @State private var presentedSleep: SleepExternalRoute?
     @State private var todoReminders = TodoReminderCoordinator()
@@ -119,6 +121,16 @@ struct AppShell: View {
         #if DEBUG
         .overlay(alignment: .top) {
             VStack {
+            if ProcessInfo.processInfo.arguments.contains("-PGOSUsageTodoRouteTest") {
+                Button("Perform synthetic Todo open intent") {
+                    Task {
+                        if #available(iOS 26.0, *) {
+                            do {_ = try await OpenTodoAlarmIntent(taskID:"40000000-1111-4222-8333-444444444444").perform()}
+                            catch {captureTestStatus="Synthetic Todo route failed"}
+                        }
+                    }
+                }.accessibilityIdentifier("todo-test-open-intent")
+            }
             if ProcessInfo.processInfo.arguments.contains("-PGOSSleepRouteControlsTest") {
                 Button("Queue synthetic sleep route") { sleepRouter.receive(day: "2026-01-01") }.accessibilityIdentifier("sleep-test-route")
             }
@@ -129,9 +141,10 @@ struct AppShell: View {
         }
         #endif
         .task {
+            todoReminders.observeSystemChanges(container:container.modelContainer)
             investmentWorkspace.checkpoint(container.modelContainer.mainContext)
             sleepWorkspace.refresh(container.modelContainer.mainContext)
-            deliverSleepRoute()
+            deliverSleepRoute();deliverTodoRoute()
             await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             deliverImportantDayRoute()
             await todoReminders.reconcile(context: container.modelContainer.mainContext)
@@ -139,6 +152,13 @@ struct AppShell: View {
         .onReceive(NotificationCenter.default.publisher(for: .investmentChanged).receive(on: RunLoop.main)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
             investmentWorkspace.refresh(container.modelContainer.mainContext)
+        }
+        .onChange(of:todoRouter.pending) {_,_ in deliverTodoRoute()}
+        .sheet(item:$presentedTodo) {route in
+            NavigationStack {
+                TodoDetailView(taskID:route.id,mediaStore:container.mediaStore,thumbnailStore:container.thumbnailStore)
+                    .toolbar {ToolbarItem(placement:.confirmationAction) {Button("Done") {presentedTodo=nil}}}
+            }
         }
         .onChange(of: sleepRouter.pending) { _, _ in deliverSleepRoute() }
         .sheet(item: $presentedSleep) { route in SleepEditorLoader(day: route.id) }
@@ -150,6 +170,12 @@ struct AppShell: View {
         .onChange(of: externalRouter.pending) { _, _ in deliverImportantDayRoute() }
         .safeAreaInset(edge: .top) {
             VStack(spacing: 0) {
+            if todoRouter.pending != nil {
+                HStack {
+                    Button("Open requested Todo") {deliverTodoRoute()}.accessibilityIdentifier("todo-pending-route")
+                    Spacer();Button("Dismiss") {todoRouter.pending=nil}
+                }.padding(8).background(.bar)
+            }
             if let pending = sleepRouter.pending {
                 HStack {
                     Button("Open sleep for \(pending.id)") { deliverSleepRoute() }.accessibilityIdentifier("sleep-pending-route")
@@ -177,7 +203,7 @@ struct AppShell: View {
             if phase == .background, ProcessInfo.processInfo.arguments.contains("-PGOSSleepQueueOnBackgroundTest") { sleepRouter.receive(day: "2026-01-01") }
             #endif
             if phase == .active { Task {
-                sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute()
+                sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute();deliverTodoRoute()
                 await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
                 await todoReminders.reconcile(context: container.modelContainer.mainContext)
             } }
@@ -240,9 +266,17 @@ struct AppShell: View {
         .environment(widgetPublisher)
     }
 
+    private func deliverTodoRoute() {
+        guard let route=todoRouter.pending,!isShowingStorage,!isShowingPendingShares,
+              presentedSleep == nil,presentedImportantDay == nil,presentedTodo == nil,
+              !ImportantDayExternalRouter.hasPresentedController() else {return}
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),to:nil,from:nil,for:nil)
+        todoRouter.pending=nil;presentedTodo=route
+    }
+
     private func deliverSleepRoute() {
         guard let route = sleepRouter.pending, !isShowingStorage, !isShowingPendingShares,
-              presentedSleep == nil, presentedImportantDay == nil,
+              presentedSleep == nil, presentedImportantDay == nil,presentedTodo == nil,
               !ImportantDayExternalRouter.hasPresentedController() else { return }
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         sleepRouter.pending = nil; presentedSleep = route
@@ -250,7 +284,7 @@ struct AppShell: View {
 
     private func deliverImportantDayRoute() {
         guard let route = externalRouter.pending, !isShowingStorage, !isShowingPendingShares,
-              presentedSleep == nil, presentedImportantDay == nil, !ImportantDayExternalRouter.hasPresentedController() else { return }
+              presentedSleep == nil, presentedImportantDay == nil,presentedTodo == nil, !ImportantDayExternalRouter.hasPresentedController() else { return }
         // Present over the existing hierarchy; Record's StateObject and every tab remain mounted.
         // Explicitly end keyboard focus so dismissing the route cannot restore a keyboard over the tabs.
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)

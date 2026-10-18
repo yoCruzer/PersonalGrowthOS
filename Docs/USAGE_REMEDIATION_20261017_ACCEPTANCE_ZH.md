@@ -133,3 +133,10 @@ Q1/UI：摘要2天/6次，日汇总4/2，原始身份集合共6且互不重复�
 ### B3 实际进展（内部检查点）
 
 T5–T7已实现快照复用、全历史累计/明确自然日与可选月份预览、20条真正查询分页、选日/清选择及失败重试。affected-t1核心30＋磁盘1＋编辑删除UI1为32PASS，1条frame warning保留；修复键盘接缝后ui-t2的R2/编辑删除2PASS但月份1FAIL，零运行warning。新UI的开关命中、滚动和分日合并标签定位失败原样保留，最终compile-t6/affected-t2完整性校验后的1万正式配对事实磁盘＋月份/分页/跨日原始UI **2/2PASS、零运行warning**，首次refresh0.224274039秒。未测Instruments/RSS。B3不是整体A/B/C/D门禁；最终中文/英文、Dark/最大AX、导入刷新和相邻路径在D，BMI/新重复/AlarmKit/新迁移备份仍未完成。
+
+
+### B4/C 内部检查点（整体 IN_PROGRESS）
+
+BMI服务、未舍入两参照边界、可选身高与清除/重开已有本轮证据；ui-c3完整入口/非法0/175cm/中国24.5超重与WHO通常范围/清除通过。星期核心9项、ui-c5空集禁存/周二周日/下一期/跳过通过；真实v11 ZIP恢复custom mask并继续生成、真v10缺省和新版缺数组/旧版夹带新字段拒绝通过。
+
+N3–N6生命周期及共享额度 affected-c11 **31PASS**；后续DST/旧修订/实际Alarm实例覆盖ZIP和生产Open Intent保留Record/modal草稿 affected-c13 **4PASS1SKIP**，均零runtime warning。精确失败/修复/命令见EXECUTION。真实授权API在当前Simulator两次立即拒绝，无弹窗；**原生正向schedule/cold/cancel、系统Stop/Open以及D1设备递送NOT_RUN**，原先2次正向UI失败未抹除。c29最大字/混合入口、D完整Unit/组合UI/Release/实包、独立review与新PR未完成；D1–D4仍全部NOT_RUN。

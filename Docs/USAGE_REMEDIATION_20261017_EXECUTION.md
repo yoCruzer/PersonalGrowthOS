@@ -150,3 +150,37 @@ B3尚未最终确认；之后继续BMI与C联合追加持久模型/备份，不�
 `compile-t6`同前命令exit0；最终合成fixture补齐每条Session对应同身份的saved Operation，保存后调用实际`InvestmentIntegrity.validate`。此前t1的0.119秒是未配对操作负载，只作阶段诊断，不能冒称最终正式完整性负载。`affected-t2`同串行测试前缀，selectors=`PersonalGrowthOSTests/InvestmentPersistenceTests/testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges`及`PersonalGrowthOSUITests/InvestmentUITests/testUsageHistoryNaturalWindowMonthPagingAndExactCrossDayFact`，**2PASS/0FAIL/0SKIP、exit0、runtimeWarnings=[]**。完整1万Session＋1万Operation磁盘首次refresh实际**0.22427403926849365秒**，测试2.558秒；原生UI103.234秒，包括完整范围/月份/第二页/选日与清选择/原始5+15分钟下钻。`affected-t2-summary.json`与附件保持，源码精确记录`candidate-t6-product.patch` / `candidate-t6-source.json`。不是同轮重跑全核心，也不将分轮计数拼成一次全量绿。
 
 下一步B BMI与C共同追加需要的设置/规则/用户提醒意图及独立设备账本，必要V15/v11将真实迁移/快照/旧包缺省/严格新包/空库恢复/失败回滚一起验；尚未改这些版本。预查官方来源：NHC2024指导原则及核心知识PDF搜索缓存、WHO NLiS、CDC BMI解释已核对；NHC直接open的412/timeout保留，不宣称该抓取成功。AlarmKit官方示例与WWDC25目前搜索可读，确认用途说明和实际授权需求；本机27.1公开SDK可编译接口仍是实现依据。系统集成/物理响铃仍未实现/NOT_RUN。
+
+## B4/C 联合持久化与 BMI（进行中）
+
+从 clean4ec5d18 继续，C 尚未提交。追加V15四类元数据：系列ISO星期/渠道、本次提醒意图、设备请求恢复账本、可选BMI设置。统一备份v11只保全三组用户设置；设备账本不入包，不复制授权或已排程结论。新数组进snapshot/materialize/发布前校验/空库/回滚；v11必须有数组，旧版本不能夹带。历史模型布局保持。
+
+compile-c1 exit65：误把工作context的Usage校验/插入标MainActor，与原非隔离导入链冲突；按既有context归属修正。compile-c2 exit65：脚本重复串接取消检查导致三处语法错误；修正。compile-c3 exit0。旧包夹具只剥离空的新字段，不剥离非空新设置；R1明确重建真正v10包，两个“当前导出版本”断言随当前改11，历史固定版本不改。candidate-c3.patch/source.json留底。
+
+`affected-c1`同本轮串行test前缀，五个PersonalGrowthOSTests selector：InvestmentPersistenceTests/testUsageV14StartupMigrationKeepsLatestProtectionAndAddsNoDefaultSettings、testUsageV11ActualZIPSettingsRoundTripRollbackEmptyGuardAndDeviceJournalExclusion、testExternalR1LegacyDiskStartupAndLegacyZIPRestoreEraseOnlyConsumedContent；WeightFoundationTests/testUsageBMIUnroundedBoundariesInvalidInputsAndExplicitRoundingHint；ImportExportRecoveryTests/testLegacyV1ThroughV6PackagesImportAndFrozenBuild12V6RestoresOriginalFacts。5PASS/0FAIL/0SKIP、exit0、runtimeWarnings=[]。真实字面V14磁盘的最新保护副本不同于更早副本，实际AppContainer升级保留最新Entry/Todo/Weight/Sleep/匹配Session+Operation，无新默认设置，保护副本仍按V14只读打开，冷重开一致。真实v11 ZIP保全175.5cm/WHO、日重复系列闹钟渠道/实例意图，设备accepted账本不入包/恢复；beforeSave失败后库空、重试往返一致，仅设置非空目标被拒，原值保留。BMI未舍入阈值及邻值、非有限/零/范围和舍入跨界提示配对成立。
+
+BMI只由显式保存落盘，独立context不提交其他Entry草稿。清除身高后WHO参照可保留；中国默认且无身高时移除可选行。主页面使用真实测量日期，历史说明使用当前身高，给互斥成人参照范围与NHC2024/WHO/CDC来源。输入50–300cm是输入保护范围，不是成人身高标准。纯浏览不落默认值。NHC直接open的412/timeout保留，后经官方PDF搜索缓存核对；WHO/CDC正文可读，不宣称失败抓取成功。
+
+compile-c4 exit65：新UI局部reveal误传第二参数，修正；compile-c5 exit0并补中英文。`affected-c2`的2 BMI Unit＋原体重均值/历史编辑删除UI通过，新BMI入口UI失败，整体3PASS/1FAIL/exit65、runtimeWarnings=[]。实际层级`affected-c2-attachments/056907CA-5A72-4564-A05E-0F1C84A6E7B1.txt`仍停在Weight，BMI编辑按钮存在但未呈现编辑页；改为原生NavigationLink详情，增加导航断言。compile-c6 exit0，ui-c3只复测BMI全路径1PASS/0FAIL/0SKIP、exit0、runtimeWarnings=[]：0身高失败保留输入、175cm/24.5中国超重参照、WHO常用正常参照、冷启动保留、清身高保留WHO均成立。截图ui-c3-attachments/7906A5CE-A2F5-4CC4-8C17-769D057CFF66.png。candidate-c5/c6各有patch/source.json，原失败保留。
+
+星期规则接线中：ISO稳定身份，当前期次保留显式日期，后续只生成选定星期的第一个未来期次；计划/截止按原锚点民用日差保留，不分别重套星期集合。compile-c7 exit0；affected-c3九项TodoFoundationTests（两新UsageWeekdayPolicy/UsageCustomWeekdayService，原RecurrenceCompleteRetryUndoSkipAndStop、ReviewReminderKeepsOneDayLead、ReminderLeadMonthlyTenthLeapYearDSTAndTravel、FutureEditRollbackAndWithdrawnReuse、ConversionRejects、RepeatingReminderKeepsChosenLocalDayAndClock、TaskPersistsAcrossReopen）9PASS/0FAIL/0SKIP、exit0。覆盖实际自选星期、来源/截止偏移、只一未来期次、跳过/停止、空集合拒绝及相邻月末/闰年/DST/时区/撤销身份。UI选择/摘要/下次日期代码刚接上，尚未编译/原生验证。candidate-c7留底是该UI接线之前。
+
+仍需严格新包缺失/旧版本夹带的真实ZIP反例、新规则ZIP往返、提醒本次覆盖和真实AlarmKit协调/取消/迟到回调/授权/nativeAPI验证。模型或DTO通过不代表N1–N6功能完成；设备与最终组合门禁、独立review/PR仍未完成。
+
+
+### C 后续生命周期与本次提醒收敛（2026-10-18）
+
+追加 V15/v11 只承载新用户设置与设备本地所有权；V1–V14 模型字段未改。Todo 的提醒意图与任务同事务提交，系统调用前先持久 ready→prepared 账本，再以真实 pending 身份确认 accepted。设备账本不进备份。prepared 在进程中断后没有系统存在证明时不自动重排；旧取消未确认时保留身份并阻挡同任务/同系列后继，显式新意图才再次设置。权限撤销无静默普通通知降级。普通通知新意图仍参与原 Todo/ImportantDays/Sleep 共享公平额度，日/周提醒及外来请求保留。
+
+本次重设使用独立 ModelContext 写入，保留长期过期系列原计划/截止/锚点/后续模板，保留普通编辑 ±366 限制；expectedRevision 防止旧页面覆盖新设置。不提交另一编辑器的未保存 Entry。详情和保存反馈共用真实当前状态/重新设定/取消核查；屏幕跨过提醒时刻后动作重新判断。Stop Intent 只调用 AlarmManager.stop；Open Intent 调用精确任务路由，Record 草稿继续挂载，已有 modal 时排队可见，用户自行结束编辑后再打开。
+
+- compile-c17 PASS；affected-c8 实际15项为11PASS/4FAIL、6断言，原因是原模型缓存修订导致状态停留 checking；没有降低预期。compile-c18 因 catch error 遮蔽 UI 状态变量编译失败，c19/c20 修复后 PASS。affected-c9=15 Unit＋过期/拒绝反馈2 UI，共17PASS；包含2020系列在2026重设本次10分钟、冷启动仍旧计划和截止。各次原始日志保留。
+- compile-c21 PASS；affected-c10 的 Todo14、Sleep4、ImportantDays7 共25项为24PASS/1FAIL，ImportantDay 同轮释放名额3断言失败。取消原生旧请求移到共享额度计算之前，避免直到下次刷新才补位。c22之前脚本语法错误，没有落地修复，该轮编译是未改源码；c23才实际修复。c24因新增测试使用[]而非空字典[:]编译失败；c25修正 PASS。
+- affected-c11：同串行 test-without-building 前缀，selectors 整类 TodoReminderTests/SleepReminderTests/ImportantDayReminderTests，**31PASS0FAIL0SKIP、runtimeWarnings=[]**。新增6项覆盖调用前写盘失败/独立草稿、系统读取失败且仍存在/已停止、旧成功与旧transport失败撞上新渠道、权限等待期间完成、同系列取消失败阻挡后继、CancellationError中断保留prepared且不继续增加请求。旧14项与相邻11项一并通过。
+- compile-c26/c27/c28 PASS。ui-c6 实际原生授权正向测试0PASS1FAIL；卸载重装仅本轮专用模拟器合成App后 affected-c12=3PASS1FAIL（DST/旧修订/Record Intent通过，原生授权仍失败），不是未运行。实际 App Info.plist 含 NSAlarmKitUsageDescription；系统日志 native-alarm-system-c12.log 的 mobiletimerd 明确记录两次 Requesting permission→Denial，无授权弹窗。未伪造权限/注入系统队列或改系统服务；不据此断言真机或签名包一定失败。
+- affected-c13（c28）：**4PASS0FAIL1SKIP，runtimeWarnings=[]**。3 Unit为实际v11 ZIP（生产创建Alarm渠道和本次覆盖→导出→失败回滚→空库恢复→重开→精确相等，设备账本0）、DST自然日/缺时顺延/重复第一次/跨年、旧修订拒绝且不提交外部草稿。1 UI为生产 OpenTodoAlarmIntent.perform→Record原文保留→已有Todo编辑器时排队、标题输入保留→主动取消后打开指定旧任务→Record仍原文。此证据不是系统闹钟按钮的实际触发。原生授权 UI 确认真实拒绝、Settings动作和已保存任务可达后SKIP正向schedule/cold/cancel段；**正向原生队列接受/取消/响铃/Stop/Open系统触发仍NOT_RUN**，绝非AlarmKit全组PASS。首两次失败保留。
+- BMI界值/持久设置及星期证据见前文；c29仅新增混合入口和中文Dark最大字号代表UI，待运行。Localizable只追加78键，既有所有键/值语义逐一相等，未重排历史资源；新 InfoPlist资源双语。c29源码清单及新文件副本在candidate-c29-source.json / patch / untracked副本，不是假称clean提交。
+
+每次 compile 均复用本文原始 xcodebuild build-for-testing 前缀，仅 result/log 改 compile-cXX；每次 affected/UI 同串行xctestrun/专用simulator前缀，仅改相应上述selectors和xcresult/log。初始/最终及每轮warning原样保留。现阶段尚未完整Unit/组合UI/Release/实包与独立实现审查，不标READY；无push/新PR。
+
+Apple原生行为依据：[requestAuthorization](https://developer.apple.com/documentation/alarmkit/alarmmanager/requestauthorization%28%29)、[WWDC25 AlarmKit](https://developer.apple.com/videos/play/wwdc2025/230/)，实际接口以本机27.1 SDK交叉核对。BMI成人来源沿页面NHC2024/WHO/CDC，不声称2026最新医疗指南。

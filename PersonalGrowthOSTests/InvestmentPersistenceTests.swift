@@ -218,9 +218,12 @@ import CryptoKit
             var op=try InvestmentOperationTransfer(model);op.timer=try model.timer();return op
         }.sorted {$0.id.uuidString < $1.id.uuidString}
         let encoder=JSONEncoder();encoder.dateEncodingStrategy = .secondsSince1970
-        let bytes=try encoder.encode(legacy);try bytes.write(to:extracted.appendingPathComponent("data.json"))
+        var payload=try XCTUnwrap(JSONSerialization.jsonObject(with:encoder.encode(legacy)) as? [String:Any])
+        for key in ["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {payload.removeValue(forKey:key)}
+        let bytes=try JSONSerialization.data(withJSONObject:payload,options:.sortedKeys);try bytes.write(to:extracted.appendingPathComponent("data.json"))
         let manifestURL=extracted.appendingPathComponent("manifest.json")
         var manifest=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:manifestURL)) as? [String:Any])
+        manifest["packageSchemaVersion"]=10;manifest["objectCounts"]=legacy.objectCounts(forPackageSchemaVersion:10)
         var dataFile=try XCTUnwrap(manifest["dataFile"] as? [String:Any]);dataFile["byteCount"]=bytes.count;dataFile["sha256"]=SHA256.hash(data:bytes).map {String(format:"%02x",$0)}.joined();manifest["dataFile"]=dataFile
         try JSONSerialization.data(withJSONObject:manifest,options:.sortedKeys).write(to:manifestURL)
         let archive=folder.appendingPathComponent("legacy-terminal.zip")
@@ -842,6 +845,127 @@ import CryptoKit
         workspace.refresh(context);XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
         bad.valueData=original;try read.save();workspace.refresh(context)
         XCTAssertNil(workspace.reviewError);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+    }
+
+    func testUsageV14StartupMigrationKeepsLatestProtectionAndAddsNoDefaultSettings() throws {
+        let folder=try root(),url=folder.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at:url.deletingLastPathComponent(),withIntermediateDirectories:true)
+        let entryID=UUID(),factID=UUID(),taskID=UUID()
+        var latestProtection: URL!
+        try autoreleasepool {
+            let schema=Schema(versionedSchema:PersonalGrowthSchemaV14.self)
+            let old=try ModelContainer(for:schema,configurations:[ModelConfiguration(schema:schema,url:url,cloudKitDatabase:.none)])
+            let context=old.mainContext
+            let entry=Entry(id:entryID,body:"Synthetic older protection",createdAt:clock.wall);context.insert(entry)
+            let participant=InvestmentParticipant(),activity=InvestmentActivity(participantID:participant.id,name:"Synthetic V14 activity")
+            context.insert(participant);context.insert(activity)
+            let values=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:300,evidence:.dateDuration,source:.manual)
+            context.insert(try InvestmentSession(id:factID,participantID:participant.id,activityID:activity.id,values:values,now:clock.wall))
+            context.insert(try InvestmentOperation(id:factID,participantID:participant.id,activityID:activity.id,timer:.init(state:.saved,values:values,target:nil,checkpointAt:clock.wall),now:clock.wall))
+            let task=TodoTask(id:taskID,title:"Synthetic V14 todo",createdAt:clock.wall);context.insert(task)
+            context.insert(TodoTaskEvent(taskID:task.id,sequence:0,kind:.created,occurredAt:clock.wall,createdAt:clock.wall,beforeValue:nil,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
+            context.insert(WeightRecord(weightKilograms:72,recordedAt:clock.wall,createdAt:clock.wall))
+            context.insert(try SleepRecord(wakeDay:"2026-10-15",timeZoneID:zone.identifier,values:SleepValues(feeling:4),createdAt:clock.wall))
+            try context.save()
+            let older=try StartupRetainedData.capture(rootURL:folder,purpose:.beforeMigration)
+            entry.body="Synthetic latest V14 fact";try context.save()
+            latestProtection=try StartupRetainedData.capture(rootURL:folder,purpose:.beforeMigration).snapshotURL
+            XCTAssertNotEqual(older.snapshotURL,latestProtection)
+            XCTAssertFalse(StartupStoreProtection.isCurrentStore(at:url))
+        }
+        let app=try AppContainer.make(configuration:AppConfiguration(launchMode:.uiTesting,resetDataOnLaunch:false),rootURLOverride:folder)
+        let read=ModelContext(app.modelContainer)
+        XCTAssertTrue(StartupStoreProtection.isCurrentStore(at:url))
+        XCTAssertEqual(try read.fetch(FetchDescriptor<Entry>()).first?.body,"Synthetic latest V14 fact")
+        XCTAssertEqual(try read.fetch(FetchDescriptor<TodoTask>()).first?.id,taskID)
+        XCTAssertEqual(try read.fetch(FetchDescriptor<InvestmentSession>()).first?.id,factID)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<BodyReferenceSettings>()),0)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoSeriesPreferences>()),0)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoReminderIntent>()),0)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoReminderDeviceRecord>()),0)
+        let schema=Schema(versionedSchema:PersonalGrowthSchemaV14.self),retainedURL=latestProtection.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        let retained=try ModelContainer(for:schema,configurations:[ModelConfiguration(schema:schema,url:retainedURL,allowsSave:false,cloudKitDatabase:.none)])
+        XCTAssertEqual(try retained.mainContext.fetch(FetchDescriptor<Entry>()).first?.body,"Synthetic latest V14 fact")
+        let expected=try TransferSnapshot.make(context:read),reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(reopened)),expected)
+    }
+    func testUsageV11ActualZIPSettingsRoundTripRollbackEmptyGuardAndDeviceJournalExclusion() async throws {
+        let folder=try root(),source=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("source.sqlite"))
+        let service=TodoTaskService(context:source.mainContext,now:{self.clock.wall})
+        let task=try service.create(.init(title:"Synthetic alarm intent",plannedDay:"2026-10-16",remindAt:clock.wall.addingTimeInterval(3600),frequency:.daily,reminderChannel:.alarm))
+        try service.rescheduleReminder(id:task.id,to:clock.wall.addingTimeInterval(4800),channel:.alarm)
+        let intent=try XCTUnwrap(service.reminderIntent(for:task.id))
+        XCTAssertTrue(intent.isInstanceOverride)
+        source.mainContext.insert(BodyReferenceSettings(heightCentimeters:175.5,reference:.who))
+        source.mainContext.insert(TodoReminderDeviceRecord(taskID:task.id,intentGeneration:intent.generation,channel:.alarm,fireAt:try XCTUnwrap(service.task(id:task.id).remindAt),phase:.accepted))
+        try source.mainContext.save();try UsagePreferencesIntegrity.validate(context:ModelContext(source))
+        let before=try TransferSnapshot.make(context:ModelContext(source))
+        let lease=try await transfer(source,folder).exportPackage();defer {lease.cleanup()}
+        let (exported,extracted)=try zipData(lease.url)
+        XCTAssertEqual(exported,before);XCTAssertEqual(ExportManifest.currentPackageSchemaVersion,11)
+        let bytes=try Data(contentsOf:extracted.appendingPathComponent("data.json"))
+        XCTAssertFalse(String(decoding:bytes,as:UTF8.self).contains("intentGeneration"))
+        let destination=try root(),targetURL=destination.appendingPathComponent("target.sqlite"),target=try PersistenceContainerFactory.makeOnDisk(at:targetURL)
+        let failing=transfer(target,destination,checkpoint:{if $0 == .beforeSave {throw CocoaError(.fileWriteOutOfSpace)}})
+        do {_ = try await failing.importPackage(from:lease.url);XCTFail("Injected publication failure ignored")} catch {}
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(target)).totalObjectCount,0)
+        _ = try await transfer(target,destination).importPackage(from:lease.url)
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:targetURL),read=ModelContext(reopened)
+        XCTAssertEqual(try TransferSnapshot.make(context:read),before)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoReminderDeviceRecord>()),0)
+        let onlySettings=try root(),settingsStore=try PersistenceContainerFactory.makeOnDisk(at:onlySettings.appendingPathComponent("settings.sqlite"))
+        settingsStore.mainContext.insert(BodyReferenceSettings(heightCentimeters:180));try settingsStore.mainContext.save()
+        do {_ = try await transfer(settingsStore,onlySettings).importPackage(from:lease.url);XCTFail("Settings-only target accepted")} catch {XCTAssertEqual(error as? TransferPackageError,.targetNotEmpty)}
+        XCTAssertEqual(try ModelContext(settingsStore).fetch(FetchDescriptor<BodyReferenceSettings>()).first?.heightCentimeters,180)
+        XCTAssertThrowsError(try exported.validateUsagePreferences(packageVersion:10))
+        var body=try XCTUnwrap(exported.bodyReferenceSettings.first);body.heightCentimeters = .infinity
+        let invalid=TransferData(entries:[],images:[],tags:[],links:[],habits:[],habitLogs:[],goals:[],goalEvents:[],bodyReferenceSettings:[body])
+        XCTAssertThrowsError(try invalid.validateUsagePreferences(packageVersion:11))
+    }
+
+    func testUsageV11RawRequiredArraysRejectAndRealLegacyV10DefaultsRestore() async throws {
+        let folder=try root(),source=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("wire-source.sqlite"))
+        source.mainContext.insert(Entry(body:"Synthetic v10 compatibility fact",createdAt:clock.wall))
+        source.mainContext.insert(BodyReferenceSettings(heightCentimeters:180,reference:.who));try source.mainContext.save()
+        let lease=try await transfer(source,folder).exportPackage();defer {lease.cleanup()}
+        let (data,extracted)=try zipData(lease.url)
+        let originalPayload=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:extracted.appendingPathComponent("data.json"))) as? [String:Any])
+        let originalManifest=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:extracted.appendingPathComponent("manifest.json"))) as? [String:Any])
+        let keys=["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"]
+        for scenario in 0..<5 {
+            var payload=originalPayload,manifest=originalManifest
+            let version=scenario < 3 ? 11 : 10
+            if scenario < 3 {payload.removeValue(forKey:keys[scenario])}
+            if scenario == 4 {for key in keys {payload.removeValue(forKey:key)}}
+            let bytes=try JSONSerialization.data(withJSONObject:payload,options:.sortedKeys)
+            let dataURL=extracted.appendingPathComponent("data.json"),manifestURL=extracted.appendingPathComponent("manifest.json")
+            try bytes.write(to:dataURL)
+            manifest["packageSchemaVersion"]=version;manifest["objectCounts"]=data.objectCounts(forPackageSchemaVersion:version)
+            var file=try XCTUnwrap(manifest["dataFile"] as? [String:Any]);file["byteCount"]=bytes.count
+            file["sha256"]=SHA256.hash(data:bytes).map {String(format:"%02x",$0)}.joined();manifest["dataFile"]=file
+            try JSONSerialization.data(withJSONObject:manifest,options:.sortedKeys).write(to:manifestURL)
+            let archive=folder.appendingPathComponent("usage-wire-\(scenario).zip")
+            try ZIPArchiveWriter.write(sources:[.init(path:"manifest.json",fileURL:manifestURL),.init(path:"data.json",fileURL:dataURL)],to:archive)
+            let destination=try root(),target=try PersistenceContainerFactory.makeOnDisk(at:destination.appendingPathComponent("target.sqlite"))
+            if scenario < 4 {
+                do {_ = try await transfer(target,destination).importPackage(from:archive);XCTFail("Invalid usage metadata accepted")} catch {}
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(target)).totalObjectCount,0)
+            } else {
+                _ = try await transfer(target,destination).importPackage(from:archive)
+                XCTAssertEqual(try ModelContext(target).fetch(FetchDescriptor<Entry>()).first?.body,"Synthetic v10 compatibility fact")
+                XCTAssertEqual(try ModelContext(target).fetchCount(FetchDescriptor<BodyReferenceSettings>()),0)
+                XCTAssertEqual(try ModelContext(target).fetchCount(FetchDescriptor<TodoReminderIntent>()),0)
+            }
+        }
+        // The actual new-format ZIP retains the custom weekday set through import and successor generation.
+        let task=try TodoTaskService(context:source.mainContext,now:{self.clock.wall},timeZone:{self.zone}).create(.init(title:"Synthetic exported weekdays",plannedDay:"2026-10-16",frequency:.customWeekdays,weekdays:[2,7]))
+        let current=try await transfer(source,folder).exportPackage();defer {current.cleanup()}
+        let destination=try root(),target=try PersistenceContainerFactory.makeOnDisk(at:destination.appendingPathComponent("current.sqlite"))
+        _ = try await transfer(target,destination).importPackage(from:current.url)
+        let service=TodoTaskService(context:target.mainContext,now:{self.clock.wall},timeZone:{self.zone})
+        XCTAssertEqual(try service.preferences(for:XCTUnwrap(task.seriesID))?.weekdaysMask,66)
+        try service.transition(id:task.id,to:.completed)
+        XCTAssertEqual(try target.mainContext.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open}?.plannedDay,"2026-10-18")
     }
 
 }

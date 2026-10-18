@@ -339,3 +339,43 @@ extension WeightFoundationTests {
         }
     }
 }
+
+extension WeightFoundationTests {
+    func testUsageBMIUnroundedBoundariesInvalidInputsAndExplicitRoundingHint() throws {
+        for reference in BMIReference.allCases {
+            for (index,limit) in reference.thresholds.enumerated() {
+                XCTAssertEqual(BMICalculation.category(limit-0.0001,reference:reference)?.rawValue,index)
+                XCTAssertEqual(BMICalculation.category(limit,reference:reference)?.rawValue,index+1)
+                XCTAssertEqual(BMICalculation.category(limit+0.0001,reference:reference)?.rawValue,index+1)
+                XCTAssertEqual(BMICalculation.boundaryHint(limit-0.0001,reference:reference),limit)
+                XCTAssertNil(BMICalculation.boundaryHint(limit,reference:reference))
+            }
+        }
+        XCTAssertEqual(try XCTUnwrap(BMICalculation.value(kilograms:70,centimeters:175)),70/(1.75*1.75),accuracy:0.00000001)
+        for height in [0.0,-1,.nan,.infinity,49.9,300.1] {XCTAssertNil(BMICalculation.value(kilograms:70,centimeters:height))}
+        for weight in [0.0,-1,.nan,.infinity] {XCTAssertNil(BMICalculation.value(kilograms:weight,centimeters:175))}
+    }
+}
+
+
+extension WeightFoundationTests {
+    func testUsageBodyPreferenceReadIsPureSaveDoesNotCommitOtherDraftAndClearRemovesHeight() throws {
+        let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext
+        context.autosaveEnabled=false
+        context.insert(Entry(body:"Synthetic unrelated unsaved draft",createdAt:Date()))
+        XCTAssertEqual(try BodyReferenceService.read(container),.init(reference:.china))
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<BodyReferenceSettings>()),0)
+        XCTAssertEqual(try BodyReferenceService.height(from:"175,5"),175.5)
+        for text in ["0","-1","nan","inf","175,5.1","49","301"] {XCTAssertThrowsError(try BodyReferenceService.height(from:text))}
+        try BodyReferenceService.save(.init(heightCentimeters:175.5,reference:.who),container:container)
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<Entry>()),0)
+        XCTAssertTrue(context.hasChanges)
+        XCTAssertEqual(try BodyReferenceService.read(container),.init(heightCentimeters:175.5,reference:.who))
+        try BodyReferenceService.save(.init(reference:.who),container:container)
+        let snapshot=try TransferSnapshot.make(context:ModelContext(container))
+        XCTAssertNil(snapshot.bodyReferenceSettings.first?.heightCentimeters)
+        XCTAssertEqual(snapshot.bodyReferenceSettings.first?.referenceRawValue,"who")
+        try BodyReferenceService.save(.init(reference:.china),container:container)
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<BodyReferenceSettings>()),0)
+    }
+}

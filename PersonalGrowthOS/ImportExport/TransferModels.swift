@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 10
+    static let currentPackageSchemaVersion = 11
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -51,6 +51,9 @@ struct TransferData: Codable, Equatable {
     let todoLists: [TodoListTransfer]
     let todoSeries: [TodoSeriesTransfer]
     let todoSources: [TodoTaskSourceTransfer]
+    let todoSeriesPreferences: [TodoSeriesPreferencesTransfer]
+    let todoReminderIntents: [TodoReminderIntentTransfer]
+    let bodyReferenceSettings: [BodyReferenceSettingsTransfer]
 
     let captureReceipts: [CaptureReceiptTransfer]
     let investmentParticipants: [InvestmentParticipantTransfer]
@@ -97,7 +100,10 @@ struct TransferData: Codable, Equatable {
         investmentParticipants: [InvestmentParticipantTransfer] = [],
         investmentActivities: [InvestmentActivityTransfer] = [],
         investmentSessions: [InvestmentSessionTransfer] = [],
-        investmentOperations: [InvestmentOperationTransfer] = []
+        investmentOperations: [InvestmentOperationTransfer] = [],
+        todoSeriesPreferences: [TodoSeriesPreferencesTransfer] = [],
+        todoReminderIntents: [TodoReminderIntentTransfer] = [],
+        bodyReferenceSettings: [BodyReferenceSettingsTransfer] = []
     ) {
         self.entries = entries
         self.images = images
@@ -119,6 +125,8 @@ struct TransferData: Codable, Equatable {
         self.todoLists = todoLists
         self.todoSeries = todoSeries
         self.todoSources = todoSources
+        self.todoSeriesPreferences=todoSeriesPreferences;self.todoReminderIntents=todoReminderIntents
+        self.bodyReferenceSettings=bodyReferenceSettings
         self.importantDays = importantDays
         self.importantDayEntryLinks = importantDayEntryLinks
         self.importantDayTodoLinks = importantDayTodoLinks
@@ -154,6 +162,7 @@ struct TransferData: Codable, Equatable {
         case todoLists
         case todoSeries
         case todoSources
+        case todoSeriesPreferences, todoReminderIntents, bodyReferenceSettings
         case importantDays
         case importantDayEntryLinks
         case importantDayTodoLinks
@@ -203,6 +212,9 @@ struct TransferData: Codable, Equatable {
         investmentOperations = try container.decodeIfPresent([InvestmentOperationTransfer].self, forKey: .investmentOperations) ?? []
         sleepRecords = try container.decodeIfPresent([SleepRecordTransfer].self, forKey: .sleepRecords) ?? []
         sleepGoals = try container.decodeIfPresent([SleepGoalTransfer].self, forKey: .sleepGoals) ?? []
+        todoSeriesPreferences = try container.decodeIfPresent([TodoSeriesPreferencesTransfer].self, forKey: .todoSeriesPreferences) ?? []
+        todoReminderIntents = try container.decodeIfPresent([TodoReminderIntentTransfer].self, forKey: .todoReminderIntents) ?? []
+        bodyReferenceSettings = try container.decodeIfPresent([BodyReferenceSettingsTransfer].self, forKey: .bodyReferenceSettings) ?? []
         importantDays = try container.decodeIfPresent([ImportantDayTransfer].self, forKey: .importantDays) ?? []
         importantDayEntryLinks = try container.decodeIfPresent([ImportantDayEntryLinkTransfer].self, forKey: .importantDayEntryLinks) ?? []
         importantDayTodoLinks = try container.decodeIfPresent([ImportantDayTodoLinkTransfer].self, forKey: .importantDayTodoLinks) ?? []
@@ -233,6 +245,8 @@ struct TransferData: Codable, Equatable {
             "todoLists": todoLists.count,
             "todoSeries": todoSeries.count,
             "todoSources": todoSources.count,
+            "todoSeriesPreferences":todoSeriesPreferences.count,"todoReminderIntents":todoReminderIntents.count,
+            "bodyReferenceSettings":bodyReferenceSettings.count,
             "importantDays": importantDays.count,
             "importantDayEntryLinks": importantDayEntryLinks.count,
             "importantDayTodoLinks": importantDayTodoLinks.count,
@@ -252,6 +266,7 @@ struct TransferData: Codable, Equatable {
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
                 && (version >= 7 || !key.hasPrefix("todo"))
+                && (version >= 11 || !["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"].contains(key))
                 && (version >= 10 || (!key.hasPrefix("investment") && key != "captureReceipts"))
                 && (version >= 9 || !key.hasPrefix("sleep"))
                 && (version >= 8 || !key.hasPrefix("importantDay"))
@@ -499,6 +514,9 @@ enum TransferValidator {
         try data.validateInvestment(packageVersion: manifest.packageSchemaVersion)
         try data.validateSleep(packageVersion: manifest.packageSchemaVersion)
         try data.validateImportantDays(packageVersion: manifest.packageSchemaVersion, manifest: manifest)
+        do {try data.validateUsagePreferences(packageVersion:manifest.packageSchemaVersion)}
+        catch is CancellationError {throw CancellationError()}
+        catch {throw TransferPackageError.invalidObject("usagePreferences")}
         do { try data.validateTodos() }
         catch is CancellationError { throw CancellationError() }
         catch { throw TransferPackageError.invalidObject("todo integrity") }

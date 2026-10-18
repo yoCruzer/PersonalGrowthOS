@@ -346,3 +346,83 @@ struct WeightReviewBuilder {
         return try modelContext.fetch(query).map(WeightMeasurement.init)
     }
 }
+
+// Optional personal settings are created only by an explicit save, never by viewing a review.
+@Model final class BodyReferenceSettings {
+    static let singletonID=UUID(uuidString:"C8E99F09-842D-48A5-9825-D1CB981D2195")!
+    @Attribute(.unique) var id: UUID
+    var heightCentimeters: Double?
+    var referenceRawValue: String
+    init(heightCentimeters: Double?, reference: BMIReference = .china) {
+        id=Self.singletonID;self.heightCentimeters=heightCentimeters;referenceRawValue=reference.rawValue
+    }
+}
+enum BMIReference: String, Codable, CaseIterable {
+    case china, who
+    var thresholds: [Double] { self == .china ? [18.5,24,28] : [18.5,25,30] }
+}
+enum BMICategory: Int { case low, usual, elevated, high }
+enum BMICalculation {
+    /// Broad input guard in cm; this is an input constraint, not a reference for adult stature.
+    static let heightRange=50.0...300.0
+    static func value(kilograms: Double, centimeters: Double) -> Double? {
+        guard kilograms.isFinite,kilograms > 0,centimeters.isFinite,heightRange.contains(centimeters) else {return nil}
+        let result=kilograms / pow(centimeters / 100,2)
+        return result.isFinite && result > 0 ? result : nil
+    }
+    static func category(_ value: Double, reference: BMIReference) -> BMICategory? {
+        guard value.isFinite,value > 0 else {return nil}
+        let limits=reference.thresholds
+        if value < limits[0] {return .low}
+        if value < limits[1] {return .usual}
+        if value < limits[2] {return .elevated}
+        return .high
+    }
+    /// Retain a short familiar value. An adjacent boundary hint carries the exact classification.
+    static func boundaryHint(_ value: Double, reference: BMIReference) -> Double? {
+        let displayed=(value * 10).rounded() / 10
+        return reference.thresholds.first { value < $0 && displayed >= $0 }
+    }
+}
+
+struct BodyReferencePreference: Equatable {
+    var heightCentimeters: Double?
+    var reference: BMIReference
+}
+enum BodyReferenceFailure: Error, LocalizedError {
+    case invalidHeight, invalidSettings
+    var errorDescription: String? {
+        switch self {
+        case .invalidHeight: return String(localized:"Enter a height from 50 to 300 cm. Use a decimal point or comma.")
+        case .invalidSettings: return String(localized:"Could not read BMI settings. Retry before changing them.")
+        }
+    }
+}
+@MainActor enum BodyReferenceService {
+    static func read(_ container: ModelContainer) throws -> BodyReferencePreference {
+        let read=ModelContext(container)
+        var query=FetchDescriptor<BodyReferenceSettings>();query.fetchLimit=2
+        let rows=try read.fetch(query)
+        guard rows.count <= 1 else {throw BodyReferenceFailure.invalidSettings}
+        guard let row=rows.first else {return .init(reference:.china)}
+        guard row.id == BodyReferenceSettings.singletonID,let reference=BMIReference(rawValue:row.referenceRawValue),
+              row.heightCentimeters.map({$0.isFinite && BMICalculation.heightRange.contains($0)}) ?? true else {throw BodyReferenceFailure.invalidSettings}
+        return .init(heightCentimeters:row.heightCentimeters,reference:reference)
+    }
+    static func height(from text: String) throws -> Double? {
+        let text=text.trimmingCharacters(in:.whitespacesAndNewlines)
+        guard !text.isEmpty else {return nil}
+        guard let value=Double(text.replacingOccurrences(of:",",with:".")),value.isFinite,BMICalculation.heightRange.contains(value) else {throw BodyReferenceFailure.invalidHeight}
+        return value
+    }
+    static func save(_ preference: BodyReferencePreference, container: ModelContainer) throws {
+        if let height=preference.heightCentimeters, !height.isFinite || !BMICalculation.heightRange.contains(height) {throw BodyReferenceFailure.invalidHeight}
+        _ = try read(container)
+        let write=ModelContext(container);write.autosaveEnabled=false
+        let rows=try write.fetch(FetchDescriptor<BodyReferenceSettings>())
+        if preference.heightCentimeters == nil && preference.reference == .china {rows.forEach(write.delete)}
+        else if let row=rows.first {row.heightCentimeters=preference.heightCentimeters;row.referenceRawValue=preference.reference.rawValue}
+        else {write.insert(BodyReferenceSettings(heightCentimeters:preference.heightCentimeters,reference:preference.reference))}
+        try write.save()
+    }
+}

@@ -16,6 +16,7 @@ import XCTest
         let co = TodoReminderCoordinator(client: client, now: { now }, sleepPreferences: { prefs }, sleepHistory: SleepReminderHistory(defaults: nil))
         await co.reconcile(context: c.mainContext)
         XCTAssertEqual(client.pending.count, 3)
+        XCTAssertFalse(client.pending.keys.contains {$0.hasPrefix(TodoIntentScheduling.budgetPrefix)})
         XCTAssertEqual(co.status(for: task), .scheduled); XCTAssertEqual(co.status(for: day).status, .scheduled)
         XCTAssertEqual(co.sleepStatus().scheduledCount, 1); XCTAssertEqual(co.sleepStatus().status, .queueFull)
         XCTAssertTrue(client.removed.allSatisfy { !$0.hasPrefix("reserved-") })

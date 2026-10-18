@@ -25,6 +25,12 @@ struct PersonalGrowthOSApp: App {
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch {
                 for key in ["sleep.showToday", "sleep.introductionDismissed", "sleep.morningReminder.plannedFires", SleepReminderPreferences.enabledKey, SleepReminderPreferences.minuteKey] { UserDefaults.standard.removeObject(forKey: key) }
             }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSUsageElapsedTodoTest") {
+                let zone=TimeZone.current,then=TodoDay("2020-01-01")!.date(timeZone:TimeZone.current)!.addingTimeInterval(12*3600)
+                let service=TodoTaskService(context:container.modelContainer.mainContext,now:{then},timeZone:{zone})
+                _ = try service.create(.init(title:"Synthetic long elapsed reminder",plannedDay:"2020-01-01",deadlineDay:"2020-01-02",remindAt:then.addingTimeInterval(3600),frequency:.daily),id:UUID(uuidString:"40000000-1111-4222-8333-444444444444")!)
+            }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSUsageWeightTest") {
                 let now = Date(), calendar = Calendar(identifier: .gregorian)

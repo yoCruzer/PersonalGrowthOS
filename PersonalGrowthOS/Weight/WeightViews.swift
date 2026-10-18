@@ -44,7 +44,7 @@ struct WeightHistoryView: View {
                     }
                 } else {
                     Section {
-                        ContentUnavailableView("No Weight Records", systemImage: "scalemass")
+                        ContentUnavailableView(historical ? "No records through selected date" : "No Weight Records", systemImage: "scalemass")
                             .accessibilityIdentifier("weight-empty-state")
                         GrowthEmptyStateAddButton(title: "Add Weight", systemImage: "plus") { adding = true }.accessibilityIdentifier("add-weight")
                     }
@@ -102,7 +102,7 @@ struct WeightHistoryView: View {
                         Text("Missing days are not measurements. This shows app records, not whether you weighed yourself.").font(.caption)
                     }
                 }
-                // Optional BMI settings will be connected with the joint additive persistence version.
+                WeightBMISection(measurement:snapshot.latest.first,historical:historical)
                 Section(selectedDay == nil ? "Recent measurements" : "Selected day") {
                     if let selectedDay, let day = snapshot.daily.first(where: { $0.day == selectedDay }) {
                         LabeledContent("Daily mean (kg)", value: WeightFormatting.kilograms(day.mean)).accessibilityIdentifier("weight-selected-mean")
@@ -416,5 +416,110 @@ struct WeightEditorView: View {
         } catch {
             errorMessage = String(localized: "The weight record was not saved.")
         }
+    }
+}
+
+extension BMIReference {
+    var label: String {self == .china ? String(localized:"China adult reference") : String(localized:"WHO adult reference")}
+}
+extension BMICategory {
+    var label: String {
+        switch self {
+        case .low: return String(localized:"Underweight reference range")
+        case .usual: return String(localized:"Usual adult reference range")
+        case .elevated: return String(localized:"Overweight reference range")
+        case .high: return String(localized:"Obesity reference range")
+        }
+    }
+}
+private struct WeightBMISection: View {
+    let measurement: WeightMeasurement?
+    let historical: Bool
+    @Environment(\.modelContext) private var context
+    @State private var preference=BodyReferencePreference(reference:.china)
+    @State private var error: String?
+    var body: some View {
+        Section("BMI (optional)") {
+            if let error {Text(error).foregroundStyle(.red);Button("Retry") {load()}}
+            else {
+                if let height=preference.heightCentimeters {
+                    Text("Current height: \(height.formatted(.number.precision(.fractionLength(0...2)))) cm").accessibilityIdentifier("bmi-height")
+                    if let measurement,let bmi=BMICalculation.value(kilograms:measurement.kilograms,centimeters:height),let category=BMICalculation.category(bmi,reference:preference.reference) {
+                        LabeledContent("BMI",value:bmi.formatted(.number.precision(.fractionLength(1)))).accessibilityIdentifier("bmi-value")
+                        Text(category.label).accessibilityIdentifier("bmi-category")
+                        if let boundary=BMICalculation.boundaryHint(bmi,reference:preference.reference) {
+                            Text("The unrounded BMI is below \(boundary.formatted(.number.precision(.fractionLength(1)))). The displayed value is rounded.").font(.caption)
+                        }
+                        Text(measurement.recordedAt,format:.dateTime.year().month().day()).font(.caption)
+                        if historical {Text("Calculated from this historical weight using your current height.").font(.caption)}
+                    } else {Text("Add a weight measurement to calculate BMI.")}
+                } else {Text("Add optional height to see BMI. Weight recording works without it.")}
+                Text(preference.reference.label).font(.subheadline)
+                NavigationLink {BodyReferenceEditor(preference:preference)} label: {
+                    Text(preference.heightCentimeters == nil ? "Set height (optional)" : "Edit or clear height")
+                }.accessibilityIdentifier("bmi-edit")
+            }
+            DisclosureGroup("BMI reference and limits") {
+                Text("General adult screening reference, not a diagnosis. These ranges do not apply directly to children or pregnancy. Muscle mass and older age also affect interpretation.").font(.caption)
+                ForEach(BMIReference.allCases,id:\.self) { reference in
+                    VStack(alignment:.leading,spacing:4) {
+                        Text(reference.label).font(.headline)
+                        let limits=reference.thresholds
+                        Text("Underweight: <18.5")
+                        Text("Usual adult range: ≥18.5 and <\(limits[1].formatted(.number.precision(.fractionLength(0))))")
+                        Text("Overweight reference: ≥\(limits[1].formatted(.number.precision(.fractionLength(0)))) and <\(limits[2].formatted(.number.precision(.fractionLength(0))))")
+                        Text("Obesity reference: ≥\(limits[2].formatted(.number.precision(.fractionLength(0))))")
+                    }.font(.caption)
+                }
+                Text("Observe changes over time, keep regular meals and activity, and consult a qualified professional if you have concerns.").font(.caption)
+                Link("China: Weight Management Guideline (2024)",destination:URL(string:"https://www.nhc.gov.cn/ylyjs/zcwj/202412/75cb79c171c94def9e768193e65484f7.shtml")!)
+                Link("China: Core Knowledge (2024)",destination:URL(string:"https://www.nhc.gov.cn/cms-search/downFiles/5e20de34c0fe45bb9fcac0636b21ad98.pdf")!)
+                Link("WHO adult BMI definitions",destination:URL(string:"https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women")!)
+                Link("CDC: About BMI",destination:URL(string:"https://www.cdc.gov/bmi/about/")!)
+            }
+        }.onAppear {load()}
+        .onReceive(NotificationCenter.default.publisher(for:ModelContext.didSave).receive(on:RunLoop.main)) {_ in load()}
+    }
+    private func load() {
+        do {preference=try BodyReferenceService.read(context.container);error=nil}
+        catch {self.error=error.localizedDescription}
+    }
+}
+private struct BodyReferenceEditor: View {
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var height: String
+    @State private var reference: BMIReference
+    @State private var error: String?
+    @FocusState private var focused: Bool
+    init(preference: BodyReferencePreference) {
+        _height=State(initialValue:preference.heightCentimeters.map {String($0)} ?? "")
+        _reference=State(initialValue:preference.reference)
+    }
+    var body: some View {
+        Form {
+            Section("Optional height") {
+                TextField("Height (cm)",text:$height).keyboardType(.decimalPad).focused($focused).accessibilityIdentifier("bmi-height-input")
+                Text("Input range: 50–300 cm. Leave blank to remove height.").font(.caption)
+                Picker("Adult reference",selection:$reference) {ForEach(BMIReference.allCases,id:\.self) {Text($0.label).tag($0)}}.accessibilityIdentifier("bmi-reference")
+                Text("Height is optional and saved on this device with your backup settings.").font(.caption)
+            }
+            if let error {Text(error).foregroundStyle(.red).accessibilityIdentifier("bmi-error")}
+            Button("Save") {save(clear:false)}.accessibilityIdentifier("bmi-save")
+            Button("Clear height",role:.destructive) {save(clear:true)}.accessibilityIdentifier("bmi-clear")
+        }.navigationTitle("BMI settings")
+        .toolbar {
+            ToolbarItem(placement:.cancellationAction) {Button("Cancel") {dismiss()}}
+            ToolbarItem(placement:.confirmationAction) {if focused {
+                Button {focused=false} label: {Image(systemName:"keyboard.chevron.compact.down").frame(minWidth:44,minHeight:44)}.accessibilityLabel("Done")
+            }}
+        }
+    }
+    private func save(clear: Bool) {
+        do {
+            let value=try clear ? nil : BodyReferenceService.height(from:height)
+            try BodyReferenceService.save(.init(heightCentimeters:value,reference:reference),container:context.container)
+            dismiss()
+        } catch {self.error=error.localizedDescription}
     }
 }
