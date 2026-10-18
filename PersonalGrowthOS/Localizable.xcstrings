@@ -1,6 +1,151 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Unable to read investment statistics": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unable to read investment statistics"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法读取投入统计"
+        }
+      }
+    }
+  },
+  "Current period": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Current period"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "当前期间"
+        }
+      }
+    }
+  },
+  "Inspect date": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Inspect date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查看日期"
+        }
+      }
+    }
+  },
+  "Inspect selected date": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Inspect selected date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查看所选日期"
+        }
+      }
+    }
+  },
+  "Preview selected month": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Preview selected month"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "预览所选月份"
+        }
+      }
+    }
+  },
+  "The chart previews this date range. All-time totals include the complete saved history.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "The chart previews this date range. All-time totals include the complete saved history."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "图表预览此日期范围。全部累计包含完整的已保存历史。"
+        }
+      }
+    }
+  },
+  "Newest first · 20 records per page": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Newest first · 20 records per page"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "按记录日期从新到旧 · 每页20条"
+        }
+      }
+    }
+  },
+  "Previous page": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Previous page"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "上一页"
+        }
+      }
+    }
+  },
+  "Next page": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Next page"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "下一页"
+        }
+      }
+    }
+  }
+,
   "Expanded": {
     "localizations": {
       "en": {

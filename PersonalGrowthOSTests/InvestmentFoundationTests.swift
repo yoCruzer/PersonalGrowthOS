@@ -387,6 +387,32 @@ import XCTest
         XCTAssertThrowsError(try data(forged,changedOps).validateInvestment(packageVersion:10))
     }
 
+    func testUsageReviewSnapshotKeepsCrossDayIdentityAndRejectsInvalidFacts() throws {
+        let p=UUID(),a=UUID(),foreign=UUID()
+        let start=ImportantCivilDay(identifier:"2026-12-31")!.instant(minutes:1430,timeZone:zone)!
+        let values=InvestmentValues(day:"2026-12-31",timeZoneID:zone.identifier,seconds:1200,evidence:.intervals,source:.timer,
+            spans:[.init(start:start,end:start.addingTimeInterval(300)),.init(start:start.addingTimeInterval(900),end:start.addingTimeInterval(1800))])
+        let fact=try InvestmentSessionTransfer(InvestmentSession(id:UUID(),participantID:p,activityID:a,values:values,now:start))
+        var other=fact;other.id=UUID();other.participantID=foreign
+        let snapshot=try InvestmentReviewSnapshot(sessions:[fact,other],participantID:p)
+        XCTAssertEqual(snapshot.activitySeconds[a],1200)
+        let today=ImportantCivilDay(identifier:"2027-01-01")!
+        let all=snapshot.selection(days:nil,today:today,activityID:nil,day:nil)
+        XCTAssertEqual(all.seconds,1200);XCTAssertEqual(all.count,1)
+        XCTAssertEqual(all.daySeconds,["2026-12-31":300,"2027-01-01":900])
+        XCTAssertEqual(snapshot.selection(days:7,today:today,activityID:a,day:nil).count,1)
+        for (day,seconds) in [("2026-12-31",300.0),("2027-01-01",900.0)] {
+            let chosen=snapshot.selection(days:nil,today:today,activityID:a,day:day)
+            XCTAssertEqual(chosen.seconds,seconds);XCTAssertEqual(chosen.pageIDs(offset:0),[fact.id])
+        }
+        XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:a,day:"2020-01-01").count,0)
+        var invalid=fact;invalid.values.seconds = .nan
+        XCTAssertThrowsError(try InvestmentReviewSnapshot(sessions:[invalid],participantID:p))
+        // A foreign participant's unreadable facts do not change this participant's review.
+        invalid.participantID=foreign
+        XCTAssertNoThrow(try InvestmentReviewSnapshot(sessions:[fact,invalid],participantID:p))
+    }
+
 }
 
 // Synthetic clock observations are independent. This is not a hardware sleep test.

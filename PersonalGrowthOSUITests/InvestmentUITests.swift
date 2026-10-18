@@ -141,6 +141,48 @@ final class InvestmentUITests: XCTestCase {
         let count=app.staticTexts["investment-review-count"];reveal(count,app);XCTAssertTrue(count.label.contains("1"))
         screenshot(app,"External-R3-Chinese-Dark-AX-confirmed-duration-reopened-statistics")
     }
+    func testUsageHistoryNaturalWindowMonthPagingAndExactCrossDayFact() {
+        let app=launch(extra:["-PGOSInvestmentUsageHistory"]);openHub(app)
+        let history=app.buttons["investment-history"];reveal(history,app);history.tap()
+        XCTAssertTrue(app.staticTexts["investment-review-total"].waitForExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("1:10:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("51"))
+        let toggle=app.switches["Preview selected month"];reveal(toggle,app)
+        screenshot(app,"Usage-Investment-before-month-switch")
+        toggle.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        XCTAssertEqual(toggle.value as? String,"1",app.debugDescription)
+        screenshot(app,"Usage-Investment-after-month-switch")
+        let previous=app.buttons["investment-previous-month"];reveal(previous,app)
+        let range=app.staticTexts["investment-preview-range"]
+        let initial=range.label
+        previous.tap()
+        XCTAssertNotEqual(range.label,initial)
+        screenshot(app,"Usage-Investment-previous-month-full-history")
+        app.buttons["investment-next-month"].tap()
+        XCTAssertEqual(range.label,initial)
+        let next=app.buttons["Next page"];reveal(next,app);next.tap()
+        let prior=app.buttons["Previous page"];reveal(prior,app);XCTAssertTrue(prior.isHittable)
+        screenshot(app,"Usage-Investment-bounded-second-page")
+        for _ in 0..<12 {app.swipeDown()}
+        let period=app.segmentedControls["investment-review-period"];XCTAssertTrue(period.isHittable)
+        period.buttons["7 days"].tap()
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:27:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("8"))
+        let day=button("investment-day-",app);reveal(day,app);day.tap()
+        for _ in 0..<6 {app.swipeDown()}
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:16:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("2"))
+        let clear=app.buttons["investment-clear-day"];reveal(clear,app);clear.tap()
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:27:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("8"))
+        let fact=app.buttons["investment-session-30000001-1111-4222-8333-444444444444"]
+        reveal(fact,app);fact.tap()
+        XCTAssertTrue(app.staticTexts["Synthetic paused cross-day fact"].waitForExistence(timeout:5))
+        let original=app.staticTexts.matching(NSPredicate(format:"identifier BEGINSWITH %@ AND label CONTAINS %@","investment-original-day-","0:05:00")).firstMatch
+        reveal(original,app);XCTAssertTrue(original.exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format:"identifier BEGINSWITH %@ AND label CONTAINS %@","investment-original-day-","0:15:00")).firstMatch.exists)
+        screenshot(app,"Usage-Investment-exact-cross-day-original")
+    }
     func testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview() {
         let app=launch();openHub(app);create(app)
         let record=button("investment-record-",app);reveal(record,app);record.tap()

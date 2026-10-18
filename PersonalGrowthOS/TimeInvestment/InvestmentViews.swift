@@ -72,13 +72,16 @@ import UIKit
 }
 
 @MainActor @Observable final class InvestmentWorkspace {
-    var participants: [InvestmentParticipantTransfer] = []
-    var activities: [InvestmentActivityTransfer] = []
-    var sessions: [InvestmentSessionTransfer] = []
-    var operations: [InvestmentOperationSnapshot] = []
+    private(set) var participants: [InvestmentParticipantTransfer] = []
+    private(set) var activities: [InvestmentActivityTransfer] = []
+    private(set) var sessions: [InvestmentSessionTransfer] = []
+    private(set) var operations: [InvestmentOperationSnapshot] = []
     var editors: [UUID: InvestmentEditorState] = [:]
     var error: String?
     var reference = Date()
+    private(set) var review: InvestmentReviewSnapshot?
+    private(set) var reviewError: String?
+    private(set) var reviewGeneration = 0
     var me: UUID? { participants.first(where: \.isDefault)?.id }
     var myActivities: [InvestmentActivityTransfer] { activities.filter { $0.participantID == me }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending } }
     var unfinished: [InvestmentOperationSnapshot] { operations.filter { $0.participantID == me && $0.timer.state.unfinished } }
@@ -96,8 +99,17 @@ import UIKit
                 editor.values=InvestmentTimer(state:.discarded,values:editor.values,target:nil,checkpointAt:Date()).erasingConsumedContent().values
                 editor.durationText="";editors.removeValue(forKey:id)
             }
+            let changed = sessions != s || me != p.first(where: \.isDefault)?.id || review == nil
             participants = p; activities = a; sessions = s; operations = o; reference = Date(); error = nil
-        } catch { self.error = error.localizedDescription }
+            if changed {
+                do { review = try InvestmentReviewSnapshot(sessions:s,participantID:me); reviewError = nil }
+                catch { review = nil; reviewError = error.localizedDescription }
+                reviewGeneration += 1
+            }
+        } catch {
+            self.error = error.localizedDescription; reviewError = error.localizedDescription; review = nil
+            reviewGeneration += 1
+        }
     }
     func checkpoint(_ context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current) {
         let service = InvestmentService(context:context,clock:clock)
@@ -146,8 +158,8 @@ import UIKit
         editors[editor.id] = editor; return editor
     }
     func contributions() throws -> [InvestmentContribution] {
-        guard let me else { return [] }
-        return try InvestmentReview.contributions(sessions:sessions,participantID:me)
+        guard let review else { throw InvestmentEditorPersistenceFailure(message:reviewError ?? String(localized:"Unable to read investment statistics")) }
+        return review.contributions
     }
     func name(_ id: UUID) -> String { activities.first { $0.id == id }?.name ?? String(localized:"Investment activity") }
 }
@@ -278,8 +290,12 @@ struct InvestmentHubView: View {
                             Button { editingActivity = activity; rename = activity.name } label: { Image(systemName:"ellipsis").frame(minWidth:44,minHeight:44) }
                                 .accessibilityLabel("Edit activity").accessibilityIdentifier("investment-edit-activity-\(activity.id)")
                         }
-                        let total = (try? workspace.contributions().filter { $0.activityID == activity.id }.reduce(0) { $0 + $1.seconds }) ?? 0
-                        Text("Total recorded: \(InvestmentFormatting.accumulated(total))").monospacedDigit().accessibilityLabel("Total recorded investment")
+                        if let review = workspace.review {
+                            Text("Total recorded: \(InvestmentFormatting.accumulated(review.activitySeconds[activity.id,default:0]))").monospacedDigit().accessibilityLabel("Total recorded investment")
+                        } else {
+                            Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+                            Button("Retry") { workspace.refresh(context) }
+                        }
                         if activity.isArchived { Text("Archived").font(.caption) }
                         else {
                             ViewThatFits(in:.horizontal) {
@@ -308,7 +324,10 @@ struct InvestmentHubView: View {
         .searchable(text:$search,prompt:"Find activities")
         .task {
 #if DEBUG
-            do {try InvestmentReviewTestSupport.seedSegmentsIfRequested(context)} catch {workspace.error=error.localizedDescription}
+            do {
+                try InvestmentReviewTestSupport.seedUsageHistoryIfRequested(context)
+                try InvestmentReviewTestSupport.seedSegmentsIfRequested(context)
+            } catch {workspace.error=error.localizedDescription}
 #endif
             workspace.refresh(context)
         }
@@ -432,6 +451,7 @@ struct InvestmentEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var phase
     @State private var cancel = false
+    @FocusState private var inputFocused: Bool
     @State private var confirmExact = false
     @State private var start = Date().addingTimeInterval(-2700)
     @State private var end = Date()
@@ -444,7 +464,7 @@ struct InvestmentEditorView: View {
                 }.disabled(editor.timerConfirmation)
                 InvestmentDateField("Occurrence date",selection:Binding(get:{ImportantCivilDay(identifier:editor.values.day)?.instant(minutes:720,timeZone:zone) ?? Date()},set:{ editor.values.day = ImportantCivilDay($0,timeZone:zone).identifier; if editor.values.evidence == .intervals { editor.values.spans = []; editor.values.evidence = .correctedDuration; editor.values.corrected = true }; persist() }),displayedComponents:.date)
                     .environment(\.timeZone,zone).accessibilityIdentifier("investment-date")
-                TextField("Duration in minutes",text:$editor.durationText).keyboardType(.decimalPad).accessibilityIdentifier("investment-duration")
+                TextField("Duration in minutes",text:$editor.durationText).focused($inputFocused).keyboardType(.decimalPad).accessibilityIdentifier("investment-duration")
                     .onChange(of:editor.durationText) { _, text in
                         if let minutes = Double(text), minutes.isFinite, minutes >= 0, minutes <= 527040 { editor.values.changeDuration(minutes * 60) }
                         persist()
@@ -469,7 +489,7 @@ struct InvestmentEditorView: View {
                     Text("Not filled").tag(0)
                     ForEach(1...5,id:\.self) { Text(SleepFormatting.feeling($0)).tag($0) }
                 }.accessibilityIdentifier("investment-feeling")
-                TextField("What did you do or feel?",text:$editor.values.note,axis:.vertical).lineLimit(3...8)
+                TextField("What did you do or feel?",text:$editor.values.note,axis:.vertical).focused($inputFocused).lineLimit(3...8)
                     .accessibilityIdentifier("investment-note").onChange(of:editor.values.note) { _, _ in persist() }
             }
             if let error = editor.error { Section { Text(error).foregroundStyle(.red).accessibilityIdentifier("investment-save-error") } }
@@ -492,7 +512,14 @@ struct InvestmentEditorView: View {
             }
         }.navigationTitle(editor.timerConfirmation ? "Confirm time investment" : "Record activity")
         .interactiveDismissDisabled(!editor.finished)
-        .toolbar { ToolbarItemGroup(placement:.keyboard) { Spacer(); Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),to:nil,from:nil,for:nil) } } }
+        .toolbar {
+            ToolbarItem(placement:.confirmationAction) {
+                if inputFocused {
+                    Button { inputFocused=false } label: { Image(systemName:"keyboard.chevron.compact.down").frame(minWidth:44,minHeight:44) }
+                        .accessibilityLabel("Done").accessibilityIdentifier("investment-dismiss-keyboard")
+                }
+            }
+        }
         .confirmationDialog("Cancel this draft?",isPresented:$cancel,titleVisibility:.visible) {
             Button("Cancel draft",role:.destructive) {
                 do {
@@ -558,20 +585,26 @@ struct InvestmentEditorView: View {
 
 struct InvestmentHistoryView: View {
     @Environment(InvestmentWorkspace.self) private var workspace
+    @Environment(\.modelContext) private var context
     @State private var days = 0
     @State private var activity: UUID?
     @State private var selectedDay: String?
-    private var rows: [InvestmentContribution] {
-        InvestmentReview.window((try? workspace.contributions()) ?? [],days:days == 0 ? nil : days,
-            today:ImportantCivilDay(workspace.reference),activityID:activity)
+    @State private var browseDate = Date()
+    @State private var earlierMonth = false
+    private var today: ImportantCivilDay { ImportantCivilDay(workspace.reference) }
+    private var previewBounds: (ImportantCivilDay,ImportantCivilDay) {
+        if days != 0 { return (today.adding(days:1-days)!,today) }
+        if earlierMonth {
+            let chosen = ImportantCivilDay(browseDate)
+            let first = ImportantCivilDay(year:chosen.year,month:chosen.month,day:1)
+            let next = ImportantCivilDay.utcCalendar.date(byAdding:.month,value:1,to:first.date!)!
+            return (first,ImportantCivilDay(next,timeZone:TimeZone(secondsFromGMT:0)!).adding(days:-1)!)
+        }
+        return (today.adding(days:-29)!,today)
     }
-    private var totals: [(day:String,seconds:Double)] {
-        let grouped = Dictionary(grouping:rows,by:\.day)
-        return grouped.keys.sorted().map { ($0,grouped[$0]!.reduce(0) { $0 + $1.seconds }) }
-    }
-    private var visibleSessions: [InvestmentSessionTransfer] {
-        let ids = Set(rows.filter { selectedDay == nil || $0.day == selectedDay }.map(\.sessionID))
-        return workspace.sessions.filter { ids.contains($0.id) }.sorted { a,b in a.values.day == b.values.day ? a.createdAt > b.createdAt : a.values.day > b.values.day }
+    private func moveMonth(_ delta: Int) {
+        var calendar = Calendar(identifier:.gregorian); calendar.timeZone = .current
+        if let next = calendar.date(byAdding:.month,value:delta,to:browseDate) { browseDate=next }
     }
     var body: some View {
         List {
@@ -583,47 +616,113 @@ struct InvestmentHistoryView: View {
                     ForEach(workspace.myActivities,id:\.id) { Text($0.name).tag(Optional($0.id)) }
                 }
                 Text("Recorded investment is not a measure of skill. Days without records mean no record, not proven zero effort.").font(.caption)
-                let chosen = selectedDay.map { day in rows.filter { $0.day == day } } ?? rows
-                LabeledContent("Recorded duration",value:InvestmentFormatting.duration(chosen.reduce(0) { $0 + $1.seconds }))
-                    .accessibilityIdentifier("investment-review-total")
-                LabeledContent("Sessions",value:String(InvestmentReview.count(chosen))).accessibilityIdentifier("investment-review-count")
             }
-            if !totals.isEmpty {
+            if let review = workspace.review {
+                let selection = review.selection(days:days == 0 ? nil : days,today:today,activityID:activity,day:selectedDay)
+                Section(selectedDay ?? String(localized:"Current period")) {
+                    LabeledContent("Recorded duration",value:InvestmentFormatting.duration(selection.seconds)).accessibilityIdentifier("investment-review-total")
+                    LabeledContent("Sessions",value:String(selection.count)).accessibilityIdentifier("investment-review-count")
+                    if selectedDay != nil { Button("Show whole period") { selectedDay = nil }.accessibilityIdentifier("investment-clear-day") }
+                    InvestmentDateField("Inspect date",selection:$browseDate,displayedComponents:.date).accessibilityIdentifier("investment-inspect-date")
+                    Button("Inspect selected date") { selectedDay = ImportantCivilDay(browseDate).identifier }
+                }
                 Section("Daily recorded investment") {
-                    Chart(totals.suffix(30),id:\.day) { value in
-                        BarMark(x:.value("Day",value.day),y:.value("Minutes",value.seconds/60))
-                    }.frame(height:180).accessibilityLabel("Daily recorded investment")
+                    if days == 0 {
+                        Toggle("Preview selected month",isOn:$earlierMonth)
+                        if earlierMonth {
+                            Button("Previous month") { moveMonth(-1) }.accessibilityIdentifier("investment-previous-month")
+                            Button("Next month") { moveMonth(1) }.accessibilityIdentifier("investment-next-month")
+                        }
+                    }
+                    let bounds = previewBounds
+                    Text(bounds.0.identifier + " → " + bounds.1.identifier).font(.caption).accessibilityIdentifier("investment-preview-range")
+                    Text("The chart previews this date range. All-time totals include the complete saved history.").font(.caption)
+                    let dates = selection.daySeconds.keys.sorted().filter { $0 >= bounds.0.identifier && $0 <= bounds.1.identifier }
+                    Chart(dates,id:\.self) { day in
+                        let parts = day.split(separator:"-").compactMap { Int($0) }
+                        if parts.count == 3, let date = ImportantCivilDay(year:parts[0],month:parts[1],day:parts[2]).date {
+                            BarMark(x:.value("Day",date),y:.value("Minutes",selection.daySeconds[day,default:0]/60))
+                        }
+                    }.chartXScale(domain:bounds.0.date!...bounds.1.adding(days:1)!.date!)
+                        .chartXAxis { AxisMarks(values:.stride(by:.day,count:days == 7 ? 1 : 7)) { _ in AxisGridLine(); AxisValueLabel(format:.dateTime.month().day(),centered:true) } }
+                        .environment(\.timeZone,TimeZone(secondsFromGMT:0)!)
+                        .frame(height:180).accessibilityLabel("Daily recorded investment")
                     Text("Select a day below to inspect its contribution. Cross-day sessions count once in each review period.").font(.caption)
-                    if selectedDay != nil { Button("Show whole period") { selectedDay = nil } }
-                    ForEach(totals.reversed(),id:\.day) { value in
-                        Button { selectedDay = selectedDay == value.day ? nil : value.day } label: {
+                    if dates.isEmpty { Text("No records in this selection") }
+                    ForEach(dates.reversed(),id:\.self) { day in
+                        Button { selectedDay = day } label: {
                             ViewThatFits(in:.horizontal) {
-                                HStack { Text(value.day); Spacer(); Text(InvestmentFormatting.duration(value.seconds)).monospacedDigit() }
-                                VStack(alignment:.leading,spacing:4) {
-                                    Text(value.day)
-                                    Text(InvestmentFormatting.duration(value.seconds)).monospacedDigit()
-                                }
-                            }
-                        }.accessibilityIdentifier("investment-day-\(value.day)")
+                                HStack { Text(day); Spacer(); Text(InvestmentFormatting.duration(selection.daySeconds[day,default:0])).monospacedDigit() }
+                                VStack(alignment:.leading,spacing:4) { Text(day); Text(InvestmentFormatting.duration(selection.daySeconds[day,default:0])).monospacedDigit() }
+                            }.frame(minHeight:44).contentShape(.rect)
+                        }.accessibilityIdentifier("investment-day-\(day)")
                     }
                 }
+                InvestmentSessionPage(selection:selection,generation:workspace.reviewGeneration,key:"\(days)-\(activity?.uuidString ?? "all")-\(selectedDay ?? "period")")
+            } else {
+                Section {
+                    Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+                    Button("Retry") { workspace.refresh(context) }
+                }
             }
-            Section("Saved sessions") {
-                if visibleSessions.isEmpty { Text("No records in this selection") }
-                ForEach(visibleSessions,id:\.id) { session in
+        }.navigationTitle("History and review")
+        .onReceive(NotificationCenter.default.publisher(for:.NSCalendarDayChanged)) { _ in workspace.reference=Date() }
+        .onReceive(NotificationCenter.default.publisher(for:UIApplication.significantTimeChangeNotification)) { _ in workspace.reference=Date() }
+        .onChange(of:days) { _, _ in selectedDay = nil }
+        .onChange(of:activity) { _, _ in selectedDay = nil }
+    }
+}
+
+/// Only the IDs on this page are fetched again as full formal records. A missing selected day stays empty.
+private struct InvestmentSessionPage: View {
+    let selection: InvestmentReviewSelection
+    let generation: Int
+    let key: String
+    @Environment(InvestmentWorkspace.self) private var workspace
+    @Environment(\.modelContext) private var context
+    @State private var offset = 0
+    @State private var records: [InvestmentSessionTransfer] = []
+    @State private var loadedKey: String?
+    @State private var error: String?
+    @State private var retry = 0
+    private var loadKey: String { "\(generation)-\(key)-\(offset)-\(retry)" }
+    var body: some View {
+        Section("Saved sessions") {
+            Text("Newest first · 20 records per page").font(.caption).task(id:loadKey) { load() }
+            if let error { Text(error).foregroundStyle(.red); Button("Retry") { retry += 1 } }
+            else if loadedKey != loadKey { ProgressView() }
+            else if records.isEmpty { Text("No records in this selection") }
+            else {
+                ForEach(records,id:\.id) { session in
                     NavigationLink { InvestmentSessionDetailView(id:session.id) } label: {
                         VStack(alignment:.leading) {
-                            Text(workspace.name(session.activityID)); Text(session.values.day + " · " + InvestmentFormatting.duration(session.values.seconds)).font(.caption)
-                            let contribution = rows.filter { $0.sessionID == session.id && (selectedDay == nil || $0.day == selectedDay) }.reduce(0) { $0 + $1.seconds }
+                            Text(workspace.name(session.activityID))
+                            Text(session.values.day + " · " + InvestmentFormatting.duration(session.values.seconds)).font(.caption)
+                            let contribution = selection.rows.filter { $0.sessionID == session.id }.reduce(0) { $0 + $1.seconds }
                             if abs(contribution-session.values.seconds) > 0.001 { Text("Contribution in selection: \(InvestmentFormatting.duration(contribution))").font(.caption) }
                         }
                     }.accessibilityIdentifier("investment-session-\(session.id)")
                 }
             }
-        }.navigationTitle("History and review")
-        .onChange(of:days) { _, _ in selectedDay = nil }
-        .onChange(of:activity) { _, _ in selectedDay = nil }
-        .onChange(of:workspace.sessions) { _, _ in if let selectedDay, !rows.contains(where: { $0.day == selectedDay }) { self.selectedDay = nil } }
+            if offset > 0 { Button("Previous page") { offset = max(0,offset-20) } }
+            if offset+20 < selection.count { Button("Next page") { offset += 20 } }
+        }.onChange(of:key) { _,_ in offset = 0 }
+        .onChange(of:generation) { _,_ in offset = 0 }
+    }
+    private func load() {
+        do {
+            let ids = selection.pageIDs(offset:offset)
+            if ids.isEmpty { records = [] }
+            else {
+                let read = ModelContext(context.container)
+                var query = FetchDescriptor<InvestmentSession>(predicate:#Predicate { ids.contains($0.id) })
+                query.fetchLimit = 20
+                let values = try read.fetch(query).map(InvestmentSessionTransfer.init)
+                let lookup = Dictionary(uniqueKeysWithValues:values.map { ($0.id,$0) })
+                records = ids.compactMap { lookup[$0] }
+            }
+            error = nil; loadedKey = loadKey
+        } catch { records = []; self.error = error.localizedDescription; loadedKey = loadKey }
     }
 }
 
@@ -660,8 +759,14 @@ struct InvestmentSessionDetailView: View {
                     }.environment(\.timeZone,TimeZone(identifier:session.values.timeZoneID)!)
                 }
                 Section("Contribution by original local day") {
-                    let contributions = (try? InvestmentReview.contributions(id:id,activityID:session.activityID,values:session.values)) ?? []
-                    ForEach(contributions) { row in LabeledContent(row.day,value:InvestmentFormatting.duration(row.seconds)) }
+                    if let review = workspace.review {
+                        ForEach(review.contributions.filter { $0.sessionID == id }) { row in
+                            LabeledContent(row.day,value:InvestmentFormatting.duration(row.seconds)).accessibilityIdentifier("investment-original-day-\(row.day)")
+                        }
+                    } else {
+                        Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+                        Button("Retry") { workspace.refresh(context) }
+                    }
                 }
                 Section {
                     Button("Edit record") { editor = workspace.edit(session); editor?.persist(context) }.accessibilityIdentifier("investment-edit-session")
@@ -697,6 +802,32 @@ struct InvestmentSessionDetailView: View {
             throw CocoaError(.fileWriteOutOfSpace)
         }
         try context.save()
+    }
+    static func seedUsageHistoryIfRequested(_ context: ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        guard args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentUsageHistory") else {return}
+        let aid=UUID(uuidString:"30000000-1111-4222-8333-444444444444")!
+        guard !(try context.fetch(FetchDescriptor<InvestmentActivity>()).contains {$0.id == aid}) else {return}
+        let service=InvestmentService(context:context)
+        _=try service.createActivity(name:"Synthetic setup")
+        let p=try context.fetch(FetchDescriptor<InvestmentParticipant>()).first!
+        let a=InvestmentActivity(id:aid,participantID:p.id,name:"Synthetic history archive");a.isArchived=true;context.insert(a)
+        let zone=TimeZone.current,today=ImportantCivilDay(Date())
+        func insertFact(_ id: UUID, _ values: InvestmentValues, _ date: Date) throws {
+            context.insert(try InvestmentSession(id:id,participantID:p.id,activityID:aid,values:values,now:date))
+            context.insert(try InvestmentOperation(id:id,participantID:p.id,activityID:aid,
+                timer:.init(state:.saved,values:values,target:nil,checkpointAt:date),now:date))
+        }
+        for index in 0..<50 {
+            let day=today.adding(days:-index)!
+            let values=InvestmentValues(day:day.identifier,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual,note:"Synthetic historical day \(index)")
+            try insertFact(UUID(),values,day.date!)
+        }
+        let yesterday=today.adding(days:-1)!,start=yesterday.instant(minutes:1430,timeZone:zone)!
+        let cross=InvestmentValues(day:yesterday.identifier,timeZoneID:zone.identifier,seconds:1200,evidence:.intervals,source:.timer,
+            spans:[.init(start:start,end:start.addingTimeInterval(300)),.init(start:start.addingTimeInterval(900),end:start.addingTimeInterval(1800))],note:"Synthetic paused cross-day fact")
+        try insertFact(UUID(uuidString:"30000001-1111-4222-8333-444444444444")!,cross,Date())
+        try context.save();try InvestmentIntegrity.validate(context:ModelContext(context.container))
     }
     static func seedSegmentsIfRequested(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments

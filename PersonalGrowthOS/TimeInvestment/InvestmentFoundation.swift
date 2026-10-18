@@ -531,3 +531,38 @@ enum InvestmentReview {
     }
     static func count(_ rows: [InvestmentContribution]) -> Int { Set(rows.map(\.sessionID)).count }
 }
+
+
+/// Derived only from one immutable formal-fact snapshot. Drafts and timer projections never enter it.
+struct InvestmentReviewSnapshot {
+    let contributions: [InvestmentContribution]
+    let activitySeconds: [UUID: Double]
+    let orderedSessionIDs: [UUID]
+    init(sessions: [InvestmentSessionTransfer], participantID: UUID?) throws {
+        let facts = sessions.filter { $0.participantID == participantID }
+        contributions = try facts.flatMap { try InvestmentReview.contributions(id:$0.id,activityID:$0.activityID,values:$0.values) }
+        activitySeconds = contributions.reduce(into:[:]) { $0[$1.activityID,default:0] += $1.seconds }
+        orderedSessionIDs = facts.sorted {
+            if $0.values.day != $1.values.day { return $0.values.day > $1.values.day }
+            if $0.createdAt != $1.createdAt { return $0.createdAt > $1.createdAt }
+            return $0.id.uuidString < $1.id.uuidString
+        }.map(\.id)
+    }
+    func selection(days: Int?, today: ImportantCivilDay, activityID: UUID?, day: String?) -> InvestmentReviewSelection {
+        let period = InvestmentReview.window(contributions,days:days,today:today,activityID:activityID)
+        let rows = day.map { chosen in period.filter { $0.day == chosen } } ?? period
+        let ids = Set(rows.map(\.sessionID))
+        return .init(rows:rows,daySeconds:period.reduce(into:[:]) { $0[$1.day,default:0] += $1.seconds },
+                     orderedSessionIDs:orderedSessionIDs.filter { ids.contains($0) })
+    }
+}
+struct InvestmentReviewSelection {
+    let rows: [InvestmentContribution]
+    let daySeconds: [String: Double]
+    let orderedSessionIDs: [UUID]
+    var seconds: Double { rows.reduce(0) { $0 + $1.seconds } }
+    var count: Int { orderedSessionIDs.count }
+    func pageIDs(offset: Int, limit: Int = 20) -> [UUID] {
+        Array(orderedSessionIDs.dropFirst(max(0,offset)).prefix(min(50,max(0,limit))))
+    }
+}

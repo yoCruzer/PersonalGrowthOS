@@ -123,3 +123,30 @@ B2内部检查点已收敛，不表示完整B或Goal完成。Q1的4+2/去重边�
 远端只读 `git ls-remote --heads origin refs/heads/codex/usage-remediation-20261017 refs/heads/plan/usage-remediation-20261017-goal refs/heads/codex/time-investment-v1`：新整改远端分支不存在；规划仍GOAL_SHA，时间投入仍BASE。尚未push/建PR。
 
 下一步仍在同一Goal：时间投入快照复用/明确7/30自然日与全部预览月份/有界明细/失败态，再完成BMI和C联合持久化与系统渠道，最后D。考虑提醒设计时必须把用户意图、设备本地排程账本和授权分离；取消未确认不新增冲突请求，含糊排程后缺失请求不能冷启动自动重响；停响不完成任务；这是后续实现注意项，不是已完成证据。
+
+## B3 时间投入统计复用与有界日期历史（进行中）
+
+在同一正式事实快照中只拆分一次原时区贡献，按活动缓存累计和稳定原始身份顺序；活动行不再各自全量contributions。没有改计时/检查点、正式写入事务或历史模型。刷新仍用四次新context查询读取参与者/活动/正式事实/操作，事实和当前参与者未变化则复用统计；这不是数据库增量引擎，也没有声称全量读取被完全消除。统计失败明确错误/重试，不再try?默认零；原已消费编辑器清除在更新统计前执行，保留R1。
+
+全部累计继续覆盖全历史，图表默认明确最近30自然日预览、可切指定月份/前后月；7/30日严格同自然日窗口。月份最多31个日汇总，原始正式明细每页20个身份，按这些身份真正查询最多20条完整记录；跨日Session按贡献可从任一日期到同一事实，期间计数仍唯一Session。无记录选日不自动跳其他日期。大字日期输入复用已有自适应DateField；午夜/显著时钟变化更新评价日，不重写原保存时区。
+
+本节同前环境与串行测试前缀，derivedData仍`/tmp/pgos-usage-remediation-derived`，result/log均在`/tmp/pgos-usage-remediation-evidence`，源码是f2d02fa后dirty候选，不是clean门禁：
+
+- `compile-t1`、`compile-t2`：同Debug simulator arm64 build-for-testing命令，均exit0。t2加入跨日/参与者/无记录日/无效事实Unit及五年一万条真实磁盘负载，双语新文案。
+- `affected-t1.xcresult`：`-only-testing:PersonalGrowthOSTests/InvestmentFoundationTests -only-testing:PersonalGrowthOSTests/InvestmentPersistenceTests/testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview`；**31 Unit + 1 UI = 32PASS/0FAIL/0SKIP，exit0**。保留**1条Invalid frame dimension运行warning**，发生在编辑器聚焦时，未改标无警告。全部核心30包含新增快照1，磁盘1；未重跑原磁盘整类或旧全量。
+- 磁盘负载实际`USAGE_INVESTMENT_10000_DISK_REFRESH_SECONDS=0.11898493766784668`；1826不同保存业务日、累计600000秒，重复refresh不换统计generation，两页20/20身份不交，实际按ID磁盘查询20条；归档活动历史保留，实际服务编辑后600060/删除后599940及9999条，损坏payload使review=nil/error非空，修复后重试恢复599940。纯Unit另验5/15分钟跨日仍1场、各日同一源ID、当前参与者隔离、未知/无样本日期不伪造记录。未测Instruments/RSS，非性能承诺。
+- t2对应`candidate-t2.patch` / `candidate-t2-source.json`。`compile-t3`：编辑器键盘Done改为导航44pt键盘收起按钮（保留可访问Done及失败关闭门禁），增加50自然日+跨日原生合成fixture和月份前后按钮；exit0。
+- `ui-t2.xcresult`：三个selector为`InvestmentUITests/testExternalR2FailedCloseKeepsEditorAndRetrySurvivesColdLaunch`、`.../testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview`、`.../testUsageHistoryNaturalWindowMonthPagingAndExactCrossDayFact`；**2PASS/1FAIL/0SKIP，exit65，runtimeWarnings=[]**。R2与编辑删除通过，月份测试查找上一月失败。真实录屏`ui-t2-attachments/83A7825F-495E-4B45-9B20-89B17F3872F8.mp4`通过系统AVFoundation取9/11/13秒帧（仅临时诊断脚本有deprecated copyCGImage编译提示，不是App运行warning）；已看`ui-t2-frame-11.png`开关仍关闭，中间点击未切换。改操作实际原生开关区域并断言value=1，没有放宽功能断言。
+- `compile-t4` exit0，加入评价日更新与选日16分钟/2场、清选择27分钟/8场断言。`ui-t3`只复测新月份selector，**0PASS/1FAIL/0SKIP，exit65**；开关value=1通过，但先reveal范围文字的上滑使上一月按钮到视口上方，单向向下找再次失败。已看`ui-t3-attachments/18F83E4B-5DF4-4288-873D-BD57C7AB1311.png`，绿色开关、上一月、下一月和10月1→31范围真实存在，不是日期数据丢失。改按页面顺序先定位上一月，再读取范围，保留全部功能断言。原失败/图/树不覆盖。
+- `compile-t5` exit0；只读发布四个源数组以保护缓存失效边界，调整上述测试滚动顺序；`candidate-t5.patch` / `candidate-t5-source.json`留底。`ui-t4`同单一新selector正在运行，结果随后追加。
+
+B3尚未最终确认；之后继续BMI与C联合追加持久模型/备份，不能把本小节或模拟器性能当完整Goal/真机门禁。最终完整Unit、迁移ZIP/回滚、集中UI、unsigned Release实包和真正独立审查仍在D。
+
+
+### B3 收敛结果
+
+`ui-t4` 为0PASS/1FAIL/exit65：月份前后、第二页、7日27分钟8场、选日16分钟2场/清选择已通过，最后原始5分钟仅因查询独立Text失败。真实原生树在log的561/569行明确为合并的`2026-10-17, 0:05:00` / `2026-10-18, 0:15:00`；不是分摊丢失。为原贡献行加稳定日期标识，按该行身份＋值验证，未改期望时长。已看`ui-t4-attachments/CA38E2C4-CD84-4EB7-92D0-2655EEE82CDE.png`月份和`4A200253-9140-4C70-AF3B-2206E0A5FD4A.png`第二页实图。
+
+`compile-t6`同前命令exit0；最终合成fixture补齐每条Session对应同身份的saved Operation，保存后调用实际`InvestmentIntegrity.validate`。此前t1的0.119秒是未配对操作负载，只作阶段诊断，不能冒称最终正式完整性负载。`affected-t2`同串行测试前缀，selectors=`PersonalGrowthOSTests/InvestmentPersistenceTests/testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges`及`PersonalGrowthOSUITests/InvestmentUITests/testUsageHistoryNaturalWindowMonthPagingAndExactCrossDayFact`，**2PASS/0FAIL/0SKIP、exit0、runtimeWarnings=[]**。完整1万Session＋1万Operation磁盘首次refresh实际**0.22427403926849365秒**，测试2.558秒；原生UI103.234秒，包括完整范围/月份/第二页/选日与清选择/原始5+15分钟下钻。`affected-t2-summary.json`与附件保持，源码精确记录`candidate-t6-product.patch` / `candidate-t6-source.json`。不是同轮重跑全核心，也不将分轮计数拼成一次全量绿。
+
+下一步B BMI与C共同追加需要的设置/规则/用户提醒意图及独立设备账本，必要V15/v11将真实迁移/快照/旧包缺省/严格新包/空库恢复/失败回滚一起验；尚未改这些版本。预查官方来源：NHC2024指导原则及核心知识PDF搜索缓存、WHO NLiS、CDC BMI解释已核对；NHC直接open的412/timeout保留，不宣称该抓取成功。AlarmKit官方示例与WWDC25目前搜索可读，确认用途说明和实际授权需求；本机27.1公开SDK可编译接口仍是实现依据。系统集成/物理响铃仍未实现/NOT_RUN。

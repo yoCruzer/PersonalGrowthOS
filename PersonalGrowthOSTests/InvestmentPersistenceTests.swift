@@ -797,4 +797,51 @@ import CryptoKit
         XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(source)),before)
     }
 
+    func testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges() throws {
+        let folder=try root(),container=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("usage-review.sqlite"))
+        let context=ModelContext(container),p=InvestmentParticipant(name:"Synthetic default",isDefault:true)
+        let a=InvestmentActivity(participantID:p.id,name:"Synthetic archive history")
+        a.isArchived=true;context.insert(p);context.insert(a)
+        let today=ImportantCivilDay(identifier:"2026-10-18")!
+        for i in 0..<10000 {
+            let day=today.adding(days:-(i % 1826))!
+            let values=InvestmentValues(day:day.identifier,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual)
+            let id=UUID()
+            context.insert(try InvestmentSession(id:id,participantID:p.id,activityID:a.id,values:values,now:day.date!))
+            context.insert(try InvestmentOperation(id:id,participantID:p.id,activityID:a.id,
+                timer:.init(state:.saved,values:values,target:nil,checkpointAt:day.date!),now:day.date!))
+        }
+        try context.save();try InvestmentIntegrity.validate(context:ModelContext(container))
+        let workspace=InvestmentWorkspace(),start=Date();workspace.refresh(context)
+        print("USAGE_INVESTMENT_10000_DISK_REFRESH_SECONDS=\(Date().timeIntervalSince(start))")
+        XCTAssertNil(workspace.reviewError)
+        let snapshot=try XCTUnwrap(workspace.review)
+        XCTAssertEqual(snapshot.activitySeconds[a.id],600000)
+        XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:a.id,day:nil).daySeconds.count,1826)
+        let generation=workspace.reviewGeneration
+        workspace.refresh(context);XCTAssertEqual(workspace.reviewGeneration,generation)
+        let chosen=snapshot.selection(days:nil,today:today,activityID:a.id,day:nil)
+        let first=chosen.pageIDs(offset:0),second=chosen.pageIDs(offset:20)
+        XCTAssertEqual(first.count,20);XCTAssertEqual(second.count,20);XCTAssertTrue(Set(first).isDisjoint(with:second))
+        var query=FetchDescriptor<InvestmentSession>(predicate:#Predicate { first.contains($0.id) });query.fetchLimit=20
+        let page=try ModelContext(container).fetch(query)
+        XCTAssertEqual(page.count,20);XCTAssertEqual(Set(page.map(\.id)),Set(first))
+        let edit=try XCTUnwrap(page.first)
+        let service=InvestmentService(context:context)
+        var values=try edit.values();values.changeDuration(120)
+        try service.saveManual(id:edit.id,participantID:p.id,activityID:a.id,values:values,expectedRevision:edit.revision,confirmDuplicate:true)
+        workspace.refresh(context);XCTAssertEqual(workspace.review?.activitySeconds[a.id],600060)
+        XCTAssertGreaterThan(workspace.reviewGeneration,generation)
+        let changed=try XCTUnwrap(workspace.sessions.first {$0.id == edit.id})
+        try service.delete(id:edit.id,revision:changed.revision)
+        workspace.refresh(context);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+        XCTAssertEqual(workspace.review?.orderedSessionIDs.count,9999)
+        // Corrupt payload is an explicit read failure, followed by successful retry, never a false zero.
+        let read=ModelContext(container),bad=try XCTUnwrap(read.fetch(FetchDescriptor<InvestmentSession>()).first)
+        let original=bad.valueData;bad.valueData=Data("invalid synthetic payload".utf8);try read.save()
+        workspace.refresh(context);XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
+        bad.valueData=original;try read.save();workspace.refresh(context)
+        XCTAssertNil(workspace.reviewError);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+    }
+
 }
