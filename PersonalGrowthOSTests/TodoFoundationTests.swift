@@ -1397,3 +1397,31 @@ extension TodoFoundationTests {
         }
     }
 }
+
+
+extension TodoFoundationTests {
+    func testReviewFixF2SingleLegacyNilOffsetSurvivesOverrideCompleteAndSkip() throws {
+        for (offset,elapsed,minutes,skip) in [(0,3,600,false),(-1,3,601,true),(0,800,600,true),(-1,800,601,false)] {
+            let c=try PersistenceContainerFactory.makeInMemory(),context=c.mainContext
+            var now=date("2020-01-01")
+            let service=TodoTaskService(context:context,now:{now},timeZone:{self.zone})
+            let reminderDay=try TodoRecurrence.reminderDay(occurrence:TodoDay("2020-01-01")!,offset:offset)
+            let task=try service.create(.init(title:"Single legacy",plannedDay:"2020-01-01",remindAt:TodoRecurrence.reminder(day:reminderDay,minutes:600,timeZone:zone),frequency:.daily))
+            let rule=try XCTUnwrap(context.fetch(FetchDescriptor<TodoSeries>()).first)
+            rule.reminderDayOffset=nil;try context.save()
+            let before=try TransferSnapshot.make(context:ModelContext(c))
+            now=Calendar(identifier:.gregorian).date(byAdding:.day,value:elapsed+1,to:now)!
+            let fire=TodoRecurrence.reminder(day:TodoDay(date:now.addingTimeInterval(86400),timeZone:zone),minutes:minutes,timeZone:zone)!
+            XCTAssertThrowsError(try service.rescheduleReminder(id:task.id,to:fire,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+            try service.rescheduleReminder(id:task.id,to:fire)
+            XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset,offset)
+            try service.transition(id:task.id,to:skip ? .canceled:.completed,skip:skip)
+            let next=try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+            let planned=try XCTUnwrap(next.plannedDay)
+            XCTAssertEqual(next.reminderLocalDay,try TodoRecurrence.reminderDay(occurrence:TodoDay(planned)!,offset:offset).description)
+            XCTAssertEqual(next.reminderMinutes,600)
+            try TodoIntegrity.validate(context:ModelContext(c))
+        }
+    }
+}

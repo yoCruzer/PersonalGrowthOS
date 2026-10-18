@@ -2655,3 +2655,66 @@ private extension TransferData {
         }
     }
 }
+
+extension ImportExportRecoveryTests {
+    func testReviewFixF2TrueV110SingleOpenNilAndV7RestorePreserveOriginalRuleAndRollback() async throws {
+        for (offset,elapsed,minute,skip) in [(0,3,600,false),(-1,3,601,true),(0,800,600,true),(-1,800,601,false)] {
+            let fixture=try TransferTestFixture()
+            let zone=TimeZone(identifier:"Asia/Shanghai")!,origin=TodoDay("2020-01-01")!.date(timeZone:TimeZone(identifier:"Asia/Shanghai")!)!
+            let url=fixture.root.appendingPathComponent("legacy.sqlite"),taskID=UUID(),seriesID=UUID()
+            let day=try TodoRecurrence.reminderDay(occurrence:TodoDay("2020-01-01")!,offset:offset)
+            let fire=TodoRecurrence.reminder(day:day,minutes:600,timeZone:zone)!
+            let draft=TodoDraft(title:"True V11 single",plannedDay:"2020-01-01",deadlineDay:"2020-01-02",remindAt:fire,frequency:.daily)
+            var originalEvent: Data!
+            try autoreleasepool {
+                let schema=Schema(versionedSchema:PersonalGrowthSchemaV11Original.self)
+                let old=try ModelContainer(for:schema,configurations:[ModelConfiguration("PersonalGrowthOSV1",schema:schema,url:url,cloudKitDatabase:.none)])
+                let task=TodoTask(id:taskID,title:draft.title,plannedDay:draft.plannedDay,deadlineDay:draft.deadlineDay,remindAt:fire,seriesID:seriesID,occurrenceIndex:0,createdAt:origin)
+                task.reminderLocalDay=day.description;task.reminderMinutes=600;task.reminderTimeZoneID=zone.identifier
+                old.mainContext.insert(task)
+                old.mainContext.insert(PersonalGrowthSchemaV11Original.TodoSeries(id:seriesID,frequency:.daily,anchorDay:"2020-01-01",draft:draft,reminderMinutes:600,createdAt:origin))
+                originalEvent=try JSONEncoder().encode(TodoEventValue(task))
+                old.mainContext.insert(TodoTaskEvent(taskID:taskID,sequence:0,kind:.created,occurredAt:origin,createdAt:origin,beforeValue:nil,afterValue:originalEvent))
+                try old.mainContext.save()
+            }
+            let migrated=try PersistenceContainerFactory.makeOnDisk(at:url)
+            XCTAssertNil(try migrated.mainContext.fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset)
+            try TodoIntegrity.validate(context:migrated.mainContext)
+            let export=ImportExportService(context:migrated.mainContext,mediaStore:MediaStore(rootURL:fixture.root),availableCapacity:{.max})
+            let lease=try await export.exportPackage();defer {lease.cleanup()}
+            let v7=try mutatePackage(lease.url,under:fixture.root.appendingPathComponent("wire-v7"),rewriteJSON:{manifest,data in
+                (ExportManifest(formatIdentifier:manifest.formatIdentifier,packageSchemaVersion:7,appVersion:manifest.appVersion,appBuild:manifest.appBuild,exportID:manifest.exportID,exportedAt:manifest.exportedAt,objectCounts:data.objectCounts(forPackageSchemaVersion:7),dataFile:manifest.dataFile,mediaFiles:manifest.mediaFiles),data)
+            })
+            let restored=try fixture.makeEmptyStore(named:"V7-restored",onDisk:true)
+            _ = try await restored.service.importPackage(from:v7)
+            for (index,c) in [migrated,restored.container].enumerated() {
+                let now=origin.addingTimeInterval(Double(elapsed)*86400),future=TodoRecurrence.reminder(day:TodoDay(date:now.addingTimeInterval(86400),timeZone:zone),minutes:minute,timeZone:zone)!
+                let service=TodoTaskService(context:c.mainContext,now:{now},timeZone:{zone})
+                XCTAssertEqual(try c.mainContext.fetchCount(FetchDescriptor<TodoTask>()),1)
+                XCTAssertNil(try ModelContext(c).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset)
+                let before=try TransferSnapshot.make(context:ModelContext(c))
+                XCTAssertThrowsError(try service.rescheduleReminder(id:taskID,to:future,channel:.alarm,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+                XCTAssertEqual(try ModelContext(c).fetchCount(FetchDescriptor<TodoReminderDeviceRecord>()),0)
+                try service.rescheduleReminder(id:taskID,to:future,channel:.alarm)
+                let reopened=try PersistenceContainerFactory.makeOnDisk(at:c.configurations.first!.url)
+                XCTAssertEqual(try ModelContext(reopened).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset,offset)
+                let writer=TodoTaskService(context:reopened.mainContext,now:{now},timeZone:{zone})
+                XCTAssertEqual(try writer.task(id:taskID).remindAt,future)
+                try writer.transition(id:taskID,to:skip ? .canceled:.completed,skip:skip)
+                let next=try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+                XCTAssertEqual(next.reminderLocalDay,try TodoRecurrence.reminderDay(occurrence:TodoDay(next.plannedDay!)!,offset:offset).description)
+                XCTAssertEqual(next.reminderMinutes,600)
+                XCTAssertEqual(try writer.task(id:taskID).plannedDay,"2020-01-01")
+                XCTAssertEqual(try writer.task(id:taskID).deadlineDay,"2020-01-02")
+                XCTAssertEqual(try ModelContext(reopened).fetch(FetchDescriptor<TodoTaskEvent>()).first {$0.taskID == taskID && $0.sequence == 0}?.afterValue,originalEvent)
+                let output=ImportExportService(context:reopened.mainContext,mediaStore:MediaStore(rootURL:fixture.root),availableCapacity:{.max})
+                let archive=try await output.exportPackage();defer {archive.cleanup()}
+                let final=try fixture.makeEmptyStore(named:"Final-\(index)",onDisk:true)
+                _ = try await final.service.importPackage(from:archive.url)
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(final.container)),try TransferSnapshot.make(context:ModelContext(reopened)))
+                try TodoIntegrity.validate(context:ModelContext(final.container))
+            }
+        }
+    }
+}

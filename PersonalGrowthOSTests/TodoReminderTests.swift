@@ -597,3 +597,105 @@ extension TodoReminderTests {
         XCTAssertEqual(alarms.pending.count,1);XCTAssertEqual(alarms.pending.values.first?.title,"Synthetic blocked title after")
     }
 }
+
+extension TodoReminderTests {
+    func testReviewFixF1WithdrawnSuccessorRenewsOnlyOnReactivationBothChannels() async throws {
+        for (channel,failCancellation) in [(TodoReminderChannel.notification,false),(.alarm,false),(.notification,true),(.alarm,true)] {
+            let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+            let url=root.appendingPathComponent("store.sqlite"),container=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let zone=TimeZone.current,now=TodoDay("2026-10-18")!.date(timeZone:TimeZone.current)!
+            let service=TodoTaskService(context:container.mainContext,now:{now},timeZone:{zone})
+            let a=try service.create(.init(title:"F1 cycle",plannedDay:"2026-10-18",remindAt:now.addingTimeInterval(3600),frequency:.daily,reminderChannel:channel))
+            try service.transition(id:a.id,to:.completed)
+            let b=try XCTUnwrap(container.mainContext.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+            let notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
+            await coordinator.reconcile(context:container.mainContext)
+            let oldGeneration=try XCTUnwrap(service.reminderIntent(for:b.id)).generation
+            let oldRecord=try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == b.id})
+            try service.transition(id:a.id,to:.open)
+            // Cancellation may fail; ownership must remain and block the next generation.
+            alarms.failCancel=failCancellation;notifications.failedRemovalIdentifiers=failCancellation ? [TodoIntentScheduling.identifier(oldRecord.id)] : []
+            await coordinator.reconcile(context:container.mainContext)
+            try service.transition(id:a.id,to:.completed)
+            let newGeneration=try XCTUnwrap(service.reminderIntent(for:b.id)).generation
+            XCTAssertNotEqual(newGeneration,oldGeneration)
+            await coordinator.reconcile(context:container.mainContext)
+            if failCancellation {
+                XCTAssertEqual(coordinator.status(for:b),.cancellationPending)
+                XCTAssertEqual(alarms.pending.count+notifications.pending.count,1)
+            }
+            alarms.failCancel=false;notifications.failedRemovalIdentifiers=[]
+            await coordinator.reconcile(context:container.mainContext)
+            XCTAssertEqual(coordinator.status(for:b),.scheduled)
+            let count=alarms.scheduleCalls.count+notifications.addCalls.count
+            let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let cold=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
+            await cold.reconcile(context:reopened.mainContext);await cold.reconcile(context:reopened.mainContext)
+            XCTAssertEqual(alarms.pending.count+notifications.pending.count,1)
+            XCTAssertEqual(alarms.scheduleCalls.count+notifications.addCalls.count,count)
+            XCTAssertEqual(try TodoTaskService(context:reopened.mainContext).reminderIntent(for:b.id)?.generation,newGeneration)
+            XCTAssertEqual(alarms.pending.values.first?.taskID ?? notifications.pending.values.first?.taskID,b.id)
+        }
+    }
+    func testReviewFixF3AcceptedNotificationReallocatedAndWaitingRestores() async throws {
+        let container=try PersistenceContainerFactory.makeInMemory(),now=Date(),c=container.mainContext
+        let service=TodoTaskService(context:c,now:{now}),client=TodoNotificationStub()
+        client.otherIdentifiers=Set((0..<59).map {"reserved-\($0)"})
+        let coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init()})
+        let late=try service.create(.init(title:"L",remindAt:now.addingTimeInterval(7200)))
+        await coordinator.reconcile(context:c)
+        let lateID=try XCTUnwrap(client.pending.keys.first),generation=try XCTUnwrap(service.reminderIntent(for:late.id)).generation
+        let early=try service.create(.init(title:"E",remindAt:now.addingTimeInterval(600)))
+        client.failedRemovalIdentifiers=[lateID]
+        await coordinator.reconcile(context:c)
+        XCTAssertEqual(client.pending.count,1);XCTAssertNil(client.pending.values.first {$0.taskID == early.id})
+        client.failedRemovalIdentifiers=[]
+        await coordinator.reconcile(context:c)
+        XCTAssertEqual(client.pending.values.map(\.taskID),[early.id]);XCTAssertEqual(coordinator.status(for:late),.queueFull)
+        try service.transition(id:early.id,to:.completed)
+        await coordinator.reconcile(context:c)
+        XCTAssertEqual(client.pending.values.map(\.taskID),[late.id]);XCTAssertEqual(coordinator.status(for:late),.scheduled)
+        XCTAssertEqual(try service.reminderIntent(for:late.id)?.generation,generation)
+        XCTAssertEqual(client.otherIdentifiers.count,59)
+        XCTAssertFalse(client.removed.contains {client.otherIdentifiers.contains($0)})
+    }
+}
+
+extension TodoReminderTests {
+    func testReviewFixF3StoppedLateReminderNeverBecomesCapacityRetry() async throws {
+        for earlySeconds in [600.0,10000.0] {
+        let c=try PersistenceContainerFactory.makeInMemory(),now=Date(),client=TodoNotificationStub()
+        client.otherIdentifiers=Set((0..<59).map {"reserved-\($0)"})
+        let service=TodoTaskService(context:c.mainContext,now:{now})
+        let late=try service.create(.init(title:"Stopped L",remindAt:now.addingTimeInterval(7200)))
+        let coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init()})
+        await coordinator.reconcile(context:c.mainContext)
+        client.pending.removeAll() // Native user stop, before a capacity allocation can observe it.
+        let early=try service.create(.init(title:"E",remindAt:now.addingTimeInterval(earlySeconds)))
+        await coordinator.reconcile(context:c.mainContext)
+        XCTAssertEqual(client.pending.values.map(\.taskID),[early.id])
+        try service.transition(id:early.id,to:.completed)
+        await coordinator.reconcile(context:c.mainContext)
+        XCTAssertTrue(client.pending.isEmpty);XCTAssertEqual(coordinator.status(for:late),.stopped)
+        }
+    }
+    func testReviewFixF3NewImportantDayDisplacesAcceptedTodoAndArchiveRestoresWaiting() async throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),zone=TimeZone.current
+        let now=ImportantCivilDay(year:2026,month:10,day:18).instant(minutes:0,timeZone:zone)!
+        let client=TodoNotificationStub();client.otherIdentifiers=Set((0..<59).map {"reserved-\($0)"})
+        let task=try TodoTaskService(context:c.mainContext,now:{now}).create(.init(title:"Late Todo",remindAt:now.addingTimeInterval(86400*10)))
+        let coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init()})
+        await coordinator.reconcile(context:c.mainContext)
+        var prefs=ImportantDayPreferences();prefs.reminderOffsets=[0]
+        let day=try ImportantDay(title:"Earlier day",rule:.init(preset:.anniversary,year:nil,month:10,day:19),preferences:prefs)
+        c.mainContext.insert(day);try c.mainContext.save()
+        await coordinator.reconcile(context:c.mainContext)
+        XCTAssertEqual(client.pending.count,1);XCTAssertEqual(client.pending.values.first?.importantDayID,day.id)
+        XCTAssertEqual(coordinator.status(for:task),.queueFull)
+        day.isArchived=true;try c.mainContext.save()
+        await coordinator.reconcile(context:c.mainContext)
+        XCTAssertEqual(client.pending.values.map(\.taskID),[task.id]);XCTAssertEqual(coordinator.status(for:task),.scheduled)
+    }
+}

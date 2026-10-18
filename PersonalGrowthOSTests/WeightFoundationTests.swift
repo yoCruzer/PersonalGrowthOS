@@ -406,3 +406,65 @@ extension WeightFoundationTests {
         XCTAssertEqual(snapshot.daily.first?.mean,71);XCTAssertEqual(snapshot.daily.first?.observations,2)
     }
 }
+
+private actor WeightReadBarrier {
+    var waiting=false
+    var continuation: CheckedContinuation<[WeightMeasurement],Error>?
+    func pause() async throws -> [WeightMeasurement] {
+        try await withCheckedThrowingContinuation {continuation=$0;waiting=true}
+    }
+    func release(_ rows: [WeightMeasurement]) {continuation?.resume(returning:rows);continuation=nil}
+}
+extension WeightFoundationTests {
+    func testReviewFixF4LatePageRetryAndRefreshCannotOverwriteCurrentQuery() async throws {
+        let a=WeightMeasurementQuery(start:Date(timeIntervalSince1970:0),end:Date(timeIntervalSince1970:100),now:Date(),refresh:0,limit:50)
+        var b=a;b.start=Date(timeIntervalSince1970:100);b.end=Date(timeIntervalSince1970:200)
+        let aRows=(0..<50).map {WeightMeasurement(kilograms:Double(60+$0),recordedAt:Date(timeIntervalSince1970:Double($0)))}
+        let bRows=[WeightMeasurement(kilograms:72,recordedAt:Date(timeIntervalSince1970:150))]
+        for retry in [false,true] {
+            let loader=WeightMeasurementLoader(),barrier=WeightReadBarrier()
+            await loader.load(a,read:{_,_ in aRows})
+            if retry {
+                await loader.load(a,reset:false,read:{_,_ in throw CocoaError(.fileReadUnknown)})
+                XCTAssertTrue(loader.failed)
+            }
+            let old=Task {
+                if retry {await loader.retry(read:{_,_ in try await barrier.pause()})}
+                else {await loader.load(a,reset:false,read:{_,_ in try await barrier.pause()})}
+            }
+            while !(await barrier.waiting) {await Task.yield()}
+            await loader.load(b,read:{_,_ in bRows})
+            await barrier.release([aRows[0]]);await old.value
+            XCTAssertEqual(loader.query,b);XCTAssertEqual(loader.records.map(\.id),bRows.map(\.id));XCTAssertFalse(loader.failed)
+            await loader.load(a,read:{_,_ in aRows})
+            XCTAssertEqual(loader.records.map(\.id),aRows.map(\.id))
+            await loader.load(a,reset:false,read:{_,offset in XCTAssertEqual(offset,50);return [bRows[0]]})
+            XCTAssertEqual(loader.records.count,51)
+            loader.cancel() // The list header can leave and re-enter the viewport.
+            await loader.initial(a,read:{_,_ in XCTFail("Same query must retain its loaded pages");return []})
+            XCTAssertEqual(loader.records.count,51)
+            var refreshed=a;refreshed.refresh=1
+            let pending=WeightReadBarrier()
+            let stale=Task {await loader.load(a,reset:false,read:{_,_ in try await pending.pause()})}
+            while !(await pending.waiting) {await Task.yield()}
+            loader.select(refreshed)
+            await loader.load(refreshed,read:{_,_ in bRows})
+            await pending.release(aRows);await stale.value
+            XCTAssertEqual(loader.records.map(\.id),bRows.map(\.id));XCTAssertEqual(loader.query,refreshed)
+        }
+    }
+    func testReviewFixUX2CutoffRecentAndIndependentAllHistoryUseDifferentBounds() async throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),zone=TimeZone.current
+        let today=ImportantCivilDay(year:2026,month:10,day:18).instant(minutes:720,timeZone:zone)!
+        let first=ImportantCivilDay(year:2026,month:10,day:1).instant(minutes:600,timeZone:zone)!
+        let later=ImportantCivilDay(year:2026,month:10,day:17).instant(minutes:600,timeZone:zone)!
+        for date in [first,later] {c.mainContext.insert(WeightRecord(weightKilograms:70,recordedAt:date,createdAt:date))}
+        try c.mainContext.save()
+        let reader=WeightReviewReader(modelContainer:c)
+        let snapshot=try await reader.snapshot(now:today,through:ImportantCivilDay(year:2026,month:10,day:10).instant(minutes:0,timeZone:zone),zone:zone)
+        let recent=try await reader.records(end:snapshot.endExclusive,now:snapshot.now)
+        XCTAssertEqual(recent.map(\.recordedAt),[first]);XCTAssertEqual(snapshot.summaries[.all]?.observations,1)
+        let all=try await reader.records(now:Date.distantFuture)
+        XCTAssertEqual(all.map(\.recordedAt),[later,first])
+    }
+}

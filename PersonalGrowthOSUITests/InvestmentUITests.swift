@@ -332,3 +332,33 @@ final class InvestmentUITests: XCTestCase {
     }
 
 }
+
+extension InvestmentUITests {
+    func testReviewFixUX1OutsideWindowDateSwitchRetainsDateMonthAndDetailChineseDarkAX() {
+        print("PGOS_USAGE_STYLE_DARK");fflush(stdout)
+        let app=launch(chinese:true,darkLarge:true,extra:["-PGOSInvestmentReviewFixDates"]);openHub(app,chinese:true)
+        let history=app.buttons["investment-history"];reveal(history,app);history.tap()
+        let period=app.segmentedControls["investment-review-period"]
+        period.buttons["7 天"].tap()
+        let date=app.datePickers["investment-inspect-date"];reveal(date,app)
+        XCTAssertGreaterThanOrEqual(app.pickerWheels.count,3)
+        app.pickerWheels.element(boundBy:0).adjust(toPickerWheelValue:"2026年")
+        app.pickerWheels.element(boundBy:1).adjust(toPickerWheelValue:"9月")
+        app.pickerWheels.element(boundBy:2).adjust(toPickerWheelValue:"1日")
+        let inspect=app.buttons["查看所选日期"];reveal(inspect,app,avoidingWheel:true);inspect.tap()
+        for _ in 0..<18 where !period.isHittable {
+            app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.30)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.80)))
+        }
+        XCTAssertTrue(period.buttons["全部累计"].isSelected)
+        let total=app.staticTexts["investment-review-total"];reveal(total,app)
+        XCTAssertTrue(total.label.contains("0:45:00"),total.label)
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("1"))
+        screenshot(app,"ReviewFix-UX1-Chinese-Dark-maxAX-selected-September1-45min")
+        let range=app.staticTexts["investment-preview-range"];reveal(range,app,avoidingWheel:true)
+        XCTAssertTrue(range.label.contains("2026-09-01 → 2026-09-30"),range.label)
+        let row=app.buttons["investment-session-30000002-1111-4222-8333-444444444444"];reveal(row,app);row.tap()
+        let note=app.staticTexts["Synthetic September 1 detail"];reveal(note,app)
+        XCTAssertTrue(note.exists)
+        screenshot(app,"ReviewFix-UX1-by-ID-detail")
+    }
+}

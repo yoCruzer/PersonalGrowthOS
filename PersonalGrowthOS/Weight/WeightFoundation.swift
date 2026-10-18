@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import Observation
 
 @Model
 final class WeightRecord {
@@ -435,4 +436,60 @@ enum WeightReviewSelection {
         guard let day,previousZoneID == nil || previousZoneID == calendar.timeZone.identifier else {return nil}
         return calendar.startOfDay(for:day)
     }
+}
+
+/// One shared query identity owns initial, more and retry requests. Cancellation alone
+/// is insufficient: a reader may complete after cancellation, so every commit checks a ticket.
+struct WeightMeasurementQuery: Equatable, Sendable {
+    var start: Date?
+    var end: Date?
+    var now: Date
+    var refresh: Int
+    var limit: Int
+}
+@MainActor @Observable final class WeightMeasurementLoader {
+    private(set) var query: WeightMeasurementQuery?
+    private(set) var records: [WeightMeasurement] = []
+    private(set) var failed=false
+    private(set) var more=false
+    private(set) var loading=false
+    private var generation=0
+    private var work: Task<Void,Never>?
+    private var failedReset=true
+    private var loaded=false
+    typealias Read = @Sendable (WeightMeasurementQuery,Int) async throws -> [WeightMeasurement]
+    func select(_ value: WeightMeasurementQuery) {
+        guard query != value else {return}
+        cancel();query=value;records=[];more=false;failed=false;loaded=false
+    }
+    func cancel() {generation += 1;work?.cancel();work=nil;loading=false}
+    func initial(_ value: WeightMeasurementQuery, read: @escaping Read) async {
+        guard !Task.isCancelled else {return}
+        select(value)
+        guard !loaded else {return}
+        await load(value,read:read)
+    }
+    func load(_ value: WeightMeasurementQuery, reset: Bool = true, read: @escaping Read) async {
+        guard !Task.isCancelled else {return}
+        select(value)
+        if loading {return}
+        if reset {records=[]}
+        failed=false;loading=true;failedReset=reset
+        generation += 1
+        let ticket=generation,offset=reset ? 0:records.count
+        let task=Task { [weak self] in
+            do {
+                let rows=try await read(value,offset)
+                guard let self,!Task.isCancelled,self.generation == ticket,self.query == value else {return}
+                if reset {self.records=rows} else {self.records += rows}
+                self.more=rows.count == value.limit;self.loading=false;self.loaded=true
+            } catch {
+                guard let self,!Task.isCancelled,self.generation == ticket,self.query == value else {return}
+                self.failed=true;self.loading=false
+            }
+        }
+        work=task
+        await withTaskCancellationHandler(operation:{await task.value},onCancel:{task.cancel()})
+    }
+    func retry(read: @escaping Read) async {if let query {await load(query,reset:failedReset,read:read)}}
 }

@@ -1,3 +1,12 @@
+# PR #13 独立复核修复 — FIXES_IN_PROGRESS（2026-10-18）
+
+已安全续接原 `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`，从干净 f1b52b5 fast-forward 到固定规格 2add10b0c67d064b7e77478fb18a11479d3c94dc；远端 PR #13 OPEN Draft/base codex/time-investment-v1 已核对。主工作区三项未知改动保留。
+
+F1–F3/ F4与UX2/ F5与UX1 已实现本地候选，仍在必要集中回归及独立终审之前，不沿用历史 READY。新证据根 `/tmp/pgos-pr13-review-fix-evidence`；红测、夹具错误、UI驱动失败与补验分别保留。真实 V11.0 单一 open/nil + v7 ZIP恢复及回滚、10k真实Service→事件→Workspace读取计数首轮4/4PASS；初轮30受影响回归PASS，非最终候选门。独立 reviewer `/root/pr13_fix_independent_reviewer` 已只读预审并提出两项预算停止/空位风险，正在补保护和验证。
+
+下一步在同一授权批次继续：收敛原生UI，集中受影响Unit/UI，固定干净产品SHA双构建/实包，独立终审闭环，文档交付和普通push原分支。不逐阶段请求批准。D1–D4、原 AlarmKit正向NOT_RUN/Public Share FAIL/environment/unsigned Safari FAIL/低空间SKIP/远端CI NOT_RUN保持；不操作私人设备/库或签名发行。
+
+---
 # 使用反馈统一整改 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-18）
 
 **当前有效状态：FIX_GOAL_READY，等待 Codex 连续执行本地修复。产品尚未因本规格准备而改变。**

@@ -179,12 +179,8 @@ final class TodoReminderCoordinator {
                 var dayStates: [UUID: ImportantDayReminderState] = [:]
                 for task in tasks {
                     if let intent=ownedIntents[task.id] {
-                        // New notification intents participate in the same chronology/fair budget.
-                        // Accepted or cancellation-uncertain requests already reserve a real native slot.
-                        let hasOwnership=deviceRecords[task.id,default:[]].contains {
-                            [TodoReminderDevicePhase.prepared.rawValue,TodoReminderDevicePhase.accepted.rawValue,TodoReminderDevicePhase.cancellationPending.rawValue].contains($0.phaseRawValue)
-                        }
-                        if intent.channelRawValue == TodoReminderChannel.notification.rawValue,!hasOwnership,
+                        // Accepted app-owned notifications remain candidates in every allocation.
+                        if intent.channelRawValue == TodoReminderChannel.notification.rawValue,
                            task.state == .open,let fire=task.remindAt,fire > now(),
                            !(task.seriesID.map {stoppedSeries.contains($0)} ?? false),
                            !deviceRecords[task.id,default:[]].contains(where: {$0.intentGeneration == intent.generation && $0.phaseRawValue == TodoReminderDevicePhase.retired.rawValue}) {
@@ -223,7 +219,7 @@ final class TodoReminderCoordinator {
                 if pass != generation { continue }
                 let pending = await client.pendingIdentifiers()
                 if pass != generation { continue }
-                func managed(_ id: String) -> Bool { (id.hasPrefix(Self.prefix) && !id.hasPrefix(TodoIntentScheduling.notificationPrefix)) || id.hasPrefix(ImportantDayReminderPlanner.prefix) || id.hasPrefix(SleepReminderPlanner.prefix) }
+                func managed(_ id: String) -> Bool { id.hasPrefix(Self.prefix) || id.hasPrefix(ImportantDayReminderPlanner.prefix) || id.hasPrefix(SleepReminderPlanner.prefix) }
                 // Daily/weekly and unknown third-party requests are reserved and never removed by this batch.
                 let capacity = max(0, 60 - pending.filter { !managed($0) }.count)
                 requests.sort { $0.fireAt == $1.fireAt ? $0.id < $1.id : $0.fireAt < $1.fireAt }
@@ -239,7 +235,10 @@ final class TodoReminderCoordinator {
                     }
                 }
                 let selected = permission == .allowed && !authorizationFailed ? Set(allocation.prefix(capacity).map(\.id)) : []
-                let removedIdentifiers = pending.filter { managed($0) && !selected.contains($0) }
+                let selectedIntentIDs=Set(requests.filter {$0.id.hasPrefix(TodoIntentScheduling.budgetPrefix) && selected.contains($0.id)}.map(\.taskID))
+                let rebalanced=try await intentScheduling.rebalanceNotifications(container:context.container,selected:selectedIntentIDs,isCurrent:{pass == self.generation})
+                if rebalanced.stale || pass != generation {continue}
+                let removedIdentifiers = pending.filter { managed($0) && !$0.hasPrefix(TodoIntentScheduling.notificationPrefix) && !selected.contains($0) }
                 client.remove(Array(removedIdentifiers))
                 if !removedIdentifiers.isEmpty {
                     // Confirm before slow adds can cross the old fire time. An absence observed
@@ -259,6 +258,9 @@ final class TodoReminderCoordinator {
                         continue
                     }
                     guard selected.contains(request.id) else { requestStatuses[request.id] = .queueFull; continue }
+                    let actualPending=await client.pendingIdentifiers()
+                    if pass != generation {break}
+                    guard actualPending.contains(request.id) || actualPending.count < 60 else {requestStatuses[request.id] = .queueFull;continue}
                     do {
                         try await client.add(request)
                         let acceptedAt = now()
@@ -303,7 +305,7 @@ final class TodoReminderCoordinator {
                 let blockedLegacySeries=Set(tasks.filter {unconfirmedLegacy.contains($0.id)}.compactMap(\.seriesID))
                 let blockedByLegacy=Set(tasks.filter {unconfirmedLegacy.contains($0.id) || $0.seriesID.map {blockedLegacySeries.contains($0)} == true}.map(\.id))
                 let intents=try await intentScheduling.reconcile(container:context.container,requestNotifications:explicitPermission && !authorizationFailed,
-                    requestAlarms:explicitAlarmPermission,blockedTaskIDs:blockedByLegacy,isCurrent:{pass == self.generation})
+                    requestAlarms:explicitAlarmPermission,blockedTaskIDs:blockedByLegacy.union(rebalanced.states.keys),selectedNotificationTaskIDs:selectedIntentIDs,isCurrent:{pass == self.generation})
                 if intents.stale || pass != generation {continue}
                 newStatuses.merge(intents.states) {_,new in new}
                 if authorizationFailed {

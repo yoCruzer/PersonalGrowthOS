@@ -152,7 +152,7 @@ struct AppShell: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .investmentChanged).receive(on: RunLoop.main)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
-            investmentWorkspace.refresh(container.modelContainer.mainContext)
+            investmentWorkspace.receive(notification,context:container.modelContainer.mainContext)
         }
         .onChange(of:todoRouter.pending) {_,_ in deliverTodoRoute()}
         .sheet(item:$presentedTodo) {route in

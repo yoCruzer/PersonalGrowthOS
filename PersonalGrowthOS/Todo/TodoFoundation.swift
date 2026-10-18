@@ -409,6 +409,12 @@ final class TodoTaskService {
             context.insert(TodoReminderIntent(taskID:task.id,channel:channel,isInstanceOverride:override))
         }
     }
+    private func preserveLegacyReminderOffset(_ task: TodoTask) throws {
+        if let seriesID=task.seriesID {
+            let rule=try series(seriesID)
+            if rule.reminderDayOffset == nil,rule.reminderMinutes != nil {rule.reminderDayOffset=try reminderOffset(for:rule)}
+        }
+    }
     /// A deliberate current-occurrence reminder; never changes the plan, deadline or series anchor.
     func rescheduleReminder(id: UUID,to fireAt: Date,channel: TodoReminderChannel? = nil,
                             expectedRevision: Int? = nil,commit: ((ModelContext) throws -> Void)? = nil) throws {
@@ -427,6 +433,9 @@ final class TodoTaskService {
         } ?? .notification
         try transaction {
             guard task.state == .open,fireAt > now() else {throw TodoFailure.invalidReminder}
+            // Freeze a legacy rule while the original wall-day/minutes still exist.
+            // This is part of the same transaction as the override and event.
+            try preserveLegacyReminderOffset(task)
             let before=try TodoEventValue(task)
             task.remindAt=fireAt;setReminderWallTime(task,from:fireAt)
             try setIntent(task,channel:selected,override:task.seriesID != nil,renew:true)
@@ -445,12 +454,12 @@ final class TodoTaskService {
         guard let first = candidates.first, let index = first.occurrenceIndex, let local = first.reminderLocalDay else { return 0 }
         return try TodoRecurrence.reminderOffset(localDay: local, anchor: occurrence(rule,index:index).description)
     }
-    private func applyTemplate(_ rule: TodoSeries, to task: TodoTask, at date: Date) throws {
+    private func applyTemplate(_ rule: TodoSeries, to task: TodoTask, at date: Date, reactivating: Bool = false) throws {
         let before = try TodoEventValue(task),oldReminder=task.remindAt
         task.title = rule.title; task.notes = rule.notes; task.isImportant = rule.isImportant; task.listID = rule.listID
         try applyReminder(rule, to: task)
         let channel=try preferences(for:rule.id).flatMap {TodoReminderChannel(rawValue:$0.reminderChannelRawValue)} ?? .notification
-        try setIntent(task,channel:channel,override:false,renew:oldReminder != task.remindAt)
+        try setIntent(task,channel:channel,override:false,renew:reactivating || oldReminder != task.remindAt)
         try record(task, kind: .edited, before: before, at: date)
     }
     private func applyReminder(_ rule: TodoSeries, to task: TodoTask) throws {
@@ -488,6 +497,7 @@ final class TodoTaskService {
         let reminderChanged=task.remindAt != draft.remindAt
         let retainOverride=previousIntent?.isInstanceOverride == true && !reminderChanged && !futureSeries && draft.remindAt != nil
         try transaction {
+            if reminderChanged && !futureSeries {try preserveLegacyReminderOffset(task)}
             let before = try TodoEventValue(task)
             if draft.frequency != nil {
                 let rule = try makeSeries(draft, at: now())
@@ -570,7 +580,7 @@ final class TodoTaskService {
             let before = try TodoEventValue(existing)
             existing.stateRawValue = TodoTaskState.open.rawValue; existing.canceledAt = nil; existing.completedAt = nil
             try record(existing, kind: .reopened, before: before, at: date)
-            try applyTemplate(series, to: existing, at: date)
+            try applyTemplate(series, to: existing, at: date, reactivating: true)
             return
         }
         let occurrence = try occurrence(series,index:next)
@@ -867,7 +877,7 @@ enum TodoReminderChannel: String, Codable, CaseIterable { case notification, ala
     }
 }
 enum TodoReminderDevicePhase: String, Codable {
-    case ready, prepared, accepted, cancellationPending, retired, capacityWaiting
+    case ready, prepared, accepted, cancellationPending, retired, capacityWaiting, capacityCancellationPending
 }
 
 struct TodoReminderDisplaySnapshot: Equatable {
@@ -890,7 +900,7 @@ struct TodoReminderDisplaySnapshot: Equatable {
         }
         let records=try read.fetch(FetchDescriptor<TodoReminderDeviceRecord>(predicate:#Predicate {$0.taskID == id}))
         let pending=records.contains {
-            $0.phaseRawValue == TodoReminderDevicePhase.cancellationPending.rawValue ||
+            $0.phaseRawValue == TodoReminderDevicePhase.cancellationPending.rawValue || $0.phaseRawValue == TodoReminderDevicePhase.capacityCancellationPending.rawValue ||
                 (!active && [TodoReminderDevicePhase.prepared.rawValue,TodoReminderDevicePhase.accepted.rawValue].contains($0.phaseRawValue))
         }
         return .init(task:TodoTaskTransfer(task),channel:channel,active:active,cancellationUnverified:pending)

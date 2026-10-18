@@ -444,3 +444,21 @@ struct InvestmentClockTestReadings {
         self.wall.addTimeInterval(wall);continuousElapsed += continuous;awakeUptime += awake
     }
 }
+
+
+extension InvestmentFoundationTests {
+    func testReviewFixUX1OutsideDateUsesAllTimeAndKeepsActivityAndExactDayContribution() throws {
+        let today=ImportantCivilDay(identifier:"2026-10-18")!,chosen=ImportantCivilDay(identifier:"2026-09-01")!,activity=UUID(),other=UUID()
+        let rows=[InvestmentContribution(sessionID:UUID(),activityID:activity,day:chosen.identifier,seconds:2700),InvestmentContribution(sessionID:UUID(),activityID:activity,day:today.identifier,seconds:900),InvestmentContribution(sessionID:UUID(),activityID:other,day:chosen.identifier,seconds:600)]
+        let snapshot=InvestmentReviewSnapshot(contributions:rows,orderedSessionIDs:rows.map(\.sessionID))
+        for period in [7,30] {
+            let days=InvestmentReview.periodForInspection(days:period,day:chosen,today:today)
+            XCTAssertEqual(days,0)
+            let selection=snapshot.selection(days:days == 0 ? nil:days,today:today,activityID:activity,day:chosen.identifier)
+            XCTAssertEqual(selection.seconds,2700);XCTAssertEqual(selection.count,1)
+            XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:activity,day:"2026-09-02").count,0)
+            XCTAssertEqual(InvestmentReview.periodForInspection(days:period,day:today,today:today),period)
+            XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:activity,day:nil).seconds,3600)
+        }
+    }
+}

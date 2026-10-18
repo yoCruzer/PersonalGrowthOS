@@ -3,6 +3,7 @@ import SwiftData
 import XCTest
 import UIKit
 import CryptoKit
+import Combine
 @testable import PersonalGrowthOS
 
 @MainActor final class InvestmentPersistenceTests: XCTestCase {
@@ -743,7 +744,7 @@ import CryptoKit
             timeZoneID:zone.identifier,seconds:seconds,evidence:.dateDuration,source:.manual)
         try service.saveManual(id:id,participantID:participant,activityID:activity,values:values)
         let workspace = InvestmentWorkspace(); workspace.refresh(c.mainContext)
-        let editor = workspace.edit(try XCTUnwrap(workspace.sessions.first))
+        let editor = workspace.edit(try XCTUnwrap(workspace.session(id:id,context:c.mainContext)))
         XCTAssertEqual(InvestmentFormatting.minutes(2700),"45")
         XCTAssertTrue(editor.hasValidDuration,editor.durationText)
         XCTAssertGreaterThan(try XCTUnwrap(Double(editor.durationText)),0)
@@ -783,7 +784,7 @@ import CryptoKit
         _ = try await ImportExportService(context:target.mainContext,mediaStore:MediaStore(rootURL:targetRoot),availableCapacity:{.max}).importPackage(from:lease.url)
         let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
         let restored=InvestmentWorkspace();restored.refresh(reopened.mainContext)
-        XCTAssertTrue(restored.sessions.isEmpty)
+        XCTAssertTrue(restored.review?.orderedSessionIDs.isEmpty == true)
         let draft=try XCTUnwrap(restored.drafts.first);XCTAssertEqual(draft.id,editor.id)
         let restoredEditor=restored.editor(for:draft)
         XCTAssertEqual(restoredEditor.durationText,"invalid synthetic duration")
@@ -800,7 +801,7 @@ import CryptoKit
         XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(source)),before)
     }
 
-    func testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges() throws {
+    func testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges() async throws {
         let folder=try root(),container=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("usage-review.sqlite"))
         let context=ModelContext(container),p=InvestmentParticipant(name:"Synthetic default",isDefault:true)
         let a=InvestmentActivity(participantID:p.id,name:"Synthetic archive history")
@@ -808,43 +809,127 @@ import CryptoKit
         let today=ImportantCivilDay(identifier:"2026-10-18")!
         for i in 0..<10000 {
             let day=today.adding(days:-(i % 1826))!
-            let values=InvestmentValues(day:day.identifier,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual)
+            var values=InvestmentValues(day:day.identifier,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual)
+            if i % 100 == 0 {
+                let start=day.instant(minutes:600,timeZone:zone)!
+                values.evidence = .intervals;values.spans=[.init(start:start,end:start.addingTimeInterval(30)),.init(start:start.addingTimeInterval(60),end:start.addingTimeInterval(90))]
+                values.note=String(repeating:"Synthetic long saved note ",count:100)
+            }
             let id=UUID()
-            context.insert(try InvestmentSession(id:id,participantID:p.id,activityID:a.id,values:values,now:day.date!))
+            context.insert(try InvestmentSession(id:id,participantID:p.id,activityID:a.id,values:values,now:day.date!.addingTimeInterval(86400)))
             context.insert(try InvestmentOperation(id:id,participantID:p.id,activityID:a.id,
-                timer:.init(state:.saved,values:values,target:nil,checkpointAt:day.date!),now:day.date!))
+                timer:.init(state:.saved,values:values,target:nil,checkpointAt:day.date!.addingTimeInterval(86400)),now:day.date!.addingTimeInterval(86400)))
         }
         try context.save();try InvestmentIntegrity.validate(context:ModelContext(container))
-        let workspace=InvestmentWorkspace(),start=Date();workspace.refresh(context)
+        var events: [InvestmentReadEvent] = [],readFailure=false
+        let reader=InvestmentUIReader(observe:{event in
+            if readFailure && event.purpose == .factBatch {throw CocoaError(.fileReadUnknown)}
+            events.append(event)
+        })
+        let workspace=InvestmentWorkspace(reader:reader),start=Date();workspace.refresh(context)
         print("USAGE_INVESTMENT_10000_DISK_REFRESH_SECONDS=\(Date().timeIntervalSince(start))")
         XCTAssertNil(workspace.reviewError)
         let snapshot=try XCTUnwrap(workspace.review)
         XCTAssertEqual(snapshot.activitySeconds[a.id],600000)
         XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:a.id,day:nil).daySeconds.count,1826)
+        XCTAssertEqual(events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded},10000)
+        XCTAssertEqual(events.filter {$0.purpose == .operationBatch}.reduce(0) {$0+$1.decoded},10000)
+        XCTAssertTrue(workspace.operations.isEmpty) // no saved Operation payloads are retained
+        var delivered: XCTestExpectation?
+        let subscription=NotificationCenter.default.publisher(for:.investmentChanged).receive(on:RunLoop.main).sink {notification in
+            MainActor.assumeIsolated {
+                workspace.receive(notification,context:context)
+                delivered?.fulfill()
+            }
+        }
+        defer {subscription.cancel()}
+        func event(count: Int = 1,_ action: () throws -> Void) async throws {
+            let expected=expectation(description:"Service → event → Workspace")
+            expected.expectedFulfillmentCount=count;delivered=expected;try action();await fulfillment(of:[expected],timeout:5);delivered=nil
+        }
+        var time=InvestmentClock(wall:Date(),uptime:100,processID:"review-f5-continuous")
+        let live=InvestmentService(context:context,clock:{time})
+        let originalFactReads=events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded}
+        let originalOperationReads=events.filter {$0.purpose == .operationBatch}.reduce(0) {$0+$1.decoded}
+        let initialFactFetches=events.filter {$0.purpose == .factBatch && $0.rows == 0}.count
+        let initialOperationFetches=events.filter {$0.purpose == .operationBatch && $0.rows == 0}.count
+        XCTAssertEqual(initialFactFetches,40);XCTAssertEqual(initialOperationFetches,40)
+        try await event {try live.updateActivity(id:a.id,name:"Renamed history",archived:false)}
+        let draft=try workspace.newEditor(activityID:a.id)
+        for i in 0..<4 {
+            draft.values.note="Last durable draft \(i)";draft.durationText=String(31+i);draft.values.changeDuration(Double(31+i)*60)
+            try await event {XCTAssertTrue(draft.persist(context))}
+        }
+        let timerID=UUID()
+        try await event {_ = try live.start(activityID:a.id,participantID:p.id,operationID:timerID,zone:zone)}
+        time.wall.addTimeInterval(10);time.uptime += 10
+        try await event(count:2) {workspace.checkpoint(context,clock:{time})}
+        try await event {try live.command(.pause,id:timerID,revision:XCTUnwrap(workspace.unfinished.first?.revision))}
+        try await event {try live.command(.resume,id:timerID,revision:XCTUnwrap(workspace.unfinished.first?.revision))}
+        XCTAssertEqual(events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded},originalFactReads)
+        XCTAssertEqual(events.filter {$0.purpose == .operationBatch}.reduce(0) {$0+$1.decoded},originalOperationReads)
+        let cold=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("usage-review.sqlite"))
+        let recovered=InvestmentWorkspace();recovered.refresh(cold.mainContext)
+        XCTAssertEqual(recovered.drafts.first?.timer.values.note,"Last durable draft 3")
+        XCTAssertEqual(recovered.drafts.first?.timer.durationText,"34")
+        draft.values.note="Unsaved retained input"
+        XCTAssertFalse(draft.persist(context,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+        XCTAssertNotNil(draft.error);XCTAssertEqual(draft.values.note,"Unsaved retained input")
+        let disk=try InvestmentService(context:cold.mainContext).operations().first {$0.id == draft.id}
+        XCTAssertEqual(disk?.timer.values.note,"Last durable draft 3")
+        print("REVIEW_F5_CHAIN factDecoded=\(originalFactReads) operationBatchDecoded=\(originalOperationReads) initialFactFetches=\(initialFactFetches) initialOperationFetches=\(initialOperationFetches) afterDraftAndTimerFactFetches=\(events.filter {$0.purpose == .factBatch && $0.rows == 0}.count) afterDraftAndTimerOperationFetches=\(events.filter {$0.purpose == .operationBatch && $0.rows == 0}.count) afterDraftAndTimerFactDecoded=\(events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded}) operationIDDecoded=\(events.filter {$0.purpose == .operationIDs}.reduce(0) {$0+$1.decoded})")
         let generation=workspace.reviewGeneration
         workspace.refresh(context);XCTAssertEqual(workspace.reviewGeneration,generation)
         let chosen=snapshot.selection(days:nil,today:today,activityID:a.id,day:nil)
         let first=chosen.pageIDs(offset:0),second=chosen.pageIDs(offset:20)
         XCTAssertEqual(first.count,20);XCTAssertEqual(second.count,20);XCTAssertTrue(Set(first).isDisjoint(with:second))
-        var query=FetchDescriptor<InvestmentSession>(predicate:#Predicate { first.contains($0.id) });query.fetchLimit=20
-        let page=try ModelContext(container).fetch(query)
+        let decodedBefore=events.reduce(0) {$0+($1.purpose == .page ? $1.decoded:0)}
+        let page=try reader.page(container,ids:first)
+        let nextPage=try reader.page(container,ids:second)
+        XCTAssertEqual(nextPage.map(\.id),second)
+        XCTAssertEqual(events.reduce(0) {$0+($1.purpose == .page ? $1.decoded:0)}-decodedBefore,40)
+        let detailed=try workspace.session(id:second[0],context:context)
+        XCTAssertEqual(detailed?.id,second[0]);XCTAssertEqual(events.filter {$0.purpose == .detail}.reduce(0) {$0+$1.decoded},1)
         XCTAssertEqual(page.count,20);XCTAssertEqual(Set(page.map(\.id)),Set(first))
         let edit=try XCTUnwrap(page.first)
         let service=InvestmentService(context:context)
-        var values=try edit.values();values.changeDuration(120)
+        var values=edit.values;values.changeDuration(120)
         try service.saveManual(id:edit.id,participantID:p.id,activityID:a.id,values:values,expectedRevision:edit.revision,confirmDuplicate:true)
         workspace.refresh(context);XCTAssertEqual(workspace.review?.activitySeconds[a.id],600060)
         XCTAssertGreaterThan(workspace.reviewGeneration,generation)
-        let changed=try XCTUnwrap(workspace.sessions.first {$0.id == edit.id})
+        let changed=try XCTUnwrap(workspace.session(id:edit.id,context:context))
         try service.delete(id:edit.id,revision:changed.revision)
         workspace.refresh(context);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
         XCTAssertEqual(workspace.review?.orderedSessionIDs.count,9999)
         // Corrupt payload is an explicit read failure, followed by successful retry, never a false zero.
         let read=ModelContext(container),bad=try XCTUnwrap(read.fetch(FetchDescriptor<InvestmentSession>()).first)
-        let original=bad.valueData;bad.valueData=Data("invalid synthetic payload".utf8);try read.save()
+        let original=bad.valueData;bad.valueData=Data("invalid synthetic payload".utf8);try read.save();InvestmentChanges.publish(.all,container:container)
         workspace.refresh(context);XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
-        bad.valueData=original;try read.save();workspace.refresh(context)
+        bad.valueData=original;try read.save();InvestmentChanges.publish(.all,container:container);workspace.refresh(context)
         XCTAssertNil(workspace.reviewError);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+        readFailure=true;InvestmentChanges.publish(.all,container:container);workspace.refresh(context)
+        XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
+        readFailure=false;workspace.refresh(context)
+        XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+        let export=try await transfer(container,folder).exportPackage();defer {export.cleanup()}
+        let targetRoot=try root(),target=try PersistenceContainerFactory.makeOnDisk(at:targetRoot.appendingPathComponent("imported.sqlite"))
+        let imported=InvestmentWorkspace();imported.refresh(target.mainContext)
+        XCTAssertEqual(imported.review?.orderedSessionIDs.count,0)
+        let importedEvent=expectation(description:"Import → event → Workspace")
+        let importSubscription=NotificationCenter.default.publisher(for:.investmentChanged).receive(on:RunLoop.main).sink {notification in
+            MainActor.assumeIsolated {
+                guard notification.object as? ModelContainer === target else {return}
+                imported.receive(notification,context:target.mainContext);importedEvent.fulfill()
+            }
+        }
+        _ = try await transfer(target,targetRoot).importPackage(from:export.url)
+        await fulfillment(of:[importedEvent],timeout:5);importSubscription.cancel()
+        XCTAssertEqual(imported.review?.orderedSessionIDs.count,9999)
+        XCTAssertEqual(imported.review?.activitySeconds[a.id],599940)
+        XCTAssertNil(try imported.session(id:edit.id,context:target.mainContext))
+        let importedIDs=Array(try XCTUnwrap(imported.review?.orderedSessionIDs).prefix(20))
+        XCTAssertEqual(try imported.reader.page(target,ids:importedIDs).map(\.id),importedIDs)
+        print("REVIEW_F5_PAGE pageDecoded=40 detailDecodedBeforeEdits=1 initialSavedPayloadsRetained=0 batchesOfAtMost=256 RSS_NOT_MEASURED")
     }
 
     func testUsageV14StartupMigrationKeepsLatestProtectionAndAddsNoDefaultSettings() throws {
@@ -968,4 +1053,32 @@ import CryptoKit
         XCTAssertEqual(try target.mainContext.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open}?.plannedDay,"2026-10-18")
     }
 
+}
+
+extension InvestmentPersistenceTests {
+    func testReviewFixF5PageDetailReadFailureRetriesAndDeletionErasesCachedEditor() throws {
+        let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("cache-errors.sqlite"))
+        let service=InvestmentService(context:c.mainContext),a=try service.createActivity(name:"Synthetic cache")
+        let p=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentParticipant>()).first).id,id=UUID()
+        let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual,note:"Synthetic detail to erase")
+        try service.saveManual(id:id,participantID:p,activityID:a,values:values)
+        var failing=false
+        let reader=InvestmentUIReader(observe:{event in
+            if failing && [.page,.detail].contains(event.purpose) {throw CocoaError(.fileReadUnknown)}
+        })
+        let workspace=InvestmentWorkspace(reader:reader);workspace.refresh(c.mainContext)
+        failing=true
+        XCTAssertThrowsError(try reader.page(c,ids:[id]))
+        XCTAssertThrowsError(try workspace.session(id:id,context:c.mainContext))
+        failing=false
+        XCTAssertEqual(try reader.page(c,ids:[id]).map(\.id),[id])
+        let editor=workspace.edit(try XCTUnwrap(workspace.session(id:id,context:c.mainContext)))
+        XCTAssertTrue(editor.persist(c.mainContext));workspace.refresh(c.mainContext)
+        XCTAssertEqual(workspace.drafts.count,1)
+        try service.delete(id:id,revision:0);workspace.refresh(c.mainContext)
+        XCTAssertNil(try workspace.session(id:id,context:c.mainContext))
+        XCTAssertTrue(workspace.drafts.isEmpty);XCTAssertTrue(workspace.editors.isEmpty)
+        XCTAssertTrue(editor.finished);XCTAssertEqual(editor.values.note,"");XCTAssertTrue(editor.values.spans.isEmpty)
+        XCTAssertEqual(editor.durationText,"")
+    }
 }

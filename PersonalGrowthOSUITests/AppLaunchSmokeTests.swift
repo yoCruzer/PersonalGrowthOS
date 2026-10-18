@@ -2967,3 +2967,45 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(card.waitForExistence(timeout: 10)); XCTAssertTrue(card.label.contains("Tasks completed: 1"))
     }
 }
+
+
+extension AppLaunchSmokeTests {
+    func testReviewFixWeightCutoffAndFiftyRowPaginationAcrossDays() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeightReviewFixDates","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        app.launch();app.buttons["today-weight"].tap()
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<20 where !element.isHittable {app.swipeUp()}
+            XCTAssertTrue(element.isHittable,app.debugDescription)
+        }
+        let through=app.datePickers["weight-review-through"];reveal(through)
+        through.buttons.firstMatch.tap()
+        let calendar=XCTAttachment(string:app.debugDescription);calendar.name="ReviewFix-native-cutoff-calendar";calendar.lifetime = .keepAlways;add(calendar)
+        let tenth=app.buttons.matching(NSPredicate(format:"label CONTAINS %@","October 10")).firstMatch
+        XCTAssertTrue(tenth.waitForExistence(timeout:5),app.debugDescription);tenth.tap()
+        app.navigationBars["Weight"].tap()
+        let latest=app.staticTexts["weight-latest-value"]
+        for _ in 0..<10 where !latest.isHittable {app.swipeDown()}
+        XCTAssertTrue(latest.label.contains("70.59"),latest.label)
+        let all=app.buttons["weight-all-records"];reveal(all)
+        let rows=app.buttons.matching(identifier:"weight-record-row")
+        XCTAssertEqual(rows.count,5,app.debugDescription)
+        XCTAssertFalse(rows.allElementsBoundByIndex.contains {$0.label.contains("77.0 kg")})
+        let cutoff=XCTAttachment(screenshot:app.screenshot());cutoff.name="ReviewFix-Weight-main-cutoff-October10";cutoff.lifetime = .keepAlways;add(cutoff)
+        all.tap()
+        let first=app.buttons["weight-history-day-2026-10-01"];reveal(first);first.tap()
+        let pageCount=app.staticTexts["weight-page-count"];reveal(pageCount)
+        expectation(for:NSPredicate(format:"label == %@","50 measurements"),evaluatedWith:pageCount);waitForExpectations(timeout:5)
+        let more=app.buttons["Load more"];reveal(more);more.tap()
+        for _ in 0..<30 where !pageCount.isHittable {app.swipeDown()}
+        expectation(for:NSPredicate(format:"label == %@","60 measurements"),evaluatedWith:pageCount);waitForExpectations(timeout:5)
+        for _ in 0..<30 where !app.buttons["weight-history-day-2026-10-17"].isHittable {app.swipeDown()}
+        app.buttons["weight-history-day-2026-10-17"].tap()
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout:5));XCTAssertEqual(rows.count,1)
+        XCTAssertTrue(rows.firstMatch.label.contains("77.0 kg"))
+        first.tap()
+        expectation(for:NSPredicate(format:"label == %@","50 measurements"),evaluatedWith:pageCount);waitForExpectations(timeout:5)
+        let shot=XCTAttachment(screenshot:app.screenshot());shot.name="ReviewFix-Weight-return-A-correct-first-page";shot.lifetime = .keepAlways;add(shot)
+    }
+}

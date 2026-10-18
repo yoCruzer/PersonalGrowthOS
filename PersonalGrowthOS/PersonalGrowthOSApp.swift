@@ -43,6 +43,17 @@ struct PersonalGrowthOSApp: App {
                 }
                 try container.modelContainer.mainContext.save()
             }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSWeightReviewFixDates") {
+                let zone=TimeZone.current,day=ImportantCivilDay(year:2026,month:10,day:1).instant(minutes:0,timeZone:TimeZone.current)!
+                for index in 0..<60 {
+                    let at=day.addingTimeInterval(Double(index)*60)
+                    container.modelContainer.mainContext.insert(WeightRecord(weightKilograms:70+Double(index)/100,recordedAt:at,createdAt:at))
+                }
+                let later=ImportantCivilDay(year:2026,month:10,day:17).instant(minutes:600,timeZone:zone)!
+                container.modelContainer.mainContext.insert(WeightRecord(weightKilograms:77,recordedAt:later,createdAt:later))
+                try container.modelContainer.mainContext.save()
+            }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSImportantDaysTest") {
                 try ImportantDayUITestFixture.seed(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)

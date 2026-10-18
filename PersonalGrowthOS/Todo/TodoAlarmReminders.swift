@@ -215,8 +215,8 @@ struct TodoIntentSchedulingResult {
         if request.channel == .alarm {return try await alarms.pendingIdentifiers().contains(request.id)}
         return await notifications.pendingIdentifiers().contains(Self.identifier(request.id))
     }
-    private func cancel(_ request: TodoDeviceRequest,_ container: ModelContainer,delete: Bool) async -> Bool {
-        var pending=request;pending.phase = .cancellationPending
+    private func cancel(_ request: TodoDeviceRequest,_ container: ModelContainer,delete: Bool, waiting: Bool = false) async -> Bool {
+        var pending=request;pending.phase = waiting ? .capacityCancellationPending : .cancellationPending
         // Ownership already exists on disk. Even if this phase write fails, still try to stop the owned request.
         do {try write(pending,container)}
         catch TodoAlarmFailure.invalidRequest {return false}
@@ -231,7 +231,7 @@ struct TodoIntentSchedulingResult {
                 }
                 guard try await !present(request) else {return false}
             }
-            pending.phase = .retired
+            pending.phase = waiting ? .capacityWaiting : .retired
             try write(pending,container,delete:delete)
             return true
         } catch {return false}
@@ -253,6 +253,14 @@ struct TodoIntentSchedulingResult {
             try Task.checkCancellation()
             let target=desired[record.taskID]
             let changedFutureTitle=target?.active == true && record.fireAt > now() && record.title != target?.title
+            if record.matches(target),[.accepted,.prepared].contains(record.phase),!changedFutureTitle {
+                do {
+                    if try await !present(record) {
+                        var retired=record;retired.phase = .retired
+                        try write(retired,container)
+                    }
+                } catch {blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending}
+            }
             if !record.matches(target) || record.phase == .cancellationPending || record.phase == .retired || changedFutureTitle {
                 let sameGeneration=target?.generation == record.generation
                 var existed=false
@@ -262,7 +270,7 @@ struct TodoIntentSchedulingResult {
                     continue
                 }
                 let changedLiveContent=sameGeneration && target?.active == true && (target?.fireAt != record.fireAt || changedFutureTitle) && existed && record.phase != .retired
-                let safeTitleReplacement=changedFutureTitle && [.ready,.capacityWaiting,.cancellationPending].contains(record.phase)
+                let safeTitleReplacement=changedFutureTitle && [.ready,.capacityWaiting,.cancellationPending,.capacityCancellationPending].contains(record.phase)
                 if !(await cancel(record,container,delete:!sameGeneration || changedLiveContent || safeTitleReplacement)) {
                     blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending
                 }
@@ -275,8 +283,35 @@ struct TodoIntentSchedulingResult {
         if !isCurrent() {result.stale=true;return result}
         return result
     }
+    /// Temporarily displaced notifications keep their generation and explicit user intent.
+    /// Confirm absence before another category can consume the slot. This reason survives restart.
+    func rebalanceNotifications(container: ModelContainer, selected: Set<UUID>, isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
+        let desired=try targets(container)
+        var result=TodoIntentSchedulingResult(),blocked=Set<UUID>()
+        for record in try records(container) where record.channel == .notification && record.phase != .retired {
+            guard record.matches(desired[record.taskID]),record.fireAt > now() else {continue}
+            if !selected.contains(record.taskID) || record.phase == .capacityCancellationPending {
+                if [.accepted,.prepared].contains(record.phase) {
+                    // Missing accepted requests were stopped/consumed outside this allocation.
+                    // Do not turn their absence into permission to retry after capacity returns.
+                    if try await !present(record) {
+                        var retired=record;retired.phase = .retired
+                        try write(retired,container)
+                        continue
+                    }
+                }
+                if !(await cancel(record,container,delete:false,waiting:true)) {blocked.insert(record.taskID)}
+            }
+            if !isCurrent() {result.stale=true;return result}
+        }
+        let blockedSeries=Set(blocked.compactMap {desired[$0]?.seriesID})
+        for target in desired.values where blocked.contains(target.id) || target.seriesID.map({blockedSeries.contains($0)}) == true {
+            result.states[target.id] = .cancellationPending
+        }
+        return result
+    }
     func reconcile(container: ModelContainer,requestNotifications: Bool,requestAlarms: Bool,
-                   blockedTaskIDs: Set<UUID> = [],isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
+                   blockedTaskIDs: Set<UUID> = [],selectedNotificationTaskIDs: Set<UUID>? = nil,isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
         var result=try await retireObsoleteRequests(container:container,isCurrent:isCurrent)
         if result.stale {return result}
         let desired=try targets(container)
@@ -316,6 +351,10 @@ struct TodoIntentSchedulingResult {
                     if target.channel == .alarm {result.states[target.id] = alarmPermission == .unsupported ? .unsupportedAlarm : alarmPermission == .denied ? .alarmDenied : .alarmPermissionRequired}
                     else {result.states[target.id] = notificationPermission == .denied ? .denied : .permissionRequired}
                 }
+                continue
+            }
+            if target.channel == .notification,let selectedNotificationTaskIDs,!selectedNotificationTaskIDs.contains(target.id) {
+                result.states[target.id] = same.first?.phase == .retired ? .stopped : .queueFull
                 continue
             }
             var record=same.first ?? TodoDeviceRequest(target:target,fireAt:fire)

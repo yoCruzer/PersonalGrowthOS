@@ -387,7 +387,7 @@ final class ImportExportService {
             NotificationCenter.default.post(name: .todoTasksChanged, object: container)
             NotificationCenter.default.post(name: .importantDaysChanged, object: container)
             NotificationCenter.default.post(name: .sleepRecordsChanged, object: container)
-            NotificationCenter.default.post(name: .investmentChanged, object: container)
+            InvestmentChanges.publish(.all,container:container)
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.mediaAssets.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,

@@ -59,7 +59,7 @@ struct WeightHistoryView: View {
                     Text(summary.start.formatted(date: .abbreviated, time: .omitted) + " – " + snapshot.asOfDay.formatted(date: .abbreviated, time: .omitted)).font(.caption).accessibilityIdentifier("weight-review-dates")
                     Text("Daily points are daily means. A missing day means no record.").font(.caption).foregroundStyle(.secondary)
                     chart(snapshot)
-                    DatePicker("Select a record day", selection: Binding(get: { selectedDay ?? snapshot.asOfDay }, set: { selectedDay = snapshot.calendar.startOfDay(for: $0) }), displayedComponents: .date)
+                    DatePicker("Select a record day", selection: Binding(get: { selectedDay ?? snapshot.asOfDay }, set: { selectedDay = snapshot.calendar.startOfDay(for: $0) }), in: ...snapshot.asOfDay, displayedComponents: .date)
                         .accessibilityIdentifier("weight-select-day")
                     if selectedDay != nil {
                         Button("Clear selection") { selectedDay = nil }.accessibilityIdentifier("weight-clear-selection")
@@ -104,12 +104,12 @@ struct WeightHistoryView: View {
                     }
                 }
                 WeightBMISection(measurement:snapshot.latest.first,historical:historical)
-                Section(selectedDay == nil ? "Recent measurements" : "Selected day") {
+                Section(selectedDay == nil ? (historical ? String(localized:"Recent measurements through \(snapshot.asOfDay.formatted(date:.abbreviated,time:.omitted))") : String(localized:"Recent measurements")) : String(localized:"Selected day")) {
                     if let selectedDay, let day = snapshot.daily.first(where: { $0.day == selectedDay }) {
                         LabeledContent("Daily mean (kg)", value: WeightFormatting.kilograms(day.mean)).accessibilityIdentifier("weight-selected-mean")
                         Text("\(day.observations) measurements").font(.caption)
                     }
-                    WeightMeasurementPage(start: selectedDay, end: selectedDay.flatMap { snapshot.calendar.date(byAdding: .day, value: 1, to: $0) }.map { snapshot.calendar.startOfDay(for: $0) },
+                    WeightMeasurementPage(start: selectedDay, end: min(selectedDay.flatMap { snapshot.calendar.date(byAdding: .day, value: 1, to: $0) }.map { snapshot.calendar.startOfDay(for: $0) } ?? snapshot.endExclusive,snapshot.endExclusive),
                         now: snapshot.now, refresh: refresh, limit: 5, edit: edit, delete: requestDelete)
                     NavigationLink("All Weight Records") { WeightAllRecordsView(edit: edit) }
                         .accessibilityIdentifier("weight-all-records")
@@ -176,7 +176,7 @@ struct WeightHistoryView: View {
                 }
             }.chartXScale(domain: snapshot.summaries[range]!.start...snapshot.endExclusive)
                 .chartYScale(domain: axis.domain).chartYAxis { AxisMarks(values: axis.ticks) }
-                .chartXSelection(value: Binding(get: { selectedDay }, set: { value in selectedDay = value.map { snapshot.calendar.startOfDay(for: $0) } }))
+                .chartXSelection(value: Binding(get: { selectedDay }, set: { value in selectedDay = value.map { min(snapshot.calendar.startOfDay(for: $0),snapshot.asOfDay) } }))
                 .frame(height: 200).accessibilityLabel("Weight trend").accessibilityIdentifier("weight-trend-chart")
         }
     }
@@ -188,6 +188,7 @@ struct WeightHistoryView: View {
             let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
             try Task.checkCancellation()
             selectedDay=WeightReviewSelection.retainedDay(selectedDay,previousZoneID:selectionZoneID,calendar:result.calendar)
+            if let selectedDay,selectedDay > result.asOfDay {self.selectedDay=nil}
             selectionZoneID=result.calendar.timeZone.identifier
             snapshot = result
         } catch is CancellationError {} catch { if !Task.isCancelled { snapshot = nil; failed = true } }
@@ -206,21 +207,24 @@ struct WeightMeasurementPage: View {
     let edit: (UUID) -> Void
     let delete: (UUID) -> Void
     @Environment(\.modelContext) private var context
-    @State private var records: [WeightMeasurement] = []
-    @State private var failed = false
-    @State private var more = false
-    @State private var loading = false
-    @State private var loadedKey: String?
-    private var key: String { "\(start?.timeIntervalSince1970 ?? -1):\(end?.timeIntervalSince1970 ?? -1):\(now.timeIntervalSince1970):\(refresh)" }
+    @State private var loader=WeightMeasurementLoader()
+    private var query: WeightMeasurementQuery {.init(start:start,end:end,now:now,refresh:refresh,limit:limit)}
+    private var reader: WeightMeasurementLoader.Read {
+        let container=context.container
+        return { query,offset in try await WeightReviewReader(modelContainer:container).records(start:query.start,end:query.end,now:query.now,offset:offset,limit:query.limit) }
+    }
     var body: some View {
         Group {
-            // A task on Group is forwarded to conditional rows and cancels itself when loading changes.
-            // Keep one stable row as the task host; reappearing with the same query reuses its page.
             Text("Newest first").font(.caption).foregroundStyle(.secondary)
-                .task(id: key) { if loadedKey != key { await load(reset: true) } }
-            if failed { Text("Could not load weight records"); Button("Retry") { Task { await load(reset: true) } } }
-            else if loadedKey == key && records.isEmpty && !loading { Text("No records in this selection") }
-            ForEach(loadedKey == key ? records : []) { record in
+                .task(id:query) {await loader.initial(query,read:reader)}
+                .onChange(of:query) {_,value in loader.select(value)}
+                .onDisappear {loader.cancel()}
+            if loader.failed { Text("Could not load weight records"); Button("Retry") { Task {await loader.retry(read:reader)} } }
+            else if loader.query == query && loader.records.isEmpty && !loader.loading { Text("No records in this selection") }
+            if paginated && loader.query == query {
+                Text("\(loader.records.count) measurements").font(.caption).accessibilityIdentifier("weight-page-count")
+            }
+            ForEach(loader.query == query ? loader.records : []) { record in
                 Button { edit(record.id) } label: {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(record.recordedAt, format: .dateTime.year().month().day().hour().minute())
@@ -230,21 +234,9 @@ struct WeightMeasurementPage: View {
                 }.buttonStyle(.plain).accessibilityIdentifier("weight-record-row")
                     .swipeActions { Button("Delete", role: .destructive) { delete(record.id) } }
             }
-            if paginated && more && loadedKey == key { Button("Load more") { Task { await load(reset: false) } }.disabled(loading) }
-            if loading { ProgressView() }
+            if paginated && loader.more && loader.query == query {Button("Load more") {Task {await loader.load(query,reset:false,read:reader)}}.disabled(loader.loading)}
+            if loader.loading {ProgressView()}
         }
-    }
-    @MainActor private func load(reset: Bool) async {
-        if reset { records = [] }
-        failed = false; loading = true
-        let container = context.container, offset = reset ? 0 : records.count, token = key
-        let work = Task.detached { try await WeightReviewReader(modelContainer: container).records(start: start, end: end, now: now, offset: offset, limit: limit) }
-        do {
-            let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
-            try Task.checkCancellation(); guard token == key else { return }
-            if reset { records = result } else { records += result }
-            more = result.count == limit; loadedKey = token; loading = false
-        } catch is CancellationError {} catch { if !Task.isCancelled && token == key { failed = true; loading = false } }
     }
 }
 
