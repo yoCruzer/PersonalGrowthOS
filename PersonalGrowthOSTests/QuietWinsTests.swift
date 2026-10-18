@@ -317,7 +317,7 @@ final class QuietWinsReaderTests: XCTestCase {
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
         let manifest = try decoder.decode(ExportManifest.self,from:Data(contentsOf:legacyRoot.appendingPathComponent("manifest.json")))
         var payload = try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:legacyRoot.appendingPathComponent("data.json"))) as? [String:Any])
-        for key in ["importantDays","importantDayEntryLinks","importantDayTodoLinks","importantDayCovers","sleepRecords","sleepGoals","investmentParticipants","investmentActivities","investmentSessions","investmentOperations"] {
+        for key in ["importantDays","importantDayEntryLinks","importantDayTodoLinks","importantDayCovers","sleepRecords","sleepGoals","investmentParticipants","investmentActivities","investmentSessions","investmentOperations","todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {
             XCTAssertEqual((payload[key] as? [Any])?.count,0); payload.removeValue(forKey:key)
         }
         XCTAssertEqual((payload["captureReceipts"] as? [Any])?.count,3)

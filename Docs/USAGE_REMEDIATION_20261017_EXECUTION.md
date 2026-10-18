@@ -198,3 +198,12 @@ Apple原生行为依据：[requestAuthorization](https://developer.apple.com/doc
 - `compile-d4` PASS；`review-d4-green`=TodoReminder23＋Sleep4＋ImportantDays7＋真实磁盘反例1，**35PASS0FAIL0SKIP**（summary待提取）。又补原生读取/排程暂停期间改标题，以及文字替换取消失败→恢复成对测试，尚未运行；最终集中Unit会包含。
 
 外部原生UI driver保存`/tmp/pgos-usage-remediation-evidence/run_usage_ui.py`，调用`python3 .../run_usage_ui.py RUN_NAME selector...`，底层仍本文串行test-without-building和同一专用Simulator；记录外观切换exit，finally恢复原外观。最终门禁尚未执行，未push/新PR。
+
+
+### 集中 Unit 首轮实际结果与范围内测试夹具修正
+
+`final-debug1`在clean `c909821b498492e133c726fd4e36f2191920e026` build-for-testing PASS，实际App BuildProvenance=同完整SHA/localGit/Dirty=false/Tag空。`final-unit1`同原test前缀、仅`-only-testing:PersonalGrowthOSTests`，实际 **517项：512PASS/4FAIL/1SKIP、runtimeWarnings=[]，exit65**。1SKIP为既有独立32MB HFS+低空间项目，不填满主卷。35秒。所有新标题并发/取消负例、各版升级/重开、F1/R1–R3及其余通过原始证据在xcresult/log；没有把首轮改标全绿。
+
+4失败均在旧测试假设/旧包构造：FullRoundTrip和LegacyV1的手工expectedCounts缺新v11三项0值；TodoV7RoundTrip误期待新设备请求仍为旧固定taskID而非本轮设备UUID；QuietWinsReader旧v7 wire从当前编码构造时未去除三项新空数组，被严格原v7校验正确拒绝。只修测试夹具：补精确三个0键；断言单个native请求的taskID/title/fireAt和实际accepted设备账本UUID一致；构造旧v7时仅移除已经断言为空的新数组，不放松生产兼容校验。产品代码保持c909821不变。下一轮只跑受影响完整ImportExportRecoveryTests及QuietWinsReaderTests，并保存全部其他产品/测试blob相等证明，不重复完整517。
+
+首轮Unit Host默认根在专用模拟器保留早期本任务未发布V15合成库，新增title字段后启动有unknown model version诊断；没有私人数据，该诊断不在测试夹具路径。后续仅卸载本轮专用Simulator的合成App重新安装，保留原日志，不修改历史schema/原工作区/其他Simulator。

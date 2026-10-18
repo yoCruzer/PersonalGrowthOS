@@ -1752,7 +1752,8 @@ private final class TransferTestFixture {
                 "habitPlanRevisions": 1, "habitLifecycleEvents": 1,
                 "entryPins": 0, "entryFollowUps": 0, "entrySources": 0,
                 "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0,
-                "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0, "sleepRecords": 0, "sleepGoals": 0, "captureReceipts": 0, "investmentParticipants": 0, "investmentActivities": 0, "investmentSessions": 0, "investmentOperations": 0
+                "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0, "sleepRecords": 0, "sleepGoals": 0, "captureReceipts": 0, "investmentParticipants": 0, "investmentActivities": 0, "investmentSessions": 0, "investmentOperations": 0,
+                "todoSeriesPreferences": 0, "todoReminderIntents": 0, "bodyReferenceSettings": 0
             ],
             expectedIDs: try ids(in: context)
         )
@@ -2242,7 +2243,13 @@ extension ImportExportRecoveryTests {
         await reminders.reconcile(context: reopened.mainContext)
         let restoredOpen = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
         XCTAssertEqual(reminders.status(for: restoredOpen), .scheduled)
-        XCTAssertEqual(Set(reminderClient.pending.keys), [TodoReminderCoordinator.identifier(restoredOpen.id)])
+        let accepted=try XCTUnwrap(reminderClient.pending.values.first)
+        XCTAssertEqual(reminderClient.pending.count,1)
+        XCTAssertEqual(accepted.taskID,restoredOpen.id);XCTAssertEqual(accepted.title,restoredOpen.title)
+        XCTAssertEqual(accepted.fireAt,restoredOpen.remindAt)
+        let device=try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first)
+        XCTAssertEqual(accepted.id,TodoIntentScheduling.identifier(device.id))
+        XCTAssertEqual(device.taskID,restoredOpen.id);XCTAssertEqual(device.phaseRawValue,"accepted")
         let again = try await target.service.exportPackage(); defer { again.cleanup() }
         let expected = try extractedDataJSON(from: lease.url, under: fixture.root.appendingPathComponent("TodoExpected"))
         let actual = try extractedDataJSON(from: again.url, under: fixture.root.appendingPathComponent("TodoActual"))

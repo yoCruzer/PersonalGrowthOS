@@ -22,6 +22,8 @@ C内部验证继续收敛：新增本次提醒独立写入/修订守卫、ready/
 
 D独立review已开始（`/root/usage_remediation_independent_review`，无历史fork、只读固定266c9ca）：确认3项P2，标题旧文案/周一顺序/旧库取消后继阻挡；真实红测已保留，限定修复后review-d4-green35PASS。缓存损坏假设被真实磁盘对照否定。截图发现启动Dark参数未生效，旧Light不冒称Dark，正在用实际simctl appearance验证。集中全量/Release/实包与审查闭环仍待完成。
 
+集中Unit在clean c909821实际517=512PASS/4FAIL/1SKIP、零runtime warning。四处为旧计数/请求身份假设及旧v7构造夹带新空数组，正在仅修测试并整类复验ImportExport与QuietWinsReader；生产代码不改，保存其余blob复用证据。全量首轮失败不改标。后续实际Dark/组合UI/Release/实包/审查闭环/PR仍未完成。
+
 ---
 
 # 当前任务 — 使用反馈统一整改 Goal（2026-10-18）
