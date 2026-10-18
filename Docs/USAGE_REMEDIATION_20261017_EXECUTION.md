@@ -184,3 +184,17 @@ compile-c4 exit65：新UI局部reveal误传第二参数，修正；compile-c5 ex
 每次 compile 均复用本文原始 xcodebuild build-for-testing 前缀，仅 result/log 改 compile-cXX；每次 affected/UI 同串行xctestrun/专用simulator前缀，仅改相应上述selectors和xcresult/log。初始/最终及每轮warning原样保留。现阶段尚未完整Unit/组合UI/Release/实包与独立实现审查，不标READY；无push/新PR。
 
 Apple原生行为依据：[requestAuthorization](https://developer.apple.com/documentation/alarmkit/alarmmanager/requestauthorization%28%29)、[WWDC25 AlarmKit](https://developer.apple.com/videos/play/wwdc2025/230/)，实际接口以本机27.1 SDK交叉核对。BMI成人来源沿页面NHC2024/WHO/CDC，不声称2026最新医疗指南。
+
+
+## D 集中验收与独立审查进行中
+
+实现检查点 `266c9cab7b3745fd8d217793e7acf7a9cfbbb715`，32文件/3491增100删。真正独立只读 reviewer `/root/usage_remediation_independent_review` 使用 fork_turns=none，重新从固定规格和BASE→实现差异开始，不编辑、不占Xcode队列。首轮确认三项P2：只改标题时accepted系统请求保留旧文字；weekday UI按地区而非固定周一开始；V14旧通知取消失败未阻挡新账本后继。无P0/P1，最终闭环待修复实测和D门禁，不以初审等于完成。
+
+- `compile-c29` 因新UI测试for循环使用$0编译失败，c30改显式index后PASS。`ui-d1`=1PASS1FAIL、runtimeWarnings=[]：混合Today/Growth默认及最大字号遍历通过；中文最大字号BMI175cm→24.5通过，重复菜单第8项在滚动区外，测试未滚动菜单就失败；按实际菜单内已可见周末项滚动再选，不降低原保存/触达断言。
+- **截图外观校正**：ui-d1和更早仅凭`-AppleInterfaceStyle Dark`标注的图实际为Light。已查看ui-d1 BMI/Growth实际像素，不能称其Dark通过。后续外部driver只切本轮专用Simulator的`simctl ui ... appearance dark/light`，实际结果保留AppearanceDriver日志并结束恢复原外观；mixed UI在两轮启动前输出明确标记。新的真Dark图待查看。不是更改真机或系统私有授权。
+- `compile-d1/d2/d3`均PASS。review-d1-red名字只是反例轮：保留原main对象/不手工refresh，生产独立重设后同context完成/取消，真实磁盘重开/事件[0,1,2]/revision2/新提醒/完整性，**1PASS**；未复现缓存损坏，reviewer撤回该假设。
+- review-d2-red=1个方法FAIL、2断言：notification和alarm只改标题都留下Before。review-d3-red=1PASS(两个渠道停止后标题改动不重排的对照)、1FAIL(legacy取消未确认仍排后继)，3断言。原失败保留。
+- 限定修复不盲目更新用户generation：在本任务尚未发布的新V15设备账本保存requestedTitle，真正native存在且未来时才确认取消并替换；不存在/retired维持stopped；排程异步回来时比较最新标题，旧回调清理所有权。取消未确认阻挡，恢复确认后只有一个新请求。该设备字段不进ZIP。V1–V14定义未改。legacy旧ID实际仍在confirmed集合时扩展同系列阻挡，下一轮确认旧ID消失再允许后继。星期UI固定ISO1...7，名称仍本地化。
+- `compile-d4` PASS；`review-d4-green`=TodoReminder23＋Sleep4＋ImportantDays7＋真实磁盘反例1，**35PASS0FAIL0SKIP**（summary待提取）。又补原生读取/排程暂停期间改标题，以及文字替换取消失败→恢复成对测试，尚未运行；最终集中Unit会包含。
+
+外部原生UI driver保存`/tmp/pgos-usage-remediation-evidence/run_usage_ui.py`，调用`python3 .../run_usage_ui.py RUN_NAME selector...`，底层仍本文串行test-without-building和同一专用Simulator；记录外观切换exit，finally恢复原外观。最终门禁尚未执行，未push/新PR。

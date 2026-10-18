@@ -136,13 +136,14 @@ private struct TodoDeviceRequest: Equatable {
     let generation: UUID
     let channel: TodoReminderChannel
     let fireAt: Date
+    let title: String?
     var phase: TodoReminderDevicePhase
     init(_ value: TodoReminderDeviceRecord) throws {
         guard let channel=TodoReminderChannel(rawValue:value.channelRawValue),let phase=TodoReminderDevicePhase(rawValue:value.phaseRawValue) else {throw TodoAlarmFailure.invalidRequest}
-        id=value.id;taskID=value.taskID;generation=value.intentGeneration;self.channel=channel;fireAt=value.fireAt;self.phase=phase
+        id=value.id;taskID=value.taskID;generation=value.intentGeneration;self.channel=channel;fireAt=value.fireAt;title=value.requestedTitle;self.phase=phase
     }
     init(target: TodoIntentTarget,fireAt: Date) {
-        id=UUID();taskID=target.id;generation=target.generation;channel=target.channel;self.fireAt=fireAt;phase = .ready
+        id=UUID();taskID=target.id;generation=target.generation;channel=target.channel;self.fireAt=fireAt;title=target.title;phase = .ready
     }
     func matches(_ target: TodoIntentTarget?) -> Bool {
         guard let target else {return false}
@@ -178,12 +179,13 @@ struct TodoIntentSchedulingResult {
         }
         return result
     }
-    private func current(_ request: TodoDeviceRequest,_ container: ModelContainer) throws -> Bool {
+    private func current(_ request: TodoDeviceRequest,_ container: ModelContainer,includingTitle: Bool = true) throws -> Bool {
         let read=ModelContext(container),id=request.taskID
         var query=FetchDescriptor<TodoTask>(predicate:#Predicate {$0.id == id});query.fetchLimit=1
         var intentQuery=FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id});intentQuery.fetchLimit=1
         guard let task=try read.fetch(query).first,task.state == .open,task.remindAt == request.fireAt,
               let intent=try read.fetch(intentQuery).first,intent.generation == request.generation,intent.channelRawValue == request.channel.rawValue else {return false}
+        if includingTitle,task.title != request.title {return false}
         if let seriesID=task.seriesID {
             var seriesQuery=FetchDescriptor<TodoSeries>(predicate:#Predicate {$0.id == seriesID});seriesQuery.fetchLimit=1
             guard try read.fetch(seriesQuery).first?.isStopped == false else {return false}
@@ -198,10 +200,10 @@ struct TodoIntentSchedulingResult {
         let id=request.id
         let old=try write.fetch(FetchDescriptor<TodoReminderDeviceRecord>(predicate:#Predicate {$0.id == id})).first
         if let old {
-            guard old.taskID == request.taskID,old.intentGeneration == request.generation,old.channelRawValue == request.channel.rawValue,old.fireAt == request.fireAt else {throw TodoAlarmFailure.invalidRequest}
+            guard old.taskID == request.taskID,old.intentGeneration == request.generation,old.channelRawValue == request.channel.rawValue,old.fireAt == request.fireAt,old.requestedTitle == request.title else {throw TodoAlarmFailure.invalidRequest}
             if delete {write.delete(old)} else {old.phaseRawValue=request.phase.rawValue}
         } else if !delete {
-            write.insert(TodoReminderDeviceRecord(id:request.id,taskID:request.taskID,intentGeneration:request.generation,channel:request.channel,fireAt:request.fireAt,phase:request.phase))
+            write.insert(TodoReminderDeviceRecord(id:request.id,taskID:request.taskID,intentGeneration:request.generation,channel:request.channel,fireAt:request.fireAt,phase:request.phase,requestedTitle:request.title))
         }
         do {try commit(write)} catch {
             // A reported failure after a committed journal write is acknowledged only by exact canonical data.
@@ -250,7 +252,8 @@ struct TodoIntentSchedulingResult {
         for record in try records(container) {
             try Task.checkCancellation()
             let target=desired[record.taskID]
-            if !record.matches(target) || record.phase == .cancellationPending || record.phase == .retired {
+            let changedFutureTitle=target?.active == true && record.fireAt > now() && record.title != target?.title
+            if !record.matches(target) || record.phase == .cancellationPending || record.phase == .retired || changedFutureTitle {
                 let sameGeneration=target?.generation == record.generation
                 var existed=false
                 do {existed=try await present(record)} catch {blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending;continue}
@@ -258,8 +261,9 @@ struct TodoIntentSchedulingResult {
                     if !sameGeneration {do {try write(record,container,delete:true)} catch {blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending}}
                     continue
                 }
-                let changedLiveWallTime=sameGeneration && target?.active == true && target?.fireAt != record.fireAt && existed && record.phase != .retired
-                if !(await cancel(record,container,delete:!sameGeneration || changedLiveWallTime)) {
+                let changedLiveContent=sameGeneration && target?.active == true && (target?.fireAt != record.fireAt || changedFutureTitle) && existed && record.phase != .retired
+                let safeTitleReplacement=changedFutureTitle && [.ready,.capacityWaiting,.cancellationPending].contains(record.phase)
+                if !(await cancel(record,container,delete:!sameGeneration || changedLiveContent || safeTitleReplacement)) {
                     blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending
                 }
             }
@@ -272,10 +276,11 @@ struct TodoIntentSchedulingResult {
         return result
     }
     func reconcile(container: ModelContainer,requestNotifications: Bool,requestAlarms: Bool,
-                   isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
+                   blockedTaskIDs: Set<UUID> = [],isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
         var result=try await retireObsoleteRequests(container:container,isCurrent:isCurrent)
         if result.stale {return result}
         let desired=try targets(container)
+        for id in blockedTaskIDs {result.states[id] = .cancellationPending}
         let blocked=Set(result.states.compactMap {$0.value == .cancellationPending ? $0.key : nil})
         var notificationPermission=await notifications.permission(),alarmPermission=await alarms.permission()
         if !isCurrent() {result.stale=true;return result}
@@ -319,7 +324,7 @@ struct TodoIntentSchedulingResult {
                 do {
                     let exists=try await present(existing)
                     if exists {
-                        guard try current(record,container) else {
+                        guard try current(record,container,includingTitle:false) else {
                             _ = await cancel(record,container,delete:true);result.stale=true;return result
                         }
                         record.phase = .accepted

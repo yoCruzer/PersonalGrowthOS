@@ -233,6 +233,7 @@ extension TodoReminderTests {
     var errorAfterSchedule: Error?
     var failCancel=false
     var failReads=false
+    var whileReading: (() async throws -> Void)?
     var whileScheduling: ((TodoAlarmRequest) async throws -> Void)?
     var whileAuthorizing: (() async -> Void)?
     var changed: (@MainActor () -> Void)?
@@ -243,6 +244,7 @@ extension TodoReminderTests {
         authorization=permissionResponse;return authorization
     }
     func pendingIdentifiers() async throws -> Set<UUID> {
+        if let action=whileReading {whileReading=nil;try await action()}
         if failReads {throw CocoaError(.fileReadUnknown)}
         return Set(pending.keys)
     }
@@ -491,5 +493,107 @@ extension TodoReminderTests {
         await coordinator.reconcile(context:context)
         XCTAssertEqual(alarms.scheduleCalls.count,2);XCTAssertEqual(alarms.pending.count,2)
         XCTAssertEqual(coordinator.status(for:first),.scheduled)
+    }
+}
+
+extension TodoReminderTests {
+    func testReviewCTitleOnlyEditReplacesNativeTextButUnrelatedNotesKeepAcceptedIdentity() async throws {
+        for channel in TodoReminderChannel.allCases {
+            let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
+            let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
+            let task=try service.create(.init(title:"Synthetic before title",remindAt:now.addingTimeInterval(600),reminderChannel:channel))
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            await coordinator.reconcile(context:context)
+            let before=try XCTUnwrap(service.reminderIntent(for:task.id)).generation
+            var draft=try service.draft(id:task.id);draft.notes="Synthetic unrelated notes"
+            try service.edit(id:task.id,draft:draft);await coordinator.reconcile(context:context)
+            XCTAssertEqual(try service.reminderIntent(for:task.id)?.generation,before)
+            draft=try service.draft(id:task.id);draft.title="Synthetic after title"
+            try service.edit(id:task.id,draft:draft);await coordinator.reconcile(context:context)
+            XCTAssertEqual(coordinator.status(for:task),.scheduled)
+            if channel == .alarm {
+                XCTAssertEqual(alarms.pending.count,1);XCTAssertEqual(alarms.pending.values.first?.title,"Synthetic after title")
+            } else {
+                XCTAssertEqual(notifications.pending.count,1);XCTAssertEqual(notifications.pending.values.first?.title,"Synthetic after title")
+            }
+        }
+    }
+}
+
+extension TodoReminderTests {
+    func testReviewCTitleEditOfStoppedRequestDoesNotRearmEitherChannel() async throws {
+        for channel in TodoReminderChannel.allCases {
+            let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
+            let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
+            let task=try service.create(.init(title:"Synthetic stopped before",remindAt:now.addingTimeInterval(600),reminderChannel:channel))
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            await coordinator.reconcile(context:context)
+            let generation=try XCTUnwrap(service.reminderIntent(for:task.id)).generation
+            notifications.pending=[:];alarms.pending=[:]
+            var draft=try service.draft(id:task.id);draft.title="Synthetic stopped after"
+            try service.edit(id:task.id,draft:draft)
+            await coordinator.reconcile(context:context);await coordinator.reconcile(context:context)
+            XCTAssertEqual(coordinator.status(for:task),.stopped)
+            XCTAssertEqual(alarms.scheduleCalls.count+notifications.addCalls.count,1)
+            XCTAssertTrue(alarms.pending.isEmpty);XCTAssertTrue(notifications.pending.isEmpty)
+            XCTAssertEqual(try service.reminderIntent(for:task.id)?.generation,generation)
+        }
+    }
+    func testReviewCLegacyCancellationFailureBlocksNewSeriesSuccessorUntilVerified() async throws {
+        let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
+        let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
+        let task=try service.create(.init(title:"Synthetic V14 legacy series",plannedDay:TodoDay(date:now).description,remindAt:now.addingTimeInterval(600),frequency:.daily))
+        // Represents the actual V14→V15 default: an existing task has no new intent or device journal.
+        context.delete(try XCTUnwrap(service.reminderIntent(for:task.id)));try context.save()
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        await coordinator.reconcile(context:context)
+        let old=TodoReminderCoordinator.identifier(task.id)
+        XCTAssertNotNil(notifications.pending[old]);notifications.failedRemovalIdentifiers=[old]
+        try service.transition(id:task.id,to:.completed)
+        let successor=try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+        await coordinator.reconcile(context:context)
+        XCTAssertEqual(coordinator.status(for:task),.cancellationPending)
+        XCTAssertEqual(coordinator.status(for:successor),.cancellationPending)
+        XCTAssertEqual(notifications.pending.count,1);XCTAssertNil(notifications.pending.values.first {$0.taskID == successor.id})
+        notifications.failedRemovalIdentifiers=[];await coordinator.reconcile(context:context)
+        XCTAssertNil(notifications.pending[old]);XCTAssertEqual(notifications.pending.count,1)
+        XCTAssertEqual(notifications.pending.values.first?.taskID,successor.id);XCTAssertEqual(coordinator.status(for:successor),.scheduled)
+    }
+}
+
+
+extension TodoReminderTests {
+    func testReviewCTitleChangesWhileNativeReadOrScheduleSuspendsCannotKeepOldText() async throws {
+        for duringRead in [true,false] {
+            let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
+            let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
+            let task=try service.create(.init(title:"Synthetic suspended before",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let change: () async throws -> Void = {
+                var draft=try service.draft(id:task.id);draft.title="Synthetic suspended after"
+                try service.edit(id:task.id,draft:draft)
+                await coordinator.reconcile(context:context)
+            }
+            if duringRead {await coordinator.reconcile(context:context);alarms.whileReading=change}
+            else {alarms.whileScheduling={_ in try await change()}}
+            await coordinator.reconcile(context:context)
+            XCTAssertEqual(coordinator.status(for:task),.scheduled)
+            XCTAssertEqual(alarms.pending.count,1);XCTAssertEqual(alarms.pending.values.first?.title,"Synthetic suspended after")
+            XCTAssertEqual(alarms.scheduleCalls.count,2);XCTAssertEqual(alarms.cancelCalls.count,1)
+        }
+    }
+    func testReviewCTitleReplacementWaitsForConfirmedCancellationThenUsesOneNewRequest() async throws {
+        let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
+        let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
+        let task=try service.create(.init(title:"Synthetic blocked title before",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        await coordinator.reconcile(context:context);alarms.failCancel=true
+        var draft=try service.draft(id:task.id);draft.title="Synthetic blocked title after"
+        try service.edit(id:task.id,draft:draft);await coordinator.reconcile(context:context)
+        XCTAssertEqual(coordinator.status(for:task),.cancellationPending);XCTAssertEqual(alarms.scheduleCalls.count,1)
+        XCTAssertEqual(alarms.pending.values.first?.title,"Synthetic blocked title before")
+        alarms.failCancel=false;await coordinator.reconcile(context:context)
+        XCTAssertEqual(coordinator.status(for:task),.scheduled);XCTAssertEqual(alarms.scheduleCalls.count,2)
+        XCTAssertEqual(alarms.pending.count,1);XCTAssertEqual(alarms.pending.values.first?.title,"Synthetic blocked title after")
     }
 }

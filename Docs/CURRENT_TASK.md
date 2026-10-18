@@ -20,6 +20,8 @@ B4/C联合持久化正在实现（尚未提交）：追加V15系列设置、本�
 
 C内部验证继续收敛：新增本次提醒独立写入/修订守卫、ready/prepared/accepted/取消待确认的磁盘所有权和真实系统查队、旧回调/写失败/停止/权限/同系列阻挡。共享额度先确认取消再分配，affected-c11整类Todo20＋Sleep4＋ImportantDays7 **31/31PASS、零runtime warning**。c28的actual ZIP本次Alarm覆盖/设备账本排除、DST/修订守卫、生产Open Intent保留Record和modal编辑草稿，affected-c13 **4PASS0FAIL1SKIP、零runtime warning**。原生授权API两次到达mobiletimerd但无弹窗立即Denial；首两次正向UI失败保留，正向native schedule/cancel/系统Stop/Open及真机递送仍NOT_RUN，不把fake绿标为集成PASS。c29双语混合与最大字号UI正在运行，D全量/Release/独立review/普通push/唯一DraftPR尚未完成。
 
+D独立review已开始（`/root/usage_remediation_independent_review`，无历史fork、只读固定266c9ca）：确认3项P2，标题旧文案/周一顺序/旧库取消后继阻挡；真实红测已保留，限定修复后review-d4-green35PASS。缓存损坏假设被真实磁盘对照否定。截图发现启动Dark参数未生效，旧Light不冒称Dark，正在用实际simctl appearance验证。集中全量/Release/实包与审查闭环仍待完成。
+
 ---
 
 # 当前任务 — 使用反馈统一整改 Goal（2026-10-18）

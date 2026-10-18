@@ -1370,3 +1370,30 @@ extension TodoFoundationTests {
         XCTAssertTrue(context.hasChanges)
     }
 }
+
+
+extension TodoFoundationTests {
+    func testReviewCRescheduleThenRetainedContextTransitionKeepsCanonicalEventChainOnDisk() throws {
+        for completing in [true,false] {
+            let folder=FileManager.default.temporaryDirectory.appendingPathComponent("pgos-review-reminder-"+UUID().uuidString)
+            try FileManager.default.createDirectory(at:folder,withIntermediateDirectories:true)
+            defer {try? FileManager.default.removeItem(at:folder)}
+            let url=folder.appendingPathComponent("store.sqlite"),container=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let context=container.mainContext,now=Date(),service=TodoTaskService(context:context,now:{now})
+            let retained=try service.create(.init(title:"Synthetic retained main identity",remindAt:now.addingTimeInterval(600)))
+            let id=retained.id
+            try service.rescheduleReminder(id:id,to:now.addingTimeInterval(1800),channel:.alarm)
+            // Deliberately keep the original identity/context alive without a refresh/read of the new task.
+            try service.transition(id:id,to:completing ? .completed : .canceled)
+            try TodoIntegrity.validate(context:ModelContext(container))
+            let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+            try TodoIntegrity.validate(context:ModelContext(reopened));try UsagePreferencesIntegrity.validate(context:ModelContext(reopened))
+            let actual=try XCTUnwrap(ModelContext(reopened).fetch(FetchDescriptor<TodoTask>()).first)
+            XCTAssertEqual(actual.remindAt,now.addingTimeInterval(1800));XCTAssertEqual(actual.revision,2)
+            let events=try ModelContext(reopened).fetch(FetchDescriptor<TodoTaskEvent>()).sorted {$0.sequence < $1.sequence}
+            XCTAssertEqual(events.map(\.sequence),[0,1,2])
+            XCTAssertEqual(try JSONDecoder().decode(TodoEventValue.self,from:events.last!.afterValue),try TodoEventValue(actual))
+            withExtendedLifetime(retained) {}
+        }
+    }
+}

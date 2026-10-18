@@ -296,8 +296,14 @@ final class TodoReminderCoordinator {
                 for identifier in removedIdentifiers where confirmed.contains(identifier) && identifier.hasPrefix(Self.prefix) && !identifier.hasPrefix(TodoIntentScheduling.notificationPrefix) {
                     if let id=UUID(uuidString:String(identifier.dropFirst(Self.prefix.count))) {newStatuses[id] = .cancellationPending}
                 }
+                let unconfirmedLegacy=Set(removedIdentifiers.intersection(confirmed).compactMap {identifier -> UUID? in
+                    guard identifier.hasPrefix(Self.prefix),!identifier.hasPrefix(TodoIntentScheduling.notificationPrefix) else {return nil}
+                    return UUID(uuidString:String(identifier.dropFirst(Self.prefix.count)))
+                })
+                let blockedLegacySeries=Set(tasks.filter {unconfirmedLegacy.contains($0.id)}.compactMap(\.seriesID))
+                let blockedByLegacy=Set(tasks.filter {unconfirmedLegacy.contains($0.id) || $0.seriesID.map {blockedLegacySeries.contains($0)} == true}.map(\.id))
                 let intents=try await intentScheduling.reconcile(container:context.container,requestNotifications:explicitPermission && !authorizationFailed,
-                    requestAlarms:explicitAlarmPermission,isCurrent:{pass == self.generation})
+                    requestAlarms:explicitAlarmPermission,blockedTaskIDs:blockedByLegacy,isCurrent:{pass == self.generation})
                 if intents.stale || pass != generation {continue}
                 newStatuses.merge(intents.states) {_,new in new}
                 if authorizationFailed {

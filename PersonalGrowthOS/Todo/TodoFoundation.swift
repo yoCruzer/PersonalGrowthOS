@@ -859,10 +859,11 @@ enum TodoReminderChannel: String, Codable, CaseIterable { case notification, ala
     var channelRawValue: String
     var fireAt: Date
     var phaseRawValue: String
+    var requestedTitle: String?
     init(id: UUID = UUID(), taskID: UUID, intentGeneration: UUID, channel: TodoReminderChannel,
-         fireAt: Date, phase: TodoReminderDevicePhase = .prepared) {
+         fireAt: Date, phase: TodoReminderDevicePhase = .prepared, requestedTitle: String? = nil) {
         self.id=id;self.taskID=taskID;self.intentGeneration=intentGeneration
-        channelRawValue=channel.rawValue;self.fireAt=fireAt;phaseRawValue=phase.rawValue
+        channelRawValue=channel.rawValue;self.fireAt=fireAt;phaseRawValue=phase.rawValue;self.requestedTitle=requestedTitle
     }
 }
 enum TodoReminderDevicePhase: String, Codable {

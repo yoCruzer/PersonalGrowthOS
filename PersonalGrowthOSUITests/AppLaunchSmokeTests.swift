@@ -39,6 +39,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         continueAfterFailure=false
         let app=XCUIApplication()
         app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSUsageWeightTest","-AppleLanguages","(zh-Hans)","-AppleLocale","zh_CN","-AppleInterfaceStyle","Dark","-UIPreferredContentSizeCategoryName",UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        print("PGOS_USAGE_STYLE_DARK");fflush(stdout);Thread.sleep(forTimeInterval:1)
         app.launch();app.buttons["today-weight"].tap()
         func reveal(_ element: XCUIElement) {
             for _ in 0..<18 where !element.isHittable {app.swipeUp()}
@@ -54,7 +55,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         let title=app.descendants(matching:.any)["todo-title"];XCTAssertTrue(title.waitForExistence(timeout:5));title.typeText("合成自选星期的大字待办")
         app.buttons["todo-dismiss-keyboard"].tap()
         let planned=app.switches["todo-planned-toggle"];reveal(planned);planned.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
-        let frequency=app.buttons["todo-repeat"];reveal(frequency);frequency.tap();app.buttons["自选星期"].tap()
+        let frequency=app.buttons["todo-repeat"];reveal(frequency);frequency.tap();
+        let selectedWeekdays=app.buttons["自选星期"]
+        for _ in 0..<4 where !selectedWeekdays.exists {app.buttons["每周六、周日"].swipeUp()}
+        selectedWeekdays.tap()
         let sunday=app.buttons["todo-weekday-7"];reveal(sunday);XCTAssertGreaterThanOrEqual(sunday.frame.height,44);sunday.tap()
         let summary=app.staticTexts["todo-repeat-summary"];reveal(summary)
         let weekdays=XCTAttachment(screenshot:app.screenshot());weekdays.name="Usage-Chinese-Dark-maxAX-weekdays";weekdays.lifetime = .keepAlways;add(weekdays)
@@ -66,6 +70,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         for large in [false,true] {
             let app=XCUIApplication()
             app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSQuietWinsTest","-PGOSUsageWeightTest","-PGOSImportantDaysTest","-PGOSInvestmentSegmentReview","-AppleLanguages",large ? "(zh-Hans)" : "(en)","-AppleLocale",large ? "zh_CN" : "en_US","-AppleInterfaceStyle",large ? "Dark" : "Light","-UIPreferredContentSizeCategoryName",large ? UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue : UIContentSizeCategory.large.rawValue]
+            print(large ? "PGOS_USAGE_STYLE_DARK" : "PGOS_USAGE_STYLE_LIGHT");fflush(stdout);Thread.sleep(forTimeInterval:1)
             app.launch()
             func shot(_ name: String) {let a=XCTAttachment(screenshot:app.screenshot());a.name="Usage-mixed-\(large ? "Chinese-Dark-maxAX" : "English-Light-default")-"+name;a.lifetime = .keepAlways;add(a)}
             app.tabBars.buttons[large ? "成长" : "Growth"].tap()

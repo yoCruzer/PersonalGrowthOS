@@ -694,10 +694,7 @@ enum TodoRepeatDescription {
 private struct TodoWeekdayPicker: View {
     @Binding var selection: Set<Int>
     @Environment(\.dynamicTypeSize) private var typeSize
-    private var order: [Int] {
-        let native=Calendar.current.firstWeekday,first=native == 1 ? 7 : native-1
-        return (0..<7).map {(first+$0-1)%7+1}
-    }
+    private let order=Array(1...7)
     var body: some View {
         LazyVGrid(columns:typeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.adaptive(minimum:140))],alignment:.leading) {
             ForEach(order,id:\.self) {day in
