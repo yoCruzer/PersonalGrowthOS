@@ -1,3 +1,7 @@
+> **2026-10-18 第二轮外部复核后：LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。** CR-01～06 均 OPEN，OBS-01/02 待限定补验；新矩阵见本文末尾，执行 [第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)。本次只准备规格，新产品/测试 NOT_RUN。下方上一轮运行结果保留，其 READY 和“本地全部关闭”不作为当前状态。
+
+---
+
 > **2026-10-18 最新增量：F1–F5 / UX1–UX2 本地修复与独立复核完成，READY_FOR_OWNER_DEVICE_GATE。** 固定产品597552a；本轮最终证据见本文末尾。下方原A–D及“全部待执行”为历史基线，真实失败与设备遗留不改标。
 
 ---
@@ -289,3 +293,24 @@ Reviewer `/root/pr13_fix_independent_reviewer` 没有编写本轮代码，读取
 本轮交付提交在固定产品597552a之后只更新五份Markdown；交付SHA以本次交付commit/PR head和外部final-delivery-proof.json核对，避免文件自引用。普通push后核对Draft/base/head和workflows=0、checks=[]；远端CI仍NOT_RUN。
 
 独立原文报告见REVIEW最后章节；全部本地要求闭环，设备/签名/CI门未通过。
+
+## 2026-10-18 第二轮限定补修验收基线
+
+已审交付 e75ac56110cb9c4f58158eaf494087b2ed946324 / 产品597552a020eab22673feed108d8676359efd8822。新 FIX2_GOAL_SHA 由引导 prompt 指定；执行规格为 [REVIEW_FIX2_GOAL](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)。本表为待执行要求，不复用旧 PASS 预先关闭新问题。
+
+| 项目 | 当前状态 | 必须新增或核实的证据 |
+| --- | --- | --- |
+| CR-01 | OPEN / NOT_RUN | pending 容量取消跨过 fireAt 后，在实际缺失/取消后收敛，Recheck/重开幂等，未来仍可等待恢复，过期无旧排程 |
+| CR-02 | OPEN / NOT_RUN | 两次 phase 真未保存、native 成功移除的反例；原因先可靠持久化，故障恢复后用户意图不误退役，停止负例保持 |
+| CR-03 | OPEN / NOT_RUN | 旧 f1 可生成的有效已覆盖 nil V15/v11，直接 complete/skip/再改期、重开/恢复和原子回滚；原始历史事件快照保留 |
+| CR-04 | OPEN / NOT_RUN | 编辑/删除候选 B 后返回未变 A，候选与详情/分页一致，A 输入保留且能正常保存 |
+| CR-05 | OPEN / NOT_RUN | 计时保存后正式事实仅一条且有效落点；失败仍可编辑，无空外层页，不恢复全量终态缓存 |
+| CR-06 | OPEN / NOT_RUN | 固定完整年月日，不依赖真实执行月/年；截止、全部历史与中英文相关断言继续有效 |
+| OBS-01 | 故障契约补验 / NOT_RUN | 同一预热 Workspace：实际保存后报错→refresh/retry→缓存revision与后续命令恢复；区分未保存与已提交 |
+| OBS-02 | 未确认观察 / NOT_RUN | 一次有界实际入口核验或最小加固；无可达证据可保留 UNCONFIRMED，不因此阻断原F4/交付 |
+| RF2-REGRESSION | NOT_RUN | 按最终diff的受影响Unit与关键UI组合、既有计时/草稿/取消/读取保护 |
+| RF2-BUILD-REVIEW | NOT_RUN | 最终干净产品SHA的Debug/unsigned Release及既有实包proof；独立reviewer固定代码/原始证据闭环 |
+
+按新 Goal 完成本地连续修复，不每阶段重复全量测试；只文档提交不重建。实际命令、用例、SHA、计数/失败、原始证据位置与必要哈希追加到既有 EXECUTION 和本矩阵，独立结论追加 REVIEW。旧241/0/1是九类242项，不是全仓517重跑；UI原8/2与补4/4继续分轮记录。
+
+六项明确收尾均有完成或反证处置、OBS完成限定工作、必要本地门与独立复核有效，且无未关闭confirmed P0/P1/P2后，才能恢复READY_FOR_OWNER_DEVICE_GATE。原D1–D4、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN不因此通过。

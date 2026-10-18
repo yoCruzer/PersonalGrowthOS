@@ -1,3 +1,20 @@
+# PR #13 第二轮外部复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-18）
+
+**当前有效目标：[第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)。规格已准备；CR-01～CR-06 尚未实施，本轮原生验证 NOT_RUN。此前 READY_FOR_OWNER_DEVICE_GATE 暂不成立，本地修复已获 Owner 授权，不等待设备门才能开工。**
+
+远端核对基线：交付 e75ac56110cb9c4f58158eaf494087b2ed946324、产品/测试 597552a020eab22673feed108d8676359efd8822；PR #13 OPEN Draft，head 分支 codex/usage-remediation-20261017，base 仍 codex/time-investment-v1 / 5a70f0110b151f8a45ac7c33d3f443823b1cff24。本规格提交只改 Markdown，FIX2_GOAL_SHA 由 Owner 引导 prompt 固定。
+
+第二轮外部源码复核确认 3 项 P2：CR-01 容量取消跨过 fireAt 后不收敛；CR-02 容量原因两次真实未落盘会误退役；CR-03 旧候选已经保存过覆盖的 nil 系列兼容遗漏。另有 CR-04 候选记录变更后的失效、CR-05 保存计时后外层空页、CR-06 日期测试稳定性三项 P3。OBS-01 按既有保存后报错契约补验；OBS-02 仅作有界入口检查，不预先记为普通生产 confirmed P2。详见 Goal 与 REVIEW 最新补充。
+
+原 F1、F4、UX1/UX2 主要逻辑及 F5 核心性能修复在代码层面得到认可，作为本轮保护基线，不重新开工 A–D。上一轮 241/0/1 与 UI 8/2 后补 4/4、双构建、实包核对是既有报告结果，原始证据仍在开发机；本次外部 review 未运行 Xcode，也未取得这些原始产物进行独立复算。
+
+下一步：沿原 worktree / 分支核实并修复 CR-01～06、完成 OBS 的限定处置、必要组合回归和独立复核，再普通 push 原 PR。Mac 工作树与未知改动应在实际续接时轻量核对；本规格准备没有重新验证开发机状态。没有本轮产品 PASS 或新实包结论。
+
+D1–D4、AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持；不操作私人库或设备、不签名安装、不 merge/force push/tag/Archive/TestFlight。
+
+---
+以下为前轮交接原文。其运行结果保留；其中“最新”“READY”“下一步仅设备门”等本地停点已由上文和第二轮 Goal 替代。
+
 # PR #13 独立复核修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
 
 固定 FIX_GOAL_SHA `2add10b0c67d064b7e77478fb18a11479d3c94dc` 的 F1–F5 与 UX1–UX2 已完成本轮本地实现、必要回归和独立复核。产品/测试与双构建固定 `597552a020eab22673feed108d8676359efd8822`；生产/Unit与f946相同，最后提交仅补强UI驱动。交付提交在此后只更新五份Markdown，交付SHA以本次commit/PR head及外部final-delivery-proof.json核对。

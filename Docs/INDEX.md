@@ -158,3 +158,7 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## PR #13 独立复核后的本地修复 — 2026-10-18
 
 [PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md)：基于已审交付 f1b52b58fd11c41f508ec665d583827879ffa202，连续修复新 F1–F5 并落实 UX1 / UX2，沿用既有 PR #13 与原 base。新 FIX_GOAL_SHA 由引导 prompt 固定。当前仅规格准备，执行 / 验证均待完成；本地执行停点由新 Goal 和 CURRENT 最新章节替代，旧 A–D / R1–R8 证据及设备 / 发行边界保留。
+
+## PR #13 第二轮独立复核限定补修 — 2026-10-18
+
+[第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)：基于已审交付 e75ac561 / 产品597552a，处理 CR-01～06 和 OBS-01/02 的限定补验。Owner 已批准沿同一 Draft PR #13 / 原 base 连续执行，FIX2_GOAL_SHA 由短引导 prompt 固定。本次仅规格准备，新的实现与原生验证均未执行；两份 CURRENT 最新章节和新 Goal 取代前轮仅等设备的本地停点。已认可修复作为保护，旧失败轮次和设备/发行边界保留。

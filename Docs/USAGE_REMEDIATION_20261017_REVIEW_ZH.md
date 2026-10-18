@@ -1,3 +1,7 @@
+> **2026-10-18 第二轮外部独立复核：CR-01～03 为仍开放 P2，CR-04～06 为 P3；当前 LOCAL_REVIEW_FIX_REQUIRED。** 基于产品 597552a / 交付 e75ac561 的源码和测试内容；未执行本轮原生测试。下一轮执行规格见 [第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)，本次复核摘要在本文末尾。以下保留上一轮全部原文；其中“无未关闭 P2 / READY”不作为当前结论。
+
+---
+
 > **2026-10-18 最新复核：新 F1–F5 与 UX1–UX2 本地闭环，固定产品597552a，独立原文终审见本文末尾。** 下方旧R1–R8报告、外部F1–F5发现及原待修状态完整保留为历史；不覆盖设备/签名/CI遗留。
 
 ---
@@ -134,3 +138,24 @@ F5 最终 `final-unit2` 的真实落盘夹具含 10,000 个有效 Session 及配
 `final-debug2` 与 unsigned generic iOS `final-release1` 均来自 clean `597552a`、退出 0。我直接读取两种配置的 App/Share/Widget 实包并重算可执行文件哈希，与 proof 一致：原 Bundle IDs、1.0(7)、minOS 17 保持；两 App provenance 均为完整 `597552a`、Dirty=false、localGit、Tag 空。实际 Release Mach-O 的 AlarmKit 为 `LC_LOAD_WEAK_DYLIB`，Debug 证据亦一致。历史 Schema、TransferModels、ZIPArchive 和工程配置相关 blob 未改写。
 
 以上结论限于本轮实现及本地证据。AlarmKit 原生正向调用 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 继续保留；D1–D4、私人设备/私人库、签名覆盖安装和发行验证均未通过，不能由本报告改为 PASS。
+
+## 2026-10-18 第二轮外部独立复核摘要 — CR-01～06
+
+审查固定产品/测试 `597552a020eab22673feed108d8676359efd8822`、交付 `e75ac56110cb9c4f58158eaf494087b2ed946324`。ChatGPT 外部只读核对远端身份、相对 2add 的四提交/24文件差异及相关调用链，并对三个 P2 做反证复核。本节为源码审查摘要，不是新原生运行报告，也不改写上方既有 reviewer 原文。
+
+| 编号 | 判定 | 缺口与现有测试边界 |
+| --- | --- | --- |
+| CR-01 | P2 / OPEN | capacityCancellationPending 在同一开放意图跨过 fireAt 后被重排前置条件跳过，Recheck 不收敛并遮蔽过期重设；现有 F3 固定时钟且取消及时恢复。 |
+| CR-02 | P2 / OPEN | 容量 pending 和 waiting 两次真实未落盘，而 native 移除成功，accepted 缺失被误退役，释放容量不能恢复原意图；不把抛错但精确读回成功混为此例。 |
+| CR-03 | P2 / OPEN，存量兼容遗漏 | 有效旧 V11→旧 f1 已保存单次覆盖→当前 V15/v11 路径仍从覆盖后实例推导 nil 偏移；新测试只覆盖用当前服务第一次改期。 |
+| CR-04 | P3 / OPEN | 正式候选 B 编辑/删除后，未变草稿 A 仍保留旧 duplicateIDs；原测试改 A 自身，未覆盖候选成员变化。 |
+| CR-05 | P3 / OPEN | 保存后终态操作退出缓存，内层编辑器关闭但外层 Timer sheet 不关闭，内容可能为空；现有保存测试未检查最终落点。 |
+| CR-06 | P3 / OPEN，测试稳定性 | 固定 2026 年 10 月夹具而日期选择器用 Date()，仅查 October 10/10月10；跨月/年不可重复。 |
+
+两项观察单列：OBS-01 是既有“save 后抛错”故障模型下同一 Workspace 刷新/retry 的恢复缺口，未证明生产 SwiftData 自然出现此分支；OBS-02 是旧分页按钮任务很晚才进入 loader 的入口防御观察，未证明真实 SwiftUI 调度可达，不据此重新打开 F4。其补验与有界停止条件见新 Goal。
+
+可认可的代码层修复：原 F1 后继重新启用换代、F4 已进入 reader 的旧结果晚完成保护、UX1 窗外选日与 UX2 截止/独立历史边界；F5 确实接入 Service→事件→Workspace 的按 ID 刷新、轻量事实及真实有界详情，10k 测试不是单纯 generation helper。上述范围作为本轮保护，不重复开发。
+
+外部审查未取得开发机 xcresult、截图或实包，不能独立复算上一轮 241/0/1、8/2 后补 4/4、双构建与哈希声明；没有把它们判为虚假，也没有冒称本次运行通过。远端身份可核对，产品 check-runs 为 0，CI 仍 NOT_RUN。设备门及历史 FAIL/SKIP/NOT_RUN 保留。
+
+结论：当前不认可无未关闭 P2/READY_FOR_OWNER_DEVICE_GATE；Owner 已批准依 [第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md) 在同一 PR 连续修复和验证。本规格提交未关闭任何 CR。后续 reviewer 在此追加实际独立结论和逐项关闭证据。

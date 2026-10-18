@@ -1,3 +1,21 @@
+# 当前任务 — PR #13 第二轮限定补修（2026-10-18）
+
+**目标：[USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)。状态 FIX_GOAL_READY / LOCAL_REVIEW_FIX_REQUIRED。Owner 已批准本地连续执行；本次仅文档准备，修复与新原生测试均未执行。**
+
+已审产品 597552a020eab22673feed108d8676359efd8822、已审交付 e75ac56110cb9c4f58158eaf494087b2ed946324。FIX2_GOAL_SHA 以引导 prompt 的完整 SHA 为准。沿 codex/usage-remediation-20261017 和唯一 Draft PR #13 续接，base 保持 codex/time-investment-v1；保留后续有效提交和未知工作区改动。
+
+1. 按 AGENTS 与新 Goal 轻量核对上下文、worktree、远端和祖先关系；安全接收规格，不先重跑全量基线或从旧 BASE 重建。
+2. RC-A：修复 CR-01 过期容量取消恢复、CR-02 容量取消原因未落盘、CR-03 旧候选已保存覆盖 nil 状态。取消确认、等待/停止区分、旧事件与原子性一起验证。
+3. RC-B：收尾 CR-04 候选 B 编辑/删除后草稿 A 候选失效、CR-05 保存计时后外层有效去向；按 OBS-01 的既有故障契约验证同一 Workspace 刷新/重试恢复，保持草稿与 F5 读取边界。
+4. RC-C：CR-06 体重 UI 测试固定完整日期；OBS-02 有界检查实际任务入口或最小加固，未证明可达时如实保留未确认观察，不重开已修原 F4。
+5. RC-D：定向回归收敛后运行按最终 diff 选择的受影响 Unit/关键 UI 组合；最终干净产品 SHA 完成既有必要 Debug/unsigned Release 和实包 proof，独立 reviewer 读取代码及本机原始证据并闭环。内部阶段无需再请求继续，不每阶段全量验证。
+6. 更新 CURRENT、既有 EXECUTION/ACCEPTANCE/REVIEW，保留旧失败轮次和证据边界，固定产品与纯文档交付 SHA，普通 push 同一 PR。六项明确收尾完成、OBS 有限定处置且无范围内未关闭 confirmed P0/P1/P2 后才恢复 READY_FOR_OWNER_DEVICE_GATE；否则如实记录剩余问题或本地验证阻塞。
+
+原 F1/F4/UX1/UX2 与 F5 核心性能作为保护，不重做 A–D。D1–D4、AlarmKit 正向、Share/Safari/物理低空间/CI 遗留状态保持。此授权不包含私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+---
+以下保留前轮任务交接原文。其运行结果和设备边界不改写，本地执行停点以上文为准。
+
 # PR #13 独立复核修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
 
 固定 FIX_GOAL_SHA `2add10b0c67d064b7e77478fb18a11479d3c94dc` 的 F1–F5 与 UX1–UX2 已完成本轮本地实现、必要回归和独立复核。产品/测试与双构建固定 `597552a020eab22673feed108d8676359efd8822`；生产/Unit与f946相同，最后提交仅补强UI驱动。交付提交在此后只更新五份Markdown，交付SHA以本次commit/PR head及外部final-delivery-proof.json核对。
