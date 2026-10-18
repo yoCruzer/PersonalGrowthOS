@@ -227,3 +227,5 @@ Apple原生行为依据：[requestAuthorization](https://developer.apple.com/doc
 独立R7/P2：InvestmentHistory的评价日跨午夜/前台变化时，总计重算而SessionPage加载key未含评价日，原records可能保留已移出7/30天窗口的事实。最小修复给既有page scope key增加民用today.identifier，同步触发offset归零与任务重查，不按每秒Date重读。新增冻结同一正式事实快照、评价日10-17→10-18的7日/30日成对反例，All time保留且旧评价日不变作对照；不冒称Unit执行了真实午夜UI。final-debug3 clean6db49ab已PASS，R7追加后另建干净包并定向运行完整InvestmentFoundationTests和相关历史UI，不重复517全量。
 
 `final-debug4`在新反例误用不存在的durationOnly枚举编译FAIL；改用现有dateDuration，失败保留，下一干净构建final-debug5。
+
+`final-debug5`继续指出新测试fixture的抛错初始化缺try，编译FAIL；仅补try，下一轮final-debug6，产品无新变化。
