@@ -391,7 +391,7 @@ import XCTest
         let participant=UUID(),activity=UUID(),before=ImportantCivilDay(identifier:"2026-10-17")!,after=ImportantCivilDay(identifier:"2026-10-18")!
         for (days,start) in [(7,"2026-10-11"),(30,"2026-09-18")] {
             let id=UUID(),date=ImportantCivilDay(identifier:start)!.instant(minutes:720,timeZone:zone)!
-            let values=InvestmentValues(day:start,timeZoneID:zone.identifier,seconds:60,evidence:.durationOnly,source:.manual,spans:[])
+            let values=InvestmentValues(day:start,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual,spans:[])
             let fact=InvestmentSessionTransfer(InvestmentSession(id:id,participantID:participant,activityID:activity,values:values,now:date))
             let snapshot=try InvestmentReviewSnapshot(sessions:[fact],participantID:participant)
             let previous=snapshot.selection(days:days,today:before,activityID:nil,day:nil)
