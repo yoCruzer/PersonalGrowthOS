@@ -758,7 +758,10 @@ extension TodoReminderTests {
                 XCTAssertNotNil(client.pending[lateID],"Two phase writes really fail: preserve native ownership before destructive removal")
                 XCTAssertFalse(client.removed.contains(lateID))
             } else {XCTAssertNil(client.pending[lateID])}
-            XCTAssertNotEqual(try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == late.id}?.phaseRawValue,"retired")
+            let phase=try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == late.id}?.phaseRawValue
+            XCTAssertEqual(phase,mode == 0 ? "accepted":mode == 1 ? "capacityCancellationPending":"capacityWaiting")
+            if mode == 0 {XCTAssertFalse(attempts.contains("capacityWaiting"),"No destructive removal before the first durable reason")}
+            else {XCTAssertTrue(attempts.contains("capacityWaiting"))}
             fail=false;await coordinator.reconcile(context:c.mainContext)
             XCTAssertEqual(client.pending.values.map(\.taskID),[early.id]);XCTAssertEqual(coordinator.status(for:late),.queueFull)
             try service.transition(id:early.id,to:.completed)

@@ -450,45 +450,41 @@ final class TodoTaskService {
         guard let minutes=rule.reminderMinutes else {return 0}
         guard rule.updatedAt == rule.createdAt else {throw TodoFailure.invalidReminderOffset}
         let id=rule.id
-        let tasks=try context.fetch(FetchDescriptor<TodoTask>(predicate:#Predicate {$0.seriesID == id}))
-        var offsets=Set<Int>()
-        for task in tasks {
-            guard let index=task.occurrenceIndex else {throw TodoFailure.corruptData}
-            let taskID=task.id
-            let history=try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate:#Predicate {$0.taskID == taskID})).sorted {$0.sequence < $1.sequence}
-            var previous: TodoEventValue?,source: TodoEventValue?
-            var reminderEdits=0,lastEdit: Int?,lastReminderEdit: Int?
-            for (sequence,event) in history.enumerated() {
-                let after=try JSONDecoder().decode(TodoEventValue.self,from:event.afterValue)
-                let before=try event.beforeValue.map {try JSONDecoder().decode(TodoEventValue.self,from:$0)}
-                guard event.sequence == sequence,before == previous else {throw TodoFailure.corruptData}
-                if source == nil,event.createdAt >= rule.createdAt,after.reminderMinutes == minutes,after.reminderLocalDay != nil,
-                   event.kindRawValue == TodoEventKind.created.rawValue || event.kindRawValue == TodoEventKind.convertedToSeries.rawValue {
-                    source=after
-                }
-                if event.kindRawValue == TodoEventKind.edited.rawValue {
-                    lastEdit=sequence
-                    if before?.reminderLocalDay != after.reminderLocalDay || before?.reminderMinutes != after.reminderMinutes {
-                        reminderEdits += 1;lastReminderEdit=sequence
-                    }
-                }
-                previous=after
+        let roots=try context.fetch(FetchDescriptor<TodoTask>(predicate:#Predicate {$0.seriesID == id})).filter {$0.occurrenceIndex == 0}
+        guard roots.count == 1,let task=roots.first else {throw TodoFailure.invalidReminderOffset}
+        let taskID=task.id
+        let history=try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate:#Predicate {$0.taskID == taskID})).sorted {$0.sequence < $1.sequence}
+        var previous: TodoEventValue?,source: TodoEventValue?
+        var reminderEdits=0,lastEdit: Int?,lastReminderEdit: Int?
+        for (sequence,event) in history.enumerated() {
+            let after=try JSONDecoder().decode(TodoEventValue.self,from:event.afterValue)
+            let before=try event.beforeValue.map {try JSONDecoder().decode(TodoEventValue.self,from:$0)}
+            guard event.sequence == sequence,before == previous else {throw TodoFailure.corruptData}
+            if source == nil,event.createdAt >= rule.createdAt,after.reminderMinutes == minutes,after.reminderLocalDay != nil,
+               event.kindRawValue == TodoEventKind.created.rawValue || event.kindRawValue == TodoEventKind.convertedToSeries.rawValue {
+                source=after
             }
-            if reminderEdits > 0 {
-                // Older events do not label instance vs series edits. Only a single
-                // final wall-time edit with an explicit current override has an
-                // unambiguous original rule; more complex legacy histories need correction.
-                guard try reminderIntent(for:taskID)?.isInstanceOverride == true,
-                      reminderEdits == 1,lastEdit == lastReminderEdit else {throw TodoFailure.invalidReminderOffset}
+            if event.kindRawValue == TodoEventKind.edited.rawValue {
+                lastEdit=sequence
+                if before?.reminderLocalDay != after.reminderLocalDay || before?.reminderMinutes != after.reminderMinutes {
+                    reminderEdits += 1;lastReminderEdit=sequence
+                }
             }
-            guard !history.isEmpty,previous == (try TodoEventValue(task)),history.last?.sequence == task.revision else {throw TodoFailure.corruptData}
-            guard let source,source.reminderMinutes == minutes,let local=source.reminderLocalDay else {continue}
-            offsets.insert(try TodoRecurrence.reminderOffset(localDay:local,anchor:occurrence(rule,index:index).description))
+            previous=after
         }
-        // Do not invent zero, trust an override's mutable wall clock, or pick a
-        // conflicting sibling. Preserve ambiguous facts for explicit correction.
-        guard offsets.count == 1,let offset=offsets.first else {throw TodoFailure.invalidReminderOffset}
-        return offset
+        if reminderEdits > 0 {
+            // Older events do not label instance vs series edits. Only a single
+            // final wall-time edit with an explicit current override has an
+            // unambiguous original rule; more complex legacy histories need correction.
+            guard try reminderIntent(for:taskID)?.isInstanceOverride == true,
+                  reminderEdits == 1,lastEdit == lastReminderEdit else {throw TodoFailure.invalidReminderOffset}
+        }
+        guard !history.isEmpty,previous == (try TodoEventValue(task)),history.last?.sequence == task.revision else {throw TodoFailure.corruptData}
+        guard let source,source.reminderMinutes == minutes,let local=source.reminderLocalDay else {throw TodoFailure.invalidReminderOffset}
+        // Original V11 could materialize a successor with a lost lead day.
+        // Only the verified root creation/conversion is independent evidence;
+        // derived successors, even if consistent, cannot establish the old policy.
+        return try TodoRecurrence.reminderOffset(localDay:local,anchor:occurrence(rule,index:0).description)
     }
 
     private func applyTemplate(_ rule: TodoSeries, to task: TodoTask, at date: Date, reactivating: Bool = false) throws {
