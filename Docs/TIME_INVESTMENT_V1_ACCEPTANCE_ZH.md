@@ -1,3 +1,39 @@
+# 时间投入 V1 F1/P1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
+
+沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接；固定审查输入 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[外部 F1/P1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)已完成反例、限定修复和真正独立只读复核。原外部 R1–R3 已关闭，本轮仅回归。BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。
+
+最终产品/测试与最后生产 **`4d59a5909ec4314d82c9f9af12c203503ffde98b`**。生产 `current()` 改用包含设备睡眠的 `ContinuousClock` 进程相对秒数，经同一采样接缝进入实际服务；新 `continuous-v1:` 随机进程标识隔离旧 awake 锚点，旧 `anchorUptime` 编码键不改。50ms/18h保护、暂停不累计、倒计时封顶与显式继续、真实壁钟跳变、跨进程/重启待确认及备份只保留可信检查点均保持。Workspace 只加默认 current 的测试注入，AppShell 真实调用不变；无后台常驻、Schema或签名变更。
+
+修复前 clean `0eea42a` 十项原生反例 **1 PASS / 9 FAIL / 0 SKIP，exit65**；暂停对照通过，服务、落盘和实际 ZIP 复现旧120秒而非1920秒或1500秒。九个失败方法不等于九个纯睡眠反例：也含新 token、来源/非有限/回退读数断言；原log有58条断言/抛错失败，含微漂移恢复后零值验证的1个unexpected invalid，全部保留。GREEN clean `4d59a59` 核心29＋磁盘24 **53/53 PASS**；另一轮正确 ImportExport55 **55/55 PASS**；四项真实前后台/冷启动/R2/R3 UI **4/4 PASS**，各exit0，分轮不拼为一次全绿。Unit两轮无runtime warning，UI保留3条 Invalid frame warning。
+
+复用历史完整 Unit：`d5db223` 实际467项 **466 PASS / 0 FAIL / 1 SKIP**；当轮额外AX UI使总468项仍FAIL。没有宣称本轮重跑完整Unit。40份其他旧Unit/fixture blob相同，两份Investment测试扩展且整类重跑；本轮全部受影响消费者及真实ZIP/回滚、历史V14迁移、跨日/DST已补验，独立Reviewer认可影响矩阵。旧中文Dark最大AX/相邻Record/Files ZIP等未改路径证据按下方固定提交复用。
+
+Debug build-for-testing `compile2`、unsigned generic iOS Release `release1` **PASS/exit0**；六实际App/Share/Widget包保留原身份1.0(7)，两App provenance均clean同完整4d59 SHA/localGit/Tag空。Xcode27.1/27A9275只读首检exit0，既有专用模拟器/iOS27.0可用；首次受限沙箱simctl访问失败与获准只读服务检查区分记录，无系统配置操作。新证据根 `/tmp/pgos-time-investment-f1-evidence`；`native-run-index.json` 保存完整命令、SHA、退出码、实际计数和日志哈希，原红测/旧证据不覆盖。
+
+独立 Reviewer `/root/time_investment_reviewer` 只读核对固定红绿源码、生产链、原始日志/xcresult、实际截图和实包；范围内无尚未关闭 confirmed P0/P1/P2。**READY_FOR_OWNER_DEVICE_GATE 只表示本地批次完成，设备Gate未通过。** 真实iPhone锁屏/硬件睡眠、私人库覆盖、签名/安装、实际通知/桌面Widget/Photos/VoiceOver/飞行模式及远端独立CI（workflows=0）均 **NOT_RUN**；Safari unsigned **FAIL**、专用HFS+物理低空间 **SKIP/NOT_RUN**保持。不能用合成三读数或Simulator home/relaunch替代硬件睡眠。
+
+最终产品/测试后交付仅五份交接Markdown变化，delivery SHA以原PR head和 `final-delivery-proof.json` 核对；普通push原分支/原Draft PR，旧PR与原workspace三项未知dirty保留。下一边界仅Owner另行授权设备验收：先独立备份和旧数据核对，再不卸载覆盖安装、锁屏/使用其他App后结束、晚返回倒计时、待确认重开、手工/跨日/回顾及相邻模块组合。未merge/force/tag/Archive/TestFlight，不进入新模块。
+
+## F1 受影响验收矩阵
+
+| 路径/对照 | 本轮真实证据 | 状态 |
+| --- | --- | --- |
+| T1/T2 正计时/倒计时睡眠 | 独立wall/continuous各+1800或3000，awake仅+30；1920/1500秒，显式继续再60=1560 | PASS，合成读数经生产sampler/service |
+| 暂停、真实壁钟前跳/回拨、连续读数回退/非有限、进程/重启 | 保留120检查点，异常清锚点；暂停不累计；微漂移相邻span及18h边界 | PASS |
+| T4/T10 磁盘检查点/故障/外部草稿 | Workspace真实事务→重开1920→保存两次只有一事实；beforeSave/actualSave后throw重试无重复，外部Entry不被保存 | PASS |
+| T12 真实ZIP检查点 | 正/倒计时导出1920/1500，源完整snapshot不变；7天后导入仅可信值、待确认，显式继续才+60；落盘重开 | PASS |
+| 旧awake锚点 | 真实旧裸UUID/awake320，与新进程域隔离；恢复120，显式resume才建立continuous200000；再睡眠后1920 | PASS |
+| R1–R3、T6/T7/T14及相邻备份 | 整类29核心/24磁盘含原八持久反例、五历史schema与V13→V14、跨日/DST；另55导入导出 | PASS，分两轮 |
+| 计时前后台/冷重开及R2/R3 UI | 原默认current；恢复待确认、冻结、草稿不入统计、R3重开25分钟/1条 | PASS，4项；3条warning |
+| 历史完整Unit及中文Dark/AX/相邻Record/Files | 按下方固定SHA复用；本轮40其他Unit/fixture blob不变 | REUSED，不写本轮PASS计数 |
+| 真实iPhone锁屏/硬件睡眠 | 没有设备运行/签名安装授权或实测 | NOT_RUN / OWNER_DEVICE_GATE |
+
+本轮截图原图与manifest见 `ui1-attachments`；可见恢复仅建议可信检查点、冻结确认与重开统计25分钟/1条。冻结页native标题的省略显示未改变；未将其当F1新修复。Simulator前后台与合成读数覆盖各自层级，不能证明硬件深睡行为。
+
+下方为先前交接原始历史，不覆盖上方当前结论。
+
+---
+
 # 时间投入 V1 F1/P1 — FIXES_IN_PROGRESS（2026-10-18）
 
 本轮沿原 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 处理固定 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[完整外部复审 F1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)。外部已关闭 R1–R3，本轮不重新扩修。`systemUptime` 不含设备睡眠，而当前 `projected` 将其与 wallDelta 比较后会持久化异常恢复状态；F1 关闭及本地门禁完成前，不能沿用下方历史 READY 结论。
