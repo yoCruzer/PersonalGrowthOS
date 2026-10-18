@@ -309,3 +309,135 @@ Reviewer `/root/pr13_fix_independent_reviewer` 没有编写本轮代码，读取
 本轮不授权D1–D4/私人设备与库/签名安装/merge/force/tag/Archive/TestFlight。原AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、签名/真机/远端CI NOT_RUN继续保留。全部本地门通过才恢复READY_FOR_OWNER_DEVICE_GATE，设备门本身不因此通过。
 
 本轮交付提交在固定产品597552a之后只更新五份Markdown；交付SHA以本次交付commit/PR head和外部final-delivery-proof.json核对，避免文件自引用。普通push后核对Draft/base/head和workflows=0、checks=[]；远端CI仍NOT_RUN。
+
+
+## PR #13 第二轮限定补修本地交付（2026-10-19）
+
+固定 FIX2_GOAL_SHA `41ef47c384464823f9456e9816d574ba7edff563`；产品/测试 `c296a3691d53ce7f5b5bff36fbf7de525d86510f`；前轮产品597552a / 交付e75ac561保留为历史。原worktree从e75干净fast-forward到41ef，六份Markdown增量；未从BASE重建。主工作区三项未知改动保持，固定规格/原交付/base为候选祖先，原PR #13 Draft / base不变。CR-01～06与前轮F1～F5/UX1～UX2、原R1～R8及时间投入历史T编号分别记录，不重新编号或覆盖历史。
+
+| 项目 | 生产处理及可区分证据 |
+| --- | --- |
+| CR-01 | retire入口独立处理capacityCancellationPending，native真实缺失确认后未来继续capacityWaiting、过期退役/elapsed；普通通知过期先于selected预算判断，正常ringing Alarm不动。可推进时钟跨fireAt，native已消失/仍失败后取消、重开/重复Recheck、不排过去时间；原F3未来恢复在同候选完整Reminder类通过。 |
+| CR-02 | 容量原因pending可靠落盘/精确读回前不移除native；主动取消继续原best-effort语义。mode0 pending真未保存即止，native/accepted保持，不尝试waiting写；mode1 pending已保存但waiting真失败，磁盘pending可恢复；mode2实际save后仅报错以精确读回确认，waiting落盘。冷coordinator恢复L，原generation不变、59保留项与预算/停止负例保持。不是AlarmKit容量证明。 |
+| CR-03 | 显式规则offset优先；缺值从经过完整sequence/before/after末端验证的第0期created/converted源恢复，在业务事务中冻结。真V11.0单一open→迁移→旧f1等价事务已覆盖nil→V15/v11实际ZIP恢复，含覆盖前无关标题edit；覆盖后当前版本metadata/title、跨时区刷新、删除清单（含task已单次换清单而rule仍指旧清单）在添事件/改rule时间前冻结；0/-1、短/800天、同/改分钟、complete/skip/再次改期、重开/导出恢复、保存失败回滚，所有既有事件/快照字节保持。独立reviewer逐段比对旧f1 happy path；没有运行旧二进制。真实4625602原V11夹具证明派生后继曾丢lead，不参与原始规则投票；旧断言保留并补验。 |
+| CR-04 | 正式facts版本变化仅清草稿候选IDs/baseline/展示与旧duplicate提示，保留输入、最后成功草稿和真实写入错误，不让草稿按键扫历史。修改/删除B后不变A候选失效；仍匹配负例仍触发正常重复确认。UI覆盖默认编辑B、中文Dark最大字号删除B，再保存A。 |
+| CR-05 | 内层save成功回调标记完成，外层Timer在内层onDismiss后关闭到有效Hub；不把终态payload放回缓存。首次保存注入未提交错误保留备注/时长，重试成功退出两层，稳定Hub按钮可用、History恰好一条3分钟并有正确详情。原Confirm later/冷启动用例保持。 |
+| CR-06 | 仅DEBUG+UITesting可注入的WeightReviewClock同供页面/夹具，固定2026-10-18；native日期弹窗核对完整2026/10月再选10日。Unit的live日期对照为2026-11/2027-10，注入后固定日不变；无UITesting正常使用live。未修改主机时间或声称已在未来真实主机日期执行。中英截止、50→60/切日返回/全历史17日断言保留。 |
+| OBS-01 | 同一预热Workspace经pause实际save后抛错，对照未save错误，普通refresh/Retry、resume/checkpoint及关联正式delete缓存清理通过。仅commit真正开始后的错误发布原scope失效，仍抛原错，由canonical reader区分结果；body重复/业务拒绝不发布facts失效。真实RunLoop延迟通知链验证刚显示的候选不被误清。不是原生SwiftData自然必现P2。 |
+| OBS-02 | load只处理共享当前query，切换权属于initial/select；正常首载/更多/重试/显式切日及旧reader晚返回保持。有界顺序调用真实loader验证旧A按钮入口不能重选B后的A；未证明该启动顺序实际SwiftUI可达，原观察保持UNCONFIRMED，不重开原F4。 |
+
+CR-03恢复边界：技术时间相等本身不证明未编辑。没有第0期、规则曾变化但没有可识别policy，或多次/无法区分的旧墙钟编辑时拒绝编造offset，原事实与事务回滚保持；可显式改系列规则提供policy。f1/当前正式futureSeries编辑有提醒时会显式写offset，优先使用该值；测试含同分钟正式改-1与converted同now正例，以及nil/sameTimestamp歧义拒绝后显式纠正负例。未宣称任意旧nil都可自动恢复。
+
+### 实际环境与最终本地门
+
+macOS27.0.1/26A434，Xcode27.1/27A9275，SDK27.1；专用iPhone18Pro模拟器42609456-859D-41F8-8977-4B2D85A74082 / iOS27.0(24A434)。Xcode串行，隔离合成库；未操作私人库/设备、其他模拟器数据。原始日志、xcresult、截图manifest、实包proof和完整命令/SHA/dirty/exit在 `/tmp/pgos-pr13-fix2-evidence`。本机独立reviewer实际读取，未声称远端reviewer已取得这些开发机产物；下方小型摘要/哈希供远端核对，CI仍NOT_RUN。
+
+- `final-debug6`：clean c296a36，Debug Simulator `build-for-testing` exit0；`final-unit4` 同候选九类252=251PASS/0FAIL/1SKIP，exit0，34.165秒（测试31.015秒）。AppComposition18、ImportExportRecovery57、ImportantDayReminder7、InvestmentFoundation32、InvestmentPersistence32、SleepReminder4、TodoFoundation50（含1SKIP）、TodoReminder31、WeightFoundation21。不是全仓全套重跑。唯一SKIP为隔离32MB HFS+物理低空间环境未具备；不得填满主盘。
+- `final-ui-cr05` 同clean c296a36，完整1/1PASS，exit0；中英两分支共124.619秒（命令128.068秒）。`final-ui-regression` 同候选八项结果：8/8PASS，exit0，594.713秒测试体。原fixtureWeight两项在cec的完整PASS、duplicate在302完整PASS、CR04在b45完整PASS按精确生产路径/方法/helper blob复用；并非把变化路径的旧PASS当新候选，未声称一次13/13。
+- `final-release1`：clean c296a36，unsigned generic iOS Release PASS，exit0，41.502秒。实包实际proof含App `com.yocruzer.PersonalGrowthOS`、Share `com.yocruzer.PersonalGrowthOS.ShareExtension`、Widget `com.yocruzer.PersonalGrowthOS.ImportantDaysWidget`，均1.0(7)/minOS17.0；App provenance Commit=c296a3691d53ce7f5b5bff36fbf7de525d86510f、Dirty=false、Source=localGit、Tag为空。Debug实际承载dylib与Release主可执行的AlarmKit `LC_LOAD_WEAK_DYLIB`、中英NSAlarmKitUsageDescription核对。App Group等entitlement/工程源码blob不变；unsigned实包不等于签名安装或设备正向证明。
+- F5真实10k磁盘链：`testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges` 首次refresh0.3196220397949219秒，40 fact批次/40 operation批次、10000/10000解码；Service草稿和计时命令→真实事件→同一个Workspace后仍40/40与10000 fact解码，9次operation按ID解码，未靠generation不变推断读取。两页20条详情合计解码40、按ID详情1，初始已保存操作正文保留0。全host peakRSS before/after均552763392 bytes，含夹具与测试host，不能声称Workspace独立峰值或节省量。强制正式变更仍进行必要业务完整性检查。
+- 预期故障日志保留：腐坏库CoreData259、注入调度/授权/写入错误、Widget projection code0及Xcode runtime invalidDigitCount诊断；没有把这些原始日志删除或冒称自然设备故障。每项测试真实退出与断言以原始xcresult为准。
+
+
+### 真实失败、补验与中止
+
+| 轮次 | 真实结果与处置 |
+| --- | --- |
+| red-a | 2FAIL：跨期pending不收敛；两phase真未落盘却移除native并误retired。新路径pending失败即保留native，不伪称两次抛错但实际保存。 |
+| red-cr03 / red-b | 首次与修正intent existing分支后存量红例均FAIL；red-b 4FAIL另含候选成员变化、同Workspace陈旧revision/conflict、旧按钮入口。真实V11/旧f1等价事务来源经校验，非新服务首次覆盖。 |
+| red-b-build / green-core-build / recovery-build2 | 新测试缺excluding参数、onSaved参数顺序、收紧root后遗留continue分别编译失败；修正后构建成功，不算产品业务红例。 |
+| green-core / diagnostic-cr02 | 12项为11PASS1FAIL；单项诊断仍FAIL。native/journal已恢复，测试错误引用旧coordinator；改断言为实际cold实例，三模式精确phase和等待写尝试另加强。原业务断言保持。 |
+| green-scope | 10/10PASS；当时候选dirty，不替代最终门。 |
+| red-ui-cr05 | 1FAIL，临时仅将自有Timer段替为固定41ef旧段；真实失败准确为保存后外层Timer未退出，故障输入保留先通过。finally恢复当前源码，有来源hash；未重置未知改动。 |
+| final-unit1 / 395 | 251=249PASS1FAIL1SKIP；原4625602 V11实包fixture被新“后继一致性”错误拒绝。保留原断言，改为独立原始root证据；recovery-green 5/5PASS。 |
+| final-unit2 / cec | 251=250PASS0FAIL1SKIP；尚未含后来新增的业务错误事件反例，不当最终新候选全通过。 |
+| final-ui1 / cec | 13项计划在确认新事件回归后主动中止；summary实际3 collected=2PASS/1FAIL（Testing was canceled），exit75。两Weight完整PASS 85.472/50.531秒，mixed被取消；保留SIGINT记录与Xcode取消堆栈，不把它当产品崩溃或13通过。 |
+| red-event-scope / scope2 | 各1FAIL，真实延迟通知会清掉刚显示候选。首轮version对象别名对照偏弱但候选失败有效；改独立int快照后6断言红测成立。仅commitAttempted后错失效修复；event-green 4/4PASS同时覆盖OBS两方向、CR04和10k。 |
+| final-ui-core1 / 302 | 3=1PASS2FAIL：原duplicate UI完整PASS37.745秒；CR04/CR05中文最大字号读取duration失败。保留断言，局部gutter视口校准。 |
+| final-ui-core2 / c98 | 2=1PASS1FAIL：CR04默认编辑/中文Dark最大字号删除完整PASS118.047秒；CR05辅助函数误用普通表单nav标题失败，修为实际确认标题。 |
+| final-ui-core3 / b45 | 2=1PASS1FAIL：CR04再次完整PASS117.560秒；CR05中文已返回Hub，但后置查找上方History驱动方向错误，仍记整项FAIL132.412秒。过渡截图不当稳定落点证明。 |
+| red-cr03-continuation | 1FAIL（2断言）：新metadata edit导致nil未冻结及后续invalidReminderOffset；先红后修。 |
+| continuation-green | 1测试崩溃：新增fixture捕获旧TodoList跨container销毁；改只传UUID，非忽略生产异常。continuation-green2完整1/1PASS，覆盖三种合法后续命令及回滚。 |
+| final-ui-cr05 / c296 | 完整1/1PASS：默认与中文Dark最大字号的失败保留、重试退出两层、稳定Hub可操作、历史1条3分钟、按ID详情备注均断言通过。 |
+| final-ui-regression / c296 | 8/8PASS，exit0；594.713秒测试体；完整串行结果，无新增失败。 |
+
+### 独立复核与停止边界
+
+Reviewer `/root/pr13_fix2_reviewer` 未编写本轮代码、未运行Xcode/操作模拟器或push，独立核对固定规格/完整diff/旧等价事务/原实包来源/测试与本机原始证据。原文终审追加REVIEW，作者不代写独立通过。历史Schema V1–V15、TransferModels、ZIPArchive及工程blob保持，兼容由实际恢复/回滚补验。
+
+只有六项收尾、OBS限定工作和必要本地门全部有效才恢复READY_FOR_OWNER_DEVICE_GATE。D1–D4未通过；AlarmKit原生正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、签名/私人设备/私人库与远端CI NOT_RUN保持。本轮不签名安装、merge、force push、tag、Archive或TestFlight。交付在产品之后仅文档，SHA以交付commit/PR head和外部final-delivery-proof.json核对，避免文件自引用。
+
+
+### 可供远端核对的小型结果摘要
+
+| 原始运行 | 候选SHA / dirty | exit | 结果（xcresult） | log SHA-256 |
+| --- | --- | --- | --- | --- |
+| red-a | 41ef47c38446 / dirty | 65 | 2 total / 0 PASS / 2 FAIL / 0 SKIP | `b0a6ba6e8d4ad1b0a8387ec2981ccc6d584f46cbcc7815cd22eb0685c273116a` |
+| red-b | 41ef47c38446 / dirty | 65 | 4 total / 0 PASS / 4 FAIL / 0 SKIP | `d93aa7ac3de694a4ebbc6de3b39031673a0159faabdfadd28436c31984b2825e` |
+| red-cr03 | 41ef47c38446 / dirty | 65 | 1 total / 0 PASS / 1 FAIL / 0 SKIP | `959332255d7de88a7bebcf03cce66fc6029e0da115c58821763def96e3e0211e` |
+| red-ui-cr05 | 41ef47c38446 / dirty | 65 | 1 total / 0 PASS / 1 FAIL / 0 SKIP | `16596f9c25e578fb4605eebf24dbbac2e03b3f71782dd098ecfdea5784a0c55a` |
+| red-event-scope2 | cec2e4d4cc9e / dirty | 65 | 1 total / 0 PASS / 1 FAIL / 0 SKIP | `9e60a1d5a7aab97802ea0f4f52474115d4efd19d8f9fc0718f7ad2893bfe157d` |
+| red-cr03-continuation | b45ce36f4332 / dirty | 65 | 1 total / 0 PASS / 1 FAIL / 0 SKIP | `046483886226dc7902e8e2b104bd2663fd8890fdf5d3e7800f9f75bf253d87a1` |
+| continuation-green | b45ce36f4332 / dirty | 65 | 1 total / 0 PASS / 1 FAIL / 0 SKIP | `60d3f0d57698b6e977da1d242cfc57b86b8eccb0ad3910df45830ff043b162fc` |
+| continuation-green2 | b45ce36f4332 / dirty | 0 | 1 total / 1 PASS / 0 FAIL / 0 SKIP | `94391f68e00438de4d993681b5750ebb914e77fe7a02c6a351a94d9819ee6043` |
+| final-unit1 | 395f3bf5dd35 / clean | 65 | 251 total / 249 PASS / 1 FAIL / 1 SKIP | `ad741e339578925b2d82d75f133cb65ebd80a004166fcb286914b86b514bf43d` |
+| final-unit2 | cec2e4d4cc9e / clean | 0 | 251 total / 250 PASS / 0 FAIL / 1 SKIP | `00226dc37be74a95c55a7362bf9e36e7d3a9e995fbea0af0be5c7fbc70760707` |
+| final-unit3 | 302e3109c8e0 / clean | 0 | 252 total / 251 PASS / 0 FAIL / 1 SKIP | `5d130c61fd51805512488b4bfca30124ead1b0e1ef03b055ad1e7156c327903f` |
+| final-unit4 | c296a3691d53 / clean | 0 | 252 total / 251 PASS / 0 FAIL / 1 SKIP | `67ddc2e5fa3bc31b6f40dd28d6db9fcfb01adc620ae76fb0453ff48a825f45d1` |
+| final-ui1 | cec2e4d4cc9e / clean | 75 | 3 total / 2 PASS / 1 FAIL / 0 SKIP | `9bd1095ef5a7dcdfc8c1556dff4c4edf6318f9b0957afc50ca9c0814a26f251b` |
+| final-ui-core1 | 302e3109c8e0 / clean | 65 | 3 total / 1 PASS / 2 FAIL / 0 SKIP | `abfbdbe233a52b0b83c196761d43497e69d4883fca11ff4e077056b58a960285` |
+| final-ui-core2 | c98e3e2100e3 / clean | 65 | 2 total / 1 PASS / 1 FAIL / 0 SKIP | `360a01e739b54b91b6b4d65338d1f4edaa20eaec3e05d97bdf8deb59ff33bec6` |
+| final-ui-core3 | b45ce36f4332 / clean | 65 | 2 total / 1 PASS / 1 FAIL / 0 SKIP | `557817651da526394b1a58f9beded56c91258c2f1c3ecc854e26e70824af88cc` |
+| final-ui-cr05 | c296a3691d53 / clean | 0 | 1 total / 1 PASS / 0 FAIL / 0 SKIP | `d721430949ae47bebb9c4c9945714f6cb3ff10351132d735324997a00c0206b9` |
+| final-ui-regression | c296a3691d53 / clean | 0 | 8 total / 8 PASS / 0 FAIL / 0 SKIP | `96759dacb258662c28a540d4cc48044ff08bf649c838209f64c884c35a17225f` |
+| final-debug6 | c296a3691d53 / clean | 0 | 0 total / 0 PASS / 0 FAIL / 0 SKIP | `ec3a18797fa72f62ccec84b64ddb4555fdc50288499c2d66f3577af024138769` |
+| final-release1 | c296a3691d53 / clean | 0 | 0 total / 0 PASS / 0 FAIL / 0 SKIP | `88e1e6e721462ced3397dc686b945de73804834fdf4703d46d67416d82062599` |
+
+日志的实际命令、SHA、dirty、退出码和计数来自同名JSON/xcresult，不将计划数作为执行数；原始大产物只在本机证据根。`—`表示无该项摘要，不代表0。
+
+- `native-run-index.json` SHA-256 `0d5ee45465a89d26bf3fb376bdd746ee6201150178cf5a87160df2e1e3c2fa8b`
+- `final-evidence-reuse-proof.json` SHA-256 `63266359547d453ee5632537581c498dfe32a317229788fef0cc94114091d6c9`
+- `continuity-proof.json` SHA-256 `6874a6413fba1bc65f95fb79e1219d31ab62c30271005bfbb591f499890fd9a4`
+- `final-debug6-bundle-proof.json` SHA-256 `45814a0e9d2e9e489a3718947961d561611c3e9b8357124967ad7a968d018afd`
+- `final-release1-bundle-proof.json` SHA-256 `01d280514280f3a30d36d304450a17268263f6d12acca95960ab02d7d780f765`
+- `final-debug6-mach-o.txt` SHA-256 `ca49ddfd4cdbb2bab060d8ec9fc392132bca50f8dd1bdc9a185bedf7173b252b`
+- `final-release1-mach-o.txt` SHA-256 `2da619a9e252e9c7c63d997f72f7f6bc539483c23a5e6732b945d720753eb0b2`
+- `final-bundle-assertions.json` SHA-256 `79668d659e18d9cbda57a62c5f7ab881258c10c6fe2a3ed6f9d46467ad3df96c`
+- `screenshot-map.json` SHA-256 `287f54a3a27e0a37842cf551f5041f042d55e82564a99dfd47d493054facaf38`
+- `original-v11-immutable-sqlite.json` SHA-256 `e56cb03a5c90aba891aae0ad32e47dc0e32eb2ac06ed703e5a9d7f45b26d64d1`
+- `red-source-hashes.json` SHA-256 `a7a91c169cb5222d4b8db4b0e7f2feaf7ab8c9eed3fedbf2be3b3a2f8ae16fb1`
+- `red-ui-timer-source.json` SHA-256 `fc80db48a21a56646e5b17dba57df26b68a1becac164ed65f5718b451458f6b1`
+- `final-ui-cr05-attachments/manifest.json` SHA-256 `0854e417d548ce5584368fe6ebb59c082b420b78169986b652c3f26d4d41bce6`
+- `final-ui-regression-attachments/manifest.json` SHA-256 `eeafceb129354aaccd97f0b2751d07ed3b8cad855c1e43df3044afc1c099bd1e`
+- final-debug6 `com.yocruzer.PersonalGrowthOS` v1.0(7) minOS17.0 executableSHA256 `43303593fe3bac299ec83fc15424c5ce48c4e4fa9e4dea8585d16bbc729578f9`；provenance `{'Commit': 'c296a3691d53ce7f5b5bff36fbf7de525d86510f', 'Dirty': False, 'Source': 'localGit', 'Tag': ''}`
+- final-debug6 `com.yocruzer.PersonalGrowthOS.ImportantDaysWidget` v1.0(7) minOS17.0 executableSHA256 `15dac98175aa7582e720fd6dca4cd2e9eee1ba9946a78c53ea9695b7f7cf5dd5`
+- final-debug6 `com.yocruzer.PersonalGrowthOS.ShareExtension` v1.0(7) minOS17.0 executableSHA256 `42841fffbef5b7cf7db4268d0cf41c40243d50c2abbe9ff6a6b51464b2d4df85`
+- final-release1 `com.yocruzer.PersonalGrowthOS` v1.0(7) minOS17.0 executableSHA256 `350819f01ff4035a9fe2d64a437ccd851316335fd59540bc2bde6aa71c6329cc`；provenance `{'Commit': 'c296a3691d53ce7f5b5bff36fbf7de525d86510f', 'Dirty': False, 'Source': 'localGit', 'Tag': ''}`
+- final-release1 `com.yocruzer.PersonalGrowthOS.ImportantDaysWidget` v1.0(7) minOS17.0 executableSHA256 `e5af21c4a3ffe0136711933f7d8a1269f02f02b5bd3bdc658317117294705637`
+- final-release1 `com.yocruzer.PersonalGrowthOS.ShareExtension` v1.0(7) minOS17.0 executableSHA256 `aa3f9e979eb8d847f3f8b20743b671b8779b4098b4b68feb7fd3608c991d54a7`
+
+### final-debug6
+
+```sh
+xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Debug -sdk iphonesimulator -arch arm64 -derivedDataPath /tmp/pgos-pr13-fix-derived -resultBundlePath /tmp/pgos-pr13-fix2-evidence/final-debug6.xcresult CODE_SIGNING_ALLOWED=NO build-for-testing
+```
+### final-unit4
+
+```sh
+xcodebuild test-without-building -xctestrun /tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-pr13-fix2-evidence/final-unit4.xcresult -only-testing:PersonalGrowthOSTests/TodoFoundationTests -only-testing:PersonalGrowthOSTests/TodoReminderTests -only-testing:PersonalGrowthOSTests/SleepReminderTests -only-testing:PersonalGrowthOSTests/ImportantDayReminderTests -only-testing:PersonalGrowthOSTests/WeightFoundationTests -only-testing:PersonalGrowthOSTests/InvestmentFoundationTests -only-testing:PersonalGrowthOSTests/InvestmentPersistenceTests -only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests -only-testing:PersonalGrowthOSTests/AppCompositionTests
+```
+### final-ui-cr05
+
+```sh
+xcodebuild test-without-building -xctestrun /tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-pr13-fix2-evidence/final-ui-cr05.xcresult -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText
+```
+### final-ui-regression
+
+```sh
+xcodebuild test-without-building -xctestrun /tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun -destination 'platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082' -parallel-testing-enabled NO -collect-test-diagnostics never -resultBundlePath /tmp/pgos-pr13-fix2-evidence/final-ui-regression.xcresult -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageMixedTodayAndGrowthDefaultAndChineseMaximumText -only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageWeightDailyMeansRangesAndDateHistoryEditDeleteRefresh -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testReviewFixUX1OutsideWindowDateSwitchRetainsDateMonthAndDetailChineseDarkAX -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR2FailedCloseKeepsEditorAndRetrySurvivesColdLaunch -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testRecordDraftSurvivesManualActivitySaveAndChineseDarkAX -only-testing:PersonalGrowthOSUITests/InvestmentUITests/testTimerForegroundBackgroundFrozenConfirmationAndColdRelaunch
+```
+### final-release1
+
+```sh
+xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination generic/platform=iOS -derivedDataPath /tmp/pgos-pr13-fix-release -resultBundlePath /tmp/pgos-pr13-fix2-evidence/final-release1.xcresult CODE_SIGNING_ALLOWED=NO build
+```

@@ -1,3 +1,18 @@
+# PR #13 第二轮限定补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
+
+固定 FIX2_GOAL_SHA `41ef47c384464823f9456e9816d574ba7edff563` 的 CR-01～CR-06 已逐项闭环；OBS-01 完成既有故障契约恢复验证，OBS-02 完成有界入口加固，原生 UI 可达性保持 UNCONFIRMED。产品/测试 SHA `c296a3691d53ce7f5b5bff36fbf7de525d86510f`，之后纯文档交付的 SHA 以 commit/PR head 与外部 final-delivery-proof.json 核对。
+
+最终 clean 产品九类 Unit 252=251PASS/0FAIL/1SKIP；Debug Simulator 和 unsigned generic iOS Release PASS，实际 App/Share/Widget 身份、1.0(7)、minOS17、provenance Dirty=false 和 AlarmKit 弱链接核对。关键 UI 分轮：原轮 Weight 两项 PASS、duplicate PASS、CR04 PASS；最终 c296 CR05 1/1 PASS、八项保护 8/8 PASS。不拼称一次13/13；复用的 SHA/blob/方法关系及真实失败、取消、补验均见 [EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md) / [ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)。F5 10k Service→事件→同一Workspace实际读取/解码计数保持，细节与局限已入仓库摘要。
+
+独立 reviewer `/root/pr13_fix2_reviewer` 未编写本轮修复，实际读取固定候选、调用链、原始日志、截图和实包，发现的旧nil续接缺口已修复并补验；原文终审见 [REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)。范围内无尚未关闭 confirmed P0/P1/P2。
+
+原worktree安全续接，主工作区三项未知改动保持；原分支普通push到唯一 [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，保持 Draft 与 base `codex/time-investment-v1`。不从旧BASE重建、不重置、不强推、不另开PR。
+
+当前批次已完成，下一步仅Owner另行授权设备门。READY只表示本地修复门通过，D1–D4尚未通过；AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持。私人设备/库、签名安装、merge、force push、tag、Archive、TestFlight不在本轮内。
+
+---
+以下为执行中及较早交接历史，当前结论以上文为准，原始结果保留。
+
 # PR #13 第二轮限定补修 — FIXES_IN_PROGRESS（2026-10-19）
 
 已在原worktree从干净e75ac561安全fast-forward至固定规格41ef47c384464823f9456e9816d574ba7edff563；远端Draft/base及祖先关系已核对，主工作区未知改动保留。长期Foundation/Contract相对前轮未变化并复用已读上下文，最新CURRENT和完整固定Goal已读取。

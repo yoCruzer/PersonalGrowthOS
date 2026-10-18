@@ -159,3 +159,43 @@ F5 最终 `final-unit2` 的真实落盘夹具含 10,000 个有效 Session 及配
 外部审查未取得开发机 xcresult、截图或实包，不能独立复算上一轮 241/0/1、8/2 后补 4/4、双构建与哈希声明；没有把它们判为虚假，也没有冒称本次运行通过。远端身份可核对，产品 check-runs 为 0，CI 仍 NOT_RUN。设备门及历史 FAIL/SKIP/NOT_RUN 保留。
 
 结论：当前不认可无未关闭 P2/READY_FOR_OWNER_DEVICE_GATE；Owner 已批准依 [第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md) 在同一 PR 连续修复和验证。本规格提交未关闭任何 CR。后续 reviewer 在此追加实际独立结论和逐项关闭证据。
+
+
+## 第二轮限定补修独立终审（2026-10-19）
+
+固定规格41ef47c；候选`c296a3691d53ce7f5b5bff36fbf7de525d86510f`。以下保留未参与本轮实现的 reviewer 原文；原始证据根 `/tmp/pgos-pr13-fix2-evidence`，其确实为本机只读复核，非远端CI。发现与修复过程、失败和补验见EXECUTION/ACCEPTANCE的同轮追加。
+
+```text
+独立终审结论（2026-10-19，reviewer：`/root/pr13_fix2_reviewer`）
+
+审查固定规格 `41ef47c384464823f9456e9816d574ba7edff563`，最终产品/测试候选 `c296a3691d53ce7f5b5bff36fbf7de525d86510f`。本人未编写本轮实现或测试，未运行 Xcode、操作模拟器、写入文件或 push。已只读核对完整最终 diff、相关生产调用链、新旧测试、真实旧 V11 夹具来源、本机原始日志、xcresult 摘要、实际截图及 Debug/Release 实包。原规格、已审交付和原 base 均为候选祖先；任务工作树干净，主工作区三项未知改动仍保留。
+
+**CR-01～CR-06 已关闭，OBS-01 已完成限定验证及恢复修复，OBS-02 已完成最小入口加固与有界核验。范围内没有尚未关闭的 confirmed P0/P1/P2。**
+
+| 项目 | 独立复核结论 |
+| --- | --- |
+| CR-01 | 容量取消确认已与未来排队资格分离。跨过 fireAt 后，实际 native 缺失或最终取消成功均能收敛为 elapsed/retired；未确认时继续阻挡，过期不重排。可推进时钟、冷启动、重复对账及未来等待恢复对照通过。普通通知过期判断不改变正常 ringing Alarm 的既有行为。 |
+| CR-02 | 容量取消原因必须可靠落盘或精确读回，之后才允许移除 native。真正未保存、pending 保存而 waiting 未保存、实际保存后仅报告错误三种分支有区分；故障恢复后保持原 generation，等待意图可以恢复，停止负例和应用预算保护仍在。此结论不扩展为 AlarmKit 原生容量证明。 |
+| CR-03 | 显式规则 offset 优先；nil 恢复使用经过事件链及末端事实验证的第 0 期原始创建/转换证据，派生后继不参与规则投票。已核对真 V11.0→迁移→旧 f1 等价覆盖事务→V15/v11 ZIP 恢复的来源；等价事务与旧服务 happy path 一致，没有声称运行旧二进制。0/-1、短/长延期、同/改分钟、完成/跳过、再改期、重开、历史字节、原子回滚均有证据。当前版本元数据编辑、时区刷新和清单删除会先冻结偏移，包含任务与模板清单不一致分支。 |
+| CR-04 | 正式候选编辑/删除后，草稿 A 的候选 IDs、基线、对话框和陈旧重复提示失效，输入及最后成功草稿保留；真正保存错误不被清除。默认编辑 B、中文 Dark 最大字号删除 B 后返回未变 A 并正常保存的完整 UI 通过；仍匹配时的重复确认负例保留。 |
+| CR-05 | 内层保存成功后，外层 Timer 按 dismiss 顺序返回有效 Hub；未恢复常驻终态 payload。最终完整 UI 同时覆盖中英文失败保留输入、重试成功、两层退出、稳定 Hub、恰好一条 3 分钟事实和正确详情备注。我实际查看了中文稳定落点和单条历史原图。 |
+| CR-06 | 页面与夹具共用仅 DEBUG+UITesting 可启用的固定时钟，原生日期弹窗核对 2026 年 10 月，再选择 10 日。Unit 以 2026-11、2027-10 的 live 日期作对照；无测试授权时继续使用真实日期。中英文截止、全历史 17 日、分页切日断言保留。未修改主机时间，也未冒称在未来日期真实运行。 |
+| OBS-01 | 同一预热 Workspace 在实际提交后报错及实际未提交的对照中，普通刷新、Retry、后续命令、checkpoint 和关联删除清理均通过。错误失效限定在真正尝试 commit 后；业务重复拒绝不发布事实失效，真实 RunLoop 交付反例已补验，避免误清刚展示的候选。仍报告原错误，未把故障注入描述为 SwiftData 自然必现问题。 |
+| OBS-02 | 旧按钮入口不能再通过 load 重选旧 query；切换权由 initial/select 持有。正常首载、分页、重试、显式切日和已启动旧 reader 晚完成保护通过。真实 SwiftUI 是否可产生原观察中的启动顺序仍为 UNCONFIRMED；未据此重开原 F4。 |
+
+CR-03 的自动恢复存在明确证据边界：技术时间相等不能单独证明规则未变；缺失第 0 期、旧规则缺少可识别 policy，或存在无法区分的复杂墙钟编辑时，代码拒绝编造偏移并保留事实，可由显式系列规则纠正。此边界已在测试和交接草稿中披露，未冒称任意旧 nil 状态均能自动恢复。
+
+审查过程中发现并闭环了旧 V11 派生后继错误导致的回归、同时间戳/转换来源歧义、新元数据/时区/清单操作污染恢复线索，以及业务 duplicate 错误失效清除候选的问题。原有断言保留；相关红测、编译错误、夹具模型生命周期崩溃和 UI 驱动失败均保留，没有改写为一次全绿。
+
+最终本地证据已实际读取：
+
+- `final-unit4`：干净 c296a36，九完整类 **252＝251 PASS / 0 FAIL / 1 SKIP**，exit 0；不是全仓重跑。低空间环境 SKIP 保留。
+- `final-ui-cr05`：同候选 **1/1 PASS**；`final-ui-regression`：同候选 **8/8 PASS**。其余两项 Weight、duplicate、CR-04 仅复用完整通过的方法，并核对生产路径、测试方法和 helpers 的 SHA/blob 关系。原取消轮及失败轮分别记录，不能称一次 13/13。
+- F5 真实 10k Service→事件→同一 Workspace 链保持 40/40 批次、10000/10000 解码，草稿和计时命令无额外正式历史扫描；两页详情解码 40、单 ID 详情 1、已保存正文常驻 0。RSS 是包含夹具的整 host 观察，未作为 Workspace 独立峰值或节省量。
+- 最终 Debug 与 unsigned Release 均为干净 c296a36、exit 0。App/Share/Widget 原身份、1.0(7)、minOS 17 保持；App provenance 完整 SHA、Dirty=false、localGit、Tag 空。实际承载二进制的 AlarmKit 弱链接与中英用途说明已核对。Release 主程序 SHA-256 经我独立重算为 `350819f01ff4035a9fe2d64a437ccd851316335fd59540bc2bde6aa71c6329cc`，与 proof 一致。
+
+原始证据位于 `/tmp/pgos-pr13-fix2-evidence`。最终 Unit/UI 摘要与原日志一致，四份最终日志哈希经独立重算与小型摘要一致。交接矩阵及小型结果草稿未见错误计数或过度主张；本机读取不代表远端 reviewer 已取得临时产物。
+
+本地产品验证与独立复核门已满足 **READY_FOR_OWNER_DEVICE_GATE** 条件；实施者仍需完成文档交付、普通 push 及 PR Draft/base/head 核对。D1–D4 未通过；AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 均保留。本结论不授权私人设备/库操作、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+```
