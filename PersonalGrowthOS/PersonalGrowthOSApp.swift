@@ -45,12 +45,13 @@ struct PersonalGrowthOSApp: App {
             }
             if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSWeightReviewFixDates") {
-                let zone=TimeZone.current,day=ImportantCivilDay(year:2026,month:10,day:1).instant(minutes:0,timeZone:TimeZone.current)!
+                let today=ImportantCivilDay(WeightReviewClock.current()),zone=TimeZone.current
+                let day=ImportantCivilDay(year:today.year,month:today.month,day:1).instant(minutes:0,timeZone:zone)!
                 for index in 0..<60 {
                     let at=day.addingTimeInterval(Double(index)*60)
                     container.modelContainer.mainContext.insert(WeightRecord(weightKilograms:70+Double(index)/100,recordedAt:at,createdAt:at))
                 }
-                let later=ImportantCivilDay(year:2026,month:10,day:17).instant(minutes:600,timeZone:zone)!
+                let later=ImportantCivilDay(year:today.year,month:today.month,day:17).instant(minutes:600,timeZone:zone)!
                 container.modelContainer.mainContext.insert(WeightRecord(weightKilograms:77,recordedAt:later,createdAt:later))
                 try container.modelContainer.mainContext.save()
             }

@@ -220,7 +220,11 @@ struct TodoIntentSchedulingResult {
         // Ownership already exists on disk. Even if this phase write fails, still try to stop the owned request.
         do {try write(pending,container)}
         catch TodoAlarmFailure.invalidRequest {return false}
-        catch { /* Existing ownership remains available for a verified native cancellation. */ }
+        catch {
+            // Capacity displacement must durably retain its retry reason before removing native ownership.
+            // Explicit stop/obsolete cancellation still makes a best-effort stop with existing ownership.
+            if waiting {return false}
+        }
         do {
             if try await present(request) {
                 do {
@@ -261,7 +265,7 @@ struct TodoIntentSchedulingResult {
                     }
                 } catch {result.states[record.taskID] = .confirmationRequired}
             }
-            if !record.matches(target) || record.phase == .cancellationPending || record.phase == .retired || changedFutureTitle {
+            if !record.matches(target) || record.phase == .cancellationPending || record.phase == .capacityCancellationPending || record.phase == .retired || changedFutureTitle {
                 let sameGeneration=target?.generation == record.generation
                 var existed=false
                 do {existed=try await present(record)} catch {blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending;continue}
@@ -271,7 +275,8 @@ struct TodoIntentSchedulingResult {
                 }
                 let changedLiveContent=sameGeneration && target?.active == true && (target?.fireAt != record.fireAt || changedFutureTitle) && existed && record.phase != .retired
                 let safeTitleReplacement=changedFutureTitle && [.ready,.capacityWaiting,.cancellationPending,.capacityCancellationPending].contains(record.phase)
-                if !(await cancel(record,container,delete:!sameGeneration || changedLiveContent || safeTitleReplacement)) {
+                let capacityRetry=record.phase == .capacityCancellationPending && record.matches(target) && record.fireAt > now() && !changedFutureTitle
+                if !(await cancel(record,container,delete:!sameGeneration || changedLiveContent || safeTitleReplacement,waiting:capacityRetry)) {
                     blocked.insert(record.taskID);result.states[record.taskID] = .cancellationPending
                 }
             }
@@ -353,6 +358,7 @@ struct TodoIntentSchedulingResult {
                 }
                 continue
             }
+            if target.channel == .notification,fire <= now() {result.states[target.id] = .elapsed;continue}
             if target.channel == .notification,let selectedNotificationTaskIDs,!selectedNotificationTaskIDs.contains(target.id) {
                 result.states[target.id] = same.first?.phase == .retired ? .stopped : .queueFull
                 continue

@@ -2718,3 +2718,79 @@ extension ImportExportRecoveryTests {
         }
     }
 }
+
+extension ImportExportRecoveryTests {
+    /// Happy-path rescheduleOwnedReminder from f1b52b58: same fresh context, event chain and
+    /// override intent; deliberately has no later preserveLegacyReminderOffset prevention.
+    private func fix2OldF1Override(_ container: ModelContainer,id: UUID,fire: Date,now: Date,zone: TimeZone) throws {
+        let c=ModelContext(container);c.autosaveEnabled=false
+        let task=try XCTUnwrap(c.fetch(FetchDescriptor<TodoTask>(predicate:#Predicate {$0.id == id})).first)
+        XCTAssertEqual(task.state,.open);XCTAssertGreaterThan(fire,now)
+        let before=try JSONEncoder().encode(TodoEventValue(task))
+        task.remindAt=fire;task.reminderLocalDay=TodoDay(date:fire,timeZone:zone).description
+        let parts=WeeklyReviewCalendarPolicy.calendar(timeZone:zone).dateComponents([.hour,.minute],from:fire)
+        task.reminderMinutes=parts.hour!*60+parts.minute!;task.reminderTimeZoneID=zone.identifier
+        if let intent=try c.fetch(FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id})).first {
+            intent.generation=UUID();intent.revision += 1;intent.channelRawValue=TodoReminderChannel.notification.rawValue;intent.isInstanceOverride=true
+        } else {c.insert(TodoReminderIntent(taskID:id,channel:.notification,isInstanceOverride:true))}
+        task.revision += 1;task.updatedAt=TechnicalTimestamp.updated(now:now,createdAt:task.createdAt,previous:task.updatedAt)
+        c.insert(TodoTaskEvent(taskID:id,sequence:task.revision,kind:.edited,occurredAt:now,createdAt:task.updatedAt,beforeValue:before,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
+        try c.save();try TodoIntegrity.validate(context:ModelContext(container));try UsagePreferencesIntegrity.validate(context:ModelContext(container))
+        XCTAssertEqual(try c.fetch(FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id})).first?.isInstanceOverride,true)
+    }
+    func testFix2CR03AlreadyOverriddenLegacyNilV15AndV11RestoreRecoverWithoutChangingHistory() async throws {
+        for (offset,elapsed,minute,skip) in [(0,3,600,false),(-1,3,601,true),(0,800,600,true),(-1,800,601,false)] {
+            let f=try TransferTestFixture();defer {f.remove()}
+            let zone=TimeZone(identifier:"Asia/Shanghai")!,origin=TodoDay("2020-01-01")!.date(timeZone:TimeZone(identifier:"Asia/Shanghai")!)!
+            let url=f.root.appendingPathComponent("legacy.sqlite"),id=UUID(),sid=UUID()
+            let day=try TodoRecurrence.reminderDay(occurrence:TodoDay("2020-01-01")!,offset:offset)
+            let fire=TodoRecurrence.reminder(day:day,minutes:600,timeZone:zone)!
+            let draft=TodoDraft(title:"Legacy already overridden",plannedDay:"2020-01-01",deadlineDay:"2020-01-02",remindAt:fire,frequency:.daily)
+            try autoreleasepool {
+                let schema=Schema(versionedSchema:PersonalGrowthSchemaV11Original.self)
+                let old=try ModelContainer(for:schema,configurations:[ModelConfiguration("PersonalGrowthOSV1",schema:schema,url:url,cloudKitDatabase:.none)])
+                let task=TodoTask(id:id,title:draft.title,plannedDay:draft.plannedDay,deadlineDay:draft.deadlineDay,remindAt:fire,seriesID:sid,occurrenceIndex:0,createdAt:origin)
+                task.reminderLocalDay=day.description;task.reminderMinutes=600;task.reminderTimeZoneID=zone.identifier
+                old.mainContext.insert(task);old.mainContext.insert(PersonalGrowthSchemaV11Original.TodoSeries(id:sid,frequency:.daily,anchorDay:"2020-01-01",draft:draft,reminderMinutes:600,createdAt:origin))
+                old.mainContext.insert(TodoTaskEvent(taskID:id,sequence:0,kind:.created,occurredAt:origin,createdAt:origin,beforeValue:nil,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
+                try old.mainContext.save()
+            }
+            let migrated=try PersistenceContainerFactory.makeOnDisk(at:url),now=origin.addingTimeInterval(Double(elapsed)*86400)
+            // An unrelated title edit precedes the old one-off override; it is not a rule edit.
+            let oldService=TodoTaskService(context:migrated.mainContext,now:{origin.addingTimeInterval(1)},timeZone:{zone})
+            var title=try oldService.draft(id:id);title.title="Legacy title edit";try oldService.edit(id:id,draft:title)
+            let override=TodoRecurrence.reminder(day:TodoDay(date:now.addingTimeInterval(86400),timeZone:zone),minutes:minute,timeZone:zone)!
+            try fix2OldF1Override(migrated,id:id,fire:override,now:now,zone:zone)
+            XCTAssertNil(try ModelContext(migrated).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset)
+            let exporter=ImportExportService(context:migrated.mainContext,mediaStore:MediaStore(rootURL:f.root),availableCapacity:{.max})
+            let archive=try await exporter.exportPackage();defer {archive.cleanup()}
+            let restored=try f.makeEmptyStore(named:"overridden-v11",onDisk:true);_ = try await restored.service.importPackage(from:archive.url)
+            for (index,c) in [try PersistenceContainerFactory.makeOnDisk(at:url),restored.container].enumerated() {
+                let history=try ModelContext(c).fetch(FetchDescriptor<TodoTaskEvent>()).map {TodoTaskEventTransfer($0)}
+                let before=try TransferSnapshot.make(context:ModelContext(c))
+                let failing=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{zone},save:{throw CocoaError(.fileWriteOutOfSpace)})
+                XCTAssertThrowsError(try failing.transition(id:id,to:skip ? .canceled:.completed,skip:skip))
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+                let service=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{zone})
+                if index == 1 {
+                    XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:override.addingTimeInterval(120),commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                    XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+                    try service.rescheduleReminder(id:id,to:override.addingTimeInterval(120))
+                    XCTAssertEqual(try service.task(id:id).remindAt,override.addingTimeInterval(120))
+                } else {XCTAssertEqual(try service.task(id:id).remindAt,override)}
+                try service.transition(id:id,to:skip ? .canceled:.completed,skip:skip)
+                let next=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+                XCTAssertEqual(next.reminderLocalDay,try TodoRecurrence.reminderDay(occurrence:TodoDay(next.plannedDay!)!,offset:offset).description)
+                XCTAssertEqual(next.reminderMinutes,600)
+                XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset,offset)
+                let after=try ModelContext(c).fetch(FetchDescriptor<TodoTaskEvent>()).map {TodoTaskEventTransfer($0)}
+                XCTAssertTrue(history.allSatisfy {after.contains($0)},"Preserve every historical event and snapshot byte")
+                try TodoIntegrity.validate(context:ModelContext(c))
+                let finalExport=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:f.root),availableCapacity:{.max})
+                let output=try await finalExport.exportPackage();defer {output.cleanup()}
+                let final=try f.makeEmptyStore(named:"final-\(index)",onDisk:true);_ = try await final.service.importPackage(from:output.url)
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(final.container)),try TransferSnapshot.make(context:ModelContext(c)))
+            }
+        }
+    }
+}

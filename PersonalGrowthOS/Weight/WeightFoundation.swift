@@ -2,6 +2,17 @@ import Foundation
 import SwiftData
 import Observation
 
+enum WeightReviewClock {
+    static func current(arguments: [String] = ProcessInfo.processInfo.arguments, live: Date = Date()) -> Date {
+#if DEBUG
+        if arguments.contains("-PGOSUITesting"),let index=arguments.firstIndex(of:"-PGOSWeightReviewNow"),
+           arguments.indices.contains(index+1),let day=ImportantCivilDay(identifier:arguments[index+1]),
+           let fixed=day.instant(minutes:720,timeZone:.current) {return fixed}
+#endif
+        return live
+    }
+}
+
 @Model
 final class WeightRecord {
     @Attribute(.unique) var id: UUID
@@ -471,7 +482,9 @@ struct WeightMeasurementQuery: Equatable, Sendable {
     }
     func load(_ value: WeightMeasurementQuery, reset: Bool = true, read: @escaping Read) async {
         guard !Task.isCancelled else {return}
-        select(value)
+        // Button tasks may only append/retry their current owner. Explicit initial
+        // selection owns switching; a late old button must never select its query.
+        guard query == value else {return}
         if loading {return}
         if reset {records=[]}
         failed=false;loading=true;failedReset=reset

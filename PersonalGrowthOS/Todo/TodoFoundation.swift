@@ -444,16 +444,53 @@ final class TodoTaskService {
     }
     private func reminderOffset(for rule: TodoSeries) throws -> Int {
         if let offset = rule.reminderDayOffset { return offset }
-        // Old V11 candidates have no offset. Recover the first matching saved wall-day
-        // without changing task/event bytes; an absent reminder needs no policy.
-        guard let minutes = rule.reminderMinutes, TodoFrequency(rawValue: rule.frequencyRawValue) != nil else { return 0 }
-        let id = rule.id
-        let candidates = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == id }))
-            .filter { $0.reminderMinutes == minutes && $0.reminderLocalDay != nil }
-            .sorted { ($0.occurrenceIndex ?? 0) < ($1.occurrenceIndex ?? 0) }
-        guard let first = candidates.first, let index = first.occurrenceIndex, let local = first.reminderLocalDay else { return 0 }
-        return try TodoRecurrence.reminderOffset(localDay: local, anchor: occurrence(rule,index:index).description)
+        // A nil rule has no stored policy. Only an unchanged legacy rule can be
+        // reconstructed from its original per-occurrence event chain. A later explicit
+        // series edit already has a non-nil offset and takes the path above.
+        guard let minutes=rule.reminderMinutes else {return 0}
+        guard rule.updatedAt == rule.createdAt else {throw TodoFailure.invalidReminderOffset}
+        let id=rule.id
+        let tasks=try context.fetch(FetchDescriptor<TodoTask>(predicate:#Predicate {$0.seriesID == id}))
+        var offsets=Set<Int>()
+        for task in tasks {
+            guard let index=task.occurrenceIndex else {throw TodoFailure.corruptData}
+            let taskID=task.id
+            let history=try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate:#Predicate {$0.taskID == taskID})).sorted {$0.sequence < $1.sequence}
+            var previous: TodoEventValue?,source: TodoEventValue?
+            var reminderEdits=0,lastEdit: Int?,lastReminderEdit: Int?
+            for (sequence,event) in history.enumerated() {
+                let after=try JSONDecoder().decode(TodoEventValue.self,from:event.afterValue)
+                let before=try event.beforeValue.map {try JSONDecoder().decode(TodoEventValue.self,from:$0)}
+                guard event.sequence == sequence,before == previous else {throw TodoFailure.corruptData}
+                if source == nil,event.createdAt >= rule.createdAt,after.reminderMinutes == minutes,after.reminderLocalDay != nil,
+                   event.kindRawValue == TodoEventKind.created.rawValue || event.kindRawValue == TodoEventKind.convertedToSeries.rawValue {
+                    source=after
+                }
+                if event.kindRawValue == TodoEventKind.edited.rawValue {
+                    lastEdit=sequence
+                    if before?.reminderLocalDay != after.reminderLocalDay || before?.reminderMinutes != after.reminderMinutes {
+                        reminderEdits += 1;lastReminderEdit=sequence
+                    }
+                }
+                previous=after
+            }
+            if reminderEdits > 0 {
+                // Older events do not label instance vs series edits. Only a single
+                // final wall-time edit with an explicit current override has an
+                // unambiguous original rule; more complex legacy histories need correction.
+                guard try reminderIntent(for:taskID)?.isInstanceOverride == true,
+                      reminderEdits == 1,lastEdit == lastReminderEdit else {throw TodoFailure.invalidReminderOffset}
+            }
+            guard !history.isEmpty,previous == (try TodoEventValue(task)),history.last?.sequence == task.revision else {throw TodoFailure.corruptData}
+            guard let source,source.reminderMinutes == minutes,let local=source.reminderLocalDay else {continue}
+            offsets.insert(try TodoRecurrence.reminderOffset(localDay:local,anchor:occurrence(rule,index:index).description))
+        }
+        // Do not invent zero, trust an override's mutable wall clock, or pick a
+        // conflicting sibling. Preserve ambiguous facts for explicit correction.
+        guard offsets.count == 1,let offset=offsets.first else {throw TodoFailure.invalidReminderOffset}
+        return offset
     }
+
     private func applyTemplate(_ rule: TodoSeries, to task: TodoTask, at date: Date, reactivating: Bool = false) throws {
         let before = try TodoEventValue(task),oldReminder=task.remindAt
         task.title = rule.title; task.notes = rule.notes; task.isImportant = rule.isImportant; task.listID = rule.listID
@@ -599,6 +636,7 @@ final class TodoTaskService {
             }
         }
         let planned = try shifted(series.plannedAnchorDay), deadline = try shifted(series.deadlineAnchorDay)
+        if series.reminderDayOffset == nil,series.reminderMinutes != nil {series.reminderDayOffset=try reminderOffset(for:series)}
         let reminderDay = try TodoRecurrence.reminderDay(occurrence: occurrence, offset: reminderOffset(for: series))
         let reminder = series.reminderMinutes.flatMap { TodoRecurrence.reminder(day: reminderDay, minutes: $0, timeZone: timeZone()) }
         let nextTask = TodoTask(title: series.title, notes: series.notes, isImportant: series.isImportant,

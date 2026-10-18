@@ -423,7 +423,7 @@ extension WeightFoundationTests {
         let bRows=[WeightMeasurement(kilograms:72,recordedAt:Date(timeIntervalSince1970:150))]
         for retry in [false,true] {
             let loader=WeightMeasurementLoader(),barrier=WeightReadBarrier()
-            await loader.load(a,read:{_,_ in aRows})
+            await loader.initial(a,read:{_,_ in aRows})
             if retry {
                 await loader.load(a,reset:false,read:{_,_ in throw CocoaError(.fileReadUnknown)})
                 XCTAssertTrue(loader.failed)
@@ -433,10 +433,10 @@ extension WeightFoundationTests {
                 else {await loader.load(a,reset:false,read:{_,_ in try await barrier.pause()})}
             }
             while !(await barrier.waiting) {await Task.yield()}
-            await loader.load(b,read:{_,_ in bRows})
+            await loader.initial(b,read:{_,_ in bRows})
             await barrier.release([aRows[0]]);await old.value
             XCTAssertEqual(loader.query,b);XCTAssertEqual(loader.records.map(\.id),bRows.map(\.id));XCTAssertFalse(loader.failed)
-            await loader.load(a,read:{_,_ in aRows})
+            await loader.initial(a,read:{_,_ in aRows})
             XCTAssertEqual(loader.records.map(\.id),aRows.map(\.id))
             await loader.load(a,reset:false,read:{_,offset in XCTAssertEqual(offset,50);return [bRows[0]]})
             XCTAssertEqual(loader.records.count,51)
@@ -466,5 +466,35 @@ extension WeightFoundationTests {
         XCTAssertEqual(recent.map(\.recordedAt),[first]);XCTAssertEqual(snapshot.summaries[.all]?.observations,1)
         let all=try await reader.records(now:Date.distantFuture)
         XCTAssertEqual(all.map(\.recordedAt),[later,first])
+    }
+}
+
+extension WeightFoundationTests {
+    func testFix2OBS02OldButtonEntryCannotReselectCurrentQuery() async {
+        let a=WeightMeasurementQuery(start:Date(timeIntervalSince1970:0),end:nil,now:Date(),refresh:0,limit:50)
+        var b=a;b.start=Date(timeIntervalSince1970:100)
+        let rows=[WeightMeasurement(kilograms:72,recordedAt:Date(timeIntervalSince1970:150))]
+        let loader=WeightMeasurementLoader()
+        await loader.initial(a,read:{_,_ in []});await loader.initial(b,read:{_,_ in rows})
+        await loader.load(a,reset:false,read:{_,_ in XCTFail("A stale button entry must not read or select A");return []})
+        XCTAssertEqual(loader.query,b);XCTAssertEqual(loader.records.map(\.id),rows.map(\.id))
+        await loader.load(b,reset:false,read:{_,offset in XCTAssertEqual(offset,1);return rows})
+        XCTAssertEqual(loader.records.count,2)
+        await loader.load(b,read:{_,_ in throw CocoaError(.fileReadUnknown)});XCTAssertTrue(loader.failed)
+        await loader.retry(read:{_,_ in rows});XCTAssertFalse(loader.failed)
+        await loader.initial(a,read:{_,_ in []});XCTAssertEqual(loader.query,a)
+    }
+}
+
+extension WeightFoundationTests {
+    func testFix2CR06FixtureClockIgnoresExecutionMonthAndYearAndRequiresUITesting() throws {
+        let target=try XCTUnwrap(ImportantCivilDay(identifier:"2026-10-18")?.instant(minutes:720,timeZone:.current))
+        for date in ["2026-11-18","2027-10-18"] {
+            let live=try XCTUnwrap(ImportantCivilDay(identifier:date)?.instant(minutes:720,timeZone:.current))
+            let args=["-PGOSUITesting","-PGOSWeightReviewNow","2026-10-18"]
+            XCTAssertEqual(WeightReviewClock.current(arguments:args,live:live),target)
+            XCTAssertEqual(WeightReviewClock.current(arguments:[],live:live),live)
+            XCTAssertEqual(WeightReviewClock.current(arguments:["-PGOSWeightReviewNow","2026-10-18"],live:live),live)
+        }
     }
 }

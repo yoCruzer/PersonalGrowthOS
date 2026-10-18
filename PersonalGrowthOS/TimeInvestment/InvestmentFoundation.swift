@@ -267,13 +267,21 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         let store = container.configurations.first!.url
         let parent = store.deletingLastPathComponent()
         let root = parent.lastPathComponent == "Store" ? parent.deletingLastPathComponent() : parent
-        let result = try StorePublication.perform(at: root) {
-            let context = ModelContext(container); context.autosaveEnabled = false
-            do { let result = try body(context, clock()); try commit(context); return result }
-            catch { context.rollback(); throw error }
+        do {
+            let result = try StorePublication.perform(at: root) {
+                let context = ModelContext(container); context.autosaveEnabled = false
+                do { let result = try body(context, clock()); try commit(context); return result }
+                catch { context.rollback(); throw error }
+            }
+            InvestmentChanges.publish(change,container:container)
+            return result
+        } catch {
+            // A transport/commit error can follow a durable write in the injected
+            // fault contract. Invalidate the same scope and let canonical reads
+            // determine what committed; still report the original command failure.
+            InvestmentChanges.publish(change,container:container)
+            throw error
         }
-        InvestmentChanges.publish(change,container:container)
-        return result
     }
     /// Cleanup only after successful startup integrity checks. Fresh context and the same
     /// publication lock keep unrelated editor drafts outside this logical privacy rewrite.

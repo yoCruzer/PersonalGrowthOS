@@ -1425,3 +1425,52 @@ extension TodoFoundationTests {
         }
     }
 }
+
+extension TodoFoundationTests {
+    func testFix2CR03ExplicitLaterSeriesRuleWinsOverEarliestCreatedSnapshot() throws {
+        let c=try PersistenceContainerFactory.makeInMemory();var now=date("2020-01-01")
+        let s=TodoTaskService(context:c.mainContext,now:{now},timeZone:{self.zone})
+        let task=try s.create(.init(title:"Series",plannedDay:"2020-01-01",remindAt:TodoRecurrence.reminder(day:TodoDay("2020-01-01")!,minutes:600,timeZone:zone),frequency:.daily))
+        var edited=try s.draft(id:task.id);edited.remindAt=TodoRecurrence.reminder(day:TodoDay("2019-12-31")!,minutes:600,timeZone:zone)
+        try s.edit(id:task.id,draft:edited,futureSeries:true)
+        now=date("2020-01-03")
+        try s.rescheduleReminder(id:task.id,to:now.addingTimeInterval(86400*800))
+        try s.transition(id:task.id,to:.completed)
+        let next=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+        XCTAssertEqual(next.reminderLocalDay,try TodoRecurrence.reminderDay(occurrence:TodoDay(next.plannedDay!)!,offset:-1).description)
+        XCTAssertEqual(try c.mainContext.fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset,-1)
+    }
+}
+
+extension TodoFoundationTests {
+    func testFix2CR03ConvertedSourceAndAmbiguousLegacyPolicyDoNotGuess() throws {
+        for ambiguous in [false,true] {
+            let c=try PersistenceContainerFactory.makeInMemory(),now=date("2020-01-01")
+            let s=TodoTaskService(context:c.mainContext,now:{now},timeZone:{self.zone})
+            let task=try s.create(.init(title:"Convert",plannedDay:"2020-01-01"))
+            var draft=try s.draft(id:task.id);draft.frequency = .daily;draft.remindAt=TodoRecurrence.reminder(day:TodoDay("2020-01-01")!,minutes:600,timeZone:zone)
+            try s.edit(id:task.id,draft:draft)
+            let rule=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<TodoSeries>()).first)
+            if ambiguous {
+                // Emulate the information available from a pre-offset formal edit:
+                // same technical timestamp, changed policy, no semantic event flag.
+                var changed=try s.draft(id:task.id);changed.remindAt=TodoRecurrence.reminder(day:TodoDay("2019-12-31")!,minutes:600,timeZone:zone)
+                try s.edit(id:task.id,draft:changed,futureSeries:true)
+            }
+            rule.reminderDayOffset=nil;try c.mainContext.save();try TodoIntegrity.validate(context:ModelContext(c))
+            let before=try TransferSnapshot.make(context:ModelContext(c))
+            if ambiguous {
+                XCTAssertEqual(rule.updatedAt,rule.createdAt)
+                XCTAssertThrowsError(try s.transition(id:task.id,to:.completed))
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+                // Explicit rule correction provides the missing policy without editing history.
+                let corrected=try s.draft(id:task.id);try s.edit(id:task.id,draft:corrected,futureSeries:true)
+                try s.transition(id:task.id,to:.completed)
+                XCTAssertEqual(rule.reminderDayOffset,-1)
+            } else {
+                try s.transition(id:task.id,to:.completed)
+                XCTAssertEqual(rule.reminderDayOffset,0)
+            }
+        }
+    }
+}

@@ -2990,7 +2990,7 @@ extension AppLaunchSmokeTests {
     func testReviewFixWeightCutoffAndFiftyRowPaginationAcrossDays() {
         continueAfterFailure=false
         let app=XCUIApplication()
-        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeightReviewFixDates","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeightReviewFixDates","-PGOSWeightReviewNow","2026-10-18","-AppleLanguages","(en)","-AppleLocale","en_US"]
         app.launch();app.buttons["today-weight"].tap()
         func reveal(_ element: XCUIElement) {
             for _ in 0..<20 where !element.isHittable {app.swipeUp()}
@@ -2998,6 +2998,7 @@ extension AppLaunchSmokeTests {
         }
         let through=app.datePickers["weight-review-through"];reveal(through)
         through.buttons.firstMatch.tap()
+        XCTAssertEqual(app.buttons["DatePicker.Show"].value as? String,"October 2026")
         let calendar=XCTAttachment(string:app.debugDescription);calendar.name="ReviewFix-native-cutoff-calendar";calendar.lifetime = .keepAlways;add(calendar)
         let tenth=app.buttons.matching(NSPredicate(format:"label CONTAINS %@","October 10")).firstMatch
         XCTAssertTrue(tenth.waitForExistence(timeout:5),app.debugDescription);tenth.tap()
@@ -3033,18 +3034,20 @@ extension AppLaunchSmokeTests {
         continueAfterFailure=false
         print("PGOS_USAGE_STYLE_DARK");fflush(stdout)
         let app=XCUIApplication()
-        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeightReviewFixDates","-AppleLanguages","(zh-Hans)","-AppleLocale","zh_CN","-AppleInterfaceStyle","Dark","-UIPreferredContentSizeCategoryName",UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeightReviewFixDates","-PGOSWeightReviewNow","2026-10-18","-AppleLanguages","(zh-Hans)","-AppleLocale","zh_CN","-AppleInterfaceStyle","Dark","-UIPreferredContentSizeCategoryName",UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
         app.launch();app.buttons["today-weight"].tap()
         func reveal(_ element: XCUIElement) {
             for _ in 0..<24 where !element.isHittable {app.swipeUp()}
             XCTAssertTrue(element.isHittable,app.debugDescription)
         }
         let through=app.datePickers["weight-review-through"];reveal(through);through.buttons.firstMatch.tap()
+        XCTAssertTrue((app.buttons["DatePicker.Show"].value as? String ?? "").contains("2026"))
+        XCTAssertTrue((app.buttons["DatePicker.Show"].value as? String ?? "").contains("10"))
         let tenth=app.buttons.matching(NSPredicate(format:"label CONTAINS %@","10月10")).firstMatch
         XCTAssertTrue(tenth.waitForExistence(timeout:5),app.debugDescription);tenth.tap()
         app.navigationBars["体重"].tap()
         let heading=app.staticTexts.matching(NSPredicate(format:"label CONTAINS %@ AND label CONTAINS %@","截至","最近记录")).firstMatch
-        reveal(heading);XCTAssertTrue(heading.label.contains("10"),heading.label)
+        reveal(heading);XCTAssertTrue(heading.label.contains("2026"),heading.label);XCTAssertTrue(heading.label.contains("10月10"),heading.label)
         let shot=XCTAttachment(screenshot:app.screenshot());shot.name="ReviewFix-Weight-Chinese-Dark-maxAX-cutoff-title";shot.lifetime = .keepAlways;add(shot)
         let row=app.buttons.matching(identifier:"weight-record-row").firstMatch;reveal(row)
         XCTAssertFalse(row.label.contains("77.0"),row.label)

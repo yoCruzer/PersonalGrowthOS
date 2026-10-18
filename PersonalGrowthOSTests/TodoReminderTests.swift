@@ -699,3 +699,78 @@ extension TodoReminderTests {
         XCTAssertEqual(client.pending.values.map(\.taskID),[task.id]);XCTAssertEqual(coordinator.status(for:task),.scheduled)
     }
 }
+
+extension TodoReminderTests {
+    func testFix2CR01CapacityCancellationConfirmsAfterExpiryAndColdRecheck() async throws {
+        for nativeDisappears in [true,false] {
+            let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+            defer {try? FileManager.default.removeItem(at:root)}
+            let url=root.appendingPathComponent("test.sqlite"),c=try PersistenceContainerFactory.makeOnDisk(at:url)
+            var now=Date();let client=TodoNotificationStub();client.otherIdentifiers=Set((0..<59).map {"reserved-\($0)"})
+            let service=TodoTaskService(context:c.mainContext,now:{now})
+            let late=try service.create(.init(title:"L",remindAt:now.addingTimeInterval(120)))
+            let coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init()})
+            await coordinator.reconcile(context:c.mainContext)
+            let old=try XCTUnwrap(client.pending.keys.first),adds=client.addCalls.count
+            _ = try service.create(.init(title:"E",remindAt:now.addingTimeInterval(60)))
+            client.failedRemovalIdentifiers=[old];await coordinator.reconcile(context:c.mainContext)
+            XCTAssertEqual(coordinator.status(for:late),.cancellationPending)
+            now.addTimeInterval(121)
+            let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let cold=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init()})
+            if nativeDisappears {client.pending.removeValue(forKey:old)}
+            await cold.reconcile(context:reopened.mainContext)
+            let task=try TodoTaskService(context:reopened.mainContext).task(id:late.id)
+            if !nativeDisappears {
+                XCTAssertEqual(cold.status(for:task),.cancellationPending)
+                client.failedRemovalIdentifiers=[];await cold.reconcile(context:reopened.mainContext)
+            }
+            for _ in 0..<2 {await cold.reconcile(context:reopened.mainContext)}
+            XCTAssertEqual(cold.status(for:task),.elapsed)
+            XCTAssertFalse(cold.hasPendingCancellation)
+            XCTAssertTrue(client.pending.isEmpty);XCTAssertEqual(client.addCalls.count,adds)
+            XCTAssertEqual(try ModelContext(reopened).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == late.id}?.phaseRawValue,"retired")
+        }
+    }
+    func testFix2CR02CapacityReasonMustPersistBeforeNativeRemoval() async throws {
+        for mode in 0..<3 {
+            let c=try PersistenceContainerFactory.makeInMemory();var now=Date()
+            let client=TodoNotificationStub();client.otherIdentifiers=Set((0..<59).map {"reserved-\($0)"})
+            let service=TodoTaskService(context:c.mainContext,now:{now})
+            let late=try service.create(.init(title:"L",remindAt:now.addingTimeInterval(7200)))
+            var fail=false,attempts:[String]=[]
+            let coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init()},journalCommit:{write in
+                let phase=try write.fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == late.id}?.phaseRawValue ?? ""
+                if fail && (phase == "capacityCancellationPending" || phase == "capacityWaiting") {
+                    attempts.append(phase)
+                    if mode == 2 {try write.save();throw CocoaError(.fileWriteUnknown)}
+                    if mode == 0 || phase == "capacityWaiting" {throw CocoaError(.fileWriteOutOfSpace)}
+                }
+                try write.save()
+            })
+            await coordinator.reconcile(context:c.mainContext)
+            let lateID=try XCTUnwrap(client.pending.keys.first),generation=try XCTUnwrap(service.reminderIntent(for:late.id)).generation
+            let early=try service.create(.init(title:"E",remindAt:now.addingTimeInterval(600)))
+            fail=true;await coordinator.reconcile(context:c.mainContext)
+            XCTAssertFalse(attempts.isEmpty)
+            if mode == 0 {
+                XCTAssertNotNil(client.pending[lateID],"Two phase writes really fail: preserve native ownership before destructive removal")
+                XCTAssertFalse(client.removed.contains(lateID))
+            } else {XCTAssertNil(client.pending[lateID])}
+            XCTAssertNotEqual(try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == late.id}?.phaseRawValue,"retired")
+            fail=false;await coordinator.reconcile(context:c.mainContext)
+            XCTAssertEqual(client.pending.values.map(\.taskID),[early.id]);XCTAssertEqual(coordinator.status(for:late),.queueFull)
+            try service.transition(id:early.id,to:.completed)
+            let cold=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init()})
+            for pass in 0..<2 {
+                await cold.reconcile(context:c.mainContext)
+                print("FIX2_CR02 mode=\(mode) pass=\(pass) native=\(client.pending.values.map {($0.taskID,$0.fireAt)}) status=\(cold.status(for:late)) phases=\(try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).map {($0.taskID,$0.phaseRawValue)}))")
+            }
+            XCTAssertEqual(client.pending.values.map(\.taskID),[late.id]);XCTAssertEqual(cold.status(for:late),.scheduled)
+            XCTAssertEqual(try service.reminderIntent(for:late.id)?.generation,generation)
+            XCTAssertLessThanOrEqual(client.pending.count+client.otherIdentifiers.count,60)
+            now.addTimeInterval(1)
+        }
+    }
+}

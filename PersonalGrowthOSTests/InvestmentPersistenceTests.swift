@@ -1118,3 +1118,64 @@ extension InvestmentPersistenceTests {
         XCTAssertTrue(editor.duplicateIDs.isEmpty);XCTAssertFalse(editor.duplicate);XCTAssertNil(editor.pendingExactInterval)
     }
 }
+
+extension InvestmentPersistenceTests {
+    func testFix2CR04FormalCandidateChangesInvalidateUnchangedDraftWithoutErasingInput() throws {
+        for mode in 0..<3 {
+            let c=try PersistenceContainerFactory.makeInMemory(),s=InvestmentService(context:c.mainContext)
+            let a=try s.createActivity(name:"A"),p=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentParticipant>()).first).id,b=UUID()
+            let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual)
+            try s.saveManual(id:b,participantID:p,activityID:a,values:values)
+            let w=InvestmentWorkspace();w.refresh(c.mainContext)
+            let editor=try w.newEditor(activityID:a);editor.values=values;editor.values.note="Last successful draft";editor.durationText="45"
+            XCTAssertTrue(editor.persist(c.mainContext));w.refresh(c.mainContext)
+            let durable=try XCTUnwrap(s.operations().first {$0.id == editor.id})
+            editor.values.note="Unsaved input remains";editor.showDuplicates([b]);editor.error=InvestmentFailure.duplicate.localizedDescription
+            let input=editor.values
+            if mode == 1 {try s.delete(id:b,revision:0)}
+            else {var edited=values;edited.changeDuration(mode == 0 ? 2760:2700);edited.note="Changed formal B";try s.saveManual(id:b,participantID:p,activityID:a,values:edited,expectedRevision:0)}
+            w.refresh(c.mainContext)
+            XCTAssertFalse(editor.duplicate);XCTAssertFalse(editor.showDuplicateDialog);XCTAssertTrue(editor.duplicateIDs.isEmpty)
+            XCTAssertNil(editor.duplicateValues);XCTAssertNil(editor.error);XCTAssertEqual(editor.values,input);XCTAssertEqual(editor.durationText,"45");XCTAssertFalse(editor.finished)
+            XCTAssertEqual(try s.operations().first {$0.id == editor.id},durable)
+            if mode == 2 {
+                XCTAssertThrowsError(try s.saveManual(id:editor.id,participantID:p,activityID:a,values:editor.values,draftID:editor.id))
+                XCTAssertEqual(try s.matchingSessionIDs(values:editor.values,participantID:p,excluding:editor.id),[b])
+            } else {
+                try s.saveManual(id:editor.id,participantID:p,activityID:a,values:editor.values,draftID:editor.id)
+                w.refresh(c.mainContext);XCTAssertEqual(try w.session(id:editor.id,context:c.mainContext)?.values.note,input.note)
+                XCTAssertEqual(w.review?.orderedSessionIDs.count,mode == 1 ? 1:2)
+            }
+        }
+    }
+    func testFix2OBS01SameWarmWorkspaceRecoversActualCommitReportedErrorAndLaterCommands() throws {
+        for committed in [false,true] {
+            var readings=InvestmentClockTestReadings()
+            let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("warm.sqlite"))
+            let (s,id)=try f1DiskStart(c,clock:{readings.sample()})
+            let w=InvestmentWorkspace();w.refresh(c.mainContext)
+            let initial=try XCTUnwrap(w.operations.first {$0.id == id})
+            readings.advance(wall:60,continuous:60,awake:60)
+            let failure=InvestmentService(context:c.mainContext,clock:{readings.sample()},commit:{context in
+                if committed {try context.save()};throw CocoaError(.fileWriteUnknown)
+            })
+            XCTAssertThrowsError(try failure.command(.pause,id:id,revision:initial.revision))
+            let disk=try XCTUnwrap(s.operations().first {$0.id == id})
+            XCTAssertEqual(disk.revision,initial.revision+(committed ? 1:0));XCTAssertEqual(disk.timer.state,committed ? .paused:.running)
+            w.refresh(c.mainContext)
+            XCTAssertEqual(w.operations.first {$0.id == id},disk,"Same prewarmed Workspace must see durable state after a reported error")
+            w.refresh(c.mainContext,retry:true);XCTAssertEqual(w.operations.first {$0.id == id},disk);XCTAssertNil(w.error)
+            if committed {try w.resume(id:id,context:c.mainContext,clock:{readings.sample()})}
+            readings.advance(wall:30,continuous:30,awake:30)
+            w.checkpoint(c.mainContext,clock:{readings.sample()});XCTAssertNil(w.error)
+            XCTAssertEqual(w.operations.first {$0.id == id},try s.operations().first {$0.id == id})
+            let activity=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentActivity>()).first),participant=activity.participantID,fact=UUID()
+            let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual,note:"Sensitive cached detail")
+            try s.saveManual(id:fact,participantID:participant,activityID:activity.id,values:values);w.refresh(c.mainContext)
+            let editor=w.edit(try XCTUnwrap(w.session(id:fact,context:c.mainContext)));editor.values.note="Sensitive editing copy";XCTAssertTrue(editor.persist(c.mainContext));w.refresh(c.mainContext)
+            XCTAssertThrowsError(try failure.delete(id:fact,revision:0));w.refresh(c.mainContext)
+            if committed {XCTAssertNil(try w.session(id:fact,context:c.mainContext));XCTAssertTrue(editor.finished);XCTAssertEqual(editor.values.note,"");XCTAssertNil(w.editors[editor.id])}
+            else {XCTAssertNotNil(try w.session(id:fact,context:c.mainContext));XCTAssertEqual(editor.values.note,"Sensitive editing copy");XCTAssertFalse(editor.finished)}
+        }
+    }
+}

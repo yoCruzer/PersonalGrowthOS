@@ -1,3 +1,14 @@
+# PR #13 第二轮限定补修 — FIXES_IN_PROGRESS（2026-10-19）
+
+已在原worktree从干净e75ac561安全fast-forward至固定规格41ef47c384464823f9456e9816d574ba7edff563；远端Draft/base及祖先关系已核对，主工作区未知改动保留。长期Foundation/Contract相对前轮未变化并复用已读上下文，最新CURRENT和完整固定Goal已读取。
+
+CR-01～06和OBS局部实现已进入候选；red-a 2FAIL、red-b 4FAIL、CR05原Timer UI红例1FAIL保留，定向green-scope 10/10PASS。CR02中间绿测误断言旧coordinator的测试错误已按冷实例修正，不改业务断言。CR03为真V11→旧f1等价事务已覆盖nil→V15/v11恢复，历史事件字节不改；无足够规则语义的歧义历史安全拒绝，显式规则纠正可恢复。OBS01仅代表save后抛错故障契约；OBS02为最小入口加固，不声称已复现真实SwiftUI竞态。
+
+下一步同批完成最终受影响Unit/关键UI、干净SHA双构建/实包、独立终审、文档和普通push；尚不恢复READY。原设备/签名/Share/Safari/低空间/CI状态与禁止边界保持。新本机原始证据根：/tmp/pgos-pr13-fix2-evidence。
+
+---
+以下为较早交接与规格准备历史，当前状态以上文为准。
+
 # PR #13 第二轮外部复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-18）
 
 **当前有效目标：[第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)。规格已准备；CR-01～CR-06 尚未实施，本轮原生验证 NOT_RUN。此前 READY_FOR_OWNER_DEVICE_GATE 暂不成立，本地修复已获 Owner 授权，不等待设备门才能开工。**

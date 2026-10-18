@@ -13,7 +13,7 @@ struct WeightHistoryView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var phase
     @State private var snapshot: WeightReviewSnapshot?
-    @State private var through = Date()
+    @State private var through = WeightReviewClock.current()
     @State private var historical = false
     @State private var range = WeightReviewRange.month
     @State private var references: Set<WeightReviewRange> = [.week, .month]
@@ -53,7 +53,7 @@ struct WeightHistoryView: View {
                 Section("Trend") {
                     Picker("Time range", selection: $range) { ForEach(WeightReviewRange.allCases) { Text($0.label).tag($0) } }
                         .accessibilityIdentifier("weight-review-range")
-                    DatePicker("Statistics through", selection: Binding(get: { through }, set: { historical = true; through = $0 }), in: ...Date(), displayedComponents: .date)
+                    DatePicker("Statistics through", selection: Binding(get: { through }, set: { historical = true; through = $0 }), in: ...WeightReviewClock.current(), displayedComponents: .date)
                         .accessibilityIdentifier("weight-review-through")
                     let summary = snapshot.summaries[range]!
                     Text(summary.start.formatted(date: .abbreviated, time: .omitted) + " – " + snapshot.asOfDay.formatted(date: .abbreviated, time: .omitted)).font(.caption).accessibilityIdentifier("weight-review-dates")
@@ -144,7 +144,7 @@ struct WeightHistoryView: View {
         .alert("Weight Update", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK", role: .cancel) {} } message: { Text(error ?? "") }
     }
     private func refreshForClock() {
-        let now = Date()
+        let now = WeightReviewClock.current()
         if !historical, !Calendar(identifier: .gregorian).isDate(through, inSameDayAs: now) { through = now }
         else { refresh += 1 }
     }
@@ -182,7 +182,7 @@ struct WeightHistoryView: View {
     }
     @MainActor private func load() async {
         failed = false; snapshot = nil
-        let container = context.container, end = through, now = Date(), zone = TimeZone.current
+        let container = context.container, end = through, now = WeightReviewClock.current(), zone = TimeZone.current
         let work = Task.detached { try await WeightReviewReader(modelContainer: container).snapshot(now: now, through: end, zone: zone) }
         do {
             let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
@@ -245,7 +245,7 @@ struct WeightAllRecordsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var phase
     @State private var snapshot: WeightReviewSnapshot?
-    @State private var selected = Date()
+    @State private var selected = WeightReviewClock.current()
     @State private var selectionZoneID: String?
     @State private var refresh = 0
     @State private var failed = false
@@ -299,7 +299,7 @@ struct WeightAllRecordsView: View {
             .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refresh += 1 }
             .task(id: refresh) {
                 let container = context.container
-                let work = Task.detached { try await WeightReviewReader(modelContainer: container).snapshot(now: Date()) }
+                let work = Task.detached { try await WeightReviewReader(modelContainer: container).snapshot(now: WeightReviewClock.current()) }
                 do {
                     let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
                     try Task.checkCancellation()

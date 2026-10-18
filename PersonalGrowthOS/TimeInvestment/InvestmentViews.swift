@@ -27,6 +27,7 @@ import UIKit
     func clearDuplicateCandidates() {
         duplicateValues=nil;duplicateActivity=nil;duplicateDuration=nil
         duplicateIDs=[];duplicate=false;showDuplicateDialog=false
+        if error == InvestmentFailure.duplicate.localizedDescription {error=nil}
     }
     func eraseConsumedContent() {
         finished=true
@@ -145,6 +146,9 @@ import UIKit
         if factsVersion != version.facts || previousMe != me || (retry && review == nil) {
             // Record the attempted version even on failure. Draft events cannot implicitly
             // retry an expensive failed history scan; explicit Retry or new formal facts can.
+            if factsVersion != version.facts || previousMe != me {
+                for editor in editors.values {editor.clearDuplicateCandidates()}
+            }
             factsVersion=version.facts;reviewGeneration += 1
             do {
                 if let metadataError {throw InvestmentEditorPersistenceFailure(message:metadataError)}
@@ -420,6 +424,7 @@ struct InvestmentTimerView: View {
     @State private var editor: InvestmentEditorState?
     @State private var error: String?
     @State private var discard = false
+    @State private var saved = false
     private var op: InvestmentOperationSnapshot? { workspace.operations.first { $0.id == id } }
     var body: some View {
         Form {
@@ -456,7 +461,9 @@ struct InvestmentTimerView: View {
         .confirmationDialog("Discard this unfinished timer?",isPresented:$discard,titleVisibility:.visible) {
             Button("Discard timer",role:.destructive) { command(.discard); if error == nil { dismiss() } }
         }
-        .sheet(item:$editor) { editor in NavigationStack { InvestmentEditorView(editor:editor) } }
+        .sheet(item:$editor,onDismiss:{if saved {dismiss()}}) { editor in
+            NavigationStack { InvestmentEditorView(onSaved:{saved=true},editor:editor) }
+        }
         .task { workspace.checkpoint(context) }
     }
     private var closeLabel: String {
@@ -502,6 +509,7 @@ private struct InvestmentDateField: View {
 }
 
 struct InvestmentEditorView: View {
+    var onSaved: () -> Void = {}
     @Bindable var editor: InvestmentEditorState
     @Environment(InvestmentWorkspace.self) private var workspace
     @Environment(\.modelContext) private var context
@@ -572,7 +580,7 @@ struct InvestmentEditorView: View {
             Button("Cancel draft",role:.destructive) {
                 do {
                     if let revision = editor.operationRevision { try InvestmentService(context:context).command(.discard,id:editor.id,revision:revision) }
-                    editor.finished = true; workspace.refresh(context); dismiss()
+                    editor.finished = true; workspace.refresh(context); onSaved();dismiss()
                 } catch { editor.error = error.localizedDescription }
             }
         }
@@ -617,7 +625,11 @@ struct InvestmentEditorView: View {
     private func save(_ confirmed: Bool) {
         guard editor.hasValidDuration else { editor.error = InvestmentFailure.invalid.localizedDescription; return }
         do {
+#if DEBUG
+            let service = InvestmentService(context:context,commit:InvestmentReviewTestSupport.saveCommit)
+#else
             let service = InvestmentService(context:context)
+#endif
             if editor.timerConfirmation {
                 guard let revision = editor.operationRevision else { throw InvestmentFailure.missing }
                 try service.saveTimer(id:editor.id,revision:revision,values:editor.values,confirmDuplicate:confirmed)
@@ -625,7 +637,7 @@ struct InvestmentEditorView: View {
                 try service.saveManual(id:editor.editingSessionID ?? editor.id,participantID:editor.participantID,activityID:editor.activityID,
                     values:editor.values,expectedRevision:editor.editingRevision,confirmDuplicate:confirmed,draftID:editor.operationRevision == nil ? nil : editor.id)
             }
-            editor.finished = true; workspace.refresh(context); dismiss()
+            editor.finished = true; workspace.refresh(context); onSaved();dismiss()
         } catch InvestmentFailure.duplicate {
             do {editor.showDuplicates(try InvestmentService(context:context).matchingSessionIDs(values:editor.values,participantID:editor.participantID,excluding:editor.editingSessionID ?? editor.id))}
             catch {editor.error=error.localizedDescription;return}
@@ -847,6 +859,14 @@ struct InvestmentSessionDetailView: View {
 #if DEBUG
 @MainActor private enum InvestmentReviewTestSupport {
     static var closeFailureConsumed=false
+    static var saveFailureConsumed=false
+    static func saveCommit(_ context: ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentSaveWriteFailure"),!saveFailureConsumed {
+            saveFailureConsumed=true;throw CocoaError(.fileWriteOutOfSpace)
+        }
+        try context.save()
+    }
     static func draftCommit(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
         if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentCloseWriteFailure"),!closeFailureConsumed {throw CocoaError(.fileWriteOutOfSpace)}
