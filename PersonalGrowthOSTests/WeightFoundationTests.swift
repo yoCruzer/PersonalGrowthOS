@@ -5,6 +5,144 @@ import XCTest
 
 @MainActor
 final class WeightFoundationTests: XCTestCase {
+    func testReviewDailyMeansAreEqualWeightAndLatestIsAnActualMeasurement() throws {
+        let zone = TimeZone(identifier: "Asia/Shanghai")!
+        func instant(_ day: Int, _ hour: Int) -> Date { ImportantCivilDay(year: 2026, month: 10, day: day).instant(minutes: hour * 60, timeZone: zone)! }
+        var builder = WeightReviewBuilder(now: instant(17, 18), timeZone: zone)
+        let a = WeightMeasurement(kilograms: 70, recordedAt: instant(16, 8))
+        let b = WeightMeasurement(kilograms: 72, recordedAt: instant(16, 18))
+        let c = WeightMeasurement(kilograms: 75, recordedAt: instant(17, 8))
+        [c, a, b, WeightMeasurement(kilograms: 1, recordedAt: instant(17, 19))].forEach { builder.append($0) }
+        let snapshot = builder.snapshot(), summary = try XCTUnwrap(snapshot.summaries[.week])
+        XCTAssertEqual(snapshot.daily.map(\.mean), [71, 75])
+        XCTAssertEqual(try XCTUnwrap(summary.mean), 73, accuracy: 1e-10)
+        XCTAssertEqual(summary.days, 2); XCTAssertEqual(summary.observations, 3)
+        XCTAssertEqual(snapshot.latest.map(\.id), [c.id, b.id])
+        XCTAssertEqual(snapshot.latest[0].kilograms - snapshot.latest[1].kilograms, 3)
+    }
+
+    func testReviewCalendarWindowsClampMonthsAndYearsAndUseExclusiveEnd() throws {
+        let zone = TimeZone(secondsFromGMT: 0)!
+        func snapshot(_ y: Int, _ m: Int, _ d: Int) -> WeightReviewSnapshot {
+            WeightReviewBuilder(now: ImportantCivilDay(year: y, month: m, day: d).instant(minutes: 720, timeZone: zone)!, timeZone: zone).snapshot()
+        }
+        let value = snapshot(2026, 10, 17)
+        for (range, expected) in [(WeightReviewRange.week, "2026-10-11"), (.month, "2026-09-18"), (.quarter, "2026-07-18"), (.year, "2025-10-18")] {
+            XCTAssertEqual(HabitLocalDay(date: value.summaries[range]!.start, timeZone: zone).description, expected)
+        }
+        XCTAssertEqual(HabitLocalDay(date: snapshot(2024, 5, 30).summaries[.quarter]!.start, timeZone: zone).description, "2024-02-29")
+        XCTAssertEqual(HabitLocalDay(date: snapshot(2024, 2, 28).summaries[.year]!.start, timeZone: zone).description, "2023-02-28")
+        var builder = WeightReviewBuilder(now: Date(), through: value.asOfDay, timeZone: zone)
+        builder.append(.init(kilograms: 70, recordedAt: value.endExclusive.addingTimeInterval(-1)))
+        builder.append(.init(kilograms: 80, recordedAt: value.endExclusive))
+        XCTAssertEqual(builder.snapshot().summaries[.all]?.observations, 1)
+    }
+
+    func testReviewCoverageAndStreaksUseAllHistoryAndRespectYesterdayAndGaps() {
+        let zone = TimeZone(identifier: "America/Los_Angeles")!
+        let now = ImportantCivilDay(year: 2026, month: 1, day: 3).instant(minutes: 720, timeZone: zone)!
+        var builder = WeightReviewBuilder(now: now, timeZone: zone)
+        let days = ["2025-01-01", "2025-12-30", "2025-12-31", "2026-01-01", "2026-01-02"]
+        for day in days {
+            let instant = ImportantCivilDay(identifier: day)!.instant(minutes: 720, timeZone: zone)!
+            builder.append(.init(kilograms: 70, recordedAt: instant)); builder.append(.init(kilograms: 72, recordedAt: instant))
+        }
+        let snapshot = builder.snapshot()
+        XCTAssertEqual(snapshot.recordedDays, 5); XCTAssertEqual(snapshot.spanDays, 368)
+        XCTAssertEqual(snapshot.longestStreak, 4); XCTAssertEqual(snapshot.endingStreak, 4)
+        XCTAssertEqual(snapshot.streakEnd, snapshot.calendar.date(byAdding: .day, value: -1, to: snapshot.asOfDay))
+        XCTAssertEqual(snapshot.summaries[.month]?.days, 4)
+        XCTAssertEqual(Set(snapshot.daily.map(\.segment)).count, 2)
+        let empty = WeightReviewBuilder(now: now, timeZone: zone).snapshot()
+        XCTAssertNil(empty.earliest); XCTAssertNil(empty.streakEnd); XCTAssertEqual(empty.endingStreak, 0)
+    }
+
+    func testReviewAxisContainsEveryEnabledReferenceAndExtremeValueWithoutFabricatingDays() {
+        let zone = TimeZone(secondsFromGMT: 0)!, now = Date()
+        var builder = WeightReviewBuilder(now: now, timeZone: zone)
+        builder.append(.init(kilograms: 70, recordedAt: now.addingTimeInterval(-86400)))
+        builder.append(.init(kilograms: 1000, recordedAt: now.addingTimeInterval(-86400 * 60)))
+        let snapshot = builder.snapshot()
+        XCTAssertEqual(snapshot.points(.week).count, 1)
+        let axis = snapshot.axis(range: .week, references: [.quarter])
+        XCTAssertTrue(axis.domain.contains(70)); XCTAssertTrue(axis.domain.contains(snapshot.summaries[.quarter]!.mean!))
+        XCTAssertGreaterThanOrEqual(axis.domain.upperBound - axis.domain.lowerBound, 2)
+        XCTAssertEqual(snapshot.daily.count, 2)
+        XCTAssertTrue(snapshot.axis(range: .all, references: []).domain.contains(1000))
+    }
+
+    func testReviewCurrentZoneIsFrozenAndSameInstantHasConsistentDifferentDayAfterRefresh() {
+        let instant = ISO8601DateFormatter().date(from: "2026-10-17T01:00:00Z")!
+        var west = WeightReviewBuilder(now: instant.addingTimeInterval(3600), timeZone: TimeZone(identifier: "America/Los_Angeles")!)
+        var east = WeightReviewBuilder(now: instant.addingTimeInterval(3600), timeZone: TimeZone(identifier: "Asia/Shanghai")!)
+        let measurement = WeightMeasurement(kilograms: 70, recordedAt: instant)
+        west.append(measurement); east.append(measurement)
+        let a = west.snapshot(), b = east.snapshot()
+        XCTAssertEqual(HabitLocalDay(date: a.daily[0].day, timeZone: a.calendar.timeZone).description, "2026-10-16")
+        XCTAssertEqual(HabitLocalDay(date: b.daily[0].day, timeZone: b.calendar.timeZone).description, "2026-10-17")
+        XCTAssertEqual(a.latest[0].recordedAt, instant); XCTAssertEqual(b.latest[0].recordedAt, instant)
+    }
+
+    func testReviewProductionReaderStreamsFiveYearsAndPagesMeasurementsAfterSaveEditDelete() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("UsageWeight-" + UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let url = root.appendingPathComponent("weight.sqlite")
+        let container = try PersistenceContainerFactory.makeOnDisk(at: url), context = container.mainContext
+        context.autosaveEnabled = false
+        let zone = TimeZone(secondsFromGMT: 0)!, now = Date()
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
+        var mostRecent: UUID?
+        for index in 0..<10_000 {
+            let at = calendar.date(byAdding: .day, value: -(index % 1826), to: now.addingTimeInterval(-60))!
+            let record = WeightRecord(weightKilograms: 70 + Double(index % 30) / 10, recordedAt: at, createdAt: at)
+            if index == 0 { mostRecent = record.id }
+            context.insert(record)
+        }
+        try context.save()
+        let clock = ContinuousClock(), began = clock.now
+        let reader = WeightReviewReader(modelContainer: container)
+        let snapshot = try await reader.snapshot(now: now, zone: zone)
+        let elapsed = began.duration(to: clock.now)
+        XCTAssertEqual(snapshot.daily.count, 1826); XCTAssertEqual(snapshot.summaries[.all]?.observations, 10_000)
+        XCTAssertEqual(snapshot.latest.count, 2)
+        let first = try await reader.records(now: now, limit: 50)
+        let second = try await reader.records(now: now, offset: 50, limit: 50)
+        XCTAssertEqual(first.count, 50); XCTAssertEqual(second.count, 50)
+        XCTAssertTrue(Set(first.map(\.id)).isDisjoint(with: Set(second.map(\.id))))
+        let recent = try await reader.records(now: now, limit: 5); XCTAssertEqual(recent.count, 5)
+        let targetID = mostRecent!
+        let target = try XCTUnwrap(context.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.id == targetID })).first)
+        let earliest = calendar.date(byAdding: .day, value: -2000, to: now)!
+        try WeightRecordService(context: context).update(target, weightKilograms: 80, recordedAt: earliest)
+        let changed = try await WeightReviewReader(modelContainer: container).snapshot(now: Date(), zone: zone)
+        XCTAssertEqual(changed.recordedDays, 1827); XCTAssertEqual(changed.earliest, calendar.startOfDay(for: earliest))
+        try WeightRecordService(context: context).delete(target)
+        let deleted = try await WeightReviewReader(modelContainer: container).snapshot(now: Date(), zone: zone)
+        XCTAssertEqual(deleted.recordedDays, 1826); XCTAssertEqual(deleted.summaries[.all]?.observations, 9999)
+        let attachment = XCTAttachment(string: "Synthetic on-disk 10,000 measurements / 1,826 days; streaming snapshot \(elapsed); recent limit=5; pages=50+50 disjoint. Xcode27.1 iPhone18Pro iOS27.0 simulator. No Instruments/RSS measurement.")
+        attachment.name = "Usage-weight-five-year-reader-performance"; attachment.lifetime = .keepAlways; add(attachment)
+    }
+
+    func testReviewMidnightDSTGapUsesCivilBoundariesAndDoesNotBreakStreakOrSpan() throws {
+        let zone = TimeZone(identifier: "America/Sao_Paulo")!
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
+        func instant(_ day: Int, _ minutes: Int) -> Date { ImportantCivilDay(year: 2018, month: 11, day: day).instant(minutes: minutes, timeZone: zone)! }
+        // Brazil skipped midnight on Nov 4. The following day starts at 00:00, not 01:00.
+        var historical = WeightReviewBuilder(now: instant(6, 720), through: instant(4, 720), timeZone: zone)
+        historical.append(.init(kilograms: 70, recordedAt: instant(4, 720)))
+        historical.append(.init(kilograms: 80, recordedAt: instant(5, 30)))
+        let value = historical.snapshot()
+        XCTAssertEqual(value.endExclusive, calendar.startOfDay(for: instant(5, 720)))
+        XCTAssertEqual(value.summaries[.all]?.observations, 1)
+        XCTAssertEqual(calendar.component(.hour, from: value.summaries[.week]!.start), 0)
+        var builder = WeightReviewBuilder(now: instant(5, 720), timeZone: zone)
+        for day in [3, 4, 5] { builder.append(.init(kilograms: 70, recordedAt: instant(day, 720))) }
+        let snapshot = builder.snapshot()
+        XCTAssertEqual(snapshot.recordedDays, 3); XCTAssertEqual(snapshot.spanDays, 3)
+        XCTAssertEqual(snapshot.endingStreak, 3); XCTAssertEqual(snapshot.longestStreak, 3)
+        XCTAssertEqual(Set(snapshot.daily.map(\.segment)).count, 1)
+    }
+
     func testWeightValidationAcceptsPositiveKilogramsAndRejectsInvalidValues() throws {
         XCTAssertEqual(try WeightRules.validatedKilograms(72.4), 72.4)
         for invalid in [0, -1, .infinity, .nan, WeightRules.maximumKilograms + 0.1] {

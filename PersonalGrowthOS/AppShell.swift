@@ -9,13 +9,14 @@ struct ModuleEntryRow: View {
     var subtitle: String? = nil
     let systemImage: String
     var value: String? = nil
+    var titleID = ""
     @Environment(\.dynamicTypeSize) private var typeSize
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Image(systemName: systemImage).font(.body).foregroundStyle(.secondary).frame(width: 24)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
+                Text(title).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true).accessibilityIdentifier(titleID)
                 if let subtitle { Text(subtitle).font(.subheadline).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
                 if typeSize.isAccessibilitySize, let value { Text(value).font(.subheadline).foregroundStyle(.secondary) }
             }.frame(maxWidth: .infinity, alignment: .leading)
@@ -623,8 +624,7 @@ private struct TodayView: View {
             ModuleEntryRow(title: snapshot.today.map { WeightFormatting.kilograms($0.weightKilograms) } ?? String(localized: "No Weight Recorded Today"),
                 subtitle: snapshot.today != nil ? String(localized: "Recorded Today") : snapshot.previous.map {
                     $0.recordedAt.formatted(date: .abbreviated, time: .omitted) + " · " + WeightFormatting.kilograms($0.weightKilograms)
-                }, systemImage: "scalemass")
-                .accessibilityIdentifier("today-latest-weight")
+                }, systemImage: "scalemass", titleID: "today-latest-weight")
         }.accessibilityIdentifier("today-weight")
     }
     private var weightRecordButton: some View {

@@ -1,6 +1,7 @@
 import Charts
 import SwiftData
 import SwiftUI
+import UIKit
 
 enum WeightFormatting {
     static func kilograms(_ value: Double) -> String {
@@ -9,174 +10,308 @@ enum WeightFormatting {
 }
 
 struct WeightHistoryView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors)
-    private var queriedRecords: [WeightRecord]
-    @State private var isAddingRecord = false
-    @State private var editingRecord: WeightRecord?
-    @State private var pendingDeletion: WeightRecord?
-    @State private var errorMessage: String?
-
-    private var records: [WeightRecord] {
-        WeightRecordOrdering.newestFirst(queriedRecords)
-    }
-
-    private var trend: WeightTrend? {
-        WeightTrend.make(from: records)
-    }
+    @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var phase
+    @State private var snapshot: WeightReviewSnapshot?
+    @State private var through = Date()
+    @State private var historical = false
+    @State private var range = WeightReviewRange.month
+    @State private var references: Set<WeightReviewRange> = [.week, .month]
+    @State private var selectedDay: Date?
+    @State private var refresh = 0
+    @State private var visible = false
+    @State private var failed = false
+    @State private var adding = false
+    @State private var editing: WeightRecord?
+    @State private var deleting: WeightRecord?
+    @State private var error: String?
 
     var body: some View {
         List {
-            if records.isEmpty {
-                Section {
-                    VStack(spacing: 16) {
-                        ContentUnavailableView {
-                            Label("No Weight Records", systemImage: "scalemass")
-                        } description: {
-                            Text("Add your first weight record to see your latest value and a simple trend.")
-                        }
-                        .accessibilityIdentifier("weight-empty-state")
-                        GrowthEmptyStateAddButton(
-                            title: "Add Weight",
-                            systemImage: "plus",
-                            action: { isAddingRecord = true }
-                        )
-                        .accessibilityIdentifier("add-weight")
+            if failed {
+                ContentUnavailableView("Could not load weight records", systemImage: "exclamationmark.triangle")
+                Button("Retry") { refresh += 1 }
+            } else if let snapshot {
+                if let latest = snapshot.latest.first {
+                    Section(historical ? "Latest through selected date" : "Latest Weight") {
+                        Text(WeightFormatting.kilograms(latest.kilograms)).font(.title2.bold()).accessibilityIdentifier("weight-latest-value")
+                        Text(latest.recordedAt, format: .dateTime.year().month().day().hour().minute()).font(.subheadline)
+                        if let previous = snapshot.latest.dropFirst().first {
+                            let delta = latest.kilograms - previous.kilograms
+                            Text("Since previous: \(delta > 0 ? "+" : "")\(WeightFormatting.kilograms(delta))")
+                            Text(previous.recordedAt, format: .dateTime.year().month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
+                        } else { Text("No previous measurement to compare") }
                     }
-                } footer: {
-                    Text("Weight uses kilograms (kg). This is a personal record, not health advice.")
-                }
-            } else {
-                Section("Latest Weight") {
-                    if let latest = records.first {
-                        LabeledContent {
-                            Text(verbatim: WeightFormatting.kilograms(latest.weightKilograms))
-                                .font(.title3.weight(.semibold))
-                                .accessibilityIdentifier("weight-latest-value")
-                        } label: {
-                            Text(latest.recordedAt, format: .dateTime.year().month().day())
-                        }
-                        if let change = trend?.changeKilograms {
-                            Label {
-                                Text(verbatim: WeightFormatting.kilograms(abs(change)))
-                            } icon: {
-                                Image(systemName: change == 0
-                                    ? "equal.circle"
-                                    : change > 0 ? "arrow.up.right.circle" : "arrow.down.right.circle")
-                            }
-                            .foregroundStyle(change == 0 ? .secondary : .primary)
-                            .accessibilityLabel(
-                                "\(String(localized: "Since previous")) \(WeightFormatting.kilograms(change))"
-                            )
-                        }
+                } else {
+                    Section {
+                        ContentUnavailableView("No Weight Records", systemImage: "scalemass")
+                            .accessibilityIdentifier("weight-empty-state")
+                        GrowthEmptyStateAddButton(title: "Add Weight", systemImage: "plus") { adding = true }.accessibilityIdentifier("add-weight")
                     }
                 }
-
                 Section("Trend") {
-                    if records.count >= 2 {
-                        Chart(WeightRecordOrdering.oldestFirst(records)) { record in
-                            LineMark(
-                                x: .value("Date", record.recordedAt),
-                                y: .value("Weight (kg)", record.weightKilograms)
-                            )
-                            .interpolationMethod(.linear)
-                            PointMark(
-                                x: .value("Date", record.recordedAt),
-                                y: .value("Weight (kg)", record.weightKilograms)
-                            )
-                        }
-                        .frame(height: 180)
-                        .accessibilityLabel("Weight trend")
-                        .accessibilityIdentifier("weight-trend-chart")
-                    } else {
-                        Text("Add at least two records to see a trend.")
-                            .foregroundStyle(.secondary)
+                    Picker("Time range", selection: $range) { ForEach(WeightReviewRange.allCases) { Text($0.label).tag($0) } }
+                        .accessibilityIdentifier("weight-review-range")
+                    DatePicker("Statistics through", selection: Binding(get: { through }, set: { historical = true; through = $0 }), in: ...Date(), displayedComponents: .date)
+                        .accessibilityIdentifier("weight-review-through")
+                    let summary = snapshot.summaries[range]!
+                    Text(summary.start.formatted(date: .abbreviated, time: .omitted) + " – " + snapshot.asOfDay.formatted(date: .abbreviated, time: .omitted)).font(.caption).accessibilityIdentifier("weight-review-dates")
+                    Text("Daily points are daily means. A missing day means no record.").font(.caption).foregroundStyle(.secondary)
+                    chart(snapshot)
+                    DatePicker("Select a record day", selection: Binding(get: { selectedDay ?? snapshot.asOfDay }, set: { selectedDay = snapshot.calendar.startOfDay(for: $0) }), displayedComponents: .date)
+                        .accessibilityIdentifier("weight-select-day")
+                    if selectedDay != nil {
+                        Button("Clear selection") { selectedDay = nil }.accessibilityIdentifier("weight-clear-selection")
                     }
                 }
-
-                Section("History") {
-                    ForEach(records) { record in
-                        Button {
-                            editingRecord = record
-                        } label: {
-                            HStack {
-                                Text(record.recordedAt, format: .dateTime.year().month().day())
-                                Spacer()
-                                Text(verbatim: WeightFormatting.kilograms(record.weightKilograms))
-                                    .foregroundStyle(.secondary)
+                Section("Range averages") {
+                    Text("Each recorded day has equal weight. All averages use the same ending date.").font(.caption).foregroundStyle(.secondary)
+                    ForEach(WeightReviewRange.allCases.filter { $0 != .all }) { reference in
+                        let value = snapshot.summaries[reference]!
+                        Toggle(isOn: Binding(get: { references.contains(reference) }, set: { enabled in
+                            if enabled { references.insert(reference) } else { references.remove(reference) }
+                        })) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack {
+                                    Path { path in path.move(to: .init(x: 0, y: 6)); path.addLine(to: .init(x: 32, y: 6)) }
+                                        .stroke(color(reference), style: StrokeStyle(lineWidth: 2, dash: dash(reference)))
+                                        .frame(width: 32, height: 12).accessibilityHidden(true)
+                                    Text(reference.label).foregroundStyle(.primary)
+                                }
+                                Text(value.mean.map(WeightFormatting.kilograms) ?? String(localized: "No data"))
+                                Text("\(value.days) recorded days · \(value.observations) measurements").font(.caption)
                             }
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(
-                            "\(record.recordedAt.formatted(date: .abbreviated, time: .omitted)), \(WeightFormatting.kilograms(record.weightKilograms))"
-                        )
-                        .accessibilityIdentifier("weight-record-row")
-                        .swipeActions {
-                            Button("Delete", role: .destructive) {
-                                pendingDeletion = record
-                            }
-                        }
+                        }.accessibilityIdentifier("weight-average-\(reference.rawValue)")
                     }
                 }
-            }
+                Section("Recording coverage") {
+                    if let first = snapshot.earliest {
+                        LabeledContent("First recorded day", value: first.formatted(date: .abbreviated, time: .omitted))
+                        Text("Across \(snapshot.spanDays) days, recorded on \(snapshot.recordedDays) days")
+                        Text("Last 30 days: \(snapshot.summaries[.month]!.days) recorded days")
+                        DisclosureGroup("Recording continuity") {
+                            if let end = snapshot.streakEnd {
+                                Text("Through \(end.formatted(date: .abbreviated, time: .omitted)): \(snapshot.endingStreak) consecutive recorded days")
+                            } else { Text("No consecutive records ending today or yesterday") }
+                            Text("Longest: \(snapshot.longestStreak) consecutive recorded days")
+                        }
+                    } else { Text("No recorded days through this date") }
+                    DisclosureGroup("Date and average details") {
+                        Text("Weight uses Gregorian days in the current device time zone. Older records do not contain their original time zone.")
+                        Text(snapshot.calendar.timeZone.identifier).font(.caption)
+                        Text("Missing days are not measurements. This shows app records, not whether you weighed yourself.").font(.caption)
+                    }
+                }
+                // Optional BMI settings will be connected with the joint additive persistence version.
+                Section(selectedDay == nil ? "Recent measurements" : "Selected day") {
+                    if let selectedDay, let day = snapshot.daily.first(where: { $0.day == selectedDay }) {
+                        LabeledContent("Daily mean (kg)", value: WeightFormatting.kilograms(day.mean)).accessibilityIdentifier("weight-selected-mean")
+                        Text("\(day.observations) measurements").font(.caption)
+                    }
+                    WeightMeasurementPage(start: selectedDay, end: selectedDay.flatMap { snapshot.calendar.date(byAdding: .day, value: 1, to: $0) }.map { snapshot.calendar.startOfDay(for: $0) },
+                        now: snapshot.now, refresh: refresh, limit: 5, edit: edit, delete: requestDelete)
+                    NavigationLink("All Weight Records") { WeightAllRecordsView(edit: edit) }
+                        .accessibilityIdentifier("weight-all-records")
+                }
+            } else { ProgressView().accessibilityLabel("Loading weight records") }
         }
-        .navigationTitle("Weight")
-        .accessibilityIdentifier("weight-history-view")
+        .navigationTitle("Weight").accessibilityIdentifier("weight-history-view")
         .toolbar {
-            if !records.isEmpty {
-                Button {
-                    isAddingRecord = true
-                } label: {
-                    Label("Add Weight", systemImage: "plus")
-                }
-                .accessibilityIdentifier("add-weight")
+            if snapshot?.latest.isEmpty == false {
+                Button { adding = true } label: { Label("Add Weight", systemImage: "plus") }.accessibilityIdentifier("add-weight")
             }
         }
-        .sheet(isPresented: $isAddingRecord) {
-            WeightEditorView(record: nil) {
-                isAddingRecord = false
-            }
-        }
-        .sheet(item: $editingRecord) { record in
-            WeightEditorView(record: record) {
-                editingRecord = nil
-            }
-        }
-        .confirmationDialog(
-            "Delete this weight record?",
-            isPresented: Binding(
-                get: { pendingDeletion != nil },
-                set: { if !$0 { pendingDeletion = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
+        .onAppear { visible = true; refresh += 1 }
+        .onDisappear { visible = false }
+        .task(id: refresh) { await load() }
+        .onChange(of: through) { _, _ in selectedDay = nil; refresh += 1 }
+        .onChange(of: phase) { _, value in if value == .active && visible { refreshForClock() } }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in if visible { refresh += 1 } }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in if visible { refreshForClock() } }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in if visible { refreshForClock() } }
+        .sheet(isPresented: $adding) { WeightEditorView(record: nil) { adding = false; refresh += 1 } }
+        .sheet(item: $editing) { record in WeightEditorView(record: record) { editing = nil; refresh += 1 } }
+        .confirmationDialog("Delete this weight record?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
             Button("Delete Weight Record", role: .destructive) {
-                deletePendingRecord()
+                if let record = deleting {
+                    do { try WeightRecordService(context: context).delete(record); deleting = nil; refresh += 1 }
+                    catch { self.error = String(localized: "The weight record was not deleted.") }
+                }
             }
-            Button("Cancel", role: .cancel) {
-                pendingDeletion = nil
+            Button("Cancel", role: .cancel) { deleting = nil }
+        }
+        .alert("Weight Update", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK", role: .cancel) {} } message: { Text(error ?? "") }
+    }
+    private func refreshForClock() {
+        let now = Date()
+        if !historical, !Calendar(identifier: .gregorian).isDate(through, inSameDayAs: now) { through = now }
+        else { refresh += 1 }
+    }
+    private func color(_ range: WeightReviewRange) -> Color {
+        switch range { case .week: .blue; case .month: .orange; case .quarter: .purple; case .year: .green; case .all: .primary }
+    }
+    private func dash(_ range: WeightReviewRange) -> [CGFloat] {
+        switch range { case .week: [3, 3]; case .month: [8, 3]; case .quarter: [8, 3, 2, 3]; case .year: [2, 4]; case .all: [] }
+    }
+    @ViewBuilder private func chart(_ snapshot: WeightReviewSnapshot) -> some View {
+        let points = snapshot.points(range)
+        let axis = snapshot.axis(range: range, references: references)
+        if points.isEmpty { Text("No records in this selection") }
+        else {
+            Chart {
+                ForEach(points) { point in
+                    LineMark(x: .value("Date", point.day), y: .value("Daily mean (kg)", point.mean), series: .value("Recorded segment", point.segment))
+                        .foregroundStyle(Color.accentColor)
+                    PointMark(x: .value("Date", point.day), y: .value("Daily mean (kg)", point.mean))
+                        .foregroundStyle(Color.accentColor)
+                }
+                ForEach(WeightReviewRange.allCases.filter { references.contains($0) }) { reference in
+                    if let value = snapshot.summaries[reference]?.mean {
+                        RuleMark(y: .value(reference.label, value)).foregroundStyle(color(reference)).lineStyle(StrokeStyle(lineWidth: 1, dash: dash(reference)))
+                    }
+                }
+                if let selectedDay, let point = points.first(where: { $0.day == selectedDay }) {
+                    RuleMark(x: .value("Selected day", point.day)).foregroundStyle(.secondary)
+                }
+            }.chartXScale(domain: snapshot.summaries[range]!.start...snapshot.endExclusive)
+                .chartYScale(domain: axis.domain).chartYAxis { AxisMarks(values: axis.ticks) }
+                .chartXSelection(value: Binding(get: { selectedDay }, set: { value in selectedDay = value.map { snapshot.calendar.startOfDay(for: $0) } }))
+                .frame(height: 200).accessibilityLabel("Weight trend").accessibilityIdentifier("weight-trend-chart")
+        }
+    }
+    @MainActor private func load() async {
+        failed = false; snapshot = nil
+        let container = context.container, end = through, now = Date(), zone = TimeZone.current
+        let work = Task.detached { try await WeightReviewReader(modelContainer: container).snapshot(now: now, through: end, zone: zone) }
+        do {
+            let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
+            try Task.checkCancellation(); snapshot = result
+        } catch is CancellationError {} catch { if !Task.isCancelled { snapshot = nil; failed = true } }
+    }
+    private func edit(_ id: UUID) { do { editing = try context.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.id == id })).first } catch { self.error = String(localized: "Could not load weight records") } }
+    private func requestDelete(_ id: UUID) { do { deleting = try context.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.id == id })).first } catch { self.error = String(localized: "Could not load weight records") } }
+}
+
+struct WeightMeasurementPage: View {
+    let start: Date?
+    let end: Date?
+    let now: Date
+    let refresh: Int
+    var limit = 50
+    var paginated = false
+    let edit: (UUID) -> Void
+    let delete: (UUID) -> Void
+    @Environment(\.modelContext) private var context
+    @State private var records: [WeightMeasurement] = []
+    @State private var failed = false
+    @State private var more = false
+    @State private var loading = false
+    @State private var loadedKey: String?
+    private var key: String { "\(start?.timeIntervalSince1970 ?? -1):\(end?.timeIntervalSince1970 ?? -1):\(now.timeIntervalSince1970):\(refresh)" }
+    var body: some View {
+        Group {
+            // A task on Group is forwarded to conditional rows and cancels itself when loading changes.
+            // Keep one stable row as the task host; reappearing with the same query reuses its page.
+            Text("Newest first").font(.caption).foregroundStyle(.secondary)
+                .task(id: key) { if loadedKey != key { await load(reset: true) } }
+            if failed { Text("Could not load weight records"); Button("Retry") { Task { await load(reset: true) } } }
+            else if loadedKey == key && records.isEmpty && !loading { Text("No records in this selection") }
+            ForEach(loadedKey == key ? records : []) { record in
+                Button { edit(record.id) } label: {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(record.recordedAt, format: .dateTime.year().month().day().hour().minute())
+                        Text(WeightFormatting.kilograms(record.kilograms)).foregroundStyle(.secondary)
+                        if record.recordedAt > Date() { Text("Future measurement; excluded from recorded statistics").font(.caption) }
+                    }
+                }.buttonStyle(.plain).accessibilityIdentifier("weight-record-row")
+                    .swipeActions { Button("Delete", role: .destructive) { delete(record.id) } }
             }
+            if paginated && more && loadedKey == key { Button("Load more") { Task { await load(reset: false) } }.disabled(loading) }
+            if loading { ProgressView() }
         }
-        .alert("Could Not Delete Weight", isPresented: Binding(
-            get: { errorMessage != nil },
-            set: { if !$0 { errorMessage = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
-        }
+    }
+    @MainActor private func load(reset: Bool) async {
+        if reset { records = [] }
+        failed = false; loading = true
+        let container = context.container, offset = reset ? 0 : records.count, token = key
+        let work = Task.detached { try await WeightReviewReader(modelContainer: container).records(start: start, end: end, now: now, offset: offset, limit: limit) }
+        do {
+            let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
+            try Task.checkCancellation(); guard token == key else { return }
+            if reset { records = result } else { records += result }
+            more = result.count == limit; loadedKey = token; loading = false
+        } catch is CancellationError {} catch { if !Task.isCancelled && token == key { failed = true; loading = false } }
+    }
+}
+
+struct WeightAllRecordsView: View {
+    let edit: (UUID) -> Void
+    @Environment(\.modelContext) private var context
+    @State private var snapshot: WeightReviewSnapshot?
+    @State private var selected = Date()
+    @State private var refresh = 0
+    @State private var failed = false
+    @State private var pendingDeletion: UUID?
+    @State private var actionError: String?
+    var body: some View {
+        List {
+            Section {
+                DatePicker("Select a record day", selection: $selected, displayedComponents: .date).accessibilityIdentifier("weight-history-date")
+                HStack {
+                    Button("Previous day") { moveDay(-1) }.frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("weight-history-previous-day")
+                    Spacer()
+                    Button("Next day") { moveDay(1) }.frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("weight-history-next-day")
+                }.buttonStyle(.borderless)
+                if let snapshot {
+                    let components = snapshot.calendar.dateComponents([.year, .month], from: selected)
+                    Text("Recorded days in this month").font(.headline)
+                    ForEach(snapshot.daily.filter { snapshot.calendar.dateComponents([.year, .month], from: $0.day) == components }) { day in
+                        Button { selected = day.day } label: {
+                            LabeledContent(day.day.formatted(date: .abbreviated, time: .omitted), value: String(localized: "\(day.observations) measurements"))
+                        }.accessibilityIdentifier("weight-history-day-\(HabitLocalDay(date: day.day, timeZone: snapshot.calendar.timeZone).description)")
+                    }
+                }
+                if failed { Text("Could not load weight records"); Button("Retry") { refresh += 1 } }
+                if let actionError { Text(actionError).foregroundStyle(.red) }
+            }
+            if let snapshot {
+                let day = snapshot.calendar.startOfDay(for: selected)
+                Section("Selected day") {
+                    WeightMeasurementPage(start: day, end: snapshot.calendar.date(byAdding: .day, value: 1, to: day).map { snapshot.calendar.startOfDay(for: $0) }, now: Date.distantFuture, refresh: refresh,
+                        paginated: true, edit: edit, delete: { pendingDeletion = $0 })
+                }
+            }
+        }.navigationTitle("All Weight Records")
+            .confirmationDialog("Delete this weight record?", isPresented: Binding(get: { pendingDeletion != nil }, set: { if !$0 { pendingDeletion = nil } }), titleVisibility: .visible) {
+                Button("Delete Weight Record", role: .destructive) {
+                    guard let id = pendingDeletion else { return }
+                    do {
+                        let read = ModelContext(context.container)
+                        guard let record = try read.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.id == id })).first else { throw WeightValidationError.missingRecord }
+                        try WeightRecordService(context: read).delete(record)
+                        pendingDeletion = nil; actionError = nil; refresh += 1
+                    } catch { actionError = String(localized: "The weight record was not deleted.") }
+                }
+                Button("Cancel", role: .cancel) { pendingDeletion = nil }
+            }
+            .onAppear { refresh += 1 }
+            .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in refresh += 1 }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refresh += 1 }
+            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refresh += 1 }
+            .task(id: refresh) {
+                let container = context.container
+                let work = Task.detached { try await WeightReviewReader(modelContainer: container).snapshot(now: Date()) }
+                do {
+                    let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
+                    try Task.checkCancellation(); snapshot = result; failed = false
+                } catch is CancellationError {} catch { if !Task.isCancelled { snapshot = nil; failed = true } }
+            }
+    }
+    private func moveDay(_ offset: Int) {
+        let calendar = snapshot?.calendar ?? Calendar(identifier: .gregorian)
+        if let day = calendar.date(byAdding: .day, value: offset, to: selected) { selected = day }
     }
 
-    private func deletePendingRecord() {
-        guard let record = pendingDeletion else { return }
-        do {
-            try WeightRecordService(context: modelContext).delete(record)
-            pendingDeletion = nil
-        } catch {
-            pendingDeletion = nil
-            errorMessage = String(localized: "The weight record was not deleted.")
-        }
-    }
 }
 
 struct WeightEditorView: View {
@@ -187,7 +322,7 @@ struct WeightEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @FocusState private var isWeightFocused: Bool
     @State private var didRequestFocus = false
-    @Query(sort: WeightRecordOrdering.newestFirstSortDescriptors) private var previousRecords: [WeightRecord]
+    @State private var previous: WeightMeasurement?
     @State private var weightText: String
     @State private var recordedAt: Date
     @State private var errorMessage: String?
@@ -209,10 +344,10 @@ struct WeightEditorView: View {
                         .keyboardType(.decimalPad)
                         .focused($isWeightFocused)
                         .accessibilityIdentifier("weight-editor-value")
-                    if record == nil, let previous = WeightRecordOrdering.newestFirst(previousRecords).first(where: { $0.recordedAt <= Date() }) {
+                    if record == nil, let previous {
                         LabeledContent("Previous Weight") {
                             VStack(alignment: .trailing) {
-                                Text(verbatim: WeightFormatting.kilograms(previous.weightKilograms))
+                                Text(verbatim: WeightFormatting.kilograms(previous.kilograms))
                                 Text(previous.recordedAt, format: .dateTime.year().month().day())
                                     .font(.caption).foregroundStyle(.secondary)
                             }
@@ -228,18 +363,21 @@ struct WeightEditorView: View {
             .task {
                 guard record == nil, !didRequestFocus else { return }
                 didRequestFocus = true
+                let container = modelContext.container
+                previous = try? await WeightReviewReader(modelContainer: container).records(now: Date(), limit: 1).first
                 await Task.yield()
                 isWeightFocused = true
             }
             .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") { isWeightFocused = false }
-                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItemGroup(placement: .confirmationAction) {
+                    if isWeightFocused {
+                        Button { isWeightFocused = false } label: {
+                            Image(systemName: "keyboard.chevron.compact.down").frame(minWidth: 44, minHeight: 44)
+                        }.accessibilityLabel("Done").accessibilityIdentifier("weight-editor-dismiss-keyboard")
+                    }
                     Button("Save") { save() }
                         .accessibilityIdentifier("weight-editor-save")
                 }

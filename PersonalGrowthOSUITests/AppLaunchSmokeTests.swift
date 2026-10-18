@@ -3,6 +3,47 @@ import Network
 import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testUsageWeightDailyMeansRangesAndDateHistoryEditDeleteRefresh() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSUsageWeightTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch(); app.buttons["today-weight"].tap()
+        XCTAssertTrue(app.staticTexts["weight-latest-value"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["weight-latest-value"].label, "75.0 kg")
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<12 where !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.isHittable, app.debugDescription)
+        }
+        let ranges = app.buttons["weight-review-range"]; reveal(ranges); ranges.tap(); app.buttons["Last 7 days"].tap()
+        let weekly = app.switches["weight-average-week"]; reveal(weekly)
+        XCTAssertTrue(weekly.label.contains("73.0 kg"), weekly.label)
+        XCTAssertTrue(weekly.label.contains("2 recorded days") && weekly.label.contains("3 measurements"), weekly.label)
+        let year = app.switches["weight-average-year"]; reveal(year)
+        year.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        let all = app.buttons["weight-all-records"]; reveal(all); all.tap()
+        let yesterday = Calendar(identifier: .gregorian).date(byAdding: .day, value: -1, to: Date())!
+        let formatter = DateFormatter(); formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.dateFormat = "yyyy-MM-dd"
+        let day = app.buttons["weight-history-day-" + formatter.string(from: yesterday)]; reveal(day); day.tap()
+        let row = app.buttons.matching(identifier: "weight-record-row").firstMatch; reveal(row)
+        XCTAssertTrue(row.label.contains("72.0 kg"), row.label); row.tap()
+        let value = app.textFields["weight-editor-value"]; XCTAssertTrue(value.waitForExistence(timeout: 5))
+        value.tap(); value.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "73")
+        app.buttons["weight-editor-save"].tap()
+        XCTAssertTrue(row.waitForExistence(timeout: 5)); XCTAssertTrue(row.label.contains("73.0 kg"), row.label)
+        reveal(row); row.swipeLeft(); app.buttons["Delete"].tap()
+        let confirm = app.buttons["Delete Weight Record"]; XCTAssertTrue(confirm.waitForExistence(timeout: 5)); confirm.tap()
+        XCTAssertTrue(row.waitForExistence(timeout: 5)); XCTAssertTrue(row.label.contains("70.0 kg"), row.label)
+        app.buttons["weight-history-previous-day"].tap()
+        XCTAssertTrue(app.staticTexts["No records in this selection"].waitForExistence(timeout: 5))
+        XCTAssertFalse(row.exists)
+        app.buttons["weight-history-next-day"].tap()
+        XCTAssertTrue(row.waitForExistence(timeout: 5)); XCTAssertTrue(row.label.contains("70.0 kg"), row.label)
+        app.navigationBars.buttons["Weight"].tap()
+        reveal(weekly)
+        XCTAssertTrue(weekly.label.contains("72.5 kg"), weekly.label)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "Usage-weight-mean-recomputed-after-day-edit-delete"; shot.lifetime = .keepAlways; add(shot)
+    }
+
     func testUsageEditorListCreationManagementAndCancellationPreserveDraft() {
         continueAfterFailure = false
         let app = XCUIApplication()

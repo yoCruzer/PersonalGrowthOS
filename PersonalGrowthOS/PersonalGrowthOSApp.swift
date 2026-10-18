@@ -26,6 +26,18 @@ struct PersonalGrowthOSApp: App {
                 for key in ["sleep.showToday", "sleep.introductionDismissed", "sleep.morningReminder.plannedFires", SleepReminderPreferences.enabledKey, SleepReminderPreferences.minuteKey] { UserDefaults.standard.removeObject(forKey: key) }
             }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSUsageWeightTest") {
+                let now = Date(), calendar = Calendar(identifier: .gregorian)
+                let today = calendar.startOfDay(for: now)
+                let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+                let values: [(Double, Date)] = [(70, yesterday.addingTimeInterval(8 * 3600)), (72, yesterday.addingTimeInterval(18 * 3600)),
+                    (75, today), (65, calendar.date(byAdding: .day, value: -60, to: today)!)]
+                for (kilograms, at) in values {
+                    container.modelContainer.mainContext.insert(WeightRecord(weightKilograms: kilograms, recordedAt: at, createdAt: at))
+                }
+                try container.modelContainer.mainContext.save()
+            }
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSImportantDaysTest") {
                 try ImportantDayUITestFixture.seed(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             }

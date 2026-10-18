@@ -64,3 +64,44 @@ U01–U09 / N1–N6 / Q1–Q3 / W1–W6 / B1–B3 / T1–T8 最终结论均待�
 编译与上述受影响验证完成。U01 清单新增路径已有本轮真实通过；U03 保存反馈已有拒绝/查看/仅收起路径，U06/T1 统计有只读/范围 Unit；T3/T8 的 R2/R3 接缝原生通过。U09 混合布局、T2/T4、最终双语/大字组合仍待 D；U04 过期动作与独立本次覆盖随 C 联合完成，不能提前标 A 全部 PASS。继续 B/C/D，无逐阶段确认请求。
 
 AlarmKit 预核查：已读本机 iPhoneSimulator27.1 SDK AlarmKit.swiftinterface，确认 iOS26 availability、fixed(Date)、schedule/cancel/stop、alarms 抛错读取、alarmUpdates/authorizationUpdates 和 LiveActivityIntent 接口。官方网页 JavaScript/markdown 抓取受工具格式限制，仅以 SDK 作当前接口依据；接入和系统验收尚 NOT_RUN。
+
+## B1 体重统计与有界历史（进行中）
+
+未增加 Schema/持久字段。WeightReviewBuilder 冻结 now、当前公历时区及截至日，枚举时排除未来/截止后测量；仅保留每日 sum/count、原始最新两条和派生窗口。7/30天和日历3月/1年分别取 endExclusive 回溯；区间均值对有记录日等权；累计覆盖/跨度/当前截至昨天与最长连续段取全历史。坐标包含开启参考线，缺口分段，原始极端合法值保留。四均值有各自文字/颜色/虚线与样本日/次。
+
+WeightReviewReader 是 detached ModelActor 的只读生产读取，SwiftData enumerate batchSize256；页面不再 @Query 全量历史并在每次渲染排序。主页面最近5条，完整历史日期/月选择并以最多50条分页取原始测量；快速编辑器的前次值只读1条。图点/日期选择独立于趋势/均值截至日，有清除选择；保存/改日期/删除/返回/日期切换重读，任务取消不发表旧快照。原 WeightRecord recordedAt/身份和原保存服务不改。Today 实际数值 Text 继续保留原 accessibilityIdentifier。
+
+- `compile-b1`：同 A 构建前缀，resultBundlePath=`/tmp/pgos-usage-remediation-evidence/compile-b1.xcresult`，exit0。`affected-b1`：同串行 test-without-building 前缀，selector `PersonalGrowthOSTests/WeightFoundationTests`，**12PASS0FAIL0SKIP / exit0**，含原读写/旧库与五个新增日期/均值/坐标/覆盖/时区反例。
+- `compile-b2` exit0；此前一次翻译插入 Python 输入报 Non-UTF-8 SyntaxError，未写入资源；随后修正插入35键，实际新中文资源直到 b3 才编译。没有将该脚本失败冒称产品构建错误或隐藏。
+- `affected-b2`：同 test 前缀与整个 WeightFoundationTests，**13PASS0FAIL0SKIP / exit0**。增加真实磁盘五年 10,000 条/1,826 日期的生产 reader：快照 **0.054145125秒**，最近查询5条，50+50两页不重叠；改到更早日期后1,827日，再删除回到1,826日/9,999条。附件 `affected-b2-attachments/4C429159-927D-4162-9399-215710A639AA.txt`，已读取。这里只测该次聚合与分页，不是整页性能改善百分比；未用 Instruments，未测RSS/峰值内存。
+- `ui-b1`：同 test 前缀，selector `PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeightEntryIsAccessiblePersistsAndShowsLatestValue`，**1PASS0FAIL / exit0**。Today进入→空态→快速录入72.5→最新值→冷启动Today值保留。实际用 b2 英文包，后加中文资源不作为该轮证据。
+- `compile-b3` exit0，包含新双语资源和仅 DEBUG+uiTesting+reset 可用的确定性四条 Weight fixture（昨日70/72、今天75、60天前65）。`ui-b2` selector `PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageWeightDailyMeansRangesAndDateHistoryEditDeleteRefresh`，**0PASS1FAIL / exit65**。已走过75.0最新、7天73.0均值/2日3次、开启年均值、完整历史和昨日按钮；失败在找原始记录行。失败 hierarchy 明确日期 Oct17、2 measurements，而 Selected day 后无明细/空态/加载子树。测试终止后的simctl图只有主屏，不当作失败页证据。
+- 最小修复 `compile-b4` exit0：原 Group.task 会转发给条件子行，loading切换会取消自己的读取；改为稳定“Newest first”行承载任务，同查询重现复用已加载页，换查询隐藏旧行。生产查询、原始断言和编辑/删除步骤不变。`ui-b3` 同原 selector 复验中，结果待收集。
+
+本阶段工作树精确差异/文件哈希见 `candidate-b4-source.json` / `candidate-b4.patch`，HEAD为A1提交，不冒称当前已是干净最终构建。B1尚未独立审查，BMI、成长回顾聚合、时间投入历史/缓存及C/D仍未完成。需继续核查中文大字/空选日/图点/未来记录可纠错路径与日期前台更新。
+
+### B1 原生失败闭环与后续补验
+
+- `ui-b3`：**0PASS1FAIL / exit65**；Group任务修复后，原始昨日两条和编辑保存73kg已可见，失败转到完整历史的删除确认。确认曾挂在已离开的趋势页，改由可见完整历史页持有删除ID、确认并用独立上下文执行原服务删除，保留单独错误态。
+- `compile-b5` exit0；`ui-b4` **0PASS1FAIL / exit65**：删除确认和删除后70kg断言已通过，最后寻找均值失败。原始 hierarchy 显示已回到趋势顶部（Latest Weight、range可见），测试却向下拖动页面直到顶部仍继续同方向；改为从顶部向上滑动正常阅读下方均值，最终值断言不变。事后simctl图仍为测试退出后主屏，不能冒称失败现场截图。
+- `compile-b6` exit0：也补全前/后日按钮的44pt路径、无记录日不跳转与恢复原日断言；前台/午夜/时区刷新快照接线。`ui-b5` **1PASS0FAIL0SKIP / exit0**：75最新→7天均值73/2日3次→开启年均值→按日2条→编辑72为73→明确删除→剩70→前日无记录且没有原始行→回原日70→返回均值72.5/2日2次。保留1条 frame warning。
+- `compile-b7` exit0：图横轴显式使用所选自然日期窗口，避免暗中只拉伸记录日区间；文字使用正文对比，颜色/虚线由线段图例提供。`ui-b6` 同原selector **1PASS0FAIL0SKIP / exit0**，仍1条frame warning。已看实际截图 `ui-b6-attachments/C6EEB20B-F4A9-4CBF-BC62-23E2050E7D93.png`，72.5/2日2次及3个月/1年70/3日3次、四种图例可读。
+- 原生log明确 warning 出现在编辑页 t≈26.8s 点击 weight-editor-value 打开键盘，而不是画图或保存。`weight-frame-events.json` 也保留 SwiftUICore runtime issue时间/回溯；xcresult原始issue无源码url，console log不可用。没有将这些新直接关联警告归到旧历史。
+- `compile-b8` exit0：收键盘动作移到导航栏（44pt并保留Done语义），不再使用导致该原生接缝告警的 `.keyboard` 工具栏；仍须按后续运行结果证明，不能仅由推断宣称关闭。
+- 自查发现午夜DST自然日缺口的真实算法边界：从01:00的startOfDay直接加一天会保留01:00，导致历史截至日多包含次日一小时、前后日可能误断段。`compile-b9` exit0：所有窗口端点/明细次日边界再取startOfDay，连续段按下一民用日比较，跨度用Gregorian民用日ordinal差。新增巴西2018-11-04午夜跳时反例：Nov5 00:30不能落入Nov4，三日仍连续/跨度3，7日起点零时。`affected-b3` 同前缀，selectors=整个WeightFoundationTests+上述两项Weight原生UI，结果待收集。
+
+各轮产品/测试仍为A1后的未提交B工作树；并未进行本Goal最终全量/Release/实包或独立review。后续B1提交前记最终结果和源码哈希。所有失败保留，不按通过的断言数将失败方法重标为PASS。
+
+### B1 内部检查点结果
+
+`affected-b3` **exit0 / 16PASS0FAIL0SKIP = 14 Unit + 2 UI，runtimeWarnings=[]**。同一实际运行包含午夜DST/窗口/均值/覆盖/磁盘/分页/旧Weight持久化回归，及快速新建保存冷启动和完整日期历史编辑/确认删除/无记录日/返回72.5kg两个原生UI。该路径下键盘toolbar调整后不再出现frame警告；仅关闭此有配对证据的Weight接缝，不宣称其他页面3条历史/本轮warning全部解决。
+
+最新生产磁盘reader样本 **0.054404458秒 / 10,000条 / 1,826日**，附件 `affected-b3-attachments/1F3A113A-50FE-4379-BB6C-2CE5EFD30A81.txt` 已读；不是全App性能百分比，未测RSS/峰值或Instruments。正常最终截图 `92E94C30-6953-4B2A-8066-78E22EE86185.png` 在同目录。
+
+精确产品/测试工作差异与哈希：`candidate-b9-product.patch`、`candidate-b9-source.json`，随后提交B1；当前没有新Schema/备份/版本/签名改动。当前B1是内部检查点，不是整个B阶段或Goal完成。
+
+**接续顺序**：完成成长回顾日聚合及具体原始事实下钻（不要只跳Habit首页）；时间投入同一事实快照统计复用、明确自然日图窗/月份及有限明细/失败态；BMI与星期重复/本次提醒覆盖/AlarmKit联合设计必要追加模型及v11备份后，真实迁移/恢复/空库/失败回滚一次完成。过期提醒不能放宽旧系列±366校验。之后才做D集中全量/组合原生/UI双语大字/实包/独立只读review与push/唯一Draft PR。未完成项保留NOT_RUN，继续自主推进，无阶段批准停点。
+
+提示：时间投入原R2/R3所见键盘frame warning仍须按接缝查因，不能借本次Weight零warning抹去。主工作区2026-10-18尾检仍为原三项未知dirty，未碰私人库/真实手机或旧PR。固定GOAL_SHA相对原主工作区Foundation追加的ImportantDay/Sleep/TimeInvestment段已另行核读，版本职责/身份与独立事实约束保持。
+
+B1 后续UI核查明确保留：历史截至日期无样本时，空态应说明截至所选日期，不能误称全库为空；新加入的当前时区/前台/午夜刷新、图点选择、中文最大字号与多年份实际页面仍在D组合验收。当前“历史期间无样本”标题细节与完整历史可选日期范围需随该路径核验收口，未标全部W5通过。
