@@ -97,8 +97,12 @@ final class AppLaunchSmokeTests: XCTestCase {
             app.tabBars.buttons[large ? "今天" : "Today"].tap()
             for index in 0..<7 {shot("Today-\(index)");app.swipeUp()}
             XCTAssertTrue(app.buttons["today-weekly-review"].exists)
-            XCTAssertTrue(app.buttons["today-goal-synthetic active focus"].exists)
-            XCTAssertTrue(app.buttons["today-investment"].exists)
+            let todayGoal=app.buttons["today-goal-synthetic active focus"]
+            for _ in 0..<12 where !todayGoal.isHittable {app.swipeDown()}
+            XCTAssertTrue(todayGoal.isHittable,app.debugDescription);shot("Today-active-goal")
+            let todayInvestment=app.buttons["today-investment"]
+            for _ in 0..<12 where !todayInvestment.isHittable {app.swipeDown()}
+            XCTAssertTrue(todayInvestment.isHittable,app.debugDescription);shot("Today-running-investment")
             app.terminate()
         }
     }

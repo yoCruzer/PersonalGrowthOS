@@ -234,3 +234,6 @@ Apple原生行为依据：[requestAuthorization](https://developer.apple.com/doc
 `final-debug6` clean`1bfceef60b5849b3004f5b96854cbdb8e7d230a7` PASS；`affected-d7`完整InvestmentFoundationTests **31PASS0FAIL0SKIP / exit0、runtimeWarnings=[]**，含R7两个范围和既有F1保护。Debug实际三包proof=`debug-bundle-proof-1bfceef.json`，完整clean SHA/localGit/Tag空、1.0(7)/min17；额外hash真正debug/preview实现库，不只相同stub可执行文件。`debug-implementation-mach-o-1bfceef.txt`直接核对真实App.debug.dylib的AlarmKit LC_LOAD_WEAK_DYLIB/min17。
 
 `ui-d6`Public再次到原生App Group错误，扩展内粘贴诊断的编辑菜单也不可触达，原FAIL保留；该临时探查逻辑已移除，恢复50e9原严格分享成功测试，不加环境跳过、不改变生产共享/签名边界。原始失败ui-d5/ui-d6及主动复制后通过simctl取得的真实报告保留；签名分享正向仍NOT_RUN，不重复在已确认的unsigned环境探查。其余五项收口UI继续运行。最终test-only回归恢复与1bfceef产品源码相同证明另留。
+
+
+ui-d6中QFiveSources与原WeeklyReview多字段/收键盘/保存/冷启动均PASS（64.213s/31.008s），未再出现对应frame warning；RunningCold手工草稿54.058s PASS，实际0场/0秒且空态可滚动，保留草稿不计入历史。mixed英文默认含真实running/activeGoal通过；中文最大AX完成七张滚动截图后在页底断言早先Goal仍exists失败（最大字号List有限实例化），原失败保留。仅改测试向下滚回实际Goal/Investment、断言isHittable再截图；未改生产/减少断言。最后月份/自然日/跨日UI仍在执行，完成后只补mixed一项，不再重跑其余。
