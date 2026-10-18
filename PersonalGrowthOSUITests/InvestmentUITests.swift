@@ -385,8 +385,13 @@ extension InvestmentUITests {
         let detail=app.staticTexts["Synthetic matching detail"];reveal(detail,app);XCTAssertTrue(detail.exists)
         app.navigationBars.buttons.firstMatch.tap()
         let minutes=app.textFields["investment-duration"]
-        for _ in 0..<15 where !minutes.isHittable {app.swipeDown()}
-        minutes.tap();minutes.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:2)+"46")
+        for _ in 0..<18 {
+            if minutes.exists,minutes.frame.minY >= app.navigationBars["Record activity"].frame.maxY+8,minutes.frame.maxY < app.frame.height*0.75 {break}
+            app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.35)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.55)))
+        }
+        XCTAssertGreaterThanOrEqual(minutes.frame.minY,app.navigationBars["Record activity"].frame.maxY+8)
+        minutes.tap();XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout:5))
+        minutes.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:2)+"46")
         app.buttons["Done"].tap()
         XCTAssertFalse(candidate.exists,"Time input change invalidates matching IDs without rescanning history")
         reveal(save,app);save.tap()

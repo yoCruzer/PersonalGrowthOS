@@ -83,8 +83,25 @@ final class AppLaunchSmokeTests: XCTestCase {
             XCTAssertTrue(start.isHittable,app.debugDescription);start.tap()
             let collapse=app.buttons["investment-collapse-timer"];XCTAssertTrue(collapse.waitForExistence(timeout:5));collapse.tap()
             app.navigationBars.buttons.firstMatch.tap()
-            for _ in 0..<12 where !app.buttons["growth-goals"].isHittable {app.swipeDown()}
-            app.buttons["growth-goals"].tap()
+            let goalRow=app.buttons["growth-goals"]
+            // XCTest can call a partly covered row hittable and consume its first tap
+            // while scrolling. Put the whole row in the visible list, then tap the row.
+            for _ in 0..<24 {
+                let top=app.navigationBars.firstMatch.frame.maxY+8
+                let bottom=app.tabBars.firstMatch.frame.minY-56
+                if goalRow.exists,goalRow.frame.minY >= top,goalRow.frame.maxY <= bottom {break}
+                if !goalRow.exists || goalRow.frame.minY < top {
+                    app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.35)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.55)))
+                } else {
+                    app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.65)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.45)))
+                }
+            }
+            XCTAssertGreaterThanOrEqual(goalRow.frame.minY,app.navigationBars.firstMatch.frame.maxY+8)
+            XCTAssertLessThanOrEqual(goalRow.frame.maxY,app.tabBars.firstMatch.frame.minY-56)
+            let geometry=XCTAttachment(string:"row=\(goalRow.frame) nav=\(app.navigationBars.firstMatch.frame) tab=\(app.tabBars.firstMatch.frame)")
+            geometry.name="ReviewFix-mixed-pre-tap-\(large ? "Dark-maxAX" : "Light-default")-geometry";geometry.lifetime = .keepAlways;add(geometry)
+            shot("Goals-whole-row-before-tap")
+            goalRow.tap()
             XCTAssertTrue(app.navigationBars[large ? "目标与标记" : "Goals and Flags"].waitForExistence(timeout:5),app.debugDescription)
             let goal=app.textFields["new-goal-title"];XCTAssertTrue(goal.waitForExistence(timeout:5));goal.tap();goal.typeText("Synthetic active focus\n")
             let addGoal=app.buttons["add-goal"];for _ in 0..<12 where !addGoal.isHittable {app.swipeUp()};addGoal.tap()
@@ -3007,5 +3024,30 @@ extension AppLaunchSmokeTests {
         first.tap()
         expectation(for:NSPredicate(format:"label == %@","50 measurements"),evaluatedWith:pageCount);waitForExpectations(timeout:5)
         let shot=XCTAttachment(screenshot:app.screenshot());shot.name="ReviewFix-Weight-return-A-correct-first-page";shot.lifetime = .keepAlways;add(shot)
+    }
+}
+
+
+extension AppLaunchSmokeTests {
+    func testReviewFixWeightCutoffChineseDarkMaximumText() {
+        continueAfterFailure=false
+        print("PGOS_USAGE_STYLE_DARK");fflush(stdout)
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeightReviewFixDates","-AppleLanguages","(zh-Hans)","-AppleLocale","zh_CN","-AppleInterfaceStyle","Dark","-UIPreferredContentSizeCategoryName",UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        app.launch();app.buttons["today-weight"].tap()
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<24 where !element.isHittable {app.swipeUp()}
+            XCTAssertTrue(element.isHittable,app.debugDescription)
+        }
+        let through=app.datePickers["weight-review-through"];reveal(through);through.buttons.firstMatch.tap()
+        let tenth=app.buttons.matching(NSPredicate(format:"label CONTAINS %@","10月10")).firstMatch
+        XCTAssertTrue(tenth.waitForExistence(timeout:5),app.debugDescription);tenth.tap()
+        app.navigationBars["体重"].tap()
+        let heading=app.staticTexts.matching(NSPredicate(format:"label CONTAINS %@ AND label CONTAINS %@","截至","最近记录")).firstMatch
+        reveal(heading);XCTAssertTrue(heading.label.contains("10"),heading.label)
+        let shot=XCTAttachment(screenshot:app.screenshot());shot.name="ReviewFix-Weight-Chinese-Dark-maxAX-cutoff-title";shot.lifetime = .keepAlways;add(shot)
+        let row=app.buttons.matching(identifier:"weight-record-row").firstMatch;reveal(row)
+        XCTAssertFalse(row.label.contains("77.0"),row.label)
+        let detail=XCTAttachment(screenshot:app.screenshot());detail.name="ReviewFix-Weight-Chinese-Dark-maxAX-cutoff-records";detail.lifetime = .keepAlways;add(detail)
     }
 }
