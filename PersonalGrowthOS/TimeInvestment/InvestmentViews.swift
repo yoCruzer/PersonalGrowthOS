@@ -658,7 +658,7 @@ struct InvestmentHistoryView: View {
                         }.accessibilityIdentifier("investment-day-\(day)")
                     }
                 }
-                InvestmentSessionPage(selection:selection,generation:workspace.reviewGeneration,key:"\(days)-\(activity?.uuidString ?? "all")-\(selectedDay ?? "period")")
+                InvestmentSessionPage(selection:selection,generation:workspace.reviewGeneration,key:"\(today.identifier)-\(days)-\(activity?.uuidString ?? "all")-\(selectedDay ?? "period")")
             } else {
                 Section {
                     Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)

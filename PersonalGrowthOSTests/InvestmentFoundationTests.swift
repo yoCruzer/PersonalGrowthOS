@@ -387,6 +387,22 @@ import XCTest
         XCTAssertThrowsError(try data(forged,changedOps).validateInvestment(packageVersion:10))
     }
 
+    func testReviewDAdjacentEvaluationDaysExpireWindowMembersWithoutChangingFacts() throws {
+        let participant=UUID(),activity=UUID(),before=ImportantCivilDay(identifier:"2026-10-17")!,after=ImportantCivilDay(identifier:"2026-10-18")!
+        for (days,start) in [(7,"2026-10-11"),(30,"2026-09-18")] {
+            let id=UUID(),date=ImportantCivilDay(identifier:start)!.instant(minutes:720,timeZone:zone)!
+            let values=InvestmentValues(day:start,timeZoneID:zone.identifier,seconds:60,evidence:.durationOnly,source:.manual,spans:[])
+            let fact=InvestmentSessionTransfer(InvestmentSession(id:id,participantID:participant,activityID:activity,values:values,now:date))
+            let snapshot=try InvestmentReviewSnapshot(sessions:[fact],participantID:participant)
+            let previous=snapshot.selection(days:days,today:before,activityID:nil,day:nil)
+            let next=snapshot.selection(days:days,today:after,activityID:nil,day:nil)
+            XCTAssertEqual(previous.count,1);XCTAssertEqual(previous.seconds,60);XCTAssertEqual(previous.pageIDs(offset:0),[id])
+            XCTAssertEqual(next.count,0);XCTAssertEqual(next.seconds,0);XCTAssertEqual(next.pageIDs(offset:0),[])
+            XCTAssertEqual(snapshot.selection(days:nil,today:after,activityID:nil,day:nil).pageIDs(offset:0),[id])
+            XCTAssertEqual(snapshot.selection(days:days,today:before,activityID:nil,day:nil).pageIDs(offset:0),[id],"The immutable fact snapshot itself did not change")
+        }
+    }
+
     func testUsageReviewSnapshotKeepsCrossDayIdentityAndRejectsInvalidFacts() throws {
         let p=UUID(),a=UUID(),foreign=UUID()
         let start=ImportantCivilDay(identifier:"2026-12-31")!.instant(minutes:1430,timeZone:zone)!

@@ -222,3 +222,6 @@ Apple原生行为依据：[requestAuthorization](https://developer.apple.com/doc
 `ui-d5`实际10项 **7PASS3FAIL0SKIP / exit65、1条Invalid frame warning**。Files预览取消恢复、后台QImport刷新、中文实际Dark最大AX BMI/星期菜单、清单新建管理保留草稿、Weight日期编辑删除、计时前后台/冷启动均PASS。两条Publishing changes from background警告不再出现，Growth主线程接收有配对结果。QFiveSources业务通过但同打开WeeklyReview接缝仍有frame warning，限定将原keyboard ToolbarItemGroup改为focused时导航栏44pt收键盘动作，保存逻辑不变。
 
 三FAIL保留：Public扩展主动复制报告后Runner读剪贴板遭PBError13；随后只读专用Simulator主动复制报告确认category=appGroup（文件`ui-d5-public-copied-diagnostic.txt`），新测试改为扩展自己原生粘贴报告再验证。mixed新增today-investment断言失败：SegmentReview夹具是finish+saveTimer后的已保存事实，没有unfinished，生产正确隐藏；改为真实Start→Collapse再拍混合页面。RunningCold走过恢复/取消确认/丢弃/手工草稿冷重开，最后空态在新增图表下方未实例化；保留原空态断言并正常滚动，同时先断言真实总数/时长为0，不修改事实代码。后续仅五项受影响UI补验（含原WeeklyReview保存），其余通过证据复用。
+
+
+独立R7/P2：InvestmentHistory的评价日跨午夜/前台变化时，总计重算而SessionPage加载key未含评价日，原records可能保留已移出7/30天窗口的事实。最小修复给既有page scope key增加民用today.identifier，同步触发offset归零与任务重查，不按每秒Date重读。新增冻结同一正式事实快照、评价日10-17→10-18的7日/30日成对反例，All time保留且旧评价日不变作对照；不冒称Unit执行了真实午夜UI。final-debug3 clean6db49ab已PASS，R7追加后另建干净包并定向运行完整InvestmentFoundationTests和相关历史UI，不重复517全量。
