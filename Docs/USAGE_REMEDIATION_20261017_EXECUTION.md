@@ -237,3 +237,9 @@ Apple原生行为依据：[requestAuthorization](https://developer.apple.com/doc
 
 
 ui-d6中QFiveSources与原WeeklyReview多字段/收键盘/保存/冷启动均PASS（64.213s/31.008s），未再出现对应frame warning；RunningCold手工草稿54.058s PASS，实际0场/0秒且空态可滚动，保留草稿不计入历史。mixed英文默认含真实running/activeGoal通过；中文最大AX完成七张滚动截图后在页底断言早先Goal仍exists失败（最大字号List有限实例化），原失败保留。仅改测试向下滚回实际Goal/Investment、断言isHittable再截图；未改生产/减少断言。最后月份/自然日/跨日UI仍在执行，完成后只补mixed一项，不再重跑其余。
+
+
+`ui-d6`完整 **6项=4PASS2FAIL0SKIP / exit65、runtimeWarnings=[]**：QFiveSources、WeeklyReview原多字段保存/冷启动、RunningCold手工草稿0/0/空态、History自然窗口/月份/分页/精确crossday全部通过。两FAIL为已确认unsigned public share环境和mixed页底早先行检查。root实际查看`ui-d6-attachments/4D906F23-4D6A-473F-B779-A931E361F1CD.png`，真实active Goal在Today2中，证明未丢失；但也确实看见共享图标随AX放大超出24列，target图标叠到active文字。R5相关新布局缺陷需处理：仅将AX hidden的装饰图标固定20pt于24列，正文/副标题仍完整缩放，触控范围不变；补跑mixed并由独立reviewer看实图，不将旧图冒称无遮挡。
+
+
+`ui-d7`单mixed **FAIL / exit65**，并非滚回Goal阶段：在中文Growth点击Goals中央后仍留成长页，`new-goal-title`不存在。实际树`ui-d7-attachments/2FEA3B5C-F8CE-43A2-AABE-485B368EC883.txt`明确navigationBar=成长且growth-goals仍在；原生log点击坐标目标正确。共享ModuleEntryRow标签的空白未定义整行命中区，与前清单/回顾已证实接缝一致；补`.contentShape(.rect)`到共享行完整frame，保持原NavigationLink/action；测试增加真实Goals目的导航断言，不以点文字坐标绕过问题。与图标20pt一起仅补mixed实际路径。

@@ -13,7 +13,7 @@ struct ModuleEntryRow: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            Image(systemName: systemImage).font(.body).foregroundStyle(.secondary).frame(width: 24)
+            Image(systemName: systemImage).font(.system(size: 20)).foregroundStyle(.secondary).frame(width: 24)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true).accessibilityIdentifier(titleID)
@@ -25,6 +25,7 @@ struct ModuleEntryRow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }.frame(minHeight: subtitle == nil ? 36 : 48)
+            .contentShape(.rect)
     }
 }
 

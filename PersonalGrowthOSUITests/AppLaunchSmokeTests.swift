@@ -85,6 +85,7 @@ final class AppLaunchSmokeTests: XCTestCase {
             app.navigationBars.buttons.firstMatch.tap()
             for _ in 0..<12 where !app.buttons["growth-goals"].isHittable {app.swipeDown()}
             app.buttons["growth-goals"].tap()
+            XCTAssertTrue(app.navigationBars[large ? "目标与标记" : "Goals and Flags"].waitForExistence(timeout:5),app.debugDescription)
             let goal=app.textFields["new-goal-title"];XCTAssertTrue(goal.waitForExistence(timeout:5));goal.tap();goal.typeText("Synthetic active focus\n")
             let addGoal=app.buttons["add-goal"];for _ in 0..<12 where !addGoal.isHittable {app.swipeUp()};addGoal.tap()
             app.navigationBars.buttons.firstMatch.tap()
