@@ -1,3 +1,19 @@
+# 当前任务 — 使用反馈统一整改 Goal（2026-10-18）
+
+状态：**READY_FOR_CODEX_EXECUTION（规格准备完成，尚未实现）**。
+
+读取同一固定 GOAL_SHA 的 [GOAL 1.0](USAGE_REMEDIATION_20261017_GOAL_ZH.md)、[DESIGN 1.0](USAGE_REMEDIATION_20261017_DESIGN_ZH.md)、[ACCEPTANCE 1.0](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)。BASE 固定 5a70f0110b151f8a45ac7c33d3f443823b1cff24，包含原 ad0720ad 与时间投入 F1 修复。规划输入仅七份 Markdown 增量；产品/工程/测试仍与 BASE 一致，新增验收未运行。
+
+下一步：在 Owner 固定 SHA 引导下，只读确认基线/dirty/祖先/七文件差异，以 GOAL_SHA 建立独立 worktree 和 codex/usage-remediation-20261017，按 0→A→B→C→D 连续推进；新 Draft PR base codex/time-investment-v1。已有同任务工作安全续接，不改旧 PR，不逐阶段等 Owner 确认。阶段是本 Goal 内部检查点；正常实现、影响验证、真正独立只读 review、范围内修复及普通 push 由 Codex 完成。
+
+先统一 Today/Growth 与时间投入展示及提示语义，再做事实聚合/体重/BMI和有界历史，之后扩展重复与 AlarmKit，最后集中组合验收。字段变更同步最小迁移/备份，保护 V14/v10 历史、计时连续时钟、原始记录与独立草稿。只有全部本地必选实现/验证/review 完成，才交接 READY_FOR_OWNER_DEVICE_GATE；缺独立审查或真实可执行验证须按实际状态报告。
+
+原真机硬件睡眠、静音/专注系统响铃、私人库覆盖、签名/安装及发行仍单列 Owner Gate，不将其当作暂停其余编码的理由，不把模拟器结果当真实设备通过。没有 merge、force、tag、Archive、TestFlight 或操作私人数据授权。
+
+下方是上一批任务历史，保留原文；其“仅等设备、不进新模块”不再指挥本 Goal。
+
+---
+
 # 时间投入 V1 F1/P1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
 
 沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接；固定审查输入 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[外部 F1/P1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)已完成反例、限定修复和真正独立只读复核。原外部 R1–R3 已关闭，本轮仅回归。BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。

@@ -149,3 +149,8 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## 时间投入 V1 批准增量 — 2026-10-16
 
 时间投入 V1：`TIME_INVESTMENT_V1_DESIGN_ZH.md` / `TIME_INVESTMENT_V1_GOAL_ZH.md` 为固定1.1批准增量；执行、独立审查及验收分别见 `TIME_INVESTMENT_V1_EXECUTION.md`、`TIME_INVESTMENT_V1_REVIEW_ZH.md`、`TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md`。当前状态以 `CURRENT_STATE.md` / `CURRENT_TASK.md` 及验收记录为准，不代表设备或发行通过。
+
+## 使用反馈统一整改批准增量 — 2026-10-18
+
+基于时间投入 V1 最终交接 5a70f0110b151f8a45ac7c33d3f443823b1cff24，统一处理使用反馈 20261017 九项与时间投入同类展示问题。执行规格：[USAGE_REMEDIATION_20261017_GOAL_ZH.md](USAGE_REMEDIATION_20261017_GOAL_ZH.md) / [DESIGN](USAGE_REMEDIATION_20261017_DESIGN_ZH.md) / [ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)，均为同一固定提交的 1.0。阶段属于一个连续执行目标，现仅规格准备；不表示实现、独立实现 review 或设备门禁通过。范围增量见 V1_SCOPE，本轮进展以 CURRENT 两份文件与新验收记录为准，旧历史原样保留。
+

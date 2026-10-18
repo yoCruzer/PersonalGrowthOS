@@ -1,3 +1,15 @@
+# 使用反馈统一整改 — READY_FOR_CODEX_EXECUTION（2026-10-18）
+
+Owner 要求将使用反馈 20261017 的九项问题与新完成的时间投入 V1 同类展示问题纳入一个分阶段连续整改 Goal。最新固定产品基线为 **5a70f0110b151f8a45ac7c33d3f443823b1cff24**（codex/time-investment-v1 / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)）；原反馈 ad0720ad743f495ac6f2ee3e97b16577266351db 是其祖先。实际最后产品/测试提交为 4d59a5909ec4314d82c9f9af12c203503ffde98b，5a70f01 为时间投入最终交接。
+
+本次只准备规格、范围增量及新任务交接，未修改产品/工程/测试，也未运行新的 App 验证。三份固定版本 1.0：[执行 Goal](USAGE_REMEDIATION_20261017_GOAL_ZH.md)、[设计](USAGE_REMEDIATION_20261017_DESIGN_ZH.md)、[验收](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)。实施以 Owner 引导的完整 GOAL_SHA 为准；本轮验收全部 NOT_RUN，规划核查不等于实现独立 review。
+
+规划分支 plan/usage-remediation-20261017-goal；后续产品分支 codex/usage-remediation-20261017，新 Draft PR base 为 codex/time-investment-v1。A 统一展示/操作反馈，B 可信回顾/体重/BMI/时间历史，C 星期重复/闹钟，D 集中验证与独立 review。新授权在新分支替代旧“只等设备、不再开发”的停点，保留全部历史失败/设备门禁及 F1、R1–R3 数据与计时保护线。旧 PR、原 dirty 工作区、私人库及发行边界保持。
+
+下方为原时间投入及更早交接历史；旧状态不表示本次整改已经完成，也不阻挡本次明确授权下的安全实施。
+
+---
+
 # 时间投入 V1 F1/P1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
 
 沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接；固定审查输入 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[外部 F1/P1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)已完成反例、限定修复和真正独立只读复核。原外部 R1–R3 已关闭，本轮仅回归。BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。
