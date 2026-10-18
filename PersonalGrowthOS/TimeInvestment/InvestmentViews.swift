@@ -99,8 +99,8 @@ import UIKit
             participants = p; activities = a; sessions = s; operations = o; reference = Date(); error = nil
         } catch { self.error = error.localizedDescription }
     }
-    func checkpoint(_ context: ModelContext) {
-        let service = InvestmentService(context:context)
+    func checkpoint(_ context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current) {
+        let service = InvestmentService(context:context,clock:clock)
         do {
             for op in try service.operations() where op.timer.state == .running {
                 try service.command(.checkpoint,id:op.id,revision:op.revision)

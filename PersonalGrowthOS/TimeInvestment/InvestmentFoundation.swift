@@ -133,7 +133,18 @@ struct InvestmentClock: Equatable {
     var uptime: Double
     var processID: String
     private static let currentProcessID = UUID().uuidString
-    static func current() -> Self { .init(wall: Date(), uptime: ProcessInfo.processInfo.systemUptime, processID: currentProcessID) }
+    private static let continuousClock = ContinuousClock()
+    private static let continuousOrigin = continuousClock.now
+    static func current() -> Self {
+        let origin = continuousOrigin // Initialize the process origin before reading now.
+        let elapsed = origin.duration(to: continuousClock.now).components
+        return sample(wall: Date(), continuousElapsed: Double(elapsed.seconds) + Double(elapsed.attoseconds) / 1e18,
+                      awakeUptime: ProcessInfo.processInfo.systemUptime, processID: currentProcessID)
+    }
+    // Both the live clock and deterministic service tests use this sampling boundary.
+    static func sample(wall: Date, continuousElapsed: Double, awakeUptime: Double, processID: String) -> Self {
+        .init(wall: wall, uptime: awakeUptime, processID: processID)
+    }
 }
 enum InvestmentTimerState: String, Codable {
     case running, paused, targetReached, pendingSave, recoveryRequired, draft, saved, discarded, deleted

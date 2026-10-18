@@ -1,3 +1,13 @@
+# 时间投入 V1 F1/P1 — FIXES_IN_PROGRESS（2026-10-18）
+
+本轮沿原 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 处理固定 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[完整外部复审 F1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)。外部已关闭 R1–R3，本轮不重新扩修。`systemUptime` 不含设备睡眠，而当前 `projected` 将其与 wallDelta 比较后会持久化异常恢复状态；F1 关闭及本地门禁完成前，不能沿用下方历史 READY 结论。
+
+只读基线确认任务树 clean b55da13、原 branch/upstream/PR base，原工作区三项未知 dirty 保留；Xcode27.1 首检及既有隔离模拟器可用。新证据根 `/tmp/pgos-time-investment-f1-evidence`，指定 review 原文已保存并完整读取。下一步是区分 wall/连续经过时间/awake uptime 的生产反例、限定连续时钟修复及核心/磁盘/导出/R1–R3回归、独立固定SHA复核。保留50ms异常保护、暂停/倒计时/跨进程及旧锚点/备份边界；不新增后台常驻或Schema。真实iPhone锁屏/硬件睡眠 NOT_RUN；Safari unsigned FAIL、物理低空间 SKIP、签名/私人库/远端CI NOT_RUN保持。不merge/force/tag/Archive/TestFlight。
+
+下方是原始历史，原样保留。
+
+---
+
 # 时间投入 V1 外部 Review 修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
 
 本节覆盖本轮外部 Review 修复，后文原始阶段记录完整保留。固定输入/最终 SHA/剩余设备边界见 [CURRENT_STATE](CURRENT_STATE.md)。指定评论原文已完整保存为 `external-review-6234984209.json`，SHA-256 `2493c7dc5742fb359143a8cc865e346426c8cdc8c484966333d4764a7a680e3d`。

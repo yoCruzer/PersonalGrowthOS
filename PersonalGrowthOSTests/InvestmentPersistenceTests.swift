@@ -24,6 +24,127 @@ import CryptoKit
         let decoder=JSONDecoder();decoder.dateDecodingStrategy = .secondsSince1970
         return (try decoder.decode(TransferData.self,from:Data(contentsOf:extracted.appendingPathComponent("data.json"))),extracted)
     }
+    func f1DiskStart(_ container:ModelContainer,clock:@escaping () -> InvestmentClock,target:Double?=nil) throws -> (InvestmentService,UUID) {
+        let service=InvestmentService(context:container.mainContext,clock:clock),activity=try service.createActivity(name:"Synthetic F1 disk timer")
+        let participant=try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<InvestmentParticipant>()).first).id,id=UUID()
+        try service.start(activityID:activity,participantID:participant,operationID:id,target:target,zone:zone)
+        return (service,id)
+    }
+    func f1Command(_ service:InvestmentService,_ id:UUID,_ action:InvestmentService.Command) throws {
+        try service.command(action,id:id,revision:XCTUnwrap(service.operations().first {$0.id==id}).revision)
+    }
+    func testF1WorkspaceSleepCheckpointReopensAndSavesExactlyOneFactWithoutForeignDraft() throws {
+        var readings=InvestmentClockTestReadings()
+        let folder=try root(),url=folder.appendingPathComponent("f1-workspace.sqlite"),container=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let (service,id)=try f1DiskStart(container,clock:{readings.sample()})
+        readings.advance(wall:120,continuous:120,awake:120);try f1Command(service,id,.checkpoint)
+        container.mainContext.autosaveEnabled=false
+        let foreign=Entry(body:"Synthetic F1 foreign unsaved",createdAt:readings.wall);container.mainContext.insert(foreign)
+        readings.advance(wall:1800,continuous:1800,awake:30)
+        let workspace=InvestmentWorkspace();workspace.checkpoint(container.mainContext,clock:{readings.sample()})
+        XCTAssertNil(workspace.error);XCTAssertEqual(workspace.unfinished.first?.timer.state,.running)
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:url),read=ModelContext(reopened)
+        let op=try XCTUnwrap(read.fetch(FetchDescriptor<InvestmentOperation>()).first),timer=try op.timer()
+        XCTAssertEqual(timer.values.seconds,1920);XCTAssertEqual(timer.state,.running);XCTAssertEqual(timer.anchorUptime,readings.continuousElapsed)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<Entry>()),0);XCTAssertTrue(container.mainContext.hasChanges)
+        XCTAssertEqual(foreign.body,"Synthetic F1 foreign unsaved")
+        let durable=InvestmentService(context:read,clock:{readings.sample()});try f1Command(durable,id,.finish)
+        let pending=try XCTUnwrap(durable.operations().first)
+        try durable.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+        try durable.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+        let final=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let facts=try ModelContext(final).fetch(FetchDescriptor<InvestmentSession>())
+        XCTAssertEqual(facts.count,1);XCTAssertEqual(facts.first?.id,id);XCTAssertEqual(try facts.first?.values().seconds,1920)
+    }
+    func testF1SleepCheckpointBeforeAndAfterCommitFailureReopensAndRetriesWithoutDoubleCredit() throws {
+        for afterSave in [false,true] {
+            var readings=InvestmentClockTestReadings()
+            let folder=try root(),url=folder.appendingPathComponent("f1-fault.sqlite"),container=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let (service,id)=try f1DiskStart(container,clock:{readings.sample()})
+            readings.advance(wall:120,continuous:120,awake:120);try f1Command(service,id,.checkpoint)
+            let before=try TransferSnapshot.make(context:ModelContext(container))
+            readings.advance(wall:1800,continuous:1800,awake:30)
+            let failing=InvestmentService(context:container.mainContext,clock:{readings.sample()},commit:{context in if afterSave {try context.save()};throw CocoaError(.fileWriteOutOfSpace)})
+            XCTAssertThrowsError(try f1Command(failing,id,.checkpoint))
+            let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+            if !afterSave {XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(reopened)),before)}
+            else {
+                let timer=try XCTUnwrap(ModelContext(reopened).fetch(FetchDescriptor<InvestmentOperation>()).first).timer()
+                XCTAssertEqual(timer.state,.running);XCTAssertEqual(timer.values.seconds,1920)
+            }
+            let durable=InvestmentService(context:reopened.mainContext,clock:{readings.sample()});try f1Command(durable,id,.checkpoint)
+            let again=try PersistenceContainerFactory.makeOnDisk(at:url)
+            XCTAssertEqual(try InvestmentService(context:again.mainContext).operations().first?.timer.values.seconds,1920)
+            readings.advance(wall:60,continuous:60,awake:1);try f1Command(durable,id,.checkpoint)
+            let final=try PersistenceContainerFactory.makeOnDisk(at:url)
+            XCTAssertEqual(try InvestmentService(context:final.mainContext).operations().first?.timer.values.seconds,1980)
+            XCTAssertEqual(try ModelContext(final).fetchCount(FetchDescriptor<InvestmentSession>()),0)
+        }
+    }
+    func testF1ActualZIPExportAfterSleepKeepsSourceAndRestoresOnlyContinuousCheckpoint() async throws {
+        for target in [nil,Double(1500)] {
+            var readings=InvestmentClockTestReadings()
+            let folder=try root(),url=folder.appendingPathComponent("f1-export.sqlite"),container=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let (service,id)=try f1DiskStart(container,clock:{readings.sample()},target:target)
+            readings.advance(wall:120,continuous:120,awake:120);try f1Command(service,id,.checkpoint)
+            let sourceBefore=try TransferSnapshot.make(context:ModelContext(container))
+            let duration=target==nil ? 1800.0:3000.0
+            readings.advance(wall:duration,continuous:duration,awake:30)
+            let exportClock=readings.sample(),expectedSeconds=target==nil ? 1920.0:1500.0
+            let exporter=ImportExportService(context:container.mainContext,mediaStore:MediaStore(rootURL:folder),availableCapacity:{.max},now:{exportClock.wall},investmentClock:{exportClock})
+            let lease=try await exporter.exportPackage();defer {lease.cleanup()}
+            let (data,_)=try zipData(lease.url),exported=try XCTUnwrap(data.investmentOperations.first {$0.id==id})
+            XCTAssertEqual(exported.timer.values.seconds,expectedSeconds)
+            XCTAssertEqual(exported.timer.state,target==nil ? .running:.targetReached)
+            XCTAssertEqual(exported.timer.checkpointAt,readings.wall)
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(container)),sourceBefore,"Export must not checkpoint or consume the live source")
+            var importedReadings=readings
+            importedReadings.advance(wall:7*86400,continuous:7*86400,awake:600);importedReadings.processID="continuous-v1:restored-process"
+            let targetRoot=try root(),targetURL=targetRoot.appendingPathComponent("f1-restored.sqlite"),restoring=try PersistenceContainerFactory.makeOnDisk(at:targetURL)
+            let importClock=importedReadings.sample()
+            let importer=ImportExportService(context:restoring.mainContext,mediaStore:MediaStore(rootURL:targetRoot),availableCapacity:{.max},now:{importClock.wall},investmentClock:{importClock})
+            _ = try await importer.importPackage(from:lease.url)
+            let reopened=try PersistenceContainerFactory.makeOnDisk(at:targetURL),restored=InvestmentService(context:reopened.mainContext,clock:{importedReadings.sample()})
+            let recovered=try XCTUnwrap(restored.operations().first)
+            XCTAssertEqual(recovered.timer.state,.recoveryRequired);XCTAssertEqual(recovered.timer.values.seconds,expectedSeconds)
+            XCTAssertEqual(recovered.timer.restoredState,target==nil ? .running:.targetReached)
+            XCTAssertNil(recovered.timer.anchor);XCTAssertNil(recovered.timer.anchorUptime);XCTAssertNil(recovered.timer.processID)
+            try f1Command(restored,id,.checkpoint);XCTAssertEqual(try restored.operations().first,recovered)
+            XCTAssertEqual(try ModelContext(reopened).fetchCount(FetchDescriptor<InvestmentSession>()),0)
+            try f1Command(restored,id,.resume)
+            importedReadings.advance(wall:60,continuous:60,awake:1);try f1Command(restored,id,.finish)
+            let pending=try XCTUnwrap(restored.operations().first)
+            XCTAssertEqual(pending.timer.values.seconds,expectedSeconds+60)
+            try restored.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+            let final=try PersistenceContainerFactory.makeOnDisk(at:targetURL)
+            let facts=try ModelContext(final).fetch(FetchDescriptor<InvestmentSession>())
+            XCTAssertEqual(facts.count,1);XCTAssertEqual(try facts.first?.values().seconds,expectedSeconds+60)
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(container)),sourceBefore)
+        }
+    }
+    func testF1LegacyAwakeAnchorNeverMixesWithNewProcessAndResumeEstablishesContinuousAnchor() throws {
+        var readings=InvestmentClockTestReadings()
+        let oldProcess=UUID().uuidString
+        func legacyReading() -> InvestmentClock {.init(wall:readings.wall,uptime:readings.awakeUptime,processID:oldProcess)}
+        let folder=try root(),url=folder.appendingPathComponent("f1-legacy.sqlite"),container=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let (legacy,id)=try f1DiskStart(container,clock:legacyReading)
+        readings.advance(wall:120,continuous:120,awake:120);try f1Command(legacy,id,.checkpoint)
+        let known=try XCTUnwrap(legacy.operations().first).timer
+        XCTAssertEqual(known.anchorUptime,320);XCTAssertEqual(known.values.seconds,120)
+        readings.continuousElapsed=200000;readings.processID=InvestmentClock.current().processID
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:url),current=InvestmentService(context:reopened.mainContext,clock:{readings.sample()})
+        try f1Command(current,id,.checkpoint)
+        let recovered=try XCTUnwrap(current.operations().first).timer
+        XCTAssertEqual(recovered.state,.recoveryRequired);XCTAssertEqual(recovered.values,known.values)
+        XCTAssertEqual(recovered.checkpointAt,known.checkpointAt);XCTAssertNil(recovered.anchorUptime);XCTAssertNil(recovered.processID)
+        try f1Command(current,id,.resume)
+        let resumed=try XCTUnwrap(current.operations().first).timer
+        XCTAssertEqual(resumed.anchorUptime,200000);XCTAssertEqual(resumed.processID,readings.processID)
+        readings.advance(wall:1800,continuous:1800,awake:30);try f1Command(current,id,.checkpoint)
+        let final=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let result=try XCTUnwrap(InvestmentService(context:final.mainContext).operations().first).timer
+        XCTAssertEqual(result.state,.running);XCTAssertEqual(result.values.seconds,1920)
+    }
     func testExternalR1DeleteAndLinkedDraftFaultsReopenAtomicallyAndRejectNewStaleEditors() throws {
         for afterSave in [false,true] {
             let folder=try root(),url=folder.appendingPathComponent("delete-fault.sqlite"),c=try PersistenceContainerFactory.makeOnDisk(at:url)

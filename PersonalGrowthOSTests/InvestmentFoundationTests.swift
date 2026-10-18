@@ -19,6 +19,103 @@ import XCTest
         try s.command(command, id: id, revision: op(s, id).revision)
     }
     func sessions(_ c: ModelContainer) throws -> [InvestmentSession] { try ModelContext(c).fetch(FetchDescriptor<InvestmentSession>()) }
+    func f1Start(_ container: ModelContainer, readings: @escaping () -> InvestmentClock, target: Double? = nil) throws -> (InvestmentService,UUID) {
+        let service=InvestmentService(context:container.mainContext,clock:readings)
+        let activity=try service.createActivity(name:"Synthetic F1 clock evidence")
+        let participant=try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<InvestmentParticipant>()).first).id
+        let id=UUID();try service.start(activityID:activity,participantID:participant,operationID:id,target:target,zone:zone)
+        return (service,id)
+    }
+    func testF1ProductionSamplerSelectsContinuousNotAwakeAndLiveClockIsProcessScoped() {
+        let wall=Date(timeIntervalSince1970:1792113600)
+        let reading=InvestmentClock.sample(wall:wall,continuousElapsed:123456.75,awakeUptime:12.5,processID:"synthetic-continuous-process")
+        XCTAssertEqual(reading.wall,wall);XCTAssertEqual(reading.uptime,123456.75)
+        let notAwake=InvestmentClock.sample(wall:wall,continuousElapsed:25,awakeUptime:.nan,processID:reading.processID)
+        XCTAssertEqual(notAwake.uptime,25)
+        let first=InvestmentClock.current(),second=InvestmentClock.current()
+        XCTAssertTrue(first.uptime.isFinite);XCTAssertGreaterThanOrEqual(first.uptime,0)
+        XCTAssertGreaterThanOrEqual(second.uptime,first.uptime);XCTAssertEqual(first.processID,second.processID)
+        XCTAssertTrue(first.processID.hasPrefix("continuous-v1:"),"Legacy awake-only process tokens must not identify new clock anchors")
+    }
+    func testF1ServiceStopwatchIncludesSleepWhileAwakeAdvancesOnlyThirtySeconds() throws {
+        var readings=InvestmentClockTestReadings()
+        let container=try PersistenceContainerFactory.makeInMemory()
+        let (service,id)=try f1Start(container,readings:{readings.sample()})
+        readings.advance(wall:120,continuous:120,awake:120);try command(service,id,.checkpoint)
+        readings.advance(wall:1800,continuous:1800,awake:30);try command(service,id,.checkpoint)
+        let timer=try op(service,id).timer
+        XCTAssertEqual(timer.state,.running);XCTAssertEqual(timer.values.seconds,1920)
+        XCTAssertEqual(timer.anchorUptime,readings.continuousElapsed);XCTAssertEqual(timer.checkpointAt,readings.wall)
+        XCTAssertEqual(timer.values.spans.map(\.seconds),[120,1800]);try timer.values.validate(now:readings.wall)
+    }
+    func testF1ServiceCountdownSleepCapsAtTargetAndExplicitContinueOmitsLateGap() throws {
+        var readings=InvestmentClockTestReadings()
+        let container=try PersistenceContainerFactory.makeInMemory()
+        let (service,id)=try f1Start(container,readings:{readings.sample()},target:1500)
+        readings.advance(wall:120,continuous:120,awake:120);try command(service,id,.checkpoint)
+        readings.advance(wall:3000,continuous:3000,awake:30);try command(service,id,.checkpoint)
+        let reached=try op(service,id).timer
+        XCTAssertEqual(reached.state,.targetReached);XCTAssertEqual(reached.values.seconds,1500)
+        XCTAssertNil(reached.anchor);XCTAssertNil(reached.anchorUptime)
+        try command(service,id,.resume);XCTAssertNil(try op(service,id).timer.target)
+        let resumedAt=readings.wall
+        readings.advance(wall:60,continuous:60,awake:5);try command(service,id,.finish)
+        let finished=try op(service,id).timer
+        XCTAssertEqual(finished.state,.pendingSave);XCTAssertEqual(finished.values.seconds,1560)
+        XCTAssertEqual(finished.values.spans.last?.start,resumedAt)
+        XCTAssertEqual(finished.values.spans.count,3);try finished.values.validate(now:readings.wall)
+    }
+    func testF1PausedSleepDoesNotAccumulateOrConsumeCountdown() throws {
+        var readings=InvestmentClockTestReadings()
+        let container=try PersistenceContainerFactory.makeInMemory()
+        let (service,id)=try f1Start(container,readings:{readings.sample()},target:1500)
+        readings.advance(wall:120,continuous:120,awake:120);try command(service,id,.pause)
+        let paused=try op(service,id)
+        readings.advance(wall:3000,continuous:3000,awake:30);try command(service,id,.checkpoint)
+        XCTAssertEqual(try op(service,id),paused)
+        try command(service,id,.finish)
+        XCTAssertEqual(try op(service,id).timer.values.seconds,120);XCTAssertEqual(try op(service,id).timer.target,1500)
+    }
+    func testF1TrueWallJumpsContinuousRegressionAndProcessChangeRetainCheckpoint() throws {
+        for scenario in ["forward","backward","elapsed-regression","elapsed-nonfinite","process-change","reboot"] {
+            var readings=InvestmentClockTestReadings()
+            let container=try PersistenceContainerFactory.makeInMemory()
+            let (service,id)=try f1Start(container,readings:{readings.sample()})
+            readings.advance(wall:120,continuous:120,awake:120);try command(service,id,.checkpoint)
+            let original=try op(service,id).timer
+            switch scenario {
+            case "forward":readings.advance(wall:3630,continuous:30,awake:30)
+            case "backward":readings.advance(wall:-3570,continuous:30,awake:30)
+            case "elapsed-regression":readings.advance(wall:30,continuous:-1,awake:30)
+            case "elapsed-nonfinite":readings.advance(wall:30,continuous:.infinity,awake:30)
+            case "process-change":readings.advance(wall:30,continuous:30,awake:30);readings.processID="synthetic-next-process"
+            default:readings.advance(wall:30,continuous:30,awake:30);readings.continuousElapsed=0;readings.awakeUptime=0;readings.processID="synthetic-after-reboot"
+            }
+            try command(service,id,.checkpoint);let result=try op(service,id).timer
+            XCTAssertEqual(result.state,.recoveryRequired,scenario);XCTAssertEqual(result.values,original.values,scenario)
+            XCTAssertEqual(result.checkpointAt,original.checkpointAt,scenario)
+            XCTAssertNil(result.anchor,scenario);XCTAssertNil(result.anchorUptime,scenario);XCTAssertNil(result.processID,scenario)
+        }
+    }
+    func testF1SleepMicrodriftKeepsAdjacentSpansAndEighteenHourGuard() throws {
+        var readings=InvestmentClockTestReadings()
+        let container=try PersistenceContainerFactory.makeInMemory()
+        let (service,id)=try f1Start(container,readings:{readings.sample()})
+        readings.advance(wall:60.000001,continuous:60,awake:1);try command(service,id,.checkpoint)
+        readings.advance(wall:60,continuous:60,awake:2);try command(service,id,.finish)
+        let value=try op(service,id).timer.values
+        XCTAssertEqual(value.seconds,120.000001,accuracy:0.000001);XCTAssertEqual(value.spans.count,2)
+        if value.spans.count==2 {XCTAssertEqual(value.spans[0].end,value.spans[1].start)}
+        try value.validate(now:readings.wall)
+        for duration in [18.0*3600,18.0*3600+0.001] {
+            var bounded=InvestmentClockTestReadings()
+            let disk=try PersistenceContainerFactory.makeInMemory(),(s,opID)=try f1Start(disk,readings:{bounded.sample()})
+            bounded.advance(wall:duration,continuous:duration,awake:30);try command(s,opID,.checkpoint)
+            let timer=try op(s,opID).timer
+            XCTAssertEqual(timer.state,duration==64800 ? .running:.recoveryRequired)
+            XCTAssertEqual(timer.values.seconds,duration==64800 ? 64800:0)
+        }
+    }
     func testT1PauseExcludesFiveMinutesAndDoesNotDependOnTicks() throws {
         let c = try PersistenceContainerFactory.makeInMemory(), (s, _, _, id) = try setup(c)
         advance(600); try command(s,id,.pause); advance(300); try command(s,id,.resume); advance(900); try command(s,id,.finish)
@@ -290,4 +387,18 @@ import XCTest
         XCTAssertThrowsError(try data(forged,changedOps).validateInvestment(packageVersion:10))
     }
 
+}
+
+// Synthetic clock observations are independent. This is not a hardware sleep test.
+struct InvestmentClockTestReadings {
+    var wall=Date(timeIntervalSince1970:1792113600)
+    var continuousElapsed=1000.0
+    var awakeUptime=200.0
+    var processID="continuous-v1:synthetic-process"
+    func sample() -> InvestmentClock {
+        InvestmentClock.sample(wall:wall,continuousElapsed:continuousElapsed,awakeUptime:awakeUptime,processID:processID)
+    }
+    mutating func advance(wall:Double,continuous:Double,awake:Double) {
+        self.wall.addTimeInterval(wall);continuousElapsed += continuous;awakeUptime += awake
+    }
 }
