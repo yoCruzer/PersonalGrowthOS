@@ -130,9 +130,10 @@ struct InvestmentValues: Codable, Equatable {
 
 struct InvestmentClock: Equatable {
     var wall: Date
+    // Process-relative continuous seconds, including device sleep. The persisted key stays compatible.
     var uptime: Double
     var processID: String
-    private static let currentProcessID = UUID().uuidString
+    private static let currentProcessID = "continuous-v1:" + UUID().uuidString
     private static let continuousClock = ContinuousClock()
     private static let continuousOrigin = continuousClock.now
     static func current() -> Self {
@@ -141,9 +142,10 @@ struct InvestmentClock: Equatable {
         return sample(wall: Date(), continuousElapsed: Double(elapsed.seconds) + Double(elapsed.attoseconds) / 1e18,
                       awakeUptime: ProcessInfo.processInfo.systemUptime, processID: currentProcessID)
     }
-    // Both the live clock and deterministic service tests use this sampling boundary.
+    // Both live and synthetic observations select the sleep-inclusive clock here.
+    // Awake uptime is a separate observation, never an elapsed-time fallback.
     static func sample(wall: Date, continuousElapsed: Double, awakeUptime: Double, processID: String) -> Self {
-        .init(wall: wall, uptime: awakeUptime, processID: processID)
+        .init(wall: wall, uptime: continuousElapsed, processID: processID)
     }
 }
 enum InvestmentTimerState: String, Codable {
@@ -156,6 +158,7 @@ struct InvestmentTimer: Codable, Equatable {
     var values: InvestmentValues
     var target: Double?
     @TodoTransferOptionalInstant var anchor: Date? = nil
+    // Only comparable within the same process token; legacy awake anchors require review.
     var anchorUptime: Double? = nil
     var processID: String? = nil
     @TodoTransferInstant var checkpointAt: Date
