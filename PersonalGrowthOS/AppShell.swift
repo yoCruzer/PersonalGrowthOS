@@ -3,6 +3,30 @@ import SwiftUI
 import UniformTypeIdentifiers
 import UIKit
 
+/// List insets supply the remaining row height; content grows naturally for large text.
+struct ModuleEntryRow: View {
+    let title: String
+    var subtitle: String? = nil
+    let systemImage: String
+    var value: String? = nil
+    @Environment(\.dynamicTypeSize) private var typeSize
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: systemImage).font(.body).foregroundStyle(.secondary).frame(width: 24)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
+                if let subtitle { Text(subtitle).font(.subheadline).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+                if typeSize.isAccessibilitySize, let value { Text(value).font(.subheadline).foregroundStyle(.secondary) }
+            }.frame(maxWidth: .infinity, alignment: .leading)
+            if !typeSize.isAccessibilitySize, let value {
+                Text(value).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }.frame(minHeight: subtitle == nil ? 36 : 48)
+    }
+}
+
 enum AppTab: Hashable {
     case today
     case timeline
@@ -211,6 +235,7 @@ struct AppShell: View {
         .environment(investmentWorkspace)
         .environment(sleepWorkspace)
         .environment(todoReminders)
+        .environment(\.todoFeedbackMedia, TodoFeedbackMedia(mediaStore: container.mediaStore, thumbnailStore: container.thumbnailStore))
         .environment(widgetPublisher)
     }
 
@@ -426,8 +451,8 @@ private struct TodayView: View {
                                 checkIn(habit)
                             } label: {
                                 HStack {
-                                    Text(habit.name)
-                                    Spacer()
+                                    ModuleEntryRow(title: habit.name, systemImage: "repeat")
+                                    Spacer(minLength: 4)
                                     Label(
                                         progress.actionTitle,
                                         systemImage: progress.isCompletedForOncePerDay
@@ -443,7 +468,7 @@ private struct TodayView: View {
                             )
                             .accessibilityLabel("Check in \(habit.name)")
                             .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
-                            .frame(minHeight: 52)
+                            .frame(minHeight: 44)
                         }
                     }
                     if todayHabits.count > 4 {
@@ -474,10 +499,7 @@ private struct TodayView: View {
                                 thumbnailStore: thumbnailStore
                             )
                         } label: {
-                            Label(
-                                goal.title,
-                                systemImage: goal.kind == .flag ? "flag" : "target"
-                            )
+                            ModuleEntryRow(title: goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
                         }
                         .accessibilityLabel("\(goal.kind.localizedName): \(goal.title)")
                         .accessibilityIdentifier("today-goal-\(goal.normalizedTitle)")
@@ -494,7 +516,7 @@ private struct TodayView: View {
             periodSection(.month, title: "This Month")
             if let thisWeeksFocus {
                 Section("This Week’s Focus") {
-                    Label(thisWeeksFocus, systemImage: "scope")
+                    ModuleEntryRow(title: thisWeeksFocus, systemImage: "scope")
                         .accessibilityIdentifier("today-weekly-focus")
                 }
             }
@@ -588,31 +610,26 @@ private struct TodayView: View {
 
     private var weightSection: some View {
         Section("Weight") {
-            HStack {
-                NavigationLink {
-                    WeightHistoryView()
-                } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        if let today = TodayWeightSnapshot(records: weightRecords).today {
-                            Text("Recorded Today").font(.caption).foregroundStyle(.secondary)
-                            Text(verbatim: WeightFormatting.kilograms(today.weightKilograms))
-                                .accessibilityIdentifier("today-latest-weight")
-                        } else {
-                            Text("No Weight Recorded Today")
-                            if let previous = TodayWeightSnapshot(records: weightRecords).previous {
-                                Text("\(previous.recordedAt.formatted(date: .abbreviated, time: .omitted)) · \(WeightFormatting.kilograms(previous.weightKilograms))")
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                }
-                .accessibilityIdentifier("today-weight")
-                Button("Record Weight") { isAddingWeight = true }
-                    .buttonStyle(.borderless)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityIdentifier("today-add-weight")
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) { weightLink; weightRecordButton }
+                VStack(alignment: .leading, spacing: 4) { weightLink; weightRecordButton }
             }
         }
+    }
+
+    private var weightLink: some View {
+        let snapshot = TodayWeightSnapshot(records: weightRecords)
+        return NavigationLink { WeightHistoryView() } label: {
+            ModuleEntryRow(title: snapshot.today.map { WeightFormatting.kilograms($0.weightKilograms) } ?? String(localized: "No Weight Recorded Today"),
+                subtitle: snapshot.today != nil ? String(localized: "Recorded Today") : snapshot.previous.map {
+                    $0.recordedAt.formatted(date: .abbreviated, time: .omitted) + " · " + WeightFormatting.kilograms($0.weightKilograms)
+                }, systemImage: "scalemass")
+                .accessibilityIdentifier("today-latest-weight")
+        }.accessibilityIdentifier("today-weight")
+    }
+    private var weightRecordButton: some View {
+        Button("Record Weight") { isAddingWeight = true }.buttonStyle(.borderless)
+            .frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("today-add-weight")
     }
 
     private var reviewSection: some View {
@@ -620,7 +637,7 @@ private struct TodayView: View {
             NavigationLink {
                 WeeklyReviewView()
             } label: {
-                Label("Weekly Review", systemImage: "text.book.closed")
+                ModuleEntryRow(title: String(localized: "Weekly Review"), systemImage: "text.book.closed")
             }
             .accessibilityIdentifier("today-weekly-review")
         } header: {

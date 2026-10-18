@@ -90,11 +90,10 @@ struct ImportantDayRow: View {
     let day: ImportantDay
     var today = ImportantCivilDay(Date())
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Label(day.title, systemImage: "calendar").lineLimit(2).fixedSize(horizontal: false, vertical: true)
-            if let rule = try? day.rule() { Text(rule.distanceDescription(today: today)).font(.subheadline).foregroundStyle(.secondary) }
-            if day.isArchived { Text("Archived").font(.caption).foregroundStyle(.secondary) }
-        }.accessibilityIdentifier("important-day-row-\(day.id)")
+        ModuleEntryRow(title: day.title,
+            subtitle: (try? day.rule()).map { $0.distanceDescription(today: today) },
+            systemImage: "calendar", value: day.isArchived ? String(localized: "Archived") : nil)
+            .accessibilityIdentifier("important-day-row-\(day.id)")
     }
 }
 

@@ -1,6 +1,438 @@
 {
   "sourceLanguage": "en",
   "strings": {
+"View Todo": {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "View Todo"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "查看待办"
+      }
+    }
+  }
+},
+  "Could not load growth counts": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Could not load growth counts"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无法读取成长统计"
+        }
+      }
+    }
+  },
+  "Small habits, day by day": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Small habits, day by day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录日常的小坚持"
+        }
+      }
+    }
+  },
+  "Make room for what matters": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Make room for what matters"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "让想做的事慢慢实现"
+        }
+      }
+    }
+  },
+  "Record weight, see the trend": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record weight, see the trend"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记录体重，看见趋势"
+        }
+      }
+    }
+  },
+  "Recall last night, understand your routine": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Recall last night, understand your routine"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记下昨夜，了解作息"
+        }
+      }
+    }
+  },
+  "Record effort, see it add up": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record effort, see it add up"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记下投入，看见积累"
+        }
+      }
+    }
+  },
+  "Remember anticipation and milestones": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Remember anticipation and milestones"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "记住期待与纪念"
+        }
+      }
+    }
+  },
+  "Look at all you've done": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Look at all you've done"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "原来我已经做了这么多"
+        }
+      }
+    }
+  },
+  "%lld active habits": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld active habits"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "进行中 %lld 个"
+        }
+      }
+    }
+  },
+  "%lld active goals": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld active goals"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "进行中 %lld 项"
+        }
+      }
+    }
+  },
+  "%lld recorded days": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld recorded days"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已记录 %lld 天"
+        }
+      }
+    }
+  },
+  "%lld recorded nights": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld recorded nights"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已记录 %lld 晚"
+        }
+      }
+    }
+  },
+  "%lld activities": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld activities"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld 项活动"
+        }
+      }
+    }
+  },
+  "%lld days": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld days"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld 个"
+        }
+      }
+    }
+  },
+  "Last night's sleep": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Last night's sleep"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "昨夜睡眠"
+        }
+      }
+    }
+  },
+  "How repeating reminders work": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "How repeating reminders work"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重复提醒如何安排"
+        }
+      }
+    }
+  },
+  "For example, a reminder the evening before stays the evening before each occurrence.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "For example, a reminder the evening before stays the evening before each occurrence."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "例如，前一天晚上的提醒，会在每一期的前一天晚上提醒。"
+        }
+      }
+    }
+  },
+  "Missed dates are skipped. Completing this occurrence creates the next future one.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Missed dates are skipped. Completing this occurrence creates the next future one."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "错过的日期不补建，完成本次后会创建下一个未来期次。"
+        }
+      }
+    }
+  },
+  "Collapse timer": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Collapse timer"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "收起计时"
+        }
+      }
+    }
+  },
+  "Keep paused": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Keep paused"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保持暂停并收起"
+        }
+      }
+    }
+  },
+  "Confirm later": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Confirm later"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "稍后确认"
+        }
+      }
+    }
+  },
+  "Keep draft": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Keep draft"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保留草稿"
+        }
+      }
+    }
+  },
+  "Includes start and end times": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Includes start and end times"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "含起止时间"
+        }
+      }
+    }
+  },
+  "Time details": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Time details"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "时间详情"
+        }
+      }
+    }
+  },
+  "%lld sec": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld sec"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld 秒"
+        }
+      }
+    }
+  },
+  "Total recorded: %@": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Total recorded: %@"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "累计 %@"
+        }
+      }
+    }
+  },
   "A continuous interval replaces all effective segments and may include paused time. Your original segments remain until you confirm.": {
     "localizations": {
       "en": {

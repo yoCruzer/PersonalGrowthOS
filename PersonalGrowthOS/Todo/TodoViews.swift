@@ -191,6 +191,7 @@ struct TodoEditorView: View {
     @State private var futureSeries = false
     @State private var error: String?
     @State private var savedNotice = false
+    @State private var selectingList = false
     private enum Field: Hashable { case title, notes }
     @FocusState private var focusedField: Field?
     var body: some View {
@@ -202,9 +203,8 @@ struct TodoEditorView: View {
                     TextField("Notes (optional)", text: $draft.notes, axis: .vertical)
                         .focused($focusedField, equals: .notes).accessibilityIdentifier("todo-notes")
                     Toggle("Important", isOn: $draft.isImportant).accessibilityIdentifier("todo-important")
-                    Picker("List", selection: $draft.listID) {
-                        Text("Unclassified").tag(nil as UUID?)
-                        ForEach(lists) { Text($0.name).tag(Optional($0.id)) }
+                    Button { focusedField = nil; selectingList = true } label: {
+                        LabeledContent("List", value: lists.first { $0.id == draft.listID }?.name ?? String(localized: "Unclassified"))
                     }.accessibilityIdentifier("todo-editor-list")
                 }
                 Section("Schedule") {
@@ -237,8 +237,11 @@ struct TodoEditorView: View {
                         Text("Choose a planned day or hard deadline for the first occurrence before saving.").foregroundStyle(.orange).accessibilityIdentifier("todo-repeat-needs-day")
                     }
                     if importantDayID == nil {
-                    Text("Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after.").font(.caption).foregroundStyle(.secondary)
-                    Text("Fixed calendar repeats use the original anchor. Missed dates are skipped; completion creates the first future occurrence.").font(.caption).foregroundStyle(.secondary)
+                    Text("Missed dates are skipped. Completing this occurrence creates the next future one.").font(.caption).foregroundStyle(.secondary)
+                    DisclosureGroup("How repeating reminders work") {
+                        Text("For example, a reminder the evening before stays the evening before each occurrence.").font(.caption)
+                        Text("Repeating reminders keep their calendar-day offset from the fixed anchor, using the planned day first, otherwise the deadline. The supported range is 366 days before or after.").font(.caption).foregroundStyle(.secondary)
+                    }
                     }
                 }
             }
@@ -277,6 +280,10 @@ struct TodoEditorView: View {
                     draft.notes = sourceEntry.body ?? ""
                 }
                 focusedField = .title
+            }
+            .sheet(isPresented: $selectingList) { TodoListSelectionView(selection: $draft.listID) }
+            .onChange(of: lists.map(\.id)) { _, ids in
+                if let selected = draft.listID, !ids.contains(selected) { draft.listID = nil }
             }
             .environment(\.calendar, WeeklyReviewCalendarPolicy.calendar())
         }
@@ -442,6 +449,69 @@ extension TodoEventKind {
     }
 }
 
+struct TodoListSelectionView: View {
+    @Binding var selection: UUID?
+    @Environment(\.dismiss) private var dismiss
+    @Query(sort: \TodoList.createdAt) private var lists: [TodoList]
+    @State private var creating = false
+    @State private var createdID: UUID?
+    @State private var managing = false
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Button("Unclassified") { selection = nil; dismiss() }.accessibilityIdentifier("todo-select-unclassified")
+                    ForEach(lists) { list in
+                        Button { selection = list.id; dismiss() } label: {
+                            HStack { Text(list.name); Spacer(); if selection == list.id { Image(systemName: "checkmark") } }
+                        }.accessibilityIdentifier("todo-select-list-\(list.id)")
+                    }
+                }
+                Section {
+                    Button("New List") { creating = true }.accessibilityIdentifier("todo-editor-new-list")
+                    Button("Manage Lists") { managing = true }.accessibilityIdentifier("todo-editor-manage-lists")
+                }
+            }.navigationTitle("List")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .sheet(isPresented: $creating, onDismiss: {
+                if createdID != nil { dismiss() }
+            }) {
+                TodoNewListView { id in selection = id; createdID = id; creating = false }
+            }
+            .sheet(isPresented: $managing) { TodoListsView() }
+            .onChange(of: lists.map(\.id)) { _, ids in
+                if let selection, !ids.contains(selection) { self.selection = nil }
+            }
+        }
+    }
+}
+
+private struct TodoNewListView: View {
+    let onCreated: (UUID) -> Void
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""
+    @State private var error: String?
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("List name", text: $name).accessibilityIdentifier("todo-new-list-name")
+                if let error { Text(error).foregroundStyle(.red) }
+            }.navigationTitle("New List")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Create List") {
+                        do { onCreated(try TodoTaskService(context: context).createList(name: name).id) }
+                        catch { self.error = error.localizedDescription }
+                    }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityIdentifier("todo-new-list-create")
+                }
+            }
+        }
+    }
+}
+
 struct TodoListsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
@@ -513,15 +583,28 @@ private struct TodoListRenameView: View {
 }
 
 
+struct TodoFeedbackMedia {
+    let mediaStore: MediaStore
+    let thumbnailStore: ThumbnailStore
+}
+extension EnvironmentValues {
+    @Entry var todoFeedbackMedia: TodoFeedbackMedia? = nil
+}
+
 /// Lives both in the editor (continuous input) and shell (after sheet dismissal).
 struct TodoReminderFeedbackView: View {
     @Environment(TodoReminderCoordinator.self) private var reminders
     @Environment(\.modelContext) private var context
     @Query private var tasks: [TodoTask]
+    @Environment(\.todoFeedbackMedia) private var media
+    @State private var showingTask = false
     var body: some View {
-        if let id = reminders.savedTaskID, let task = tasks.first(where: { $0.id == id }) {
+        if let id = reminders.savedTaskID ?? reminders.savedFactID, let task = tasks.first(where: { $0.id == id }) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Todo saved").font(.headline)
+                if let fire = task.remindAt {
+                    Text(fire, format: .dateTime.month().day().hour().minute()).font(.subheadline)
+                }
                 Text(reminders.status(for: task).label).accessibilityIdentifier("todo-saved-reminder-status")
                 HStack {
                     if reminders.status(for: task) == .denied {
@@ -529,13 +612,24 @@ struct TodoReminderFeedbackView: View {
                     } else if [.permissionRequired, .failed, .queueFull].contains(reminders.status(for: task)) {
                         Button("Retry Reminder") { Task { await reminders.reconcile(context: context, requestPermission: true) } }
                     }
+                    if media != nil {
+                        Button("View Todo") { showingTask = true }.accessibilityIdentifier("todo-feedback-view-task")
+                    }
                     Spacer()
-                    Button("Dismiss") { reminders.savedTaskID = nil }.frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("todo-reminder-feedback-dismiss")
+                    Button("Got it") { reminders.savedTaskID = nil; reminders.savedFactID = nil }.frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("todo-reminder-feedback-dismiss")
                 }.frame(minHeight: 44)
             }
             .padding().frame(maxWidth: .infinity, alignment: .leading).background(.bar)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("todo-saved-reminder-feedback")
+            .sheet(isPresented: $showingTask) {
+                if let media {
+                    NavigationStack {
+                        TodoDetailView(taskID: id, mediaStore: media.mediaStore, thumbnailStore: media.thumbnailStore)
+                            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showingTask = false } } }
+                    }
+                }
+            }
         }
     }
 }

@@ -97,13 +97,10 @@ struct SleepTodaySection: View {
         if showToday {
             Section {
                 Button { open(day) } label: {
-                    HStack {
-                        Image(systemName: "moon.zzz")
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(SleepFormatting.summary(workspace.records.first { $0.wakeDay == day }))
-                            Text("Wake day: \(day)").font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer(); Image(systemName: "chevron.right").font(.caption)
+                    HStack(spacing: 8) {
+                        ModuleEntryRow(title: String(localized: "Last night's sleep"),
+                            subtitle: SleepFormatting.summary(workspace.records.first { $0.wakeDay == day }), systemImage: "moon.zzz")
+                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary).accessibilityHidden(true)
                     }.frame(minHeight: 44).contentShape(Rectangle())
                 }.buttonStyle(.plain).accessibilityIdentifier("today-sleep")
                 if !introduced {

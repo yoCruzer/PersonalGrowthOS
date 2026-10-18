@@ -92,7 +92,9 @@ final class TodoReminderCoordinator {
     private var revisions: [UUID: Int] = [:]
     var savedImportantDayID: UUID?
     var savedTaskID: UUID?
+    var savedFactID: UUID?
     func reportSavedTask(_ task: TodoTask, affectedOpenSuccessor: TodoTask? = nil) {
+        savedFactID = task.id
         let candidate = task.state == .open ? task : affectedOpenSuccessor
         savedTaskID = candidate.flatMap {
             guard $0.state == .open, $0.remindAt != nil,
@@ -114,6 +116,7 @@ final class TodoReminderCoordinator {
     static func identifier(_ taskID: UUID) -> String { prefix + taskID.uuidString.lowercased() }
     func status(for task: TodoTask) -> TodoReminderStatus {
         guard task.state == .open, task.remindAt != nil else { return .none }
+        if let fire = task.remindAt, fire <= now() { return .elapsed }
         if reconciliationFailed { return .failed }
         return revisions[task.id] == task.revision ? statuses[task.id] ?? .checking : .checking
     }

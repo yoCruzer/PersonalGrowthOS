@@ -178,6 +178,13 @@ enum InvestmentFormatting {
         let total = Int(seconds.rounded(.down))
         return String(format:"%d:%02d:%02d",total / 3600,(total / 60) % 60,total % 60)
     }
+    static func accumulated(_ seconds: Double) -> String {
+        guard seconds.isFinite, seconds >= 0, seconds < Double(Int.max) else { return "—" }
+        if seconds < 1 && seconds > 0 { return String(localized: "Less than 1 second") }
+        let total = Int(seconds.rounded(.down))
+        if total < 60 { return String(localized: "\(total) sec") }
+        return String(localized: "\(total / 3600) h \((total / 60) % 60) min")
+    }
     static func state(_ state: InvestmentTimerState) -> String {
         switch state {
         case .running: String(localized:"Timer running")
@@ -192,7 +199,7 @@ enum InvestmentFormatting {
     }
     static func evidence(_ value: InvestmentEvidence) -> String {
         switch value {
-        case .intervals: String(localized:"Effective time intervals")
+        case .intervals: String(localized:"Includes start and end times")
         case .dateDuration: String(localized:"Date and duration only")
         case .correctedDuration: String(localized:"Corrected duration — no exact interval")
         }
@@ -205,7 +212,12 @@ struct InvestmentTodaySection: View {
         if !workspace.unfinished.isEmpty {
             Section {
                 NavigationLink { InvestmentHubView() } label: {
-                    Label("Unfinished time investment",systemImage:"timer")
+                    TimelineView(.periodic(from: .now, by: 1)) { _ in
+                        if let op = workspace.unfinished.first {
+                            ModuleEntryRow(title: workspace.name(op.activityID),
+                                subtitle: InvestmentFormatting.state(op.timer.projected(at: InvestmentClock.current()).state), systemImage: "timer")
+                        }
+                    }
                 }.accessibilityIdentifier("today-investment")
             }
         }
@@ -267,7 +279,7 @@ struct InvestmentHubView: View {
                                 .accessibilityLabel("Edit activity").accessibilityIdentifier("investment-edit-activity-\(activity.id)")
                         }
                         let total = (try? workspace.contributions().filter { $0.activityID == activity.id }.reduce(0) { $0 + $1.seconds }) ?? 0
-                        Text(InvestmentFormatting.duration(total)).monospacedDigit().accessibilityLabel("Total recorded investment")
+                        Text("Total recorded: \(InvestmentFormatting.accumulated(total))").monospacedDigit().accessibilityLabel("Total recorded investment")
                         if activity.isArchived { Text("Archived").font(.caption) }
                         else {
                             ViewThatFits(in:.horizontal) {
@@ -360,12 +372,24 @@ struct InvestmentTimerView: View {
             }
             if let error { Text(error).foregroundStyle(.red) }
         }.navigationTitle("Timer")
-        .toolbar { ToolbarItem(placement:.confirmationAction) { Button("Close") { dismiss() } } }
+        .toolbar { ToolbarItem(placement:.confirmationAction) {
+            TimelineView(.periodic(from: .now, by: 1)) { _ in
+                Button(closeLabel) { dismiss() }.accessibilityIdentifier("investment-collapse-timer")
+            }
+        } }
         .confirmationDialog("Discard this unfinished timer?",isPresented:$discard,titleVisibility:.visible) {
             Button("Discard timer",role:.destructive) { command(.discard); if error == nil { dismiss() } }
         }
         .sheet(item:$editor) { editor in NavigationStack { InvestmentEditorView(editor:editor) } }
         .task { workspace.checkpoint(context) }
+    }
+    private var closeLabel: String {
+        guard let state = op?.timer.projected(at: InvestmentClock.current()).state else { return String(localized: "Close") }
+        switch state {
+        case .running: return String(localized: "Collapse timer")
+        case .paused: return String(localized: "Keep paused")
+        default: return String(localized: "Confirm later")
+        }
     }
     private func command(_ action: InvestmentService.Command) {
         guard let op else { return }
@@ -426,7 +450,7 @@ struct InvestmentEditorView: View {
                         persist()
                     }
                 Text(InvestmentFormatting.evidence(editor.values.evidence)).font(.caption)
-                Text(editor.values.timeZoneID).font(.caption).foregroundStyle(.secondary)
+                DisclosureGroup("Time details") { Text(editor.values.timeZoneID).font(.caption).foregroundStyle(.secondary) }
                 DisclosureGroup("Optional exact interval") {
                     if editor.values.spans.count > 1 {
                         Text("This record contains separate effective segments. A continuous interval may include paused time.").font(.caption)
@@ -463,7 +487,7 @@ struct InvestmentEditorView: View {
             }
             Section {
                 Button("Save activity") { save(false) }.accessibilityIdentifier("investment-save")
-                Button(editor.timerConfirmation ? "Close and keep pending" : "Close and keep draft") { if persist(isClosing:true) {dismiss()} }
+                Button(editor.timerConfirmation ? "Confirm later" : "Keep draft") { if persist(isClosing:true) {dismiss()} }
                 if !editor.timerConfirmation { Button("Cancel draft",role:.destructive) { cancel = true } }
             }
         }.navigationTitle(editor.timerConfirmation ? "Confirm time investment" : "Record activity")
@@ -618,7 +642,8 @@ struct InvestmentSessionDetailView: View {
                 Section {
                     Text(workspace.name(session.activityID)).font(.title2)
                     Text(session.values.day); Text(InvestmentFormatting.duration(session.values.seconds)).monospacedDigit()
-                    Text(InvestmentFormatting.evidence(session.values.evidence)); Text(session.values.timeZoneID).font(.caption)
+                    Text(InvestmentFormatting.evidence(session.values.evidence))
+                    DisclosureGroup("Time details") { Text(session.values.timeZoneID).font(.caption) }
                     Text(session.values.source == .timer ? "Recorded with timer" : "Manually recorded").font(.caption)
                     if session.values.corrected { Text("Time evidence was explicitly corrected").font(.caption) }
                     if session.values.day > ImportantCivilDay(Date(),timeZone:TimeZone(identifier:session.values.timeZoneID)!).identifier {

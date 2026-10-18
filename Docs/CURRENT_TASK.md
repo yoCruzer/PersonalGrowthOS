@@ -1,3 +1,17 @@
+# 使用反馈统一整改 — IN_PROGRESS（2026-10-18）
+
+已按固定 BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24` / GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73` 核验祖先与七 Markdown 增量，从 GOAL_SHA 建立独立 `/private/tmp/PersonalGrowthOS-usage-remediation-20261017` / `codex/usage-remediation-20261017`。原工作区三项未知 dirty 与旧 PR #1–#12 保持；#12 head 仍 BASE。新 PR base 固定 codex/time-investment-v1，尚未创建。
+
+A 阶段在实现：Today/Growth 共用文字列与图标、准确带单位的只读统计、清单选择中新建/管理、保存事实与提醒状态反馈、时间投入投影状态与收起/保留草稿/稍后确认文案。没有改变时钟/计时保存事务或历史模型。11 项受影响 Unit PASS。首轮四项原生 UI 为 3 PASS / 1 FAIL：权限拒绝保存反馈、R2 失败重试冷启动和中文 Dark 最大 AX 的 R3 保留/抓手取消/明确替换通过；清单 UI 首两次在标题存在检查失败；增加导航检查和现场截图后确认已经返回但标题在滚动区域外，正常滚动保留全部断言后 ui-a3 **1/1 PASS**，新建/取消/改名/删除/未分类/保存重开成立。关闭两层页采用 onDismiss 顺序实现。原失败与 3 条 Invalid frame warning 保留，尚未归因清理。
+
+**整体 Goal 未完成，不是 READY 或阶段停点。** A1 内部检查点已可编译并有受影响通过证据，非整体/阶段全量通过；继续 A 剩余动作、B 回顾/体重/BMI/有界历史、C 星期重复/真实 AlarmKit/独立本次提醒覆盖，以及 D 集中验证/独立只读审查/普通 push/唯一新 Draft PR。长期过期的重复提醒须以最小追加持久意图解决，不能删除 ±366 校验或改写系列锚点。必要字段一次联合评估 V14/v10 后追加模型/备份，真实升级、快照/空库恢复/回滚一起完成。
+
+实际命令与影响矩阵见 [本轮执行记录](USAGE_REMEDIATION_20261017_EXECUTION.md)，[独立审查](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)仍 NOT_RUN。证据根 `/tmp/pgos-usage-remediation-evidence`；本轮专用 iPhone 18 Pro 模拟器 `42609456-859D-41F8-8977-4B2D85A74082` / iOS27.0，Xcode27.1。设备 D1–D4 全 NOT_RUN，不操作真实手机/私人库，不 merge/force/tag/Archive/TestFlight。历史 FAIL/SKIP/NOT_RUN 不改标。
+
+以下为原规划与历史交接，保留原文；当前执行以上方为准。
+
+---
+
 # 当前任务 — 使用反馈统一整改 Goal（2026-10-18）
 
 状态：**READY_FOR_CODEX_EXECUTION（规格准备完成，尚未实现）**。

@@ -5,6 +5,41 @@ import UIKit
 
 @MainActor
 final class AppCompositionTests: XCTestCase {
+    func testGrowthCountsAreReadOnlyAndMatchActiveDaysAndParticipantScopes() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
+        context.autosaveEnabled = false
+        let before = try TransferSnapshot.make(context: ModelContext(container))
+        let empty = try GrowthEntryCounts(context: context)
+        XCTAssertEqual(empty.habits + empty.goals + empty.weightDays + empty.sleepNights + empty.activities + empty.importantDays, 0)
+        XCTAssertEqual(try TransferSnapshot.make(context: ModelContext(container)), before)
+        XCTAssertFalse(context.hasChanges)
+        let now = Date(timeIntervalSince1970: 1792238400), zone = TimeZone(secondsFromGMT: 0)!
+        context.insert(Habit(name: "Active", normalizedName: "active", createdAt: now))
+        context.insert(Habit(name: "Paused", normalizedName: "paused", status: .paused, createdAt: now))
+        context.insert(Goal(title: "Active", normalizedTitle: "active", createdAt: now))
+        context.insert(Goal(title: "Archived", normalizedTitle: "archived", status: .archived, createdAt: now))
+        for offset in [-1800.0, -1200, -86400, 86400] {
+            context.insert(WeightRecord(weightKilograms: 70, recordedAt: now.addingTimeInterval(offset), createdAt: now))
+        }
+        let me = InvestmentParticipant(isDefault: true), other = InvestmentParticipant(name: "Other")
+        context.insert(me); context.insert(other)
+        let active = InvestmentActivity(participantID: me.id, name: "Reading")
+        let archived = InvestmentActivity(participantID: me.id, name: "Archived"); archived.isArchived = true
+        context.insert(active); context.insert(archived)
+        context.insert(InvestmentActivity(participantID: other.id, name: "Other"))
+        context.insert(try SleepRecord(wakeDay: "2026-10-17", timeZoneID: "Asia/Shanghai", values: .init(note: "Synthetic"), createdAt: now))
+        let day = try ImportantDay(title: "Visible", rule: .init(preset: .anniversary, calendar: .gregorian, year: 2020, month: 1, day: 1))
+        let hidden = try ImportantDay(title: "Archived", rule: .init(preset: .anniversary, calendar: .gregorian, year: 2020, month: 1, day: 1)); hidden.isArchived = true
+        context.insert(day); context.insert(hidden); try context.save()
+        let counts = try GrowthEntryCounts(context: context, now: now, zone: zone)
+        XCTAssertEqual(counts.habits, 1); XCTAssertEqual(counts.goals, 1)
+        XCTAssertEqual(counts.weightDays, 2); XCTAssertEqual(counts.sleepNights, 1)
+        XCTAssertEqual(counts.activities, 1); XCTAssertEqual(counts.importantDays, 1)
+        let snapshot = try TransferSnapshot.make(context: ModelContext(container))
+        _ = try GrowthEntryCounts(context: context, now: now, zone: zone)
+        XCTAssertEqual(try TransferSnapshot.make(context: ModelContext(container)), snapshot)
+    }
+
     func testPhotoInputReverseCompletionCameraAndSaveKeepOwnedBytes() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)

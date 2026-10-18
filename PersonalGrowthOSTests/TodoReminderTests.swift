@@ -38,6 +38,21 @@ final class TodoNotificationStub: TodoNotificationClient {
 
 @MainActor
 final class TodoReminderTests: XCTestCase {
+    func testReminderStatusReevaluatesElapsedTimeWithoutReconciliationOrQueueMutation() async throws {
+        let container = try PersistenceContainerFactory.makeInMemory()
+        var now = Date()
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { now })
+        let task = try TodoTaskService(context: container.mainContext).create(.init(title: "Parked screen", remindAt: now.addingTimeInterval(60)))
+        await coordinator.reconcile(context: container.mainContext)
+        XCTAssertEqual(coordinator.status(for: task), .scheduled)
+        let pending = client.pending
+        now.addTimeInterval(61)
+        XCTAssertEqual(coordinator.status(for: task), .elapsed)
+        XCTAssertEqual(client.pending, pending)
+        try TodoTaskService(context: container.mainContext).transition(id: task.id, to: .completed)
+        XCTAssertEqual(coordinator.status(for: task), .none)
+    }
+
     func testCreateReplaceCompleteReopenCancelDeleteAndNoOtherCategoryRemoval() async throws {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let service = TodoTaskService(context: context)

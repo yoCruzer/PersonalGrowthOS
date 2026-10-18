@@ -6,83 +6,89 @@ struct GrowthView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
 
-    @Query private var habits: [Habit]
-    @Query private var goals: [Goal]
-    @Query private var weightRecords: [WeightRecord]
+    @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var phase
+    @State private var counts: GrowthEntryCounts?
+    @State private var loadFailed = false
 
     var body: some View {
         List {
-            NavigationLink {
-                HabitsView(
-                    mediaStore: mediaStore,
-                    thumbnailStore: thumbnailStore
-                )
-            } label: {
-                HStack {
-                    Label("Habits", systemImage: "repeat")
-                        .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
-                    Spacer()
-                    Text("\(habits.count)")
+            if loadFailed {
+                Section {
+                    Text("Could not load growth counts").foregroundStyle(.secondary)
+                    Button("Retry") { refreshCounts() }
                 }
             }
-            .accessibilityIdentifier("growth-habits")
             NavigationLink {
-                GoalsView(
-                    mediaStore: mediaStore,
-                    thumbnailStore: thumbnailStore
-                )
+                HabitsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                HStack {
-                    Label("Goals and Flags", systemImage: "target")
-                        .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
-                    Spacer()
-                    Text("\(goals.count)")
-                }
-            }
-            .accessibilityIdentifier("growth-goals")
+                ModuleEntryRow(title: String(localized: "Habits"), subtitle: String(localized: "Small habits, day by day"),
+                    systemImage: "repeat", value: counts.map { String(localized: "\($0.habits) active habits") })
+            }.accessibilityIdentifier("growth-habits")
             NavigationLink {
-                WeightHistoryView()
+                GoalsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                HStack {
-                    Label("Weight", systemImage: "scalemass")
-                        .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
-                    Spacer()
-                    Text("\(weightRecords.count)")
-                }
-            }
-            .accessibilityIdentifier("growth-weight")
-            NavigationLink { InvestmentHubView() } label: { Label("Time investment", systemImage: "timer") }
-            .accessibilityIdentifier("growth-investment")
+                ModuleEntryRow(title: String(localized: "Goals and Flags"), subtitle: String(localized: "Make room for what matters"),
+                    systemImage: "target", value: counts.map { String(localized: "\($0.goals) active goals") })
+            }.accessibilityIdentifier("growth-goals")
+            NavigationLink { WeightHistoryView() } label: {
+                ModuleEntryRow(title: String(localized: "Weight"), subtitle: String(localized: "Record weight, see the trend"),
+                    systemImage: "scalemass", value: counts.map { String(localized: "\($0.weightDays) recorded days") })
+            }.accessibilityIdentifier("growth-weight")
             NavigationLink {
                 SleepHubView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
-            } label: { Label("Sleep and Routine", systemImage: "moon.zzz") }
-            .accessibilityIdentifier("growth-sleep")
+            } label: {
+                ModuleEntryRow(title: String(localized: "Sleep and Routine"), subtitle: String(localized: "Recall last night, understand your routine"),
+                    systemImage: "moon.zzz", value: counts.map { String(localized: "\($0.sleepNights) recorded nights") })
+            }.accessibilityIdentifier("growth-sleep")
+            NavigationLink { InvestmentHubView() } label: {
+                ModuleEntryRow(title: String(localized: "Time investment"), subtitle: String(localized: "Record effort, see it add up"),
+                    systemImage: "timer", value: counts.map { String(localized: "\($0.activities) activities") })
+            }.accessibilityIdentifier("growth-investment")
             NavigationLink {
                 ImportantDaysView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Label("Important Days", systemImage: "calendar")
-                    Text("Remember days worth anticipating and revisiting").font(.subheadline).foregroundStyle(.secondary)
-                }
+                ModuleEntryRow(title: String(localized: "Important Days"), subtitle: String(localized: "Remember anticipation and milestones"),
+                    systemImage: "calendar", value: counts.map { String(localized: "\($0.importantDays) days") })
             }.accessibilityIdentifier("growth-important-days")
             NavigationLink {
                 QuietWinsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Label("Quiet Wins", systemImage: "leaf")
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text("Look back on things you've done")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .accessibilityIdentifier("growth-quiet-wins")
+                ModuleEntryRow(title: String(localized: "Quiet Wins"), subtitle: String(localized: "Look at all you've done"), systemImage: "leaf")
+            }.accessibilityIdentifier("growth-quiet-wins")
         }
-        .navigationTitle("Growth")
-        .accessibilityIdentifier("growth-view")
+        .navigationTitle("Growth").accessibilityIdentifier("growth-view")
+        .onAppear { refreshCounts() }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in refreshCounts() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refreshCounts() }
+        .onChange(of: phase) { _, value in if value == .active { refreshCounts() } }
+    }
+
+    private func refreshCounts() {
+        do { counts = try GrowthEntryCounts(context: context); loadFailed = false }
+        catch { counts = nil; loadFailed = true }
+    }
+}
+
+/// Read-only entry statistics. No workspace bootstrap or default settings writes.
+struct GrowthEntryCounts {
+    var habits: Int
+    var goals: Int
+    var weightDays: Int
+    var sleepNights: Int
+    var activities: Int
+    var importantDays: Int
+    init(context: ModelContext, now: Date = Date(), zone: TimeZone = .current) throws {
+        let read = ModelContext(context.container)
+        habits = try read.fetchCount(FetchDescriptor<Habit>(predicate: #Predicate { $0.statusRawValue == "active" }))
+        goals = try read.fetchCount(FetchDescriptor<Goal>(predicate: #Predicate { $0.statusRawValue == "active" }))
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
+        weightDays = Set(try read.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.recordedAt <= now }))
+            .map { calendar.startOfDay(for: $0.recordedAt) }).count
+        sleepNights = Set(try read.fetch(FetchDescriptor<SleepRecord>()).map(\.wakeDay)).count
+        let me = try read.fetch(FetchDescriptor<InvestmentParticipant>()).first(where: \.isDefault)?.id
+        activities = try read.fetch(FetchDescriptor<InvestmentActivity>()).filter { $0.participantID == me && !$0.isArchived }.count
+        importantDays = try read.fetchCount(FetchDescriptor<ImportantDay>(predicate: #Predicate { !$0.isArchived }))
     }
 }
 
@@ -108,20 +114,25 @@ struct RepeatableHabitCounter: View {
     let progress: HabitTodayProgress
     let accessibilityIdentifierPrefix: String
     var showsHabitName = true
+    @Environment(\.dynamicTypeSize) private var typeSize
     let decrease: () -> Void
     let increase: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
-            if showsHabitName {
-                Text(habitName)
-                    .lineLimit(2)
-                    .layoutPriority(1)
+        Group {
+            if typeSize.isAccessibilitySize && showsHabitName {
+                VStack(alignment: .leading, spacing: 4) {
+                    ModuleEntryRow(title: habitName, systemImage: "repeat")
+                    HStack { Spacer(); controls }
+                }
+            } else {
+                HStack(spacing: 8) {
+                    if showsHabitName { ModuleEntryRow(title: habitName, systemImage: "repeat") }
+                    Spacer(minLength: 4)
+                    controls
+                }
             }
-            Spacer(minLength: 4)
-            controls
-        }
-        .frame(minHeight: 52)
+        }.frame(minHeight: 44)
     }
 
     private var controls: some View {

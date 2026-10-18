@@ -3,6 +3,68 @@ import Network
 import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testUsageEditorListCreationManagementAndCancellationPreserveDraft() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSTodoReminderDeniedTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch(); app.buttons["today-todo-add"].tap()
+        let title = app.descendants(matching: .any)["todo-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5)); title.typeText("Synthetic complete draft")
+        let notes = app.descendants(matching: .any)["todo-notes"]
+        notes.tap(); notes.typeText("Keep these notes")
+        app.buttons["todo-dismiss-keyboard"].tap()
+        app.switches["todo-important"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        app.switches["todo-planned-toggle"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        app.switches["todo-reminder-toggle"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        for _ in 0..<4 where !app.buttons["todo-repeat"].isHittable { app.swipeUp() }
+        app.buttons["todo-repeat"].tap(); app.buttons["Every Week"].tap()
+        func openLists() {
+            for _ in 0..<5 where !app.buttons["todo-editor-list"].isHittable { app.swipeDown() }
+            app.buttons["todo-editor-list"].tap()
+            XCTAssertTrue(app.buttons["todo-editor-new-list"].waitForExistence(timeout: 5))
+        }
+        openLists(); app.buttons["todo-editor-new-list"].tap()
+        XCTAssertTrue(app.textFields["todo-new-list-name"].waitForExistence(timeout: 5))
+        app.navigationBars["New List"].buttons["Cancel"].tap()
+        XCTAssertTrue(app.buttons["todo-editor-new-list"].waitForExistence(timeout: 5))
+        app.buttons["todo-editor-new-list"].tap()
+        let name = app.textFields["todo-new-list-name"]; XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap(); name.typeText("Synthetic list"); app.buttons["todo-new-list-create"].tap()
+        let returned = app.navigationBars["Add Todo"].waitForExistence(timeout: 5)
+        let returnedShot = XCTAttachment(screenshot: app.screenshot()); returnedShot.name = "Usage-new-list-return-state"; returnedShot.lifetime = .keepAlways; add(returnedShot)
+        XCTAssertTrue(returned, app.debugDescription)
+        for _ in 0..<5 where !title.exists { app.swipeDown() }
+        XCTAssertTrue(title.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["todo-editor-list"].label.contains("Synthetic list"))
+        XCTAssertEqual(title.value as? String, "Synthetic complete draft"); XCTAssertEqual(notes.value as? String, "Keep these notes")
+        openLists(); app.buttons["todo-editor-manage-lists"].tap()
+        let rename = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "todo-list-rename-")).firstMatch
+        XCTAssertTrue(rename.waitForExistence(timeout: 5)); rename.tap()
+        let renamed = app.textFields["todo-list-rename-name"]; XCTAssertTrue(renamed.waitForExistence(timeout: 5))
+        renamed.tap(); renamed.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 14) + "Renamed")
+        app.buttons["todo-list-rename-save"].tap()
+        XCTAssertTrue(app.staticTexts["Renamed"].waitForExistence(timeout: 5))
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "todo-list-delete-")).firstMatch.tap()
+        app.alerts["Delete List?"].buttons["Delete"].tap()
+        app.navigationBars["Manage Lists"].buttons["Done"].tap()
+        app.navigationBars["List"].buttons["Cancel"].tap()
+        XCTAssertTrue(app.navigationBars["Add Todo"].waitForExistence(timeout: 5), app.debugDescription)
+        for _ in 0..<5 where !title.exists { app.swipeDown() }
+        XCTAssertTrue(title.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["todo-editor-list"].label.contains("Unclassified"))
+        XCTAssertEqual(title.value as? String, "Synthetic complete draft"); XCTAssertEqual(notes.value as? String, "Keep these notes")
+        XCTAssertEqual(app.switches["todo-important"].value as? String, "1")
+        XCTAssertEqual(app.switches["todo-planned-toggle"].value as? String, "1")
+        XCTAssertEqual(app.switches["todo-reminder-toggle"].value as? String, "1")
+        app.buttons["todo-save"].tap()
+        XCTAssertTrue(app.staticTexts["Todo saved"].waitForExistence(timeout: 5))
+        app.buttons["todo-feedback-view-task"].tap()
+        XCTAssertTrue(app.staticTexts["Keep these notes"].waitForExistence(timeout: 5))
+        app.buttons["todo-edit"].tap()
+        XCTAssertTrue(title.waitForExistence(timeout: 5)); XCTAssertEqual(title.value as? String, "Synthetic complete draft")
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "Usage-list-draft-preserved-and-saved"; shot.lifetime = .keepAlways; add(shot)
+    }
+
     func testStartupDiagnosticCopiesAndSafeRetryPreservesExistingEntry() {
         continueAfterFailure = false
         let app = XCUIApplication()
