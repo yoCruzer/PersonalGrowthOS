@@ -154,3 +154,7 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 
 基于时间投入 V1 最终交接 5a70f0110b151f8a45ac7c33d3f443823b1cff24，统一处理使用反馈 20261017 九项与时间投入同类展示问题。执行规格：[USAGE_REMEDIATION_20261017_GOAL_ZH.md](USAGE_REMEDIATION_20261017_GOAL_ZH.md) / [DESIGN](USAGE_REMEDIATION_20261017_DESIGN_ZH.md) / [ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)，均为同一固定提交的 1.0。阶段属于一个连续执行目标，现仅规格准备；不表示实现、独立实现 review 或设备门禁通过。范围增量见 V1_SCOPE，本轮进展以 CURRENT 两份文件与新验收记录为准，旧历史原样保留。
 
+
+## PR #13 独立复核后的本地修复 — 2026-10-18
+
+[PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md)：基于已审交付 f1b52b58fd11c41f508ec665d583827879ffa202，连续修复新 F1–F5 并落实 UX1 / UX2，沿用既有 PR #13 与原 base。新 FIX_GOAL_SHA 由引导 prompt 固定。当前仅规格准备，执行 / 验证均待完成；本地执行停点由新 Goal 和 CURRENT 最新章节替代，旧 A–D / R1–R8 证据及设备 / 发行边界保留。

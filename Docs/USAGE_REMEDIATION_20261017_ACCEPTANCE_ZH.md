@@ -1,3 +1,6 @@
+> **2026-10-18 当前增量：本地修复 F1–F5 / UX1–UX2 待执行。** 原 A–D 验收与失败轮次保留为历史，当前新问题及验收基线见本文件末尾“独立复核后的修复验收”。按 [PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md) 执行；这次规格准备没有产生产品修复、构建或原生测试 PASS。完成新目标的全部本地要求后才可再次停在 READY_FOR_OWNER_DEVICE_GATE。
+
+---
 # 随心log · 使用反馈整改验收与交付矩阵
 
 - 规格版本：1.0；2026-10-18。
@@ -210,3 +213,25 @@ N3–N6生命周期及共享额度 affected-c11 **31PASS**；后续DST/旧修订
 ### 实际交付身份
 
 已普通push `codex/usage-remediation-20261017`，唯一新[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base=`codex/time-investment-v1`，baseRefOid仍固定BASE。最终产品/测试/实包/独立审查SHA仍`9601ff211fbdafc954e32f9e25206a38479e972b`，后续仅本轮五份Markdown交付记录；交付SHA以PR当前head和证据`final-delivery-proof.json`为准，避免自引用SHA。旧PR #1–#12及原工作区三项未知dirty保持；没有merge/force/tag/Archive/TestFlight。独立远端CI未执行（workflows=0、statusCheckRollup=[]），不能将空检查当通过。停在本轮边界，下一步仅Owner另行授权D1–D4。
+
+
+## 2026-10-18 独立复核后的修复验收 — 全部待执行
+
+输入：已审交付 `f1b52b58fd11c41f508ec665d583827879ffa202` / 产品 `9601ff211fbdafc954e32f9e25206a38479e972b`；新 FIX_GOAL_SHA 由 Owner 引导 prompt 固定。权威执行要求：[PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md)。本节 NOT_RUN 只指新修复批次，不抹去原 A–D 的实际历史结果。
+
+| 验收 ID | 必须验证的实际结果 | 初始状态 |
+| --- | --- | --- |
+| RF-F1 | 撤回后继→再次完成→两渠道各一个有效新代次；反复对账幂等，取消失败仍挡住冲突后继 | OPEN / NOT_RUN |
+| RF-F2 | 真实旧 nil 单一期次的单次改期不改系列偏移；完成 / 跳过、>366 天、原子失败、落盘及旧备份恢复 | OPEN / NOT_RUN |
+| RF-F3 | 已接受较晚 Todo 可以被更早 / 其他类别候选置换，等待项在位置释放后恢复；保留项与取消不确定占用正确 | OPEN / NOT_RUN |
+| RF-F4 | A 第二页晚于 B 返回也不能污染 B；返回 A 正确；更多 / 重试 / 刷新均受当前 query 校验 | OPEN / NOT_RUN |
+| RF-F5 | 10,000 条落盘数据的真实草稿保存→事件→workspace 链无额外 UI 全历史扫描；20 条按页 / 单 ID 详情、失效、错误 / 草稿恢复 | OPEN / NOT_RUN |
+| RF-UX1 | 最近 7 / 30 天选择窗外日自动全部累计，保留日期 / 月份 / 活动，数值为选中日 | 决策已确定 / NOT_RUN |
+| RF-UX2 | 主页面最近 5 条不超过 cutoff 且不误加趋势下界；独立全部记录可查较晚记录 | 决策已确定 / NOT_RUN |
+| RF-REGRESSION | 一轮集中受影响 Unit 与关键 UI，提醒取消 / 恢复、时间投入历史 R1–R3、混合 Today / Record 草稿保护 | NOT_RUN |
+| RF-BUILD | 最终干净产品 SHA 的 Debug、unsigned Release；App / Share / Widget 实包身份、provenance / minOS / 弱链接 | NOT_RUN |
+| RF-REVIEW | 未编写本轮修复的独立 reviewer 检查固定候选、生产路径、回归与原始证据；确认问题闭环 | NOT_RUN |
+
+执行后逐项追加实际命令、候选 SHA、逐轮 PASS / FAIL / SKIP / NOT_RUN 与证据引用；不以旧 9601 实包或原 R1–R8 报告直接满足新候选要求，不将多轮通过数拼成单轮全绿。文档交付提交与产品提交分开记录。
+
+这次已授权的本地修复替代上方旧的“下一步仅 Owner D1–D4”停点。AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、D1–D4 与远端 CI NOT_RUN 持续保留。新本地要求关闭后仍需 Owner 后续设备授权；没有签名安装、私人库、merge、force push、tag、Archive 或 TestFlight 授权。

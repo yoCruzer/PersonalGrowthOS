@@ -1,3 +1,21 @@
+# 当前任务 — PR #13 独立复核后的本地修复（2026-10-18）
+
+**有效目标：[PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md)。状态 FIX_GOAL_READY / LOCAL_REVIEW_FIX_REQUIRED；此刻只准备了规格，新修复与本轮原生验证均尚未执行。**
+
+Owner 已批准从现有 PR #13 的整改产品继续，处理 F1–F5 和 UX1 / UX2，再完成本地验收与独立复核；不需在各阶段重新请求继续。引导 prompt 提供固定 FIX_GOAL_SHA。已审交付 f1b52b58fd11c41f508ec665d583827879ffa202；已审产品 / 原实包 9601ff211fbdafc954e32f9e25206a38479e972b；原 BASE 与 GOAL_SHA 仅作历史参照，不能从其重建而丢掉 A–D 产品。
+
+1. 按 AGENTS 开工，核对原工作树、未知改动、PR head/base 及固定规格祖先关系；安全 fast-forward / 续接 `codex/usage-remediation-20261017`。保留后来有效提交，不创建重复 PR。
+2. RF-A：F1 后继撤回再启用的提醒换代；F2 真旧 nil 系列偏移与单次改期隔离；F3 已接受普通通知参与共享队列重排。联测取消确认与旧请求占用。
+3. RF-B：F4 所有体重分页请求归属当前查询，旧结果不得回写；UX2 主页面最近记录遵守 cutoff，独立全部记录仍可管理全历史。
+4. RF-C：F5 消除草稿通知引起的 UI 全历史读取 / 解码，轻量统计与真实 20 条详情分页、按 ID 详情、失效与错误状态；UX1 窗口外选日自动全部累计且保留日期 / 月份 / 活动。
+5. RF-D：有区分力的定向回归后，一轮集中受影响 Unit / 关键 UI；在最终干净产品提交完成 Debug 和 unsigned Release 及实包核对；独立只读 reviewer 检查同候选代码与原始证据，修复后闭环。
+6. 更新 CURRENT / REVIEW / ACCEPTANCE 的实际结果，普通提交并 push 原分支，PR #13 保持 Draft 与原 base。产品 SHA 与仅文档交付 SHA 分开记录。全部本地要求有效关闭后才恢复 READY_FOR_OWNER_DEVICE_GATE，否则如实保留 FIXES_IN_PROGRESS / REVIEW_BLOCKED / VALIDATION_BLOCKED。
+
+本任务替代下方历史“下一步仅 Owner D1–D4”的本地执行停点；不授权设备门或发行。原 FAIL / SKIP / NOT_RUN 继续显示；不以 fake、空 CI 或旧轮次结果冒充本候选完整通过。具体兼容性、时间投入 R1–R3、计时、草稿与取消保护以固定新 Goal 为准。
+
+下面保留前次任务交接原文作为历史。
+
+---
 # 使用反馈统一整改 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
 
 固定BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24`、GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73`；最终产品/测试与实包 `9601ff211fbdafc954e32f9e25206a38479e972b`。A/B/C实现及本地可执行D门、普通push和唯一新[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)已完成，base=codex/time-investment-v1。完整原生/签名/真机/CI验收没有全部通过；READY仅表示本次授权的本地实现/审查/交付批次完成并停在Owner设备门，不把这些限制改成PASS。

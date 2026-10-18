@@ -1,3 +1,18 @@
+# 使用反馈统一整改 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-18）
+
+**当前有效状态：FIX_GOAL_READY，等待 Codex 连续执行本地修复。产品尚未因本规格准备而改变。**
+
+Owner 在独立复核后批准继续处理新发现 F1–F5 及日期交互 UX1 / UX2。执行规格：[PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md)；从引导 prompt 指定的完整 FIX_GOAL_SHA 读取。沿用 OPEN Draft PR #13、分支 `codex/usage-remediation-20261017` 和 base `codex/time-investment-v1`。
+
+- 已独立复核交付：`f1b52b58fd11c41f508ec665d583827879ffa202`；对应产品 / 测试 / 原实包：`9601ff211fbdafc954e32f9e25206a38479e972b`。本次文档提交不代表新产品构建。
+- 新发现 F1–F4 为需修复的行为问题，F5 为原 T7 仍未完成的历史读取与详情分页要求，均 OPEN / 本轮执行 NOT_RUN。UX1 自动切换全部累计以查看期间外日期；UX2 体重主页面最近记录遵守截止快照，均已确定交互、待实现验收。
+- 下方历史 READY_FOR_OWNER_DEVICE_GATE 及“无当前已确认 P0/P1/P2”的结论已被本次新发现更新；旧 R1–R8 闭环与原始运行结果继续保留，不能用于关闭新 F1–F5。
+- 本地修复、必要测试、独立复核、普通 push 与交接属于一个已授权批次；完成目标要求后才恢复 READY_FOR_OWNER_DEVICE_GATE。仅准备文档时不得标记修复或测试通过。
+- D1–D4 仍未授权执行；原 AlarmKit 正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 继续保留。不包含私人设备 / 私人库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+详细新发现与验收基线同时记录在现有 REVIEW / ACCEPTANCE 的 2026-10-18 追加章节。下面保留前次交接原文作为历史。
+
+---
 # 使用反馈统一整改 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
 
 固定BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24`、GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73`；最终产品/测试与实包 `9601ff211fbdafc954e32f9e25206a38479e972b`。A/B/C实现及本地可执行D门、普通push和唯一新[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)已完成，base=codex/time-investment-v1。完整原生/签名/真机/CI验收没有全部通过；READY仅表示本次授权的本地实现/审查/交付批次完成并停在Owner设备门，不把这些限制改成PASS。
