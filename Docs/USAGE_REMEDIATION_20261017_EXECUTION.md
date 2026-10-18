@@ -229,3 +229,8 @@ Apple原生行为依据：[requestAuthorization](https://developer.apple.com/doc
 `final-debug4`在新反例误用不存在的durationOnly枚举编译FAIL；改用现有dateDuration，失败保留，下一干净构建final-debug5。
 
 `final-debug5`继续指出新测试fixture的抛错初始化缺try，编译FAIL；仅补try，下一轮final-debug6，产品无新变化。
+
+
+`final-debug6` clean`1bfceef60b5849b3004f5b96854cbdb8e7d230a7` PASS；`affected-d7`完整InvestmentFoundationTests **31PASS0FAIL0SKIP / exit0、runtimeWarnings=[]**，含R7两个范围和既有F1保护。Debug实际三包proof=`debug-bundle-proof-1bfceef.json`，完整clean SHA/localGit/Tag空、1.0(7)/min17；额外hash真正debug/preview实现库，不只相同stub可执行文件。`debug-implementation-mach-o-1bfceef.txt`直接核对真实App.debug.dylib的AlarmKit LC_LOAD_WEAK_DYLIB/min17。
+
+`ui-d6`Public再次到原生App Group错误，扩展内粘贴诊断的编辑菜单也不可触达，原FAIL保留；该临时探查逻辑已移除，恢复50e9原严格分享成功测试，不加环境跳过、不改变生产共享/签名边界。原始失败ui-d5/ui-d6及主动复制后通过simctl取得的真实报告保留；签名分享正向仍NOT_RUN，不重复在已确认的unsigned环境探查。其余五项收口UI继续运行。最终test-only回归恢复与1bfceef产品源码相同证明另留。

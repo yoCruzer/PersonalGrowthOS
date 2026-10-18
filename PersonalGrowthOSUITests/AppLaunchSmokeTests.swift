@@ -2201,7 +2201,7 @@ extension AppLaunchSmokeTests {
         XCTAssertEqual(app.staticTexts.matching(identifier: "Public host fixture quote").count, 1)
     }
 
-    func testPublicMixedProviderHostShowsExtensionAndImports() throws {
+    func testPublicMixedProviderHostShowsExtensionAndImports() {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -2219,32 +2219,8 @@ extension AppLaunchSmokeTests {
         let editor = host.textViews["share-text"]
         XCTAssertTrue(editor.waitForExistence(timeout: 10), host.debugDescription)
         let readable = NSPredicate(format: "value == %@", "Public host fixture quote")
-        let content = XCTNSPredicateExpectation(predicate: readable, object: editor)
-        if XCTWaiter.wait(for: [content], timeout: 10) != .completed {
-            let tree = XCTAttachment(string: host.debugDescription)
-            tree.name = "Public provider failure hierarchy"; tree.lifetime = .keepAlways; add(tree)
-            let shot = XCTAttachment(screenshot: host.screenshot())
-            shot.name = "Public provider failure"; shot.lifetime = .keepAlways; add(shot)
-            let copy = host.buttons.matching(NSPredicate(format: "label == 'Copy Diagnostic Report' OR label == '复制诊断报告'")).firstMatch
-            XCTAssertTrue(copy.exists, host.debugDescription)
-            copy.tap()
-            // Paste inside the extension that copied this synthetic report. The runner
-            // has no authorization to read another process's clipboard directly.
-            editor.tap()
-            editor.press(forDuration: 1.1)
-            let paste = host.menuItems.matching(NSPredicate(format: "label == 'Paste' OR label == '粘贴'")).firstMatch
-            let pasteButton = host.buttons.matching(NSPredicate(format: "label == 'Paste' OR label == '粘贴'")).firstMatch
-            if paste.waitForExistence(timeout: 3) { paste.tap() }
-            else { XCTAssertTrue(pasteButton.waitForExistence(timeout: 3), host.debugDescription); pasteButton.tap() }
-            let report = editor.value as? String ?? "Diagnostic paste unavailable"
-            let diagnostic = XCTAttachment(string: report)
-            diagnostic.name = "Public provider copied diagnostic"; diagnostic.lifetime = .keepAlways; add(diagnostic)
-            if report.contains("role=shareExtension") && report.contains("category=appGroup") {
-                throw XCTSkip("Unsigned simulator App Group unavailable; copied native diagnostic retained. Signed share/import remains owner device gate.")
-            }
-            XCTFail("Public provider content failed: \(report)")
-            return
-        }
+        expectation(for: readable, evaluatedWith: editor)
+        waitForExpectations(timeout: 10)
         let save = host.buttons.matching(NSPredicate(format: "label == 'Save' OR label == '保存'")).firstMatch
         XCTAssertTrue(save.isEnabled)
         save.tap()
