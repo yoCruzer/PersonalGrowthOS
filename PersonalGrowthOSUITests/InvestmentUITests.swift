@@ -400,8 +400,9 @@ extension InvestmentUITests {
 }
 
 extension InvestmentUITests {
-    private func revealFix2EarlierDuration(_ app: XCUIApplication,chinese: Bool) -> XCUIElement {
-        let field=app.textFields["investment-duration"],nav=app.navigationBars[chinese ? "记录活动":"Record activity"]
+    private func revealFix2EarlierDuration(_ app: XCUIApplication,chinese: Bool,timerConfirmation: Bool = false) -> XCUIElement {
+        let title=timerConfirmation ? (chinese ? "确认本次投入":"Confirm time investment"):(chinese ? "记录活动":"Record activity")
+        let field=app.textFields["investment-duration"],nav=app.navigationBars[title]
         for _ in 0..<24 {
             if field.exists,field.frame.minY >= nav.frame.maxY+8,field.frame.maxY <= app.frame.height*0.75 {break}
             let scrollDown = !field.exists || field.frame.minY < nav.frame.maxY+8
@@ -431,7 +432,7 @@ extension InvestmentUITests {
             let error=app.staticTexts["investment-save-error"];reveal(error,app);XCTAssertTrue(error.exists)
             XCTAssertEqual(note.value as? String,"Synthetic timer retained")
             screenshot(app,"Fix2-CR05-retained-note-before-duration-\(chinese)")
-            let retainedDuration=revealFix2EarlierDuration(app,chinese:chinese)
+            let retainedDuration=revealFix2EarlierDuration(app,chinese:chinese,timerConfirmation:true)
             XCTAssertEqual(retainedDuration.value as? String,"3")
             screenshot(app,"Fix2-CR05-save-failure-retains-input-\(chinese)")
             reveal(save,app,avoidingWheel:true);save.tap()
