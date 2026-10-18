@@ -400,6 +400,20 @@ extension InvestmentUITests {
 }
 
 extension InvestmentUITests {
+    private func revealFix2EarlierDuration(_ app: XCUIApplication,chinese: Bool) -> XCUIElement {
+        let field=app.textFields["investment-duration"],nav=app.navigationBars[chinese ? "记录活动":"Record activity"]
+        for _ in 0..<24 {
+            if field.exists,field.frame.minY >= nav.frame.maxY+8,field.frame.maxY <= app.frame.height*0.75 {break}
+            let scrollDown = !field.exists || field.frame.minY < nav.frame.maxY+8
+            let from=app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:scrollDown ? 0.35:0.65))
+            let to=app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:scrollDown ? 0.60:0.40))
+            from.press(forDuration:0.05,thenDragTo:to)
+        }
+        XCTAssertTrue(field.exists,app.debugDescription)
+        XCTAssertGreaterThanOrEqual(field.frame.minY,nav.frame.maxY+8)
+        XCTAssertLessThanOrEqual(field.frame.maxY,app.frame.height*0.75)
+        return field
+    }
     func testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText() {
         for chinese in [false,true] {
             print(chinese ? "PGOS_USAGE_STYLE_DARK":"PGOS_USAGE_STYLE_LIGHT");fflush(stdout)
@@ -413,11 +427,14 @@ extension InvestmentUITests {
             app.buttons[chinese ? "完成":"Done"].tap()
             let note=app.textFields["investment-note"];reveal(note,app,avoidingWheel:true);note.tap();note.typeText("Synthetic timer retained")
             app.buttons[chinese ? "完成":"Done"].tap()
-            let save=app.buttons["investment-save"];reveal(save,app);save.tap()
+            let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
             let error=app.staticTexts["investment-save-error"];reveal(error,app);XCTAssertTrue(error.exists)
-            XCTAssertEqual(note.value as? String,"Synthetic timer retained");XCTAssertEqual(duration.value as? String,"3")
+            XCTAssertEqual(note.value as? String,"Synthetic timer retained")
+            screenshot(app,"Fix2-CR05-retained-note-before-duration-\(chinese)")
+            let retainedDuration=revealFix2EarlierDuration(app,chinese:chinese)
+            XCTAssertEqual(retainedDuration.value as? String,"3")
             screenshot(app,"Fix2-CR05-save-failure-retains-input-\(chinese)")
-            reveal(save,app);save.tap()
+            reveal(save,app,avoidingWheel:true);save.tap()
             screenshot(app,"Fix2-CR05-after-save-landing-\(chinese)")
             XCTAssertTrue(app.navigationBars[chinese ? "计时":"Timer"].waitForNonExistence(timeout:5),"Outer Timer must close after successful confirmation")
             XCTAssertTrue(app.navigationBars[chinese ? "时间投入":"Time investment"].waitForExistence(timeout:5))
@@ -437,11 +454,11 @@ extension InvestmentUITests {
             let app=launch(chinese:chinese,darkLarge:chinese);openHub(app,chinese:chinese);create(app)
             let record=button("investment-record-",app);reveal(record,app);record.tap()
             let note=app.textFields["investment-note"];reveal(note,app,avoidingWheel:true);note.tap();note.typeText("Synthetic formal B")
-            app.buttons[chinese ? "完成":"Done"].tap();let save=app.buttons["investment-save"];reveal(save,app);save.tap()
+            app.buttons[chinese ? "完成":"Done"].tap();let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
             XCTAssertTrue(save.waitForNonExistence(timeout:5))
             for _ in 0..<12 where !record.isHittable {app.swipeDown()};record.tap()
             reveal(note,app,avoidingWheel:true);note.tap();note.typeText("Synthetic unchanged draft A");app.buttons[chinese ? "完成":"Done"].tap()
-            reveal(save,app);save.tap();let confirm=app.buttons[chinese ? "仍然保存":"Save anyway"];XCTAssertTrue(confirm.waitForExistence(timeout:5))
+            reveal(save,app,avoidingWheel:true);save.tap();let confirm=app.buttons[chinese ? "仍然保存":"Save anyway"];XCTAssertTrue(confirm.waitForExistence(timeout:5))
             let keep=app.buttons[chinese ? "继续编辑":"Keep editing"]
             if keep.exists {keep.tap()} else {app.coordinate(withNormalizedOffset:CGVector(dx:0.05,dy:0.30)).tap()}
             XCTAssertTrue(confirm.waitForNonExistence(timeout:5))
@@ -453,15 +470,17 @@ extension InvestmentUITests {
                 let minutes=app.textFields["investment-duration"];reveal(minutes,app);minutes.tap()
                 XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout:5))
                 minutes.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:2)+"46");app.buttons[chinese ? "完成":"Done"].tap()
-                reveal(save,app);save.tap();XCTAssertTrue(app.navigationBars["Time investment detail"].waitForExistence(timeout:5))
+                reveal(save,app,avoidingWheel:true);save.tap();XCTAssertTrue(app.navigationBars["Time investment detail"].waitForExistence(timeout:5))
                 app.navigationBars.buttons.firstMatch.tap()
             }
             XCTAssertTrue(app.navigationBars[chinese ? "记录活动":"Record activity"].waitForExistence(timeout:5))
             XCTAssertFalse(candidate.exists,"Formal B change must remove A's cached candidate page")
             XCTAssertEqual(note.value as? String,"Synthetic unchanged draft A")
-            XCTAssertEqual(app.textFields["investment-duration"].value as? String,"45")
+            screenshot(app,"Fix2-CR04-retained-note-before-duration-\(deleting ? "delete":"edit")")
+            let retainedDuration=revealFix2EarlierDuration(app,chinese:chinese)
+            XCTAssertEqual(retainedDuration.value as? String,"45")
             screenshot(app,"Fix2-CR04-unchanged-draft-after-\(deleting ? "delete":"edit")-B")
-            reveal(save,app);save.tap();XCTAssertTrue(save.waitForNonExistence(timeout:5));XCTAssertFalse(confirm.exists)
+            reveal(save,app,avoidingWheel:true);save.tap();XCTAssertTrue(save.waitForNonExistence(timeout:5));XCTAssertFalse(confirm.exists)
         }
     }
 }
