@@ -1,3 +1,13 @@
+# 使用反馈统一整改 D 收口 — IN_PROGRESS（2026-10-18）
+
+产品/测试检查点50e9cfa，独立审查三项提醒/星期P2已修复，新增时区日选择和Today最大字体P2及Growth后台订阅已限定修复，受影响35 Unit通过；十项真实UI补验进行中。完整Unit首轮517=512PASS4FAIL1SKIP；仅测试夹具修正后受影响完整两类60PASS，生产blob相同证明保留。实际外观最终UI首轮27=21PASS5FAIL1SKIP；原失败、3条warning和原生权限拒绝保留，不能沿用旧READY。最终Release、独立review闭环、普通push及唯一新Draft PR待完成。详见USAGE_REMEDIATION_20261017_EXECUTION.md最新D段。
+
+固定BASE/GOAL_SHA、独立worktree/执行分支及PR base保持；原工作区三项未知dirty、旧PR #1–#12保持。D1–D4真实设备/私人库/签名NOT_RUN，未merge/force/tag/Archive/TestFlight。继续本次已授权完整Goal，不逐阶段等待Owner批准。
+
+以下为前序执行历史，最新结论以上段及执行记录为准。
+
+---
+
 # 使用反馈统一整改 — IN_PROGRESS（2026-10-18）
 
 已按固定 BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24` / GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73` 核验祖先与七 Markdown 增量，从 GOAL_SHA 建立独立 `/private/tmp/PersonalGrowthOS-usage-remediation-20261017` / `codex/usage-remediation-20261017`。原工作区三项未知 dirty 与旧 PR #1–#12 保持；#12 head 仍 BASE。新 PR base 固定 codex/time-investment-v1，尚未创建。

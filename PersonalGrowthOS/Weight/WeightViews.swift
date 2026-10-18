@@ -18,6 +18,7 @@ struct WeightHistoryView: View {
     @State private var range = WeightReviewRange.month
     @State private var references: Set<WeightReviewRange> = [.week, .month]
     @State private var selectedDay: Date?
+    @State private var selectionZoneID: String?
     @State private var refresh = 0
     @State private var visible = false
     @State private var failed = false
@@ -185,7 +186,10 @@ struct WeightHistoryView: View {
         let work = Task.detached { try await WeightReviewReader(modelContainer: container).snapshot(now: now, through: end, zone: zone) }
         do {
             let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
-            try Task.checkCancellation(); snapshot = result
+            try Task.checkCancellation()
+            selectedDay=WeightReviewSelection.retainedDay(selectedDay,previousZoneID:selectionZoneID,calendar:result.calendar)
+            selectionZoneID=result.calendar.timeZone.identifier
+            snapshot = result
         } catch is CancellationError {} catch { if !Task.isCancelled { snapshot = nil; failed = true } }
     }
     private func edit(_ id: UUID) { do { editing = try context.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.id == id })).first } catch { self.error = String(localized: "Could not load weight records") } }
@@ -247,8 +251,10 @@ struct WeightMeasurementPage: View {
 struct WeightAllRecordsView: View {
     let edit: (UUID) -> Void
     @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var phase
     @State private var snapshot: WeightReviewSnapshot?
     @State private var selected = Date()
+    @State private var selectionZoneID: String?
     @State private var refresh = 0
     @State private var failed = false
     @State private var pendingDeletion: UUID?
@@ -295,6 +301,7 @@ struct WeightAllRecordsView: View {
                 Button("Cancel", role: .cancel) { pendingDeletion = nil }
             }
             .onAppear { refresh += 1 }
+            .onChange(of:phase) {_,value in if value == .active {refresh += 1}}
             .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in refresh += 1 }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refresh += 1 }
             .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refresh += 1 }
@@ -303,7 +310,10 @@ struct WeightAllRecordsView: View {
                 let work = Task.detached { try await WeightReviewReader(modelContainer: container).snapshot(now: Date()) }
                 do {
                     let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
-                    try Task.checkCancellation(); snapshot = result; failed = false
+                    try Task.checkCancellation()
+                    selected=WeightReviewSelection.retainedDay(selected,previousZoneID:selectionZoneID,calendar:result.calendar) ?? result.asOfDay
+                    selectionZoneID=result.calendar.timeZone.identifier
+                    snapshot = result; failed = false
                 } catch is CancellationError {} catch { if !Task.isCancelled { snapshot = nil; failed = true } }
             }
     }

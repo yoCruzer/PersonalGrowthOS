@@ -207,3 +207,18 @@ Apple原生行为依据：[requestAuthorization](https://developer.apple.com/doc
 4失败均在旧测试假设/旧包构造：FullRoundTrip和LegacyV1的手工expectedCounts缺新v11三项0值；TodoV7RoundTrip误期待新设备请求仍为旧固定taskID而非本轮设备UUID；QuietWinsReader旧v7 wire从当前编码构造时未去除三项新空数组，被严格原v7校验正确拒绝。只修测试夹具：补精确三个0键；断言单个native请求的taskID/title/fireAt和实际accepted设备账本UUID一致；构造旧v7时仅移除已经断言为空的新数组，不放松生产兼容校验。产品代码保持c909821不变。下一轮只跑受影响完整ImportExportRecoveryTests及QuietWinsReaderTests，并保存全部其他产品/测试blob相等证明，不重复完整517。
 
 首轮Unit Host默认根在专用模拟器保留早期本任务未发布V15合成库，新增title字段后启动有unknown model version诊断；没有私人数据，该诊断不在测试夹具路径。后续仅卸载本轮专用Simulator的合成App重新安装，保留原日志，不修改历史schema/原工作区/其他Simulator。
+
+### D 第二轮修复与真实 UI 证据（仍进行中）
+
+`50e9cfa190637feb022569ff793a9f360032b781`仅修两份测试夹具和三份交接文档；79个生产文件与c909完全相同。`final-unit-fix1`受影响完整ImportExportRecoveryTests+QuietWinsReaderTests **60PASS0FAIL0SKIP / exit0、runtimeWarnings=[]**。`full-unit-reuse-proof.json`保留blob对照，原517首轮仍512/4/1，不冒称重新全绿。`final-debug2` clean50e9 build-for-testing PASS；Debug三实包身份/1.0(7)/minOS17、App完整SHA/localGit/Dirty=false/Tag空和AlarmKit弱链接核对在`debug-bundle-proof-50e9.json`、`debug-mach-o-50e9.txt`。
+
+实际外观driver的`final-ui1` **27项=21PASS5FAIL1SKIP / exit65**。原生权限请求到mobiletimerd后真实拒绝，正向AlarmKit例SKIP；并非模拟授权。中文BMI最大AX的175cm/24.5截图为实际黑色外观。五FAIL：中文重复弹出菜单第8项在裁剪滚动区外；清单行中间空白点击未打开；两项计时例“Confirm later”标签命中被sheet遮盖的底层按钮；public share进入扩展后无法读取，未获quote。原视频/树/截图保留。没有将成功断言或测试驱动问题改标通过。
+
+独立只读reviewer继续发现两项P2：体重所选日的旧时区午夜在切时区后成为新时区09:00，可能漏当天早间事实；Today once/day习惯最大AX将右侧状态挤成竖排。限定修复：日期选择记录上次发布时区，换区清除旧日选择/完整历史回到新asOfDay，保留同区完整日；大字习惯状态放到同文字列下一行，保留正常布局/动作/disabled/ID并补AX状态值。另两条后台导入warning追到Growth新didSave订阅未切回主线程，补receive(on:RunLoop.main)。第三条Invalid frame具体发生在打开周回顾，继续查证。
+
+`compile-d5`测试局部变量add遮盖XCTestCase.add导致编译FAIL；更名addGoal后`compile-d6` PASS。`affected-d5`完整WeightFoundationTests+AppCompositionTests **35PASS0FAIL0SKIP / exit0、runtimeWarnings=[]**，包含上海→洛杉矶两个真实读数落入完整自然日的独立反例。精确未提交源码/哈希为`candidate-d6.patch`/`candidate-d6-source.json`；`ui-d5`仅补十项实际受影响UI，结果待收集。最终clean Debug/Release、实包、独立review closure、push/唯一Draft PR尚未完成。
+
+
+`ui-d5`实际10项 **7PASS3FAIL0SKIP / exit65、1条Invalid frame warning**。Files预览取消恢复、后台QImport刷新、中文实际Dark最大AX BMI/星期菜单、清单新建管理保留草稿、Weight日期编辑删除、计时前后台/冷启动均PASS。两条Publishing changes from background警告不再出现，Growth主线程接收有配对结果。QFiveSources业务通过但同打开WeeklyReview接缝仍有frame warning，限定将原keyboard ToolbarItemGroup改为focused时导航栏44pt收键盘动作，保存逻辑不变。
+
+三FAIL保留：Public扩展主动复制报告后Runner读剪贴板遭PBError13；随后只读专用Simulator主动复制报告确认category=appGroup（文件`ui-d5-public-copied-diagnostic.txt`），新测试改为扩展自己原生粘贴报告再验证。mixed新增today-investment断言失败：SegmentReview夹具是finish+saveTimer后的已保存事实，没有unfinished，生产正确隐藏；改为真实Start→Collapse再拍混合页面。RunningCold走过恢复/取消确认/丢弃/手工草稿冷重开，最后空态在新增图表下方未实例化；保留原空态断言并正常滚动，同时先断言真实总数/时长为0，不修改事实代码。后续仅五项受影响UI补验（含原WeeklyReview保存），其余通过证据复用。

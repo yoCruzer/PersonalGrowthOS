@@ -148,10 +148,15 @@ struct WeeklyReviewView: View {
             saveConfirmationTask?.cancel()
         }
         .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") { focusedField = nil }
+            ToolbarItem(placement: .confirmationAction) {
+                if focusedField != nil {
+                    Button { focusedField = nil } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                    .accessibilityLabel("Done")
                     .accessibilityIdentifier("weekly-review-keyboard-done")
+                }
             }
         }
         .alert("Could Not Save Review", isPresented: Binding(

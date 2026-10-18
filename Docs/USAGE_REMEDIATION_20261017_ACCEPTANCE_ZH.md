@@ -140,3 +140,15 @@ T5–T7已实现快照复用、全历史累计/明确自然日与可选月份预
 BMI服务、未舍入两参照边界、可选身高与清除/重开已有本轮证据；ui-c3完整入口/非法0/175cm/中国24.5超重与WHO通常范围/清除通过。星期核心9项、ui-c5空集禁存/周二周日/下一期/跳过通过；真实v11 ZIP恢复custom mask并继续生成、真v10缺省和新版缺数组/旧版夹带新字段拒绝通过。
 
 N3–N6生命周期及共享额度 affected-c11 **31PASS**；后续DST/旧修订/实际Alarm实例覆盖ZIP和生产Open Intent保留Record/modal草稿 affected-c13 **4PASS1SKIP**，均零runtime warning。精确失败/修复/命令见EXECUTION。真实授权API在当前Simulator两次立即拒绝，无弹窗；**原生正向schedule/cold/cancel、系统Stop/Open以及D1设备递送NOT_RUN**，原先2次正向UI失败未抹除。c29最大字/混合入口、D完整Unit/组合UI/Release/实包、独立review与新PR未完成；D1–D4仍全部NOT_RUN。
+
+
+### D 集中门禁与修复中（2026-10-18）
+
+完整Unit固定c909首轮517=512PASS4FAIL1SKIP，四项为旧测试夹具计数/设备ID/旧wire空数组假设；仅修测试后50e9受影响完整ImportExportRecoveryTests+QuietWinsReaderTests60/60PASS，生产79文件blob完全相同，不宣称重跑517全绿。1SKIP仍是既有独立低空间环境。真实外观UI首轮final-ui1为27=21PASS5FAIL1SKIP，五个原失败与3条warning均保留，继续按受影响项收口。
+
+- 独立R1标题替换、R2周一顺序、R3旧通知取消未确认阻挡已代码修复及配对反例/并发验证；最终UI/实包审核仍待。
+- 独立R4体重时区选择修复后affected-d5完整Weight17+AppComposition18=35PASS、runtimeWarnings=[]；R5最大AX习惯竖排与R6成长页后台导入订阅修复后，实际UI正在补验。
+- Public host本轮能够打开真实Share Extension，但原生报告role=shareExtension/stage=providerRead/category=appGroup。SharedCapture/ShareExtension/原entitlements和签名设置均未改；unsigned Simulator无法读取共享Inbox，正向导入未通过。ui-d5中测试Runner跨进程读取刚复制的报告遭PBError13，该FAIL保留，随后仅在本轮专用Simulator读取主动复制报告作真实归因。签名分享正向列D4，不用合成单元或环境SKIP冒称通过。
+- AlarmKit真实requestAuthorization进入系统后拒绝，权限拒绝/保存任务/设置反馈已验，正向schedule/stop/open及真实响铃仍D1 NOT_RUN；Debug弱链接存在不等于系统递送通过。
+
+本段为过程证据，不是最终READY；仍须最终clean Debug、unsigned generic Release、六实包provenance/身份、独立review闭环、普通push和唯一新Draft PR。

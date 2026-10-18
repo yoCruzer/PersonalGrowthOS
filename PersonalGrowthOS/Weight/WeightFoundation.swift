@@ -426,3 +426,13 @@ enum BodyReferenceFailure: Error, LocalizedError {
         try write.save()
     }
 }
+
+
+/// A selection belongs to the calendar that produced its midnight. A zone refresh
+/// returns to recent records instead of querying a partial day with an old instant.
+enum WeightReviewSelection {
+    static func retainedDay(_ day: Date?,previousZoneID: String?,calendar: Calendar) -> Date? {
+        guard let day,previousZoneID == nil || previousZoneID == calendar.timeZone.identifier else {return nil}
+        return calendar.startOfDay(for:day)
+    }
+}

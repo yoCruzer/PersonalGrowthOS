@@ -59,7 +59,7 @@ struct GrowthView: View {
         }
         .navigationTitle("Growth").accessibilityIdentifier("growth-view")
         .onAppear { refreshCounts() }
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in refreshCounts() }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in refreshCounts() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refreshCounts() }
         .onChange(of: phase) { _, value in if value == .active { refreshCounts() } }
     }

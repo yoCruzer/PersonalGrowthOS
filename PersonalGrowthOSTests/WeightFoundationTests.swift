@@ -379,3 +379,30 @@ extension WeightFoundationTests {
         XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<BodyReferenceSettings>()),0)
     }
 }
+
+
+extension WeightFoundationTests {
+    func testReviewCZoneRefreshDropsForeignMidnightAndKeepsCompleteDayFacts() async throws {
+        let shanghai=try XCTUnwrap(TimeZone(identifier:"Asia/Shanghai")),la=try XCTUnwrap(TimeZone(identifier:"America/Los_Angeles"))
+        var calendar=Calendar(identifier:.gregorian);calendar.timeZone=la
+        let old=try XCTUnwrap(ImportantCivilDay(year:2026,month:10,day:18).instant(minutes:0,timeZone:shanghai))
+        let local=try XCTUnwrap(ImportantCivilDay(year:2026,month:10,day:17).instant(minutes:0,timeZone:la))
+        let now=local.addingTimeInterval(23*3600)
+        let container=try PersistenceContainerFactory.makeInMemory()
+        for (hours,value) in [(0.5,70.0),(10.0,72.0)] {container.mainContext.insert(WeightRecord(weightKilograms:value,recordedAt:local.addingTimeInterval(hours*3600),createdAt:now))}
+        try container.mainContext.save()
+        let reader=WeightReviewReader(modelContainer:container)
+        let broken=try await reader.records(start:old,end:calendar.date(byAdding:.day,value:1,to:local),now:now)
+        XCTAssertEqual(broken.count,1,"Old Shanghai midnight is 09:00 LA, excluding the real morning fact")
+        let retained=WeightReviewSelection.retainedDay(old,previousZoneID:shanghai.identifier,calendar:calendar)
+        XCTAssertNil(retained)
+        let recent=try await reader.records(start:retained,end:nil,now:now)
+        XCTAssertEqual(Set(recent.map(\.kilograms)),[70,72])
+        let same=WeightReviewSelection.retainedDay(local.addingTimeInterval(3600),previousZoneID:la.identifier,calendar:calendar)
+        XCTAssertEqual(same,local)
+        let complete=try await reader.records(start:same,end:calendar.date(byAdding:.day,value:1,to:local),now:now)
+        XCTAssertEqual(complete.count,2)
+        let snapshot=try await reader.snapshot(now:now,zone:la)
+        XCTAssertEqual(snapshot.daily.first?.mean,71);XCTAssertEqual(snapshot.daily.first?.observations,2)
+    }
+}

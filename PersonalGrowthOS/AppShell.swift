@@ -405,6 +405,7 @@ private struct TodayView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var referenceDate = Date()
     @State private var showsAllHabits = false
     @State private var showsAllGoals = false
@@ -456,6 +457,13 @@ private struct TodayView: View {
         return focus
     }
 
+    private func habitActionLabel(_ progress: HabitTodayProgress) -> some View {
+        Label(progress.actionTitle, systemImage: progress.isCompletedForOncePerDay
+            ? "checkmark.circle.fill" : "checkmark.circle")
+            .labelStyle(.titleAndIcon)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     var body: some View {
         List {
             if !todayHabits.isEmpty {
@@ -485,16 +493,18 @@ private struct TodayView: View {
                             Button {
                                 checkIn(habit)
                             } label: {
-                                HStack {
-                                    ModuleEntryRow(title: habit.name, systemImage: "repeat")
-                                    Spacer(minLength: 4)
-                                    Label(
-                                        progress.actionTitle,
-                                        systemImage: progress.isCompletedForOncePerDay
-                                            ? "checkmark.circle.fill"
-                                            : "checkmark.circle"
-                                    )
-                                    .labelStyle(.titleAndIcon)
+                                if typeSize.isAccessibilitySize {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        ModuleEntryRow(title: habit.name, systemImage: "repeat")
+                                        habitActionLabel(progress).padding(.leading, 36)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    HStack {
+                                        ModuleEntryRow(title: habit.name, systemImage: "repeat")
+                                        Spacer(minLength: 4)
+                                        habitActionLabel(progress)
+                                    }
                                 }
                             }
                             .disabled(
@@ -502,6 +512,7 @@ private struct TodayView: View {
                                     || progress.isCompletedForOncePerDay
                             )
                             .accessibilityLabel("Check in \(habit.name)")
+                            .accessibilityValue(progress.actionTitle)
                             .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
                             .frame(minHeight: 44)
                         }

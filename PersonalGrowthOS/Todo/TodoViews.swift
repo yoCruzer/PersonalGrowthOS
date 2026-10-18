@@ -205,7 +205,7 @@ struct TodoEditorView: View {
                         .focused($focusedField, equals: .notes).accessibilityIdentifier("todo-notes")
                     Toggle("Important", isOn: $draft.isImportant).accessibilityIdentifier("todo-important")
                     Button { focusedField = nil; selectingList = true } label: {
-                        LabeledContent("List", value: lists.first { $0.id == draft.listID }?.name ?? String(localized: "Unclassified"))
+                        LabeledContent("List", value: lists.first { $0.id == draft.listID }?.name ?? String(localized: "Unclassified")).frame(maxWidth:.infinity,minHeight:44).contentShape(.rect)
                     }.accessibilityIdentifier("todo-editor-list")
                 }
                 Section("Schedule") {

@@ -507,7 +507,7 @@ struct InvestmentEditorView: View {
             }
             Section {
                 Button("Save activity") { save(false) }.accessibilityIdentifier("investment-save")
-                Button(editor.timerConfirmation ? "Confirm later" : "Keep draft") { if persist(isClosing:true) {dismiss()} }
+                Button(editor.timerConfirmation ? "Confirm later" : "Keep draft") { if persist(isClosing:true) {dismiss()} }.accessibilityIdentifier("investment-keep-draft")
                 if !editor.timerConfirmation { Button("Cancel draft",role:.destructive) { cancel = true } }
             }
         }.navigationTitle(editor.timerConfirmation ? "Confirm time investment" : "Record activity")

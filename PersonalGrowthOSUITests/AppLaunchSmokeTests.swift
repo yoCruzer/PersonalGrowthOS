@@ -57,7 +57,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         let planned=app.switches["todo-planned-toggle"];reveal(planned);planned.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
         let frequency=app.buttons["todo-repeat"];reveal(frequency);frequency.tap();
         let selectedWeekdays=app.buttons["自选星期"]
-        for _ in 0..<4 where !selectedWeekdays.exists {app.buttons["每周六、周日"].swipeUp()}
+        for _ in 0..<4 where !selectedWeekdays.exists {app.collectionViews.containing(.button,identifier:"每天").firstMatch.swipeUp()}
         selectedWeekdays.tap()
         let sunday=app.buttons["todo-weekday-7"];reveal(sunday);XCTAssertGreaterThanOrEqual(sunday.frame.height,44);sunday.tap()
         let summary=app.staticTexts["todo-repeat-summary"];reveal(summary)
@@ -74,6 +74,21 @@ final class AppLaunchSmokeTests: XCTestCase {
             app.launch()
             func shot(_ name: String) {let a=XCTAttachment(screenshot:app.screenshot());a.name="Usage-mixed-\(large ? "Chinese-Dark-maxAX" : "English-Light-default")-"+name;a.lifetime = .keepAlways;add(a)}
             app.tabBars.buttons[large ? "成长" : "Growth"].tap()
+            let investment=app.buttons["growth-investment"]
+            for _ in 0..<12 where !investment.isHittable {app.swipeUp()}
+            investment.tap();XCTAssertTrue(app.navigationBars[large ? "时间投入" : "Time investment"].waitForExistence(timeout:5))
+            let intro=app.buttons[large ? "知道了" : "Got it"];if intro.exists {intro.tap()}
+            let start=app.buttons.matching(NSPredicate(format:"identifier BEGINSWITH %@","investment-start-")).firstMatch
+            for _ in 0..<12 where !start.isHittable {app.swipeUp()}
+            XCTAssertTrue(start.isHittable,app.debugDescription);start.tap()
+            let collapse=app.buttons["investment-collapse-timer"];XCTAssertTrue(collapse.waitForExistence(timeout:5));collapse.tap()
+            app.navigationBars.buttons.firstMatch.tap()
+            for _ in 0..<12 where !app.buttons["growth-goals"].isHittable {app.swipeDown()}
+            app.buttons["growth-goals"].tap()
+            let goal=app.textFields["new-goal-title"];XCTAssertTrue(goal.waitForExistence(timeout:5));goal.tap();goal.typeText("Synthetic active focus\n")
+            let addGoal=app.buttons["add-goal"];for _ in 0..<12 where !addGoal.isHittable {app.swipeUp()};addGoal.tap()
+            app.navigationBars.buttons.firstMatch.tap()
+            for _ in 0..<12 where !app.buttons["growth-habits"].isHittable {app.swipeDown()}
             for id in ["growth-habits","growth-goals","growth-weight","growth-sleep","growth-investment","growth-important-days","growth-quiet-wins"] {
                 let row=app.buttons[id]
                 for _ in 0..<12 where !row.isHittable {app.swipeUp()}
@@ -82,6 +97,8 @@ final class AppLaunchSmokeTests: XCTestCase {
             app.tabBars.buttons[large ? "今天" : "Today"].tap()
             for index in 0..<7 {shot("Today-\(index)");app.swipeUp()}
             XCTAssertTrue(app.buttons["today-weekly-review"].exists)
+            XCTAssertTrue(app.buttons["today-goal-synthetic active focus"].exists)
+            XCTAssertTrue(app.buttons["today-investment"].exists)
             app.terminate()
         }
     }
@@ -2184,7 +2201,7 @@ extension AppLaunchSmokeTests {
         XCTAssertEqual(app.staticTexts.matching(identifier: "Public host fixture quote").count, 1)
     }
 
-    func testPublicMixedProviderHostShowsExtensionAndImports() {
+    func testPublicMixedProviderHostShowsExtensionAndImports() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSCaptureShareTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -2202,8 +2219,32 @@ extension AppLaunchSmokeTests {
         let editor = host.textViews["share-text"]
         XCTAssertTrue(editor.waitForExistence(timeout: 10), host.debugDescription)
         let readable = NSPredicate(format: "value == %@", "Public host fixture quote")
-        expectation(for: readable, evaluatedWith: editor)
-        waitForExpectations(timeout: 10)
+        let content = XCTNSPredicateExpectation(predicate: readable, object: editor)
+        if XCTWaiter.wait(for: [content], timeout: 10) != .completed {
+            let tree = XCTAttachment(string: host.debugDescription)
+            tree.name = "Public provider failure hierarchy"; tree.lifetime = .keepAlways; add(tree)
+            let shot = XCTAttachment(screenshot: host.screenshot())
+            shot.name = "Public provider failure"; shot.lifetime = .keepAlways; add(shot)
+            let copy = host.buttons.matching(NSPredicate(format: "label == 'Copy Diagnostic Report' OR label == '复制诊断报告'")).firstMatch
+            XCTAssertTrue(copy.exists, host.debugDescription)
+            copy.tap()
+            // Paste inside the extension that copied this synthetic report. The runner
+            // has no authorization to read another process's clipboard directly.
+            editor.tap()
+            editor.press(forDuration: 1.1)
+            let paste = host.menuItems.matching(NSPredicate(format: "label == 'Paste' OR label == '粘贴'")).firstMatch
+            let pasteButton = host.buttons.matching(NSPredicate(format: "label == 'Paste' OR label == '粘贴'")).firstMatch
+            if paste.waitForExistence(timeout: 3) { paste.tap() }
+            else { XCTAssertTrue(pasteButton.waitForExistence(timeout: 3), host.debugDescription); pasteButton.tap() }
+            let report = editor.value as? String ?? "Diagnostic paste unavailable"
+            let diagnostic = XCTAttachment(string: report)
+            diagnostic.name = "Public provider copied diagnostic"; diagnostic.lifetime = .keepAlways; add(diagnostic)
+            if report.contains("role=shareExtension") && report.contains("category=appGroup") {
+                throw XCTSkip("Unsigned simulator App Group unavailable; copied native diagnostic retained. Signed share/import remains owner device gate.")
+            }
+            XCTFail("Public provider content failed: \(report)")
+            return
+        }
         let save = host.buttons.matching(NSPredicate(format: "label == 'Save' OR label == '保存'")).firstMatch
         XCTAssertTrue(save.isEnabled)
         save.tap()
