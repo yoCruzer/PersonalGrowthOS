@@ -138,7 +138,7 @@ extension ImportantDayReviewFixTests {
     private func store() throws -> (URL, ModelContainer, ImportantDayService) {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("DayOperations-\(UUID())")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        // Retain this synthetic disk root until the test host releases SQLite handles.
         let container = try PersistenceContainerFactory.makeOnDisk(at: root.appendingPathComponent("store.sqlite"))
         let now = ImportantCivilDay(year: 2026, month: 10, day: 16).instant(minutes: 720, timeZone: .current)!
         return (root, container, .init(context: container.mainContext, mediaStore: MediaStore(rootURL: root), now: { now }))

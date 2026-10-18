@@ -1,3 +1,98 @@
+# 时间投入 V1 F1/P1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
+
+沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接；固定审查输入 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[外部 F1/P1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)已完成反例、限定修复和真正独立只读复核。原外部 R1–R3 已关闭，本轮仅回归。BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。
+
+最终产品/测试与最后生产 **`4d59a5909ec4314d82c9f9af12c203503ffde98b`**。生产 `current()` 改用包含设备睡眠的 `ContinuousClock` 进程相对秒数，经同一采样接缝进入实际服务；新 `continuous-v1:` 随机进程标识隔离旧 awake 锚点，旧 `anchorUptime` 编码键不改。50ms/18h保护、暂停不累计、倒计时封顶与显式继续、真实壁钟跳变、跨进程/重启待确认及备份只保留可信检查点均保持。Workspace 只加默认 current 的测试注入，AppShell 真实调用不变；无后台常驻、Schema或签名变更。
+
+修复前 clean `0eea42a` 十项原生反例 **1 PASS / 9 FAIL / 0 SKIP，exit65**；暂停对照通过，服务、落盘和实际 ZIP 复现旧120秒而非1920秒或1500秒。九个失败方法不等于九个纯睡眠反例：也含新 token、来源/非有限/回退读数断言；原log有58条断言/抛错失败，含微漂移恢复后零值验证的1个unexpected invalid，全部保留。GREEN clean `4d59a59` 核心29＋磁盘24 **53/53 PASS**；另一轮正确 ImportExport55 **55/55 PASS**；四项真实前后台/冷启动/R2/R3 UI **4/4 PASS**，各exit0，分轮不拼为一次全绿。Unit两轮无runtime warning，UI保留3条 Invalid frame warning。
+
+复用历史完整 Unit：`d5db223` 实际467项 **466 PASS / 0 FAIL / 1 SKIP**；当轮额外AX UI使总468项仍FAIL。没有宣称本轮重跑完整Unit。40份其他旧Unit/fixture blob相同，两份Investment测试扩展且整类重跑；本轮全部受影响消费者及真实ZIP/回滚、历史V14迁移、跨日/DST已补验，独立Reviewer认可影响矩阵。旧中文Dark最大AX/相邻Record/Files ZIP等未改路径证据按下方固定提交复用。
+
+Debug build-for-testing `compile2`、unsigned generic iOS Release `release1` **PASS/exit0**；六实际App/Share/Widget包保留原身份1.0(7)，两App provenance均clean同完整4d59 SHA/localGit/Tag空。Xcode27.1/27A9275只读首检exit0，既有专用模拟器/iOS27.0可用；首次受限沙箱simctl访问失败与获准只读服务检查区分记录，无系统配置操作。新证据根 `/tmp/pgos-time-investment-f1-evidence`；`native-run-index.json` 保存完整命令、SHA、退出码、实际计数和日志哈希，原红测/旧证据不覆盖。
+
+独立 Reviewer `/root/time_investment_reviewer` 只读核对固定红绿源码、生产链、原始日志/xcresult、实际截图和实包；范围内无尚未关闭 confirmed P0/P1/P2。**READY_FOR_OWNER_DEVICE_GATE 只表示本地批次完成，设备Gate未通过。** 真实iPhone锁屏/硬件睡眠、私人库覆盖、签名/安装、实际通知/桌面Widget/Photos/VoiceOver/飞行模式及远端独立CI（workflows=0）均 **NOT_RUN**；Safari unsigned **FAIL**、专用HFS+物理低空间 **SKIP/NOT_RUN**保持。不能用合成三读数或Simulator home/relaunch替代硬件睡眠。
+
+最终产品/测试后交付仅五份交接Markdown变化，delivery SHA以原PR head和 `final-delivery-proof.json` 核对；普通push原分支/原Draft PR，旧PR与原workspace三项未知dirty保留。下一边界仅Owner另行授权设备验收：先独立备份和旧数据核对，再不卸载覆盖安装、锁屏/使用其他App后结束、晚返回倒计时、待确认重开、手工/跨日/回顾及相邻模块组合。未merge/force/tag/Archive/TestFlight，不进入新模块。
+
+下方为先前交接原始历史，不覆盖上方当前结论。
+
+---
+
+# 时间投入 V1 F1/P1 — FIXES_IN_PROGRESS（2026-10-18）
+
+本轮沿原 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 处理固定 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[完整外部复审 F1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)。外部已关闭 R1–R3，本轮不重新扩修。`systemUptime` 不含设备睡眠，而当前 `projected` 将其与 wallDelta 比较后会持久化异常恢复状态；F1 关闭及本地门禁完成前，不能沿用下方历史 READY 结论。
+
+只读基线确认任务树 clean b55da13、原 branch/upstream/PR base，原工作区三项未知 dirty 保留；Xcode27.1 首检及既有隔离模拟器可用。新证据根 `/tmp/pgos-time-investment-f1-evidence`，指定 review 原文已保存并完整读取。下一步是区分 wall/连续经过时间/awake uptime 的生产反例、限定连续时钟修复及核心/磁盘/导出/R1–R3回归、独立固定SHA复核。保留50ms异常保护、暂停/倒计时/跨进程及旧锚点/备份边界；不新增后台常驻或Schema。真实iPhone锁屏/硬件睡眠 NOT_RUN；Safari unsigned FAIL、物理低空间 SKIP、签名/私人库/远端CI NOT_RUN保持。不merge/force/tag/Archive/TestFlight。
+
+下方是原始历史，原样保留。
+
+---
+
+# 时间投入 V1 外部 Review 修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+固定审查输入 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 R1/P1、R2/P2、R3/P2](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)已完成限定修复、修复前反例和真正独立只读复核。本轮 R1–R3 与下方旧阶段同编号问题分开。沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)；BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。
+
+最终产品/测试 **`2c5b4c52edbf69c1562ff9eae491616335b97472`**，最后生产 **`c91866e6abfef0241ae4ae266ee8f02f51f76393`**。完整 Unit 在固定 `d5db223` 实际执行 467 项：**466 PASS / 0 FAIL / 1 SKIP**；同轮额外 AX UI 失败，整轮 468 项为 466 PASS / 1 FAIL / 1 SKIP，未改标全绿。其后仅确认页展示与 UI 驱动变化，42 份 Unit 源码/夹具 blob 相同，确认展示块外生产源码相同；复用完整证据，另在 `a722fe9` 跑 23 核心＋20 磁盘 **43/43 PASS**。最终 `f077598` 中文 Dark 最大 AX 1/1、英文 Light R2/R3 2/2 **PASS/exit0**，相邻中文 Record 独立草稿 AX 在 `a722fe9` 1/1 PASS。原四项计时/后台/冷重开/回顾 UI 及真实 Files ZIP 证据保留，不把不同轮次相加成一次全绿。
+
+R1：删除/丢弃/已消费编辑草稿只留稳定 ID、revision/state 等技术终态；旧库在原始完整性检查通过后清理，新 ZIP 及旧 ZIP 恢复均清除已消费内容；关联草稿同事务处理，同参与者校验，旧回调和新 ID 编辑已删事实不能复活。这里是逻辑持久模型与新备份的清除，不声称 SQLite/WAL 取证级擦除，也不删除历史备份。R2：持久化失败保留外层输入、错误与重试，成功落盘才关闭；实际提交后报错仅对完整身份/内容/编辑指针一致的重试幂等确认，改变输入仍冲突；未落盘输入不承诺强杀保存。R3：多段原有效时间默认保留；明确可滚动警告展示 20→25 分钟，取消/抓手关闭仍 20，明确确认后才替换、保存并冷启动统计为 25 分钟/1 条。
+
+独立 Reviewer `/root/time_investment_reviewer` 只读复核固定源码、原始红绿日志、磁盘/ZIP测试、真实截图、实包与交付依据；无范围内未关闭的 confirmed P0/P1/P2。系统 alert 最大 AX 截字和测试导航条手势/单向滚动失败均保留；最终 Dark/Light 分别保留 **1 / 2** 条 Invalid frame warning。Debug `compile10` 与 unsigned generic iOS `release2` **PASS/exit0**，六实包原 Bundle 身份/1.0(7)及两 App clean 同 SHA provenance 核对。V14/v10、全部历史 schema、项目/签名配置及原 1032 文案条目不变，仅新增五条完整中英警告文案。
+
+新证据根 `/tmp/pgos-time-investment-review-fixes-evidence`，分轮命令/固定 SHA/原始计数见 `native-run-index.json`，完整 Unit 复用见 `full-unit-reuse-proof.json`。本轮交付在最终产品/测试后仅五份交接 Markdown；delivery SHA 以 Git/原 PR head 和 `final-delivery-proof.json` 核对，不写自引用 hash。原工作区三项未知 dirty、原分支/upstream及旧 PR8–11 保持。
+
+Safari unsigned **FAIL**；专用 HFS+ 物理低空间 **SKIP/NOT_RUN**；真实 iPhone/私人库/签名、实际通知/桌面 Widget/Photos/VoiceOver/飞行模式及独立远端 CI（workflows=0） **NOT_RUN**。设备 Gate 尚未通过。下一边界仅 Owner 另行决定并授权签名、不卸载覆盖安装和组合设备验收：先独立备份并核对旧数据，再锁屏/后台/晚返回倒计时、待确认重开、手工/跨日/长期回顾及 Record/Sleep/ImportantDay/Share/Widget。未 merge、强推、tag、Archive 或发布 TestFlight；停在本批边界。
+
+最终 test-only `2c5b4c5` 另以 R3 已成功的同一顶部区域 `(.5,.09)→(.5,.95)` 补跑 R2（`final-dismiss1`）**1/1 PASS/exit0**，外层仍在、失败后输入/错误保留、重试关闭并真正冷启动同草稿；产品与 `c91866e` 完全相同。该补验另保留 1 条 Invalid frame，不把旧导航条拖动当作抓手保护实证。
+
+---
+
+# 时间投入 V1 外部 Review — FIXES_IN_PROGRESS（2026-10-17）
+
+本轮按 Owner 新授权处理固定 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 Review](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)，仅 R1/P1、R2/P2、R3/P2 及关联数据安全/可靠性。原 `codex/time-investment-v1` / Draft PR #12 与固定 Goal1.1/BASE 保持；真实独立只读 Reviewer 已确认三项。当前不能沿用旧 READY 结论，先补修复前反例，再限定修复、原生磁盘/ZIP/UI及独立复核。旧失败/警告/Safari unsigned FAIL、物理低空间 SKIP、真实设备/签名/CI NOT_RUN 保持。
+
+新证据根 `/tmp/pgos-time-investment-review-fixes-evidence`；指定评论原文已完整读取并保存独立副本。原工作区三项未知dirty保留，任务工作树从clean92dc续接；不重建分支，不操作真实私人数据，不合并/tag/Archive/TestFlight。下方为前轮交付与历史原始记录，不代表本轮三项已关闭。
+
+---
+
+# 时间投入 V1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-17）
+
+已沿原分支 `codex/time-investment-v1` 与 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 安全续接，base仍为 `codex/sleep-routine-v1` / `ad0720ad743f495ac6f2ee3e97b16577266351db`，固定Goal 1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 未改。工作树 `/Users/himini/.codex/worktrees/time-investment-v1/PersonalGrowthOS`；原工作区三项未知dirty和旧PR#8/#9/#10/#11保留。
+
+Xcode27.1/CoreSimulator1174.9.2环境已恢复，只读首检exit0后复用专用模拟器运行。最终产品/测试与最后生产 **`2ae01f3d2af2117a3f957ee6cd275d50e19b892d`**：完整Unit **458 PASS / 0 FAIL / 1 SKIP（459项）**；最终四项时间投入UI **4 PASS / 0 FAIL / 0 SKIP，exit0**；另有受控英文Light补验1/1 PASS（1条焦点warning），实际浅色截图核实；V14五历史磁盘升级、真实ZIP/Files恢复、故障回滚、后台/冷启动、统计、相邻模块有实际原生证据。真正独立只读Reviewer已逐轮复核，新增按钮联动、AX排版、revision溢出与显式双参与者汇总均闭环。独立终审确认必选本地门禁完成，无范围内尚未关闭confirmed P0/P1/P2；最终交付同步以原PR及final-delivery-proof.json为准。
+
+最终clean同SHA Debug Simulator及unsigned generic iOS Release **PASS / exit0**，六App/Share/Widget实包保持原身份1.0(7)，两App provenance同源。后续交付只更新六份Markdown（五份交接文档及INDEX一句状态指引），delivery SHA以Git/PR head及 `/tmp/pgos-time-investment-evidence/final-delivery-proof.json` 核对，不写自引用hash。完整命令/原失败见[执行](TIME_INVESTMENT_V1_EXECUTION.md)，逐项[S1–S10/T1–T14验收](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)，[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。
+
+Safari当前unsigned App Group缺entitlement仍 **FAIL**；专用32MB HFS+低空间场景 **SKIP/NOT_RUN**；真实iPhone/私人库/签名、实际通知/桌面Widget/Photos/VoiceOver与独立远端CI（workflows=0） **NOT_RUN**。不拼成一次全绿，旧警告/失败保留。本地可执行门禁已完成，下一边界仅Owner另行授权签名/不卸载覆盖安装并做组合设备验收：先独立备份/核对旧数据，再锁屏计时、晚返回倒计时、待确认重开、手工/跨日/长期回顾及Record/Sleep/ImportantDay/Share/Widget。设备Gate尚未通过；不merge、强推、tag、Archive、TestFlight或新模块。
+
+---
+## 以下为原生续接及更早交接历史
+
+下方RUNNING/BLOCKED为当时记录，不覆盖上方当前结论。
+
+# 时间投入 V1 — RUNNING_NATIVE_GATES（2026-10-17）
+
+沿现有 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接，固定 Goal 1.1、BASE 和原工作区边界不变。只读检查确认 Xcode 27.1 / 27A9275、CoreSimulator 1174.9.2；`xcodebuild -checkFirstLaunchStatus`、可用设备/运行时列表均 exit0。复用任务隔离模拟器与固定 0abe55f 编译产物，未执行 sudo、系统修改或删除模拟器。
+
+首轮原生持久化/真实 ZIP 门禁 9/9 PASS；相邻回归执行 90 项、4 断言 FAIL（2 个旧迁移测试的 v7 oracle 缺少新快照已保全的收据），原始失败及 SQLite 清理警告保留。限定修正使用不可变 V11 夹具的独立固定收据补全预期；保留其他字段完整比较。同步收紧隔离验证容器 autorelease 生命周期，合成磁盘根留到 host 退出后清理，尚待新构建补跑证明效果。独立只读 Reviewer 已核验夹具与方案；不是最终通过。
+
+下一步：复验修正、继续计时/后台重开/统计/UI、相邻模块及必要完整 Unit 和集中 UI，再独立终审并普通推送原 PR。未满足全部本地门禁，当前不标 READY_FOR_OWNER_DEVICE_GATE。设备/私人数据/签名/实际通知/Widget/VoiceOver 与远端 CI（workflows=0）仍 NOT_RUN；不 merge、tag、Archive 或发布。实际命令与每轮证据见 [执行文档](TIME_INVESTMENT_V1_EXECUTION.md)，验收状态见 [验收文档](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)。
+
+以下为历史，原样保留。
+
+---
+
+# 时间投入 V1 — IMPLEMENTING_B / BLOCKED_ENVIRONMENT（2026-10-16）
+
+Owner新Goal固定 `72ee8bdf954a5628806db867682a6b021e63545b`，两份1.1规格替代旧引导；产品基线 `ad0720ad743f495ac6f2ee3e97b16577266351db`。独立worktree与 `codex/time-investment-v1` 已建立，原工作区和PR#8/#9/#10/#11保留。V14/v10、UI/持久草稿/完整回顾已实现，新增测试持续编译。真正独立只读Reviewer三轮R1–R7代码层闭环；固定产品/测试 `0abe55f0f722b920a73ecedf6e1fc395181994a5` 的macOS隔离核心/Workspace 24/24通过，Debug全部target与unsigned Release generic iOS构建通过，六实包身份/两App clean provenance核对。iOS运行因Xcode27.1/CoreSimulator版本不匹配退出70、运行0项，磁盘/ZIP恢复/UI/联合及全量回归仍NOT_RUN，不标READY。
+
+已普通推送唯一新 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)，base `codex/sleep-routine-v1` 仍为固定BASE。交付HEAD以Git/PR及证据根为准，最后只改Markdown。旧PR#8/#9/#10/#11保持，原工作区未知dirty未吸收。
+
+下一步等待本机Xcode组件更新后继续原生S1–S10/T1–T14及受影响/全量门禁，保持单一Xcode队列，复用本任务隔离模拟器540825BC-D0D4-4D71-B8DF-D73B243C3726。详细实际命令/每轮失败见[TIME_INVESTMENT_V1_EXECUTION.md](TIME_INVESTMENT_V1_EXECUTION.md)，证据矩阵见[TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md](TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md)。当前Goal未完成；同一环境阻塞已连续三轮复核，现标记blocked，待本机组件更新后从现有分支安全续接；最终停点仍为READY_FOR_OWNER_DEVICE_GATE。禁止合并/强推/tag/Archive/发行/真机私人库操作。
+
+以下历史证据原样保留，不再阻止本次新授权。
+
+---
+
 # PR #11 外部限定复审通过 — READY_FOR_OWNER_DEVICE_GATE（2026-10-15）
 
 据 Owner 本次确认，外部限定复审通过固定产品/测试 `9da1ce8758d868145e9b5690611634ccd292e469`，对应交付 `114558f404ced9cffca5517533a11cb10d2d4ec8`：R1、R2、R3 关闭，未发现范围内尚未关闭的确认 P0/P1/P2。
