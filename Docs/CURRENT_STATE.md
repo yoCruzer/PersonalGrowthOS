@@ -1,3 +1,23 @@
+# PR #13 终态一致性补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
+
+固定 TERMINAL_FIX_GOAL_SHA `6430a8570ce2d3528c37d491c1252f97066e8da9`；最终干净产品/测试 SHA `744e7729f103549184574e99e311ce5c380a4a16`（最后产品实现 `fcd1c9b0c310d757918133c2abd8868da6030b13`，之后仅测试窗口/截图修正）。TF-A→TF-D连续完成：RR-01 / IC-02均经完整生产链红例确认并修复，RR-02经真实raw writer原生实验证实主线程等待并修复；O-01保持非阻断UNCONFIRMED，不重复开项。
+
+- RR-01：真V11→旧f1普通编辑false，两渠道accepted→隔离/确认→实际TodoEditorView同时间/同渠道明确应用未来→新代次和唯一请求→幂等/冷开；旧deleteList、失败回滚、未确认取消、Stop/元数据等相反操作及旧override=true改值保护完成。
+- IC-02：daily/weekly真实08:00请求→改09:00挂起→实际sheet完全移除无B→当前错→确认移除/偏好off→重开可见错误；稳定Scope持反馈，当前ticket在共享gate内清理，清理query内晚到B不误删，未确认诚实pending并可重试。
+- RR-02：真实SleepService次日目标→raw BEGIN IMMEDIATE→refresh/observe/SwiftData.save，红例主probe等到ROLLBACK后；同锁try忙后主probe先于释放，保存未伪称成功；二次publisher真实busy仍自动恢复，fresh状态+观察瞬间fence保护回拨，正常生效/raw原值/原图/Todo V01/checkpoint相邻保护完成。
+
+同一clean `744e772`：Debug PASS；完整Unit **574=573PASS/0FAIL/1SKIP**；关键UI **3/3PASS**；unsigned generic iOS Release PASS。唯一SKIP是需隔离32MB HFS+图的物理低空间用例。实包App/Share/Widget原IDs、1.0(7)/min17、完整SHA/Dirty=false、AlarmKit弱链接/中英用途均核对，Release三包未签名；四轮142文件manifest一致且匹配Git。独立reviewer未写实现，先提反例，再核固定候选/未改消费者/原始xcresult、图、实包并复算；终审原文SHA256 `991c9453c63e715c8f9e546d9fb97b0ee43abbbddae5d2293aaba0adbac6364d` 见REVIEW。
+
+实际分轮及原FAIL/黑截图证据缺口与补验全部保留，见 [EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md)、[ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)、[REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md) 与 [本轮机器台账](USAGE_REMEDIATION_20261019_TERMINAL_FIX_RUNS.json)。原黑图不当可见PASS；修正后最终Unit的两张实际中文设置错误图及UI睡眠图已查看。无影响的旧UI仅按原有效证据保留，不冒称本轮全量UI。
+
+原worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、分支 `codex/usage-remediation-20261017`、唯一OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base `codex/time-investment-v1` 保持。随后纯文档交付普通commit/push，文档交付SHA以所在交付提交/PR head和本机final-delivery-proof.json核对；纯Docs不重建产品。主目录三项未知改动保留。
+
+本地READY只表示本授权补修/验证/独立审查批次完成，停在Owner后续设备门。D1–D4 NOT_PASSED、AlarmKit原生正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN全部保持。不操作私人设备/库，不签名安装、merge、force push、tag、Archive或TestFlight。
+
+---
+
+以下为保留的历史阶段、原始失败及交接，旧状态不替代上述本轮结论。
+
 # PR #13 终态一致性补修 — FIXES_IN_PROGRESS（2026-10-19）
 
 固定 TERMINAL_FIX_GOAL_SHA `6430a8570ce2d3528c37d491c1252f97066e8da9`；已 fetch 并在干净原 worktree 从 `8cc085e` 安全快进接收规格，保留全部有效产品提交。沿原分支 `codex/usage-remediation-20261017`、唯一 Draft PR #13 / base `codex/time-investment-v1` 连续执行 TF-A→TF-D；旧 READY 仅为历史，不代表本轮完成。

@@ -560,3 +560,48 @@ SleepWorkspace deferred retry获取waitUntilAvailable lease后立即释放，再
 ## 后续证据提醒
 
 RR01还需旧deleteList邻接起点、保存失败回滚、取消未确认时先纠正、正常Stop/元数据不复活及真实编辑器同值入口；IC02需remove不生效的cleanupPending可重试、重开可见反馈，及旧恢复清理期间B同值/改值/关闭保护；RR02需hold内已观察生效后先回拨/再setGoal、后释放的相反操作。现dirty测试还没有完整覆盖这些验收，不能仅三项green放行。
+
+
+## TERMINAL_FIX 固定744e772独立终审原文
+
+# PR #13 终态一致性补修独立终审原文
+
+审查者：`/root/terminal_independent_reviewer`。我未参与本轮产品或测试实现，仅只读审查并将原文/独立审计副本写入 `/tmp`。固定授权规格为 `6430a8570ce2d3528c37d491c1252f97066e8da9`；最终审查产品/测试候选为 `744e7729f103549184574e99e311ce5c380a4a16`。已直接核对该提交及完整相关差异、未改调用者、原始 log/xcresult、必要实图和实际 Debug/Release 包；没有凭实现者关闭表或 PASS 总数放行。
+
+## 审查过程与新增问题闭环
+
+先独立预登记 RR-01 / IC-02 / RR-02 的合法起点、生产入口、异步/锁边界、终态和相反操作；原文 `/tmp/pgos-pr13-terminal-review-pre.md`，SHA256 `0121b62c6adde124f4979d1c0c3ad0bbde52fa09e259331a7a10674342230b35`。阶段审查独立发现 SleepWorkspace 第一次等待后再次遭遇合法 publisher 时丢失恢复的问题；实现者同批补为仅对真实 busy 合并异步重等，并新增第二 publisher 实际持锁、actual didDefer 后释放、无需额外手动刷新即恢复的确定性验证。阶段原文 `/tmp/pgos-pr13-terminal-review-stage.md`，SHA256 `29bdcded47acf908382114a38216315a09a693245985ab475a6d8385226de5dc`。
+
+终审还亲自导出并查看早期 IC-02 两张图片，发现均为黑图，因此拒绝将其当可见反馈证据。实现者仅修正挂载测试 UIWindowScene/渲染夹具，完整方法补跑；最终候选完整 Unit 再次导出的 daily/weekly 实图均显示关闭开关及对应红字“无法更新提醒，请再试一次。”，布局无截断，证据缺口已关闭。黑图保留为真实无效截图，不追记为旧轮可见 PASS。
+
+## 逐项结论
+
+**RR-01：CONFIRMED_AND_FIXED。** 直接检查原红例，真实 V11 nil 系列经旧 f1 普通编辑形成 override=false、两渠道先 accepted 后隔离取消；首次同值纠正后仍 stopped/同 generation/无新请求的断言失败成立。旧日志末尾 nativeCount=1 是后续更多重试的状态，不能混作首次纠正成功。最终实现只对明确 futureSeries、open/live、nil 且不可推导旧策略续代，成功重试不再换代；当前同一瞬间按当前时区重编码 wall time，避免保存后刷新又改变实际提醒瞬间。最终完整方法经真实 TodoEditorView 加载、仅选择应用未来并调用同一保存入口，保留原时间/渠道，生产排程后客户端 pending 中唯一新请求、计划/截止及旧事件原字节保留、冷容器重开正确。另核对旧 deleteList 邻接起点、整 snapshot 保存失败回滚、未确认旧取消时先纠正不并排、冷开确认后替换、随后 System Stop 与元数据不复活。原 override=true/改值、正常 ringing、停止/完成/取消/删除及容量等待保护随完整 Unit 保留。未把合成外部客户端结果写成真机 AlarmKit 正向验证。
+
+**IC-02：CONFIRMED_AND_FIXED。** 原红例真实 LocalReminderScheduler 先建立08:00旧请求，实际设置页改09:00并在 add 边界挂起，sheet 完全关闭且无 B 后普通错误返回；daily/weekly 均偏好关闭但旧08:00仍在，重开仍在。最终稳定 Scope 拥有当前命令反馈/cleanupPending，恢复在共享 NotificationMutationGate 内检查当前 ticket，查询后再查 ticket，确认请求不存在后收尾，不依赖已移除 View 的 onChange。核对无新 B 当前失败/成功/transport cancel、新 B 同值/改值/关闭、两渠道独立、remove 未生效时诚实待确认及重试、清理 query 已挂起后新 B 抢占的保护；旧 cleaner 不误删 B。最终真实挂载方法偏好 off、pending=0、Scope 错误与实际重开红字均一致。可见反馈证据来自最终 Unit 两图 B759/CEDE；不使用旧黑图支撑。
+
+**RR-02：CONFIRMED_AND_FIXED。** 原 `red-chains` 日志及 xcresult 为3个完整方法均失败；睡眠原生反例实际顺序 `writer-frozen → production-observe-entry → independent-probe-submitted → native-save-held → probe-failsafe-timeout → release-requested → writer-released → main-probe`，真实主线程等待已确认。最终通过同一 raw BEGIN IMMEDIATE writer barrier、实际 refresh/observe 入口、独立执行器 probe 与可靠释放验证；最终 Unit 顺序 probe 在 writer-released 前，持锁时生效标记仍未持久、诚实 busy；回拨后 setGoal 在持锁期间拒绝并保留已观察事实，释放后 fresh context 合并 fence 持久化原生效事实，随后回拨编辑旧历史仍拒绝。第二 publisher 复竞争确实触发 actual didDefer，之后自动恢复为 native-save-free，无手动 refresh，无无限 I/O 错误重试。fence 只保留 ID/观察瞬间，不携旧 ModelContext 或旧规则跨 await。
+
+未改消费者检查：根 `.task`/active 先 checkpoint/refresh 再 share import；Todo 时区事务与 journal 使用相同 StorePublication；Investment transaction 同锁、延后 checkpoint 重读权威操作；Share importer detached worker 同 root lease；Sleep observe 补上同因缺口。手工睡眠编辑不属于导出中可达自动写入口：原设置导出期间 isTransferring 禁止 Done/交互关闭，未额外泛化整个仓储。`setGoal` 因生效 fence 保护而先 flush。旧 V01 Todo raw 竞争、非有限 quantity bitPattern/ID/unit/result、原始图字节、Investment 实际导出/晚暂停完成、正常睡眠生效与回拨保护均由最终完整 Unit 中对应完整方法覆盖。O-01 没有新增证据，保持非阻断 UNCONFIRMED，不重开导航项。
+
+## 原始证据与最终门
+
+本机原始证据根 `/tmp/pgos-pr13-terminal-evidence`。我独立调用 xcresulttool 读取原 red、focused-matrix3、visible-feedback、两次完整 Unit 与最终 UI 的原 bundle（必要时复制到独立 `/tmp` 审计根，xcresulttool 的 TestReport 缓存写权限处理未改变测试）；读取六个 Terminal 方法确实执行且 Passed，核对唯一 SKIP 的具体原文。保留 red 0/3、green 3/3、focused-matrix 与 matrix2 各35/36、matrix3 37/37，以及挂载夹具修正/可见图补验；不将分轮拼称一次全绿。
+
+最终四门均为同一 clean `744e7729f103549184574e99e311ce5c380a4a16`：
+
+- `candidate2-debug-build`：Debug Simulator build-for-testing PASS。
+- `candidate2-unit`：53.916秒，574总数 = 573 PASS / 0 FAIL / 1 SKIP，runtimeWarnings为空。唯一 SKIP 为 `testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`，原因确为需隔离32MB HFS+测试图、不得填满主卷。
+- `candidate2-ui`：100.533秒，3/3 PASS、0 SKIP，runtimeWarnings为空。完整方法为重复完成/跳过/停止/冷开、daily/weekly显式关闭冷开、睡眠目标/入口可见性/禁权提醒。前三项新链中的编辑器和设置页生命周期由实际挂载 Unit 完整验证，未机械增加同义 UI。最终 UI 唯一 Sleep PNG 已亲自查看；前两个方法无 PNG 如实记录，不冒称逐图审过。
+- `candidate2-release`：43.878秒，unsigned generic iOS Release build PASS，未 Archive。
+
+独立复算19轮 record/log 成对哈希；四份最终 manifest 各142文件完全相同，且逐文件 SHA256 与固定 Git 提交 blob 完全一致。直接读取实际 Debug 与 Release 的 App/Share/Widget 共六包 plist/executable，核对原Bundle ID、1.0(7)、minOS17；两App完整provenance为744e772、Dirty=false。直接运行 otool 检查 App debug dylib/Release executable 的 AlarmKit 为 LC_LOAD_WEAK_DYLIB，中英用途说明存在；直接 codesign -dv 确认Release三包均not signed at all。可见图与附件manifest共8文件哈希亦独立复算。独立审计 `/tmp/pgos-pr13-terminal-review-native/independent-audit-final.json`，SHA256 `7556ed3facb668f1546a0363778221b703a4c8020d50d21f5becb303152c42f0`。
+
+## 终审结论与停点
+
+范围内三项及本审查新增的二次busy恢复、黑图证据问题均已闭环；当前未发现未关闭的 confirmed P0/P1/P2 或本轮明确 P3。支持执行者完成 TF-D 文档交付、普通 commit/push、唯一原 Draft PR #13/base 核对后恢复本地 `READY_FOR_OWNER_DEVICE_GATE`。我没有代执行者声称尚未发生的文档交付或远端 push；交付 SHA 应另外核对，不替换产品/测试 SHA。
+
+READY仅指本地门。D1–D4 NOT_PASSED、AlarmKit原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端CI NOT_RUN继续保留。没有依据将合成客户端/模拟器/unsigned包外推为私人设备、系统实际递送、签名升级或发行通过。原PR/base、已认可历史修复与用户数据边界不变；不操作私人设备/库，不签名安装、merge、force push、tag、Archive或TestFlight。
+
+
+原文SHA256 `991c9453c63e715c8f9e546d9fb97b0ee43abbbddae5d2293aaba0adbac6364d`。原文由独立reviewer生成，实现者仅原样归档。

@@ -659,3 +659,45 @@ red-rename首轮为附件命名夹具错误；red-rename2为alert AX驱动错误
 实际分轮：red-build通过；red-chains **3/0PASS/3FAIL**（原RR01同时暴露跨区wall-time和过早retry断言，最初same-generation/stopped/native0是产品红例；末native1来自后续重试不能当首次恢复）；green-build→green-chains **3/3PASS**。expanded-build/expanded-build2通过。focused-matrix与focused-matrix2各 **36=35PASS/1FAIL**，真实失败保留：挂载实际editor callback后过早第二次service.edit增加revision，首轮并发reconcile、第二轮仍在首次排程settle前编辑，造成checking。只修夹具时序，保留全部业务断言；focused-build3/4通过，focused-matrix3 **37/37PASS**，完整重跑原方法及邻接矩阵。不是一次历史全绿。
 
 独立reviewer先只读预审，阶段指出第二次busy恢复丢失，同批已修复并以真实二次持锁测试闭环；独立原文附REVIEW。当前仍FIXES_IN_PROGRESS，待固定干净产品SHA的集中完整Unit、关键UI、双构建/实包及终审后交付。Schema/ZIP/project/IDs/版本不变；O-01非阻断UNCONFIRMED，所有旧设备/Share/Safari/低空间/CI限制保留。
+
+
+### TERMINAL_FIX TF-C / TF-D 最终集中门与交付
+
+最终固定干净产品/测试 `744e7729f103549184574e99e311ce5c380a4a16`。先前fcd1完整Unit574=573PASS/0FAIL/1SKIP通过；独立审查发现两张挂载错误截图实际纯黑，不能证明可见错误。随后仅修挂载测试接入真实UIWindowScene和layer截图，visible-feedback完整方法1/1PASS，两张中文错误图直接可见；新744e772上重新完成整套最终门，不仅复用前一次Unit。黑图与原始结果原样保留，生产blob全同fcd1。
+
+最终四轮均clean且同SHA：candidate2-debug-build exit0；candidate2-unit **574=573PASS/0FAIL/1SKIP** / runtimeWarnings=[]；candidate2-ui **3/3PASS，0SKIP** / runtimeWarnings=[]；candidate2-release **unsigned generic iOS build exit0**（非Archive）。精确command、destination、耗时、source manifest与record/log/summary SHA256见本轮JSON。环境arm64/macOS27.0.1(26A434)、Xcode27.1(27A9275)、SDK27.1，专用iPhone18Pro/iOS27.0(24A434)/42609456-859D-41F8-8977-4B2D85A74082；Xcode原生操作串行，未修改宿主时间/私人样本。
+
+关键UI实际完整selectors：AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence；AppLaunchSmokeTests/testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch；SleepUITests/testGoalVisibilityAndDeniedReminderRemainIndependentOfSavedFacts。RR01实际同值编辑器及IC02真实sheet关闭/重开由最终Unit的挂载完整链证明；后者最终两图真实中文off+红色错误可见。UI前两方法未产生截图，manifest如实记录；睡眠方法有1张PNG。其它未改UI只保留历史有效记录，没有声称本轮重跑全矩阵或真机系统客户端。
+
+RR02最终因果：writer-frozen→production-observe-entry→independent-probe-submitted→marker-pending-after-refresh→main-probe→release-requested→writer-released→second-publisher-held→production-observe-entry→second-busy-observe→production-observe-entry→native-save-free（独立线程之间允许不改变因果的交错，精确顺序以原log为准）。回拨尝试在raw held时busy，观察fence待锁释放fresh合并，最终marker持久/错误清除，无额外用户refresh；随后回拨改变目标被拒绝。旧V01真实Todo journal竞争、非有限quantity原bitPattern/ID/unit/result、原图字节、raw snapshot保留及Investment晚checkpoint/pause/finish均在本轮完整Unit中实际通过。
+
+实包Debug/Release各App、Share、Widget均核对原Bundle IDs、1.0(7)、MinimumOS17.0，两个App BuildProvenance为完整744e772/Dirty=false/Source=localGit/Tag空，Mach-O AlarmKit为LC_LOAD_WEAK_DYLIB，en/zh-Hans用途说明非空；Release三个codesign -dv均not signed at all。四份142文件manifest同字节且独立比Git候选；详细二进制hash和签名输出在final-bundle-and-gates.json，证明hash入本轮JSON。project/plist/历史schema/ZIP均未改，未引入依赖。
+
+独立reviewer `/root/terminal_independent_reviewer` 原文终审SHA256 `991c9453c63e715c8f9e546d9fb97b0ee43abbbddae5d2293aaba0adbac6364d`，原样追加REVIEW。其先独立提反例，阶段发现第二busy恢复遗漏并由本轮闭环，又发现黑图证据缺口后补验；最终直接核完整相关调用者、xcresult/log/代表图与六实包并复算。范围内无未关闭confirmed P0/P1/P2，满足本地READY；O-01仍非阻断UNCONFIRMED。初fetch与simctl的沙箱权限尝试失败属于工具环境，提升到授权本机只读/正常Git操作后恢复，未记成测试PASS或产品缺陷。
+
+以下本轮19次实际分轮全部保留，不重写之前集成38轮。原red-chains 3FAIL、两次focused的夹具时序FAIL、黑图证据问题及全部补验不改写为一次全绿。唯一Unit SKIP仍是物理低空间隔离HFS+图，不填主卷。
+
+| 实际轮次 | source HEAD/状态 | exit | total/PASS/FAIL/SKIP |
+| --- | --- | --- | --- |
+| red-build | 6430a8570ce2/dirty | 0 | 无测试体（构建） |
+| red-chains | 6430a8570ce2/dirty | 65 | 3/0/3/0 |
+| green-build | 6430a8570ce2/dirty | 0 | 无测试体（构建） |
+| green-chains | 6430a8570ce2/dirty | 0 | 3/3/0/0 |
+| expanded-build | 6430a8570ce2/dirty | 0 | 无测试体（构建） |
+| expanded-build2 | 6430a8570ce2/dirty | 0 | 无测试体（构建） |
+| focused-matrix | 6430a8570ce2/dirty | 65 | 36/35/1/0 |
+| focused-build3 | 6430a8570ce2/dirty | 0 | 无测试体（构建） |
+| focused-matrix2 | 6430a8570ce2/dirty | 65 | 36/35/1/0 |
+| focused-build4 | 6430a8570ce2/dirty | 0 | 无测试体（构建） |
+| focused-matrix3 | 6430a8570ce2/dirty | 0 | 37/37/0/0 |
+| final-debug-build | fcd1c9b0c310/clean | 0 | 无测试体（构建） |
+| final-unit | fcd1c9b0c310/clean | 0 | 574/573/0/1 |
+| visible-feedback-build | fcd1c9b0c310/dirty | 0 | 无测试体（构建） |
+| visible-feedback | fcd1c9b0c310/dirty | 0 | 1/1/0/0 |
+| candidate2-debug-build | 744e7729f103/clean | 0 | 无测试体（构建） |
+| candidate2-unit | 744e7729f103/clean | 0 | 574/573/0/1 |
+| candidate2-ui | 744e7729f103/clean | 0 | 3/3/0/0 |
+| candidate2-release | 744e7729f103/clean | 0 | 无测试体（构建） |
+
+
+交付仅普通commit/push原分支和更新唯一Draft PR13描述；base保持codex/time-investment-v1。不为纯Docs重建；交付SHA以实际commit/PR head+final-delivery-proof核对，主目录三项未知改动保留。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持；设备/私人库/签名安装/merge/force/tag/Archive/TestFlight均未执行，停在Owner设备门。
