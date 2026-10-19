@@ -162,3 +162,8 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## PR #13 第二轮独立复核限定补修 — 2026-10-18
 
 [第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)：基于已审交付 e75ac561 / 产品597552a，处理 CR-01～06 和 OBS-01/02 的限定补验。Owner 已批准沿同一 Draft PR #13 / 原 base 连续执行，FIX2_GOAL_SHA 由短引导 prompt 固定。本次仅规格准备，新的实现与原生验证均未执行；两份 CURRENT 最新章节和新 Goal 取代前轮仅等设备的本地停点。已认可修复作为保护，旧失败轮次和设备/发行边界保留。
+
+
+### 2026-10-19 PR #13 系统复盘与真机前修复
+
+[系统审查与原因复盘](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md) 固定审查产品 c296a369 / 交付 62210d9，记录7组SR工作、两项有界BV、完整消费者/生命周期矩阵及证据边界。[真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md) 是下一次给 Codex 的执行规格，SYSTEM_FIX_GOAL_SHA 由短 prompt 固定。当前 LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY，纯文档准备，产品修复和新原生测试未执行；两份CURRENT顶部与新Goal取代旧仅等设备的本地停点。原PR/base、旧关闭/失败证据和设备/发行边界保持。

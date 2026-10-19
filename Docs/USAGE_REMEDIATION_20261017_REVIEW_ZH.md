@@ -1,3 +1,7 @@
+> **2026-10-19 系统复核：LOCAL_REVIEW_FIX_REQUIRED。** 固定产品 c296a369 / 交付 62210d9。7 组 SR 修复工作开放（5 组 P2、2 组 P3），BV-01/02 待有界验证。原因复盘、合法反例、完整消费者/生命周期覆盖和证据层级见 [系统审查原文](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)；执行 [真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md)。本次只审源码/测试/提交并写文档，未运行新原生测试。下方既有 R/F/CR 关闭原文和失败轮次完整保留，旧 READY 不作为当前结论。
+
+---
+
 > **2026-10-18 第二轮外部独立复核：CR-01～03 为仍开放 P2，CR-04～06 为 P3；当前 LOCAL_REVIEW_FIX_REQUIRED。** 基于产品 597552a / 交付 e75ac561 的源码和测试内容；未执行本轮原生测试。下一轮执行规格见 [第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)，本次复核摘要在本文末尾。以下保留上一轮全部原文；其中“无未关闭 P2 / READY”不作为当前结论。
 
 ---
@@ -199,3 +203,10 @@ CR-03 的自动恢复存在明确证据边界：技术时间相等不能单独�
 本地产品验证与独立复核门已满足 **READY_FOR_OWNER_DEVICE_GATE** 条件；实施者仍需完成文档交付、普通 push 及 PR Draft/base/head 核对。D1–D4 未通过；AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 均保留。本结论不授权私人设备/库操作、签名安装、merge、force push、tag、Archive 或 TestFlight。
 
 ```
+
+
+## 2026-10-19 系统复核登记 — SR/BV
+
+本轮完整独立审查与原因复盘固定保留于 [SYSTEM_REVIEW](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)。SR-01 合并此前 NR-01/02 并扩展停止后普通编辑同因分支；SR-02 体重无损编辑、SR-03 Weekly 全事实业务日/截止、SR-04 MainActor 发布等待、SR-05 settings 旧任务晚错、SR-06 成功编辑器释放、SR-07 同类 UI 收尾。BV-01 Growth 真读取、BV-02 非有限 quantity 正式落库/备份，先不定性为 confirmed P2。
+
+这次结论否定的是“本地已可直接交接设备门”的当前停点，不抹去旧 CR-01～06 在其原适用范围的修复证据。本次未读到开发机全部原始运行产物、没有重跑 Xcode；新修复关闭必须由 Codex 固定产品 SHA 后补证，不能用旧251PASS代替。

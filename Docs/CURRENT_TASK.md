@@ -1,3 +1,21 @@
+# 当前任务 — PR #13 真机前系统整改收敛（2026-10-19）
+
+**状态：SYSTEM_REVIEW_COMPLETE / FIX_GOAL_READY / LOCAL_REVIEW_FIX_REQUIRED。**
+
+本轮固定审查产品 c296a3691d53ce7f5b5bff36fbf7de525d86510f、交付 62210d9910bae50acf0d58e6cb928e52a67c4a6f。用户要求原因复盘与系统 review，并把真机前问题和 Codex 执行目标记录到 GitHub；本次只修改文档，未实施产品修复或运行新原生测试。
+
+执行入口：[USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md)。原因、反例和全流程覆盖见 [SYSTEM_REVIEW](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)。SYSTEM_FIX_GOAL_SHA 由 Owner 发给 Codex 的短 prompt 指定；规格文件不自引用提交 SHA。
+
+后续修复按同一连续批次 SF-A 提醒生命周期、SF-B 事实/展示、SF-C 计时/资源与 BV、SF-D 集中交付执行。SR-01～07 需明确关闭，BV-01/02 需有界结论；每项给出不变量、全部相关消费者、合法操作序列和固定 SHA 的证据。Codex 收到执行 prompt 后不在计划/单阶段/首次 review 后停止。
+
+轻量核对原工作树和远端，保留未知改动和后续有效提交，沿原分支 codex/usage-remediation-20261017、Draft PR #13、base codex/time-investment-v1 续接。不从旧 BASE 重建；接收纯 Markdown 规格不跑全量基线或构建。
+
+阶段定向反例，末尾一次集中 Unit/关键 UI、干净产品 SHA 双构建/实包和独立复核；文档提交不重建。必要本地事项全部收敛后才恢复 READY_FOR_OWNER_DEVICE_GATE。旧设备/环境 FAIL、SKIP、NOT_RUN 不代填通过，设备和发布动作仍留后续 Owner 任务。
+
+---
+
+以下为历史执行和较早停点，当前任务以上文为准。
+
 # PR #13 第二轮限定补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
 固定 FIX2_GOAL_SHA `41ef47c384464823f9456e9816d574ba7edff563` 的 CR-01～CR-06 已逐项闭环；OBS-01 完成既有故障契约恢复验证，OBS-02 完成有界入口加固，原生 UI 可达性保持 UNCONFIRMED。产品/测试 SHA `c296a3691d53ce7f5b5bff36fbf7de525d86510f`，之后纯文档交付的 SHA 以 commit/PR head 与外部 final-delivery-proof.json 核对。

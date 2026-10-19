@@ -1,3 +1,7 @@
+> **2026-10-19 当前验收：LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。** 固定已审产品 c296a369、交付 62210d9；SR-01～07 OPEN，BV-01/02 NOT_RUN。完整矩阵见 [系统审查](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)，关闭要求见 [真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md)。本次文档提交未实施修复或产生新原生 PASS；251/0/1 等为旧开发端运行报告。本轮登记追加在文末。历史事实、旧有效修复和设备/环境未通过状态不改写。
+
+---
+
 > **2026-10-18 第二轮外部复核后：LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。** CR-01～06 均 OPEN，OBS-01/02 待限定补验；新矩阵见本文末尾，执行 [第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)。本次只准备规格，新产品/测试 NOT_RUN。下方上一轮运行结果保留，其 READY 和“本地全部关闭”不作为当前状态。
 
 ---
@@ -446,3 +450,22 @@ xcodebuild test-without-building -xctestrun /tmp/pgos-pr13-fix-derived/Build/Pro
 ```sh
 xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination generic/platform=iOS -derivedDataPath /tmp/pgos-pr13-fix-release -resultBundlePath /tmp/pgos-pr13-fix2-evidence/final-release1.xcresult CODE_SIGNING_ALLOWED=NO build
 ```
+
+
+## 2026-10-19 真机前系统整改 — 新验收登记
+
+| 项目 | 当前状态 | 最小关闭方向 |
+| --- | --- | --- |
+| SR-01 / P2 | OPEN；新原生回归 NOT_RUN | 真旧 nil 的 Stop/delete/Edit/list/timezone 全链与健康类别隔离、回滚/重开 |
+| SR-02 / P2 | OPEN；NOT_RUN | locale-aware 无损体重编辑、日期-only/no-op、实际保存重开 |
+| SR-03 / P2 | OPEN；NOT_RUN | Weekly 保存业务日、Entry/Habit/Weight 同一实际 asOf、历史周完整 |
+| SR-04 / P2 | OPEN；NOT_RUN | 真实导出持锁时主执行器响应，最终 checkpoint 可靠落盘与快照一致 |
+| SR-05 / P2 | OPEN；NOT_RUN | daily/weekly A晚普通错不覆盖B最新设置，当前失败仍反馈 |
+| SR-06 / P3 | OPEN；NOT_RUN | 新manual/timer成功释放Workspace editor，草稿/幂等/落点保持 |
+| SR-07 / P3 | OPEN；NOT_RUN | 周/月/多次 mixed UI、反馈收起语义、历史截止文案 |
+| BV-01 | NOT_RUN；未确认缺陷 | 真实已挂载Growth/保存事件/历史读取计数，按证据局部处理 |
+| BV-02 | NOT_RUN；未确认缺陷 | 非有限数量实际Service→SwiftData重开→export，按结果处理 |
+
+固定输入为产品 c296a3691d53ce7f5b5bff36fbf7de525d86510f／交付 62210d9910bae50acf0d58e6cb928e52a67c4a6f。SYSTEM_FIX_GOAL_SHA 由 Owner prompt 固定。详细合法起点、相反操作、失败回滚、消费者和停止条件以新 [Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md) 为准。结果追加产品SHA、selector、命令/环境/退出码、证据层级和复用范围，不把多轮相加成一次全绿。
+
+D1–D4未通过，AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN原样保留。本次审查/规格准备不改变它们。

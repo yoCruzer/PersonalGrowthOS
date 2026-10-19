@@ -1,3 +1,19 @@
+# PR #13 系统复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-19）
+
+本轮固定审查产品 c296a3691d53ce7f5b5bff36fbf7de525d86510f、交付 62210d9910bae50acf0d58e6cb928e52a67c4a6f。用户要求原因复盘与系统 review，并把真机前问题和 Codex 执行目标记录到 GitHub；本次只修改文档，未实施产品修复或运行新原生测试。
+
+完整结论见 [系统审查与复盘](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)；执行规格见 [真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md)。确认 7 组修复工作：SR-01～05 为 P2，SR-06/07 为本次明确 P3 收尾；BV-01/02 是必须完成一次有界验证的观察，不能预先算 confirmed 缺陷。
+
+本地停点已从 READY_FOR_OWNER_DEVICE_GATE 改为 LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。旧 CR-01～06 关闭证据、OBS-01/02 的有效处置保留；新发现按 SR/BV 独立记录，不以旧关闭结论代替本轮全链审查。测试数量不是覆盖证明。
+
+沿原分支 codex/usage-remediation-20261017 和唯一 Draft PR #13，base 保持 codex/time-investment-v1。SYSTEM_FIX_GOAL_SHA 由 Owner 短 prompt 固定为新规格提交；Codex 接到执行指令后，按 Goal 连续完成本地修复、验证、独立审查和普通 push，不在内部阶段重复申请继续。
+
+D1–D4、AlarmKit 正向、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 的原状态不变。本次未 merge、强推、签名安装、Archive、tag 或 TestFlight。
+
+---
+
+以下全部为较早交接与运行历史，最新状态以上文及本轮 Goal 为准，原始结果原样保留。
+
 # PR #13 第二轮限定补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
 固定 FIX2_GOAL_SHA `41ef47c384464823f9456e9816d574ba7edff563` 的 CR-01～CR-06 已逐项闭环；OBS-01 完成既有故障契约恢复验证，OBS-02 完成有界入口加固，原生 UI 可达性保持 UNCONFIRMED。产品/测试 SHA `c296a3691d53ce7f5b5bff36fbf7de525d86510f`，之后纯文档交付的 SHA 以 commit/PR head 与外部 final-delivery-proof.json 核对。
