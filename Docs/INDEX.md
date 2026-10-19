@@ -188,3 +188,8 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## 2026-10-20 PR #13 终态复核限定补修完成
 
 固定`ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`的TC-01～03沿S-A→S-C关闭；干净产品/测试`1b150068e76f4d7e7a6defcd51f10622951f4b4b`（实现`2b0d491`）完成Unit579=578PASS/0FAIL/1SKIP、关键UI3/3、Debug/unsigned Release、六实包核对及独立终审，恢复本地READY_FOR_OWNER_DEVICE_GATE。实际21轮及旧FAIL/SKIP、设备/发行边界见两份CURRENT、既有EXECUTION/ACCEPTANCE/REVIEW和[本轮JSON](USAGE_REMEDIATION_20261020_TERMINAL_RECHECK_RUNS.json)；纯文档交付不重建，原PR/base不变。
+
+
+## 2026-10-20 GitHub Actions、系统真机验收与分支安全收口
+
+[持续集成/设备门/分支安全收口 Goal](CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md) 为本次 Owner 批准的新阶段（G1 CI→G2 设备→G3 分支候选清点与获批删除），[设备验收矩阵](CI_DEVICE_BRANCH_CLEANUP_20261020_DEVICE_GATE_ZH.md) 与 [初始分支台账](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md) 为执行模板。当前仅规划文档，尚未新增GitHub Actions或完成真机验收，也未清理任何分支。Xcode Cloud此前成功由Owner反馈，源SHA与本次候选对齐仍待核对。私人设备/数据库操作和实际远端分支删除保留Owner单独授权门。
