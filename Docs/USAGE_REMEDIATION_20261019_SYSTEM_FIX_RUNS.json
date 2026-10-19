@@ -1342,6 +1342,672 @@
         "testFailures": []
       },
       "rawSummarySHA256": "b55964efee2a9d7f5c3becc1c43e64b9a5bad36efeddf282698554c6c0d4111f"
+    },
+    {
+      "name": "final-debug1",
+      "kind": "build",
+      "sourceHead": "00b65b70d988ef26455d719ccf35eda61233120a",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 6.266,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-system-evidence/final-debug1.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "46707094a1227dec770513e8da6bfed91d080872468fb7deb3ee2c0ec2dcf9f1",
+      "logSHA256": "d220084678a0c897577bb2c88bb4f278aa218af3ab00abfe9a8f7871c195f650"
+    },
+    {
+      "name": "final-unit1",
+      "kind": "test",
+      "sourceHead": "00b65b70d988ef26455d719ccf35eda61233120a",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 49.545,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-system-evidence/final-unit1.xcresult",
+        "-only-testing:PersonalGrowthOSTests"
+      ],
+      "recordSHA256": "a556126a39f46245d516ee74052f30a096713f03e1a315f4a2635f32dd777da5",
+      "logSHA256": "66f23b9ec16027b807c6ebdb45e15e5e0aa8e731e3b8ff7c4f78c931aad99400",
+      "summary": {
+        "totalTestCount": 557,
+        "passedTests": 556,
+        "failedTests": 0,
+        "skippedTests": 1,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "4bbb9bae825b8485c1dce1e50c437470497d08533279840bcd16f94cd359e9e5"
+    },
+    {
+      "name": "final-ui1",
+      "kind": "test",
+      "sourceHead": "00b65b70d988ef26455d719ccf35eda61233120a",
+      "dirty": false,
+      "exit": 65,
+      "elapsedSeconds": 1326.589,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-system-evidence/final-ui1.xcresult",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeightNoOpAndDateOnlyEditsPreserveFullValueAfterRelaunch",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeeklyCurrentCutoffAndHistoricalLateWeekSummary",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageMixedTodayAndGrowthDefaultAndChineseMaximumText",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageEditorListCreationManagementAndCancellationPreserveDraft",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoListCreateRenameFilterAndConfirmedDeleteKeepsTask",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageLongElapsedReminderOffersFutureResetAndPreservesSeriesDatesAcrossColdLaunch",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testReviewFixWeightCutoffAndFiftyRowPaginationAcrossDays",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testReviewFixWeightCutoffChineseDarkMaximumText",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testFix2CR04CandidateEditAndDeleteInvalidateUnchangedDraft",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR2FailedCloseKeepsEditorAndRetrySurvivesColdLaunch",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testRecordDraftSurvivesManualActivitySaveAndChineseDarkAX",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testTimerForegroundBackgroundFrozenConfirmationAndColdRelaunch",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testReviewFixUX1OutsideWindowDateSwitchRetainsDateMonthAndDetailChineseDarkAX",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testUsageHistoryNaturalWindowMonthPagingAndExactCrossDayFact",
+        "-only-testing:PersonalGrowthOSUITests/SleepUITests/testMorningThreeChoicesSaveRestartReviewEditDeleteAndWeightFocus",
+        "-only-testing:PersonalGrowthOSUITests/ImportantDayUITests/testMinimalCreateWriteRelatedEntryAndRelaunch"
+      ],
+      "recordSHA256": "d56feed778530a3334b6d3d484f6a8552302c12858272f920a4a5e4d1c15327a",
+      "logSHA256": "bdf2e73c4c221a76c8d242e6c5408c5757238e312cbae7a61769d53008461c6f",
+      "summary": {
+        "totalTestCount": 21,
+        "passedTests": 18,
+        "failedTests": 3,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertTrue failed - Attributes: Application, 0x11a1f43c0, pid: 45276, label: '随心log'\nElement subtree:\n →Application, 0x11a1f43c0, pid: 45276, label: '随心log'\n    Window (Main), 0x11a1f4780, {{0.0, 0.0}, {402.0, 874.0}}\n      Other, 0x11a1f48c0, {{0.0, 0.0}, {402.0, 874.0}}\n      Other, 0x11a1f4a00, {{0.0, 0.0}, {402.0, 874.0}}\n        Other, 0x11a1f4b40, {{0.0, 0.0}, {402.0, 874.0}}\n          Ot",
+            "testIdentifierString": "InvestmentUITests/testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments()",
+            "testName": "testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments()"
+          },
+          {
+            "failureText": "Failed to get matching snapshot: No matches found for Descendants matching type Switch from input {(\n    Application, pid: 45194, label: '随心log'\n)}",
+            "testIdentifierString": "ImportantDayUITests/testMinimalCreateWriteRelatedEntryAndRelaunch()",
+            "testName": "testMinimalCreateWriteRelatedEntryAndRelaunch()"
+          },
+          {
+            "failureText": "Failed to tap \"todo-detail-toggle\" Button: No matches found for Elements matching predicate '\"todo-detail-toggle\" IN identifiers' from input {(\n    Button, identifier: 'todo-reminder-reset', label: 'Modify reminder time',\n    Button, identifier: 'todo-feedback-view-task', label: 'View Todo',\n    Button, identifier: 'todo-reminder-feedback-dismiss', label: 'Got it',\n    Button, identifier: 'sun.max",
+            "testIdentifierString": "AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence()",
+            "testName": "testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence()"
+          }
+        ]
+      },
+      "rawSummarySHA256": "4aa56d499c1f9e229152217e236e7b1476be91882a5cf3957f69d6a3b47321b4"
+    },
+    {
+      "name": "final-debug2",
+      "kind": "build",
+      "sourceHead": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 3.357,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-system-evidence/final-debug2.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "73992a76210d687fec96ba1d37ddbb3b0e993370640362a6cad4a4f6ae09f5b6",
+      "logSHA256": "6985a7257a8a9f1f483db0d2aba5c3ab0f878e01d485e3281ae25c7f0da9a8e6"
+    },
+    {
+      "name": "final-ui2",
+      "kind": "test",
+      "sourceHead": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 274.48,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-system-evidence/final-ui2.xcresult",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDeniedReminderFeedbackSurvivesEditorDismissalAndOffersSettings",
+        "-only-testing:PersonalGrowthOSUITests/ImportantDayUITests/testMinimalCreateWriteRelatedEntryAndRelaunch",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments"
+      ],
+      "recordSHA256": "868a7c95a160b8a2fb1502bfbe8742553bc6bca34e3379f5bdfc83f020432c48",
+      "logSHA256": "f5b10a9cc7aca004ba08e62345c3f2c1931b1a9a254273412e8e2d2a97e8161c",
+      "summary": {
+        "totalTestCount": 4,
+        "passedTests": 4,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "d15c58f04f478fb6a3470986a5c258c3d66db2bfc1b66fac7ccc4eda87d7a536"
+    },
+    {
+      "name": "final-release1",
+      "kind": "build",
+      "sourceHead": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 42.5,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-release",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-system-evidence/final-release1.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "recordSHA256": "8c7bcf1de24b105afcb8a0a00894d2e2899c3fd61f35df8fffbd614c331502a3",
+      "logSHA256": "f618b7b313ee65018d929fa10f794f65cd4b641da40d4b89e9fb29a7faff1d81"
     }
-  ]
+  ],
+  "finalCandidate": {
+    "productTestSHA": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+    "concentratedUnitSHA": "00b65b70d988ef26455d719ccf35eda61233120a",
+    "localGateChecks": {
+      "final-debug": {
+        "identitiesVersionMinimumOS": "PASS",
+        "provenance": {
+          "Commit": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+          "Dirty": false,
+          "Source": "localGit",
+          "Tag": ""
+        },
+        "alarmWeakLink": "PASS",
+        "usageLocalization": "PASS"
+      },
+      "final-release": {
+        "identitiesVersionMinimumOS": "PASS",
+        "provenance": {
+          "Commit": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+          "Dirty": false,
+          "Source": "localGit",
+          "Tag": ""
+        },
+        "alarmWeakLink": "PASS",
+        "usageLocalization": "PASS"
+      },
+      "final-debug2": {
+        "exit": 0,
+        "sha": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+        "dirty": false
+      },
+      "final-ui2": {
+        "exit": 0,
+        "sha": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+        "dirty": false,
+        "counts": {
+          "totalTestCount": 4,
+          "passedTests": 4,
+          "failedTests": 0,
+          "skippedTests": 0,
+          "runtimeWarnings": []
+        }
+      },
+      "final-release1": {
+        "exit": 0,
+        "sha": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+        "dirty": false
+      },
+      "final-unit1": {
+        "sha": "00b65b70d988ef26455d719ccf35eda61233120a",
+        "counts": {
+          "total": 557,
+          "passed": 556,
+          "failed": 0,
+          "skipped": 1
+        },
+        "reuse": "All production and Unit source blobs unchanged at final SHA"
+      },
+      "final-ui1": {
+        "sha": "00b65b70d988ef26455d719ccf35eda61233120a",
+        "counts": {
+          "total": 21,
+          "passed": 18,
+          "failed": 3
+        },
+        "reuse": "18 unchanged methods; retain 3 original failures; do not call one green suite"
+      }
+    },
+    "reuse": {
+      "concentratedUnitAndUIOriginalSHA": "00b65b70d988ef26455d719ccf35eda61233120a",
+      "finalProductTestSHA": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+      "changedPaths": [
+        "PersonalGrowthOSUITests/AppLaunchSmokeTests.swift",
+        "PersonalGrowthOSUITests/ImportantDayUITests.swift",
+        "PersonalGrowthOSUITests/InvestmentUITests.swift"
+      ],
+      "productionAndUnitSourceBlobsUnchanged": true,
+      "methodChecks": [
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeightNoOpAndDateOnlyEditsPreserveFullValueAfterRelaunch",
+          "unchanged": true,
+          "oldMethodSHA256": "a72fadf5d6764ab73b37b4bf19ae42399d783e123bcb06523172d9392aa277d1",
+          "newMethodSHA256": "a72fadf5d6764ab73b37b4bf19ae42399d783e123bcb06523172d9392aa277d1"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeeklyCurrentCutoffAndHistoricalLateWeekSummary",
+          "unchanged": true,
+          "oldMethodSHA256": "5479be8ce57ed5a7db4f681f064025db7e3d31c82f9447cb4fda1ed628a87322",
+          "newMethodSHA256": "5479be8ce57ed5a7db4f681f064025db7e3d31c82f9447cb4fda1ed628a87322"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch",
+          "unchanged": true,
+          "oldMethodSHA256": "9e31f502e60928150b4a560eca0813c8d9576b82c0052dfc54196695c72d4d8e",
+          "newMethodSHA256": "9e31f502e60928150b4a560eca0813c8d9576b82c0052dfc54196695c72d4d8e"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageMixedTodayAndGrowthDefaultAndChineseMaximumText",
+          "unchanged": true,
+          "oldMethodSHA256": "121e834eae9f3b64418f6949a00a85686269b0bd7ad7573b92e767364fddac6a",
+          "newMethodSHA256": "121e834eae9f3b64418f6949a00a85686269b0bd7ad7573b92e767364fddac6a"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence",
+          "unchanged": false,
+          "oldMethodSHA256": "53f1c1302d11e679c7852f38dab6836d958e93b5a70146ebb427a5d798e4fd99",
+          "newMethodSHA256": "08f81131194061237bdf6ce3a00940c191c7c6ba1cfd28d1fa63cfded5bacc3e"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageEditorListCreationManagementAndCancellationPreserveDraft",
+          "unchanged": true,
+          "oldMethodSHA256": "0f5cdc16ac0499c8fd0ad989c7a7c0f3fa06257a018ef037150b903668162b8e",
+          "newMethodSHA256": "0f5cdc16ac0499c8fd0ad989c7a7c0f3fa06257a018ef037150b903668162b8e"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoListCreateRenameFilterAndConfirmedDeleteKeepsTask",
+          "unchanged": true,
+          "oldMethodSHA256": "ebc93bd8402489df0a2d2031dcfb74424daba0785746ef7bcbc5fa128877ba28",
+          "newMethodSHA256": "ebc93bd8402489df0a2d2031dcfb74424daba0785746ef7bcbc5fa128877ba28"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageLongElapsedReminderOffersFutureResetAndPreservesSeriesDatesAcrossColdLaunch",
+          "unchanged": true,
+          "oldMethodSHA256": "1f3f329d3f820714c0f1e7442719d3a7ff8c5a5e5792bea8b90852bf1c895ad1",
+          "newMethodSHA256": "1f3f329d3f820714c0f1e7442719d3a7ff8c5a5e5792bea8b90852bf1c895ad1"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testReviewFixWeightCutoffAndFiftyRowPaginationAcrossDays",
+          "unchanged": true,
+          "oldMethodSHA256": "2c3a6848ac5e44049254878d48bd38ae78a663f1f2ee91bed4d3cba42aea7806",
+          "newMethodSHA256": "2c3a6848ac5e44049254878d48bd38ae78a663f1f2ee91bed4d3cba42aea7806"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/AppLaunchSmokeTests/testReviewFixWeightCutoffChineseDarkMaximumText",
+          "unchanged": true,
+          "oldMethodSHA256": "454d76a26152868d6ecd69d7921a1f4fe5c2c2f657b5e46ed2e33f3e4a573bb4",
+          "newMethodSHA256": "454d76a26152868d6ecd69d7921a1f4fe5c2c2f657b5e46ed2e33f3e4a573bb4"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText",
+          "unchanged": true,
+          "oldMethodSHA256": "abf59454bd76cccdde5e93778a547f0a2a9e3e646db1fbdc19a593a946dfed78",
+          "newMethodSHA256": "abf59454bd76cccdde5e93778a547f0a2a9e3e646db1fbdc19a593a946dfed78"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testFix2CR04CandidateEditAndDeleteInvalidateUnchangedDraft",
+          "unchanged": true,
+          "oldMethodSHA256": "7b03d7ee7309c601bfdfdad76932a92a649efc446c766220e30967f126473118",
+          "newMethodSHA256": "7b03d7ee7309c601bfdfdad76932a92a649efc446c766220e30967f126473118"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview",
+          "unchanged": true,
+          "oldMethodSHA256": "08282d95678bf7a73507b1695ad7e66e97522597ca0c37b4f787e59f74dfc9a7",
+          "newMethodSHA256": "08282d95678bf7a73507b1695ad7e66e97522597ca0c37b4f787e59f74dfc9a7"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testExternalR2FailedCloseKeepsEditorAndRetrySurvivesColdLaunch",
+          "unchanged": true,
+          "oldMethodSHA256": "4faccbbb92135a057ab8de9b85bfec954407586159832c936d0f744fbd8879ba",
+          "newMethodSHA256": "4faccbbb92135a057ab8de9b85bfec954407586159832c936d0f744fbd8879ba"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments",
+          "unchanged": false,
+          "oldMethodSHA256": "252e127d3c006f4149ca8e57e6379fef6124604d80a09ef2da5ae9717083d1e4",
+          "newMethodSHA256": "ad493dd3e5a0dfe120fd91567190425db9350f65fd572d1bd72fcb3c24758bd5"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testRecordDraftSurvivesManualActivitySaveAndChineseDarkAX",
+          "unchanged": true,
+          "oldMethodSHA256": "59257a080dbdc812254cd31a7ef995c8e23de4d37e9e91a6eea564ee95518c01",
+          "newMethodSHA256": "59257a080dbdc812254cd31a7ef995c8e23de4d37e9e91a6eea564ee95518c01"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testTimerForegroundBackgroundFrozenConfirmationAndColdRelaunch",
+          "unchanged": true,
+          "oldMethodSHA256": "bf15fcb4fc6f043bcd6470819a6ae629282ea30e93adfa22f7106fbef05fcc0a",
+          "newMethodSHA256": "bf15fcb4fc6f043bcd6470819a6ae629282ea30e93adfa22f7106fbef05fcc0a"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testReviewFixUX1OutsideWindowDateSwitchRetainsDateMonthAndDetailChineseDarkAX",
+          "unchanged": true,
+          "oldMethodSHA256": "37b57dbcc7f3aad12e22c4cd66424beab30213da97c0203c6aa7ee7fc374e942",
+          "newMethodSHA256": "37b57dbcc7f3aad12e22c4cd66424beab30213da97c0203c6aa7ee7fc374e942"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/InvestmentUITests/testUsageHistoryNaturalWindowMonthPagingAndExactCrossDayFact",
+          "unchanged": true,
+          "oldMethodSHA256": "c52217e28295e49a6892e2b6a7da11dc30641f3a0661e25b4472b52a58aed365",
+          "newMethodSHA256": "c52217e28295e49a6892e2b6a7da11dc30641f3a0661e25b4472b52a58aed365"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/SleepUITests/testMorningThreeChoicesSaveRestartReviewEditDeleteAndWeightFocus",
+          "unchanged": true,
+          "oldMethodSHA256": "9b18a4db3801adb8f34b24130970a2ff55999ecd39534a68d60b17e189ce5856",
+          "newMethodSHA256": "9b18a4db3801adb8f34b24130970a2ff55999ecd39534a68d60b17e189ce5856"
+        },
+        {
+          "selector": "PersonalGrowthOSUITests/ImportantDayUITests/testMinimalCreateWriteRelatedEntryAndRelaunch",
+          "unchanged": false,
+          "oldMethodSHA256": "e221cd38589ab192c97a6f70ab24c4ddc10cb9e896ccb3c4641f814c9dc50086",
+          "newMethodSHA256": "c1a5b7ff1e99e61b4fe68d18de9e419ac2e384d6473cb7fe86b279d434b6104a"
+        }
+      ],
+      "note": "Reuse actual unchanged source cases; final-ui1 failures remain failures. Do not concatenate rounds into one green run."
+    },
+    "bundles": {
+      "final-debug": [
+        {
+          "path": "/tmp/pgos-pr13-fix-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app",
+          "identifier": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "43303593fe3bac299ec83fc15424c5ce48c4e4fa9e4dea8585d16bbc729578f9",
+          "debugLibrariesSHA256": {
+            "PersonalGrowthOS.debug.dylib": "07be5c9f6284a93ef06ec288f3e33fac189977c4f3cd7d7a8bfb28227a70e3de",
+            "__preview.dylib": "5626685e026195268d52a3a4fa2b0ee7fa253531015a944dbaf810500d7953a6"
+          },
+          "provenance": {
+            "Commit": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+            "Dirty": false,
+            "Source": "localGit",
+            "Tag": ""
+          },
+          "alarmUsageDescription": "Schedule alarm reminders that you explicitly enable for your todos.",
+          "localizedAlarmUsageDescriptions": {
+            "zh-Hans.lproj": "为你明确开启闹钟提醒的待办安排系统闹钟。",
+            "en.lproj": "Schedule alarm reminders that you explicitly enable for your todos."
+          }
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "15dac98175aa7582e720fd6dca4cd2e9eee1ba9946a78c53ea9695b7f7cf5dd5",
+          "debugLibrariesSHA256": {
+            "__preview.dylib": "d9738b3a621145ee5195732eaee22b104e8d015e670aa5cbfa995293ea42adbd",
+            "ImportantDaysWidget.debug.dylib": "49504e8a80ab4ba9b841116a4637dee31746c5695239d0290a54c68fa3b0b328"
+          }
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "42841fffbef5b7cf7db4268d0cf41c40243d50c2abbe9ff6a6b51464b2d4df85",
+          "debugLibrariesSHA256": {
+            "__preview.dylib": "9d465fe8771d8a8725d6630a6e24a3cdce2bb3de1df5dd67b9ed8be2dd7b6cfb",
+            "ShareExtension.debug.dylib": "d5a1f135061149d0eb98a107d03abdb69812ec644e340e58f9032e519c54f81f"
+          }
+        }
+      ],
+      "final-release": [
+        {
+          "path": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app",
+          "identifier": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "aab2e40436080a78176068fe99c84113f8f959cf5964945071db712719c55be8",
+          "debugLibrariesSHA256": {},
+          "provenance": {
+            "Commit": "c55dc10fde79f1fe4dec18b03195119c2049830f",
+            "Dirty": false,
+            "Source": "localGit",
+            "Tag": ""
+          },
+          "alarmUsageDescription": "Schedule alarm reminders that you explicitly enable for your todos.",
+          "localizedAlarmUsageDescriptions": {
+            "zh-Hans.lproj": "为你明确开启闹钟提醒的待办安排系统闹钟。",
+            "en.lproj": "Schedule alarm reminders that you explicitly enable for your todos."
+          }
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "e5af21c4a3ffe0136711933f7d8a1269f02f02b5bd3bdc658317117294705637",
+          "debugLibrariesSHA256": {}
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "aa3f9e979eb8d847f3f8b20743b671b8779b4098b4b68feb7fd3608c991d54a7",
+          "debugLibrariesSHA256": {}
+        }
+      ]
+    }
+  },
+  "evidenceFiles": [
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-source-manifest.json",
+      "sha256": "2f4d01e0ba8a712303f75dfe8acbd6735a9d0d5a99536f639c8421f18529def7"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-evidence-reuse-proof.json",
+      "sha256": "952ffd30f9510f28e8edcf6b5000ccc0a238b94e5232a2d4e735ad724eff2e57"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-bundle-and-gates.json",
+      "sha256": "392e1778256e575b2ba8768b58d98e6d1e43f680129671c6a7cef0a01d6ae6b4"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-debug-bundle-proof.json",
+      "sha256": "b9ed75ddb1b41ecedfd557c309dd6b5c1998ff3e5d5bd1c626ee01291b1a2106"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-release-bundle-proof.json",
+      "sha256": "7a94837fee1bb736d0e069facb984f913c6febeff60a9885def627fe5024dd47"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-debug-mach-o.txt",
+      "sha256": "3c40d805bb8936a345375cdb7ddfefb87ce39dc0385512d1981e69ce39bb150d"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-release-mach-o.txt",
+      "sha256": "31babdc9b02b3e1ed57fa1cfa84ad38c5a2ffc7fbb75b671f0151f50a6ffd4c5"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-attachment-map.json",
+      "sha256": "41118144f00d6dc2ab7aaf01659303a5ddfb163fa669d889d4415de6d0960b42"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-ui1-attachments/manifest.json",
+      "sha256": "b186537cc0555fbcae822c47373207a6216c4a4738db5b39b3a08855f0549bea"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/final-ui2-attachments/manifest.json",
+      "sha256": "3679fce3b6786da62574e5ec5b7c23a285a495b1e6b696114fa17037cc785be4"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/important-fail-15.png",
+      "sha256": "1e2e5d3222525c1351f111302902cd3b038b3fb5f88857d7be9f3fde76cb66d9"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/important-fail-19.png",
+      "sha256": "84c04ca15afa8c79917bed235e00cc6843532895aa2eee9181da4d7a26a36065"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/important-fail-21.png",
+      "sha256": "3d2021bef532a70f8f4ff9d7cdc543aeeb2c29e84fb4076aa9cb31aa9c27eb6b"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/todo-fail-25.png",
+      "sha256": "c861767b08ac6ddca85a4ff9a9fc327847d4626bc7be22af98030bf38b6f99b7"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/red-TodoReminders.swift",
+      "sha256": "032b75980e455628a375660cf216dbff3c2b49618c5176fab013b93c134177ab"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/red-WeeklyReviewFoundation.swift",
+      "sha256": "bb20394e506a578997c78f4d412e2a94f5a06c98bff8a88bb6d54120897e95ae"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/red-TodoFoundation.swift",
+      "sha256": "d0104ecc08b0c5a1a62b1bea16e8d4f0b306b46bcebe4d64d5ab3f57e385cfa3"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/red-WeightFoundation.swift",
+      "sha256": "bd4ae01fce595002a144614d4e62f6bc7e052d745030f9b4a49837b6e01f8c71"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/red-ExternalCaptureImport.swift",
+      "sha256": "bea6e20115cfd04fd5b51a84e951349a278461fb401104a9bc3841460d45956f"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/red-WeightViews.swift",
+      "sha256": "f4fd47f93dda4f34fbe21b1f3c26f35537afb6d7a9801b529a38a15ee1cb3be0"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/pre-queue-InvestmentViews.swift",
+      "sha256": "d907adec56afebe55cc7485058af0a4f64d2c8e794ccd777c075620f6bedf0e4"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/green-e-crash.ips",
+      "sha256": "61e9abc6c96b31bf55e0fde0748efb414988e8ce793f73e498d34d4a3ddaf381"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/independent-counterexamples.md",
+      "sha256": "785a144529913ed867f71a6d888d9e5cbbf6f13b84f902c6adc2cd66bcba9404"
+    },
+    {
+      "path": "/tmp/pgos-pr13-system-evidence/independent-review.md",
+      "sha256": "97a2b772840552d3ae5f56d34f2017c5332f10d4d4ebd5ddf5a124897ca5f469"
+    }
+  ],
+  "limitations": [
+    "D1-D4 NOT_PASSED",
+    "AlarmKit native positive NOT_RUN",
+    "Public Share FAIL/environment",
+    "unsigned Safari FAIL",
+    "physical low-space SKIP/NOT_RUN",
+    "remote CI NOT_RUN"
+  ],
+  "environment": {
+    "macOS": "27.0.1 (26A434)",
+    "xcode": "27.1 (27A9275)",
+    "sdk": "27.1",
+    "simulator": {
+      "name": "PGOS-UsageRemediation-20261017",
+      "model": "iPhone 18 Pro",
+      "uuid": "42609456-859D-41F8-8977-4B2D85A74082",
+      "iOS": "27.0 (24A434)"
+    },
+    "serialXcodeAndSimulator": true,
+    "localeCases": [
+      "en_US",
+      "zh_CN",
+      "de_DE (Weight Unit)"
+    ],
+    "clock": "Fixed injected business calendars/clocks in Unit; actual asOf separated from selected week; host date unchanged"
+  },
+  "independentReview": {
+    "reviewer": "/root/pr13_system_independent_reviewer",
+    "status": "COMPLETE",
+    "counterexamplesPath": "/tmp/pgos-pr13-system-evidence/independent-counterexamples.md",
+    "counterexamplesSHA256": "785a144529913ed867f71a6d888d9e5cbbf6f13b84f902c6adc2cd66bcba9404",
+    "result": "SR01-SR07 CLOSED; BV01/BV02 CONFIRMED_AND_FIXED; no in-scope unclosed confirmed P0/P1/P2; explicit P3 completed",
+    "reportPath": "/tmp/pgos-pr13-system-evidence/independent-review.md",
+    "reportSHA256": "97a2b772840552d3ae5f56d34f2017c5332f10d4d4ebd5ddf5a124897ca5f469",
+    "originalTextPreservedIn": "Docs/USAGE_REMEDIATION_20261017_REVIEW_ZH.md"
+  },
+  "finalReadiness": "READY_FOR_OWNER_DEVICE_GATE"
 }

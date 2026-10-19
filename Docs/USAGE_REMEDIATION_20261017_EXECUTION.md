@@ -491,3 +491,77 @@ pre-final-unit新增五项5/5PASS：局部规则问题+真实旧native请求取�
 focused-ui4=1PASS/2FAIL：最新Weekly当前/历史15秒内组合PASS，mixed周行未移入视口、ImportantDay未展开More settings；focused-ui5=1PASS/1FAIL：ImportantDay40.825秒PASS，mixed细拖仍未移动离屏行。pre-final-ui采用标准滚动先移入离屏目标、再微调已可见部分，保留完整可见/44pt/计数与导航断言，实际通过。全部失败仍在原始xcresult与机器摘要。
 
 最终集中门从下一个干净产品/测试提交开始：一次完整PersonalGrowthOSTests、一组有范围的关键UI、有效Debug build-for-testing、unsigned generic iOS Release与App/Share/Widget/provenance/AlarmKit实包；然后未编写本轮实现的reviewer独立先列反例再核对本机证据。当前仅候选提交，不标READY，不以阶段结果替代集中门。最后追加的每日/每周设置明确off/relaunch原生UI将纳入该组合；系统授权/晚错仍按Unit协议和设备门分层说明。
+
+
+## 2026-10-19 系统整改最终交付 — READY_FOR_OWNER_DEVICE_GATE
+
+SYSTEM_FIX_GOAL_SHA `3dad3b04e3ff703c2e799899035285f64a5976a4`；最终干净产品/测试 SHA `c55dc10fde79f1fe4dec18b03195119c2049830f`；完整Unit与首轮关键UI在干净 `00b65b70d988ef26455d719ccf35eda61233120a` 执行。c55相对00b只改三个UI方法的驱动，全部生产/Unit blob与18个复用UI方法逐项相同。本节记录本地处置、集中门和独立终审后的最终证据。SR01～07关闭、BV01/02完成有界处置，必要本地门和未写实现reviewer终审通过，恢复READY_FOR_OWNER_DEVICE_GATE。旧失败轮次和SYSTEM_REVIEW原文保留。
+
+### 最终消费者与合法状态覆盖
+
+| 项/结论 | 最终不变量与同因处理 | 实际消费者/状态及证据 |
+| --- | --- | --- |
+| SR-01 CLOSED | stopped 不再推导未来策略；delete/stop/list/default Edit 不受旧 nil 阻断。active 不可恢复仅局部待纠正，真实结构错误仍全局保守；未确认取消优先保留重查 | TodoTaskService 所有 offset 调用者、完整 TodoReminderCoordinator/intent/shared budget。真实原始V11、旧f1覆盖nil、根删除/多期兄弟/源Entry、Stop→切区→默认改标题/备注/关提醒/清单解绑、回滚/磁盘重开/ZIP恢复；显式0/-1/7/366代次、skip/reopen/Stop；ImportExportRecoveryTests 的5个 testSystemSR01* 与 TodoFoundationTests/testSystemSR01ExplicitZeroLeadAndLargerOffsetsKeepOverrideGenerationAndTermination；UI Stop/restart、清单delete/default编辑、过期future reset保护 |
+| SR-02 CLOSED | 编辑表达无分组且Double往返，展示精度独立；不修写历史值 | WeightEditorView→WeightRules→WeightRecordService→磁盘；en_US/zh_CN/de_DE、1000/72.345/65.2、no-op/日期-only/实际改值/混合拒绝；WeightFoundationTests/testSystemSR02EditorRoundTripPreservesExactWeightAcrossLocalesAndDisk + 实际UI冷启重开 |
+| SR-03 CLOSED | 同一实际asOf截 Entry/Habit/Weight；Habit按保存业务日；所选周与截止时钟分离 | WeeklySummary 全派生/RecentEntries/TopTags/详情；Habit analytics/QuietWins 的保存metadata；真实Service跨LA周日→上海、跨年/DST、1日2次、Undo、缺metadata沿既有fallback且只读不写；未来带图Tag Entry/五分钟容差Habit/Weight时钟推进、编辑删除；WeeklyReviewFoundationTests/testSystemSR03* 两项 + 本周/历史周UI。QuietWins对缺metadata的原信任边界不被外推成新相同回退 |
+| SR-04 CLOSED | MainActor不阻塞等发布锁；保留源库/媒体互斥；排队最终checkpoint读最新权威状态 | StorePublication同锁：Investment全mutation、Workspace.scenePhase checkpoint、ImportantDay save/createEntry/delete；import/export/share worker可等待。真实export barrier→MainActor probe先于release→最终120秒/导出60秒；pause/finish晚请求不覆写；完成/取消/失败/paused/保留editor重试与无关context草稿；InvestmentPersistenceTests/testSystemSR04* 三项 + 全类原计时/进程/回滚保护 |
+| SR-05 CLOSED | 被替代或取消的旧success/CancellationError/普通error均不回写；当前真失败仍反馈 | AppShell每日/每周实际快照→ReminderSettingsUpdate→LocalReminderScheduler共享gate→结果回流；A addRepeating挂起→B off/on及M2/weekday→A所有晚返回，onChange未提交的新偏好亦保护；ImportantDayReminderTests/testSystemSR05* 两项；正常明确off/relaunch UI。不冒称系统原生晚错已捕获 |
+| SR-06 CLOSED | 仅成功保存移除Workspace finished editor；持久saved操作幂等证据保留 | 新manual/timer均连续3次、正式edit擦临时正文、Keep draft/失败/其他草稿保留；InvestmentPersistenceTests/testSystemSR06SuccessfulEditorsReleaseWithoutErasingDurableEvidenceOrOtherDrafts；timer双层退出Hub、manual/edit/delete、失败/重试、CR04/Record独立草稿/外部多段UI与F5真实读取保护 |
+| SR-07 CLOSED | 同语义图标/文字列、44pt动作及自然行高；反馈收起不改事实；体重文案用所选截止日 | Today四习惯变体直接打卡/周月详情；mixed Today/Growth默认及真实中文Dark最大AX；Sleep/ImportantDay Got it后原CRUD/related Entry；Weight历史截止UI与本地en/zh资源核对。实际VoiceOver仍属D4 |
+| BV-01 CONFIRMED_AND_FIXED | 仅跳过明确InvestmentOperation/Session持久标识写入；未知/批量/活动/正式事实保守失效 | Growth真实UIHostingController+Tab挂载，10k Weight+10k Sleep，实际Service草稿/正常checkpoint，可见/切离原各2次fetch、读Weight20000/Sleep20000；修复后两状态0。真实Weight新增删除/活动metadata及批量事件继续刷新；AppCompositionTests/testSystemBV01MountedGrowthActualReadsOnInvestmentSavesVisibleAndHiddenProbe。未以任意耗时阈值声称卡顿 |
+| BV-02 CONFIRMED_AND_FIXED | 普通/带心得Service写入前拒绝非有限quantity；旧异常不删改、不漏事实伪称完整备份 | 原探针inf/1e999落盘inf并使JSON失败，NaN被SQLite归一为nil，finite成功；输入Double→Service→磁盘→实际ZIP恢复，旧inf普通export明确typed失败→单独raw支持恢复包提取SQLite保留ID/bitPattern/unit/result。ImportExportRecoveryTests/testSystemBV02* 两项。raw包不是普通备份，不能恢复过去已丢NaN或weight精度 |
+
+所有新增测试通过实际生产Service/Workspace/reader/设置结果边界；主库、历史Schema V1–V15与既有v11传输版本保持，不传活ModelContext跨actor。旧R/F/CR中适合Unit的取消/满队列/停止负例/真实旧nil/媒体失败/恢复/计时/F5保护由本轮完整Unit执行；原生环境项目继续按未通过边界记录。
+
+### 集中门真实分轮与复用
+
+- final-debug1：00b65b70 / clean，Debug Simulator build-for-testing，exit0；final-unit1：同SHA一次完整PersonalGrowthOSTests，557=556PASS/0FAIL/1SKIP，exit0，49.545秒。唯一SKIP为TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure（需要独立32MB HFS+镜像；不填满主盘）。runtimeWarnings=[]。
+- final-ui1：同00b clean，实际21=18PASS/3FAIL/0SKIP，exit65，1325.8秒。Todo行被未收起反馈栏覆盖；ImportantDay开关被导航栏覆盖，坐标点击误命中Save（录屏19秒和21秒帧/实际AX层级证明）；中文Investment历史寻找session时居中滑动拨动DatePicker，选到六月而无当前期记录。不是以预期数量或事后解释改写成绿。两轮合计95张PNG及原始失败视频/层级等179项附件均有路径/命名与SHA256映射。
+- c55dc10只修三个UI方法：显式收起Todo反馈后进入详情并等待、ImportantDay整行避开导航/键盘后切换并保留value=1断言、Investment寻找历史行采用既有避开滚轮的侧边手势；没有削弱完成/skip/Stop/重启计数、reminder启用/反馈/关联Entry、分段保留/交互取消/显式替换/冷启统计等原断言。
+- final-debug2：c55 clean，Debug build-for-testing PASS/exit0。final-ui2：同c55，三个失败方法完整补验+相邻拒绝授权反馈收起，4/4PASS，exit0；各体43.505、16.631、41.187、169.945秒，runtimeWarnings=[]。不能把两轮拼称一次21项全绿。
+- final-evidence-reuse-proof.json：00b→c55仅三个UI文件变化；生产和Unit全部源码blob未变，首轮18个PASS方法原文哈希相同。完整Unit和这18个UI结果按同源复用；未为测试驱动或Markdown重复完整Unit。最终Debug/Release仍固定完整c55 provenance。
+
+环境：macOS27.0.1(26A434)，Xcode27.1(27A9275)、iOS SDK27.1；专用iPhone18Pro模拟器PGOS-UsageRemediation-20261017 / 42609456-859D-41F8-8977-4B2D85A74082 / iOS27.0(24A434)。Xcode/模拟器操作串行；中文Dark通过simctl实际appearance驱动与截图同时核对。各case的en_US/zh_CN与Weight Unit的de_DE、固定业务时钟/区由测试源码和日志核对，未换host日期。
+
+本机原始根 `/tmp/pgos-pr13-system-evidence`；同名.log/.json/.xcresult和-summary.json保留真实命令、完整SHA、dirty、退出码、计数、原错与hash。最终截图人工抽查默认Growth全列表、周/月/多次习惯中文Dark最大AX、CR05 Hub、历史周日、ImportantDay完整开关与分段两选择/重开统计；查看的是实际像素，最大AX按自然滚动多屏检查。未声称看过全部95张或实际VoiceOver。原始文件本机可读不等于远端CI/reviewer已读；独立reviewer实际访问范围另由其原文说明。
+
+### 最终实包
+
+c55干净候选的final-debug2/unsigned generic iOS final-release1均exit0；Release42.500秒。实际App `com.yocruzer.PersonalGrowthOS`、Share `.ShareExtension`、Widget `.ImportantDaysWidget`均1.0(7)/minOS17.0；Debug和Release App provenance完整c55/Dirty=false/Source=localGit/Tag空。两个实际Mach-O确认LC_LOAD_WEAK_DYLIB AlarmKit，中英文InfoPlist用途说明均存在。Release App executable SHA256 `aab2e40436080a78176068fe99c84113f8f959cf5964945071db712719c55be8`，Debug实际业务dylib `07be5c9f6284a93ef06ec288f3e33fac189977c4f3cd7d7a8bfb28227a70e3de`；完整三包各SHA见机器摘要及本机proof。
+
+历史Schema/PersistenceFoundation、TransferModels、ZIPArchive、project.pbxproj与固定Goal blob一致。没有新增schema/依赖/备份版本/发行流程；后续只有文档与机器证据摘要时不重建该产品。
+
+### 本轮实际测试运行索引（不是单一合并结果）
+
+| 运行 | source HEAD/dirty | exit | 实际 total/PASS/FAIL/SKIP | log SHA256 |
+| --- | --- | --- | --- | --- |
+| red-a | 3dad3b04e3ff/dirty | 65 | 3/1/2/0 | `780742164199f051d5d1be5b2e903b4bdd58f6486de52c37456e39d08807196c` |
+| red-b | 3dad3b04e3ff/dirty | 65 | 4/2/2/0 | `68b8832a0f5cbea763251c2e820851e82badd23fa3a09b882c7a7732cece34c8` |
+| green-a | 3dad3b04e3ff/dirty | 0 | 6/6/0/0 | `4cf0a201cac5848887fa7c7c3a6a7de4ca147b8e695be1bf208e9fa07c1f5ef5` |
+| red-c | 3dad3b04e3ff/dirty | 65 | 1/0/1/0 | `a430ba580cd9bc90ef5a7d1e95ed976e006486e137862f0d66f515d5f8f65ac1` |
+| green-c | 3dad3b04e3ff/dirty | 0 | 2/2/0/0 | `fc035e07f64c72afd082afc47fd173cc790e07384c19a9a1bd4525fb0f4dfbd5` |
+| bv01-probe | 3dad3b04e3ff/dirty | 0 | 1/1/0/0 | `2d7c38c84a0d7b3d43014ca48892639ffc581898b4f34c6132d166fdaaf0d485` |
+| green-d | 3dad3b04e3ff/dirty | 0 | 5/5/0/0 | `33bc03fa394ec1296c4e86b468f86bf472b1374e84e678892e8559a4f4c23ac6` |
+| green-e | 3dad3b04e3ff/dirty | 65 | 5/4/1/0 | `147e64826d55e1894ce8e4909f182f6e96bbe55f337a4a6408a530d797caff71` |
+| focused-ui | 3dad3b04e3ff/dirty | 65 | 3/1/2/0 | `c589b713a3f637efdffd81897efbf69bed496534e715fe8680f6d7d44cf1dbb9` |
+| focused-green | 3dad3b04e3ff/dirty | 0 | 7/7/0/0 | `c2fb9e758704ed45098b1c564031ad54cb09385c0f5c2644d7ba1789a296683a` |
+| focused-ui2 | 3dad3b04e3ff/dirty | 65 | 2/1/1/0 | `a5b9437686f8e3ac0cb9484b90c3e0fc60e9c2853e587ffaffe63c6cb7de6c82` |
+| focused-green2 | 3dad3b04e3ff/dirty | 0 | 4/4/0/0 | `b11a1f6d64f558d3b38a3fbeff597be5784903b09c9baa3661cb7f35967e48fd` |
+| focused-ui3 | 3dad3b04e3ff/dirty | 65 | 4/2/2/0 | `b851bd28e9dd18696435119d8d69a029c987023a842b86fb8ce5fa9506638767` |
+| focused-ui4 | 3dad3b04e3ff/dirty | 65 | 3/1/2/0 | `fe4b63bb9f5a477211c41a7451c9dab4d838e60ebd1eab670d12ac34251c9a4d` |
+| focused-ui5 | 3dad3b04e3ff/dirty | 65 | 2/1/1/0 | `bd7ce88d6f30a01ca0362b34c40a4745f4d1c0ab9b5e4317fea5c93a3ea3a620` |
+| pre-final-unit | 3dad3b04e3ff/dirty | 0 | 5/5/0/0 | `90d855b64bc9a0f11a99e4f6c2f9728e6682d8621d0333e1ebda24465258256a` |
+| pre-final-ui | 3dad3b04e3ff/dirty | 0 | 1/1/0/0 | `b91ae52df8d1758c5dcfee8ad139e28d54da705253cd8beaf72c5711283e9737` |
+| final-unit1 | 00b65b70d988/clean | 0 | 557/556/0/1 | `66f23b9ec16027b807c6ebdb45e15e5e0aa8e731e3b8ff7c4f78c931aad99400` |
+| final-ui1 | 00b65b70d988/clean | 65 | 21/18/3/0 | `bdf2e73c4c221a76c8d242e6c5408c5757238e312cbae7a61769d53008461c6f` |
+| final-ui2 | c55dc10fde79/clean | 0 | 4/4/0/0 | `f5b10a9cc7aca004ba08e62345c3f2c1931b1a9a254273412e8e2d2a97e8161c` |
+
+所有build失败也保留于机器摘要；没有测试体的编译失败不伪造测试FAIL数。green-e的1FAIL为真实host crash；原始ips在green-e-crash.ips，诊断导出green-e-diagnostics，修复后的受影响组合与完整Unit才作为通过依据。
+
+### 独立终审、完成审计与交付边界
+
+Reviewer `/root/pr13_system_independent_reviewer` 未写本轮实现，先独立反例再读实现者说明，实际核对完整相关链、108个record/log/summary哈希、179个附件哈希、直接xcresult摘要、19代表图/原失败帧、Debug/Release实际plist/Mach-O/各executable+dylib。预登记和终审原文已完整追加REVIEW，SHA256分别 `785a144529913ed867f71a6d888d9e5cbbf6f13b84f902c6adc2cd66bcba9404` / `97a2b772840552d3ae5f56d34f2017c5332f10d4d4ebd5ddf5a124897ca5f469`。审查未发现本轮范围内未关闭confirmed P0/P1/P2，明确P3 SR06/07收尾完成；没有新增需要Xcode反证的confirmed问题，因此不重复扩大测试。
+
+SR01～07及BV01/02逐项处置、全部相关消费者/代表合法状态、真旧数据/回滚/重开/ZIP、集中完整Unit/关键UI、固定干净产品SHA双构建/实包及独立终审均已有证据。恢复READY_FOR_OWNER_DEVICE_GATE仅代表本地批次完成；原D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持。未签名安装、不卸载升级、私人设备/库、merge/force push/tag/Archive/TestFlight均不在本批执行。
+
+交付前fetch确认远端仍3dad3b04、base5a70f011、PR13 OPEN Draft、statusCheckRollup=[]，没有后续并发提交被覆盖。沿原分支普通push，不发PR外部评论/消息，不改base或另开PR。最终产品/测试c55dc10与之后仅文档交付SHA分开，交付SHA以实际commit/PR head和本机final-delivery-proof.json确认；主工作区d72c016及原三项未知改动保留。文档变化无需重建同产品。

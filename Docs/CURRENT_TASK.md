@@ -1,10 +1,14 @@
-# PR #13 真机前系统整改 — FIXES_IN_PROGRESS（2026-10-19）
+# PR #13 真机前系统整改 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
-已在原任务工作树安全快进到固定SYSTEM_FIX_GOAL_SHA `3dad3b04e3ff703c2e799899035285f64a5976a4`，核对PR13 OPEN Draft/head/base与祖先关系，主工作区未知改动保留。固定Goal/系统报告与必要上下文已读取。实际消费者、不变量与合法后续操作矩阵见既有EXECUTION最新章节。
+固定SYSTEM_FIX_GOAL_SHA `3dad3b04e3ff703c2e799899035285f64a5976a4`；最终干净产品/测试 `c55dc10fde79f1fe4dec18b03195119c2049830f`。SR01～07逐项关闭，BV01/02均CONFIRMED_AND_FIXED；完整不变量/消费者/合法后续状态矩阵、原错/selector/哈希在既有EXECUTION、ACCEPTANCE与SYSTEM_FIX_RUNS.json最新节。原SYSTEM_REVIEW与各轮失败保持。
 
-SR01～07已进入实现候选，新增真旧状态/跨区跨年DST/未来三事实/导出持锁/晚设置结果/成功缓存测试及BV实际观察已执行；BV01/02均确认并补限定候选。详细真实分轮含green-e新增过滤器寿命crash及修复、UI驱动失败保留在EXECUTION最新节。当前仍在收敛定向UI，未运行最终完整Unit、未固定干净产品SHA双构建、未完成独立终审或push。
+集中门：一次完整Unit在00b65b70执行557=556PASS/0FAIL/1SKIP；最终c55只改三个UI驱动，全部生产/Unit blob相同。首轮关键UI21=18PASS/3FAIL，原录屏/AX核对后仅修驱动，三个完整方法+相邻反馈4/4PASS；18个不变方法按原文哈希复用，未拼称一次全绿。c55 clean Debug/unsigned Release通过，实包App/Share/Widget身份、1.0(7)/min17、完整SHA/Dirty=false、AlarmKit弱链接与中英文用途说明均核对。物理低空间为唯一Unit合法SKIP。
 
-连续完成SR01～07、BV01/02、定向反例、集中完整Unit/关键UI、干净产品SHA双构建/实包及未写实现reviewer独立反证后才恢复READY。当前本轮测试和修复尚在执行，不以旧PASS代替。原D1–D4/AlarmKit/Share/Safari/低空间/CI状态及设备发行禁区不变。
+独立reviewer /root/pr13_system_independent_reviewer未写实现，先独立登记反例，再核对全diff与未改消费者；直接复算108个运行文件和179附件hash、读取xcresult、19代表图与实际二进制。终审支持关闭，无本轮范围内未关闭confirmed P0/P1/P2，明确P3收尾完成。预登记及终审原文原样追加REVIEW；不把本机证据外推为远端CI/真机通过。
+
+交付沿原worktree /private/tmp/PersonalGrowthOS-usage-remediation-20261017、分支codex/usage-remediation-20261017普通commit/push，唯一PR13保持OPEN Draft/base codex/time-investment-v1。此后仅文档和机器摘要交付，交付SHA以实际commit/PR head与本机final-delivery-proof.json核对，不为Markdown重建产品。主工作区原三项未知改动保留。
+
+本批停在Owner另行授权的设备门：D1–D4 NOT_PASSED、AlarmKit原生正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持。不操作私人设备/库或签名安装，不merge/force push/tag/Archive/TestFlight；本地READY不代表这些门通过。
 
 ---
 以下为历史记录，最新执行状态以上文与固定Goal为准。

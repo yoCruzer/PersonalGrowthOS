@@ -210,3 +210,181 @@ CR-03 的自动恢复存在明确证据边界：技术时间相等不能单独�
 本轮完整独立审查与原因复盘固定保留于 [SYSTEM_REVIEW](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)。SR-01 合并此前 NR-01/02 并扩展停止后普通编辑同因分支；SR-02 体重无损编辑、SR-03 Weekly 全事实业务日/截止、SR-04 MainActor 发布等待、SR-05 settings 旧任务晚错、SR-06 成功编辑器释放、SR-07 同类 UI 收尾。BV-01 Growth 真读取、BV-02 非有限 quantity 正式落库/备份，先不定性为 confirmed P2。
 
 这次结论否定的是“本地已可直接交接设备门”的当前停点，不抹去旧 CR-01～06 在其原适用范围的修复证据。本次未读到开发机全部原始运行产物、没有重跑 Xcode；新修复关闭必须由 Codex 固定产品 SHA 后补证，不能用旧251PASS代替。
+
+
+## 2026-10-19 系统整改独立终审 — 原文保留
+
+以下为未参与本轮实现的reviewer原文。预登记反例SHA256 `785a144529913ed867f71a6d888d9e5cbbf6f13b84f902c6adc2cd66bcba9404`；终审原文SHA256 `97a2b772840552d3ae5f56d34f2017c5332f10d4d4ebd5ddf5a124897ca5f469`。主agent仅追加外层说明和分隔，不改原文；固定产品/测试c55dc10fde79f1fe4dec18b03195119c2049830f。
+
+# PR #13 独立反例预登记
+
+Reviewer: /root/pr13_system_independent_reviewer；仅只读产品/测试/仓库文档。
+固定规格 3dad3b04e3ff703c2e799899035285f64a5976a4；审查候选 c55dc10fde79f1fe4dec18b03195119c2049830f。
+本文件在阅读实施者最终关闭矩阵、新测试说明与实现 diff 前写定。已读取 AGENTS/bootstrap、Foundation、Contract、CURRENT 最新状态、固定 Goal 与系统报告；以下由其领域不变量独立推导，不把旧报告的关闭声称作为证据。
+
+1. SR01：原始 nil offset 的系列 Stop 后再执行默认当前 edit（包括原 override 与无 override）、关闭提醒、换区、删除清单；根已删、兄弟期已删仍有 open、stopped/orphan 均不需要猜未来 offset。检查 Stop 权威先于策略恢复，普通标题保存不隐式打开 futureSeries，不让健康 Todo/ImportantDay/Sleep 因单个合法歧义失败。相反检查 active nil 仍不被猜为0、显式0/-1可续接；取消不确定状态不得被停止/刷新复活。事务失败须不改历史/来源/清单绑定。
+2. SR02：以合法1000、72.345、常规值开编辑器，不改数值或只改日期，经 en_US、zh_CN、逗号小数地区保存重开；展示分组不得参与解析，无损字符串必须在科学计数/最大有效精度仍可往返；真修改/混合错误输入区别处理。
+3. SR03：同一洛杉矶周日业务日早晚两条日志移到上海，必须同原周1天2次；跨年和DST相同。选择历史周周一但实际 asOf 在未来，周后半仍保留；反过来当前周未来带图/标签 Entry、未来Weight、五分钟容差Habit必须整套派生摘要排除。元数据较晚创建不应隐去已选事实；只读不补写，删除/撤销要刷新。
+4. SR04：真实导出持 publication 锁，scene checkpoint 与保留编辑器同时请求，MainActor probe 必须先于释放；纯paused不得增长。排队后 pause、finish、discard/delete 或新revision胜出，旧checkpoint不得回写。第一次因锁忙/写失败之后必须有可靠重试路径，最新编辑输入不得丢，无关主context草稿不得被保存/回滚。逐个找全同锁MainActor调用者，防只把自动checkpoint搬入Task仍同步等锁。
+5. SR05：A进入真实addRepeating await，B改时间/weekday或关开关，A分别晚success、CancellationError、普通error；旧A不能改B偏好、权限、提示。B真失败应关闭并提示；daily与weekly都覆盖，串行gate不等于结果所有权。
+6. SR06：连续新manual/timer成功只清对应内存editor，saved operation与正式ID仍可幂等查；失败、Keep draft、Confirm later、另一个editor及正式编辑必须保留。保存成功释放期间旧checkpoint回调不能重建finished缓存。
+7. SR07：daily once/multiple/weekly/monthly/长名统一文字列和可点击动作，真实中文Dark最大AX需要看像素；Sleep/ImportantDay“知道了”只收消息不改提醒。外部路由Dismiss的丢弃语义保留；Weight历史截止文案按截止日。
+8. BV01：Growth真实挂载与切离后，10k Weight/Sleep上Investment草稿保存不得全历史重读；同时正式Weight/Sleep、活动归档/import/跨日跨区不能因过滤而漏刷新，过滤器不得捕获失活ModelContext或container导致寿命crash；错误不能伪零。
+9. BV02：inf/NaN/overflow经正式Service到磁盘和export，输入拒绝不等于旧非有限事实可备份。旧异常quantity必须完整、可恢复且不静默删除；finite精度和旧包恢复保持，未知编码不能误解释。
+
+证据优先级：直接源码/实际接线与原日志/xcresult、真实截图/实包 > 机器摘要 > 实施者说明。逐轮原FAIL、合法SKIP与复用分别报告，不把多轮相加为一次全绿；D1–D4及所有原生/签名/CI限制保持。
+
+
+---
+
+# PR #13 真机前系统整改独立终审原文
+
+审查者：`/root/pr13_system_independent_reviewer`，未参与本轮产品或测试实现。审查日期：2026-10-19。结论：在下述固定代码和证据范围内，SR-01～07 有明确关闭依据，BV-01/02 均为 **CONFIRMED_AND_FIXED**；未发现本轮范围内仍未关闭的 confirmed P0/P1/P2，明确要求的 P3 收尾 SR-06/07 也已完成。可以进入本地批次交付；此结论不代表设备、签名、发布或远端 CI 通过。
+
+## 1. 固定对象、独立性与方法
+
+- SYSTEM_FIX_GOAL_SHA：`3dad3b04e3ff703c2e799899035285f64a5976a4`。
+- 固定审查产品/测试 SHA：`c55dc10fde79f1fe4dec18b03195119c2049830f`。
+- 完整 Unit 和首轮关键 UI 候选：`00b65b70d988ef26455d719ccf35eda61233120a`；向 c55 的变动只有三个 UI 驱动方法所在文件。
+- 工作树：`/private/tmp/PersonalGrowthOS-usage-remediation-20261017`。开始时 HEAD c55、工作树干净。审查后段主 agent 正常追加五份交接文档，产品 SHA 不变；本人没有写产品、测试或仓库文档，没有接触默认主工作区的未知改动，没有运行 Xcode/模拟器、push 或发送外部消息。
+- 按 AGENTS/bootstrap 阅读 INDEX 定义的现有 Foundation、Contract、两份 CURRENT 最新状态，再完整阅读本轮固定 Goal/系统报告；并核对前两轮修复 Goal、EXECUTION/ACCEPTANCE 的有关保护及本轮分轮资料。
+
+本人在看实现 diff、实施者最终关闭矩阵和新测试说明前，先写定 `/tmp/pgos-pr13-system-evidence/independent-counterexamples.md`。其 SHA256 是 `785a144529913ed867f71a6d888d9e5cbbf6f13b84f902c6adc2cd66bcba9404`。预登记包括：停止 nil 系列后的默认 edit/删根/删清单/切区；数值无损往返；业务日跨周跨区和三类未来事实；导出持锁与晚 checkpoint 的暂停/完成/删除权威；每日/每周旧 success、CancellationError、普通 catch；只释放成功编辑器而保留其他草稿；全部习惯变体、反馈语义，以及两个 BV 的实际生产观察和反向保护。以下结论是对这些反例及合法后续操作的核对结果，不以实施者关闭标签替代证据。
+
+完整审阅 `3dad..c55` 的生产、测试及文档/机器摘要变动；另查未改的 Todo intent/journal、默认编辑器、Stop/delete、Habit resolver/analytics、QuietWins reader、Weight service/reader、Investment service/reader/state machine、ImportantDay 全部同锁调用方、Share/import/export worker、反馈/设置结果和双层导航。没有发现新增 schema、修改历史 schema、改变既有传输版本或工程身份的 diff。
+
+## 2. 独立反例核对与逐项结论
+
+### SR-01 / P2：关闭，终止权威与未来策略恢复已解耦
+
+关键位置：`TodoFoundation.swift:412` 的 preserve、`:527` 起默认 edit、`:657` refresh、`:679` Stop、`:690` delete、`:714` deleteList；`TodoReminders.swift:170` 后完整协调；未改 `TodoAlarmReminders.swift:170` targets 和 `:183` current。
+
+- Stop/delete 先保留终止权威，不需要恢复 nil；preserve 和换区刷新跳过 stopped，删清单对 stopped/orphan 不推导未来 offset。默认当前 edit 仍走原业务入口：无 override 时关闭 Reminder，以及旧 f1 nil+override 时只改标题/备注均不要求 futureSeries=true。override 原时间保留；真正继续生成/套用未来模板仍需可信原规则。
+- 真 V11 原模型迁移和已有 `OriginalV11Fixture` 被实际测试使用。`fix2OldF1Override` 按旧正式 reschedule 的 fresh context、墙钟、before/after事件、revision和override意图构造已保存状态，而不是调用新防污染路径后再冒称旧状态。原始 nil、有根/根已删、多期删兄弟仍有 open、保留来源 Entry 和空清单解绑都进入测试。
+- active 的合法不可推导 nil 只捕获 `TodoFailure.invalidReminderOffset`，不会用0猜策略。协调器跳过该条并显示待明确规则；健康 Todo/ImportantDay/Sleep 继续。JSON解码、corruptData、数据库错误没有 catch-all 伪装成局部策略失败。负例 `testSystemSR01InjectedIntegrityReadFailureIsNotSwallowedAsLocalLegacyPolicy` 确认不排陈旧快照。
+- 跨领域反证：局部规则警告没有覆盖真实 cancellationPending。最终状态还查旧 legacy/retired/rebalanced/display snapshot 的取消不确定性；原请求未确认消失时保留重查入口，不把它当已取消。未改 intent targets/current 仍以 stopped 为非活跃，标题编辑或冷重开不能复活停止系列。显式0/-1/7/366、skip/complete/reopen续接与幂等、满队列/两渠道/停止负例保护仍实际运行。
+- 新测试：ImportExportRecoveryTests 五个 `testSystemSR01*`，TodoFoundationTests 的 `testSystemSR01ExplicitZeroLeadAndLargerOffsetsKeepOverrideGenerationAndTermination`；包含保存失败原子回滚、磁盘重开、实际 ZIP 导出/恢复、完整性和既有历史事件保留。红轮 red-a 在旧逻辑真实抛 invalidReminderOffset；最终完整 Unit 上述方法均 PASS。
+
+本次未发现停止系列、默认 edit、清单删除及健康邻接类别仍存在可达的同因失败。明确规则纠正仍是无法推导的 active 旧策略的诚实边界，不是自动修复历史猜测。
+
+### SR-02 / P2：关闭，编辑表达与显示精度分离
+
+关键位置：`WeightFoundation.swift:47`、`WeightViews.swift:336`。编辑初值用 Swift Double 最短可往返字符串、无分组；逗号小数地区只替换小数分隔符，与既有 parser 配对，显示舍入不再写回事实。检查合法科学计数表达仍能经 parser 往返，未缩小1000合法边界，也没有全库舍入。
+
+`testSystemSR02EditorRoundTripPreservesExactWeightAcrossLocalesAndDisk` 经实际 formatter→parser→WeightRecordService→磁盘重开，覆盖 en_US/zh_CN/de_DE、1000/72.345/65.2、日期-only及正常点/逗号修改，混合错误和非有限输入拒绝。red-a 保存了 en_US 1000→1 的真实红断言。UI `testSystemWeightNoOpAndDateOnlyEditsPreserveFullValueAfterRelaunch` 实际开编辑器直接保存、改日期、处理1000、重启再开；已看最终72.345/Oct11像素。Weight趋势/BMI/截止/分页原 service 与 reader 未变，相关旧 Unit/UI 仍运行。不能据此声称恢复以前已经损失的精度。
+
+### SR-03 / P2：关闭，三类事实共用实际 asOf，选周保持独立
+
+关键位置：`WeeklyReviewFoundation.swift:307` 起，`WeeklyReviewViews.swift:37` 选周身份和 `:65` summary、`:109` TimelineView；未改 `HabitFoundation.swift:336` resolver、`:1160` 正式日志写入及 QuietWinsReader 的业务日读取。
+
+- Habit 周归属和 activeDayCount 均用保存的 civil day，实际 occurredAt 只承担时刻截止；没有机械改 Timeline绝对时刻排序/标签。缺元数据沿现有 Habit resolver 的当前区保守回退，只读不写 metadata。QuietWins 现有“需要保存元数据才作可信证据”的边界保留，不能把缺元数据的旧事实声称为三个消费者完全同口径。
+- Entry/完成HabitLog/Weight 各先不晚于同一 asOf，再按 respective业务时间归周。条数、天数、图片、TopTags、RecentEntries均从过滤后 Entry 派生；Tag/Habit名称/ObjectLink当前元数据没有无依据追加createdAt截止。
+- init把所选周固定成身份，环境区变化按同一身份重建；实际 cutoff由Date()及periodic刷新推进，不取历史周周一。已读真实 UI callsite，不是只测试一个多了参数的 helper。
+- `testSystemSR03SavedCivilDayAndActualCutoffAcrossZonesAndHistoricalWeeks` 通过正式 HabitCheckInService 和磁盘重开验证 LA周日→上海、跨年、春秋DST，原业务日早晚两次为1天2次，analytics/QuietWins配对，undo和无元数据只读也检查。`testSystemSR03AllWeeklyDerivedFactsUseSameActualAsOf` 正式保存带图Tag未来Entry、容差内Habit、未来Weight，先排除再推进纳入，随后编辑/删除/undo派生刷新。
+- red-b保留错周和未来事实两项红例。最终Unit两项PASS。UI当前周截图显示当前Entry/1次habit/70kg而没有未来99kg；历史周截图显示周日Entry/69kg，证明历史周后半段未被referenceDate误截。未增加Sleep/Goal/Investment摘要。
+
+### SR-04 / P2：关闭，MainActor不等发布锁，检查点可靠重读
+
+关键位置：`ExternalCaptureImport.swift:19–42`，`InvestmentViews.swift:179–217`、`InvestmentFoundation.swift:266` 事务；生命周期原入口 `AppShell.swift:203`。
+
+- Main thread用try-lock，忙则抛明确可重试busy；真正阻塞等待在detached worker，只传root URL。不是把原同步MainActor等待再包一个Task。后台Share/import/export仍持同一个规范root锁，真实媒体/库快照互斥没有移除。
+- 自动checkpoint遇busy保存最后clock并合并任务。worker等可用之后回MainActor创建新context、读当前operation/revision；没有携带旧running模型/上下文跨actor。若可用到命令之间另一worker再次拿锁，会再次busy并排队，不永久跳过。暂停不累计、finish冻结、discard/delete从active读取移除或擦除editor；因此晚请求不能重放旧running revision。显式命令在busy时保留输入、反馈重试，失败不会把其他主context草稿连带save/rollback。
+- 搜索核对同锁全部使用方：Investment全部mutation；ImportantDay save/createEntry/delete（忙在实际变更前返回，调用者原catch保留输入）；ExternalCaptureImporter.run、export、import.publish和新增raw恢复worker。没有把后台worker合法等待误报为UI阻塞，也没有依赖导出sheet背后可任意编辑的不可达假说。
+- 三个 `InvestmentPersistenceTests/testSystemSR04*` 使用真实export持锁barrier和独立后台fail-safe。red-c原MainActor probe只能在barrier超时释放后执行，真实失败；最终probe先于release，之后落盘120秒，备份仍60秒cutoff，无关Entry草稿未提交。合并等待后显式pause/finish拥有最新revision；纯paused无工作、完成/取消/导出失败与保留editor之前写失败再重试均有区别。
+- 删除终态主要由代码与原删除/擦除测试反证：refresh的erased清理+service authoritative读取不把旧editor复活；没有声称新增了独立“导出等待后删除”的专门native实验。原ContinuousClock/process token/50ms/18h/倒计时/跨进程/回滚和F5保护都在本轮完整Unit执行。
+
+本次没有测量真机卡顿秒数或watchdog；结论限于确定性因果次序与规范状态/快照正确。
+
+### SR-05 / P2：关闭，三个结果出口同一所有权校验
+
+关键位置：`ReminderFoundation.swift:155–174`、`AppShell.swift:1357` daily和`:1370` weekly。
+
+提交B会取消A并换generation；success、CancellationError和普通catch先归入Result，再统一验证Task取消/generation/当前偏好快照后才apply。AppShell真实daily/weekly都接该边界，enabled/minutes/weekday按提交值捕获；即便绑定变了而onChange尚未提交，isCurrent也可拒绝旧结果。当前普通失败仍disable并反馈；明确off仍正常移除。原MutationGate、60保守预算和未知请求保留，不把gate当UI所有权。
+
+两个 `ImportantDayReminderTests/testSystemSR05*` 挂起实际scheduler.addRepeating，再投递B on/off、M2/weekday和旧A三种晚结果；当前真失败必须抵达反馈，快照先变后提交的窗口也验证。不是在测试复制一个改良UI闭包。它们在完整Unit PASS，UI正常off/relaunch PASS。旧源码普通catch可达序列是源码合同证据，不虚构一次原生晚错捕获或不存在的旧helper红测。
+
+### SR-06 / P3：明确收尾完成，仅释放成功缓存
+
+关键位置：`InvestmentViews.swift:253–269` 以及editor.persist、refresh erased分支。只有service可靠成功后才completeEditor并按同一对象身份从Workspace字典移除；正式编辑清临时正文。saved operation和规范Session未删除，继续承担重试幂等证据。失败、Keep draft、Confirm later、其他editor输入仍保留；晚checkpoint遍历当前未finished editor，不会重建成功缓存。
+
+`testSystemSR06SuccessfulEditorsReleaseWithoutErasingDurableEvidenceOrOtherDrafts` 连续3次manual与3次timer，首个写失败后保留、成功释放，其他草稿一直存在；saved operation、按ID正式详情和重复saveTimer均检查。正式edit临时输入擦除也验证。原CR04/05、失败关闭重试、Record独立草稿和F5实际读取保护在Unit/UI组合中保持。
+
+CR05原始after-save-landing的空Timer帧属于双sheet关闭动画期间；本人没有把该帧称为有效落点。后续stable-Hub-true像素已回到有内容的“时间投入”，测试等待并核对正式事实恰好一条。这个短暂引用/动画符合Goal允许的边界，未发现稳定空页复发。
+
+### SR-07 / P3：明确收尾完成，全部变体和反馈语义有证据
+
+周/月HabitOverviewRow复用ModuleEntryRow，daily once/multiple沿既有同列结构；没有硬定不同行相同高度。mixed测试补入multiple/week/month且实际点多次+1和周/月详情，检查44pt动作（只给CGFloat表示误差1e-6余量）。已看默认Light、中文Dark最大AX的实际像素：daily once/multiple、周/月长名称图标和标题/副标题列，内容自然分行，周/月check动作在独立行。Growth中文Dark与原模块链亦核对。
+
+Sleep和ImportantDay底部“Got it/知道了”仅清message或savedImportantDayID，未调用关闭提醒；外部路由Dismiss的丢弃pending语义未改。Sleep UI收起后仍保留23:00、随后冷启CRUD；ImportantDay UI先启用onDay=1再收起反馈、关联Entry/冷启，最终通过。ImportantDay开关的实际截图与原失败帧已看；反馈点击和不改变事实的依据为源码及原日志/完整UI断言，不声称独立看过不存在的专用反馈截图。Weight历史连续性说明改为所选截止日/前一天，中英文资源均在。实际VoiceOver仍留D4。
+
+### BV-01：CONFIRMED_AND_FIXED，有界读取结论成立
+
+原 `bv01-probe.log` 明确可见和切离各actualFetches=2、weightModels=20000、sleepModels=20000、mainProbe=true，来自真实UIHostingController/TabView挂载的生产Growth、10k+10k数据、实际Service草稿+正常checkpoint，并非事件次数估算。最终 `final-unit1.log:93/95` 同条件均0。
+
+最终Growth仅在通知持久标识全部为InvestmentOperation/Session时跳过；活动/参与者metadata、Weight/Sleep/习惯/目标/日子、未知格式、空payload、批量失效都保守刷新，失败counts=nil并显示Retry，未伪零。正式Weight新增删除和活动新增走真实刷新；跨日跨区依靠significantTimeChange/active/onAppear原入口。Session在当前Growth入口只影响活动数之外的正式投入事实，因此跳过Session本身不漏当前入口计数。
+
+必须保留真实中间缺陷：`green-e` 4PASS/1FAIL为host crash，不是测试断言或环境偶发被跳过。本人读了原ips，主线程栈明确为旧 `GrowthEntryCounts.needsRefresh(_:container:)` 的HabitViews.swift:84→GrowthView.onReceive，位于延迟RunLoop接收路径。最终过滤器不读notification.object、不解引用sender ModelContext/container，只读取值类型persistent identifier与entityName，移除了同因访问。随后受影响组合与一次完整557 Unit通过；未声称仅凭一次局部重跑就证明一切寿命竞态不存在。
+
+没有把读取量直接外推成真机已卡顿，性能结论限本次混合规模和当前消费者。
+
+### BV-02：CONFIRMED_AND_FIXED，旧异常保留与正常备份诚实区分
+
+原 `green-c.log:47–50`：inf和溢出1e999经正式服务保存、磁盘重开仍inf，实际export在habitLogs.quantity JSON编码失败；NaN被SQLite归一为nil且export PASS，2.5正常。不能把NaN也写成“重开仍NaN”。
+
+最终详细输入parser和普通/带心得checkIn都在写前validate finite；final-unit原探针显示三种新异常saved=false，finite保存/导出正常。`testSystemBV02RejectsNonfiniteBeforeSaveAndPreservesOldInvalidFactInRawRecovery` 验证无异常Log/Entry写入、finite实际ZIP恢复；随后重建已证实的旧inf事实，普通export typed失败，不跳过quantity/整条日志假称完整备份。用户可明确准备独立raw支持恢复包，提取SQLite重开核对ID/infinity bitPattern/unit/result，源事实不变。该包不是可直接导入的普通备份，未许诺自动纠正或恢复已经被SQLite丢失的NaN。没有为编码成功静默删历史或更改schema。
+
+## 3. 实际读取的证据层级、分轮与复用
+
+本机证据根 `/tmp/pgos-pr13-system-evidence`。本人没有重新运行产品测试；独立动作是读源码、现存原日志、xcresulttool解析、图片像素、plist和实际二进制。xcrun xcresulttool只读取现有结果，不触发Xcode或模拟器。
+
+- 逐条解析system-runs全部run记录（完整command、sourceHead、dirty、exit、summary），重新SHA256核对其108个record/log/raw-summary文件，0不匹配。大xcresult本身未声称计算目录整体hash。
+- 直接调用 `xcrun xcresulttool get test-results summary --path ...` 读取final-unit1、final-ui1、final-ui2及green-e；同时读取原日志结尾、全部新selector的实际PASS行、BV和F5计数、红例与UI失败段。并非只读仓库“全部PASS”说明。
+- red-a=1PASS/2FAIL（旧nil及1000→1），red-b=2PASS/2FAIL（业务日/未来事实），red-c=0PASS/1FAIL（主执行器barrier）；阶段green与编译失败保留，不混入最终次数。red快照TodoFoundation、TodoReminders、ExternalCaptureImport逐字等于固定基线；Weight/Weekly快照为适配新测试签名的等价旧行为，实际读到formatter仍两位+分组、Weekly新参数未使用，故不把它们冒称完全未改的旧源码编译。
+- final-unit1：00b clean，一次whole `PersonalGrowthOSTests`，557=556PASS/0FAIL/1SKIP，exit0，49.545秒。唯一SKIP是 `TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`，原日志1837行明确需要独立32MB HFS+镜像；没有以填满主盘替代。
+- final-ui1：00b clean，21=18PASS/3FAIL，exit65。三错原AX/日志、视频导出附件保留。本人查看原层级文本及提取帧：Todo反馈遮行，ImportantDay开关滑到导航栏区域后误点Save而返回列表，Investment中心滑动拨动日期wheel至六月，测试尚未抵达分段操作。
+- c55仅改三个驱动：Todo收反馈并等待详情，ImportantDay整行避开导航/键盘后点击并保留onDay=1，Investment用已有侧边避wheel手势；没有删complete/skip/Stop/restart计数、提醒启用/关联Entry或分段保留/取消/明确替换/冷启统计断言。final-ui2在c55 clean完整补跑三个失败方法+相邻拒绝权限反馈，4PASS/0FAIL，exit0。不能拼称“一次21项全绿”。
+- 本人通过Git直接比较00b与c55的PersonalGrowthOS和PersonalGrowthOSTests目录tree，完全相同；再独立逐项提取21个测试方法区域，恰为18个未变/3个变化，和reuse proof一致，且相关shared helper未在最终diff变化。因此复用whole Unit和18个UI的实际结果有源码依据，未为只改驱动/Markdown无理由重跑Unit。
+- 已读最终Debug/Release原命令/日志与构建产物：final-debug2 c55 clean `build-for-testing` exit0；final-release1 c55 clean unsigned generic iOS build exit0，42.5秒。环境由原记录为macOS27.0.1、Xcode27.1/SDK27.1、专用iPhone18Pro模拟器iOS27.0；这是原执行环境，未声称用真机复验。
+
+F5本轮原日志还有 `REVIEW_F5_CHAIN factDecoded=10000 operationBatchDecoded=10000 initialFactFetches=40 initialOperationFetches=40 afterDraftAndTimerFactFetches=40 afterDraftAndTimerOperationFetches=40 afterDraftAndTimerFactDecoded=10000 operationIDDecoded=9`，说明原Service→事件→同Workspace保护仍执行；不把Growth的新观察与Workspace这组计数混为一件事。
+
+### 附件与像素范围
+
+重新核对final-ui1/2各manifest及final-attachment-map：179项附件、95PNG，所有179文件SHA256匹配。本人实际看19张代表图/提取帧，未声称逐张看95张或播放全部MP4：默认mixed Today；中文Dark最大AX daily once/multiple/week/month和Growth；Weekly当前未来排除与历史周日；Weight72.345日期-only重开；CR05失败输入、瞬时landing和stable Hub；ImportantDay完整开关及原fail15/19/21；Todo原fail25；ExternalR3两选择确认与25分钟冷启统计；另看mixed旧失败末帧。图像均来自现有本机证据，没有修改或重绘。
+
+特别可追溯代表（目录相对证据根）：
+
+- `final-ui1-attachments/C32990AE-1CC7-4F0A-8F2B-BC0C4CAA7FF7.png` daily once/multiple，`216E444A-B6D7-4DB1-85F5-848547D929D0.png` week，`C515E98C-7059-4902-885F-693F40943A5A.png` month：像素为真实黑底、中文最大AX；文字和动作按自然多屏查看。
+- `E9ADEF34-E414-4D25-B2B7-B7AB5500EDB0.png` 历史周；`CC4BA5E5-4FDC-4D37-A1C5-3D5CAFE840BE.png` 当前周；`8FD1A6F8-EFD4-441D-99C8-53DF2B097FC1.png` CR05稳定Hub。
+- `final-ui2-attachments/995CBB71-EC5D-4EFA-B020-DD4622730B90.png` 开关完整避遮挡；`8F1AE9BF-860A-479D-A08F-7580A1889941.png` 两种分段选择；`5B7210B9-B5CA-4D8E-B6B1-433B5261E95A.png` 冷启25分钟。
+
+### 实包直接核对
+
+直接读取 `/tmp/pgos-pr13-fix-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app` 和 `/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app`，不是只读proof声称：
+
+- 两套App/Share/Widget实际Info.plist均原ID `com.yocruzer.PersonalGrowthOS` / `.ShareExtension` / `.ImportantDaysWidget`，1.0(7)、MinimumOS17.0。
+- 两App实际BuildProvenance.plist均完整c55、Dirty=false、Source=localGit、Tag空。
+- 实际中英文InfoPlist.strings和用途说明存在；对Debug业务dylib、Release executable重新 `otool -l`，均见 `LC_LOAD_WEAK_DYLIB` 指向AlarmKit。
+- 六个executable以及Debug所有相应dylib重新SHA256，与两份bundle proof全匹配。Release App `aab2e40436080a78176068fe99c84113f8f959cf5964945071db712719c55be8`，Debug业务dylib `07be5c9f6284a93ef06ec288f3e33fac189977c4f3cd7d7a8bfb28227a70e3de`。
+
+关键原始文件SHA256：
+
+| 文件 | SHA256 |
+| --- | --- |
+| system-runs.json | `5892f22ab41ec711ddb8de7d1db512dffa70a59d1adb646341bd3160932fe125` |
+| final-unit1.log | `66f23b9ec16027b807c6ebdb45e15e5e0aa8e731e3b8ff7c4f78c931aad99400` |
+| final-ui1.log | `bdf2e73c4c221a76c8d242e6c5408c5757238e312cbae7a61769d53008461c6f` |
+| final-ui2.log | `f5b10a9cc7aca004ba08e62345c3f2c1931b1a9a254273412e8e2d2a97e8161c` |
+| final-debug2.log | `6985a7257a8a9f1f483db0d2aba5c3ab0f878e01d485e3281ae25c7f0da9a8e6` |
+| final-release1.log | `f618b7b313ee65018d929fa10f794f65cd4b641da40d4b89e9fb29a7faff1d81` |
+| green-e-crash.ips | `61e9abc6c96b31bf55e0fde0748efb414988e8ce793f73e498d34d4a3ddaf381` |
+| final-attachment-map.json | `41118144f00d6dc2ab7aaf01659303a5ddfb163fa669d889d4415de6d0960b42` |
+| final-evidence-reuse-proof.json | `952ffd30f9510f28e8edcf6b5000ccc0a238b94e5232a2d4e735ad724eff2e57` |
+
+## 4. 剩余问题与交接边界
+
+本次独立审查没有新增confirmed缺陷，因而没有虚构优先级/源行/可达序列清单。已确认的历史SR与BV按第2节具体源点、生产序列及正反证关闭；green-e真实新增crash与首轮UI三个FAIL均明确保留并有最终处置，未降成“未发生”。本轮明确P3 SR-06成功缓存和SR-07同类UI/反馈均完成，没有将它们静默移到未来债务。
+
+剩余状态继续原样：D1–D4 **NOT_PASSED**；AlarmKit原生正向 **NOT_RUN**；Public Share **FAIL/environment**；unsigned Safari **FAIL**；物理低空间 **SKIP/NOT_RUN**；远端CI **NOT_RUN**。没有重新执行签名安装、不卸载升级、私人库/私人设备、Archive、tag、TestFlight、merge或force push。fake、模拟器、直接intent和unsigned包不能填这些门为PASS。
+
+本结论支持固定c55候选的本地修复交付与后续Owner另行授权设备门；它是有限范围的独立代码/证据审查，不是对未知数据组合或所有设备不存在缺陷的保证。报告写定后请原文追加，不由实施者改写独立结论。

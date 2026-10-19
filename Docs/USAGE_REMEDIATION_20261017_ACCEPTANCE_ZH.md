@@ -476,3 +476,25 @@ D1–D4未通过，AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsig
 SR01～07已进入本地候选；BV01实测确认重复无关全历史读，候选限定过滤后可见/切离两状态均0次额外Weight/Sleep读取；BV02实测确认inf落库阻断备份，候选拒绝新非有限输入，对旧异常明确阻止普通备份并提供原样保留数据支持恢复，不自动改事实。具体反例、全部消费者/状态矩阵、真实失败及分轮补验见EXECUTION最新系统整改节。
 
 当前不以阶段PASS关闭最终门：集中完整Unit、关键UI组合、干净产品SHA双构建/实包、独立reviewer和普通push尚待完成。green-e的1crash为新增过滤器的活Context寿命错误，已修并定向补验；UI驱动/前提失败与编译失败均逐轮保留。旧设备/环境门状态保持。
+
+
+### 系统整改最终验收 — READY_FOR_OWNER_DEVICE_GATE
+
+固定Goal3dad3b04；最终产品/测试c55dc10fde79f1fe4dec18b03195119c2049830f，全部生产/Unit源码与完整Unit候选00b65b70相同，仅三个UI驱动方法补强。SR01～07已有明确本地关闭证据；BV01/02均CONFIRMED_AND_FIXED，最终消费者/状态矩阵及实际selector见[EXECUTION系统整改末节](USAGE_REMEDIATION_20261017_EXECUTION.md)。
+
+| 本地门 | 实际运行与限制 |
+| --- | --- |
+| 完整Unit | final-unit1一次whole target，557=556PASS/0FAIL/1SKIP，exit0；SKIP为独立32MB HFS+物理低空间用例，未伪造通过 |
+| 关键UI | final-ui1=18PASS/3FAIL/21，原视频/层级保留；三个仅驱动修正后final-ui2三个完整方法+相邻反馈4/4PASS。18个不变方法逐项原文哈希复用，不拼称一次21全绿 |
+| Debug/Release | 最终c55 clean：final-debug2 build-for-testing PASS，final-release1 unsigned generic iOS PASS；实际三包ID/1.0(7)/min17、完整SHA/Dirty=false及AlarmKit弱链接/用途说明核对 |
+| 旧保护 | 完整Unit实际执行提醒取消/满队列/停止负例、真旧nil/恢复/媒体失败、计时/幂等/F5；关键UI保留CR04/05、Record草稿、体重截止/分页及Investment窗外选日/跨日历史 |
+| 独立审查 | 未参与实现reviewer先写反例，再审固定c55全相关链并直接核对日志/xcresult/19代表图/实包；原文追加REVIEW，无范围内未关闭confirmed P0/P1/P2，明确P3收尾完成 |
+
+原始根/tmp/pgos-pr13-system-evidence；逐轮完整命令、环境、SHA/dirty、退出码、原错/计数/日志hash以及实包与复用证明已加入[SYSTEM_FIX_RUNS.json](USAGE_REMEDIATION_20261019_SYSTEM_FIX_RUNS.json)。阶段green-e的真实SwiftData寿命crash和UI驱动失败保留。原始大产物仅本机，不等于远端CI或远端reviewer已读。
+
+SR01～07关闭、BV01/02限定处置完成，必要本地门与独立终审完成，恢复READY_FOR_OWNER_DEVICE_GATE；普通push和最终交付证明仍依同一授权执行。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持。不签名安装、不操作私人设备/库，不merge/force push/tag/Archive/TestFlight。
+
+
+最终逐项判定：SR01/02/03/04/05 CLOSED；明确P3 SR06/07 CLOSED；BV01/02 CONFIRMED_AND_FIXED。BV02已有异常仍普通export明确失败，原始支持恢复包保留原事实，不是正常可导入备份；不能声称恢复旧NaN/体重精度损失。SR03缺metadata旧Habit沿既有fallback，QuietWins既有信任边界不外推。SR04删除终态复用源码及原删除/擦除测试，不声称另做了“导出等待后删除”专门原生实验。审查完整原文见[REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)，终审SHA256 `97a2b772840552d3ae5f56d34f2017c5332f10d4d4ebd5ddf5a124897ca5f469`。
+
+本批达到本地停点即交接，不开展未授权的设备/签名/发布操作；下一步仅Owner另行授权D1–D4。最终文档提交相对c55只有Docs，产品证据继续同源有效。
