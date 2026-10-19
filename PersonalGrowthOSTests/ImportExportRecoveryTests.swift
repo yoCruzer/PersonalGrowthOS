@@ -2240,7 +2240,7 @@ extension ImportExportRecoveryTests {
         XCTAssertEqual(restored.title, task.title); XCTAssertEqual(restored.completedAt, task.completedAt)
         XCTAssertEqual(restored.reminderTimeZoneID, task.reminderTimeZoneID)
         XCTAssertEqual(try reopened.mainContext.fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset, -1)
-        let reminderClient = TodoNotificationStub(), reminders = TodoReminderCoordinator(client: reminderClient)
+        let reminderClient = TodoNotificationStub(), reminders = TodoReminderCoordinator(client: reminderClient, sleepPreferences:{.init()})
         await reminders.reconcile(context: reopened.mainContext)
         let restoredOpen = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
         XCTAssertEqual(reminders.status(for: restoredOpen), .scheduled)
