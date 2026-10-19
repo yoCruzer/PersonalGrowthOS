@@ -1,10 +1,14 @@
-# PR #13 集成边界修复 — FIXES_IN_PROGRESS / 最终集中门前（2026-10-19）
+# PR #13 集成边界修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
-固定Goal b495bead6c9910ec1e15631227c1146176819583。原worktree/分支续接；主目录未知改动保留，PR13保持OPEN Draft/base codex/time-investment-v1。IF-A阶段checkpoint cf3d320已完成，IR01～03定向6/6与45/45；独立新增IR02查询故障已原生红绿闭环。
+固定 INTEGRATION_FIX_GOAL_SHA `b495bead6c9910ec1e15631227c1146176819583`；最终产品/测试 SHA `53eeb1d3410630f836bbc3e713c79f9f157a4081`。IR-01～05 已关闭，V-01 为 **CONFIRMED_AND_FIXED**；O-01 保持非阻断 UNCONFIRMED，未预改导航。完整不变量/消费者矩阵、逐项 selector、原红例及补验见 [EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md)、[ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md) 和 [分轮机器摘要](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_RUNS.json)。
 
-IF-B：IR04真实importer持锁红例→可重试sheet，普通失败/重试/取消/另一活动和busy成功；IR05真实Growth固定10000自然日与Weekly固定clock/推进的Unit/UI通过。IF-C：V01真实raw writer→Alarm观察→SwiftData.save确认阻塞，已同批以现有发布互斥修复，原生主响应/诚实状态/原值与释放后重试通过；新增原图字节保护进入最终完整Unit。O01保持非阻断UNCONFIRMED，未预改产品。
+同一 clean 产品 SHA 的最终集中门：Debug Simulator build-for-testing PASS；完整 Unit 568=567 PASS/0 FAIL/1 SKIP；关键 UI 7/7 PASS；unsigned generic iOS Release PASS。唯一 SKIP 是需隔离 32MB HFS+ 图的物理低空间方法。实际 App/Share/Widget 原身份、1.0(7)、minOS17、App 完整 SHA/Dirty=false、AlarmKit 弱链接与中英用途说明已核对，Release 三包均未签名。四份 142 文件 source manifest 相同，UI 18 PNG 与 manifest 的 19 项哈希保留；历史真实 FAIL/host 清理崩溃/驱动错误未改写。
 
-下一步同一授权完成固定干净候选一次完整Unit、必要保护UI、Debug/unsigned Release和实包、独立终审/范围内补修、文档与普通push原PR。尚不恢复READY；实际FAIL（含夹具/驱动/host清理）和补验均见EXECUTION/ACCEPTANCE/INTEGRATION_FIX_RUNS。D1–D4、AlarmKit正向、Share/Safari、低空间和CI原状态及所有设备/发行禁止边界保持。
+独立 reviewer `/root/integration_independent_reviewer` 未写实现，先登记跨边界反例，再核对固定候选、未改调用者及本机原始 log/xcresult/代表图/实包，独立复算证据。其新增 retired Alarm 查询故障已红绿修复；正式终审支持恢复本地 READY，无范围内未关闭 confirmed P0/P1/P2 及明确 P3。原文见 [REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)，SHA256 `a0c3e3f5cfabd7baa857439dd5e51449a8736ee87a1e11c4d078a130a0cd4c3f`。
+
+沿原 worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、原分支 `codex/usage-remediation-20261017` 完成纯文档交付并普通 push 唯一 [Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base 保持 `codex/time-investment-v1`。交付 SHA 以实际文档 commit/PR head 及本机 final-delivery-proof.json 核对；产品仍固定上述 SHA，纯文档不重建。主目录原三项未知改动保留。
+
+本批本地修复、验证和审查已完成，停止在 Owner 后续设备门；READY 仅指本地停点。D1–D4 NOT_PASSED、AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持。不操作私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
 
 ---
 

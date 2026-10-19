@@ -445,3 +445,47 @@ Owner已批准 [新Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 
 - 原始 xcresult runtime 为 iOS **27.0** / build **24A434**，SDK/xctestrun 文件名为 27.1。EXECUTION 将环境笼统写成“iOS Simulator 27.1”需区分 SDK 与实际运行 runtime。
 
 阶段结论：IR01/IR03 当前定向证据有效，IR02 仍有本轮范围内 confirmed 源码问题；尚未审核 IF-B/IF-C/最终集中门，不支持恢复 READY_FOR_OWNER_DEVICE_GATE。D1–D4、AlarmKit 正向、Share/Safari、物理低空间、CI 与发行权限边界保持。
+
+## 2026-10-19 PR #13 集成边界修复独立终审
+
+审查者：`/root/integration_independent_reviewer`；未编写本轮产品或测试实现。固定 Goal：`b495bead6c9910ec1e15631227c1146176819583`。固定最终产品/测试候选：`53eeb1d3410630f836bbc3e713c79f9f157a4081`。
+
+**终审结论：支持该固定候选完成本地集成边界修复并恢复 READY_FOR_OWNER_DEVICE_GATE。IR01～05 有直接关闭证据，V01 为 CONFIRMED_AND_FIXED；未发现本轮范围内尚未关闭的 confirmed P0/P1/P2 或明确 P3。** 这是限定范围的本机代码与原始证据审查，不表示设备门、远端 CI 或发行通过。
+
+### 审查顺序和实际读取层级
+
+先于实现者关闭表独立登记不变量、跨边界合法反例与相反操作，原文已存 `independent-counterexamples.md` 并追加 REVIEW。阶段复审实际发现 IR02 retired Alarm 查询失败外抛的邻接 P2，原文保留于 `independent-if-a-review.md`，不是事后代写全通过。本次核对固定候选相对固定 Goal 的完整 diff，逐项阅读修改实现和测试，并追查未改调用者：AppShell/MediaStorage 接线，Todo editor/detail/list/提醒重设、ImportantDay createTodo、scheduler gate、journal cancel/write、display snapshot、Alarm 系统 adapter、Search 同步订阅、Share importer/导入 materialize、Investment checkpoint/editor 及 raw capture 的发布/清理边界。
+
+没有自行启动构建、模拟器或测试；直接读取本机原始日志/运行 JSON，使用 xcresulttool 解析既有 red-a、red-b、review-a-red、focused-b-clock、green-a2、focused-a、red-v01、green-v01、final-unit、final-ui 的原始 xcresult summary。另读取重命名各轮原始日志与最终测试正文。直接查看最终导出的八张代表截图，读取实际 Debug/Release App、Share、Widget 的 Info.plist、BuildProvenance.plist、中英用途说明及可执行文件，并自行执行只读 otool/codesign 检查。未用实现者 PASS 数量替代覆盖判断。
+
+独立复算四份最终 source manifest，每份 142 个文件均与固定 53eeb1d Git 内容一致；复算已登记的 34 轮共 68 个原始 record/log 哈希，以及最终四轮 record/log 哈希。最终 UI 的 18 PNG 加 manifest 共 19 项哈希全部复算一致。旧 green-v01 与最终候选的两处差异已核对为实际 SQLite ROLLBACK 后的释放探针及同方法原图/元数据保护加强，最终完整 Unit 已运行该加强方法。此报告不将未读取的历史大产物冒称重新审过。
+
+### 逐项关闭判断
+
+**IR-01：关闭。** stopped 在刷新候选前排除；active unresolved 在 fresh read context 没有事实变化时不会 save/post。生产 AppShell 与挂载测试使用同一个 TodoReminderEvents。最终完整 Unit 中 `testIntegrationIR01MountedProductionEventBridgeSettlesAndReleasesSettingsGate` 经真实事件订阅和权限 barrier，三个合法起点分别收敛为 1/1/2 个必要事实事件；外部真实编辑仍使旧 generation 失效，健康 Todo/ImportantDay/Sleep 最终 scheduled，daily gate waiter 完成。`testIntegrationIR01StoppedRefreshDoesNotSaveOrPublish` 和真实跨区失败回滚/恢复方法同时通过。没有禁用订阅或改写 stopped 原字段；真实修改保存/事件与事务回滚仍有效。
+
+**IR-02：关闭，包含阶段审查新增反例。** `testIntegrationIR02BothOwnedFutureChannelsCancelConfirmColdReopenAndCorrect` 从真实 V11/可追溯旧 f1 保存链出发，以同一客户端建立两渠道 accepted future；取消前 journal/native cancel/取消后确认三阶段失败逐一检查 native 存在性和 durable 身份，经冷容器确认、显式 futureSeries 纠正后产生新 generation/新 native ID。隔离不再借用容量重排理由，取消未确认优先于局部规则提示。系统 Stop/retired 普通刷新或元数据编辑不复活，已到点仍存在的正常 Alarm 不误取消，原容量取消/确认保护由完整 TodoReminderTests 保持。独立发现的 retired native 查询失败最初确实造成 healthy 三类别失败（review-a-red 1 方法/4 断言 FAIL）；局部 catch 修复后，同一生产对账方法在 focused-b-clock 与最终 Unit 通过，健康三类继续、查询恢复后仅剩待纠正规则且旧 Alarm 未复活。未吞掉持久化或结构错误。
+
+**IR-03：关闭。** 每渠道 Scope 由 AppShell 的稳定 State 持有；MediaStorage 关闭重建后的 wrapper 共用相同 Scope，daily/weekly 独立。实际 MediaStorage sheet 已经过 onDismiss→重开 onAppear→AppStorage off/on 同值提交；旧 A 普通错误不能覆盖新 B，最终实际 repeating request 和 B 偏好保持。双 owner 经真实 updater→scheduler→gate 的成功/普通错误/CancellationError 三种旧出口均被隔离；B 明确 off、B 当前真实失败、无新 B 时 A 合法完成及参数变更先于下次提交的保护全部在最终 Unit 中验证。没有用关闭时无条件 cancel 代替合法完成证明；最终 UI 另验证 daily/weekly 明确关闭跨 relaunch 保持。
+
+**IR-04：关闭。** 新表单按活动 ID 管理输入，busy/普通错误保持可见输入和错误，成功或明确 Cancel 才 dismiss；Archive/Restore 同样只在成功后关闭。最终 UI 实际运行 ExternalCaptureImporter.scan/consume 的 attachment checkpoint 持发布锁→名称 A 改 B→Save busy→输入 B/正式 A/锁 held 同时可见→释放→完整重试成功、持久活动数仍为 1。直接查看 `17C729FC...png`、`1E30C7C7...png`、`C4CE58FC...png`、`0DAED3A5...png`，分别证明 busy、释放后成功、普通错误和不同活动的状态；取消重开不串稿也经完整 UI 方法断言。原 red-rename3 在旧 alert 的 Save 后确实输入不可达；前两轮夹具/AX错误和后续两轮驱动失败保留，未假充产品红例或一次全绿。create/start、正式 editor 成功释放、saved 幂等及 Record 独立草稿未回退，完整 Unit 与 CR05 关键 UI 提供相邻保护。
+
+**IR-05：关闭。** BV01 固定 LA 午夜 2026-10-19 00:30，明确 Gregorian calendar 逐自然日建立 10000 日，原 86400 秒公式在同参数下直接反算仅 9973 日。真实 Growth reader 注入同一 now/zone，仍挂载真实页面并经真实 InvestmentService→didSave；可见和切离均 actualFetches=0，正式 Weight 增删和 activity metadata 的应刷新对照保持。Weekly seed、选周及实际 summary 使用同一受控 clock/zone，周一首分钟当前事实保持同周；任意 live 时间推进不改变测试截止，显式 +180s 后真实未来三事实纳入。最终两个 Weekly UI 方法和真实 reader Unit 均通过；代表图直接显示当前 1 Entry/1 Habit/70kg、推进后 2/2/99kg，以及历史周日 69kg。普通启动仍使用实际 Date()/时区，未改宿主时间或放宽统计断言。
+
+**V-01：CONFIRMED_AND_FIXED。** red-v01 原始记录为 `writer-frozen → production-journal-entry → native-save-held → independent-probe-submitted → probe-failsafe-timeout → release-requested → writer-released → native-save-success → main-probe`。实际入口为 live raw export 的 BEGIN IMMEDIATE 和独立 Alarm 观察回调；生产 journalCommit 确实执行 SwiftData.save，probe 由独立执行器在保存入口之后投递，故该红例证明 MainActor 等 writer 释放，不能解释为前置权限等待或伪 SQLite 保存。
+
+修复复用既有 StorePublication 按真实 store root 的互斥，Todo 事务与 journal commit 在 MainThread try-lock 快速返回 busy；原 SQLite 冻结和媒体发布合同保留。最终加强方法 `testIntegrationV01RawWriterActualAlarmJournalSaveAndIndependentMainProbe` 在完整 Unit 通过，顺序变为 `writer-frozen → production-journal-entry → independent-probe-submitted → main-probe → todo-command-busy-input-retryable → release-requested → writer-released`；互斥阻止 writer 持有期间的 native save，MainActor 在真实 ROLLBACK 前响应，状态诚实 confirmationRequired，显式 Todo 命令未误报成功、事实未变且释放后可重试。raw ZIP 重开保留原 HabitLog ID/Infinity bitPattern/unit/result、Entry/图片 ID 与正文，归档和源图片字节均核对；释放后命令重试和 journal 退役收敛。旧非有限值拒绝/普通备份保护也在本轮完整 Unit 中通过。
+
+对新 mutex 的邻接审查：Todo 内部 transaction 没有嵌套 acquisition；ImportantDay createTodo 不位于另一个 StorePublication 闭包内；导入 materialize 不调用这两个 MainActor 服务；同步 todoTasksChanged 消费者仅只读搜索或启动稍后执行的 MainActor Task，未形成重入等待。worker 继续等待、主线程继续 try-lock，检查取消及 defer 解锁保留；journal 对 save 后报错仍只按持久精确值确认，native 取消与本地确认失败的身份保护未弱化。没有发现需要额外并发架构的证据。
+
+### 集中门、保护范围和限度
+
+固定干净 53eeb1d 上：final-debug-build 的 Debug build-for-testing exit 0；一次 final-unit 共 568=567 PASS/0 FAIL/1 SKIP；final-ui 七个完整关键方法 7/7 PASS；final-release unsigned generic iOS exit 0。原始 Unit/UI runtimeWarnings 均为空。唯一 Unit SKIP 是需要隔离 32MB HFS+ 图的物理低空间方法，未填主卷也未把 SKIP 写成 PASS。环境按原始结果区分为本机 macOS 27.0.1 arm64、Xcode/SDK 27.1、Simulator runtime 27.0 (24A434)。
+
+直接核对 Debug/Release 六个实际 bundle：App/Share/Widget 原身份、1.0(7)、minOS17 均正确；两份 App BuildProvenance 均为完整 53eeb1d、Dirty=false。独立重算六个 executable SHA256 与实包摘要相符；直接 otool 确认 Debug 主 dylib 与 Release App 的 AlarmKit 为 LC_LOAD_WEAK_DYLIB，中英 NSAlarmKitUsageDescription 存在；直接 codesign 检查 Release 三个 bundle 均未签名。没有安装或发行操作。
+
+已认可 SR02 无损编辑、SR03 事实/业务日主体、SR06 成功缓存释放、SR07 共同布局、BV01 限定失效与 BV02 原值保留未被重做。完整 Unit 覆盖既有旧 nil/迁移/恢复/回滚/取消/容量/停止、checkpoint/晚 pause-finish、editor 与 F5 读数等保护；关键 UI 还覆盖重复 Todo Stop/单 open、Settings 关闭及 CR05 中英 Light/Dark 最大字保存落点。Dark marker 的实际切换/恢复记录与直接查看的中文深色大字号截图相符。本次不把先前失败轮次拼接成一次全绿，不要求为无影响的旧 UI/纯文档交付重新跑产品。
+
+O01 未取得已打开 Weekly 跨周/父重建丢输入的原生反例，保持 UNCONFIRMED/非阻断；没有据此预改导航产品。D1–D4 仍 NOT_PASSED，AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持。本地结论不外推为这些门通过，也不授权私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+该固定候选的本地必要修复、集中验证和独立终审已具备。之后纯文档交付可原样追加本审查，不需要重建同一产品；PR Draft/base、普通推送和最终交付 SHA 仍由实施者按实际 Git/远端状态核对，不能由本报告先行宣称已完成。

@@ -545,3 +545,89 @@ V01：首次有界原生red-v01实际1FAIL。入口为exportRetainedQuantityData
 同批最小修复：TodoTaskService事务与intent journal commit共用现有按真实store root识别的StorePublication；主线程try-lock busy返回，worker仍等待，raw SQLite冻结/媒体归档合同不删除。green-v01 3/3PASS（2 Unit+1 UI）：同一raw/Alarm链变为writer-frozen, production-journal-entry, independent-probe-submitted, main-probe, todo-command-busy-input-retryable, release-requested, writer-released；writer仍持有时实际native-save被互斥阻止，journal状态诚实confirmationRequired，Todo命令原文本/事实不变且释放后可重试，原ID/Infinity bitPattern/unit/result和旧BV02原值恢复保护通过。V01定向结论CONFIRMED_AND_FIXED；最后再为原图/元数据/源文件字节加了同方法断言，进入下一次最终完整Unit。writerReleased观察只在实际SQLite ROLLBACK返回OK后登记。
 
 当前IR01～05/V01已具上述定向证据；最终集中Unit、必要保护UI、干净候选双构建/实包和独立全范围终审仍待，不恢复READY。证据根、实际命令/退出/全部真实FAIL/摘要hash见本机及INTEGRATION_FIX_RUNS.json。原设备/发行/Share/Safari/低空间/CI状态保持。
+
+## 2026-10-19 IF-D 最终集中门与交付 — READY_FOR_OWNER_DEVICE_GATE
+
+固定 Goal `b495bead6c9910ec1e15631227c1146176819583`；产品/测试 `53eeb1d3410630f836bbc3e713c79f9f157a4081`。IF-A checkpoint `cf3d3208206f50f805e252da2f17d42f063a6329`，IF-B/C 整合后固定最终产品。下表绑定最终干净产品（阶段 dirty 红/绿运行单独列示），不替换旧 SR/BV/CR 或先前失败记录。
+
+| 条目 | 结论与生产证据 | 相反操作/邻接保护 |
+| --- | --- | --- |
+| IR-01 CLOSED | 共用实际 AppShell TodoReminderEvents；Stop/旧 nil Stop/unresolved 无变化不保存/发布，混合健康跨区有限收敛且 gate waiter 完成 | 真实编辑仍使旧代次失效；实际写失败回滚及 retry 恰一次事件；三个起点必要事件 1/1/2 |
+| IR-02 CLOSED | 真 V11→旧 f1 两渠道 accepted future→隔离→三个取消失败阶段→冷重开→确认→futureSeries 明确纠正后新 native ID | cancellationPending 优先；Stop/retired 不复活；elapsed ringing/容量保护；reviewer 新增 retired query 故障局部收敛 |
+| IR-03 CLOSED | AppShell 稳定 per-channel Scope 接入 MediaStorage，实际 sheet 关/重开同值 B 隔离 A 的 success/error/cancel | B off、当前真错、无 B 时 A 合法完成、两渠道独立；onChange 未提交时偏好变化仍保护 |
+| IR-04 CLOSED | 按活动 ID 的 sheet；真实 ExternalCaptureImporter.scan/consume attachment checkpoint 持锁→Save busy 保留 B/正式 A/主响应→释放重试唯一活动 | 普通失败重试、明确取消、成功结束、另一活动不串稿；SR06/Record 独立草稿/CR05 相邻保护 |
+| IR-05 CLOSED | LA 午夜按 calendar 建 10000 日（旧秒式仅9973）；Growth 真实 Service→事件→挂载 reader；Weekly seed/summary/UI 同固定 clock 并显式推进 | 可见/切离 actualFetches=0；真实 Weight 增删/活动 metadata 正例；周一首分钟当前/未来排除/推进纳入/历史周日 |
+| V-01 CONFIRMED_AND_FIXED | 真实 raw writer→独立 Alarm observation→生产 journal→实际 SwiftData.save 红例确认 MainActor 等待；Todo transaction/journal 共用既有发布互斥后快速 busy | probe 先于实际 ROLLBACK，状态诚实/输入可重试、释放后恢复；原 SQLite/媒体冻结、Infinity bitPattern/ID/unit/result/原图与 metadata 字节保持 |
+| O-01 UNCONFIRMED | 未取得原生输入丢失反例，非阻断 | 未据此预改导航 |
+
+修前 red-v01 原始因果：`writer-frozen → production-journal-entry → native-save-held → independent-probe-submitted → probe-failsafe-timeout → release-requested → writer-released → native-save-success → main-probe`。修后：`writer-frozen → production-journal-entry → independent-probe-submitted → main-probe → todo-command-busy-input-retryable → release-requested → writer-released`。release 探针位于实际 SQLite ROLLBACK 返回 SQLITE_OK 后；独立 probe 在真实保存入口后投递，未拿前置权限等待当保存竞争。原 raw 是支持恢复包，不是普通可导入备份。
+
+### 最终同 SHA 本地集中门
+
+- final-debug-build：clean 53eeb1d，Debug Simulator build-for-testing exit0，7.798秒。
+- final-unit：同 clean SHA 一次完整 PersonalGrowthOSTests，568=567 PASS/0 FAIL/1 SKIP，exit0，50.884秒；runtimeWarnings=[]。唯一 SKIP：TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure，需要隔离32MB HFS+镜像，未填主卷。V01 最终方法包含原图字节加强并实际执行。
+- final-ui：同 clean SHA，七个完整方法 7/7 PASS、0 SKIP，exit0，298.728秒；runtimeWarnings=[]。两个 IR04、两个 Weekly、Todo repeat/Stop/restart、daily/weekly off/relaunch、CR05 default/中文Dark最大字保存落点。完整 selector、command 数组和原始record/log/summary哈希见 INTEGRATION_FIX_RUNS.json，未只重跑尾断言。
+- final-release：同 clean SHA，unsigned generic iOS Release build，CODE_SIGNING_ALLOWED=NO，exit0，42.529秒；不是 Archive。两构建实际 App/Share/Widget 为原 bundle ID、1.0(7)、minOS17.0；两份 App provenance 完整53eeb1d/Dirty=false/Source=localGit/Tag空；AlarmKit 为 LC_LOAD_WEAK_DYLIB，中英 NSAlarmKitUsageDescription 存在；Release三个bundle经codesign只读检查均not signed at all。
+
+环境：主本机 arm64/macOS27.0.1(26A434)，Xcode27.1(27A9275)、iPhoneOS/iPhoneSimulator SDK27.1；专用 iPhone18Pro 模拟器 runtime iOS27.0(24A434)，ID42609456-859D-41F8-8977-4B2D85A74082。模拟器/Xcode操作串行，无私人数据、未改宿主日期/时区。LA固定clock及en/zh测试参数进入真实reader，普通启动实时。
+
+四个最终运行均clean，142个tracked非Docs文件的source manifest完全一致且对应Git产品SHA。纯文档交付不重建。Release三个 executable SHA256：App `caf8c71cd1ddcc687d105932d6b47559717b95d98b09e8d5d9b8699685820865`；Widget `e5af21c4a3ffe0136711933f7d8a1269f02f02b5bd3bdc658317117294705637`；Share `aa3f9e979eb8d847f3f8b20743b671b8779b4098b4b68feb7fd3608c991d54a7`。完整Debug/Release实际plist、Mach-O、签名输出和各包哈希保留本机proof，摘要及proof哈希入机器记录。
+
+本机证据根 `/tmp/pgos-pr13-integration-evidence`；每轮 .json/.log/.xcresult/-summary.json 保留真实结果。最终UI导出18 PNG+manifest共19项哈希；代表图：17C729FC（busy正式A/草稿B/锁held）、1E30C7C7（释放后成功）、C4CE58FC（普通失败输入）、0DAED3A5（另一活动）、3FF670FC（周一当前）、0B697752（推进后未来纳入）、07B11382（历史周日）、729FDC9F（中文Dark最大字Hub）。已直接查看代表像素；appearance-driver按实际marker切Dark，结束恢复light。不是声称已看全部附件或设备VoiceOver通过。
+
+### 独立复核与范围审计
+
+独立 reviewer `/root/integration_independent_reviewer` 未写产品/测试；先登记反例，阶段审查实际发现 retired Alarm query 邻接 P2，同批红绿修复；正式终审原文完整追加 REVIEW，SHA256 `a0c3e3f5cfabd7baa857439dd5e51449a8736ee87a1e11c4d078a130a0cd4c3f`。其直接审读固定diff/未改调用者、既有log与xcresult、八张代表图和实际六bundle，独立复算34阶段轮次68个record/log哈希及四最终轮次、四份manifest、19附件hash；支持本地READY，无范围内未关闭confirmed P0/P1/P2及明确P3。实现者未代写终审。
+
+已认可SR02/03主体、SR06/07、BV01/02及旧R/F/CR保护保持；完整Unit执行提醒取消/容量/Stop、legacy nil/迁移/回滚/恢复、checkpoint/晚pause-finish、editor/F5等。Schema历史、project配置、Transfer/ZIP版本与固定Goal不变。最终必要UI集中跑上述七项，其它未受影响旧UI仅保留历史有效记录，不冒称本轮重跑全部UI或原生系统客户端。
+
+沿原分支普通commit/push唯一OPEN Draft PR13、base codex/time-investment-v1；不覆盖并发有效提交，交付前后核对远端head及PR。产品53eeb1d与之后仅Docs交付SHA分开；后者以实际commit/PR head和本机final-delivery-proof.json核对。主工作区三项未知改动保留。本地批次停在Owner设备门，D1–D4 NOT_PASSED、AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持。不操作私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+### 全部实际分轮（total/PASS/FAIL/SKIP）
+
+red-a是两方法失败（IR01 no-op与IR03旧owner），red-b是一方法失败（两渠道）；green-a是5PASS/1FAIL，实际Settings链后清理重复onDismiss expectation造成host崩溃，不算六绿，修清理后green-a2六完整方法通过。focused-a 45项保护通过。review-a-red一方法四断言失败是真实retired查询问题，修复后focused-b-clock三完整方法通过。
+
+red-rename首轮为附件命名夹具错误；red-rename2为alert AX驱动错误；red-rename3才是旧alert busy后输入不可达的产品红例。green-b-ui的3PASS/1FAIL是busy控件重复匹配；green-b-ui2完整busy→释放→保存已过，仅最终文字计数把调试文本误算第二活动；改用实际@Query活动数后green-v01三完整方法及最终UI全部通过。red-v01是真实保存阻塞的一方法FAIL。未将夹具/驱动错误冒充产品红例。
+
+构建失败也原样保留：red-a-build exit-5为沙箱macro/CoreSimulator限制；正常权限red-a-build2通过；green-a-build2为测试private跨文件访问编译失败；focused-b-clock-build为误传HabitService参数编译失败。它们无测试体，不伪造FAIL测试数。以下38轮各自命令、环境、HEAD/dirty和log/record SHA256全部见机器摘要；阶段dirty是明确记录的当时源码，不能冒充clean最终SHA。
+
+| 运行 | source HEAD/状态 | exit | total/PASS/FAIL/SKIP |
+| --- | --- | --- | --- |
+| red-a-build | b495bead6c99/dirty | -5 | 无测试体（构建） |
+| red-a-build2 | b495bead6c99/dirty | 0 | 无测试体（构建） |
+| red-a | b495bead6c99/dirty | 65 | 2/0/2/0 |
+| red-b-build | b495bead6c99/dirty | 0 | 无测试体（构建） |
+| red-b | b495bead6c99/dirty | 65 | 1/0/1/0 |
+| green-a-build | b495bead6c99/dirty | 0 | 无测试体（构建） |
+| green-a-build2 | b495bead6c99/dirty | 65 | 无测试体（构建） |
+| green-a-build3 | b495bead6c99/dirty | 0 | 无测试体（构建） |
+| green-a-build4 | b495bead6c99/dirty | 0 | 无测试体（构建） |
+| green-a | b495bead6c99/dirty | 65 | 6/5/1/0 |
+| green-a-build5 | b495bead6c99/dirty | 0 | 无测试体（构建） |
+| green-a2 | b495bead6c99/dirty | 0 | 6/6/0/0 |
+| focused-a-build | b495bead6c99/dirty | 0 | 无测试体（构建） |
+| focused-a | b495bead6c99/dirty | 0 | 45/45/0/0 |
+| focused-b-clock-build | cf3d3208206f/dirty | 65 | 无测试体（构建） |
+| review-a-red-build | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| review-a-red | cf3d3208206f/dirty | 65 | 1/0/1/0 |
+| review-a-green-build | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| focused-b-clock-build2 | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| focused-b-clock | cf3d3208206f/dirty | 0 | 3/3/0/0 |
+| red-rename-build | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| red-rename | cf3d3208206f/dirty | 65 | 1/0/1/0 |
+| green-b-build | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| red-rename-build2 | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| red-rename2 | cf3d3208206f/dirty | 65 | 1/0/1/0 |
+| red-rename-build3 | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| red-rename3 | cf3d3208206f/dirty | 65 | 1/0/1/0 |
+| green-b-build2 | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| green-b-ui | cf3d3208206f/dirty | 65 | 4/3/1/0 |
+| red-v01-build | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| green-b-ui2 | cf3d3208206f/dirty | 65 | 1/0/1/0 |
+| red-v01 | cf3d3208206f/dirty | 65 | 1/0/1/0 |
+| green-v01-build | cf3d3208206f/dirty | 0 | 无测试体（构建） |
+| green-v01 | cf3d3208206f/dirty | 0 | 3/3/0/0 |
+| final-debug-build | 53eeb1d34106/clean | 0 | 无测试体（构建） |
+| final-unit | 53eeb1d34106/clean | 0 | 568/567/0/1 |
+| final-ui | 53eeb1d34106/clean | 0 | 7/7/0/0 |
+| final-release | 53eeb1d34106/clean | 0 | 无测试体（构建） |

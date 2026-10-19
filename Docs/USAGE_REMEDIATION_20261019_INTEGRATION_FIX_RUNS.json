@@ -1172,7 +1172,587 @@
         "testFailures": []
       },
       "rawSummarySHA256": "65a4189bd4ea40a23c32f878ebd9938269c753558804532705fcab48a82c66f2"
+    },
+    {
+      "name": "final-debug-build",
+      "kind": "build",
+      "sourceHead": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 7.798,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-integration-evidence/final-debug-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "610249387912fb596f8e25b8861214625680e62aa37d3f367bf1ba78abc4fc2e",
+      "logSHA256": "9ab4b593c3a6335c15421e6ce79625aacd4f5eb5d0c7a22418f7b1aa90b6aabb"
+    },
+    {
+      "name": "final-unit",
+      "kind": "test",
+      "sourceHead": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 50.885,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-integration-evidence/final-unit.xcresult",
+        "-only-testing:PersonalGrowthOSTests"
+      ],
+      "recordSHA256": "b46130f6568821a8e0c41b38380212e06a68e2d7af7700156d0eb21ac91e4d9c",
+      "logSHA256": "9f91de42aa64b34cc411b687c860ffdc7ab95bc553dba45a69683d51f85ed11d",
+      "summary": {
+        "totalTestCount": 568,
+        "passedTests": 567,
+        "failedTests": 0,
+        "skippedTests": 1,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "b7e6e252e168a24b83fee40a9347fbf8cd626e47738c4665b47c55763ae71735"
+    },
+    {
+      "name": "final-ui",
+      "kind": "test",
+      "sourceHead": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 298.728,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-integration-evidence/final-ui.xcresult",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testIntegrationIR04RealImporterBusyKeepsRenameVisibleAndRetryable",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testIntegrationIR04OrdinarySaveFailureRetryCancelAndAnotherActivity",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeeklyCurrentCutoffAndHistoricalLateWeekSummary",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testIntegrationIR05WeeklyFixedClockAdvanceIncludesActualFutureFacts",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch",
+        "-only-testing:PersonalGrowthOSUITests/InvestmentUITests/testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText"
+      ],
+      "recordSHA256": "0ca9eed4ae34b77297708838fbe2ef5f4f963b9c9c60609dd0b74316ed1a8f21",
+      "logSHA256": "7fa1818896dab62a48ed527cdd83bf83d757212227f08fb3848950f4aad1ebaa",
+      "summary": {
+        "totalTestCount": 7,
+        "passedTests": 7,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "e6d54426b54cc1978f92f6433dd35b8bc69929f7f0c7ac87c88bfdc6b026e6da"
+    },
+    {
+      "name": "final-release",
+      "kind": "build",
+      "sourceHead": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 42.53,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-release",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-integration-evidence/final-release.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "recordSHA256": "1e862f6f42c820d79a64151fff0781cff84de82c64894e8c553e789b2b1ccdc5",
+      "logSHA256": "1661ae6246871e7309bb086e2c68fd48f9e8d265d47661f9b2b3a6bbf2ccd7c8"
     }
   ],
-  "status": "FIXES_IN_PROGRESS"
+  "status": "READY_FOR_OWNER_DEVICE_GATE",
+  "productAndTestsSHA": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+  "documentationDelivery": "Subsequent Docs-only commit; resolve exact SHA via PR head and local final-delivery-proof.json; no product rebuild.",
+  "environment": {
+    "host": "macOS 27.0.1 (26A434) arm64",
+    "xcode": "27.1 (27A9275)",
+    "sdk": "iPhoneOS/iPhoneSimulator 27.1",
+    "simulatorRuntime": "iOS 27.0 (24A434)",
+    "simulator": "iPhone 18 Pro / PGOS-UsageRemediation-20261017 / 42609456-859D-41F8-8977-4B2D85A74082"
+  },
+  "cases": {
+    "IR-01": {
+      "status": "CLOSED",
+      "invariant": "stopped 候选排除；无事实变化不 save/post；真实变化仍发事件并失效旧 generation",
+      "consumers": [
+        "TodoTaskService.refreshFloatingReminderTimes",
+        "TodoReminderEvents/AppShell",
+        "TodoReminderCoordinator/LocalReminderScheduler",
+        "Search read-only event consumer"
+      ],
+      "selectors": [
+        "ImportExportRecoveryTests/testIntegrationIR01StoppedRefreshDoesNotSaveOrPublish",
+        "ImportExportRecoveryTests/testIntegrationIR01MountedProductionEventBridgeSettlesAndReleasesSettingsGate",
+        "ImportExportRecoveryTests/testIntegrationIR01RealTravelSaveFailureRollsBackAndRetryPublishesExactlyOnce"
+      ],
+      "counterexamples": [
+        "显式 Stop/真 V11 nil Stop/active unresolved",
+        "健康 Todo/ImportantDay/Sleep 与 daily gate waiter",
+        "外部真实编辑/真实 save rollback/retry"
+      ],
+      "runs": [
+        "red-a",
+        "green-a2",
+        "focused-a",
+        "final-unit"
+      ]
+    },
+    "IR-02": {
+      "status": "CLOSED",
+      "invariant": "两渠道已有未来 ownership 隔离并确认取消；未确认身份优先，健康类别继续",
+      "consumers": [
+        "V11 migration/old f1 persisted chain",
+        "TodoReminderCoordinator",
+        "LocalReminderScheduler notification/alarm clients",
+        "TodoReminderJournalEntry",
+        "futureSeries correction/display snapshot"
+      ],
+      "selectors": [
+        "ImportExportRecoveryTests/testIntegrationIR02BothOwnedFutureChannelsCancelConfirmColdReopenAndCorrect",
+        "ImportExportRecoveryTests/testIntegrationIR02UnresolvedFutureSystemStopNeverRevivesAndElapsedAlarmStillRings",
+        "ImportExportRecoveryTests/testIntegrationIR02RetiredAlarmQueryFailureStaysLocalBesideHealthyThree"
+      ],
+      "counterexamples": [
+        "journal 前失败/native cancel 失败/取消后确认失败/冷重开/显式规则纠正",
+        "系统 Stop/retired 不复活，正常 elapsed ringing 不误取消",
+        "retired Alarm 查询失败不击穿健康三类别；原容量保护"
+      ],
+      "runs": [
+        "red-b",
+        "green-a2",
+        "focused-a",
+        "review-a-red",
+        "focused-b-clock",
+        "final-unit"
+      ]
+    },
+    "IR-03": {
+      "status": "CLOSED",
+      "invariant": "AppShell 持有 per-channel Scope；跨 sheet 同值新意图隔离旧所有出口",
+      "consumers": [
+        "AppShell State/MediaStorage sheet",
+        "MediaStorageView actual onChange",
+        "ReminderSettingsUpdate Scope",
+        "LocalReminderScheduler shared mutation gate"
+      ],
+      "selectors": [
+        "ImportantDayReminderTests/testIntegrationIR03RebuiltSettingsSameValuesRejectOldOutcome",
+        "ImportantDayReminderTests/testIntegrationIR03CrossSheetScopeKeepsLegalCompletionExplicitOffAndChannelsIndependent",
+        "AppCompositionTests/testIntegrationIR03ActualSettingsSheetCloseReopenSameValueIntent"
+      ],
+      "counterexamples": [
+        "A 挂起→关闭重建→B 同值 off/on→A success/error/cancel",
+        "B off/B 当前错误/无 B 时 A 合法完成/两渠道独立/偏好先变后提交"
+      ],
+      "runs": [
+        "red-a",
+        "green-a",
+        "green-a2",
+        "focused-a",
+        "final-unit",
+        "final-ui"
+      ]
+    },
+    "IR-04": {
+      "status": "CLOSED",
+      "invariant": "按活动 ID 管理可见草稿；busy/普通失败保留输入；成功/明确取消结束",
+      "consumers": [
+        "InvestmentActivityEditView",
+        "InvestmentService rename/archive/restore",
+        "ExternalCaptureImporter.scan/consume",
+        "StorePublication",
+        "Investment Workspace editor cleanup"
+      ],
+      "selectors": [
+        "InvestmentUITests/testIntegrationIR04RealImporterBusyKeepsRenameVisibleAndRetryable",
+        "InvestmentUITests/testIntegrationIR04OrdinarySaveFailureRetryCancelAndAnotherActivity"
+      ],
+      "counterexamples": [
+        "真实附件导入持锁→正式 A/可见 B/主响应→释放→重试一条活动",
+        "普通保存失败/取消/成功关闭/另一活动隔离",
+        "SR06 saved 幂等/Record 独立草稿/CR05/F5"
+      ],
+      "runs": [
+        "red-rename",
+        "red-rename2",
+        "red-rename3",
+        "green-b-ui",
+        "green-b-ui2",
+        "green-v01",
+        "final-unit",
+        "final-ui"
+      ]
+    },
+    "IR-05": {
+      "status": "CLOSED",
+      "invariant": "calendar 自然日 10000 日；seed 与真实 reader/summary/UI 共用受控 now/zone，普通启动实时",
+      "consumers": [
+        "GrowthView countClock",
+        "InvestmentService didSave→mounted Growth reader",
+        "WeeklyReviewClock",
+        "Weekly seed/current/historical summary"
+      ],
+      "selectors": [
+        "AppCompositionTests/testSystemBV01MountedGrowthActualReadsOnInvestmentSavesVisibleAndHiddenProbe",
+        "WeeklyReviewFoundationTests/testIntegrationIR05FixedMondaySeedAndReaderIgnoreElapsedWallTimeUntilClockAdvances",
+        "AppLaunchSmokeTests/testSystemWeeklyCurrentCutoffAndHistoricalLateWeekSummary",
+        "AppLaunchSmokeTests/testIntegrationIR05WeeklyFixedClockAdvanceIncludesActualFutureFacts"
+      ],
+      "counterexamples": [
+        "LA 2026-10-19 00:30，秒数旧式仅9973不同日",
+        "LA周一00:00:30，当前-10秒/未来+120秒/历史周日；显式+180秒纳入",
+        "Growth可见/隐藏 actualFetches=0，Weight增删/metadata正例保持"
+      ],
+      "runs": [
+        "focused-b-clock",
+        "green-b-ui",
+        "final-unit",
+        "final-ui"
+      ]
+    },
+    "V-01": {
+      "status": "CONFIRMED_AND_FIXED",
+      "invariant": "真实 raw writer 冻结期间 MainActor 快速 busy，不误报成功；原 SQLite/媒体互斥和原值/图片不变",
+      "consumers": [
+        "ImportExportService.exportRetainedQuantityData",
+        "StartupRetainedData.capture actual BEGIN IMMEDIATE/ROLLBACK",
+        "Alarm observation→reconcile→journalCommit actual SwiftData.save",
+        "TodoTaskService.transaction",
+        "StorePublication"
+      ],
+      "selectors": [
+        "ImportExportRecoveryTests/testIntegrationV01RawWriterActualAlarmJournalSaveAndIndependentMainProbe"
+      ],
+      "counterexamples": [
+        "独立执行器在生产保存入口后投递 probe，独立2秒fail-safe",
+        "修前 probe 仅释放后运行；修后 probe 先于实际 ROLLBACK",
+        "诚实 confirmationRequired/Todo输入可重试/释放后编辑与对账恢复",
+        "源和raw HabitLog ID/Infinity bitPattern/unit/result、Entry/image ID/metadata/原图字节"
+      ],
+      "runs": [
+        "red-v01",
+        "green-v01",
+        "final-unit"
+      ]
+    },
+    "O-01": {
+      "status": "UNCONFIRMED",
+      "blocking": false,
+      "scope": "未取得已打开Weekly跨周/父重建输入丢失的原生反例；不预改导航"
+    }
+  },
+  "finalGates": {
+    "final-debug": {
+      "identityVersionMinimumOS": "PASS",
+      "provenance": {
+        "Commit": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+        "Dirty": false,
+        "Source": "localGit",
+        "Tag": ""
+      },
+      "alarmWeakLink": "PASS",
+      "alarmUsageLocalization": "PASS",
+      "bundles": [
+        {
+          "path": "/tmp/pgos-pr13-fix-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app",
+          "identifier": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "43303593fe3bac299ec83fc15424c5ce48c4e4fa9e4dea8585d16bbc729578f9",
+          "debugLibrariesSHA256": {
+            "PersonalGrowthOS.debug.dylib": "5db223d3cc3a2c58659e89870192d24083985fba344409ca0dd3a1ba1c215e99",
+            "__preview.dylib": "5626685e026195268d52a3a4fa2b0ee7fa253531015a944dbaf810500d7953a6"
+          },
+          "provenance": {
+            "Commit": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+            "Dirty": false,
+            "Source": "localGit",
+            "Tag": ""
+          },
+          "alarmUsageDescription": "Schedule alarm reminders that you explicitly enable for your todos.",
+          "localizedAlarmUsageDescriptions": {
+            "zh-Hans.lproj": "为你明确开启闹钟提醒的待办安排系统闹钟。",
+            "en.lproj": "Schedule alarm reminders that you explicitly enable for your todos."
+          }
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "15dac98175aa7582e720fd6dca4cd2e9eee1ba9946a78c53ea9695b7f7cf5dd5",
+          "debugLibrariesSHA256": {
+            "__preview.dylib": "d9738b3a621145ee5195732eaee22b104e8d015e670aa5cbfa995293ea42adbd",
+            "ImportantDaysWidget.debug.dylib": "49504e8a80ab4ba9b841116a4637dee31746c5695239d0290a54c68fa3b0b328"
+          }
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "42841fffbef5b7cf7db4268d0cf41c40243d50c2abbe9ff6a6b51464b2d4df85",
+          "debugLibrariesSHA256": {
+            "__preview.dylib": "9d465fe8771d8a8725d6630a6e24a3cdce2bb3de1df5dd67b9ed8be2dd7b6cfb",
+            "ShareExtension.debug.dylib": "d5a1f135061149d0eb98a107d03abdb69812ec644e340e58f9032e519c54f81f"
+          }
+        }
+      ]
+    },
+    "final-release": {
+      "identityVersionMinimumOS": "PASS",
+      "provenance": {
+        "Commit": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+        "Dirty": false,
+        "Source": "localGit",
+        "Tag": ""
+      },
+      "alarmWeakLink": "PASS",
+      "alarmUsageLocalization": "PASS",
+      "bundles": [
+        {
+          "path": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app",
+          "identifier": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "caf8c71cd1ddcc687d105932d6b47559717b95d98b09e8d5d9b8699685820865",
+          "debugLibrariesSHA256": {},
+          "provenance": {
+            "Commit": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+            "Dirty": false,
+            "Source": "localGit",
+            "Tag": ""
+          },
+          "alarmUsageDescription": "Schedule alarm reminders that you explicitly enable for your todos.",
+          "localizedAlarmUsageDescriptions": {
+            "zh-Hans.lproj": "为你明确开启闹钟提醒的待办安排系统闹钟。",
+            "en.lproj": "Schedule alarm reminders that you explicitly enable for your todos."
+          },
+          "unsignedInspection": {
+            "exit": 1,
+            "output": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app: code object is not signed at all"
+          }
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "e5af21c4a3ffe0136711933f7d8a1269f02f02b5bd3bdc658317117294705637",
+          "debugLibrariesSHA256": {},
+          "unsignedInspection": {
+            "exit": 1,
+            "output": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex: code object is not signed at all"
+          }
+        },
+        {
+          "path": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+          "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+          "version": "1.0",
+          "build": "7",
+          "minimumOS": "17.0",
+          "executableSHA256": "aa3f9e979eb8d847f3f8b20743b671b8779b4098b4b68feb7fd3608c991d54a7",
+          "debugLibrariesSHA256": {},
+          "unsignedInspection": {
+            "exit": 1,
+            "output": "/tmp/pgos-pr13-fix-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ShareExtension.appex: code object is not signed at all"
+          }
+        }
+      ]
+    },
+    "run:final-debug-build": {
+      "sha": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "exit": 0,
+      "dirty": false,
+      "unchangedSourceFiles": 142,
+      "recordSHA256": "610249387912fb596f8e25b8861214625680e62aa37d3f367bf1ba78abc4fc2e",
+      "logSHA256": "9ab4b593c3a6335c15421e6ce79625aacd4f5eb5d0c7a22418f7b1aa90b6aabb"
+    },
+    "run:final-unit": {
+      "sha": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "exit": 0,
+      "dirty": false,
+      "unchangedSourceFiles": 142,
+      "recordSHA256": "b46130f6568821a8e0c41b38380212e06a68e2d7af7700156d0eb21ac91e4d9c",
+      "logSHA256": "9f91de42aa64b34cc411b687c860ffdc7ab95bc553dba45a69683d51f85ed11d",
+      "counts": {
+        "total": 568,
+        "pass": 567,
+        "fail": 0,
+        "skip": 1
+      },
+      "runtimeWarnings": []
+    },
+    "run:final-ui": {
+      "sha": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "exit": 0,
+      "dirty": false,
+      "unchangedSourceFiles": 142,
+      "recordSHA256": "0ca9eed4ae34b77297708838fbe2ef5f4f963b9c9c60609dd0b74316ed1a8f21",
+      "logSHA256": "7fa1818896dab62a48ed527cdd83bf83d757212227f08fb3848950f4aad1ebaa",
+      "counts": {
+        "total": 7,
+        "pass": 7,
+        "fail": 0,
+        "skip": 0
+      },
+      "runtimeWarnings": []
+    },
+    "run:final-release": {
+      "sha": "53eeb1d3410630f836bbc3e713c79f9f157a4081",
+      "exit": 0,
+      "dirty": false,
+      "unchangedSourceFiles": 142,
+      "recordSHA256": "1e862f6f42c820d79a64151fff0781cff84de82c64894e8c553e789b2b1ccdc5",
+      "logSHA256": "1661ae6246871e7309bb086e2c68fd48f9e8d265d47661f9b2b3a6bbf2ccd7c8"
+    },
+    "physicalLowSpace": "SKIP: Requires isolated 32MB HFS+ test image; never fill primary volume",
+    "nativeEnvironment": {
+      "machine": "primary local Mac arm64",
+      "macOS": "27.0.1 (26A434)",
+      "xcode": "27.1 (27A9275)",
+      "sdk": "iPhoneOS/iPhoneSimulator 27.1",
+      "runtime": "iOS Simulator 27.0 (24A434)",
+      "simulator": "42609456-859D-41F8-8977-4B2D85A74082"
+    },
+    "appearanceDriver": {
+      "original": "light",
+      "changes": [
+        {
+          "marker": "Test Case '-[PersonalGrowthOSUITests.AppLaunchSmokeTests testIntegrationIR05WeeklyFixedClockAdvanceIncludesActualFutureFacts]' started.",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407123.732069
+        },
+        {
+          "marker": "Test Case '-[PersonalGrowthOSUITests.AppLaunchSmokeTests testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch]' started.",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407123.808079
+        },
+        {
+          "marker": "Test Case '-[PersonalGrowthOSUITests.AppLaunchSmokeTests testSystemWeeklyCurrentCutoffAndHistoricalLateWeekSummary]' started.",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407123.8895922
+        },
+        {
+          "marker": "Test Case '-[PersonalGrowthOSUITests.AppLaunchSmokeTests testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence]' started.",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407127.39489
+        },
+        {
+          "marker": "Test Case '-[PersonalGrowthOSUITests.InvestmentUITests testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText]' started.",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407170.325611
+        },
+        {
+          "marker": "PGOS_USAGE_STYLE_LIGHT",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407170.392194
+        },
+        {
+          "marker": "PGOS_USAGE_STYLE_DARK",
+          "style": "dark",
+          "exit": 0,
+          "at": 1792407204.884067
+        },
+        {
+          "marker": "Test Case '-[PersonalGrowthOSUITests.InvestmentUITests testIntegrationIR04OrdinarySaveFailureRetryCancelAndAnotherActivity]' started.",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407295.40498
+        },
+        {
+          "marker": "Test Case '-[PersonalGrowthOSUITests.InvestmentUITests testIntegrationIR04RealImporterBusyKeepsRenameVisibleAndRetryable]' started.",
+          "style": "light",
+          "exit": 0,
+          "at": 1792407340.2857752
+        }
+      ],
+      "restored": "light"
+    },
+    "fixedInputsUnchanged": true
+  },
+  "finalUISelectors": [
+    "PersonalGrowthOSUITests/InvestmentUITests/testIntegrationIR04RealImporterBusyKeepsRenameVisibleAndRetryable",
+    "PersonalGrowthOSUITests/InvestmentUITests/testIntegrationIR04OrdinarySaveFailureRetryCancelAndAnotherActivity",
+    "PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeeklyCurrentCutoffAndHistoricalLateWeekSummary",
+    "PersonalGrowthOSUITests/AppLaunchSmokeTests/testIntegrationIR05WeeklyFixedClockAdvanceIncludesActualFutureFacts",
+    "PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence",
+    "PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch",
+    "PersonalGrowthOSUITests/InvestmentUITests/testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText"
+  ],
+  "boundaries": "D1–D4 NOT_PASSED、AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持。不操作私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。",
+  "remoteCIEvidence": "gh api repos/yoCruzer/PersonalGrowthOS/actions/workflows returned total_count=0; CI NOT_RUN; no run triggered.",
+  "evidenceFiles": {
+    "independent-counterexamples.md": "a62c67042b25de5e11ee5560e23148341708039363c1815de363eb2c807b27e5",
+    "independent-if-a-review.md": "7533d48f7d52df0446f72033df6cd852c9eba840959e7fa5dc66eb82196e39d2",
+    "independent-final-review.md": "a0c3e3f5cfabd7baa857439dd5e51449a8736ee87a1e11c4d078a130a0cd4c3f",
+    "final-bundle-and-gates.json": "b5323909597df27be6535075e27cb72da52e3b93b9bcb006c9696d7ee799ff90",
+    "final-debug-bundle-proof.json": "68f689e997512f278ce3c4d8009a18d4bcc5d8c5da283a17faff25e978ed7cf2",
+    "final-release-bundle-proof.json": "8dd51117bcf8138347c09334d6601ac093cc801d6e56bad887e25c40c65644d6",
+    "final-ui-appearance.json": "52e8a13ef9f9687d7651fb8f14eec3343dfdacecc59b2d2fa2a2633101b7f03c",
+    "final-ui-attachment-hashes.json": "8f4bc717e057b09abd64bf26d786a8dc2884dc0f6a6095d04911c0949dde8b18",
+    "final-debug-build-source-manifest.json": "d3c4bdcb17504f3e37275016b6806dbb81be134b21efb70ca38eb11ac43f5443",
+    "final-unit-source-manifest.json": "d3c4bdcb17504f3e37275016b6806dbb81be134b21efb70ca38eb11ac43f5443",
+    "final-ui-source-manifest.json": "d3c4bdcb17504f3e37275016b6806dbb81be134b21efb70ca38eb11ac43f5443",
+    "final-release-source-manifest.json": "d3c4bdcb17504f3e37275016b6806dbb81be134b21efb70ca38eb11ac43f5443"
+  }
 }
