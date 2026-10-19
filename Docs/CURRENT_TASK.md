@@ -1,6 +1,10 @@
-# PR #13 集成边界修复 — FIXES_IN_PROGRESS（2026-10-19）
+# PR #13 集成边界修复 — FIXES_IN_PROGRESS / 最终集中门前（2026-10-19）
 
-已在原干净worktree安全快进到固定Goal b495bead6c9910ec1e15631227c1146176819583；PR13 OPEN Draft/base codex/time-investment-v1及祖先关系已核对。主目录未知改动保留。实施前消费者/不变量/合法后续矩阵已追加EXECUTION；独立只读reviewer先登记反例。IF-A已取得red-a两方法FAIL、red-b双渠道FAIL，修复后green-a2 6/6PASS及focused-a 45/45PASS；真实失败、测试清理host崩溃与补验见EXECUTION/INTEGRATION_FIX_RUNS。IR01～03已具定向证据但尚待最终独立审查；IR04/05、V01、集中门与交付继续，不恢复READY。IF-A→IF-D沿同一授权连续完成；原设备/发行边界和历史证据保持。
+固定Goal b495bead6c9910ec1e15631227c1146176819583。原worktree/分支续接；主目录未知改动保留，PR13保持OPEN Draft/base codex/time-investment-v1。IF-A阶段checkpoint cf3d320已完成，IR01～03定向6/6与45/45；独立新增IR02查询故障已原生红绿闭环。
+
+IF-B：IR04真实importer持锁红例→可重试sheet，普通失败/重试/取消/另一活动和busy成功；IR05真实Growth固定10000自然日与Weekly固定clock/推进的Unit/UI通过。IF-C：V01真实raw writer→Alarm观察→SwiftData.save确认阻塞，已同批以现有发布互斥修复，原生主响应/诚实状态/原值与释放后重试通过；新增原图字节保护进入最终完整Unit。O01保持非阻断UNCONFIRMED，未预改产品。
+
+下一步同一授权完成固定干净候选一次完整Unit、必要保护UI、Debug/unsigned Release和实包、独立终审/范围内补修、文档与普通push原PR。尚不恢复READY；实际FAIL（含夹具/驱动/host清理）和补验均见EXECUTION/ACCEPTANCE/INTEGRATION_FIX_RUNS。D1–D4、AlarmKit正向、Share/Safari、低空间和CI原状态及所有设备/发行禁止边界保持。
 
 ---
 

@@ -59,19 +59,7 @@ struct PersonalGrowthOSApp: App {
             }
             if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSWeeklyCutoffTest") {
-                let context=container.modelContainer.mainContext,now=Date(),future=now.addingTimeInterval(120)
-                let previous=try WeeklyReviewPeriod(containing:now).previous()
-                let historical=previous.end.addingTimeInterval(12*3600)
-                let entries=EntryCreationService(persistence:ModelContextEntryPersistence(context:context),mediaStore:container.mediaStore,now:{now})
-                _ = try entries.create(.init(title:"Current occurred entry",body:"Current fact",occurredAt:now.addingTimeInterval(-60)))
-                _ = try entries.create(.init(title:"Future occurred entry",body:"Future fact",occurredAt:future))
-                _ = try entries.create(.init(title:"Historical Sunday entry",body:"Late in the selected historical week",occurredAt:historical))
-                let habit=try HabitService(context:context,now:{historical}).create(name:"Actual cutoff habit")
-                let check=HabitCheckInService(context:context,mediaStore:container.mediaStore,now:{now})
-                _ = try check.incrementCount(habit,occurredAt:now.addingTimeInterval(-60))
-                _ = try check.incrementCount(habit,occurredAt:future)
-                let weights=WeightRecordService(context:context,now:{now})
-                for (value,date) in [(69.0,historical),(70.0,now.addingTimeInterval(-60)),(99.0,future)] {_ = try weights.create(weightKilograms:value,recordedAt:date)}
+                try WeeklyReviewClock.seed(context:container.modelContainer.mainContext,mediaStore:container.mediaStore)
             }
             if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSWeightReviewFixDates") {

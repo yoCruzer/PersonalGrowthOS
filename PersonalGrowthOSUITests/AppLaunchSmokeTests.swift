@@ -3176,3 +3176,34 @@ extension AppLaunchSmokeTests {
         for id in ["daily-reminder-toggle","weekly-reminder-toggle"] {XCTAssertTrue(app.switches[id].waitForExistence(timeout:5));XCTAssertEqual(app.switches[id].value as? String,"0")}
     }
 }
+
+extension AppLaunchSmokeTests {
+    func testIntegrationIR05WeeklyFixedClockAdvanceIncludesActualFutureFacts() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeeklyCutoffTest","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        for advanced in [false,true] {
+            if advanced {
+                app.launchArguments.removeAll {$0 == "-PGOSResetData"}
+                app.launchArguments.append("-PGOSWeeklyAdvanceTest")
+            }
+            app.launch()
+            let open=app.buttons["today-weekly-review"]
+            for _ in 0..<15 where !open.isHittable {app.swipeUp()}
+            XCTAssertTrue(open.isHittable);open.tap()
+            let entries=app.descendants(matching:.any)["weekly-summary-entries"]
+            XCTAssertTrue(entries.waitForExistence(timeout:5))
+            XCTAssertTrue(entries.label.contains(advanced ? "2":"1"),entries.label)
+            let habits=app.descendants(matching:.any)["weekly-summary-habits"]
+            XCTAssertTrue(habits.label.contains(advanced ? "2":"1"),habits.label)
+            let weight=app.descendants(matching:.any)["weekly-summary-weight"]
+            for _ in 0..<12 where !weight.isHittable {app.swipeUp()}
+            XCTAssertTrue(weight.label.contains(advanced ? "99.0":"70.0"),weight.label)
+            let expected=app.staticTexts[advanced ? "Future occurred entry":"Current occurred entry"]
+            for _ in 0..<12 where !expected.isHittable {app.swipeUp()}
+            XCTAssertTrue(expected.exists,app.debugDescription)
+            let shot=XCTAttachment(screenshot:app.screenshot());shot.name=advanced ? "Integration-Weekly-clock-advanced":"Integration-Weekly-fixed-Monday-first-minute";shot.lifetime = .keepAlways;add(shot)
+            app.terminate()
+        }
+    }
+}

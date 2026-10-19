@@ -424,3 +424,24 @@ Owner已批准 [新Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 
 请提供固定产品/测试 SHA、相对固定 Goal 的完整 diff、每条 selector/命令/退出码和 clock/locale、红绿轮次归属、原始 xcresult/日志/代表图/实包路径及哈希。终审将自行读取与复算所需材料，并检查未改调用者和上述合法相反操作；不会以 PASS 总数或实现者关闭表作为覆盖证明。集中完整 Unit、必要关键 UI、干净同候选 Debug/unsigned Release 与实际 App/Share/Widget provenance 要按实际运行轮次报告；旧有效证据只按 blob/方法/依赖配置明确复用，保留全部真实 FAIL/SKIP/NOT_RUN。D1–D4、AlarmKit 正向、Share/Safari、物理低空间与 CI 的原状态不由本次审查改写。
 
 预审结论：上述条目均待固定候选及原生证据终审；此时不支持恢复 READY_FOR_OWNER_DEVICE_GATE。没有新增产品范围，也没有将 O-01 升格为 confirmed。
+
+## 2026-10-19 IF-A 独立阶段复审（非最终终审）
+
+审查者 `/root/integration_independent_reviewer`，未参与实现。本次只读审查固定 checkpoint `cf3d3208206f50f805e252da2f17d42f063a6329` 相对固定 Goal `b495bead6c9910ec1e15631227c1146176819583` 的 IR01～03 完整生产/测试 diff，核对未改的 scheduler gate、cancel/write、status/display、Alarm 系统 adapter 和活动入口。没有运行 Xcode 构建、模拟器或测试；使用 `xcresulttool get test-results summary` 解析既有原始产物。
+
+### 发现：IR02 邻接查询失败仍可打断健康队列（P2，待修复）
+
+`TodoAlarmReminders.swift:297` 中新增的 `if record.phase == .retired, try await !present(record)` 没有局部错误出口。合法序列：真实旧 nil 多次覆盖的 future Alarm 已接受→切区后成功隔离并保存 retired→冷重开→系统 `AlarmManager.shared.alarms` 暂时抛查询错误。开头 `retireObsoleteRequests` 对同一查询失败已捕获为该任务的 `cancellationPending`，但随后 quarantine 对 retired 再次查询时向外抛，`TodoReminderCoordinator.reconcile` 在生成/安排健康三类之前进入全局 catch，清空状态，并将整个轮次标失败。该错误也使当前已知局部 pending 被全局失败覆盖。
+
+这是源码可追踪的生产反例，尚未原生运行。应将此 native 查询失败保留为局部待确认，保持 durable 身份，并补真实生产对账反例：已隔离 retired future Alarm→查询失败→同队列健康 Todo/ImportantDay/Sleep 仍调度且该任务 cancellationPending→查询恢复/冷重开→仅纠正规则提示、不重建旧请求。不能把存储/结构错误一并当局部错误吞掉。
+
+### 已核对证据与当前支持范围
+
+- 直接读取 `/tmp/pgos-pr13-integration-evidence/{red-a,red-b,green-a2,focused-a}.log`、运行 JSON、对应原始 xcresult summary。red-a 为 2 个方法 FAIL（日志 12 断言失败），red-b 为 1 个方法 FAIL（日志 19 断言失败），green-a2 为 6 PASS/0 FAIL/0 SKIP，focused-a 为 45 PASS/0 FAIL/0 SKIP。未将红例改写为通过。
+- 逐项复算 source manifest 中 113 个文件 SHA256，并与固定 cf3d320 的 Git 内容比较：focused-a 与 focused-a-build 全部一致；green-a2 只有 `ImportExportRecoveryTests.swift` 不同，后续 focused-a 已包含新增回滚/Stop/ringing 及外部 mutation 加强。后续最终候选仍须重新绑定。
+- IR01 的新生产事件桥确由 AppShell 使用，挂载测试使用同一桥；stopped 在候选前排除，active unresolved 在 fresh read context 无变化时不 save/post。挂载序列经过权限 await，验证 1/1/2 个事实事件、健康三类别最终 scheduled、daily waiter 完成；外部编辑与回滚/重试正例存在。当前未发现 IR01 新 confirmed 问题。
+- IR03 的 Scope 由 AppShell State 持有，MediaStorage 的新 updater wrapper 共用 root 的 daily/weekly Scope。真实 MediaStorage sheet onDismiss/onAppear 重建及 AppStorage onChange 链已运行，旧普通错误被同值新意图拒绝，最终 native repeating request 存在；双 owner 生产 updater→scheduler→gate 的六出口矩阵补足成功/错误/取消、无 B 合法完成、B off/当前失败及渠道独立。当前未发现 IR03 新 confirmed 问题。
+- IR02 的 accepted future 六场景真实持久化、冷容器、新 generation/新 native ID 已直接核对，正常 elapsed Alarm 不被取消、系统 Stop 不复活的对照存在；但没有覆盖上方 retired native 查询失败，故不能据六场景通过关闭完整 IR02 集成。
+- 原始 xcresult runtime 为 iOS **27.0** / build **24A434**，SDK/xctestrun 文件名为 27.1。EXECUTION 将环境笼统写成“iOS Simulator 27.1”需区分 SDK 与实际运行 runtime。
+
+阶段结论：IR01/IR03 当前定向证据有效，IR02 仍有本轮范围内 confirmed 源码问题；尚未审核 IF-B/IF-C/最终集中门，不支持恢复 READY_FOR_OWNER_DEVICE_GATE。D1–D4、AlarmKit 正向、Share/Safari、物理低空间、CI 与发行权限边界保持。

@@ -545,3 +545,31 @@ extension WeeklyReviewFoundationTests {
         XCTAssertFalse(try summary(future).hasActivity);XCTAssertTrue(try summary(future).recentEntries.isEmpty);XCTAssertTrue(try summary(future).topTags.isEmpty)
     }
 }
+
+@MainActor extension WeeklyReviewFoundationTests {
+    func testIntegrationIR05FixedMondaySeedAndReaderIgnoreElapsedWallTimeUntilClockAdvances() throws {
+        let args=["-PGOSUITesting","-PGOSWeeklyCutoffTest"]
+        let now=WeeklyReviewClock.current(arguments:args),zone=WeeklyReviewClock.zone(arguments:args)
+        XCTAssertEqual(WeeklyReviewCalendarPolicy.calendar(timeZone:zone).component(.weekday,from:now),2)
+        XCTAssertEqual(WeeklyReviewClock.current(arguments:args,live:now.addingTimeInterval(86400*365)),now)
+        XCTAssertNotEqual(WeeklyReviewClock.current(arguments:[],live:now.addingTimeInterval(999)),now)
+        let c=try PersistenceContainerFactory.makeInMemory(),context=c.mainContext
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        defer {try? FileManager.default.removeItem(at:root)}
+        try WeeklyReviewClock.seed(context:context,mediaStore:MediaStore(rootURL:root))
+        let period=try WeeklyReviewPeriod(containing:now,timeZone:zone)
+        func read(_ selected:WeeklyReviewPeriod,_ asOf:Date) throws -> WeeklySummary {
+            let fresh=ModelContext(c)
+            return WeeklySummaryService.make(period:selected,entries:try fresh.fetch(FetchDescriptor<Entry>()),habits:try fresh.fetch(FetchDescriptor<Habit>()),habitLogs:try fresh.fetch(FetchDescriptor<HabitLog>()),weightRecords:try fresh.fetch(FetchDescriptor<WeightRecord>()),dayMetadata:try fresh.fetch(FetchDescriptor<HabitLogDayMetadata>()),asOf:asOf,timeZone:zone)
+        }
+        let first=try read(period,WeeklyReviewClock.current(arguments:args,live:now.addingTimeInterval(9999)))
+        XCTAssertEqual(first.entryCount,1);XCTAssertEqual(first.habitCheckInCount,1);XCTAssertEqual(first.weight?.latestKilograms,70)
+        XCTAssertEqual(first.recentEntries.map(\.title),["Current occurred entry"])
+        let advanced=try read(period,WeeklyReviewClock.current(arguments:args+["-PGOSWeeklyAdvanceTest"]))
+        XCTAssertEqual(advanced.entryCount,2);XCTAssertEqual(advanced.habitCheckInCount,2);XCTAssertEqual(advanced.weight?.latestKilograms,99)
+        let historical=try read(period.previous(timeZone:zone),now)
+        XCTAssertEqual(historical.entryCount,1);XCTAssertEqual(historical.weight?.latestKilograms,69)
+        XCTAssertEqual(historical.recentEntries.map(\.title),["Historical Sunday entry"])
+    }
+}

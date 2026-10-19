@@ -66,6 +66,7 @@ final class ImportExportService {
     private let publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
     private let investmentClock: () -> InvestmentClock
     private let exportCheckpoint: (() throws -> Void)?
+    private let rawCaptureCheckpoint: ((String) -> Void)?
 
     init(
         context: ModelContext,
@@ -82,7 +83,8 @@ final class ImportExportService {
         log: @escaping Log = { _ in },
         publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil,
         investmentClock: @escaping () -> InvestmentClock = InvestmentClock.current,
-        exportCheckpoint: (() throws -> Void)? = nil
+        exportCheckpoint: (() throws -> Void)? = nil,
+        rawCaptureCheckpoint: ((String) -> Void)? = nil
     ) {
         self.context = context
         self.container = context.container
@@ -96,6 +98,7 @@ final class ImportExportService {
         self.log = log
         self.publicationCheckpoint = publicationCheckpoint
         self.exportCheckpoint = exportCheckpoint
+        self.rawCaptureCheckpoint=rawCaptureCheckpoint
         self.investmentClock = investmentClock
         self.availableCapacity = availableCapacity ?? {
             let values = try mediaStore.rootURL.resourceValues(forKeys: [
@@ -194,9 +197,10 @@ final class ImportExportService {
         let configuredStore=container.configurations.first!.url.standardizedFileURL.resolvingSymlinksInPath()
         let source=root.appendingPathComponent("Store/PersonalGrowthOS.sqlite").standardizedFileURL.resolvingSymlinksInPath()
         guard configuredStore == source else {throw CocoaError(.fileReadUnsupportedScheme)}
+        let checkpoint=rawCaptureCheckpoint
         let worker=Task.detached {
             try StorePublication.perform(at:root) {
-                let retained=try StartupRetainedData.capture(rootURL:root)
+                let retained=try StartupRetainedData.capture(rootURL:root,checkpoint:checkpoint)
                 return try retained.archive(diagnostic:"Nonfinite Habit quantity: source data retained without correction. This is raw support recovery, not an importable normal backup.")
             }
         }

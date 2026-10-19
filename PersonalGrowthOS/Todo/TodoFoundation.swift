@@ -299,8 +299,16 @@ final class TodoTaskService {
         self.save = save ?? { try context.save() }
     }
     private func transaction<T>(onlyIfChanged: Bool = false,_ operation: () throws -> T) throws -> T {
-        do { let result = try operation(); if !onlyIfChanged || context.hasChanges {try save(); NotificationCenter.default.post(name: .todoTasksChanged, object: context.container)}; return result }
-        catch { context.rollback(); throw error }
+        do {
+            return try StorePublication.perform(at:StorePublication.root(for:context.container)) {
+                let result=try operation()
+                if !onlyIfChanged || context.hasChanges {
+                    try save()
+                    NotificationCenter.default.post(name:.todoTasksChanged,object:context.container)
+                }
+                return result
+            }
+        } catch {context.rollback();throw error}
     }
     func task(id: UUID) throws -> TodoTask {
         guard let task = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == id })).first else { throw TodoFailure.missingTask }

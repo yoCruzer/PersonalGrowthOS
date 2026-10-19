@@ -358,12 +358,14 @@ struct InvestmentHubView: View {
     @State private var operationID: UUID?
     @State private var editor: InvestmentEditorState?
     @State private var editingActivity: InvestmentActivityTransfer?
-    @State private var rename = ""
     @State private var showArchived = false
     @State private var error: String?
     private var active: [InvestmentActivityTransfer] { workspace.myActivities.filter { (showArchived || !$0.isArchived) && (search.isEmpty || $0.name.localizedStandardContains(search)) } }
     var body: some View {
         List {
+#if DEBUG
+            if InvestmentRenameImporterTestSupport.enabled {InvestmentRenameImporterTestControls()}
+#endif
             if !introduced {
                 Section {
                     Text("You can lock the screen or use other apps while timing. This records self-reported investment, not proof of participation.")
@@ -403,7 +405,7 @@ struct InvestmentHubView: View {
                     VStack(alignment:.leading,spacing:8) {
                         HStack {
                             Text(activity.name).font(.headline); Spacer()
-                            Button { editingActivity = activity; rename = activity.name } label: { Image(systemName:"ellipsis").frame(minWidth:44,minHeight:44) }
+                            Button { editingActivity = activity } label: { Image(systemName:"ellipsis").frame(minWidth:44,minHeight:44) }
                                 .accessibilityLabel("Edit activity").accessibilityIdentifier("investment-edit-activity-\(activity.id)")
                         }
                         if let review = workspace.review {
@@ -451,13 +453,11 @@ struct InvestmentHubView: View {
             if let operationID { NavigationStack { InvestmentTimerView(id:operationID) } }
         }
         .sheet(item:$editor) { editor in NavigationStack { InvestmentEditorView(editor:editor) } }
-        .alert("Edit activity",isPresented:Binding(get:{editingActivity != nil},set:{if !$0 {editingActivity = nil}})) {
-            TextField("Activity name",text:$rename)
-            Button("Save name") { if let activity = editingActivity { run { try InvestmentService(context:context).updateActivity(id:activity.id,name:rename,archived:activity.isArchived) } }; editingActivity = nil }
-            Button(editingActivity?.isArchived == true ? "Restore activity" : "Archive activity") {
-                if let activity = editingActivity { run { try InvestmentService(context:context).updateActivity(id:activity.id,name:activity.name,archived:!activity.isArchived) } }; editingActivity = nil
+        .sheet(isPresented:Binding(get:{editingActivity != nil},set:{if !$0 {editingActivity=nil}})) {
+            if let activity=editingActivity {
+                NavigationStack {InvestmentActivityEditView(activity:activity) {workspace.refresh(context)}}
+                    .id(activity.id)
             }
-            Button("Cancel",role:.cancel) { editingActivity = nil }
         }
     }
     private func startButton(_ activity: InvestmentActivityTransfer) -> some View {
@@ -469,6 +469,49 @@ struct InvestmentHubView: View {
             .buttonStyle(.bordered).accessibilityIdentifier("investment-record-\(activity.id)")
     }
     private func run(_ action: () throws -> Void) { do { try action(); error = nil; workspace.refresh(context) } catch { self.error = error.localizedDescription; workspace.refresh(context) } }
+}
+
+/// A failed explicit command keeps the activity-owned form and visible input alive.
+struct InvestmentActivityEditView:View {
+    let activity:InvestmentActivityTransfer
+    let didSave:() -> Void
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var name:String
+    @State private var error:String?
+    @FocusState private var nameFocused:Bool
+    init(activity:InvestmentActivityTransfer,didSave:@escaping () -> Void) {
+        self.activity=activity;self.didSave=didSave;_name=State(initialValue:activity.name)
+    }
+    var body:some View {
+        Form {
+            TextField("Activity name",text:$name).focused($nameFocused).accessibilityIdentifier("investment-rename-name")
+            if let error {Text(error).foregroundStyle(.red).accessibilityIdentifier("investment-rename-error")}
+            Button("Save name") {nameFocused=false;save(name:name,archived:activity.isArchived)}.accessibilityIdentifier("investment-rename-save")
+                .disabled(name.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)
+            Button(activity.isArchived ? "Restore activity":"Archive activity") {
+                save(name:activity.name,archived:!activity.isArchived)
+            }.accessibilityIdentifier("investment-rename-archive")
+#if DEBUG
+            if InvestmentRenameImporterTestSupport.enabled {InvestmentRenameImporterTestControls()}
+#endif
+        }
+        .accessibilityIdentifier("investment-activity-edit-form")
+        .navigationTitle("Edit activity")
+        .toolbar {ToolbarItem(placement:.cancellationAction) {Button("Cancel") {dismiss()}}}
+        .interactiveDismissDisabled()
+    }
+    private func save(name:String,archived:Bool) {
+        do {
+#if DEBUG
+            let service=InvestmentService(context:context,commit:InvestmentReviewTestSupport.renameCommit)
+#else
+            let service=InvestmentService(context:context)
+#endif
+            try service.updateActivity(id:activity.id,name:name,archived:archived)
+            error=nil;didSave();dismiss()
+        } catch {self.error=error.localizedDescription}
+    }
 }
 
 struct InvestmentTimerView: View {
@@ -914,6 +957,14 @@ struct InvestmentSessionDetailView: View {
 @MainActor private enum InvestmentReviewTestSupport {
     static var closeFailureConsumed=false
     static var saveFailureConsumed=false
+    static var renameFailureConsumed=false
+    static func renameCommit(_ context:ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        if args.contains("-PGOSUITesting"),args.contains("-PGOSRenameWriteFailure"),!renameFailureConsumed {
+            renameFailureConsumed=true;throw CocoaError(.fileWriteOutOfSpace)
+        }
+        try context.save()
+    }
     static func saveCommit(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
         if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentSaveWriteFailure"),!saveFailureConsumed {
@@ -988,6 +1039,67 @@ struct InvestmentSessionDetailView: View {
         clock.wall.addTimeInterval(600);clock.uptime += 600;try command(.finish)
         let pending=try service.operations().first {$0.id == id}!
         try service.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+    }
+}
+#endif
+
+#if DEBUG
+private final class InvestmentRenameImportBarrier: @unchecked Sendable {
+    let semaphore=DispatchSemaphore(value:0)
+    private let lock=NSLock()
+    private var released=false
+    func release() {lock.lock();let first = !released;released=true;lock.unlock();if first {semaphore.signal()}}
+}
+@MainActor @Observable private final class InvestmentRenameImporterTestSupport {
+    static let shared=InvestmentRenameImporterTestSupport()
+    static var enabled:Bool {let args=ProcessInfo.processInfo.arguments;return args.contains("-PGOSUITesting") && args.contains("-PGOSRenameImporterTest")}
+    var held=false
+    var finished=false
+    var error:String?
+    private var started=false
+    private let barrier=InvestmentRenameImportBarrier()
+    func release() {barrier.release()}
+    func start(_ context:ModelContext) {
+        guard !started else {return};started=true
+        do {
+            let root=StorePublication.root(for:context.container),media=MediaStore(rootURL:root),inbox=ShareInbox(root:root.appendingPathComponent("RenameTestInbox"))
+            let file=root.appendingPathComponent("rename-test-image.png")
+            let renderer=UIGraphicsImageRenderer(size:CGSize(width:2,height:2))
+            let data=renderer.pngData {_ in UIColor.blue.setFill();UIRectFill(CGRect(x:0,y:0,width:2,height:2))}
+            try data.write(to:file)
+            let attachmentID=UUID()
+            let attachment=CaptureAttachment(id:attachmentID,filename:attachmentID.uuidString.lowercased(),contentType:"image/png",byteCount:Int64(data.count),checksum:try ShareInbox.checksum(file))
+            try inbox.publish(.init(text:"Synthetic rename concurrency",images:[attachment]),files:[attachment.id:file])
+            let importer=ExternalCaptureImporter(container:context.container,mediaStore:media,inbox:inbox),barrier=self.barrier
+            importer.checkpoint={ phase in
+                if phase == "attachment" {
+                    Task { @MainActor in self.held=true }
+                    guard barrier.semaphore.wait(timeout:.now()+45) == .success else {throw CaptureError.providerTimedOut}
+                }
+            }
+            DispatchQueue.global().asyncAfter(deadline:.now()+40) {barrier.release()}
+            Task {
+                do {_ = try await importer.scanReport();self.finished=true}
+                catch {self.error=error.localizedDescription}
+                self.held=false
+            }
+        } catch {self.error=error.localizedDescription}
+    }
+}
+private struct InvestmentRenameImporterTestControls:View {
+    @Query private var activities:[InvestmentActivity]
+    @Environment(\.modelContext) private var context
+    private var support:InvestmentRenameImporterTestSupport { .shared }
+    var body:some View {
+        Section("Synthetic importer control") {
+            Text(activities.map(\.name).sorted().joined(separator:" | ")).accessibilityIdentifier("rename-test-canonical-name")
+            Text("\(activities.count)").accessibilityIdentifier("rename-test-activity-count")
+            Button("Begin synthetic importer") {support.start(context)}.accessibilityIdentifier("rename-test-import-start")
+            Text(support.held ? "Importer holds publication":"Importer idle").accessibilityIdentifier("rename-test-import-state")
+            Button("Release synthetic importer") {support.release()}.accessibilityIdentifier("rename-test-import-release")
+            if support.finished {Text("Importer finished").accessibilityIdentifier("rename-test-import-finished")}
+            if let error=support.error {Text(error)}
+        }
     }
 }
 #endif

@@ -3230,3 +3230,140 @@ extension ImportExportRecoveryTests {
         }
     }
 }
+
+@MainActor extension ImportExportRecoveryTests {
+    func testIntegrationIR02RetiredAlarmQueryFailureStaysLocalBesideHealthyThree() async throws {
+        let f=try TransferTestFixture();defer {f.remove()}
+        let (c,id,_,now,zone)=try systemLegacyNilStore(f,override:true)
+        let fire=try TodoTaskService(context:ModelContext(c)).task(id:id).remindAt!.addingTimeInterval(86460)
+        try fix2OldF1Override(c,id:id,fire:fire,now:now.addingTimeInterval(90),zone:zone,channel:.alarm)
+        let client=TodoNotificationStub(),alarms=TodoAlarmStub()
+        _ = try await TodoIntentScheduling(notifications:client,alarms:alarms,now:{now}).reconcile(container:c,requestNotifications:false,requestAlarms:false,isCurrent:{true})
+        let coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init(enabled:true,minute:540)},sleepHistory:SleepReminderHistory(defaults:nil),alarmClient:alarms)
+        await coordinator.reconcile(context:ModelContext(c))
+        XCTAssertTrue(alarms.pending.isEmpty)
+        XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first?.phaseRawValue,TodoReminderDevicePhase.retired.rawValue)
+        let cold=try PersistenceContainerFactory.makeOnDisk(at:c.configurations.first!.url)
+        let healthy=try TodoTaskService(context:ModelContext(cold),now:{now}).create(.init(title:"Healthy despite Alarm query",remindAt:now.addingTimeInterval(3600)))
+        var preferences=ImportantDayPreferences();preferences.reminderOffsets=[0]
+        let tomorrow=ImportantCivilDay(now,timeZone:.current).adding(days:1)!
+        let day=try ImportantDay(title:"Healthy day beside query failure",rule:.init(year:tomorrow.year,month:tomorrow.month,day:tomorrow.day),preferences:preferences)
+        cold.mainContext.insert(day);try cold.mainContext.save()
+        alarms.failReads=true
+        let reopened=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init(enabled:true,minute:540)},sleepHistory:SleepReminderHistory(defaults:nil),alarmClient:alarms)
+        await reopened.reconcile(context:ModelContext(cold))
+        XCTAssertEqual(reopened.status(for:try TodoTaskService(context:ModelContext(cold)).task(id:id)),.cancellationPending)
+        XCTAssertEqual(reopened.status(for:healthy),.scheduled)
+        XCTAssertEqual(reopened.status(for:day).status,.scheduled);XCTAssertEqual(reopened.sleepStatus().status,.scheduled)
+        alarms.failReads=false
+        await reopened.reconcile(context:ModelContext(cold))
+        XCTAssertEqual(reopened.status(for:try TodoTaskService(context:ModelContext(cold)).task(id:id)),.legacyRuleNeedsCorrection)
+        XCTAssertTrue(alarms.pending.isEmpty);XCTAssertEqual(alarms.scheduleCalls.count,1)
+    }
+}
+
+private final class IntegrationRawRaceTrace: @unchecked Sendable {
+    private let lock=NSLock()
+    private var values:[String]=[]
+    private var frozen=false
+    private var released=false
+    let rawRelease=DispatchSemaphore(value:0)
+    let attempted=DispatchSemaphore(value:0)
+    let probed=DispatchSemaphore(value:0)
+    func add(_ value:String) {lock.lock();values.append(value);lock.unlock()}
+    func freeze() {lock.lock();frozen=true;values.append("writer-frozen");lock.unlock()}
+    func writerReleased() {lock.lock();frozen=false;values.append("writer-released");lock.unlock()}
+    func nativeAttempt() {lock.lock();values.append(frozen ? "native-save-held":"native-save-free");lock.unlock()}
+    func reset() {lock.lock();values=[];lock.unlock()}
+    func snapshot() -> [String] {lock.lock();defer {lock.unlock()};return values}
+    func release() {lock.lock();let first = !released;released=true;values.append("release-requested");lock.unlock();if first {rawRelease.signal()}}
+}
+@MainActor extension ImportExportRecoveryTests {
+    func testIntegrationV01RawWriterActualAlarmJournalSaveAndIndependentMainProbe() async throws {
+        let f=try TransferTestFixture();defer {f.remove()}
+        let root=f.root.appendingPathComponent("RawRace"),url=root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at:url.deletingLastPathComponent(),withIntermediateDirectories:true)
+        let c=try PersistenceContainerFactory.makeOnDisk(at:url),context=c.mainContext,media=MediaStore(rootURL:root)
+        context.autosaveEnabled=false
+        let now=ImportantCivilDay(identifier:"2026-10-19")!.instant(minutes:600,timeZone:.gmt)!
+        let source=root.appendingPathComponent("raw-race-source.png")
+        try f.imageData.write(to:source)
+        let entry=try EntryCreationService(persistence:ModelContextEntryPersistence(context:context),mediaStore:media,now:{now}).create(.init(body:"Raw race original image",image:MediaSource(url:source,originalFilename:"raw-race-source.png",contentType:"image/png")))
+        let asset=try XCTUnwrap(entry.images.first)
+        let habit=try HabitService(context:context,now:{now}).create(name:"Raw race retained original")
+        let log=try HabitCheckInService(context:context,mediaStore:media,now:{now}).checkIn(habit,draft:.init(occurredAt:now,quantity:2.5,unit:"km",result:"Original raw race result"))
+        log.quantity = .infinity;try context.save()
+        let task=try TodoTaskService(context:ModelContext(c),now:{now}).create(.init(title:"Actual Alarm disappearance",remindAt:now.addingTimeInterval(3600),reminderChannel:.alarm))
+        let trace=IntegrationRawRaceTrace(),notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms,journalCommit:{write in
+            trace.nativeAttempt()
+            do {try write.save();trace.add("native-save-success")}
+            catch {trace.add("native-save-error");throw error}
+        })
+        await coordinator.reconcile(context:ModelContext(c))
+        XCTAssertEqual(coordinator.status(for:task),.scheduled);XCTAssertEqual(alarms.pending.count,1)
+        trace.reset();coordinator.observeSystemChanges(container:c)
+        let frozen=expectation(description:"Actual raw BEGIN IMMEDIATE holds writer"),probe=expectation(description:"Independent MainActor probe delivered")
+        let exporter=ImportExportService(context:context,mediaStore:media,availableCapacity:{.max},rawCaptureCheckpoint:{phase in
+            if phase == "frozen" {
+                trace.freeze();frozen.fulfill()
+                if trace.rawRelease.wait(timeout:.now()+10) != .success {trace.add("raw-failsafe-timeout")}
+            } else if phase == "released" {trace.writerReleased()}
+        })
+        TodoJournalWriteProbe.willCommit={container in
+            if container === c {trace.add("production-journal-entry");trace.attempted.signal()}
+        }
+        defer {TodoJournalWriteProbe.willCommit=nil;trace.release()}
+        let exporting=Task {try await exporter.exportRetainedQuantityData()}
+        await fulfillment(of:[frozen],timeout:5)
+        let independent=Task.detached {
+            if trace.attempted.wait(timeout:.now()+6) == .success {
+                trace.add("independent-probe-submitted")
+                Task { @MainActor in
+                    trace.add("main-probe")
+                    XCTAssertEqual(coordinator.status(for:task),.confirmationRequired,"A busy journal must not claim durable success")
+                    let service=TodoTaskService(context:ModelContext(c),now:{now})
+                    do {
+                        var draft=try service.draft(id:task.id);draft.title="Retry after raw capture"
+                        XCTAssertThrowsError(try service.edit(id:task.id,draft:draft)) {XCTAssertEqual($0 as? StorePublicationFailure,.busy)}
+                        XCTAssertEqual(try service.task(id:task.id).title,"Actual Alarm disappearance")
+                        trace.add("todo-command-busy-input-retryable")
+                    } catch {XCTFail("Unexpected read failure: \(error)")}
+                    probe.fulfill();trace.probed.signal()
+                }
+                if trace.probed.wait(timeout:.now()+2) != .success {trace.add("probe-failsafe-timeout")}
+            } else {trace.add("no-production-save-entry")}
+            trace.release()
+        }
+        // This is the production Alarm observation callback, independent of the raw-export sheet.
+        alarms.pending.removeAll();alarms.changed?()
+        await fulfillment(of:[probe],timeout:10)
+        let raw=try await exporting.value;await independent.value
+        let events=trace.snapshot()
+        print("PGOS_V01 events=\(events.joined(separator:","))")
+        XCTAssertTrue(events.contains("production-journal-entry"))
+        XCTAssertFalse(events.contains("native-save-held"),"Publication exclusion must prevent native save while raw writer holds")
+        XCTAssertFalse(events.contains("probe-failsafe-timeout"))
+        XCTAssertTrue(events.contains("todo-command-busy-input-retryable"))
+        let probeIndex=try XCTUnwrap(events.firstIndex(of:"main-probe")),releaseIndex=try XCTUnwrap(events.firstIndex(of:"writer-released"))
+        XCTAssertLessThan(probeIndex,releaseIndex,"MainActor must respond before raw writer release")
+        let extracted=f.root.appendingPathComponent("raw-race-reopened")
+        try ZIPArchiveReader(archiveURL:raw,availableCapacity:.max).extractAll(to:extracted)
+        let recovered=try PersistenceContainerFactory.makeOnDisk(at:extracted.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        let original=try XCTUnwrap(ModelContext(recovered).fetch(FetchDescriptor<HabitLog>()).first {$0.id == log.id})
+        XCTAssertEqual(original.quantity?.bitPattern,Double.infinity.bitPattern);XCTAssertEqual(original.unit,"km");XCTAssertEqual(original.result,"Original raw race result")
+        let rawEntry=try XCTUnwrap(ModelContext(recovered).fetch(FetchDescriptor<Entry>()).first {$0.id == entry.id})
+        XCTAssertEqual(rawEntry.body,entry.body);XCTAssertEqual(rawEntry.images.first?.id,asset.id)
+        XCTAssertEqual(try Data(contentsOf:extracted.appendingPathComponent(asset.relativePath)),f.imageData)
+        XCTAssertEqual(try Data(contentsOf:media.fileURL(for:asset.relativePath)),f.imageData)
+        XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<HabitLog>()).first?.quantity?.bitPattern,Double.infinity.bitPattern)
+        TodoJournalWriteProbe.willCommit=nil
+        let retry=TodoTaskService(context:ModelContext(c),now:{now})
+        var draft=try retry.draft(id:task.id);draft.title="Retry after raw capture"
+        try retry.edit(id:task.id,draft:draft)
+        XCTAssertEqual(try retry.task(id:task.id).title,"Retry after raw capture")
+        await coordinator.reconcile(context:ModelContext(c))
+        XCTAssertTrue(alarms.pending.isEmpty)
+        XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first?.phaseRawValue,TodoReminderDevicePhase.retired.rawValue)
+    }
+}

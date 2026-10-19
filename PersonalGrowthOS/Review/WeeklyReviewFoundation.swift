@@ -439,3 +439,42 @@ enum WeeklySummaryService {
 }
 
 extension WeeklyReview: Identifiable {}
+
+/// UI fixtures and the real reader share a business clock; normal launches stay live.
+enum WeeklyReviewClock {
+    static func current(arguments:[String] = ProcessInfo.processInfo.arguments,live:Date = Date()) -> Date {
+#if DEBUG
+        if arguments.contains("-PGOSUITesting"),arguments.contains("-PGOSWeeklyCutoffTest") {
+            return fixedReference.addingTimeInterval(arguments.contains("-PGOSWeeklyAdvanceTest") ? 180:0)
+        }
+#endif
+        return live
+    }
+    static func zone(arguments:[String] = ProcessInfo.processInfo.arguments,live:TimeZone = .current) -> TimeZone {
+#if DEBUG
+        if arguments.contains("-PGOSUITesting"),arguments.contains("-PGOSWeeklyCutoffTest") {return TimeZone(identifier:"America/Los_Angeles")!}
+#endif
+        return live
+    }
+#if DEBUG
+    static var fixedReference:Date {
+        WeeklyReviewCalendarPolicy.calendar(timeZone:TimeZone(identifier:"America/Los_Angeles")!).date(from:DateComponents(year:2026,month:10,day:19,hour:0,minute:0,second:30))!
+    }
+    @MainActor static func seed(context:ModelContext,mediaStore:MediaStore) throws {
+        let now=fixedReference,future=now.addingTimeInterval(120),zone=TimeZone(identifier:"America/Los_Angeles")!
+        let calendar=WeeklyReviewCalendarPolicy.calendar(timeZone:zone)
+        let previous=try WeeklyReviewPeriod(containing:now,timeZone:zone).previous(timeZone:zone)
+        let historical=previous.end.addingTimeInterval(12*3600),current=now.addingTimeInterval(-10)
+        let entries=EntryCreationService(persistence:ModelContextEntryPersistence(context:context),mediaStore:mediaStore,now:{now})
+        _ = try entries.create(.init(title:"Current occurred entry",body:"Current fact",occurredAt:current))
+        _ = try entries.create(.init(title:"Future occurred entry",body:"Future fact",occurredAt:future))
+        _ = try entries.create(.init(title:"Historical Sunday entry",body:"Late in the selected historical week",occurredAt:historical))
+        let habit=try HabitService(context:context,now:{previous.start}).create(name:"Actual cutoff habit")
+        let check=HabitCheckInService(context:context,mediaStore:mediaStore,now:{now},calendar:calendar)
+        _ = try check.incrementCount(habit,occurredAt:current)
+        _ = try check.incrementCount(habit,occurredAt:future)
+        let weights=WeightRecordService(context:context,now:{now})
+        for (value,date) in [(69.0,historical),(70.0,current),(99.0,future)] {_ = try weights.create(weightKilograms:value,recordedAt:date)}
+    }
+#endif
+}

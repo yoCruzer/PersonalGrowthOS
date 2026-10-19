@@ -205,7 +205,10 @@ struct TodoIntentSchedulingResult {
         } else if !delete {
             write.insert(TodoReminderDeviceRecord(id:request.id,taskID:request.taskID,intentGeneration:request.generation,channel:request.channel,fireAt:request.fireAt,phase:request.phase,requestedTitle:request.title))
         }
-        do {try commit(write)} catch {
+        #if DEBUG
+        TodoJournalWriteProbe.willCommit?(container)
+        #endif
+        do {try StorePublication.perform(at:StorePublication.root(for:container)) {try commit(write)}} catch {
             // A reported failure after a committed journal write is acknowledged only by exact canonical data.
             let check=try records(container).first {$0.id == request.id}
             guard delete ? check == nil : check == request else {throw error}
@@ -294,7 +297,10 @@ struct TodoIntentSchedulingResult {
         var result=TodoIntentSchedulingResult()
         for record in try records(container) where taskIDs.contains(record.taskID) {
             guard record.fireAt > now() || record.phase == .cancellationPending else {continue}
-            if record.phase == .retired,try await !present(record) {continue}
+            if record.phase == .retired {
+                do {if try await !present(record) {continue}}
+                catch {result.states[record.taskID] = .cancellationPending;continue}
+            }
             if !(await cancel(record,container,delete:false)) {result.states[record.taskID] = .cancellationPending}
             if !isCurrent() {result.stale=true;return result}
         }
@@ -444,3 +450,9 @@ struct TodoIntentSchedulingResult {
         return result
     }
 }
+
+#if DEBUG
+@MainActor enum TodoJournalWriteProbe {
+    static var willCommit: ((ModelContainer) -> Void)?
+}
+#endif

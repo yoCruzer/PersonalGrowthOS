@@ -420,9 +420,11 @@ extension AppCompositionTests {
     @Bindable var selection:SystemGrowthTabSelection
     let media:MediaStore
     let thumbnail:ThumbnailStore
+    let now:Date
+    let zone:TimeZone
     var body:some View {
         TabView(selection:$selection.tab) {
-            NavigationStack {GrowthView(mediaStore:media,thumbnailStore:thumbnail)}.tabItem {Text("Growth")}.tag(0)
+            NavigationStack {GrowthView(mediaStore:media,thumbnailStore:thumbnail,countClock:{(now,zone)})}.tabItem {Text("Growth")}.tag(0)
             Text("Other tab").tabItem {Text("Other")}.tag(1)
         }
     }
@@ -433,14 +435,19 @@ extension AppCompositionTests {
         let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
         let c=try PersistenceContainerFactory.makeOnDisk(at:root.appendingPathComponent("growth.sqlite")),context=c.mainContext
-        let now=Date(),zone=TimeZone.current
-        for index in 0..<10_000 {
-            let stamp=now.addingTimeInterval(-Double(index)*86400)
+        let zone=TimeZone(identifier:"America/Los_Angeles")!
+        var calendar=Calendar(identifier:.gregorian);calendar.timeZone=zone
+        let now=calendar.date(from:DateComponents(year:2026,month:10,day:19,hour:0,minute:30))!
+        let oldDays=Set((0..<10_000).map {ImportantCivilDay(now.addingTimeInterval(-Double($0)*86400),timeZone:zone).identifier})
+        XCTAssertEqual(oldDays.count,9973,"Original absolute-seconds fixture collides across DST")
+        let days=(0..<10_000).map {calendar.date(byAdding:.day,value:-$0,to:now)!}
+        XCTAssertEqual(Set(days.map {ImportantCivilDay($0,timeZone:zone).identifier}).count,10_000)
+        for stamp in days {
             context.insert(WeightRecord(weightKilograms:70,recordedAt:stamp,createdAt:stamp))
             context.insert(try SleepRecord(wakeDay:ImportantCivilDay(stamp,timeZone:zone).identifier,timeZoneID:zone.identifier,values:.init(note:"Synthetic"),createdAt:stamp))
         }
         try context.save()
-        var clock=InvestmentClock.current()
+        var clock=InvestmentClock.current();clock.wall=now
         let service=InvestmentService(context:context,clock:{clock})
         let activity=try service.createActivity(name:"Mounted Growth probe")
         let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id,timer=UUID()
@@ -450,7 +457,7 @@ extension AppCompositionTests {
         let mounted=expectation(description:"Production Growth onAppear read completed")
         GrowthCountReadProbe.reads=[];GrowthCountReadProbe.didRead={mounted.fulfill()}
         let window=UIWindow(frame:UIScreen.main.bounds)
-        let host=UIHostingController(rootView:SystemGrowthMountedTabs(selection:selection,media:media,thumbnail:thumbnail).modelContainer(c))
+        let host=UIHostingController(rootView:SystemGrowthMountedTabs(selection:selection,media:media,thumbnail:thumbnail,now:now,zone:zone).modelContainer(c))
         window.rootViewController=host;window.makeKeyAndVisible();host.view.layoutIfNeeded()
         defer {GrowthCountReadProbe.didRead=nil;window.isHidden=true;window.rootViewController=nil}
         await fulfillment(of:[mounted],timeout:5)
@@ -470,7 +477,7 @@ extension AppCompositionTests {
             XCTAssertTrue(actual.isEmpty,"Identified Investment operation writes must not re-fetch Weight or Sleep")
         }
         let weightService=WeightRecordService(context:context)
-        let record=try weightService.create(weightKilograms:72.345,recordedAt:now.addingTimeInterval(-10010*86400))
+        let record=try weightService.create(weightKilograms:72.345,recordedAt:calendar.date(byAdding:.day,value:-10010,to:now)!)
         await settle();XCTAssertEqual(GrowthCountReadProbe.last?.weightDays,10001)
         try weightService.delete(record);await settle();XCTAssertEqual(GrowthCountReadProbe.last?.weightDays,10000)
         _ = try service.createActivity(name:"Metadata refresh")

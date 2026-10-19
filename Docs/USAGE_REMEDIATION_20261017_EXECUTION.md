@@ -597,7 +597,7 @@ SR01～07及BV01/02逐项处置、全部相关消费者/代表合法状态、真
 
 ### IF-A 定向进展（非最终集中门）
 
-原生平台：本机 Xcode / iOS Simulator 27.1 arm64，合成测试 simulator 42609456-859D-41F8-8977-4B2D85A74082，主协调者串行运行。完整命令/退出/dirty/日志hash见 INTEGRATION_FIX_RUNS.json；证据根 /tmp/pgos-pr13-integration-evidence。所有当前轮基于b495bea的未提交候选，不能冒称干净产品最终门。
+原生平台：本机 Xcode / iOS SDK 27.1、iOS Simulator runtime 27.0 (24A434) arm64，合成测试 simulator 42609456-859D-41F8-8977-4B2D85A74082，主协调者串行运行。完整命令/退出/dirty/日志hash见 INTEGRATION_FIX_RUNS.json；证据根 /tmp/pgos-pr13-integration-evidence。所有当前轮基于b495bea的未提交候选，不能冒称干净产品最终门。
 
 - red-a-build：沙箱插件/CoreSimulator访问失败（exit -5）；正常本机权限 red-a-build2 PASS。red-a实际执行2方法均FAIL（12断言失败）：stopped刷新仍save/post；双owner同值新意图被旧结果覆盖。
 - red-b-build PASS；red-b一个完整方法FAIL：两渠道×取消前journal/native cancel/取消后确认三阶段；Alarm旧请求未取消，Notification误用capacity reason。夹具仅增加channel参数，按旧f1既有显式channel选择接线，保留真实V11/事件逻辑。
@@ -608,3 +608,17 @@ SR01～07及BV01/02逐项处置、全部相关消费者/代表合法状态、真
 实现：仅refresh用onlyIfChanged保存，stopped在候选前排除；生产TodoReminderEvents由AppShell与挂载测试共同使用。unresolved未来native两渠道统一取消并用retired终结该generation，pending优先且不进入capacity reason。Settings意图Scope由AppShell持有，daily/weekly独立、MediaStorage重建的新wrapper共用Scope；所有结果仍有token/cancel/偏好三重检查。未关闭时取消合法A，仍保留合法完成。
 
 IR01～03当前有定向关闭证据，最终固定候选/独立终审尚待；IF-B的IR04/05、IF-C V01、IF-D集中门及交付继续同一授权。不恢复READY。
+
+### IF-B / IF-C 定向收敛及独立异议补修
+
+独立reviewer新增IR02邻接P2：retired Alarm在冷重开查询失败时全局外抛；review-a-red 1方法FAIL/4断言，修成局部cancellationPending。focused-b-clock 3/3PASS：该完整链（健康三类/恢复/不复活）、真实10000日Growth、固定Weekly seed/reader。reviewer已直接核对原始xcresult支持关闭此邻接反例，仍待最终候选绑定。SDK27.1与runtime27.0(24A434)已在前节准确区分。
+
+IR04：以真实ExternalCaptureImporter.scan/consume在attachment checkpoint持StorePublication，输入原活动A→B→Save；red-rename首轮仅夹具附件名非法，red-rename2仅系统alert丢失AX标识，均FAIL且不计产品红例；修驱动后red-rename3完整到Save，因busy后alert关闭/B不可达而FAIL，原源码已保存且哈希与manifest一致。改为按活动ID重建的sheet，失败保留输入/错误、成功或明确Cancel才dismiss，Archive/Restore也只在成功后关闭，阻止隐式交互丢稿。green-b-ui 4方法=3PASS/1FAIL，普通保存错误/重试/Cancel/另一活动、Weekly原完整方法及固定时钟推进均PASS，busy方法因底层Hub与sheet调试控件重名而FAIL；green-b-ui2完整busy链直到成功均已通过，仅最后“文字出现次数”把额外canonical调试文字算作第二条而FAIL。改成实际@Query持久活动数，green-v01同轮busy完整方法PASS（含释放前正式仍A/B可见、释放后重试成功、持久数量1）。各FAIL/录屏/AX均保留，不拼称一次4/4全绿。
+
+IR05：BV01使用固定LA 2026-10-19 00:30 +明确Gregorian calendar逐自然日构造10000日，直接反算旧index*86400公式确为9973日。真实Growth注入相同now/zone，仍经过真实InvestmentService→didSave和可见/切离reader，正式Weight增删/活动变更正对照不变。Weekly固定LA周一00:00:30，当前事实为-10s（同周）、未来+120s、历史周日中午；seed和真实summary共用受控clock/zone，普通App仍Date()/本地时区。fixed clock单元验证任意live时间变化不改变asOf，显式+180s后未来三事实纳入；两个真实Weekly UI完整方法PASS。首个clock构建因误用HabitService calendar参数FAIL，已按实际API修正，并用前周一创建Habit保证可信生效。O01未产生跨周父刷新原生反例，保持UNCONFIRMED/非阻断，未预改导航寿命。
+
+V01：首次有界原生red-v01实际1FAIL。入口为exportRetainedQuantityData→真实BEGIN IMMEDIATE已持有→AlarmClient真实观察回调→production reconcile→journalCommit实际SwiftData.save；独立执行器看到生产保存入口后才投递MainActor probe，2s独立fail-safe释放。原始序列：writer-frozen, production-journal-entry, native-save-held, independent-probe-submitted, probe-failsafe-timeout, release-requested, writer-released, native-save-success, main-probe。明确确认主执行器等writer释放，不是前置查询或手写SQLite假保存。
+
+同批最小修复：TodoTaskService事务与intent journal commit共用现有按真实store root识别的StorePublication；主线程try-lock busy返回，worker仍等待，raw SQLite冻结/媒体归档合同不删除。green-v01 3/3PASS（2 Unit+1 UI）：同一raw/Alarm链变为writer-frozen, production-journal-entry, independent-probe-submitted, main-probe, todo-command-busy-input-retryable, release-requested, writer-released；writer仍持有时实际native-save被互斥阻止，journal状态诚实confirmationRequired，Todo命令原文本/事实不变且释放后可重试，原ID/Infinity bitPattern/unit/result和旧BV02原值恢复保护通过。V01定向结论CONFIRMED_AND_FIXED；最后再为原图/元数据/源文件字节加了同方法断言，进入下一次最终完整Unit。writerReleased观察只在实际SQLite ROLLBACK返回OK后登记。
+
+当前IR01～05/V01已具上述定向证据；最终集中Unit、必要保护UI、干净候选双构建/实包和独立全范围终审仍待，不恢复READY。证据根、实际命令/退出/全部真实FAIL/摘要hash见本机及INTEGRATION_FIX_RUNS.json。原设备/发行/Share/Safari/低空间/CI状态保持。

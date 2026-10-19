@@ -485,3 +485,59 @@ extension InvestmentUITests {
         }
     }
 }
+
+extension InvestmentUITests {
+    func testIntegrationIR04RealImporterBusyKeepsRenameVisibleAndRetryable() {
+        let app=launch(extra:["-PGOSRenameImporterTest"]);openHub(app);create(app)
+        let start=app.buttons["rename-test-import-start"];reveal(start,app);start.tap()
+        let state=app.staticTexts["rename-test-import-state"]
+        expectation(for:NSPredicate(format:"label == %@","Importer holds publication"),evaluatedWith:state);waitForExpectations(timeout:5)
+        let edit=button("investment-edit-activity-",app);reveal(edit,app);edit.tap()
+        let name=app.alerts.firstMatch.exists ? app.alerts.textFields.firstMatch:app.textFields["investment-rename-name"];XCTAssertTrue(name.waitForExistence(timeout:5));name.tap()
+        name.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:(name.value as? String ?? "").count)+"Retained busy name")
+        app.buttons["Save name"].tap()
+        XCTAssertTrue(name.waitForExistence(timeout:3),"A busy save must keep the actual input reachable")
+        XCTAssertEqual(name.value as? String,"Retained busy name")
+        let error=app.staticTexts["investment-rename-error"]
+        XCTAssertTrue(error.waitForExistence(timeout:3));XCTAssertTrue(error.label.contains("busy"),error.label)
+        let form=app.collectionViews["investment-activity-edit-form"]
+        XCTAssertTrue(form.staticTexts["rename-test-canonical-name"].label.contains("Synthetic Reading"))
+        XCTAssertFalse(form.staticTexts["rename-test-canonical-name"].label.contains("Retained busy name"))
+        screenshot(app,"Integration-IR04-busy-input-retained-before-release")
+        let release=form.buttons["rename-test-import-release"];reveal(release,app);release.tap()
+        XCTAssertTrue(form.staticTexts["rename-test-import-finished"].waitForExistence(timeout:5))
+        let save=app.buttons["Save name"];for _ in 0..<4 where !save.isHittable {app.swipeDown()};reveal(save,app);save.tap()
+        XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["Retained busy name"].waitForExistence(timeout:5))
+        XCTAssertEqual(app.staticTexts["rename-test-activity-count"].label,"1")
+        screenshot(app,"Integration-IR04-importer-release-retry-saved")
+    }
+}
+
+extension InvestmentUITests {
+    func testIntegrationIR04OrdinarySaveFailureRetryCancelAndAnotherActivity() {
+        let app=launch(extra:["-PGOSRenameWriteFailure"]);openHub(app);create(app)
+        let edit=button("investment-edit-activity-",app);reveal(edit,app);edit.tap()
+        let name=app.textFields["investment-rename-name"];XCTAssertTrue(name.waitForExistence(timeout:5));name.tap()
+        name.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:(name.value as? String ?? "").count)+"Retry name")
+        app.buttons["Save name"].tap()
+        XCTAssertTrue(app.staticTexts["investment-rename-error"].waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Retry name")
+        screenshot(app,"Integration-IR04-save-error-visible-input")
+        app.buttons["Save name"].tap();XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["Retry name"].waitForExistence(timeout:5))
+        let field=app.textFields["investment-activity-name"];reveal(field,app);field.tap();field.typeText("Second activity")
+        app.buttons["investment-create-activity"].tap();XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout:5))
+        let edits=app.buttons.matching(NSPredicate(format:"identifier BEGINSWITH %@","investment-edit-activity-"))
+        for _ in 0..<5 {app.swipeDown()}
+        let first=edits.element(boundBy:0);reveal(first,app);first.tap();XCTAssertTrue(name.waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Retry name")
+        name.tap();name.typeText(" canceled draft");app.buttons["Cancel"].tap()
+        XCTAssertTrue(name.waitForNonExistence(timeout:5));first.tap();XCTAssertTrue(name.waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Retry name");app.buttons["Cancel"].tap();XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        let second=edits.element(boundBy:1);reveal(second,app);second.tap();XCTAssertTrue(name.waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Second activity")
+        app.buttons["Cancel"].tap();XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        screenshot(app,"Integration-IR04-success-cancel-and-distinct-activity")
+    }
+}

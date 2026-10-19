@@ -5,6 +5,7 @@ import UIKit
 struct GrowthView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
+    var countClock: () -> (Date,TimeZone) = {(Date(),.current)}
 
     @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var phase
@@ -67,7 +68,7 @@ struct GrowthView: View {
     }
 
     private func refreshCounts() {
-        do { counts = try GrowthEntryCounts(context: context); loadFailed = false }
+        do { let (now,zone)=countClock(); counts = try GrowthEntryCounts(context: context,now:now,zone:zone); loadFailed = false }
         catch { counts = nil; loadFailed = true }
     }
 }

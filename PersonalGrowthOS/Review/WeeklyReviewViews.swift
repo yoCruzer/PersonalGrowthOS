@@ -13,7 +13,8 @@ struct WeeklyReviewView: View {
     }
 
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.timeZone) private var timeZone
+    @Environment(\.timeZone) private var environmentTimeZone
+    private var timeZone:TimeZone {WeeklyReviewClock.zone(live:environmentTimeZone)}
     @Query private var entries: [Entry]
     @Query private var habits: [Habit]
     @Query private var habitLogs: [HabitLog]
@@ -35,19 +36,19 @@ struct WeeklyReviewView: View {
     @State private var errorMessage: String?
     @FocusState private var focusedField: Field?
 
-    init(referenceDate: Date = Date()) {
+    init(referenceDate: Date = WeeklyReviewClock.current()) {
         self.referenceDate = referenceDate
 #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-PGOSUITesting"),ProcessInfo.processInfo.arguments.contains("-PGOSWeeklyPreviousWeekTest") {
-            weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate).previous().identifier
-        } else {weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate).identifier}
+            weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate,timeZone:WeeklyReviewClock.zone()).previous(timeZone:WeeklyReviewClock.zone()).identifier
+        } else {weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate,timeZone:WeeklyReviewClock.zone()).identifier}
 #else
-        weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate).identifier
+        weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate,timeZone:WeeklyReviewClock.zone()).identifier
 #endif
     }
 
     init(weekIdentifier: String) {
-        referenceDate = Date()
+        referenceDate = WeeklyReviewClock.current()
         self.weekIdentifier = weekIdentifier
     }
 
@@ -74,7 +75,7 @@ struct WeeklyReviewView: View {
             tags: tags,
             links: links,
             dayMetadata: dayMetadata,
-            asOf: Date(),
+            asOf: WeeklyReviewClock.current(),
             timeZone: timeZone
         )
     }

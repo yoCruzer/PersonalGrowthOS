@@ -245,7 +245,7 @@ enum StartupStoreProtection {
     /// A reader pins the WAL while BEGIN IMMEDIATE excludes writers. Keep the
     /// reader alive through writer close so that closing our writer cannot
     /// checkpoint/truncate the source WAL. SHM is disposable, never archived.
-    static func withFrozenStore<T>(at url: URL, onStep: ((FailureDiagnostic.ProtectionStep) -> Void)? = nil, _ body: () throws -> T) throws -> T {
+    static func withFrozenStore<T>(at url: URL, onStep: ((FailureDiagnostic.ProtectionStep) -> Void)? = nil, onWriterReleased: (() -> Void)? = nil, _ body: () throws -> T) throws -> T {
         var reader: OpaquePointer?, writer: OpaquePointer?
         func check(_ code: Int32) throws {
             guard code == SQLITE_OK else { throw NSError(domain: "SQLite", code: Int(code)) }
@@ -259,7 +259,10 @@ enum StartupStoreProtection {
         sqlite3_busy_timeout(writer, 1_000)
         onStep?(.writerTransaction)
         try check(sqlite3_exec(writer, "BEGIN IMMEDIATE", nil, nil, nil))
-        defer { sqlite3_exec(writer, "ROLLBACK", nil, nil, nil) }
+        defer {
+            let result=sqlite3_exec(writer,"ROLLBACK",nil,nil,nil)
+            if result == SQLITE_OK {onWriterReleased?()}
+        }
         sqlite3_busy_timeout(reader, 1_000)
         onStep?(.readerTransaction)
         try check(sqlite3_exec(reader, "BEGIN; SELECT Z_PLIST FROM Z_METADATA", nil, nil, nil))
@@ -302,7 +305,7 @@ struct StartupRetainedData: Sendable {
         return result
     }
 
-    static func capture(rootURL: URL, purpose: Purpose = .integrityFailure, fileManager: FileManager = .default) throws -> Self {
+    static func capture(rootURL: URL, purpose: Purpose = .integrityFailure, fileManager: FileManager = .default, checkpoint: ((String) -> Void)? = nil) throws -> Self {
         var protectionStep = FailureDiagnostic.ProtectionStep.recoveryDirectory
         do {
             let recoveryRoot = rootURL.appendingPathComponent("Recovery", isDirectory: true)
@@ -311,7 +314,8 @@ struct StartupRetainedData: Sendable {
             let lease = try CaptureFileLease(url: recoveryRoot.appendingPathComponent(".lock"))
             defer { withExtendedLifetime(lease) {} }
             let store = rootURL.appendingPathComponent("Store", isDirectory: true)
-            return try StartupStoreProtection.withFrozenStore(at: store.appendingPathComponent("PersonalGrowthOS.sqlite"), onStep: { protectionStep = $0 }) {
+            return try StartupStoreProtection.withFrozenStore(at: store.appendingPathComponent("PersonalGrowthOS.sqlite"), onStep: { protectionStep = $0 }, onWriterReleased:{checkpoint?("released")}) {
+                checkpoint?("frozen")
                 protectionStep = .sourceSignature
                 let signature = try storeSignature(store)
                 let identity: String
