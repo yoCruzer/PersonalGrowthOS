@@ -577,7 +577,9 @@ extension AppCompositionTests {
             let intents=ReminderSettingsIntents(),presentation=IntegrationSettingsPresentation()
             let entered=expectation(description:"Changed setting entered real scheduler");client.entered=entered
             let opened=expectation(description:"Actual settings opened");presentation.didOpen={presentation.didOpen=nil;opened.fulfill()}
-            let window=UIWindow(frame:UIScreen.main.bounds)
+            let scene=try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap {$0 as? UIWindowScene}.first)
+            let window=UIWindow(windowScene:scene);window.frame=UIScreen.main.bounds
+            window.windowLevel = .normal + 1
             let host=UIHostingController(rootView:IntegrationSettingsMountedHost(presentation:presentation,intents:intents,media:media,exporter:ImportExportService(context:c.mainContext,mediaStore:media),scheduler:scheduler))
             window.rootViewController=host;window.makeKeyAndVisible()
             defer {
@@ -602,7 +604,8 @@ extension AppCompositionTests {
             XCTAssertFalse(defaults.bool(forKey:weekly ? keys[2]:keys[0]));XCTAssertNil(client.pending[id])
             XCTAssertEqual(scope.failureMessage,String(localized:"The reminder could not be updated. Please try again."))
             XCTAssertFalse(scope.cleanupPending)
-            let shot=UIGraphicsImageRenderer(bounds:window.bounds).image {_ in window.drawHierarchy(in:window.bounds,afterScreenUpdates:true)}
+            window.layoutIfNeeded()
+            let shot=UIGraphicsImageRenderer(bounds:window.bounds).image {renderer in window.layer.render(in:renderer.cgContext)}
             let attachment=XCTAttachment(image:shot);attachment.name="Terminal-IC02-reopened-\(weekly ? "weekly":"daily")-failure";attachment.lifetime = .keepAlways;add(attachment)
             print("PGOS_IC02 weekly=\(weekly) old08=true changed09=true actualClosed=true noB=true errorSettled=true pending=\(client.pending.count)")
         }
