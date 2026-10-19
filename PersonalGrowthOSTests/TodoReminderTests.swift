@@ -44,7 +44,7 @@ final class TodoReminderTests: XCTestCase {
     func testReminderStatusReevaluatesElapsedTimeWithoutReconciliationOrQueueMutation() async throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         var now = Date()
-        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { now })
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { now }, sleepPreferences:{.init()})
         let task = try TodoTaskService(context: container.mainContext).create(.init(title: "Parked screen", remindAt: now.addingTimeInterval(60)))
         await coordinator.reconcile(context: container.mainContext)
         XCTAssertEqual(coordinator.status(for: task), .scheduled)
@@ -61,7 +61,7 @@ final class TodoReminderTests: XCTestCase {
     func testCreateReplaceCompleteReopenCancelDeleteAndNoOtherCategoryRemoval() async throws {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let service = TodoTaskService(context: context)
-        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client)
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, sleepPreferences:{.init()})
         let task = try service.create(TodoDraft(title: "预约", remindAt: Date().addingTimeInterval(3600)))
         await coordinator.reconcile(context: context)
         let originalIdentifier=try XCTUnwrap(client.pending.keys.first)
@@ -91,7 +91,7 @@ final class TodoReminderTests: XCTestCase {
     func testAuthorizationIsOnlyRequestedFromExplicitReminderActionAndFailuresAreHonest() async throws {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let client = TodoNotificationStub(); client.authorization = .notDetermined
-        let coordinator = TodoReminderCoordinator(client: client)
+        let coordinator = TodoReminderCoordinator(client: client, sleepPreferences:{.init()})
         let service = TodoTaskService(context: context)
         _ = try service.create(TodoDraft(title: "默认无提醒"))
         await coordinator.reconcile(context: context)
@@ -121,7 +121,7 @@ final class TodoReminderTests: XCTestCase {
         let first = try service.create(TodoDraft(title: "先", remindAt: Date().addingTimeInterval(3600)))
         let second = try service.create(TodoDraft(title: "后", remindAt: Date().addingTimeInterval(7200)))
         let past = try service.create(TodoDraft(title: "已过", remindAt: Date().addingTimeInterval(-3600)))
-        let coordinator = TodoReminderCoordinator(client: client)
+        let coordinator = TodoReminderCoordinator(client: client, sleepPreferences:{.init()})
         await coordinator.reconcile(context: context)
         XCTAssertNil(client.pending[stale]); XCTAssertEqual(client.pending.count, 1)
         XCTAssertEqual(coordinator.status(for: first), .scheduled)
@@ -132,7 +132,7 @@ final class TodoReminderTests: XCTestCase {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let service = TodoTaskService(context: context)
         let task = try service.create(TodoDraft(title: "竞争", remindAt: Date().addingTimeInterval(3600)))
-        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client)
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, sleepPreferences:{.init()})
         client.whileAdding = {
             try service.transition(id: task.id, to: .completed)
             Task { await coordinator.reconcile(context: context) }
@@ -147,7 +147,7 @@ final class TodoReminderTests: XCTestCase {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let task = try TodoTaskService(context: context).create(TodoDraft(title: "显式提醒", remindAt: Date().addingTimeInterval(3600)))
         let client = TodoNotificationStub(); client.authorization = .notDetermined
-        let coordinator = TodoReminderCoordinator(client: client)
+        let coordinator = TodoReminderCoordinator(client: client, sleepPreferences:{.init()})
         client.whileCheckingPermission = { await coordinator.reconcile(context: context) }
         await coordinator.reconcile(context: context, requestPermission: true)
         XCTAssertEqual(client.permissionCalls, 1)
@@ -163,7 +163,7 @@ final class TodoReminderTests: XCTestCase {
 extension TodoReminderTests {
     func testSaveFeedbackRemainsCheckingWhileDelayedAndDistinguishesPermissionQueueAndFailure() async throws {
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
-        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client)
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, sleepPreferences:{.init()})
         let task = try TodoTaskService(context: context).create(TodoDraft(title: "Saved first", remindAt: Date().addingTimeInterval(3600)))
         coordinator.reportSavedTask(task)
         XCTAssertEqual(coordinator.savedTaskID, task.id); XCTAssertEqual(coordinator.status(for: task), .checking)
@@ -200,7 +200,7 @@ extension TodoReminderTests {
         let first = try service.create(TodoDraft(title: "Before", plannedDay: "2026-01-10", remindAt: TodoRecurrence.reminder(day: TodoDay("2026-01-09")!, minutes: 1200, timeZone: zone), frequency: .monthly))
         try service.transition(id: first.id, to: .completed)
         let next = try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first { $0.state == .open })
-        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { clock })
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences:{.init()})
         await coordinator.reconcile(context: context)
         let identifier=try XCTUnwrap(client.pending.keys.first)
         XCTAssertEqual(client.pending.values.first?.taskID,next.id)
@@ -271,7 +271,7 @@ extension TodoReminderTests {
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub();alarms.authorization=permission
             let service=TodoTaskService(context:context,now:{now})
             let task=try service.create(.init(title:"Synthetic alarm permission",isImportant:true,remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             await coordinator.reconcile(context:context,requestPermission:true)
             XCTAssertEqual(coordinator.status(for:task),permission == .notDetermined ? .alarmPermissionRequired : permission == .denied ? .alarmDenied : .unsupportedAlarm)
             XCTAssertEqual(alarms.permissionCalls,0);XCTAssertTrue(alarms.pending.isEmpty);XCTAssertTrue(notifications.pending.isEmpty)
@@ -291,7 +291,7 @@ extension TodoReminderTests {
         let notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
         let task=try TodoTaskService(context:context,now:{now}).create(.init(title:"Synthetic journal recovery",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
         var fail=true
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms,journalCommit:{write in
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms,journalCommit:{write in
             if fail,try write.fetch(FetchDescriptor<TodoReminderDeviceRecord>()).contains(where: {$0.phaseRawValue == "accepted"}) {throw CocoaError(.fileWriteOutOfSpace)}
             try write.save()
         })
@@ -300,7 +300,7 @@ extension TodoReminderTests {
         XCTAssertEqual(alarms.pending.count,1);XCTAssertEqual(alarms.scheduleCalls.count,1)
         XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first?.phaseRawValue,"prepared")
         fail=false
-        let cold=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let cold=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         await cold.reconcile(context:context)
         XCTAssertEqual(cold.status(for:task),.scheduled);XCTAssertEqual(alarms.scheduleCalls.count,1)
         XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first?.phaseRawValue,"accepted")
@@ -310,7 +310,7 @@ extension TodoReminderTests {
         let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
         let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
         let task=try service.create(.init(title:"Synthetic channel switch",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         await coordinator.reconcile(context:context)
         let old=try XCTUnwrap(alarms.pending.keys.first)
         alarms.failCancel=true
@@ -337,14 +337,14 @@ extension TodoReminderTests {
             var now=Date();let fire=now.addingTimeInterval(600)
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
             let task=try TodoTaskService(context:context,now:{now}).create(.init(title:"Synthetic stop is not complete",remindAt:fire,reminderChannel:.alarm))
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             await coordinator.reconcile(context:context);let id=try XCTUnwrap(alarms.pending.keys.first)
             if !stopBeforeFire {
                 now=fire.addingTimeInterval(1);await coordinator.reconcile(context:context)
                 XCTAssertEqual(alarms.pending.count,1);XCTAssertTrue(alarms.cancelCalls.isEmpty,"A current alarm may be ringing")
             }
             try await alarms.stop(id)
-            let cold=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let cold=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             await cold.reconcile(context:context);await cold.reconcile(context:context)
             XCTAssertEqual(cold.status(for:task),stopBeforeFire ? .stopped : .elapsed)
             XCTAssertEqual(alarms.scheduleCalls.count,1);XCTAssertTrue(alarms.pending.isEmpty)
@@ -357,7 +357,7 @@ extension TodoReminderTests {
         let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
         let task=try service.create(.init(title:"Synthetic late callback",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
         let id=task.id
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         alarms.whileScheduling={request in
             try service.delete(id:request.taskID)
             await coordinator.reconcile(context:context)
@@ -375,11 +375,11 @@ extension TodoReminderTests {
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
             let task=try service.create(.init(title:"Synthetic failed attempt",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
             alarms.errorBeforeSchedule=knownCapacity ? TodoAlarmFailure.queueFull : CocoaError(.fileWriteUnknown)
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             await coordinator.reconcile(context:context)
             XCTAssertEqual(coordinator.status(for:task),knownCapacity ? .alarmQueueFull : .confirmationRequired)
             alarms.errorBeforeSchedule=nil
-            let cold=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms);await cold.reconcile(context:context)
+            let cold=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms);await cold.reconcile(context:context)
             if knownCapacity {XCTAssertEqual(cold.status(for:task),.scheduled);XCTAssertEqual(alarms.scheduleCalls.count,2)}
             else {
                 XCTAssertEqual(alarms.scheduleCalls.count,1);XCTAssertTrue(alarms.pending.isEmpty)
@@ -398,7 +398,7 @@ extension TodoReminderTests {
         let task=try TodoTaskService(context:context).create(.init(title:"Synthetic pre-call failure",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
         context.autosaveEnabled=false;context.insert(Entry(body:"Synthetic unrelated uncommitted input",createdAt:now))
         var fail=true
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms,journalCommit:{write in
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms,journalCommit:{write in
             if fail,try write.fetch(FetchDescriptor<TodoReminderDeviceRecord>()).contains(where: {$0.phaseRawValue == "prepared"}) {throw CocoaError(.fileWriteOutOfSpace)}
             try write.save()
         })
@@ -417,13 +417,13 @@ extension TodoReminderTests {
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
             let task=try TodoTaskService(context:context).create(.init(title:"Synthetic native read ambiguity",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
             alarms.whileScheduling={_ in alarms.failReads=true}
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             await coordinator.reconcile(context:context);await coordinator.reconcile(context:context)
             XCTAssertEqual(coordinator.status(for:task),.confirmationRequired);XCTAssertEqual(alarms.scheduleCalls.count,1)
             XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first?.phaseRawValue,"prepared")
             if !remainsQueued {alarms.pending=[:]}
             alarms.failReads=false
-            let cold=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms);await cold.reconcile(context:context)
+            let cold=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms);await cold.reconcile(context:context)
             XCTAssertEqual(cold.status(for:task),remainsQueued ? .scheduled : .confirmationRequired)
             await cold.reconcile(context:context)
             XCTAssertEqual(cold.status(for:task),remainsQueued ? .scheduled : .stopped)
@@ -435,7 +435,7 @@ extension TodoReminderTests {
             let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
             let task=try service.create(.init(title:"Synthetic newer intent wins",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm)),id=task.id
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             alarms.whileScheduling={_ in
                 try service.rescheduleReminder(id:id,to:now.addingTimeInterval(1800),channel:.notification)
                 await coordinator.reconcile(context:context)
@@ -455,7 +455,7 @@ extension TodoReminderTests {
         let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
         alarms.authorization = .notDetermined
         let task=try service.create(.init(title:"Synthetic authorization race",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         alarms.whileAuthorizing={
             try? service.transition(id:task.id,to:.completed)
             await coordinator.reconcile(context:context)
@@ -469,7 +469,7 @@ extension TodoReminderTests {
         let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
         let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
         let task=try service.create(.init(title:"Synthetic series cancellation",plannedDay:TodoDay(date:now).description,remindAt:now.addingTimeInterval(600),frequency:.daily,reminderChannel:.alarm))
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         await coordinator.reconcile(context:context);alarms.failCancel=true
         try service.transition(id:task.id,to:.completed)
         let successor=try XCTUnwrap(context.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
@@ -486,7 +486,7 @@ extension TodoReminderTests {
         let first=try service.create(.init(title:"Synthetic canceled first",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
         _ = try service.create(.init(title:"Synthetic canceled second",remindAt:now.addingTimeInterval(1200),reminderChannel:.alarm))
         alarms.whileScheduling={_ in throw CancellationError()}
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         await coordinator.reconcile(context:context)
         XCTAssertEqual(alarms.scheduleCalls.count,1);XCTAssertEqual(coordinator.status(for:first),.confirmationRequired)
         XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first?.phaseRawValue,"prepared")
@@ -502,7 +502,7 @@ extension TodoReminderTests {
             let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
             let task=try service.create(.init(title:"Synthetic before title",remindAt:now.addingTimeInterval(600),reminderChannel:channel))
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             await coordinator.reconcile(context:context)
             let before=try XCTUnwrap(service.reminderIntent(for:task.id)).generation
             var draft=try service.draft(id:task.id);draft.notes="Synthetic unrelated notes"
@@ -526,7 +526,7 @@ extension TodoReminderTests {
             let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
             let task=try service.create(.init(title:"Synthetic stopped before",remindAt:now.addingTimeInterval(600),reminderChannel:channel))
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             await coordinator.reconcile(context:context)
             let generation=try XCTUnwrap(service.reminderIntent(for:task.id)).generation
             notifications.pending=[:];alarms.pending=[:]
@@ -545,7 +545,7 @@ extension TodoReminderTests {
         let task=try service.create(.init(title:"Synthetic V14 legacy series",plannedDay:TodoDay(date:now).description,remindAt:now.addingTimeInterval(600),frequency:.daily))
         // Represents the actual V14→V15 default: an existing task has no new intent or device journal.
         context.delete(try XCTUnwrap(service.reminderIntent(for:task.id)));try context.save()
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         await coordinator.reconcile(context:context)
         let old=TodoReminderCoordinator.identifier(task.id)
         XCTAssertNotNil(notifications.pending[old]);notifications.failedRemovalIdentifiers=[old]
@@ -568,7 +568,7 @@ extension TodoReminderTests {
             let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
             let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
             let task=try service.create(.init(title:"Synthetic suspended before",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
-            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
             let change: () async throws -> Void = {
                 var draft=try service.draft(id:task.id);draft.title="Synthetic suspended after"
                 try service.edit(id:task.id,draft:draft)
@@ -586,7 +586,7 @@ extension TodoReminderTests {
         let container=try PersistenceContainerFactory.makeInMemory(),context=container.mainContext,now=Date()
         let notifications=TodoNotificationStub(),alarms=TodoAlarmStub(),service=TodoTaskService(context:context,now:{now})
         let task=try service.create(.init(title:"Synthetic blocked title before",remindAt:now.addingTimeInterval(600),reminderChannel:.alarm))
-        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},alarmClient:alarms)
+        let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
         await coordinator.reconcile(context:context);alarms.failCancel=true
         var draft=try service.draft(id:task.id);draft.title="Synthetic blocked title after"
         try service.edit(id:task.id,draft:draft);await coordinator.reconcile(context:context)

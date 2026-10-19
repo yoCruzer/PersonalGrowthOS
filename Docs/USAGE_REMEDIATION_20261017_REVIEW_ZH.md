@@ -605,3 +605,38 @@ READY仅指本地门。D1–D4 NOT_PASSED、AlarmKit原生正向 NOT_RUN、Publi
 
 
 原文SHA256 `991c9453c63e715c8f9e546d9fb97b0ee43abbbddae5d2293aaba0adbac6364d`。原文由独立reviewer生成，实现者仅原样归档。
+
+
+## 2026-10-20 TERMINAL_RECHECK 独立预登记
+
+以下原文由未参与实现的 `/root/terminal_recheck_reviewer` 在看到关闭表之前提交；原文件 `/tmp/pgos-pr13-recheck-evidence/reviewer-preflight.md`，SHA256 `36b5bcae182232fc524304fd5690bca57a847403874e12c2bd0e2f6b6afd307c`。终审待固定候选及原始本机证据，不将预审写为READY。
+
+# TC-01～03 独立预登记（2026-10-20）
+
+审查者 `/root/terminal_recheck_reviewer` 未参与本轮产品/测试实现；在收到实现者关闭表之前登记。固定规格 ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627 的 Goal 与 Review 已全文读取；依次阅读 AGENTS、Foundation、Contract 和 CURRENT 最新边界。当前只读审查既有生产链，未执行新原生测试，不将源码推断写为 PASS。
+
+## TC-01：来源对象与受影响对象
+
+生产入口确实允许非 open 来源：TodoEditorView.save 在 futureSeries 且来源非 open 时查开放 successor 并报告。服务 edit 的 correctingPolicy 却限定来源 open，而 applyTemplate 只有 correctingPolicy 或 fireAt 改变才 renew，独立确认规格反例具有区分力。
+
+必须先得到旧 V11 nil offset 的合法链：旧 f1 complete/skip A → B、deleteList → rule.updatedAt 改变、B 原系统 accepted；Shanghai/Hong_Kong 同偏移但 identifier 不同触发 quarantine，确认 B retired/native0。两渠道分别从真实 completed 和 canceled 来源 A 保持相同时间/渠道应用未来，期待 B 新 generation、唯一新 native ID；A 状态/历史/截止/计划/来源关系不复活不损坏。至少一例挂载真实 TodoEditorView 保存，不能只调用 service 或 helper。
+
+相反操作：健康规则的 futureSeries metadata、普通 metadata、已 Stop 系列保持终态；source open 原 RR-01 保留。修复若只删 open guard，也须核实来源本身不会创建可被调度的请求。取消未确认时 B 的旧 ownership 必须保留且不能并排产生新请求；确认后再恢复唯一请求。事务保存失败应恢复 rule offset/updatedAt、A/B intents generation、事件；成功重复提交不得连续换代。冷重开从磁盘读取身份、代次、retired 和 native 独立事实。不同偏移/改值会通过时间变更偶然换代，不能反证同值缺陷。
+
+## TC-02：sheet 寿命与进程寿命
+
+旧 Scope 是纯内存；AppShell .task/.active 只协调 Todo/Sleep/ImportantDay，MediaStorageView 初次 task 不按 off 初值清固定请求。故必须销毁 UIHostingController、AppShell 及 ReminderSettingsIntents，创建新根和新 Scope，保留隔离 UserDefaults suite 与外部 client 原请求。只重开 sheet 或 wrapper 共用 Scope 不成立。
+
+daily/weekly 各自跑旧08→09失败→两次 remove 未确认→off 已保存；冷根在请求仍存在、已不存在、首次再清失败三分支应自动发现/确认或明确可达重试，未确认保持可见。最小 off 启动对账可接受，无需 SwiftData/schema；若用持久责任，不能只落错误字符串，也不能随备份迁移。持久化失败必须诚实保留可见责任。
+
+独立反例：启动清理 pendingIdentifiers await 挂起时，同渠道用户提交同值新 B、异值新 B、明确 off 三类意图。每个 await 后需最新票据检查，gate 获取前后同样检查；过期 A 不能删 B 或发布 A 文案。另一渠道与 Todo/Sleep/ImportantDay/未知 request ID 保留，预算仍共享。denied/notDetermined 不得 requestAuthorization，启动不能开启提醒，无无界轮询。
+
+还需核查未改调用者：AppShell 根 .task/.active、MediaStorageView onChange 与关闭重开、handleReminderResult/失败后自动 off 引发 onChange 的第二次 submit。偏好 off 变化和新 ticket 必须形成一致所有权，不能因新增启动对账反复覆盖当前编辑。
+
+## TC-03：失败与确认成功
+
+同 Scope 与新 Scope 都要覆盖：unconfirmed → confirmed retry → native0、cleanupPending=false、当前“尚未确认”文字消失、Try Again 不再作为死入口。旧 failureMessage 在 success(.removed) 保留的分支可确定重现此错。允许明确历史失败说明，但不能用 pending=false 隐藏按钮却继续显示当前未确认文字。需要真实中文设置页/AX或截图校验，纯字段 helper 不能替代最终 UI。
+
+## 终审门
+
+待固定候选及本机原证据：审产品与测试 diff、上述未改调用者、原 red/green 分轮、xcresult 实数、代表设置/编辑器图与最终 Debug/unsigned Release 三包。独立复算 manifest/hash/provenance、App/Share/Widget IDs、1.0(7)/min17、SHA/Dirty=false、AlarmKit weak 与中英用途；集中 Unit/必要关键 UI 与候选一致。旧 RR-02/IR/Stop/取消/容量/计时/迁移/raw/F5 证据只按依赖不变复用，不要求重做。D1–D4、AlarmKit 正向、Share/Safari、物理低空间、CI 保持既有未通过/未运行。当前不作 READY 结论。

@@ -611,3 +611,148 @@ extension AppCompositionTests {
         }
     }
 }
+
+@MainActor extension AppCompositionTests {
+    func testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests() async throws {
+        for weekly in [false,true] {
+          for coldBranch in 0..<3 { // native still present / already absent / first cold cleanup fails
+            let suite="TC02-root-\(UUID())",defaults=try XCTUnwrap(UserDefaults(suiteName:suite))
+            defer {defaults.removePersistentDomain(forName:suite)}
+            let enabledKey=weekly ? "weeklyReviewReminderEnabled":"dailyRecordingReminderEnabled"
+            let timeKey=weekly ? "weeklyReviewReminderMinutes":"dailyRecordingReminderMinutes"
+            defaults.set(true,forKey:enabledKey);defaults.set(480,forKey:timeKey);defaults.set(2,forKey:"weeklyReviewReminderWeekday")
+            let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+            defer {try? FileManager.default.removeItem(at:root)}
+            let c=try PersistenceContainerFactory.makeInMemory()
+            let container=AppContainer(configuration:.init(launchMode:.uiTesting,resetDataOnLaunch:false),modelContainer:c,mediaStore:MediaStore(rootURL:root))
+            let client=SystemSettingsLateClient();client.suspendFirst=false
+            let scheduler=LocalReminderScheduler(client:client)
+            if weekly {_ = try await scheduler.updateWeekly(enabled:true,weekday:2,minutesAfterMidnight:480,requestPermission:false)}
+            else {_ = try await scheduler.updateDaily(enabled:true,minutesAfterMidnight:480,requestPermission:false)}
+            let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+            XCTAssertNotNil(client.pending[id]);client.failedRemoval=true;client.suspendFirst=true
+            let scene=try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap {$0 as? UIWindowScene}.first)
+            weak var oldDaily:ReminderSettingsUpdate.Scope?,oldWeekly:ReminderSettingsUpdate.Scope?
+            var window:UIWindow?=UIWindow(windowScene:scene);window!.frame=UIScreen.main.bounds;window!.windowLevel = .normal + 1
+            var host:UIHostingController<AnyView>?
+            let mounted=expectation(description:"First actual AppShell root mounted")
+            ReminderSettingsUpdateProbe.didMountRoot={intents,open in oldDaily=intents.daily;oldWeekly=intents.weekly;open();mounted.fulfill()}
+            host=UIHostingController(rootView:AnyView(AppShell(container:container,settingsReminderScheduler:scheduler).modelContainer(c).defaultAppStorage(defaults)))
+            window!.rootViewController=host;window!.makeKeyAndVisible()
+            defer {ReminderSettingsUpdateProbe.didMountSettings=nil;ReminderSettingsUpdateProbe.didMountRoot=nil;window?.isHidden=true;window?.rootViewController=nil;host=nil;window=nil}
+            await fulfillment(of:[mounted],timeout:4);ReminderSettingsUpdateProbe.didMountRoot=nil
+            try await Task.sleep(for:.milliseconds(400))
+            let entered=expectation(description:"Actual settings changed08to09 enters client");client.entered=entered
+            defaults.set(540,forKey:timeKey);await fulfillment(of:[entered],timeout:4)
+            let release=try XCTUnwrap(client.continuation);client.continuation=nil;release.resume(throwing:CocoaError(.fileWriteUnknown))
+            await (weekly ? oldWeekly:oldDaily)?.task?.value
+            try await Task.sleep(for:.milliseconds(300))
+            await (weekly ? oldWeekly:oldDaily)?.task?.value
+            XCTAssertFalse(defaults.bool(forKey:enabledKey));XCTAssertNotNil(client.pending[id])
+            XCTAssertTrue((weekly ? oldWeekly:oldDaily)?.cleanupPending == true)
+            window?.isHidden=true;window?.rootViewController=nil;host=nil;window=nil
+            for _ in 0..<50 {if oldDaily == nil && oldWeekly == nil {break};try await Task.sleep(for:.milliseconds(20))}
+            XCTAssertNil(oldDaily,"Entire original root daily Scope must really deallocate")
+            XCTAssertNil(oldWeekly,"Entire original root weekly Scope must really deallocate")
+            if coldBranch == 1 {client.pending.removeValue(forKey:id)}
+            client.failedRemoval=coldBranch == 2
+            client.status=coldBranch == 1 ? .notDetermined:.denied
+            var retry:(@MainActor () -> Void)?
+            ReminderSettingsUpdateProbe.didMountSettings={daily,week in retry=weekly ? week:daily}
+            let coldMounted=expectation(description:"Brand new AppShell root mounted")
+            weak var coldScope:ReminderSettingsUpdate.Scope?
+            ReminderSettingsUpdateProbe.didMountRoot={intents,open in coldScope=weekly ? intents.weekly:intents.daily;if coldBranch == 2 {open()};coldMounted.fulfill()}
+            window=UIWindow(windowScene:scene);window!.frame=UIScreen.main.bounds;window!.windowLevel = .normal + 1
+            host=UIHostingController(rootView:AnyView(AppShell(container:container,settingsReminderScheduler:scheduler).modelContainer(c).defaultAppStorage(defaults)))
+            window!.rootViewController=host;window!.makeKeyAndVisible()
+            await fulfillment(of:[coldMounted],timeout:4);ReminderSettingsUpdateProbe.didMountRoot=nil
+            for _ in 0..<100 {if coldScope?.task != nil {break};try await Task.sleep(for:.milliseconds(20))}
+            await coldScope?.task?.value
+            if coldBranch == 2 {
+                XCTAssertNotNil(client.pending[id]);XCTAssertTrue(coldScope?.cleanupPending ?? false)
+                XCTAssertEqual(coldScope?.failureMessage,String(localized:"Reminder removal is not confirmed. Please try again."))
+                for _ in 0..<100 {if retry != nil {break};try await Task.sleep(for:.milliseconds(20))}
+                window!.layoutIfNeeded()
+                let before=UIGraphicsImageRenderer(bounds:window!.bounds).image {window!.layer.render(in:$0.cgContext)}
+                let failed=XCTAttachment(image:before);failed.name="TC02-cold-\(weekly ? "weekly":"daily")-unconfirmed";failed.lifetime = .keepAlways;add(failed)
+                client.failedRemoval=false
+                try XCTUnwrap(retry)()
+                await coldScope?.task?.value
+                try await Task.sleep(for:.milliseconds(150))
+                window!.layoutIfNeeded()
+                let after=UIGraphicsImageRenderer(bounds:window!.bounds).image {window!.layer.render(in:$0.cgContext)}
+                let confirmed=XCTAttachment(image:after);confirmed.name="TC03-cold-\(weekly ? "weekly":"daily")-confirmed";confirmed.lifetime = .keepAlways;add(confirmed)
+            }
+            retry=nil;ReminderSettingsUpdateProbe.didMountSettings=nil
+            XCTAssertEqual(client.authorizationRequests,0,"Off reconciliation never requests permission")
+            XCTAssertNil(client.pending[id],"TC-02: persistent off must recover cleanup after all original owners have died")
+            XCTAssertFalse(defaults.bool(forKey:enabledKey));XCTAssertFalse(coldScope?.cleanupPending ?? true)
+            XCTAssertNil(coldScope?.failureMessage)
+            print("PGOS_TC02 weekly=\(weekly) wholeRootDestroyed=\(oldDaily == nil && oldWeekly == nil) coldBranch=\(coldBranch) newRoot=true persistentOff=\(!defaults.bool(forKey:enabledKey)) native=\(client.pending.count)")
+          }
+        }
+    }
+}
+
+@MainActor extension AppCompositionTests {
+    func testRecheckTC02ActualColdRootQueryProtectsSettingsNewIntent() async throws {
+        for weekly in [false,true] {
+            for newer in 0..<3 {
+                let suite="TC02-B-\(UUID())",defaults=try XCTUnwrap(UserDefaults(suiteName:suite))
+                defer {defaults.removePersistentDomain(forName:suite)}
+                let key=weekly ? "weeklyReviewReminderEnabled":"dailyRecordingReminderEnabled"
+                let time=weekly ? "weeklyReviewReminderMinutes":"dailyRecordingReminderMinutes"
+                let otherKey=weekly ? "dailyRecordingReminderEnabled":"weeklyReviewReminderEnabled"
+                defaults.set(false,forKey:key);defaults.set(true,forKey:otherKey);defaults.set(480,forKey:time)
+                let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+                try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+                defer {try? FileManager.default.removeItem(at:root)}
+                let c=try PersistenceContainerFactory.makeInMemory()
+                let container=AppContainer(configuration:.init(launchMode:.uiTesting,resetDataOnLaunch:false),modelContainer:c,mediaStore:MediaStore(rootURL:root))
+                let client=SystemSettingsLateClient();client.suspendFirst=false
+                let scheduler=LocalReminderScheduler(client:client)
+                if weekly {_ = try await scheduler.updateWeekly(enabled:true,weekday:2,minutesAfterMidnight:480,requestPermission:false)}
+                else {_ = try await scheduler.updateDaily(enabled:true,minutesAfterMidnight:480,requestPermission:false)}
+                let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+                let other=weekly ? LocalReminderScheduler.dailyIdentifier:LocalReminderScheduler.weeklyIdentifier
+                for key in [other,"unknown.synthetic","sleep.synthetic","important-day.synthetic","todo.synthetic"] {client.pending[key]=DateComponents(hour:7)}
+                let preserved=client.pending.filter {$0.key != id}
+                let queried=expectation(description:"Actual cold AppShell cleanup held in native query")
+                var release:CheckedContinuation<Void,Never>?
+                client.pendingHook={client.pendingHook=nil;await withCheckedContinuation {release=$0;queried.fulfill()}}
+                var scope:ReminderSettingsUpdate.Scope?
+                ReminderSettingsUpdateProbe.didMountRoot={intents,open in scope=weekly ? intents.weekly:intents.daily;open()}
+                let settingsMounted=expectation(description:"Actual root settings mounted during startup query")
+                ReminderSettingsUpdateProbe.didMountSettings={_,_ in ReminderSettingsUpdateProbe.didMountSettings=nil;settingsMounted.fulfill()}
+                let scene=try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap {$0 as? UIWindowScene}.first)
+                let window=UIWindow(windowScene:scene);window.frame=UIScreen.main.bounds;window.windowLevel = .normal + 1
+                window.rootViewController=UIHostingController(rootView:AppShell(container:container,settingsReminderScheduler:scheduler).modelContainer(c).defaultAppStorage(defaults));window.makeKeyAndVisible()
+                defer {ReminderSettingsUpdateProbe.didMountRoot=nil;ReminderSettingsUpdateProbe.didMountSettings=nil;ReminderSettingsUpdateProbe.didSubmit=nil;window.isHidden=true;window.rootViewController=nil;release?.resume();release=nil}
+                await fulfillment(of:[queried,settingsMounted],timeout:4);ReminderSettingsUpdateProbe.didMountRoot=nil
+                let a=try XCTUnwrap(scope?.task)
+                if newer == 1 {defaults.set(660,forKey:time);try await Task.sleep(for:.milliseconds(50))}
+                let on=expectation(description:"Actual settings new B on")
+                ReminderSettingsUpdateProbe.didSubmit={value in if value === scope {on.fulfill()}}
+                defaults.set(true,forKey:key);await fulfillment(of:[on],timeout:4)
+                if newer == 2 {
+                    let off=expectation(description:"Actual settings explicit B off")
+                    ReminderSettingsUpdateProbe.didSubmit={value in if value === scope {off.fulfill()}}
+                    defaults.set(false,forKey:key);await fulfillment(of:[off],timeout:4)
+                }
+                ReminderSettingsUpdateProbe.didSubmit=nil
+                let b=try XCTUnwrap(scope?.task),removeCount=client.removedIdentifiers.filter {$0 == id}.count
+                let continuation=try XCTUnwrap(release);release=nil;continuation.resume()
+                await a.value;await b.value
+                XCTAssertEqual(client.removedIdentifiers.filter {$0 == id}.count-removeCount,newer == 2 ? 1:0)
+                XCTAssertEqual(client.pending[id] != nil,newer != 2)
+                if newer != 2 {XCTAssertEqual(client.pending[id]?.hour,newer == 1 ? 11:8)}
+                XCTAssertEqual(client.pending.filter {$0.key != id},preserved)
+                XCTAssertEqual(defaults.bool(forKey:key),newer != 2)
+                XCTAssertFalse(scope?.cleanupPending ?? true);XCTAssertNil(scope?.failureMessage)
+                XCTAssertEqual(client.authorizationRequests,0)
+                print("PGOS_TC02 actualColdRootQuery=true actualSettingsB=true weekly=\(weekly) newer=\(newer) native=\(client.pending[id] != nil)")
+            }
+        }
+    }
+}

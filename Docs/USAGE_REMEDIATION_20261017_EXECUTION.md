@@ -778,3 +778,21 @@ RR02最终因果：writer-frozen→production-observe-entry→independent-probe-
 
 
 交付仅普通commit/push原分支和更新唯一Draft PR13描述；base保持codex/time-investment-v1。不为纯Docs重建；交付SHA以实际commit/PR head+final-delivery-proof核对，主目录三项未知改动保留。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持；设备/私人库/签名安装/merge/force/tag/Archive/TestFlight均未执行，停在Owner设备门。
+
+
+## 2026-10-20 TERMINAL_RECHECK — S-A / S-B 阶段记录
+
+固定 RECHECK_GOAL_SHA `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627` 的 Goal/Review 已全文读取；原干净worktree `d04fbf7` 仅快进接收两个规格文档，无后续产品提交需覆盖。唯一 OPEN Draft PR #13 / 原 base `5a70f01` 核对，主目录三项未知改动保留。两份 CURRENT 首先追加本轮边界；接收规格未运行全量基线。独立 reviewer 在实现关闭表前预登记原文见 REVIEW。
+
+本机证据根 `/tmp/pgos-pr13-recheck-evidence`，沿用专用模拟器 `42609456-859D-41F8-8977-4B2D85A74082`；运行器保存每轮完整 command、HEAD/dirty、非Docs源码manifest、log/xcresult、实际退出码/耗时。Xcode27.1(27A9275)、SDK27.1、arm64/macOS27.0.1(26A434)；未修改宿主时间/时区，不碰私人数据或偏好。
+
+| 项目 | 合法起点、真实反例与最小实现 | 相反操作/终态证据 |
+| --- | --- | --- |
+| TC-01/P2 | 真V11每日08:00/nil→冻结旧f1服务 ordinary channel edit→真实complete或skip产生B→旧deleteList维持nil并更新rule时间→B两渠道accepted；显式生产refresh(Hong_Kong)与quarantine，两区等偏移，返回设备原区后实际TodoEditorView同值/同渠道future保存，原为stopped/native0/旧代次。纠正检测归属live规则，受影响open后继续代，终止来源不因纠正续代 | 2渠道×completed/canceled；B新ID/native唯一、原fireAt/计划/截止、A状态/代次、旧事件/Entry/来源保持；完整snapshot失败回滚；取消未确认保留旧ownership不并行，确认后磁盘冷开恢复；成功幂等；健康规则future metadata、SystemStop与seriesStop不复活。原open来源RR01两个完整方法保护 |
+| TC-02/P2 + TC-03/P3 | 实际AppShell→真实设置08改09失败/两次移除未确认→off持久，销毁hosting/root及两Scope弱引用均nil→新AppShell；原冷根失责任/native1。最小方案按持久off在根task/active重建两个固定ID清理责任，不引入schema/账本；共用Scope票据及NotificationMutationGate，每await后检查当前票据及最新偏好。成功removed且此前pending时清未确认文案 | daily/weekly native仍在/已无/首次冷清失败三分支；denied/notDetermined零权限申请；冷清失败后真实设置Retry动作确认native0/pending=false/无当前未确认/无死重试按钮；实际根query挂起→真实设置onChange新B同值/异值/off 2×3；另有同API矩阵和独立类别保护。原同Scope失败→成功与跨sheet24分支、query内B及共享预算保持 |
+
+冻结旧f1服务仅类名及内部自引用改名，完整body与`f1b52b58`逐字归一相等（独立reviewer复算SHA256 `9b0532bbeb10bc4c340e721115ca66c7fe372bfa785272c496e96d681fbad960`）；没有靠直接改state伪造终止来源。
+
+分轮真实结果保留：red-a-build exit65是旧服务自引用/字段名测试接线编译错，red-a-build2恢复；red-chains 4方法0PASS/4FAIL，其中TC01的NSTimeZone.default未影响current，隔离前提失败仅算夹具错误，TC02/03是真实产品红例。改用显式生产refresh→quarantine后 red-a-proper 2方法0PASS/2FAIL，前提成立，TC01两个来源/渠道组合均stopped/native0/旧代次。green-chains 4/4PASS。expanded-matrix 21=18PASS/3FAIL，三项旧ImportantDay测试读取前轮sleep UI留下的standard enabled偏好而额外排程；诊断JSON保存读取源/hash/true事实，未清偏好。为该类注入disabled合成sleepPreferences后，强化后的focused-matrix 22/22PASS。Todo相邻单项同依赖探针1FAIL明确观察8请求包含sleep前缀；同类独立依赖修正后adjacent-todo 31/31PASS，断言未弱化。原FAIL均不改写。
+
+已查看focused-matrix导出的四张实际中文冷根设置图：daily/weekly未确认时红字+Try Again，成功后两者均无；off保持，权限已拒绝提示与清理反馈独立。现仍FIXES_IN_PROGRESS；待同一干净候选的集中完整Unit、关键UI、双构建/实包及独立终审，才可恢复READY。旧RR02/IR/计时/迁移/raw/F5和设备限制保留，不重做A–D。

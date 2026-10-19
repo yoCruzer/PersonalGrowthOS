@@ -1,3 +1,13 @@
+# PR #13 终态复核限定补修 — LOCAL_REVIEW_FIX_REQUIRED / FIXES_IN_PROGRESS（2026-10-20）
+
+固定 RECHECK_GOAL_SHA `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`；[Goal](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md) 与 [独立复核](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md) 已全文读取。原干净 worktree 从 `d04fbf7` 安全快进至固定规格；远端无额外后续提交，唯一 OPEN Draft PR #13 / base `codex/time-investment-v1` (`5a70f01`) 已核对。本轮连续执行 S-A→S-C，旧 READY 只保留为历史，不代表本轮完成；规格接收未跑全量基线。
+
+本轮边界：TC-01/P2 终止祖先明确应用未来时恢复合法开放后继但不复活来源；TC-02/P2 每日/每周 off 清理责任跨整个根 owner 销毁及冷启动；TC-03/P3 清理确认成功后的文案与按钮一致。先登记来源/受影响对象、sheet/进程寿命、失败/成功终态的反例与反证，再最小修复；由未参与实现的独立 reviewer 先提反例，再审固定候选、未改调用者及本机原始证据。
+
+收敛后同一干净产品/测试 SHA 集中完整 Unit、必要关键 UI、Debug/unsigned Release 与实包核对；TC 关闭或严格生产反证、必要本地门及独立终审完成后才恢复 READY_FOR_OWNER_DEVICE_GATE。既有 RR-02、IR 主修复及取消/容量/Stop、计时/迁移/raw 原值/F5 保护保留，不重做 A–D 或扩展未知观察。主目录三项未知改动不动。D1–D4、AlarmKit 正向、Share/Safari、物理低空间和 CI 的旧状态保持；不操作私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+---
+
 # PR #13 终态一致性补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
 固定 TERMINAL_FIX_GOAL_SHA `6430a8570ce2d3528c37d491c1252f97066e8da9`；最终干净产品/测试 SHA `744e7729f103549184574e99e311ce5c380a4a16`（最后产品实现 `fcd1c9b0c310d757918133c2abd8868da6030b13`，之后仅测试窗口/截图修正）。TF-A→TF-D连续完成：RR-01 / IC-02均经完整生产链红例确认并修复，RR-02经真实raw writer原生实验证实主线程等待并修复；O-01保持非阻断UNCONFIRMED，不重复开项。

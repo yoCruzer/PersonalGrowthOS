@@ -536,10 +536,11 @@ final class TodoTaskService {
         let currentChannel=previousIntent.flatMap {TodoReminderChannel(rawValue:$0.channelRawValue)} ?? .notification
         let selectedChannel=draft.reminderChannel ?? currentChannel
         let reminderChanged=task.remindAt != draft.remindAt
-        // Only explicit correction of an unresolvable live legacy policy renews
-        // same-value intent. Healthy nil bootstrap, metadata and Stop stay terminal.
+        // Explicit correction belongs to the live rule, independently of the
+        // entry occurrence state. Only affected open occurrences renew intent.
+        // Healthy nil bootstrap, metadata and Stop stay terminal.
         var correctingPolicy=false
-        if futureSeries,task.state == .open,draft.remindAt != nil,let sid=task.seriesID {
+        if futureSeries,draft.remindAt != nil,let sid=task.seriesID {
             let rule=try series(sid)
             if !rule.isStopped,rule.reminderDayOffset == nil,rule.reminderMinutes != nil {
                 do {_ = try reminderOffset(for:rule)}
@@ -581,7 +582,7 @@ final class TodoTaskService {
                 }
                 series.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: series.createdAt, previous: series.updatedAt)
             }
-            try setIntent(task,channel:selectedChannel,override:retainOverride,renew:reminderChanged || correctingPolicy)
+            try setIntent(task,channel:selectedChannel,override:retainOverride,renew:reminderChanged || (correctingPolicy && task.state == .open))
             try record(task, kind: draft.frequency == nil ? .edited : .convertedToSeries, before: before, at: now())
         }
     }

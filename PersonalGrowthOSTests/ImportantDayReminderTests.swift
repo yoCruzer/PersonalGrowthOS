@@ -30,7 +30,7 @@ final class ImportantDayReminderTests: XCTestCase {
         let client = TodoNotificationStub(); client.otherIdentifiers = Set((0..<59).map { "reserved-\($0)" })
         let day = try makeDay(c, offsets: [0])
         let task = try TodoTaskService(context: c).create(.init(title: "Closer", remindAt: now.addingTimeInterval(3600)))
-        let coordinator = TodoReminderCoordinator(client: client, now: { self.now })
+        let coordinator = TodoReminderCoordinator(client: client, now: { self.now }, sleepPreferences:{.init()})
         await coordinator.reconcile(context: c)
         XCTAssertEqual(client.pending.count, 1)
         XCTAssertEqual(coordinator.status(for: task), .scheduled); XCTAssertEqual(coordinator.status(for: day).status, .queueFull)
@@ -49,7 +49,7 @@ final class ImportantDayReminderTests: XCTestCase {
     func testDayDeniedFailureOffAndArchiveNeverRemoveOtherBusinessRequests() async throws {
         let container = try PersistenceContainerFactory.makeInMemory(), c = container.mainContext
         let day = try makeDay(c), client = TodoNotificationStub()
-        let coordinator = TodoReminderCoordinator(client: client, now: { self.now })
+        let coordinator = TodoReminderCoordinator(client: client, now: { self.now }, sleepPreferences:{.init()})
         client.authorization = .notDetermined
         await coordinator.reconcile(context: c)
         XCTAssertEqual(client.permissionCalls, 0); XCTAssertEqual(coordinator.status(for: day).status, .permissionRequired)
@@ -69,7 +69,7 @@ final class ImportantDayReminderTests: XCTestCase {
     func testInterleavedDayEditAndTodoMutationCannotPublishOldGeneration() async throws {
         let container = try PersistenceContainerFactory.makeInMemory(), c = container.mainContext
         let day = try makeDay(c, offsets: [0]), client = TodoNotificationStub()
-        let coordinator = TodoReminderCoordinator(client: client, now: { self.now })
+        let coordinator = TodoReminderCoordinator(client: client, now: { self.now }, sleepPreferences:{.init()})
         client.whileAdding = {
             day.isArchived = true; try c.save()
             Task { await coordinator.reconcile(context: c) }
@@ -86,7 +86,7 @@ final class ImportantDayReminderTests: XCTestCase {
         let once = try ImportantDay(title: "Passed one time", rule: .init(year: 2026, month: 1, day: 1), preferences: p)
         c.insert(annual); c.insert(once); try c.save()
         var clock = ImportantCivilDay(year: 2100, month: 12, day: 31).instant(minutes: 720, timeZone: .current)!
-        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { clock })
+        let client = TodoNotificationStub(), coordinator = TodoReminderCoordinator(client: client, now: { clock }, sleepPreferences:{.init()})
         await coordinator.reconcile(context: c)
         XCTAssertEqual(coordinator.status(for: annual).status, .unsupportedDateRange)
         XCTAssertEqual(coordinator.status(for: once).status, .elapsed)
@@ -148,7 +148,7 @@ extension ImportantDayReminderTests {
         let daily = try await repeating.updateDaily(enabled: true, minutesAfterMidnight: 540, requestPermission: false)
         XCTAssertEqual(daily, .scheduled)
         let task = try TodoTaskService(context: c).create(.init(title: "Closer", remindAt: now.addingTimeInterval(3600)))
-        let day = try makeDay(c, offsets: [0]), coordinator = TodoReminderCoordinator(client: client, now: { self.now })
+        let day = try makeDay(c, offsets: [0]), coordinator = TodoReminderCoordinator(client: client, now: { self.now }, sleepPreferences:{.init()})
         await coordinator.reconcile(context: c)
         XCTAssertEqual(coordinator.status(for: task), .queueFull); XCTAssertEqual(coordinator.status(for: day).status, .queueFull)
         XCTAssertTrue(client.repeats.contains(LocalReminderScheduler.dailyIdentifier))
@@ -190,10 +190,13 @@ final class SystemSettingsLateClient: LocalReminderNotificationClient {
     var failedRemoval=false
     var pendingHook:(@MainActor () async -> Void)?
     var removals=0
-    func authorizationStatus() async -> UNAuthorizationStatus {.authorized}
-    func requestAuthorization() async throws -> Bool {true}
+    var removedIdentifiers:[String]=[]
+    var status:UNAuthorizationStatus = .authorized
+    var authorizationRequests=0
+    func authorizationStatus() async -> UNAuthorizationStatus {status}
+    func requestAuthorization() async throws -> Bool {authorizationRequests += 1;return true}
     func pendingIdentifiers() async -> Set<String> {if let pendingHook {await pendingHook()};return Set(pending.keys)}
-    func remove(_ ids:[String]) {removals += 1;guard !failedRemoval else {return};for id in ids {pending.removeValue(forKey:id)}}
+    func remove(_ ids:[String]) {removals += 1;removedIdentifiers += ids;guard !failedRemoval else {return};for id in ids {pending.removeValue(forKey:id)}}
     func addRepeating(identifier:String,components:DateComponents,title:String,body:String) async throws {
         if suspendFirst {
             suspendFirst=false
@@ -380,6 +383,7 @@ extension ImportantDayReminderTests {
                 return try await scheduler.updateDaily(enabled:false,minutesAfterMidnight:540,requestPermission:false)
             },apply:{if case .success(let value)=$0 {XCTAssertEqual(value,.removed)} else {XCTFail("Confirmed retry must settle")}}).value
             XCTAssertNil(client.pending[id]);XCTAssertFalse(scope.cleanupPending)
+            XCTAssertNil(scope.failureMessage,"TC-03: confirmed removal cannot continue claiming it is unconfirmed")
         }
     }
 }
@@ -417,6 +421,50 @@ extension ImportantDayReminderTests {
                 XCTAssertEqual(client.pending[id] != nil,enabled)
                 if enabled {XCTAssertEqual(client.pending[id]?.hour,minutes/60)}
                 XCTAssertNil(scope.failureMessage);XCTAssertFalse(scope.cleanupPending)
+            }
+        }
+    }
+}
+
+@MainActor extension ImportantDayReminderTests {
+    func testRecheckTC02ColdOffCleanupQueryProtectsNewSameChangedAndOffIntents() async throws {
+        for weekly in [false,true] {
+            for newer in 0..<3 {
+                let client=SystemSettingsLateClient();client.suspendFirst=false
+                let scheduler=LocalReminderScheduler(client:client),intents=ReminderSettingsIntents()
+                let scope=weekly ? intents.weekly:intents.daily
+                let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+                let other=weekly ? LocalReminderScheduler.dailyIdentifier:LocalReminderScheduler.weeklyIdentifier
+                func operation(_ on:Bool,_ minutes:Int) async throws -> ReminderUpdateResult {
+                    if weekly {return try await scheduler.updateWeekly(enabled:on,weekday:2,minutesAfterMidnight:minutes,requestPermission:false)}
+                    return try await scheduler.updateDaily(enabled:on,minutesAfterMidnight:minutes,requestPermission:false)
+                }
+                _ = try await operation(true,480)
+                let protected=[other,"com.yocruzer.PersonalGrowthOS.todo.unknown","sleep.synthetic","important-day.synthetic","unknown.request"]
+                for value in protected {client.pending[value]=DateComponents(hour:7)}
+                let preserved=client.pending.filter {$0.key != id}
+                var enabled=false
+                let entered=expectation(description:"Cold root cleanup query inside shared gate")
+                var release:CheckedContinuation<Void,Never>?
+                client.pendingHook={client.pendingHook=nil;await withCheckedContinuation {release=$0;entered.fulfill()}}
+                intents.reconcileOff(scheduler:scheduler,dailyEnabled:{weekly ? true:enabled},weeklyEnabled:{weekly ? enabled:true})
+                let a=try XCTUnwrap(scope.task)
+                await fulfillment(of:[entered],timeout:3)
+                enabled=newer != 2
+                let minutes=newer == 1 ? 660:480
+                var applied=0
+                let b=ReminderSettingsUpdate(scope:scope).submit(operation:{try await operation(enabled,minutes)},recover:{
+                    await scheduler.removeAfterFailure(weekly:weekly,isCurrent:$0)
+                },apply:{_ in applied += 1})
+                let removals=client.removals
+                try XCTUnwrap(release).resume();await a.value;await b.value
+                XCTAssertEqual(client.removals-removals,newer == 2 ? 1:0,"Stale startup A must not remove the current B")
+                XCTAssertEqual(applied,1);XCTAssertEqual(client.pending[id] != nil,newer != 2)
+                if newer != 2 {XCTAssertEqual(client.pending[id]?.hour,minutes/60)}
+                XCTAssertEqual(client.pending.filter {$0.key != id},preserved)
+                XCTAssertFalse(scope.cleanupPending);XCTAssertNil(scope.failureMessage);XCTAssertFalse(scope.updating)
+                XCTAssertEqual(client.authorizationRequests,0)
+                print("PGOS_TC02 coldQuery=true weekly=\(weekly) newer=\(newer) otherCategoriesPreserved=true native=\(client.pending[id] != nil)")
             }
         }
     }

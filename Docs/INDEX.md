@@ -178,3 +178,8 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 [终态一致性补修 Goal、审查归并与验收要求](USAGE_REMEDIATION_20261019_TERMINAL_FIX_GOAL_ZH.md) 绑定产品 `53eeb1d3410630f836bbc3e713c79f9f157a4081` / 交付 `8cc085e353fc6508b9a003d1e633370326cb7799`。Owner 已批准连续执行 TF-A→TF-D。RR-01 对应 IC-01；RR-02 对应 IC-V1 且原生影响待有界验证；前一份审查提出、后一份摘要漏列的 IC-02 保留确认/修复或反证，不因漏列视为关闭。O-01 仍非阻断。
 
 本次投递仅添加完整 Goal 并追加本索引，不修改产品/测试或历史证据；状态为 LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。Codex 接收固定规格后按 TF-A 在两份 CURRENT 顶部追加本轮边界，保留长历史原文；旧 READY 不代表本次修复完成。原 PR/base、已认可修复及设备/发行边界不变。后续必要修复建议须同时交付执行 prompt，不增加一次询问是否准备的往返。
+
+
+## 2026-10-20 PR #13 终态复核限定补修
+
+固定 `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627` 的 [TC-01～03 Goal](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md) / [独立复核](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md) 为当前连续 S-A→S-C 边界。当前 LOCAL_REVIEW_FIX_REQUIRED / FIXES_IN_PROGRESS；旧 READY 不代表本轮完成，实际进展以两份 CURRENT 顶部及既有 EXECUTION / ACCEPTANCE / REVIEW 新增节为准。

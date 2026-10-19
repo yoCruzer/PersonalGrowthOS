@@ -176,6 +176,30 @@ enum NotificationQueueError: Error { case full, notConfirmed }
 final class ReminderSettingsIntents {
     let daily=ReminderSettingsUpdate.Scope()
     let weekly=ReminderSettingsUpdate.Scope()
+
+    /// Off is a persistent device preference. Rebuild cleanup responsibility at
+    /// launch/foreground instead of relying on the lifetime of an old sheet.
+    func reconcileOff(scheduler:LocalReminderScheduler,
+                      dailyEnabled:@escaping @MainActor () -> Bool,
+                      weeklyEnabled:@escaping @MainActor () -> Bool) {
+        reconcileOff(scope:daily,weekly:false,scheduler:scheduler,enabled:dailyEnabled)
+        reconcileOff(scope:weekly,weekly:true,scheduler:scheduler,enabled:weeklyEnabled)
+    }
+    private func reconcileOff(scope:ReminderSettingsUpdate.Scope,weekly:Bool,
+                              scheduler:LocalReminderScheduler,enabled:@escaping @MainActor () -> Bool) {
+        guard !enabled(),!scope.updating else {return}
+        scope.cleanupPending=true
+        ReminderSettingsUpdate(scope:scope).submit(operation:{
+            let ticket=scope.generation
+            let confirmed=await scheduler.removeAfterFailure(weekly:weekly,isCurrent:{
+                !Task.isCancelled && scope.generation == ticket && !enabled()
+            })
+            guard confirmed else {throw NotificationQueueError.notConfirmed}
+            return .removed
+        },isCurrent:{!enabled()},recover:{current in
+            await scheduler.removeAfterFailure(weekly:weekly,isCurrent:current)
+        },apply:{_ in})
+    }
 }
 
 @MainActor
@@ -184,6 +208,7 @@ final class ReminderSettingsUpdate {
     @Observable final class Scope {
         var failureMessage:String?
         var cleanupPending=false
+        var updating=false
         var generation=UUID()
         var task: Task<Void,Never>?
     }
@@ -196,8 +221,9 @@ final class ReminderSettingsUpdate {
         apply: @escaping @MainActor (Result<ReminderUpdateResult,Error>) -> Void
     ) -> Task<Void,Never> {
         scope.task?.cancel()
-        let token=UUID();scope.generation=token
+        let token=UUID();scope.generation=token;scope.updating=true
         let next=Task { @MainActor in
+            defer {if self.scope.generation == token {self.scope.updating=false}}
             let result: Result<ReminderUpdateResult,Error>
             do {result = .success(try await operation())}
             catch {result = .failure(error)}
@@ -211,8 +237,8 @@ final class ReminderSettingsUpdate {
                     ? String(localized:"The reminder could not be updated. Please try again.")
                     : String(localized:"Reminder removal is not confirmed. Please try again.")
             } else if case .success(let value)=result {
+                if value != .removed || self.scope.cleanupPending {self.scope.failureMessage=nil}
                 self.scope.cleanupPending=false
-                if value != .removed {self.scope.failureMessage=nil}
             }
             apply(result)
         }
@@ -226,6 +252,8 @@ final class ReminderSettingsUpdate {
 
 #if DEBUG
 @MainActor enum ReminderSettingsUpdateProbe {
+    static var didMountRoot: ((ReminderSettingsIntents, () -> Void) -> Void)?
+    static var didMountSettings: ((@escaping @MainActor () -> Void, @escaping @MainActor () -> Void) -> Void)?
     static var didSubmit: ((ReminderSettingsUpdate.Scope) -> Void)?
 }
 #endif

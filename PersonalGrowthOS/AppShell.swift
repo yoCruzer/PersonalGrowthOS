@@ -39,6 +39,7 @@ enum AppTab: Hashable {
 
 struct AppShell: View {
     let container: AppContainer
+    var settingsReminderScheduler = LocalReminderScheduler()
 
     @State private var investmentWorkspace = InvestmentWorkspace()
     @State private var sleepWorkspace = SleepWorkspace()
@@ -53,6 +54,8 @@ struct AppShell: View {
     @State private var selectedTab: AppTab = .today
     @State private var isShowingStorage = false
     @State private var reminderSettingsIntents=ReminderSettingsIntents()
+    @AppStorage("dailyRecordingReminderEnabled") private var dailySettingsReminderEnabled=false
+    @AppStorage("weeklyReviewReminderEnabled") private var weeklySettingsReminderEnabled=false
     @Environment(\.scenePhase) private var captureScenePhase
     @State private var captureFailure = false
     @State private var failedCaptureIDs: [String] = []
@@ -143,6 +146,10 @@ struct AppShell: View {
         }
         #endif
         .task {
+            #if DEBUG
+            ReminderSettingsUpdateProbe.didMountRoot?(reminderSettingsIntents,{isShowingStorage=true})
+            #endif
+            reconcileOffSettingsReminders()
             todoReminders.observeSystemChanges(container:container.modelContainer)
             investmentWorkspace.checkpoint(container.modelContainer.mainContext)
             sleepWorkspace.refresh(container.modelContainer.mainContext)
@@ -204,11 +211,14 @@ struct AppShell: View {
             #if DEBUG
             if phase == .background, ProcessInfo.processInfo.arguments.contains("-PGOSSleepQueueOnBackgroundTest") { sleepRouter.receive(day: "2026-01-01") }
             #endif
-            if phase == .active { Task {
-                sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute();deliverTodoRoute()
-                await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
-                await todoReminders.reconcile(context: container.modelContainer.mainContext)
-            } }
+            if phase == .active {
+                reconcileOffSettingsReminders()
+                Task {
+                    sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute();deliverTodoRoute()
+                    await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
+                    await todoReminders.reconcile(context: container.modelContainer.mainContext)
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .importantDaysChanged)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
@@ -252,7 +262,8 @@ struct AppShell: View {
                 mediaStore: container.mediaStore,
                 importExportService: container.importExportService,
                 integrityReport: container.mediaIntegrityReport,
-                reminderSettingsIntents:reminderSettingsIntents
+                reminderSettingsIntents:reminderSettingsIntents,
+                reminderScheduler:settingsReminderScheduler
             )
         }
         .environment(investmentWorkspace)
@@ -260,6 +271,11 @@ struct AppShell: View {
         .environment(todoReminders)
         .environment(\.todoFeedbackMedia, TodoFeedbackMedia(mediaStore: container.mediaStore, thumbnailStore: container.thumbnailStore))
         .environment(widgetPublisher)
+    }
+
+    private func reconcileOffSettingsReminders() {
+        reminderSettingsIntents.reconcileOff(scheduler:settingsReminderScheduler,
+            dailyEnabled:{dailySettingsReminderEnabled},weeklyEnabled:{weeklySettingsReminderEnabled})
     }
 
     private func deliverTodoRoute() {
@@ -1234,6 +1250,11 @@ struct MediaStorageView: View {
             .task {
                 byteCount = try? mediaStore.originalsByteCount()
                 notificationPermissionDenied = await reminderScheduler.authorizationIsDenied()
+                #if DEBUG
+                ReminderSettingsUpdateProbe.didMountSettings?(
+                    {updateDailyReminder(requestPermission:false)},
+                    {updateWeeklyReminder(requestPermission:false)})
+                #endif
             }
             .onChange(of: dailyReminderEnabled) { _, enabled in
                 updateDailyReminder(requestPermission: enabled)
