@@ -152,24 +152,45 @@ enum NotificationQueueError: Error { case full, notConfirmed }
 /// Owns the settings result boundary, separately from the system mutation gate.
 /// A canceled transport may still return an ordinary error or success.
 @MainActor
+final class ReminderSettingsIntents {
+    let daily=ReminderSettingsUpdate.Scope()
+    let weekly=ReminderSettingsUpdate.Scope()
+}
+
+@MainActor
 final class ReminderSettingsUpdate {
-    private var generation=UUID()
-    private var task: Task<Void,Never>?
+    /// Root-owned tickets survive sheet removal; a new same-value request is a new intent.
+    final class Scope {
+        var generation=UUID()
+        var task: Task<Void,Never>?
+    }
+    private let scope: Scope
+    init(scope: Scope = Scope()) {self.scope=scope}
     @discardableResult func submit(
         operation: @escaping @MainActor () async throws -> ReminderUpdateResult,
         isCurrent: @escaping @MainActor () -> Bool = {true},
         apply: @escaping @MainActor (Result<ReminderUpdateResult,Error>) -> Void
     ) -> Task<Void,Never> {
-        task?.cancel()
-        let token=UUID();generation=token
+        scope.task?.cancel()
+        let token=UUID();scope.generation=token
         let next=Task { @MainActor in
             let result: Result<ReminderUpdateResult,Error>
             do {result = .success(try await operation())}
             catch {result = .failure(error)}
-            guard !Task.isCancelled,self.generation == token,isCurrent() else {return}
+            guard !Task.isCancelled,self.scope.generation == token,isCurrent() else {return}
             if case .failure(let error)=result,error is CancellationError {return}
             apply(result)
         }
-        task=next;return next
+        scope.task=next
+        #if DEBUG
+        ReminderSettingsUpdateProbe.didSubmit?(scope)
+        #endif
+        return next
     }
 }
+
+#if DEBUG
+@MainActor enum ReminderSettingsUpdateProbe {
+    static var didSubmit: ((ReminderSettingsUpdate.Scope) -> Void)?
+}
+#endif

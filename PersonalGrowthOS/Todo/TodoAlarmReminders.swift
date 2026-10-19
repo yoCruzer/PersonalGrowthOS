@@ -288,12 +288,24 @@ struct TodoIntentSchedulingResult {
         if !isCurrent() {result.stale=true;return result}
         return result
     }
+    /// An unresolved future policy revokes existing native ownership in either channel.
+    /// Retired is terminal for this generation; only an explicit rule correction may renew it.
+    func quarantineFutureRequests(container: ModelContainer, taskIDs: Set<UUID>, isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
+        var result=TodoIntentSchedulingResult()
+        for record in try records(container) where taskIDs.contains(record.taskID) {
+            guard record.fireAt > now() || record.phase == .cancellationPending else {continue}
+            if record.phase == .retired,try await !present(record) {continue}
+            if !(await cancel(record,container,delete:false)) {result.states[record.taskID] = .cancellationPending}
+            if !isCurrent() {result.stale=true;return result}
+        }
+        return result
+    }
     /// Temporarily displaced notifications keep their generation and explicit user intent.
     /// Confirm absence before another category can consume the slot. This reason survives restart.
-    func rebalanceNotifications(container: ModelContainer, selected: Set<UUID>, isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
+    func rebalanceNotifications(container: ModelContainer, selected: Set<UUID>, excludedTaskIDs: Set<UUID> = [], isCurrent: () -> Bool) async throws -> TodoIntentSchedulingResult {
         let desired=try targets(container)
         var result=TodoIntentSchedulingResult(),blocked=Set<UUID>()
-        for record in try records(container) where record.channel == .notification && record.phase != .retired {
+        for record in try records(container) where record.channel == .notification && record.phase != .retired && !excludedTaskIDs.contains(record.taskID) {
             guard record.matches(desired[record.taskID]),record.fireAt > now() else {continue}
             if !selected.contains(record.taskID) || record.phase == .capacityCancellationPending {
                 if [.accepted,.prepared].contains(record.phase) {

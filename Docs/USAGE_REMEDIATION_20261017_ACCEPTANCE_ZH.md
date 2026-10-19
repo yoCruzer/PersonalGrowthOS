@@ -517,3 +517,17 @@ SR01～07关闭、BV01/02限定处置完成，必要本地门与独立终审完�
 新V01不改写已完成BV02原值保留结论；源码写竞争不等于已经复现主线程阻塞。IR05不推翻旧条件下实际PASS/actualFetches=0。完整生产触发、反证、selector、最终SHA、原始证据与复用依新Goal登记。
 
 恢复READY条件：IR01～05明确关闭/有效生产反证；V01为VERIFIED_SAFE/DISPROVED/CONFIRMED_AND_FIXED且有原生证据，VALIDATION_BLOCKED不能放行；必要最终门、双构建/实包和未参与实现reviewer终审完成；无范围内confirmed P0/P1/P2及明确P3收尾。O01仅UNCONFIRMED不阻断。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN仍保留。
+
+### IF-A 定向进展（非最终集中门）
+
+原生平台：本机 Xcode / iOS Simulator 27.1 arm64，合成测试 simulator 42609456-859D-41F8-8977-4B2D85A74082，主协调者串行运行。完整命令/退出/dirty/日志hash见 INTEGRATION_FIX_RUNS.json；证据根 /tmp/pgos-pr13-integration-evidence。所有当前轮基于b495bea的未提交候选，不能冒称干净产品最终门。
+
+- red-a-build：沙箱插件/CoreSimulator访问失败（exit -5）；正常本机权限 red-a-build2 PASS。red-a实际执行2方法均FAIL（12断言失败）：stopped刷新仍save/post；双owner同值新意图被旧结果覆盖。
+- red-b-build PASS；red-b一个完整方法FAIL：两渠道×取消前journal/native cancel/取消后确认三阶段；Alarm旧请求未取消，Notification误用capacity reason。夹具仅增加channel参数，按旧f1既有显式channel选择接线，保留真实V11/事件逻辑。
+- green-a-build2因测试桩private跨文件可见性编译FAIL，修测试可见性后build3/4 PASS。green-a实际Settings已完成关闭/重建、偏好和系统请求断言，但测试清理第二次触发onDismiss expectation，host崩溃exit65；保留原log/xcresult，不能算6PASS。
+- 清理回调改为一次性，并重新执行六个完整方法green-a2：6/6PASS。含停止显式/旧nil/active unresolved、混合健康Todo/ImportantDay/Sleep、生产事件桥与gate等待；两渠道三阶段冷重开/明确纠正恢复；daily/weekly旧成功/错误/取消、同值意图、明确off/当前错/无新B合法完成；实际MediaStorage sheet关闭/重建。
+- focused-a-build PASS；focused-a：45/45PASS，包括两个完整提醒类（31 TodoReminder+11 ImportantDayReminder）及三个集成方法。新增外部真实编辑使旧代次失效且最终实际请求用最新标题、真实跨区save失败回滚/无事件/重试恰一次、系统Stop不复活/正常elapsed Alarm仍ringing对照。未跑全量Unit或最终构建。
+
+实现：仅refresh用onlyIfChanged保存，stopped在候选前排除；生产TodoReminderEvents由AppShell与挂载测试共同使用。unresolved未来native两渠道统一取消并用retired终结该generation，pending优先且不进入capacity reason。Settings意图Scope由AppShell持有，daily/weekly独立、MediaStorage重建的新wrapper共用Scope；所有结果仍有token/cancel/偏好三重检查。未关闭时取消合法A，仍保留合法完成。
+
+IR01～03当前有定向关闭证据，最终固定候选/独立终审尚待；IF-B的IR04/05、IF-C V01、IF-D集中门及交付继续同一授权。不恢复READY。

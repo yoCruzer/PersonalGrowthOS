@@ -52,6 +52,7 @@ struct AppShell: View {
     @State private var presentedImportantDay: ImportantDayExternalRoute?
     @State private var selectedTab: AppTab = .today
     @State private var isShowingStorage = false
+    @State private var reminderSettingsIntents=ReminderSettingsIntents()
     @Environment(\.scenePhase) private var captureScenePhase
     @State private var captureFailure = false
     @State private var failedCaptureIDs: [String] = []
@@ -214,16 +215,9 @@ struct AppShell: View {
             widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
-            guard notification.object as? ModelContainer === container.modelContainer else { return }
-            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
-            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
-        }
+        .modifier(TodoReminderEvents(container:container.modelContainer,coordinator:todoReminders))
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
-            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
         .alert("Some shared content could not be imported", isPresented: $captureFailure) {
             Button("Review Pending Shares") { isShowingPendingShares = true }
@@ -257,7 +251,8 @@ struct AppShell: View {
             MediaStorageView(
                 mediaStore: container.mediaStore,
                 importExportService: container.importExportService,
-                integrityReport: container.mediaIntegrityReport
+                integrityReport: container.mediaIntegrityReport,
+                reminderSettingsIntents:reminderSettingsIntents
             )
         }
         .environment(investmentWorkspace)
@@ -1005,10 +1000,12 @@ private struct TimelineView: View {
     }
 }
 
-private struct MediaStorageView: View {
+struct MediaStorageView: View {
     let mediaStore: MediaStore
     let importExportService: ImportExportService
     let integrityReport: MediaIntegrityReport
+    let reminderSettingsIntents: ReminderSettingsIntents
+    var reminderScheduler=LocalReminderScheduler()
 
     @Environment(\.dismiss) private var dismiss
     @State private var pendingImportURL: URL?
@@ -1034,8 +1031,8 @@ private struct MediaStorageView: View {
     @State private var notificationPermissionDenied = false
     @State private var reminderMessage: String?
     @State private var reminderAlertOffersSettings = false
-    @State private var dailyReminderUpdate=ReminderSettingsUpdate()
-    @State private var weeklyReminderUpdate=ReminderSettingsUpdate()
+    private var dailyReminderUpdate:ReminderSettingsUpdate {ReminderSettingsUpdate(scope:reminderSettingsIntents.daily)}
+    private var weeklyReminderUpdate:ReminderSettingsUpdate {ReminderSettingsUpdate(scope:reminderSettingsIntents.weekly)}
 
     var body: some View {
         NavigationStack {
@@ -1224,8 +1221,7 @@ private struct MediaStorageView: View {
             .interactiveDismissDisabled(isTransferring)
             .task {
                 byteCount = try? mediaStore.originalsByteCount()
-                notificationPermissionDenied = await LocalReminderScheduler()
-                    .authorizationIsDenied()
+                notificationPermissionDenied = await reminderScheduler.authorizationIsDenied()
             }
             .onChange(of: dailyReminderEnabled) { _, enabled in
                 updateDailyReminder(requestPermission: enabled)
@@ -1357,7 +1353,7 @@ private struct MediaStorageView: View {
     private func updateDailyReminder(requestPermission: Bool) {
         let enabled=dailyReminderEnabled,minutes=dailyReminderMinutes
         dailyReminderUpdate.submit(operation: {
-            try await LocalReminderScheduler().updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:requestPermission)
+            try await reminderScheduler.updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:requestPermission)
         },isCurrent:{dailyReminderEnabled == enabled && dailyReminderMinutes == minutes},apply: {result in
             switch result {
             case .success(let value): handleReminderResult(value) {dailyReminderEnabled=false}
@@ -1369,7 +1365,7 @@ private struct MediaStorageView: View {
     private func updateWeeklyReminder(requestPermission: Bool) {
         let enabled=weeklyReminderEnabled,minutes=weeklyReminderMinutes,weekday=weeklyReminderWeekday
         weeklyReminderUpdate.submit(operation: {
-            try await LocalReminderScheduler().updateWeekly(enabled:enabled,weekday:weekday,minutesAfterMidnight:minutes,requestPermission:requestPermission)
+            try await reminderScheduler.updateWeekly(enabled:enabled,weekday:weekday,minutesAfterMidnight:minutes,requestPermission:requestPermission)
         },isCurrent:{weeklyReminderEnabled == enabled && weeklyReminderMinutes == minutes && weeklyReminderWeekday == weekday},apply: {result in
             switch result {
             case .success(let value): handleReminderResult(value) {weeklyReminderEnabled=false}

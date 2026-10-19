@@ -578,3 +578,33 @@ SR01～07及BV01/02逐项处置、全部相关消费者/代表合法状态、真
 本次文档提交只增加新Review/Goal并更新INDEX、CURRENT两份、EXECUTION/ACCEPTANCE/REVIEW；不改产品/测试/旧机器摘要、不发起构建。规格SHA在Owner短prompt固定；后续Codex按同一连续授权完成IF-A～D，再记录产品/测试SHA和纯文档交付SHA。
 
 已认可SR与BV部分和旧R/F/CR保护保留；旧FAIL/SKIP/NOT_RUN不改写。D1–D4未通过及AlarmKit/Share/Safari/物理低空间/CI遗留状态保持；不进入设备、签名或发布。后续实际进展追加本节之后，不能以历史READY或旧测试数量替代本轮闭合。
+
+## 2026-10-19 集成边界修复：实施前不变量与消费者矩阵
+
+固定 INTEGRATION_FIX_GOAL_SHA=b495bead6c9910ec1e15631227c1146176819583；起点 b495bea。原工作树干净，HEAD是远端原分支祖先且base为祖先；接收仅8份Markdown的快进，无全量基线/构建。主目录的project、Localizable及xcodecloud未知改动原样保留。PR13 OPEN Draft/base已通过gh只读核对。本轮证据根 /tmp/pgos-pr13-integration-evidence，尚无新PASS。
+
+| 项目 | 合法起点／入口与权威 | 全部相关消费者／不变量 | 合法后续及反例计划 |
+| --- | --- | --- | --- |
+| IR01 | 当前显式系列Stop、原V11 nil Stop、旧两次覆盖不可推导，跨区刷新；任务/系列/事件为权威 | TodoTaskService→todoTasksChanged→AppShell事件桥→coordinator generation→共享gate；健康Todo/ImportantDay/Sleep和daily/weekly等待者。零变化无save/post，真变化原子发布，外部修改仍失效旧轮 | 实际挂载生产事件桥并在权限await让反馈执行；混合真更新只发一次，静默后不增；保存失败回滚后重试。独立有界清理避免红例无限占gate |
+| IR02 | 真V11→旧f1两次覆盖，真实intent scheduler建立accepted future；同一个notification/alarm客户端贯穿 | device journal/native ID、coordinator局部提示及全局取消入口、两渠道scheduler/预算；未来隔离必须确认不存在，pending优先，不能复活Stop/retired或取消正常ringing | journal前失败/native取消失败/确认落盘失败→冷重开→确认→futureSeries明确纠正→新请求；健康三类/容量/Stop/到点反对照 |
+| IR03 | A已进入真实addRepeating→关Settings→重建B off/on同参数 | sheet上方稳定每渠道意图、AppStorage、permission/error显示、scheduler共享gate；参数相同不是同意图，daily/weekly独立 | 双实例共享票据+实际Settings重开；旧成功/普通错/取消均拒绝；无B时A仍合法完成，B真错与明确off仍生效 |
+| IR04 | 前台真实ExternalCaptureImporter scan/consume持StorePublication→活动A名称草稿B提交 | InvestmentHub→updateActivity→真实锁/持久名称、编辑ID/文本/失败反馈；失败保持可见可重试，成功/明确取消才释放 | busy时MainActor先响应，释放后仅一次保存；普通保存失败、取消、成功关闭、另一活动不串稿；保护create/start/editor/SR06/F5 |
+| IR05 | BV01真实Growth挂载+Service保存事件；Weekly seed→选周→实际reader/UI | 自然日calendar/timezone和受控clock一致；BV01 10000独立日及可见/隐藏读数；Weekly三事实同asOf，未来真实排除/推进纳入 | LA午夜/DST、周一首分钟、慢执行不依赖宿主时钟；不改产品聚合，不放宽基数 |
+| V01 | exportRetainedQuantityData→raw BEGIN IMMEDIATE barrier→独立significantTimeChange/Alarm对账→实际SwiftData.save尝试 | raw SQLite/媒体快照、Todo transaction/journal、MainActor响应、原始非有限事实；保存结果诚实，可恢复 | writer持有时先证明实际save尝试，独立执行器再发probe并fail-safe释放，记录因果；确认阻塞则同批修复再同例验证。未命中保存不判安全 |
+| O01 | 已打开Weekly父刷新 | 选周/未保存输入的NavigationLink寿命 | 仅随IR05顺带观察，未获原生反例保持UNCONFIRMED，不先改产品 |
+
+未参与实现的 reviewer /root/integration_independent_reviewer 已只读预审，先提交独立反例，后审固定候选/未改调用者/本机原始证据。当前状态 FIXES_IN_PROGRESS；IF-A→IF-D连续执行，设备与发行遗留状态保持。
+
+### IF-A 定向进展（非最终集中门）
+
+原生平台：本机 Xcode / iOS Simulator 27.1 arm64，合成测试 simulator 42609456-859D-41F8-8977-4B2D85A74082，主协调者串行运行。完整命令/退出/dirty/日志hash见 INTEGRATION_FIX_RUNS.json；证据根 /tmp/pgos-pr13-integration-evidence。所有当前轮基于b495bea的未提交候选，不能冒称干净产品最终门。
+
+- red-a-build：沙箱插件/CoreSimulator访问失败（exit -5）；正常本机权限 red-a-build2 PASS。red-a实际执行2方法均FAIL（12断言失败）：stopped刷新仍save/post；双owner同值新意图被旧结果覆盖。
+- red-b-build PASS；red-b一个完整方法FAIL：两渠道×取消前journal/native cancel/取消后确认三阶段；Alarm旧请求未取消，Notification误用capacity reason。夹具仅增加channel参数，按旧f1既有显式channel选择接线，保留真实V11/事件逻辑。
+- green-a-build2因测试桩private跨文件可见性编译FAIL，修测试可见性后build3/4 PASS。green-a实际Settings已完成关闭/重建、偏好和系统请求断言，但测试清理第二次触发onDismiss expectation，host崩溃exit65；保留原log/xcresult，不能算6PASS。
+- 清理回调改为一次性，并重新执行六个完整方法green-a2：6/6PASS。含停止显式/旧nil/active unresolved、混合健康Todo/ImportantDay/Sleep、生产事件桥与gate等待；两渠道三阶段冷重开/明确纠正恢复；daily/weekly旧成功/错误/取消、同值意图、明确off/当前错/无新B合法完成；实际MediaStorage sheet关闭/重建。
+- focused-a-build PASS；focused-a：45/45PASS，包括两个完整提醒类（31 TodoReminder+11 ImportantDayReminder）及三个集成方法。新增外部真实编辑使旧代次失效且最终实际请求用最新标题、真实跨区save失败回滚/无事件/重试恰一次、系统Stop不复活/正常elapsed Alarm仍ringing对照。未跑全量Unit或最终构建。
+
+实现：仅refresh用onlyIfChanged保存，stopped在候选前排除；生产TodoReminderEvents由AppShell与挂载测试共同使用。unresolved未来native两渠道统一取消并用retired终结该generation，pending优先且不进入capacity reason。Settings意图Scope由AppShell持有，daily/weekly独立、MediaStorage重建的新wrapper共用Scope；所有结果仍有token/cancel/偏好三重检查。未关闭时取消合法A，仍保留合法完成。
+
+IR01～03当前有定向关闭证据，最终固定候选/独立终审尚待；IF-B的IR04/05、IF-C V01、IF-D集中门及交付继续同一授权。不恢复READY。

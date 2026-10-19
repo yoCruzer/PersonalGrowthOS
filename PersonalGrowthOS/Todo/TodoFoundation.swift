@@ -298,8 +298,8 @@ final class TodoTaskService {
         self.context = context; self.now = now; self.timeZone = timeZone
         self.save = save ?? { try context.save() }
     }
-    private func transaction<T>(_ operation: () throws -> T) throws -> T {
-        do { let result = try operation(); try save(); NotificationCenter.default.post(name: .todoTasksChanged, object: context.container); return result }
+    private func transaction<T>(onlyIfChanged: Bool = false,_ operation: () throws -> T) throws -> T {
+        do { let result = try operation(); if !onlyIfChanged || context.hasChanges {try save(); NotificationCenter.default.post(name: .todoTasksChanged, object: context.container)}; return result }
         catch { context.rollback(); throw error }
     }
     func task(id: UUID) throws -> TodoTask {
@@ -656,14 +656,17 @@ final class TodoTaskService {
     /// failures still abort reconciliation, before any stale snapshot is scheduled.
     @discardableResult func refreshRepeatingReminderTimes() throws -> Set<UUID> {
         let zone = timeZone()
-        let tasks = try context.fetch(FetchDescriptor<TodoTask>()).filter {
+        let candidates = try context.fetch(FetchDescriptor<TodoTask>()).filter {
             $0.state == .open && $0.seriesID != nil && $0.remindAt != nil && $0.reminderTimeZoneID != zone.identifier
         }
+        let tasks=try candidates.filter { task in
+            guard let id=task.seriesID else {return false}
+            return try !series(id).isStopped
+        }
         guard !tasks.isEmpty else { return [] }
-        return try transaction {
+        return try transaction(onlyIfChanged:true) {
             var unresolved=Set<UUID>()
             for task in tasks {
-                guard let seriesID=task.seriesID,try !series(seriesID).isStopped else {continue}
                 do {try preserveLegacyReminderOffset(task)}
                 catch TodoFailure.invalidReminderOffset {unresolved.insert(task.id);continue}
                 guard let dayString = task.reminderLocalDay, let day = TodoDay(dayString),

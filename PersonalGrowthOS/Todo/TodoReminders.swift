@@ -1,5 +1,7 @@
 import Foundation
 import Observation
+import SwiftUI
+import UIKit
 import OSLog
 import SwiftData
 import UserNotifications
@@ -171,6 +173,8 @@ final class TodoReminderCoordinator {
                 if retired.stale || pass != generation {continue}
                 let read=ModelContext(context.container);read.autosaveEnabled=false
                 let unresolvedPolicies=try TodoTaskService(context:read).refreshRepeatingReminderTimes()
+                let quarantined=try await intentScheduling.quarantineFutureRequests(container:context.container,taskIDs:unresolvedPolicies,isCurrent:{pass == self.generation})
+                if quarantined.stale || pass != generation {continue}
                 let tasks = try read.fetch(FetchDescriptor<TodoTask>())
                 let days = try read.fetch(FetchDescriptor<ImportantDay>())
                 let ownedIntents=Dictionary(uniqueKeysWithValues:try read.fetch(FetchDescriptor<TodoReminderIntent>()).map {($0.id,$0)})
@@ -239,7 +243,7 @@ final class TodoReminderCoordinator {
                 }
                 let selected = permission == .allowed && !authorizationFailed ? Set(allocation.prefix(capacity).map(\.id)) : []
                 let selectedIntentIDs=Set(requests.filter {$0.id.hasPrefix(TodoIntentScheduling.budgetPrefix) && selected.contains($0.id)}.map(\.taskID))
-                let rebalanced=try await intentScheduling.rebalanceNotifications(container:context.container,selected:selectedIntentIDs,isCurrent:{pass == self.generation})
+                let rebalanced=try await intentScheduling.rebalanceNotifications(container:context.container,selected:selectedIntentIDs,excludedTaskIDs:unresolvedPolicies,isCurrent:{pass == self.generation})
                 if rebalanced.stale || pass != generation {continue}
                 let removedIdentifiers = pending.filter { managed($0) && !$0.hasPrefix(TodoIntentScheduling.notificationPrefix) && !selected.contains($0) }
                 client.remove(Array(removedIdentifiers))
@@ -316,7 +320,7 @@ final class TodoReminderCoordinator {
                     // A local policy warning must not hide an actual unconfirmed
                     // cancellation or remove the global cancellation-recheck entry.
                     let pending=blockedByLegacy.contains(id) || retired.states[id] == .cancellationPending
-                        || rebalanced.states[id] == .cancellationPending || snapshot?.cancellationUnverified == true
+                        || quarantined.states[id] == .cancellationPending || rebalanced.states[id] == .cancellationPending || snapshot?.cancellationUnverified == true
                     newStatuses[id] = pending ? .cancellationPending:.legacyRuleNeedsCorrection
                 }
                 if authorizationFailed {
@@ -354,4 +358,23 @@ private final class TodoAlarmObservation: Sendable {
     let tasks: [Task<Void,Never>]
     init(tasks: [Task<Void,Never>]) {self.tasks=tasks}
     deinit {for task in tasks {task.cancel()}}
+}
+
+/// The root and mounted integration tests subscribe through the same event bridge.
+struct TodoReminderEvents: ViewModifier {
+    let container: ModelContainer
+    let coordinator: TodoReminderCoordinator
+    func body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
+                guard notification.object as? ModelContainer === container else {return}
+                Task {await coordinator.reconcile(context:ModelContext(container))}
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+                Task {await coordinator.reconcile(context:ModelContext(container))}
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                Task {await coordinator.reconcile(context:ModelContext(container))}
+            }
+    }
 }

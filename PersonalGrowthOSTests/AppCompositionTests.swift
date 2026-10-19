@@ -481,3 +481,71 @@ extension AppCompositionTests {
         XCTAssertTrue(GrowthEntryCounts.needsRefresh(Notification(name:ModelContext.didSave,userInfo:[ModelContext.NotificationKey.invalidatedAllIdentifiers:[record.persistentModelID],ModelContext.NotificationKey.updatedIdentifiers:[op.persistentModelID]])))
     }
 }
+
+@MainActor @Observable private final class IntegrationSettingsPresentation {
+    var shown=true
+    var didOpen:(() -> Void)?
+    var didClose:(() -> Void)?
+}
+@MainActor private struct IntegrationSettingsMountedHost:View {
+    @Bindable var presentation:IntegrationSettingsPresentation
+    let intents:ReminderSettingsIntents
+    let media:MediaStore
+    let exporter:ImportExportService
+    let scheduler:LocalReminderScheduler
+    var body:some View {
+        Color.clear.sheet(isPresented:$presentation.shown,onDismiss:{presentation.didClose?()}) {
+            MediaStorageView(mediaStore:media,importExportService:exporter,integrityReport:.init(),reminderSettingsIntents:intents,reminderScheduler:scheduler)
+                .onAppear {presentation.didOpen?()}
+        }
+    }
+}
+@MainActor extension AppCompositionTests {
+    func testIntegrationIR03ActualSettingsSheetCloseReopenSameValueIntent() async throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        defer {try? FileManager.default.removeItem(at:root)}
+        let c=try PersistenceContainerFactory.makeInMemory(),media=MediaStore(rootURL:root)
+        let exporter=ImportExportService(context:c.mainContext,mediaStore:media)
+        let keys=["dailyRecordingReminderEnabled","dailyRecordingReminderMinutes","weeklyReviewReminderEnabled"]
+        let prior=keys.map {UserDefaults.standard.object(forKey:$0)}
+        let defaults=UserDefaults.standard
+        defaults.set(false,forKey:keys[0]);defaults.set(480,forKey:keys[1]);defaults.set(false,forKey:keys[2])
+        let intents=ReminderSettingsIntents(),presentation=IntegrationSettingsPresentation(),client=SystemSettingsLateClient()
+        let entered=expectation(description:"A entered actual settings scheduler");client.entered=entered
+        let firstOpen=expectation(description:"Settings A mounted");presentation.didOpen={presentation.didOpen=nil;firstOpen.fulfill()}
+        let window=UIWindow(frame:UIScreen.main.bounds)
+        let host=UIHostingController(rootView:IntegrationSettingsMountedHost(presentation:presentation,intents:intents,media:media,exporter:exporter,scheduler:LocalReminderScheduler(client:client)))
+        window.rootViewController=host;window.makeKeyAndVisible()
+        defer {
+            ReminderSettingsUpdateProbe.didSubmit=nil
+            presentation.didOpen=nil;presentation.didClose=nil
+            window.isHidden=true;window.rootViewController=nil
+            client.continuation?.resume(throwing:CancellationError());client.continuation=nil
+            for (key,value) in zip(keys,prior) {if let value {defaults.set(value,forKey:key)} else {defaults.removeObject(forKey:key)}}
+        }
+        await fulfillment(of:[firstOpen],timeout:4)
+        defaults.set(true,forKey:keys[0])
+        await fulfillment(of:[entered],timeout:4)
+        let old=try XCTUnwrap(intents.daily.task)
+        let closed=expectation(description:"A sheet actually dismissed");presentation.didClose={presentation.didClose=nil;closed.fulfill()}
+        presentation.shown=false
+        await fulfillment(of:[closed],timeout:4)
+        let secondOpen=expectation(description:"Settings B recreated");presentation.didOpen={presentation.didOpen=nil;secondOpen.fulfill()};presentation.shown=true
+        await fulfillment(of:[secondOpen],timeout:4)
+        let off=expectation(description:"B off submitted through actual onChange")
+        ReminderSettingsUpdateProbe.didSubmit={scope in if scope === intents.daily {off.fulfill()}}
+        defaults.set(false,forKey:keys[0]);await fulfillment(of:[off],timeout:4)
+        let on=expectation(description:"B same-value on submitted")
+        ReminderSettingsUpdateProbe.didSubmit={scope in if scope === intents.daily {on.fulfill()}}
+        defaults.set(true,forKey:keys[0]);await fulfillment(of:[on],timeout:4)
+        ReminderSettingsUpdateProbe.didSubmit=nil
+        let latest=try XCTUnwrap(intents.daily.task)
+        let continuation=try XCTUnwrap(client.continuation);client.continuation=nil
+        continuation.resume(throwing:CocoaError(.fileWriteUnknown))
+        await old.value;await latest.value
+        XCTAssertTrue(defaults.bool(forKey:keys[0]))
+        XCTAssertEqual(client.pending[LocalReminderScheduler.dailyIdentifier]?.hour,8)
+        print("PGOS_IR03 actualSheetClosed=true recreated=true sameValueIntent=true oldErrorRejected=true")
+    }
+}

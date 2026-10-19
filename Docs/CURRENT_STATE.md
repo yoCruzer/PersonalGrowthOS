@@ -1,3 +1,9 @@
+# PR #13 集成边界修复 — FIXES_IN_PROGRESS（2026-10-19）
+
+已在原干净worktree安全快进到固定Goal b495bead6c9910ec1e15631227c1146176819583；PR13 OPEN Draft/base codex/time-investment-v1及祖先关系已核对。主目录未知改动保留。实施前消费者/不变量/合法后续矩阵已追加EXECUTION；独立只读reviewer先登记反例。IF-A已取得red-a两方法FAIL、red-b双渠道FAIL，修复后green-a2 6/6PASS及focused-a 45/45PASS；真实失败、测试清理host崩溃与补验见EXECUTION/INTEGRATION_FIX_RUNS。IR01～03已具定向证据但尚待最终独立审查；IR04/05、V01、集中门与交付继续，不恢复READY。IF-A→IF-D沿同一授权连续完成；原设备/发行边界和历史证据保持。
+
+---
+
 # PR #13 集成边界独立复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-19）
 
 固定已审产品/测试 c55dc10fde79f1fe4dec18b03195119c2049830f；已审交付 c1fe56477f2573930a65a95c46d4b7ab7296d6af。新 [独立审查](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md) 确认 IR-01～04 四项P2和IR-05一项P3测试收尾；V-01为必须完成一次的raw SQLite写竞争原生有界验证，尚未确认卡顿；O-01为Weekly已打开页的非阻断UNCONFIRMED观察。未发现P0/P1。

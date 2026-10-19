@@ -399,3 +399,28 @@ F5本轮原日志还有 `REVIEW_F5_CHAIN factDecoded=10000 operationBatchDecoded
 本次更新当前本地放行判断，不覆盖或代写上方开发机独立reviewer原文，不把旧通过/失败改成不存在。SR02/03主体、SR06/07、BV01过滤和BV02原值保留等继续作为保护；IR01/02补SR01完整集成，IR03补SR05页面寿命，IR04补SR04旧调用方失败落点，IR05补新夹具稳定性。
 
 Owner已批准 [新Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 的连续本地修复。实施和新原生回归仍待执行；不能以这次文档交付关闭IR/V或恢复READY。后续独立审查原文及最终证据另追加，D1–D4和设备/环境/发布边界保持。
+
+
+## 2026-10-19 集成边界修复独立预审：反例预登记
+
+审查者：`/root/integration_independent_reviewer`。未参与本轮实现，保持只读，未运行 Xcode、模拟器或产品测试。本次先读取固定规格提交 `b495bead6c9910ec1e15631227c1146176819583` 中完整 INTEGRATION_FIX_GOAL / INTEGRATION_REVIEW，再按 AGENTS 阅读 INDEX、现有 Foundation、Development Contract、CURRENT 最新章节，检查现有 AppShell、ReminderFoundation、TodoFoundation / TodoReminders / TodoAlarmReminders、InvestmentViews、raw capture、Weekly 和 Growth 测试链。此文在收到实现者关闭表之前形成，不构成修复通过结论；之后终审需绑定固定候选与本机原始证据。
+
+### 预登记不变量与合法反例
+
+1. **IR-01：事件反馈必须静默收敛，同时真实变化仍通知。** 权威是持久 Todo/Series/偏好及真实事实变化。消费者包含 AppShell 的 todoTasksChanged / importantDaysChanged / significantTimeChange / day-change 订阅、TodoReminderCoordinator 的 generation、共享 NotificationMutationGate、Todo/ImportantDay/Sleep 状态，以及等待中的 daily/weekly scheduler。分别从当前显式 offset→Stop→切区、真实 V11 nil→Stop→切区、旧 f1 合法多次覆盖形成 active unresolved→切区出发；观察实际生产事件桥，不能只直接 await coordinator 一次。异步 permission/query barrier 要让反馈 Task 确实运行，断言最后一次必要事件之后事件/轮数不再增长，三健康类别能发布，gate waiter 能完成。相反正例：健康任务跨区确有变化必须恰当地保存/通知；混合数据首轮修改后第二轮静默；外部 mutation 在 await 中到达必须淘汰旧 generation；保存失败不能留下半写事实，释放后仍可重试。不得以改 stopped 字段、猜 unresolved offset 或关闭订阅消除循环。
+
+2. **IR-02：隔离是两个渠道对既有未来 ownership 的实际处理。** 权威同时包含当前规则、intent generation、durable device journal 和 native 存在性，任何一项不能被状态文案替代。消费者包含 retireObsoleteRequests、rebalanceNotifications、reconcile、status/display snapshot、冷 coordinator、显式 futureSeries 编辑与健康同队列。需用真实 V11/旧 f1 行为分别生成 Notification/Alarm 的合法 nil+多次覆盖，再以同一真实 scheduler/client 建 accepted future，切区后隔离。预登记三个可区分失败点：取消前 phase journal 不落盘、native cancel 失败/仍存在、native 已不存在但确认 journal 不落盘；每种失败后必须查实际 native 与持久身份，不能只在内存看到 cancellationPending。代表序列须经过冷重开再次核对，确认缺席后才仅显示纠正规则。明确 futureSeries 纠正后必须出现新的实际请求及正确 generation/phase；普通标题/清单编辑、普通刷新不得让系统 Stop/retired 复活。相反正例包括正常已到点仍 ringing Alarm、停止/已消费、原容量取消等待恢复与健康 Todo/ImportantDay/Sleep 同队列。不能借用 capacity reason 让纠正前自动重排，也不能把隔离伪记为用户关闭。
+
+3. **IR-03：值相同不等于意图相同，所有出口服从跨页面稳定的 per-channel 所有权。** 消费者包括 MediaStorageView 的 AppStorage enabled/minutes/weekday、permission/error/message、LocalReminderScheduler、共享 gate 与 native daily/weekly 固定 identifier。确定顺序：A 真正进入 addRepeating barrier→Settings 关闭销毁→新 owner B off/on 并回到 A 同值→A success / ordinary error / CancellationError 返回。三种旧出口都不能改 B 偏好和显示，最终系统请求须服从 B。另测 B 明确 off、B 当前真实错误可见、daily/weekly 相互独立，以及无新 B 时旧 A 仍能合法完成。仅关闭时 cancel 不足，不能形成偏好 true 却没有合法请求的稳定状态；必须同时检查旧 transport 完成后 gate 中排队的最新 mutation 是否真正执行。参数已变而 onChange 尚未提交的保护仍需保留。至少一条实际 Settings 关闭/重开接线证据，不能只有共享 helper 双实例测试。
+
+4. **IR-04：busy/保存错误不终结活动 ID 所有的名称草稿。** 消费者包含活动行编辑入口、真实 form 呈现/关闭 binding、InvestmentService.updateActivity、workspace refresh/缓存、ExternalCaptureImporter scan/consume 的 StorePublication 及成功后的正式列表。自然反例是 A 输入 B 后，前台真实 importer 取得发布锁并停在 checkpoint，再点击保存：主响应先于释放、正式仍 A、B 输入在当前表单或明确重试入口可见；释放后真实重试只保存一次并成功关闭。普通保存失败、明确取消、成功、再次打开另一活动都要经实际界面路径核验；私有 State 暂时存着 B 但用户不可达仍属失败。相反保护是 create/start/正式 session editor 成功后仍正常释放，saved operation 幂等与 Record 独立草稿不被回退；archive/restore 若沿同一编辑表单，也应检查失败后是否意外关闭或串用名称。
+
+5. **IR-05：测试日历和截止时钟须成为真实读者共同输入。** BV-01 以固定 LA 午夜 00:30、明确 calendar 按自然日构造 10000 个不同 wakeDay，跨 DST；Weight/Sleep 唯一日与 Growth 实际按日读取必须一致。继续挂载真实 Growth，真实 Investment Service→didSave，在可见与切离状态都检查 actual reader fetch/decode；正式 Weight 增/删和 activity metadata 必须触发原应触发刷新。Weekly 以固定周一首分钟构造 seed、显式所选周和实际 summary asOf，测试本周/历史周后半段/未来事实排除，推进受控时钟后未来应纳入。慢执行不能改变测试截止；普通 App 不得被 test clock 冻结。测试若只修 seed 而 reader 仍 Date()，反例未关闭；UI 硬编码标题也不构成事实读取证据。O-01 可以同路观察已打开周和未保存文本遇父刷新/跨周，但未证实不得预改产品。
+
+6. **V-01：raw writer 与真实 SwiftData 保存的因果竞争必须被命中。** 入口须为 exportRetainedQuantityData→StartupRetainedData.capture 的真实 BEGIN IMMEDIATE writer 已取得后 barrier；竞争须来自 independent significantTimeChange/Alarm 状态→production reconcile→实际 SwiftData.save，不能用 .active 单链或手写 SQLite save 替代。raw writer 仍持有时记录生产 save-attempt，独立执行器在看到 attempt 后投递 MainActor probe，独立 fail-safe 释放；同时记录 attempt/probe/release/save-result 顺序。probe 在权限 await 前抢先跑不能证明安全，先 await reconcile/save 再 probe 不能证明阻塞。若 probe 只能在释放或内部 timeout 后执行，影响已确认，需同批最小修复并以同一反例补验；若快速失败，必须查无丢失/无误报成功、journal/提醒显示诚实、raw 原 bitPattern/身份/媒体/文件仍保留及锁释放后重试能恢复。最小修复不得删除 raw 冻结互斥或仅把 MainActor save 包进仍在 MainActor 的 Task。最终 VERIFIED_SAFE/DISPROVED 必须明示否定的影响假设；未命中 save 不可关闭。
+
+### 终审所需原始材料
+
+请提供固定产品/测试 SHA、相对固定 Goal 的完整 diff、每条 selector/命令/退出码和 clock/locale、红绿轮次归属、原始 xcresult/日志/代表图/实包路径及哈希。终审将自行读取与复算所需材料，并检查未改调用者和上述合法相反操作；不会以 PASS 总数或实现者关闭表作为覆盖证明。集中完整 Unit、必要关键 UI、干净同候选 Debug/unsigned Release 与实际 App/Share/Widget provenance 要按实际运行轮次报告；旧有效证据只按 blob/方法/依赖配置明确复用，保留全部真实 FAIL/SKIP/NOT_RUN。D1–D4、AlarmKit 正向、Share/Safari、物理低空间与 CI 的原状态不由本次审查改写。
+
+预审结论：上述条目均待固定候选及原生证据终审；此时不支持恢复 READY_FOR_OWNER_DEVICE_GATE。没有新增产品范围，也没有将 O-01 升格为 confirmed。

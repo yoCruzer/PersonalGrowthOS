@@ -181,7 +181,7 @@ extension ImportantDayReminderTests {
 }
 
 @MainActor
-private final class SystemSettingsLateClient: LocalReminderNotificationClient {
+final class SystemSettingsLateClient: LocalReminderNotificationClient {
     var pending: [String:DateComponents]=[:]
     var entered: XCTestExpectation?
     var continuation: CheckedContinuation<Void,Error>?
@@ -248,6 +248,74 @@ extension ImportantDayReminderTests {
                     await owner.submit(operation:{try await operation(true,720,3)},apply:apply).value
                     XCTAssertEqual(failures,1,"A current ordinary failure must still reach settings feedback")
                 }
+            }
+        }
+    }
+}
+
+@MainActor extension ImportantDayReminderTests {
+    func testIntegrationIR03RebuiltSettingsSameValuesRejectOldOutcome() async throws {
+        for weekly in [false,true] {
+            for outcome in 0..<3 {
+                let scope=ReminderSettingsUpdate.Scope()
+                let client=SystemSettingsLateClient(),a=ReminderSettingsUpdate(scope:scope),b=ReminderSettingsUpdate(scope:scope)
+                let entered=expectation(description:"A owns gate inside native add");client.entered=entered
+                let scheduler=LocalReminderScheduler(client:client)
+                var enabled=true,oldApplied=0,newApplied=0
+                func operation(_ value:Bool) async throws -> ReminderUpdateResult {
+                    if weekly {return try await scheduler.updateWeekly(enabled:value,weekday:2,minutesAfterMidnight:480,requestPermission:false)}
+                    return try await scheduler.updateDaily(enabled:value,minutesAfterMidnight:480,requestPermission:false)
+                }
+                let old=a.submit(operation:{try await operation(true)},isCurrent:{enabled},apply:{result in
+                    oldApplied += 1
+                    if case .failure=result {enabled=false}
+                })
+                await fulfillment(of:[entered],timeout:3)
+                enabled=false
+                let off=b.submit(operation:{try await operation(false)},apply:{_ in newApplied += 1})
+                enabled=true // Recreated sheet has a new intent with exactly A's parameters.
+                let latest=b.submit(operation:{try await operation(true)},isCurrent:{enabled},apply:{_ in newApplied += 1})
+                let release=try XCTUnwrap(client.continuation)
+                if outcome == 0 {release.resume(throwing:CocoaError(.fileWriteUnknown))}
+                else if outcome == 1 {release.resume()}
+                else {release.resume(throwing:CancellationError())}
+                await old.value;await off.value;await latest.value
+                XCTAssertEqual(oldApplied,0);XCTAssertTrue(enabled);XCTAssertEqual(newApplied,1)
+                let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+                XCTAssertEqual(client.pending[id]?.hour,8)
+            }
+        }
+    }
+}
+
+@MainActor extension ImportantDayReminderTests {
+    func testIntegrationIR03CrossSheetScopeKeepsLegalCompletionExplicitOffAndChannelsIndependent() async throws {
+        for weekly in [false,true] {
+            for newOff in [false,true] {
+                let intents=ReminderSettingsIntents(),client=SystemSettingsLateClient()
+                let scope=weekly ? intents.weekly:intents.daily
+                let a=ReminderSettingsUpdate(scope:scope),b=ReminderSettingsUpdate(scope:scope)
+                let entered=expectation(description:"Legal A began before close");client.entered=entered
+                let scheduler=LocalReminderScheduler(client:client)
+                var results:[ReminderUpdateResult]=[]
+                func update(_ enabled:Bool) async throws -> ReminderUpdateResult {
+                    if weekly {return try await scheduler.updateWeekly(enabled:enabled,weekday:2,minutesAfterMidnight:480,requestPermission:false)}
+                    return try await scheduler.updateDaily(enabled:enabled,minutesAfterMidnight:480,requestPermission:false)
+                }
+                let old=a.submit(operation:{try await update(true)},apply:{if case .success(let v)=$0 {results.append(v)}})
+                await fulfillment(of:[entered],timeout:3)
+                let independent=ReminderSettingsUpdate(scope:weekly ? intents.daily:intents.weekly)
+                var otherApplied=false
+                await independent.submit(operation:{.removed},apply:{_ in otherApplied=true}).value
+                XCTAssertTrue(otherApplied)
+                let latest=newOff ? b.submit(operation:{try await update(false)},apply:{if case .success(let v)=$0 {results.append(v)}}):nil
+                try XCTUnwrap(client.continuation).resume();await old.value;await latest?.value
+                XCTAssertEqual(results,[newOff ? .removed:.scheduled])
+                let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+                XCTAssertEqual(client.pending[id] != nil,!newOff)
+                client.failCurrent=true;var currentFailure=false
+                await b.submit(operation:{try await update(true)},apply:{if case .failure=$0 {currentFailure=true}}).value
+                XCTAssertTrue(currentFailure)
             }
         }
     }
