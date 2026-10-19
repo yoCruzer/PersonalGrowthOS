@@ -102,7 +102,7 @@ final class InvestmentUITests: XCTestCase {
     func testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments() {
         let app=launch(chinese:true,darkLarge:true,extra:["-PGOSInvestmentSegmentReview"]);openHub(app,chinese:true)
         let history=app.buttons["investment-history"];reveal(history,app);history.tap()
-        let row=button("investment-session-",app);reveal(row,app);row.tap()
+        let row=button("investment-session-",app);reveal(row,app,avoidingWheel:true);row.tap()
         let edit=app.buttons["investment-edit-session"];reveal(edit,app);edit.tap()
         let exact=app.buttons["精确起止（选填）"];reveal(exact,app,avoidingWheel:true);exact.tap()
         let warning=app.staticTexts["这条记录含多段有效时间。改为连续区间可能把暂停时间算入投入。"]

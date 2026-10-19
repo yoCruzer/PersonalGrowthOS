@@ -32,8 +32,25 @@ final class ImportantDayUITests: XCTestCase {
         let title = app.textFields["important-day-title"]
         XCTAssertTrue(title.waitForExistence(timeout: 5)); title.tap(); title.typeText("A synthetic day")
         let more=app.buttons["More settings"];scrollTo(more,app:app);more.tap()
-        let onDay=app.switches["On the day"];scrollTo(onDay,app:app)
+        let onDay=app.switches["On the day"]
+        func revealWholeReminder() {
+            for _ in 0..<20 {
+                let top=app.navigationBars.firstMatch.frame.maxY+8
+                let bottom=app.keyboards.firstMatch.exists ? app.keyboards.firstMatch.frame.minY-8:app.frame.maxY-40
+                if onDay.exists,onDay.frame.minY >= top,onDay.frame.maxY <= bottom,onDay.isHittable {break}
+                let down=onDay.exists && onDay.frame.minY < top
+                app.coordinate(withNormalizedOffset:CGVector(dx:0.06,dy:down ? 0.35:0.50)).press(forDuration:0,
+                    thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.06,dy:down ? 0.45:0.35)))
+            }
+            XCTAssertTrue(onDay.isHittable,app.debugDescription)
+            XCTAssertGreaterThanOrEqual(onDay.frame.minY,app.navigationBars.firstMatch.frame.maxY+8)
+            if app.keyboards.firstMatch.exists {XCTAssertLessThanOrEqual(onDay.frame.maxY,app.keyboards.firstMatch.frame.minY-8)}
+        }
+        revealWholeReminder()
+        let reminderShot=XCTAttachment(screenshot:app.screenshot());reminderShot.name="System-ImportantDay-reminder-fully-visible";reminderShot.lifetime = .keepAlways;add(reminderShot)
         onDay.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        XCTAssertTrue(app.navigationBars["Add Important Day"].exists)
+        revealWholeReminder()
         XCTAssertEqual(onDay.value as? String,"1")
         XCTAssertTrue(app.buttons["important-day-save"].isEnabled); app.buttons["important-day-save"].tap()
         let acknowledge=app.buttons["Got it"];XCTAssertTrue(acknowledge.waitForExistence(timeout:5));acknowledge.tap()

@@ -2580,19 +2580,29 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(title.waitForNonExistence(timeout: 5))
         app.buttons["today-todo-hub"].tap()
         XCTAssertTrue(app.buttons["todo-stat-open"].waitForExistence(timeout: 5))
+        func openCurrentOccurrence() {
+            let feedback=app.buttons["todo-reminder-feedback-dismiss"].firstMatch
+            if feedback.exists {
+                feedback.tap()
+                XCTAssertTrue(feedback.waitForNonExistence(timeout:5))
+            }
+            let row=app.staticTexts["Morning medicine"]
+            XCTAssertTrue(row.waitForExistence(timeout:5));row.tap()
+            XCTAssertTrue(app.buttons["todo-detail-toggle"].waitForExistence(timeout:5),app.debugDescription)
+        }
         app.buttons["todo-stat-open"].tap()
         XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
-        app.staticTexts["Morning medicine"].tap()
+        openCurrentOccurrence()
         app.buttons["todo-detail-toggle"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
-        app.staticTexts["Morning medicine"].tap()
+        openCurrentOccurrence()
         let skip = app.buttons["todo-skip"]
         for _ in 0..<3 where !skip.isHittable { app.swipeUp() }
         XCTAssertTrue(skip.isHittable); skip.tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertEqual(app.buttons["todo-stat-open"].value as? String, "1")
-        app.staticTexts["Morning medicine"].tap()
+        openCurrentOccurrence()
         let stop = app.buttons["todo-stop-series"]
         for _ in 0..<3 where !stop.isHittable { app.swipeUp() }
         stop.tap()
