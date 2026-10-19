@@ -1082,6 +1082,12 @@ struct MediaStorageView: View {
                         .accessibilityIdentifier("daily-reminder-time")
                     }
 
+                    if let message=reminderSettingsIntents.daily.failureMessage {
+                        Text(message).foregroundStyle(.red).accessibilityIdentifier("daily-reminder-failure")
+                        if reminderSettingsIntents.daily.cleanupPending {
+                            Button("Try Again") {updateDailyReminder(requestPermission:false)}
+                        }
+                    }
                     Toggle("Weekly Review Reminder", isOn: $weeklyReminderEnabled)
                         .accessibilityIdentifier("weekly-reminder-toggle")
                     if weeklyReminderEnabled {
@@ -1100,6 +1106,12 @@ struct MediaStorageView: View {
                         .accessibilityIdentifier("weekly-reminder-time")
                     }
 
+                    if let message=reminderSettingsIntents.weekly.failureMessage {
+                        Text(message).foregroundStyle(.red).accessibilityIdentifier("weekly-reminder-failure")
+                        if reminderSettingsIntents.weekly.cleanupPending {
+                            Button("Try Again") {updateWeeklyReminder(requestPermission:false)}
+                        }
+                    }
                     if notificationPermissionDenied {
                         Label(
                             "Notifications are disabled in iOS Settings.",
@@ -1354,7 +1366,9 @@ struct MediaStorageView: View {
         let enabled=dailyReminderEnabled,minutes=dailyReminderMinutes
         dailyReminderUpdate.submit(operation: {
             try await reminderScheduler.updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:requestPermission)
-        },isCurrent:{dailyReminderEnabled == enabled && dailyReminderMinutes == minutes},apply: {result in
+        },isCurrent:{dailyReminderEnabled == enabled && dailyReminderMinutes == minutes},recover:{current in
+            await reminderScheduler.removeAfterFailure(weekly:false,isCurrent:current)
+        },apply: {result in
             switch result {
             case .success(let value): handleReminderResult(value) {dailyReminderEnabled=false}
             case .failure: dailyReminderEnabled=false;showReminderError()
@@ -1366,7 +1380,9 @@ struct MediaStorageView: View {
         let enabled=weeklyReminderEnabled,minutes=weeklyReminderMinutes,weekday=weeklyReminderWeekday
         weeklyReminderUpdate.submit(operation: {
             try await reminderScheduler.updateWeekly(enabled:enabled,weekday:weekday,minutesAfterMidnight:minutes,requestPermission:requestPermission)
-        },isCurrent:{weeklyReminderEnabled == enabled && weeklyReminderMinutes == minutes && weeklyReminderWeekday == weekday},apply: {result in
+        },isCurrent:{weeklyReminderEnabled == enabled && weeklyReminderMinutes == minutes && weeklyReminderWeekday == weekday},recover:{current in
+            await reminderScheduler.removeAfterFailure(weekly:true,isCurrent:current)
+        },apply: {result in
             switch result {
             case .success(let value): handleReminderResult(value) {weeklyReminderEnabled=false}
             case .failure: weeklyReminderEnabled=false;showReminderError()

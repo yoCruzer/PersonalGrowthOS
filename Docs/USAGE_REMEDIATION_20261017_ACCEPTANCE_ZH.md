@@ -631,3 +631,31 @@ red-rename首轮为附件命名夹具错误；red-rename2为alert AX驱动错误
 | final-unit | 53eeb1d34106/clean | 0 | 568/567/0/1 |
 | final-ui | 53eeb1d34106/clean | 0 | 7/7/0/0 |
 | final-release | 53eeb1d34106/clean | 0 | 无测试体（构建） |
+
+
+## 2026-10-19 TERMINAL_FIX — TF-A / FIXES_IN_PROGRESS
+
+固定 Goal `6430a8570ce2d3528c37d491c1252f97066e8da9` 已全文读取；沿原 worktree/分支、唯一 PR #13 连续 TF-A→TF-D。旧运行记录原样保留，不转记本轮 PASS。
+
+- RR-01：真实 V11 nil → 旧 f1 普通编辑（override=false）→ accepted 两渠道 → 升级隔离/取消确认 → 同值同渠道明确应用未来 → 新请求/冷重开；相反操作覆盖 Stop、未确认取消、普通元数据和幂等重试。
+- IC-02：真实旧08:00 pending → 设置改09:00/add挂起 → sheet实际移除且无B → 当前错误 → settle/重开核对偏好/native/反馈；对照成功、新B同/异值/关闭、daily/weekly独立及清理未确认。
+- RR-02：真实 SleepService 次日目标 → 时钟跨生效日 → raw BEGIN IMMEDIATE held → refresh→observe→SwiftData.save → 独立MainActor probe/可靠释放 → 事实/回滚/恢复；相反操作覆盖无竞争、回拨和等待后规则变化。
+
+尚未运行本轮红例、修复或最终验证；独立预审和原生证据随后原样追加。O-01 不重复开项。
+
+
+### TERMINAL_FIX TF-B 限定实现与阶段验证
+
+本轮原证据根 `/tmp/pgos-pr13-terminal-evidence`；运行器保存每轮实际 command 数组、HEAD/dirty、142文件源码manifest（数量以机器记录为准）、退出码、耗时、原始 log/xcresult。三条红例是生产策略，替身仅控制 native 外部结果；RR02 的 writer 为实际 raw retained export 的 BEGIN IMMEDIATE/ROLLBACK。
+
+| 编号 | 最终操作与保护 | 阶段证据 |
+| --- | --- | --- |
+| RR-01 | 仅 open/live 系列 nil 且无法推导旧policy，在明确future确认时renew当前及受影响open期次；同瞬间重编码当前wall time，规则/意图同事务；可推导nil bootstrap、普通元数据、已停止系列不借此续代 | 真V11→旧f1普通编辑false，两渠道accepted→quarantine→同值实际TodoEditorView.save→native唯一新请求→幂等→冷开；旧deleteList邻接、保存失败完整snapshot回滚、取消未确认先纠正不并排、确认后冷开、SystemStop后metadata不复活；旧override=true改值/正常ringing/容量由原测试保护 |
+| IC-02 | 当前ticket由稳定Scope的命令在共享gate内完成清理，query后再次核ticket，确认native不存在；稳定Scope保存失败与cleanupPending，重开实际Text展示，未确认提供重试 | daily/weekly真08:00→09:00add挂起→实际sheet移除无B→当前错误→pending0/偏好off→重开错误截图；24分支晚错/成功/cancel×新B无/同值/异值/off；cleanup不生效诚实pending→重试确认；6分支清理query内晚到B，旧cleaner零误删；原跨sheet/渠道独立保护 |
+| RR-02 | observe在同发布锁下fresh重读保存；主线程try忙立即返回，busy不再冒充corrupt；只记录rule ID与已观察瞬间的fence，setGoal先flush；workspace合并等待，仅真实busy再等，I/O错不循环 | red-chains实际native-save-held且probe timeout，释放后probe；green三项及扩展矩阵probe在ROLLBACK前，held marker仍false，回拨setGoal busy保留事实；第二publisher在retry前获锁，actual didDefer后释放，无额外用户refresh自动持久恢复，回拨改历史仍拒绝 |
+
+合法自动入口有限核对：AppShell.task/active先Investment checkpoint/Sleep.refresh随后await importShares；Todo transaction及journal已用同StorePublication；本轮Sleep.observe加入同锁；Investment transaction同锁且workspace coalesced checkpoint重读后恢复、晚pause/finish保护；Share importer在worker整个publication临界区内操作。widget rebuild及普通统计是读路径，没有因函数名字另开项目。新Sleep fence不保留ModelContext/旧规则跨await；Scope反馈不依赖已移除页面再触发onChange完成清理。
+
+实际分轮：red-build通过；red-chains **3/0PASS/3FAIL**（原RR01同时暴露跨区wall-time和过早retry断言，最初same-generation/stopped/native0是产品红例；末native1来自后续重试不能当首次恢复）；green-build→green-chains **3/3PASS**。expanded-build/expanded-build2通过。focused-matrix与focused-matrix2各 **36=35PASS/1FAIL**，真实失败保留：挂载实际editor callback后过早第二次service.edit增加revision，首轮并发reconcile、第二轮仍在首次排程settle前编辑，造成checking。只修夹具时序，保留全部业务断言；focused-build3/4通过，focused-matrix3 **37/37PASS**，完整重跑原方法及邻接矩阵。不是一次历史全绿。
+
+独立reviewer先只读预审，阶段指出第二次busy恢复丢失，同批已修复并以真实二次持锁测试闭环；独立原文附REVIEW。当前仍FIXES_IN_PROGRESS，待固定干净产品SHA的集中完整Unit、关键UI、双构建/实包及终审后交付。Schema/ZIP/project/IDs/版本不变；O-01非阻断UNCONFIRMED，所有旧设备/Share/Safari/低空间/CI限制保留。

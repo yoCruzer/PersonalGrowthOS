@@ -2723,7 +2723,7 @@ extension ImportExportRecoveryTests {
 extension ImportExportRecoveryTests {
     /// Happy-path rescheduleOwnedReminder from f1b52b58: same fresh context, event chain and
     /// override intent; deliberately has no later preserveLegacyReminderOffset prevention.
-    private func fix2OldF1Override(_ container: ModelContainer,id: UUID,fire: Date,now: Date,zone: TimeZone,channel: TodoReminderChannel = .notification) throws {
+    private func fix2OldF1Override(_ container: ModelContainer,id: UUID,fire: Date,now: Date,zone: TimeZone,channel: TodoReminderChannel = .notification, instanceOverride: Bool = true) throws {
         let c=ModelContext(container);c.autosaveEnabled=false
         let task=try XCTUnwrap(c.fetch(FetchDescriptor<TodoTask>(predicate:#Predicate {$0.id == id})).first)
         XCTAssertEqual(task.state,.open);XCTAssertGreaterThan(fire,now)
@@ -2732,12 +2732,12 @@ extension ImportExportRecoveryTests {
         let parts=WeeklyReviewCalendarPolicy.calendar(timeZone:zone).dateComponents([.hour,.minute],from:fire)
         task.reminderMinutes=parts.hour!*60+parts.minute!;task.reminderTimeZoneID=zone.identifier
         if let intent=try c.fetch(FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id})).first {
-            intent.generation=UUID();intent.revision += 1;intent.channelRawValue=channel.rawValue;intent.isInstanceOverride=true
-        } else {c.insert(TodoReminderIntent(taskID:id,channel:channel,isInstanceOverride:true))}
+            intent.generation=UUID();intent.revision += 1;intent.channelRawValue=channel.rawValue;intent.isInstanceOverride=instanceOverride
+        } else {c.insert(TodoReminderIntent(taskID:id,channel:channel,isInstanceOverride:instanceOverride))}
         task.revision += 1;task.updatedAt=TechnicalTimestamp.updated(now:now,createdAt:task.createdAt,previous:task.updatedAt)
         c.insert(TodoTaskEvent(taskID:id,sequence:task.revision,kind:.edited,occurredAt:now,createdAt:task.updatedAt,beforeValue:before,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
         try c.save();try TodoIntegrity.validate(context:ModelContext(container));try UsagePreferencesIntegrity.validate(context:ModelContext(container))
-        XCTAssertEqual(try c.fetch(FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id})).first?.isInstanceOverride,true)
+        XCTAssertEqual(try c.fetch(FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id})).first?.isInstanceOverride,instanceOverride)
     }
     func testFix2CR03AlreadyOverriddenLegacyNilV15AndV11RestoreRecoverWithoutChangingHistory() async throws {
         for (offset,elapsed,minute,skip) in [(0,3,600,false),(-1,3,601,true),(0,800,600,true),(-1,800,601,false)] {
@@ -3365,5 +3365,201 @@ private final class IntegrationRawRaceTrace: @unchecked Sendable {
         await coordinator.reconcile(context:ModelContext(c))
         XCTAssertTrue(alarms.pending.isEmpty)
         XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first?.phaseRawValue,TodoReminderDevicePhase.retired.rawValue)
+    }
+}
+
+@MainActor extension ImportExportRecoveryTests {
+    // V11 fixture followed by the old f1 ordinary-edit transaction: it renewed the
+    // changed reminder but left isInstanceOverride=false and did not freeze nil policy.
+    func testTerminalRR01OldOrdinaryEditSameValueCorrectionCreatesRealRequest() async throws {
+        for channel:TodoReminderChannel in [.notification,.alarm] {
+            let f=try TransferTestFixture();defer {f.remove()}
+            let (c,id,_,now,zone)=try systemLegacyNilStore(f)
+            let original=try TodoTaskService(context:ModelContext(c)).task(id:id).remindAt!
+            try fix2OldF1Override(c,id:id,fire:original.addingTimeInterval(60),now:now.addingTimeInterval(60),zone:zone,channel:channel,instanceOverride:false)
+            let notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
+            let scheduler=TodoIntentScheduling(notifications:notifications,alarms:alarms,now:{now})
+            _ = try await scheduler.reconcile(container:c,requestNotifications:false,requestAlarms:false,selectedNotificationTaskIDs:[id],isCurrent:{true})
+            let old=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first)
+            XCTAssertEqual(old.phaseRawValue,TodoReminderDevicePhase.accepted.rawValue)
+            let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
+            await coordinator.reconcile(context:ModelContext(c))
+            XCTAssertEqual(coordinator.status(for:try TodoTaskService(context:ModelContext(c)).task(id:id)),.legacyRuleNeedsCorrection)
+            XCTAssertTrue(notifications.pending.isEmpty);XCTAssertTrue(alarms.pending.isEmpty)
+            let service=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{.current})
+            let history=try ModelContext(c).fetch(FetchDescriptor<TodoTaskEvent>()).sorted {$0.sequence < $1.sequence}.map(\.afterValue)
+            let draft=try service.draft(id:id),planned=draft.plannedDay,deadline=draft.deadlineDay
+            let saved=expectation(description:"Actual TodoEditorView same-value future save")
+            let window=UIWindow(frame:UIScreen.main.bounds)
+            TodoEditorInteractionProbe.loaded={loaded,save in
+                TodoEditorInteractionProbe.loaded=nil
+                XCTAssertEqual(loaded.remindAt,draft.remindAt);XCTAssertEqual(loaded.reminderChannel,channel)
+                save(true)
+            }
+            window.rootViewController=UIHostingController(rootView:TodoEditorView(task:try service.task(id:id)) {_ in saved.fulfill()}.modelContainer(c).environment(coordinator))
+            window.makeKeyAndVisible()
+            defer {TodoEditorInteractionProbe.loaded=nil;window.isHidden=true;window.rootViewController=nil}
+            await fulfillment(of:[saved],timeout:4)
+            XCTAssertEqual(try service.task(id:id).remindAt,draft.remindAt)
+            let correctedGeneration=try service.reminderIntent(for:id)?.generation
+            // Actual editor submits reconciliation asynchronously after its save callback.
+            // Observe that complete command instead of racing a second reconcile caller.
+            for _ in 0..<150 {
+                if coordinator.status(for:try service.task(id:id)) == .scheduled,
+                   (channel == .alarm ? alarms.pending.count:notifications.pending.count) == 1 {break}
+                try await Task.sleep(for:.milliseconds(20))
+            }
+            XCTAssertEqual(coordinator.status(for:try service.task(id:id)),.scheduled)
+            try service.edit(id:id,draft:draft,futureSeries:true)
+            XCTAssertEqual(try service.reminderIntent(for:id)?.generation,correctedGeneration)
+            await coordinator.reconcile(context:ModelContext(c))
+            XCTAssertEqual(coordinator.status(for:try service.task(id:id)),.scheduled)
+            let intent=try XCTUnwrap(service.reminderIntent(for:id))
+            XCTAssertNotEqual(intent.generation,old.intentGeneration)
+            XCTAssertEqual(try service.task(id:id).remindAt,draft.remindAt)
+            XCTAssertEqual(try service.task(id:id).plannedDay,planned);XCTAssertEqual(try service.task(id:id).deadlineDay,deadline)
+            let records=try ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>())
+            XCTAssertEqual(records.filter {$0.phaseRawValue == TodoReminderDevicePhase.accepted.rawValue}.count,1)
+            XCTAssertEqual(channel == .alarm ? alarms.pending.count:notifications.pending.count,1)
+            let generation=intent.generation
+            try service.edit(id:id,draft:draft,futureSeries:true)
+            XCTAssertEqual(try service.reminderIntent(for:id)?.generation,generation,"Committed correction retry must not renew again")
+            let cold=try PersistenceContainerFactory.makeOnDisk(at:c.configurations.first!.url)
+            let reopened=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
+            await reopened.reconcile(context:ModelContext(cold))
+            XCTAssertEqual(reopened.status(for:try TodoTaskService(context:ModelContext(cold)).task(id:id)),.scheduled)
+            XCTAssertEqual(try ModelContext(cold).fetch(FetchDescriptor<TodoTaskEvent>()).sorted {$0.sequence < $1.sequence}.prefix(history.count).map(\.afterValue),history)
+            print("PGOS_RR01 channel=\(channel.rawValue) sameTime=true ordinaryFalse=true nativeCount=\(channel == .alarm ? alarms.pending.count:notifications.pending.count)")
+        }
+    }
+    func testTerminalRR02ActualSleepObserveRawWriterAndRecovery() async throws {
+        let f=try TransferTestFixture();defer {f.remove()}
+        let root=f.root.appendingPathComponent("SleepRawRace"),url=root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at:url.deletingLastPathComponent(),withIntermediateDirectories:true)
+        let c=try PersistenceContainerFactory.makeOnDisk(at:url),media=MediaStore(rootURL:root)
+        var clock=ImportantCivilDay(identifier:"2026-10-19")!.instant(minutes:600,timeZone:.current)!
+        let service=SleepService(context:c.mainContext,now:{clock})
+        try service.setGoal(cutoffMinute:1410);try service.setGoal(cutoffMinute:60)
+        clock=ImportantCivilDay(identifier:"2026-10-20")!.instant(minutes:600,timeZone:.current)!
+        let workspace=SleepWorkspace(now:{clock}),trace=IntegrationRawRaceTrace()
+        let frozen=expectation(description:"Sleep real raw writer held"),probe=expectation(description:"Sleep independent main probe")
+        let exporter=ImportExportService(context:c.mainContext,mediaStore:media,availableCapacity:{.max},rawCaptureCheckpoint:{phase in
+            if phase == "frozen" {trace.freeze();frozen.fulfill();if trace.rawRelease.wait(timeout:.now()+10) != .success {trace.add("raw-failsafe-timeout")}}
+            else if phase == "released" {trace.writerReleased()}
+        })
+        SleepGoalObservationProbe.willObserve={container in if container === c {trace.add("production-observe-entry");trace.attempted.signal()}}
+        SleepGoalObservationProbe.willSave={container in if container === c {trace.nativeAttempt()}}
+        defer {SleepGoalObservationProbe.willObserve=nil;SleepGoalObservationProbe.willSave=nil;trace.release()}
+        let secondHeld=expectation(description:"Second legitimate publisher acquired before MainActor retry")
+        let secondRelease=DispatchSemaphore(value:0),secondAttempt=DispatchSemaphore(value:0)
+        var second=false
+        var holder:Task<Void,Error>?
+        SleepGoalObservationProbe.beforeRetry={container in
+            guard container === c,!second else {return};second=true
+            holder=Task.detached {
+                try StorePublication.perform(at:root) {
+                    secondHeld.fulfill()
+                    if secondAttempt.wait(timeout:.now()+6) != .success {trace.add("second-attempt-timeout")}
+                    secondRelease.signal()
+                }
+            }
+            await self.fulfillment(of:[secondHeld],timeout:4)
+            trace.add("second-publisher-held")
+        }
+        SleepGoalObservationProbe.didDefer={container in
+            if container === c,second {trace.add("second-busy-observe");secondAttempt.signal()}
+        }
+        defer {SleepGoalObservationProbe.beforeRetry=nil;SleepGoalObservationProbe.didDefer=nil;secondAttempt.signal();secondRelease.signal()}
+        let exporting=Task {try await exporter.exportRetainedQuantityData()}
+        await fulfillment(of:[frozen],timeout:5)
+        let independent=Task.detached {
+            if trace.attempted.wait(timeout:.now()+6) == .success {
+                trace.add("independent-probe-submitted")
+                Task { @MainActor in trace.add("main-probe");probe.fulfill();trace.probed.signal() }
+                if trace.probed.wait(timeout:.now()+2) != .success {trace.add("probe-failsafe-timeout")}
+            } else {trace.add("no-observe-entry")}
+            trace.release()
+        }
+        workspace.refresh(ModelContext(c))
+        let held=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<SleepGoalRule>()).first {$0.effectiveDay == "2026-10-20"})
+        trace.add(held.hasTakenEffect ? "marker-durable-after-refresh":"marker-pending-after-refresh")
+        XCTAssertFalse(held.hasTakenEffect,"Busy must not claim a persisted activation")
+        XCTAssertEqual(workspace.loadError,StorePublicationFailure.busy.localizedDescription)
+        clock=ImportantCivilDay(identifier:"2026-10-19")!.instant(minutes:600,timeZone:.current)!
+        XCTAssertThrowsError(try service.setGoal(cutoffMinute:90)) {XCTAssertEqual($0 as? StorePublicationFailure,.busy)}
+        await fulfillment(of:[probe],timeout:10)
+        _ = try await exporting.value;await independent.value
+        // The production deferred refresh must recover after exclusion is released.
+        for _ in 0..<100 {if try ModelContext(c).fetch(FetchDescriptor<SleepGoalRule>()).first(where:{$0.effectiveDay == "2026-10-20"})?.hasTakenEffect == true {break};try await Task.sleep(for:.milliseconds(20))}
+        let events=trace.snapshot();print("PGOS_RR02 events=\(events.joined(separator:","))")
+        XCTAssertTrue(events.contains("production-observe-entry"));XCTAssertFalse(events.contains("native-save-held"));XCTAssertFalse(events.contains("probe-failsafe-timeout"))
+        XCTAssertLessThan(try XCTUnwrap(events.firstIndex(of:"main-probe")),try XCTUnwrap(events.firstIndex(of:"writer-released")))
+        XCTAssertTrue(try ModelContext(c).fetch(FetchDescriptor<SleepGoalRule>()).first {$0.effectiveDay == "2026-10-20"}!.hasTakenEffect)
+        XCTAssertNil(workspace.loadError)
+        try await holder?.value
+        XCTAssertTrue(events.contains("second-publisher-held"));XCTAssertTrue(events.contains("second-busy-observe"));XCTAssertFalse(events.contains("second-attempt-timeout"))
+        clock=ImportantCivilDay(identifier:"2026-10-19")!.instant(minutes:600,timeZone:.current)!
+        XCTAssertThrowsError(try service.setGoal(cutoffMinute:90))
+    }
+}
+
+@MainActor extension ImportExportRecoveryTests {
+    func testTerminalRR01CorrectionRollbackCancellationOwnershipAndMetadataDoNotRevive() async throws {
+        for channel:TodoReminderChannel in [.notification,.alarm] {
+            for source in 0..<2 { // old ordinary edit and old deleteList timestamp update
+                let f=try TransferTestFixture();defer {f.remove()}
+                let (c,id,list,now,zone)=try systemLegacyNilStore(f)
+                let fire=try TodoTaskService(context:ModelContext(c)).task(id:id).remindAt!
+                if source == 0 {
+                    try fix2OldF1Override(c,id:id,fire:fire.addingTimeInterval(60),now:now.addingTimeInterval(60),zone:zone,channel:channel,instanceOverride:false)
+                } else {
+                    // Exact old f1 deleteList effects: unlink tasks/events, unlink rule,
+                    // update technical timestamp, without later offset preservation.
+                    let write=ModelContext(c);write.autosaveEnabled=false
+                    let task=try TodoTaskService(context:write).task(id:id),before=try JSONEncoder().encode(TodoEventValue(task))
+                    task.listID=nil;task.revision += 1;task.updatedAt=now.addingTimeInterval(60)
+                    write.insert(TodoTaskEvent(taskID:id,sequence:task.revision,kind:.edited,occurredAt:now,createdAt:task.updatedAt,beforeValue:before,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
+                    let rule=try XCTUnwrap(write.fetch(FetchDescriptor<TodoSeries>()).first);rule.listID=nil;rule.updatedAt=now.addingTimeInterval(60)
+                    write.insert(TodoReminderIntent(taskID:id,channel:channel))
+                    write.delete(try XCTUnwrap(write.fetch(FetchDescriptor<TodoList>()).first {$0.id == list}));try write.save()
+                    try TodoIntegrity.validate(context:ModelContext(c));try UsagePreferencesIntegrity.validate(context:ModelContext(c))
+                }
+                let notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
+                let scheduling=TodoIntentScheduling(notifications:notifications,alarms:alarms,now:{now})
+                _ = try await scheduling.reconcile(container:c,requestNotifications:false,requestAlarms:false,selectedNotificationTaskIDs:[id],isCurrent:{true})
+                let original=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first)
+                XCTAssertEqual(original.phaseRawValue,TodoReminderDevicePhase.accepted.rawValue)
+                notifications.failedRemovalIdentifiers=[TodoIntentScheduling.identifier(original.id)];alarms.failCancel=true
+                let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
+                await coordinator.reconcile(context:ModelContext(c))
+                let service=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{.current}),draft=try service.draft(id:id)
+                let before=try TransferSnapshot.make(context:ModelContext(c))
+                let failing=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{.current},save:{throw CocoaError(.fileWriteOutOfSpace)})
+                XCTAssertThrowsError(try failing.edit(id:id,draft:draft,futureSeries:true))
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),before)
+                try service.edit(id:id,draft:draft,futureSeries:true)
+                let generation=try service.reminderIntent(for:id)?.generation
+                XCTAssertNotEqual(generation,original.intentGeneration)
+                await coordinator.reconcile(context:ModelContext(c))
+                XCTAssertEqual(coordinator.status(for:try service.task(id:id)),.cancellationPending)
+                XCTAssertEqual(channel == .alarm ? alarms.pending.count:notifications.pending.count,1,"Unconfirmed old ownership prevents parallel replacement")
+                notifications.failedRemovalIdentifiers=[];alarms.failCancel=false
+                let cold=try PersistenceContainerFactory.makeOnDisk(at:c.configurations.first!.url)
+                let reopened=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
+                await reopened.reconcile(context:ModelContext(cold))
+                XCTAssertEqual(reopened.status(for:try TodoTaskService(context:ModelContext(cold)).task(id:id)),.scheduled)
+                XCTAssertEqual(channel == .alarm ? alarms.pending.count:notifications.pending.count,1)
+                // A subsequent external System Stop is terminal under title-only editing.
+                notifications.pending.removeAll();alarms.pending.removeAll()
+                await reopened.reconcile(context:ModelContext(cold))
+                let fresh=TodoTaskService(context:ModelContext(cold),now:{now})
+                var metadata=try fresh.draft(id:id);metadata.title="Metadata after System Stop"
+                try fresh.edit(id:id,draft:metadata,futureSeries:true)
+                await reopened.reconcile(context:ModelContext(cold))
+                XCTAssertEqual(try fresh.reminderIntent(for:id)?.generation,generation)
+                XCTAssertTrue(notifications.pending.isEmpty);XCTAssertTrue(alarms.pending.isEmpty)
+                XCTAssertEqual(reopened.status(for:try fresh.task(id:id)),.stopped)
+            }
+        }
     }
 }

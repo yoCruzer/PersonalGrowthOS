@@ -187,10 +187,13 @@ final class SystemSettingsLateClient: LocalReminderNotificationClient {
     var continuation: CheckedContinuation<Void,Error>?
     var suspendFirst=true
     var failCurrent=false
+    var failedRemoval=false
+    var pendingHook:(@MainActor () async -> Void)?
+    var removals=0
     func authorizationStatus() async -> UNAuthorizationStatus {.authorized}
     func requestAuthorization() async throws -> Bool {true}
-    func pendingIdentifiers() async -> Set<String> {Set(pending.keys)}
-    func remove(_ ids:[String]) {for id in ids {pending.removeValue(forKey:id)}}
+    func pendingIdentifiers() async -> Set<String> {if let pendingHook {await pendingHook()};return Set(pending.keys)}
+    func remove(_ ids:[String]) {removals += 1;guard !failedRemoval else {return};for id in ids {pending.removeValue(forKey:id)}}
     func addRepeating(identifier:String,components:DateComponents,title:String,body:String) async throws {
         if suspendFirst {
             suspendFirst=false
@@ -316,6 +319,104 @@ extension ImportantDayReminderTests {
                 client.failCurrent=true;var currentFailure=false
                 await b.submit(operation:{try await update(true)},apply:{if case .failure=$0 {currentFailure=true}}).value
                 XCTAssertTrue(currentFailure)
+            }
+        }
+    }
+}
+
+@MainActor extension ImportantDayReminderTests {
+    func testTerminalIC02StableFailureCleanupLatestIntentAndRetryMatrix() async throws {
+        for weekly in [false,true] {
+            for newer in 0..<4 { // no B, same value B, changed B, explicit off B
+                for outcome in 0..<3 { // ordinary error, success, transport cancellation
+                    let client=SystemSettingsLateClient();client.suspendFirst=false
+                    let scheduler=LocalReminderScheduler(client:client),scope=ReminderSettingsUpdate.Scope()
+                    let owner=ReminderSettingsUpdate(scope:scope)
+                    func operation(_ enabled:Bool,_ minutes:Int) async throws -> ReminderUpdateResult {
+                        if weekly {return try await scheduler.updateWeekly(enabled:enabled,weekday:2,minutesAfterMidnight:minutes,requestPermission:false)}
+                        return try await scheduler.updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:false)
+                    }
+                    _ = try await operation(true,480)
+                    client.suspendFirst=true
+                    let entered=expectation(description:"Current A owns actual add");client.entered=entered
+                    var enabled=true,minutes=540,applied=0
+                    func submit(_ on:Bool,_ time:Int) -> Task<Void,Never> {
+                        owner.submit(operation:{try await operation(on,time)},isCurrent:{enabled == on && minutes == time},recover:{current in
+                            await scheduler.removeAfterFailure(weekly:weekly,isCurrent:current)
+                        },apply:{result in applied += 1;if case .failure=result {enabled=false}})
+                    }
+                    let a=submit(true,540);await fulfillment(of:[entered],timeout:3)
+                    var b:Task<Void,Never>?
+                    if newer > 0 {enabled=newer != 3;minutes=newer == 2 ? 660:540;b=submit(enabled,minutes)}
+                    let release=try XCTUnwrap(client.continuation);client.continuation=nil
+                    if outcome == 0 {release.resume(throwing:CocoaError(.fileWriteUnknown))}
+                    else if outcome == 1 {release.resume()}
+                    else {release.resume(throwing:CancellationError())}
+                    await a.value;await b?.value
+                    let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+                    let expectedOn = newer > 0 ? newer != 3:outcome == 1
+                    XCTAssertEqual(enabled,expectedOn);XCTAssertEqual(client.pending[id] != nil,expectedOn)
+                    if expectedOn {XCTAssertEqual(client.pending[id]?.hour,(newer == 2 ? 660:540)/60)}
+                    XCTAssertEqual(applied,1)
+                    XCTAssertEqual(scope.failureMessage != nil,newer == 0 && outcome != 1)
+                    XCTAssertFalse(scope.cleanupPending)
+                }
+            }
+            let client=SystemSettingsLateClient();client.suspendFirst=false
+            let scheduler=LocalReminderScheduler(client:client),scope=ReminderSettingsUpdate.Scope(),owner:ReminderSettingsUpdate
+            owner=ReminderSettingsUpdate(scope:scope)
+            let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+            if weekly {_ = try await scheduler.updateWeekly(enabled:true,weekday:2,minutesAfterMidnight:480,requestPermission:false)}
+            else {_ = try await scheduler.updateDaily(enabled:true,minutesAfterMidnight:480,requestPermission:false)}
+            client.failCurrent=true;client.failedRemoval=true
+            await owner.submit(operation:{
+                if weekly {return try await scheduler.updateWeekly(enabled:true,weekday:2,minutesAfterMidnight:540,requestPermission:false)}
+                return try await scheduler.updateDaily(enabled:true,minutesAfterMidnight:540,requestPermission:false)
+            },recover:{await scheduler.removeAfterFailure(weekly:weekly,isCurrent:$0)},apply:{_ in}).value
+            XCTAssertTrue(scope.cleanupPending);XCTAssertNotNil(scope.failureMessage);XCTAssertNotNil(client.pending[id])
+            client.failedRemoval=false
+            await owner.submit(operation:{
+                if weekly {return try await scheduler.updateWeekly(enabled:false,weekday:2,minutesAfterMidnight:540,requestPermission:false)}
+                return try await scheduler.updateDaily(enabled:false,minutesAfterMidnight:540,requestPermission:false)
+            },apply:{if case .success(let value)=$0 {XCTAssertEqual(value,.removed)} else {XCTFail("Confirmed retry must settle")}}).value
+            XCTAssertNil(client.pending[id]);XCTAssertFalse(scope.cleanupPending)
+        }
+    }
+}
+
+@MainActor extension ImportantDayReminderTests {
+    func testTerminalIC02NewIntentDuringFailureCleanupQueryNeverDeletesLatest() async throws {
+        for weekly in [false,true] {
+            for newer in 0..<3 {
+                let client=SystemSettingsLateClient();client.suspendFirst=false
+                let scheduler=LocalReminderScheduler(client:client),scope=ReminderSettingsUpdate.Scope(),owner:ReminderSettingsUpdate
+                owner=ReminderSettingsUpdate(scope:scope)
+                func operation(_ enabled:Bool,_ minutes:Int) async throws -> ReminderUpdateResult {
+                    if weekly {return try await scheduler.updateWeekly(enabled:enabled,weekday:2,minutesAfterMidnight:minutes,requestPermission:false)}
+                    return try await scheduler.updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:false)
+                }
+                _ = try await operation(true,480);client.failCurrent=true
+                let entered=expectation(description:"Current A cleanup query suspended inside actual gate")
+                var release:CheckedContinuation<Void,Never>?,oldApplied=0,latestApplied=0
+                let a=owner.submit(operation:{try await operation(true,540)},recover:{current in
+                    client.pendingHook={
+                        client.pendingHook=nil
+                        await withCheckedContinuation {release=$0;entered.fulfill()}
+                    }
+                    return await scheduler.removeAfterFailure(weekly:weekly,isCurrent:current)
+                },apply:{_ in oldApplied += 1})
+                await fulfillment(of:[entered],timeout:3)
+                client.failCurrent=false
+                let enabled=newer != 2,minutes=newer == 1 ? 660:540
+                let b=owner.submit(operation:{try await operation(enabled,minutes)},apply:{_ in latestApplied += 1})
+                release?.resume();release=nil
+                await a.value;await b.value
+                let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+                XCTAssertEqual(oldApplied,0);XCTAssertEqual(latestApplied,1)
+                XCTAssertEqual(client.removals,enabled ? 0:1,"Stale cleanup must not mutate fixed identifier after a newer ticket")
+                XCTAssertEqual(client.pending[id] != nil,enabled)
+                if enabled {XCTAssertEqual(client.pending[id]?.hour,minutes/60)}
+                XCTAssertNil(scope.failureMessage);XCTAssertFalse(scope.cleanupPending)
             }
         }
     }

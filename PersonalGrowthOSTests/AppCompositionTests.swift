@@ -556,3 +556,55 @@ extension AppCompositionTests {
         print("PGOS_IR03 actualSheetClosed=true recreated=true sameValueIntent=true oldErrorRejected=true")
     }
 }
+
+@MainActor extension AppCompositionTests {
+    func testTerminalIC02ActualClosedSettingsCurrentFailureRemovesOldRequest() async throws {
+        for weekly in [false,true] {
+            let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+            defer {try? FileManager.default.removeItem(at:root)}
+            let c=try PersistenceContainerFactory.makeInMemory(),media=MediaStore(rootURL:root)
+            let keys=["dailyRecordingReminderEnabled","dailyRecordingReminderMinutes","weeklyReviewReminderEnabled","weeklyReviewReminderMinutes","weeklyReviewReminderWeekday"]
+            let defaults=UserDefaults.standard,prior=keys.map {UserDefaults.standard.object(forKey:$0)}
+            defaults.set(!weekly,forKey:keys[0]);defaults.set(480,forKey:keys[1]);defaults.set(weekly,forKey:keys[2]);defaults.set(480,forKey:keys[3]);defaults.set(2,forKey:keys[4])
+            let client=SystemSettingsLateClient();client.suspendFirst=false
+            let scheduler=LocalReminderScheduler(client:client)
+            if weekly {_ = try await scheduler.updateWeekly(enabled:true,weekday:2,minutesAfterMidnight:480,requestPermission:false)}
+            else {_ = try await scheduler.updateDaily(enabled:true,minutesAfterMidnight:480,requestPermission:false)}
+            let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+            XCTAssertEqual(client.pending[id]?.hour,8,"Legal old native request really exists before modification")
+            client.suspendFirst=true
+            let intents=ReminderSettingsIntents(),presentation=IntegrationSettingsPresentation()
+            let entered=expectation(description:"Changed setting entered real scheduler");client.entered=entered
+            let opened=expectation(description:"Actual settings opened");presentation.didOpen={presentation.didOpen=nil;opened.fulfill()}
+            let window=UIWindow(frame:UIScreen.main.bounds)
+            let host=UIHostingController(rootView:IntegrationSettingsMountedHost(presentation:presentation,intents:intents,media:media,exporter:ImportExportService(context:c.mainContext,mediaStore:media),scheduler:scheduler))
+            window.rootViewController=host;window.makeKeyAndVisible()
+            defer {
+                presentation.didOpen=nil;presentation.didClose=nil;window.isHidden=true;window.rootViewController=nil
+                client.continuation?.resume(throwing:CancellationError());client.continuation=nil
+                for (key,value) in zip(keys,prior) {if let value {defaults.set(value,forKey:key)} else {defaults.removeObject(forKey:key)}}
+            }
+            await fulfillment(of:[opened],timeout:4)
+            defaults.set(540,forKey:weekly ? keys[3]:keys[1]);await fulfillment(of:[entered],timeout:4)
+            let scope=weekly ? intents.weekly:intents.daily,old=try XCTUnwrap((weekly ? intents.weekly:intents.daily).task)
+            let closed=expectation(description:"Actual settings fully removed");presentation.didClose={presentation.didClose=nil;closed.fulfill()};presentation.shown=false
+            await fulfillment(of:[closed],timeout:4)
+            XCTAssertTrue(scope.task == nil || !old.isCancelled,"Closing alone must not cancel a legal command")
+            let release=try XCTUnwrap(client.continuation);client.continuation=nil;release.resume(throwing:CocoaError(.fileWriteUnknown))
+            await old.value
+            try await Task.sleep(for:.milliseconds(150))
+            XCTAssertFalse(defaults.bool(forKey:weekly ? keys[2]:keys[0]))
+            XCTAssertNil(client.pending[id],"Current failure after actual removal must finish system cleanup without removed View.onChange")
+            let reopened=expectation(description:"Reopen failed setting");presentation.didOpen={presentation.didOpen=nil;reopened.fulfill()};presentation.shown=true
+            await fulfillment(of:[reopened],timeout:4)
+            try await Task.sleep(for:.milliseconds(150))
+            XCTAssertFalse(defaults.bool(forKey:weekly ? keys[2]:keys[0]));XCTAssertNil(client.pending[id])
+            XCTAssertEqual(scope.failureMessage,String(localized:"The reminder could not be updated. Please try again."))
+            XCTAssertFalse(scope.cleanupPending)
+            let shot=UIGraphicsImageRenderer(bounds:window.bounds).image {_ in window.drawHierarchy(in:window.bounds,afterScreenUpdates:true)}
+            let attachment=XCTAttachment(image:shot);attachment.name="Terminal-IC02-reopened-\(weekly ? "weekly":"daily")-failure";attachment.lifetime = .keepAlways;add(attachment)
+            print("PGOS_IC02 weekly=\(weekly) old08=true changed09=true actualClosed=true noB=true errorSettled=true pending=\(client.pending.count)")
+        }
+    }
+}

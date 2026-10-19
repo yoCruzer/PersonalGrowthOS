@@ -489,3 +489,74 @@ Owner已批准 [新Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 
 O01 未取得已打开 Weekly 跨周/父重建丢输入的原生反例，保持 UNCONFIRMED/非阻断；没有据此预改导航产品。D1–D4 仍 NOT_PASSED，AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持。本地结论不外推为这些门通过，也不授权私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
 
 该固定候选的本地必要修复、集中验证和独立终审已具备。之后纯文档交付可原样追加本审查，不需要重建同一产品；PR Draft/base、普通推送和最终交付 SHA 仍由实施者按实际 Git/远端状态核对，不能由本报告先行宣称已完成。
+
+
+## 2026-10-19 TERMINAL_FIX — TF-A / FIXES_IN_PROGRESS
+
+固定 Goal `6430a8570ce2d3528c37d491c1252f97066e8da9` 已全文读取；沿原 worktree/分支、唯一 PR #13 连续 TF-A→TF-D。旧运行记录原样保留，不转记本轮 PASS。
+
+- RR-01：真实 V11 nil → 旧 f1 普通编辑（override=false）→ accepted 两渠道 → 升级隔离/取消确认 → 同值同渠道明确应用未来 → 新请求/冷重开；相反操作覆盖 Stop、未确认取消、普通元数据和幂等重试。
+- IC-02：真实旧08:00 pending → 设置改09:00/add挂起 → sheet实际移除且无B → 当前错误 → settle/重开核对偏好/native/反馈；对照成功、新B同/异值/关闭、daily/weekly独立及清理未确认。
+- RR-02：真实 SleepService 次日目标 → 时钟跨生效日 → raw BEGIN IMMEDIATE held → refresh→observe→SwiftData.save → 独立MainActor probe/可靠释放 → 事实/回滚/恢复；相反操作覆盖无竞争、回拨和等待后规则变化。
+
+尚未运行本轮红例、修复或最终验证；独立预审和原生证据随后原样追加。O-01 不重复开项。
+
+
+# PR #13 终态一致性补修独立预审原文
+
+审查者：/root/terminal_independent_reviewer。未参与实现，只读源码/测试/规格，未修改共享仓库产品或测试。固定规格6430a8570ce2d3528c37d491c1252f97066e8da9，预审生产基线53eeb1d3410630f836bbc3e713c79f9f157a4081；当前工作树的两份CURRENT/EXECUTION/ACCEPTANCE/REVIEW仅接收规格边界。已按INDEX检查Foundation、Contract、CURRENT、完整Goal和相关生产链。以下是待实验的反例与验收前置条件，不能当作新的原生FAIL/PASS。
+
+## RR-01：确认的源码缺口及最小可证伪链
+
+合法起点：真实V11 nil reminderDayOffset系列，旧f1普通edit改本次提醒但不应用未来，intent仍isInstanceOverride=false；先经真实TodoIntentScheduling完成future native accepted。升级、跨区调用TodoReminderCoordinator→refreshRepeatingReminderTimes→reminderOffset对歧义规则拒绝→quarantineFutureRequests，两渠道旧请求应先真正取消且durable retired仍属于G。用户保持相同remindAt和channel，经TodoEditorView.save的futureSeries=true明确纠正规则。现setIntent只有reminderChanged/channel/override变化才续代，本例均false；retired同G阻止reconcile，错误终态为规则已补齐、编辑保存成功，但实际native请求不存在。
+
+现有testIntegrationIR02BothOwnedFutureChannelsCancelConfirmColdReopenAndCorrect从override=true且改fireAt，不能区分本缺口。新反例需保留真实旧事件因果，而非直接手设retired/false。
+
+期待终态：旧所有权确认取消前不能并行新增；确认后新G'/native ID确实pending，任务计划/截止/历史事件原字节不被重写。冷容器重开、再刷新、同值再保存不继续续代。需成对覆盖false/true、同值/改值、Notification/Alarm。旧deleteList导致rule.updatedAt变化为邻接合法起点，应说明覆盖或给出具体无影响依据。
+
+相反操作：正常System Stop留下retired后，普通标题/备注/清单修改、普通刷新、已知健康futureSeries元数据修改不能复活；stopSeries/完成/取消/删除不能复活；ringing仍保持。纠正保存抛错要回滚policy+intent+events，重试后只一次有效续代；取消未确认时先纠正，再取消成功的次序不能丢旧所有权或重复排程。若恢复标记仅以nil→known判定，应检查它确实对应一次明确future意图，且不误将健康nil首次可推导修补等同主动恢复。
+
+## IC-02：完整页面反例必须包含旧请求
+
+合法起点：生产LocalReminderScheduler先成功建立08:00 repeating pending；真实MediaStorageView启用且显示08:00。改09:00触发onChange→共享ReminderSettingsUpdate.Scope→真实scheduler获得NotificationMutationGate并在外部addRepeating挂起。实际sheet dismiss并等onDismiss，未创建B；外部返回普通throws且保留旧08:00。现catch只在已移除View中设置AppStorage enabled=false及View本地reminderMessage，依赖已移除onChange完成清理，疑似最终开关false/native08:00仍在/错误不可见。必须daily、weekly都在真实挂载链跑并等待settle、重开，再断言偏好/native时间/错误可见。现IR03挂载测试创建B且没有旧08:00作为pending起点，只证明过期错误隔离。
+
+期待终态任选最小一致策略：关闭偏好则实际撤销并确认native不存在，或保留可证明旧配置并明确失败；不能显示09:00实际08:00。错误/清理反馈需要稳定owner留到重开，不只旧View @State。remove无throws不代表删除已确认：stub remove后pending不消失时，要诚实待确认/可重试，不能返回removed。
+
+相反操作：无B旧成功仍合法完成；无B CancellationError不误关闭；新B同值/不同值/关闭时，旧error/success/cancel不能改B偏好或抢删B固定identifier；旧失败若已经开始await清理，B插入并抢占前后都需检查当前generation，清理与system gate遵守同一序列。daily与weekly互不改写。失败后的显式重试能真正排程或关闭，不能只改反馈字段。
+
+## RR-02：结构缺口不等同已测原生阻塞
+
+合法起点：真实SleepService.setGoal先产生已生效初始规则，再设未来待生效规则；业务时钟推进生效日。真实exportRetainedQuantityData detached worker持同root StorePublication并进入BEGIN IMMEDIATE frozen。调用前台实际路径SleepWorkspace.refresh→SleepGoalSemantics.observe→fresh ModelContext.save，after保存入口由独立执行器提交MainActor probe，独立fail-safe负责释放writer。必须证明待生效规则命中且会save，记录writer-held/observe-save入口/probe提交和执行/save结果/ROLLBACK释放/冷读hasTakenEffect及后续恢复的因果与时长。
+
+现observe直接context.save、refresh所有错误corrupt；未接同锁是源码事实，未经上述实验不能声称原生卡顿已复现。旧V01 Todo journal实验不能替代。
+
+若证实，最小同锁保护应main thread try-lock及时busy，后台完整snapshot仍持锁；延后恢复要等待后重读fresh权威规则，不能持旧ModelContext/rules跨await。检查sleep记录/草稿保留、busy不冒充corrupt、锁释放后自动可靠恢复、无无限retry/重复事件。规则已经对用户生效后遇跨区/回拨不可重新成为可编辑历史；持锁期间再修改规则/删除或改目标的合法相反次序也需覆盖。
+
+只核对raw导出时可达自动入口：根.task/active先investmentCheckpoint、sleepRefresh再await share import；Todo时区refresh通过TodoTaskService.transaction同StorePublication，journal通过write同StorePublication；Sleep observe当前缺口；Investment.transaction同锁并Workspace.enqueueCheckpoint异步等待后fresh读取；Share importer detached worker同mediaRoot锁且无await持lease。Widget重建需确认只读业务事实及写出文件与raw媒体互不污染。Sleep手工save/setGoal/delete不是自动入口，但如果同因修复只包observe，需说明export期间原sheet是否可达操作，以及是否落入授权同因范围，不能只按函数名忽略。
+
+保护证据包括raw源SQLite/图片字节、nonfinite quantity bitPattern/ID/unit/result、原Todo V01、Investment晚暂停/完成与无竞争sleep生效。不触碰O-01导航，无新增confirmed证据时保持非阻断。
+
+## 固定候选终审要求
+
+后续固定clean产品/测试SHA后审完整相关diff、未改调用者与上列起点/终态/反向操作；直接读取本机raw xcresult/log/关键图/Debug及unsigned Release实包，复算manifest和SHA关系，保留原FAIL/SKIP及补验。full Unit不能只报告总数，需确认唯一skip原因及本轮selector实际执行；关键UI或真实挂载覆盖页面移除/错误重开/同值编辑器。检查实际App/Share/Widget身份、版本、minOS、provenance Dirty=false与完整SHA、AlarmKit弱链接与用途说明。未独立读取的证据不包装为reviewer已验。
+
+预审结论：RR-01源码缺口成立，IC-02需要真实关闭页面合同反例，RR-02原生结果待跑；当前不能READY。阶段可连续推进，不需要Owner逐段确认。
+
+
+# TF-B 独立阶段审查（非终审）
+
+审查者 /root/terminal_independent_reviewer，未写实现。直接读取 dirty diff 与 /tmp/pgos-pr13-terminal-evidence/red-chains.log；未将尚未固定候选的结果当作终审。
+
+红例原日志显示3完整方法均FAIL，共19断言失败。IC02 daily/weekly均真实sheet关闭无B，旧08:00留存；RR01首次同值纠正scheduled、generation、native数量断言失败，末尾PGOS_RR01 nativeCount=1是更多重试以后，不能用于否定首个终态失败；RR02实际序列writer-frozen→production-observe-entry→independent-probe-submitted→native-save-held→probe-failsafe-timeout→release-requested→writer-released→marker-durable-after-refresh→main-probe，支持真实主线程等待已确认。xcresulttool summary直接读取尝试因TestReport内部缓存写权限失败，终审需独立副本读取原始bundle，不修改源bundle。
+
+当前修复思路：RR01严格限定futureSeries/open/live nil且原policy不可推导，才same-value续代并重编码当前wall time，方向符合要求；IC02 root Scope存储feedback，当前ticket在shared gate内重查并实际确认删除，方向符合要求；RR02 fence仅保存rule ID/观察instant，try同锁并fresh context合并，避免旧模型跨await，setGoal先flush防回拨，方向符合要求。
+
+## 需闭环的具体源码遗漏
+
+SleepWorkspace deferred retry获取waitUntilAvailable lease后立即释放，再回MainActor执行refresh(deferBusy:false)。raw释放时另一个已等待的Share importer或另一导出可以先拿同锁，因此实际refresh第二次得到busy。当前catch guard deferBusy=false直接返回，publicationRetry已nil，无新等待。真实根active调用顺序sleep.refresh→await importShares→widget/todo，没有import后第二次sleep.refresh；故一次合法active结束且全部锁最终释放后marker仍可能不持久、busy错误永久保留到额外用户动作，未满足可靠恢复。
+
+最小建议：保留coalesced pending refresh请求，在真实busy时继续异步等待同锁（不是主线程等待或轮询），确保每次先重读权威状态；或使用能保证fresh保存和等待之间无抢占的同锁后台值协议。覆盖第二持锁者在waiter完成与main refresh间抢占的确定性测试，断言最终不用用户第二次刷新即marker持久且错误清除。避免为了无无限retry要求而丢弃一次真实busy；所有等待必须具有取消/释放保证。
+
+## 后续证据提醒
+
+RR01还需旧deleteList邻接起点、保存失败回滚、取消未确认时先纠正、正常Stop/元数据不复活及真实编辑器同值入口；IC02需remove不生效的cleanupPending可重试、重开可见反馈，及旧恢复清理期间B同值/改值/关闭保护；RR02需hold内已观察生效后先回拨/再setGoal、后释放的相反操作。现dirty测试还没有完整覆盖这些验收，不能仅三项green放行。

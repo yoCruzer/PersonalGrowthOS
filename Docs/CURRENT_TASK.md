@@ -1,3 +1,13 @@
+# PR #13 终态一致性补修 — FIXES_IN_PROGRESS（2026-10-19）
+
+固定 TERMINAL_FIX_GOAL_SHA `6430a8570ce2d3528c37d491c1252f97066e8da9`；已 fetch 并在干净原 worktree 从 `8cc085e` 安全快进接收规格，保留全部有效产品提交。沿原分支 `codex/usage-remediation-20261017`、唯一 Draft PR #13 / base `codex/time-investment-v1` 连续执行 TF-A→TF-D；旧 READY 仅为历史，不代表本轮完成。
+
+本轮唯一台账：RR-01（原 IC-01，隔离规则同值明确恢复）、RR-02（原 IC-V1，睡眠 observe 的真实 raw writer 竞争验证）、IC-02（设置页关闭后的当前失败收尾）；O-01 保持非阻断 UNCONFIRMED。先建立合法起点与生产链反例、登记相反操作及终态，独立 reviewer 先提反例且不参与实现。接收规格未运行全量基线，本轮原生结果尚未产生。
+
+完成必要修复/严格反证、同一干净候选集中验证和独立终审后才恢复 READY_FOR_OWNER_DEVICE_GATE。主目录 project.pbxproj、Localizable.xcstrings 和 xcodecloud 未知改动保留；设备、Share/Safari、低空间和 CI 旧状态不变，不操作私人设备/库或签名发行。
+
+---
+
 # PR #13 集成边界修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
 固定 INTEGRATION_FIX_GOAL_SHA `b495bead6c9910ec1e15631227c1146176819583`；最终产品/测试 SHA `53eeb1d3410630f836bbc3e713c79f9f157a4081`。IR-01～05 已关闭，V-01 为 **CONFIRMED_AND_FIXED**；O-01 保持非阻断 UNCONFIRMED，未预改导航。完整不变量/消费者矩阵、逐项 selector、原红例及补验见 [EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md)、[ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md) 和 [分轮机器摘要](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_RUNS.json)。

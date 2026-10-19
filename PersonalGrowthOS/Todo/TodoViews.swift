@@ -309,6 +309,11 @@ struct TodoEditorView: View {
                     draft.notes = sourceEntry.body ?? ""
                 }
                 focusedField = .title
+                #if DEBUG
+                TodoEditorInteractionProbe.loaded?(draft,{applyFuture in
+                    futureSeries=applyFuture;save(another:false)
+                })
+                #endif
             }
             .onReceive(NotificationCenter.default.publisher(for:.NSCalendarDayChanged)) {_ in referenceDate=Date()}
             .onReceive(NotificationCenter.default.publisher(for:UIApplication.significantTimeChangeNotification)) {_ in referenceDate=Date()}
@@ -859,3 +864,9 @@ private struct TodoReminderRescheduleView: View {
         } catch {self.error=error.localizedDescription;busy=false}
     }
 }
+
+#if DEBUG
+@MainActor enum TodoEditorInteractionProbe {
+    static var loaded:((TodoDraft,@escaping @MainActor (Bool) -> Void) -> Void)?
+}
+#endif

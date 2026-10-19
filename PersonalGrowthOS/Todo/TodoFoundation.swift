@@ -536,6 +536,16 @@ final class TodoTaskService {
         let currentChannel=previousIntent.flatMap {TodoReminderChannel(rawValue:$0.channelRawValue)} ?? .notification
         let selectedChannel=draft.reminderChannel ?? currentChannel
         let reminderChanged=task.remindAt != draft.remindAt
+        // Only explicit correction of an unresolvable live legacy policy renews
+        // same-value intent. Healthy nil bootstrap, metadata and Stop stay terminal.
+        var correctingPolicy=false
+        if futureSeries,task.state == .open,draft.remindAt != nil,let sid=task.seriesID {
+            let rule=try series(sid)
+            if !rule.isStopped,rule.reminderDayOffset == nil,rule.reminderMinutes != nil {
+                do {_ = try reminderOffset(for:rule)}
+                catch TodoFailure.invalidReminderOffset {correctingPolicy=true}
+            }
+        }
         let retainOverride=previousIntent?.isInstanceOverride == true && !reminderChanged && !futureSeries && draft.remindAt != nil
         try transaction {
             if !futureSeries && (reminderChanged || previousIntent?.isInstanceOverride == true) {try preserveLegacyReminderOffset(task)}
@@ -548,7 +558,7 @@ final class TodoTaskService {
             }
             task.title = draft.title; task.notes = draft.notes; task.isImportant = draft.isImportant
             task.plannedDay = draft.plannedDay; task.deadlineDay = draft.deadlineDay
-            if task.remindAt != draft.remindAt { setReminderWallTime(task, from: draft.remindAt) }
+            if reminderChanged || correctingPolicy { setReminderWallTime(task, from: draft.remindAt) }
             task.remindAt = draft.remindAt; task.listID = draft.listID
             if !retainOverride,let seriesID = task.seriesID, let local = task.reminderLocalDay, let index = task.occurrenceIndex {
                 let rule = try series(seriesID)
@@ -567,11 +577,11 @@ final class TodoTaskService {
                 } else { series.reminderDayOffset = nil }
                 for successor in try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == seriesID }))
                     where successor.id != task.id && successor.state == .open && (successor.occurrenceIndex ?? -1) > (task.occurrenceIndex ?? -1) {
-                    try applyTemplate(series, to: successor, at: now())
+                    try applyTemplate(series, to: successor, at: now(), reactivating:correctingPolicy)
                 }
                 series.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: series.createdAt, previous: series.updatedAt)
             }
-            try setIntent(task,channel:selectedChannel,override:retainOverride,renew:reminderChanged)
+            try setIntent(task,channel:selectedChannel,override:retainOverride,renew:reminderChanged || correctingPolicy)
             try record(task, kind: draft.frequency == nil ? .edited : .convertedToSeries, before: before, at: now())
         }
     }

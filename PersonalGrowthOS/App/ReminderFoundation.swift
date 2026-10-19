@@ -1,5 +1,6 @@
 import Foundation
 import UserNotifications
+import Observation
 
 enum ReminderScheduleCalculator {
     static func dailyComponents(minutesAfterMidnight: Int) -> DateComponents {
@@ -105,6 +106,20 @@ final class LocalReminderScheduler {
         )
     }
 
+    /// The caller's ticket is checked inside the shared mutation gate, including
+    /// after the native query yields. An old failure cannot delete a later intent.
+    func removeAfterFailure(weekly:Bool,isCurrent: @escaping @MainActor () -> Bool) async -> Bool {
+        await NotificationMutationGate.shared.acquire()
+        defer {NotificationMutationGate.shared.release()}
+        guard isCurrent() else {return false}
+        let identifier=weekly ? Self.weeklyIdentifier:Self.dailyIdentifier
+        _ = await client.pendingIdentifiers()
+        guard isCurrent() else {return false}
+        client.remove([identifier])
+        let absent = await !client.pendingIdentifiers().contains(identifier)
+        return isCurrent() && absent
+    }
+
     private func update(
         identifier: String,
         enabled: Bool,
@@ -117,6 +132,7 @@ final class LocalReminderScheduler {
         defer { NotificationMutationGate.shared.release() }
         guard enabled else {
             client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .removed
         }
 
@@ -138,10 +154,15 @@ final class LocalReminderScheduler {
             return .scheduled
         case .denied:
             client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .permissionDenied
         case .notDetermined:
+            client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .permissionRequired
         @unknown default:
+            client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .permissionDenied
         }
     }
@@ -160,7 +181,9 @@ final class ReminderSettingsIntents {
 @MainActor
 final class ReminderSettingsUpdate {
     /// Root-owned tickets survive sheet removal; a new same-value request is a new intent.
-    final class Scope {
+    @Observable final class Scope {
+        var failureMessage:String?
+        var cleanupPending=false
         var generation=UUID()
         var task: Task<Void,Never>?
     }
@@ -169,6 +192,7 @@ final class ReminderSettingsUpdate {
     @discardableResult func submit(
         operation: @escaping @MainActor () async throws -> ReminderUpdateResult,
         isCurrent: @escaping @MainActor () -> Bool = {true},
+        recover: (@MainActor (@escaping @MainActor () -> Bool) async -> Bool)? = nil,
         apply: @escaping @MainActor (Result<ReminderUpdateResult,Error>) -> Void
     ) -> Task<Void,Never> {
         scope.task?.cancel()
@@ -178,7 +202,18 @@ final class ReminderSettingsUpdate {
             do {result = .success(try await operation())}
             catch {result = .failure(error)}
             guard !Task.isCancelled,self.scope.generation == token,isCurrent() else {return}
-            if case .failure(let error)=result,error is CancellationError {return}
+            if case .failure(let error)=result,error is CancellationError,recover == nil {return}
+            if case .failure=result,let recover {
+                let confirmed=await recover {!Task.isCancelled && self.scope.generation == token && isCurrent()}
+                guard !Task.isCancelled,self.scope.generation == token,isCurrent() else {return}
+                self.scope.cleanupPending = !confirmed
+                self.scope.failureMessage = confirmed
+                    ? String(localized:"The reminder could not be updated. Please try again.")
+                    : String(localized:"Reminder removal is not confirmed. Please try again.")
+            } else if case .success(let value)=result {
+                self.scope.cleanupPending=false
+                if value != .removed {self.scope.failureMessage=nil}
+            }
             apply(result)
         }
         scope.task=next

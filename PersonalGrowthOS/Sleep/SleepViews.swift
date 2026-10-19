@@ -23,7 +23,10 @@ import Charts
     var sessions: [String: SleepDraftSession] = [:]
     var message: String?
     var loadError: String?
-    func refresh(_ context: ModelContext) {
+    private var publicationRetry:Task<Void,Never>?
+    private var publicationDeferred=false
+    func refresh(_ context: ModelContext) {refresh(context,deferBusy:true)}
+    private func refresh(_ context:ModelContext,deferBusy:Bool) {
         do {
             let timestamp = now()
             try SleepGoalSemantics.observe(context: context, now: timestamp)
@@ -33,7 +36,32 @@ import Charts
             // Publish complete facts and their evaluation instant in the same main-actor turn.
             records = freshRecords; goals = freshGoals; reference = timestamp
             loadError = nil
-        } catch { loadError = SleepFailure.corrupt.localizedDescription }
+        } catch StorePublicationFailure.busy {
+            loadError=StorePublicationFailure.busy.localizedDescription
+            publicationDeferred=true
+            #if DEBUG
+            SleepGoalObservationProbe.didDefer?(context.container)
+            #endif
+            guard deferBusy,publicationRetry == nil else {return}
+            let container=context.container,root=StorePublication.root(for:context.container)
+            publicationRetry=Task { @MainActor [weak self] in
+                do {
+                    while !Task.isCancelled {
+                        try await StorePublication.waitUntilAvailable(at:root)
+                        guard !Task.isCancelled,let self else {return}
+                        #if DEBUG
+                        await SleepGoalObservationProbe.beforeRetry?(container)
+                        #endif
+                        self.publicationDeferred=false
+                        // Another legitimate publisher may acquire before MainActor resumes.
+                        // Re-wait only on actual contention; I/O failures never loop.
+                        self.refresh(ModelContext(container),deferBusy:false)
+                        if !self.publicationDeferred {break}
+                    }
+                    self?.publicationRetry=nil
+                } catch {self?.publicationRetry=nil}
+            }
+        } catch { loadError = error.localizedDescription }
     }
     func session(day: String) throws -> SleepDraftSession {
         if let existing = sessions[day] { return existing }

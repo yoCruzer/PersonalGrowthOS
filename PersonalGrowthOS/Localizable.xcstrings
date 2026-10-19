@@ -1,6 +1,12 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Reminder removal is not confirmed. Please try again.": {
+    "localizations": {
+      "en": { "stringUnit": { "state": "translated", "value": "Reminder removal is not confirmed. Please try again." } },
+      "zh-Hans": { "stringUnit": { "state": "translated", "value": "尚未确认提醒已移除，请重试。" } }
+    }
+  },
   "A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup.": {
     "localizations": {
       "en": {
