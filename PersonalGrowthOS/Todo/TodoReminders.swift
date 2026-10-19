@@ -6,7 +6,7 @@ import UserNotifications
 
 enum TodoReminderStatus: Equatable {
     case none, checking, scheduled, permissionRequired, denied, failed, queueFull, elapsed, unsupportedDateRange
-    case alarmPermissionRequired, alarmDenied, alarmQueueFull, unsupportedAlarm, cancellationPending, stopped, confirmationRequired
+    case alarmPermissionRequired, alarmDenied, alarmQueueFull, unsupportedAlarm, cancellationPending, stopped, confirmationRequired, legacyRuleNeedsCorrection
     var label: String {
         switch self {
         case .none: return String(localized: "No reminder")
@@ -24,6 +24,7 @@ enum TodoReminderStatus: Equatable {
         case .unsupportedAlarm: return String(localized:"Alarm reminders require iOS 26 or later.")
         case .cancellationPending: return String(localized:"The old reminder has not been confirmed canceled. Recheck before setting another.")
         case .stopped: return String(localized:"This reminder is no longer queued. Set a new reminder to notify again.")
+        case .legacyRuleNeedsCorrection: return String(localized:"This older repeating reminder needs a rule. Edit the task and apply the reminder to future occurrences.")
         case .confirmationRequired: return String(localized:"System confirmation is unavailable. Recheck this reminder before changing it.")
         }
     }
@@ -150,6 +151,7 @@ final class TodoReminderCoordinator {
     func status(for task: TodoTaskTransfer,cancellationUnverified: Bool = false,inactive: Bool = false) -> TodoReminderStatus {
         if cancellationUnverified || statuses[task.id] == .cancellationPending {return .cancellationPending}
         guard !inactive,task.stateRawValue == TodoTaskState.open.rawValue,task.remindAt != nil else {return .none}
+        if revisions[task.id] == task.revision,statuses[task.id] == .legacyRuleNeedsCorrection {return .legacyRuleNeedsCorrection}
         if let fire=task.remindAt,fire <= now() {return .elapsed}
         if reconciliationFailed {return .confirmationRequired}
         return revisions[task.id] == task.revision ? statuses[task.id] ?? .checking : .checking
@@ -168,7 +170,7 @@ final class TodoReminderCoordinator {
                 let retired=try await intentScheduling.retireObsoleteRequests(container:context.container,isCurrent:{pass == self.generation})
                 if retired.stale || pass != generation {continue}
                 let read=ModelContext(context.container);read.autosaveEnabled=false
-                try TodoTaskService(context:read).refreshRepeatingReminderTimes()
+                let unresolvedPolicies=try TodoTaskService(context:read).refreshRepeatingReminderTimes()
                 let tasks = try read.fetch(FetchDescriptor<TodoTask>())
                 let days = try read.fetch(FetchDescriptor<ImportantDay>())
                 let ownedIntents=Dictionary(uniqueKeysWithValues:try read.fetch(FetchDescriptor<TodoReminderIntent>()).map {($0.id,$0)})
@@ -178,6 +180,7 @@ final class TodoReminderCoordinator {
                 var newStatuses: [UUID: TodoReminderStatus] = [:]
                 var dayStates: [UUID: ImportantDayReminderState] = [:]
                 for task in tasks {
+                    if unresolvedPolicies.contains(task.id) {newStatuses[task.id] = .legacyRuleNeedsCorrection;continue}
                     if let intent=ownedIntents[task.id] {
                         // Accepted app-owned notifications remain candidates in every allocation.
                         if intent.channelRawValue == TodoReminderChannel.notification.rawValue,
@@ -305,9 +308,17 @@ final class TodoReminderCoordinator {
                 let blockedLegacySeries=Set(tasks.filter {unconfirmedLegacy.contains($0.id)}.compactMap(\.seriesID))
                 let blockedByLegacy=Set(tasks.filter {unconfirmedLegacy.contains($0.id) || $0.seriesID.map {blockedLegacySeries.contains($0)} == true}.map(\.id))
                 let intents=try await intentScheduling.reconcile(container:context.container,requestNotifications:explicitPermission && !authorizationFailed,
-                    requestAlarms:explicitAlarmPermission,blockedTaskIDs:blockedByLegacy.union(rebalanced.states.keys),selectedNotificationTaskIDs:selectedIntentIDs,isCurrent:{pass == self.generation})
+                    requestAlarms:explicitAlarmPermission,blockedTaskIDs:blockedByLegacy.union(rebalanced.states.keys).union(unresolvedPolicies),selectedNotificationTaskIDs:selectedIntentIDs,isCurrent:{pass == self.generation})
                 if intents.stale || pass != generation {continue}
                 newStatuses.merge(intents.states) {_,new in new}
+                for id in unresolvedPolicies {
+                    let snapshot=try TodoReminderDisplaySnapshot.read(id:id,container:context.container)
+                    // A local policy warning must not hide an actual unconfirmed
+                    // cancellation or remove the global cancellation-recheck entry.
+                    let pending=blockedByLegacy.contains(id) || retired.states[id] == .cancellationPending
+                        || rebalanced.states[id] == .cancellationPending || snapshot?.cancellationUnverified == true
+                    newStatuses[id] = pending ? .cancellationPending:.legacyRuleNeedsCorrection
+                }
                 if authorizationFailed {
                     for (id,status) in newStatuses where status == .permissionRequired {newStatuses[id] = .failed}
                 }

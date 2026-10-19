@@ -2,11 +2,12 @@ import XCTest
 import Darwin
 
 final class ImportantDayUITests: XCTestCase {
-    private func launch(seed: Bool = false, chinese: Bool = false) -> XCUIApplication {
+    private func launch(seed: Bool = false, chinese: Bool = false, denied:Bool = false) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", chinese ? "(zh-Hans)" : "(en)", "-AppleLocale", chinese ? "zh_CN" : "en_US"]
         if seed { app.launchArguments += ["-PGOSImportantDaysTest"] }
+        if denied {app.launchArguments += ["-PGOSTodoReminderDeniedTest"]}
         app.launch(); return app
     }
     private func scrollTo(_ element: XCUIElement, app: XCUIApplication) {
@@ -24,13 +25,19 @@ final class ImportantDayUITests: XCTestCase {
         }
     }
     func testMinimalCreateWriteRelatedEntryAndRelaunch() {
-        let app = launch()
+        let app = launch(denied:true)
         app.tabBars.buttons["Growth"].tap(); app.buttons["growth-important-days"].tap()
         XCTAssertTrue(app.otherElements["important-days-list"].waitForExistence(timeout: 5) || app.navigationBars["Important Days"].exists)
         app.buttons["important-day-add"].tap()
         let title = app.textFields["important-day-title"]
         XCTAssertTrue(title.waitForExistence(timeout: 5)); title.tap(); title.typeText("A synthetic day")
+        let more=app.buttons["More settings"];scrollTo(more,app:app);more.tap()
+        let onDay=app.switches["On the day"];scrollTo(onDay,app:app)
+        onDay.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        XCTAssertEqual(onDay.value as? String,"1")
         XCTAssertTrue(app.buttons["important-day-save"].isEnabled); app.buttons["important-day-save"].tap()
+        let acknowledge=app.buttons["Got it"];XCTAssertTrue(acknowledge.waitForExistence(timeout:5));acknowledge.tap()
+        XCTAssertFalse(app.otherElements["important-day-save-feedback"].exists)
         app.staticTexts["A synthetic day"].firstMatch.tap()
         app.buttons["important-day-write"].tap()
         let body = app.textViews["capture-body"]

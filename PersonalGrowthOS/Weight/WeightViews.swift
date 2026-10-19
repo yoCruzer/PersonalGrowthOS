@@ -93,7 +93,7 @@ struct WeightHistoryView: View {
                         DisclosureGroup("Recording continuity") {
                             if let end = snapshot.streakEnd {
                                 Text("Through \(end.formatted(date: .abbreviated, time: .omitted)): \(snapshot.endingStreak) consecutive recorded days")
-                            } else { Text("No consecutive records ending today or yesterday") }
+                            } else { Text("No consecutive records ending on the selected cutoff day or the previous day") }
                             Text("Longest: \(snapshot.longestStreak) consecutive recorded days")
                         }
                     } else { Text("No recorded days through this date") }
@@ -333,7 +333,7 @@ struct WeightEditorView: View {
         self.record = record
         self.didSave = didSave
         _weightText = State(initialValue: record.map {
-            $0.weightKilograms.formatted(.number.precision(.fractionLength(0...2)))
+            WeightRules.editingKilograms($0.weightKilograms)
         } ?? "")
         _recordedAt = State(initialValue: record?.recordedAt ?? Date())
     }

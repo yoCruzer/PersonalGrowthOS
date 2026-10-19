@@ -1,6 +1,70 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "某条习惯打卡的数量无效，原数据未更改。可保存保留数据以供支持恢复；这不是普通备份。"
+        }
+      }
+    }
+  },
+  "This older repeating reminder needs a rule. Edit the task and apply the reminder to future occurrences.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This older repeating reminder needs a rule. Edit the task and apply the reminder to future occurrences."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "此旧版重复提醒需要明确规则。请编辑待办，并将提醒应用于后续期次。"
+        }
+      }
+    }
+  },
+  "Quantity must be a finite number.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Quantity must be a finite number."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "数量必须是有限数值。"
+        }
+      }
+    }
+  },
+  "Storage is busy. Your input is kept. Please try again.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Storage is busy. Your input is kept. Please try again."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "存储正在忙碌，输入已保留，请稍后重试。"
+        }
+      }
+    }
+  },
   "Recent measurements through %@": {
     "localizations": {
       "en": {
@@ -1870,6 +1934,22 @@
         "stringUnit": {
           "state": "translated",
           "value": "截至 %@，连续记录 %lld 天"
+        }
+      }
+    }
+  },
+  "No consecutive records ending on the selected cutoff day or the previous day": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No consecutive records ending on the selected cutoff day or the previous day"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "所选截止日或前一天没有连续记录"
         }
       }
     }

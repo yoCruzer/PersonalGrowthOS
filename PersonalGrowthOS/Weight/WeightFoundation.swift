@@ -44,6 +44,14 @@ enum WeightValidationError: Error, Equatable {
 enum WeightRules {
     static let maximumKilograms = 1_000.0
 
+    static func editingKilograms(_ value: Double, locale: Locale = .current) -> String {
+        // Swift's shortest round-trippable representation preserves the stored Double.
+        // Editing never uses display grouping or display rounding.
+        let shortest=String(value)
+        let text=shortest.hasSuffix(".0") ? String(shortest.dropLast(2)):shortest
+        return locale.decimalSeparator == "," ? text.replacingOccurrences(of:".",with:",") : text
+    }
+
     static func kilograms(from input: String) throws -> Double {
         guard let value = Double(input.replacingOccurrences(of: ",", with: ".")) else {
             throw WeightValidationError.invalidWeight

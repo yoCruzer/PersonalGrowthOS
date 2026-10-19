@@ -16,6 +16,7 @@ import UIKit
     var operationRevision: Int?
     var timerConfirmation: Bool
     var error: String?
+    private(set) var publicationBlocked=false
     private(set) var duplicateValues: InvestmentValues?
     private(set) var duplicateActivity: UUID?
     private(set) var duplicateDuration: String?
@@ -73,6 +74,7 @@ import UIKit
     }
     @discardableResult func persist(_ context: ModelContext,commit: ((ModelContext) throws -> Void)? = nil) -> Bool {
         guard !finished else { return true }
+        publicationBlocked=false
         if duplicate && (duplicateValues != values || duplicateActivity != activityID || duplicateDuration != durationText) {
             clearDuplicateCandidates()
         }
@@ -88,7 +90,10 @@ import UIKit
                 activityID:activityID,values:values,durationText:durationText,editingSessionID:editingSessionID,
                 editingRevision:editingRevision,expectedRevision:operationRevision,timerConfirmation:timerConfirmation)
             error = nil;return true
-        } catch { self.error = error.localizedDescription;return false }
+        } catch {
+            publicationBlocked = (error as? StorePublicationFailure) == .busy
+            self.error = error.localizedDescription;return false
+        }
     }
 }
 
@@ -165,6 +170,33 @@ import UIKit
     func session(id: UUID,context: ModelContext) throws -> InvestmentSessionTransfer? {
         try reader.page(context.container,ids:[id],detail:true).first
     }
+#if DEBUG
+    var beforeCheckpointRetry:(() async -> Void)?
+#endif
+    private var checkpointTask: Task<Void,Never>?
+    func waitForCheckpoint() async {while let task=checkpointTask {await task.value}}
+    private var pendingCheckpointClock: (() -> InvestmentClock)?
+    private func enqueueCheckpoint(_ container:ModelContainer,clock:@escaping () -> InvestmentClock) {
+        pendingCheckpointClock=clock
+        guard checkpointTask == nil else {return}
+        let root=StorePublication.root(for:container)
+        checkpointTask=Task { @MainActor [weak self] in
+            do {
+                try await StorePublication.waitUntilAvailable(at:root)
+                guard let self else {return}
+#if DEBUG
+                await self.beforeCheckpointRetry?()
+#endif
+                let latestClock=self.pendingCheckpointClock ?? clock
+                self.checkpointTask=nil;self.pendingCheckpointClock=nil
+                // Re-read canonical operations after waiting. A prior pause/finish/delete
+                // owns its revision; no captured running operation is replayed here.
+                self.checkpoint(ModelContext(container),clock:latestClock)
+            } catch {
+                self?.checkpointTask=nil;self?.error=error.localizedDescription
+            }
+        }
+    }
     func checkpoint(_ context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current) {
         let service = InvestmentService(context:context,clock:clock)
         do {
@@ -174,9 +206,14 @@ import UIKit
                 try service.command(.checkpoint,id:op.id,revision:op.revision)
             }
             for editor in editors.values where !editor.finished {
-                guard editor.persist(context) else {throw InvestmentEditorPersistenceFailure(message:editor.error ?? InvestmentFailure.invalid.localizedDescription)}
+                guard editor.persist(context) else {
+                    if editor.publicationBlocked {throw StorePublicationFailure.busy}
+                    throw InvestmentEditorPersistenceFailure(message:editor.error ?? InvestmentFailure.invalid.localizedDescription)
+                }
             }
             refresh(context)
+        } catch StorePublicationFailure.busy {
+            enqueueCheckpoint(context.container,clock:clock)
         } catch { self.error = error.localizedDescription }
     }
     func resume(id: UUID, context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current) throws {
@@ -212,6 +249,24 @@ import UIKit
             values:.init(day:ImportantCivilDay(Date()).identifier,timeZoneID:TimeZone.current.identifier,
                 seconds:2700,evidence:.dateDuration,source:.manual))
         editors[editor.id] = editor; return editor
+    }
+    func saveEditor(_ editor: InvestmentEditorState,context:ModelContext,confirmDuplicate:Bool = false,
+                    commit: @escaping (ModelContext) throws -> Void = {try $0.save()}) throws {
+        guard editor.hasValidDuration else {throw InvestmentFailure.invalid}
+        let service=InvestmentService(context:context,commit:commit)
+            if editor.timerConfirmation {
+                guard let revision = editor.operationRevision else { throw InvestmentFailure.missing }
+                try service.saveTimer(id:editor.id,revision:revision,values:editor.values,confirmDuplicate:confirmDuplicate)
+            } else {
+                try service.saveManual(id:editor.editingSessionID ?? editor.id,participantID:editor.participantID,activityID:editor.activityID,
+                    values:editor.values,expectedRevision:editor.editingRevision,confirmDuplicate:confirmDuplicate,draftID:editor.operationRevision == nil ? nil : editor.id)
+            }
+        completeEditor(editor);refresh(context)
+    }
+    private func completeEditor(_ editor: InvestmentEditorState) {
+        if editor.editingSessionID != nil {editor.eraseConsumedContent()}
+        else {editor.finished=true}
+        if editors[editor.id] === editor {editors.removeValue(forKey:editor.id)}
     }
     func contributions() throws -> [InvestmentContribution] {
         guard let review else { throw InvestmentEditorPersistenceFailure(message:reviewError ?? String(localized:"Unable to read investment statistics")) }
@@ -550,7 +605,7 @@ struct InvestmentEditorView: View {
                 }
             }
             Section("Experience (optional)") {
-                Picker("Experience",selection:Binding(get:{editor.values.feeling ?? 0},set:{editor.values.feeling = $0 == 0 ? nil : $0; persist()})) {
+                Picker("Experience",selection:feelingBinding) {
                     Text("Not filled").tag(0)
                     ForEach(1...5,id:\.self) { Text(SleepFormatting.feeling($0)).tag($0) }
                 }.accessibilityIdentifier("investment-feeling")
@@ -580,7 +635,7 @@ struct InvestmentEditorView: View {
             Button("Cancel draft",role:.destructive) {
                 do {
                     if let revision = editor.operationRevision { try InvestmentService(context:context).command(.discard,id:editor.id,revision:revision) }
-                    editor.finished = true; workspace.refresh(context); onSaved();dismiss()
+                    editor.finished=true; workspace.refresh(context); onSaved();dismiss()
                 } catch { editor.error = error.localizedDescription }
             }
         }
@@ -616,6 +671,12 @@ struct InvestmentEditorView: View {
             if let first = editor.values.spans.first, let last = editor.values.spans.last { start = first.start; end = last.end }
         }
     }
+    private var feelingBinding: Binding<Int> {
+        Binding(get:{editor.values.feeling ?? 0},set:{value in
+            editor.values.feeling = value == 0 ? nil:value
+            persist()
+        })
+    }
     @discardableResult private func persist(isClosing: Bool = false) -> Bool {
 #if DEBUG
         if isClosing {return editor.persist(context,commit:InvestmentReviewTestSupport.closeCommit)}
@@ -626,18 +687,11 @@ struct InvestmentEditorView: View {
         guard editor.hasValidDuration else { editor.error = InvestmentFailure.invalid.localizedDescription; return }
         do {
 #if DEBUG
-            let service = InvestmentService(context:context,commit:InvestmentReviewTestSupport.saveCommit)
+            try workspace.saveEditor(editor,context:context,confirmDuplicate:confirmed,commit:InvestmentReviewTestSupport.saveCommit)
 #else
-            let service = InvestmentService(context:context)
+            try workspace.saveEditor(editor,context:context,confirmDuplicate:confirmed)
 #endif
-            if editor.timerConfirmation {
-                guard let revision = editor.operationRevision else { throw InvestmentFailure.missing }
-                try service.saveTimer(id:editor.id,revision:revision,values:editor.values,confirmDuplicate:confirmed)
-            } else {
-                try service.saveManual(id:editor.editingSessionID ?? editor.id,participantID:editor.participantID,activityID:editor.activityID,
-                    values:editor.values,expectedRevision:editor.editingRevision,confirmDuplicate:confirmed,draftID:editor.operationRevision == nil ? nil : editor.id)
-            }
-            editor.finished = true; workspace.refresh(context); onSaved();dismiss()
+            onSaved();dismiss()
         } catch InvestmentFailure.duplicate {
             do {editor.showDuplicates(try InvestmentService(context:context).matchingSessionIDs(values:editor.values,participantID:editor.participantID,excluding:editor.editingSessionID ?? editor.id))}
             catch {editor.error=error.localizedDescription;return}

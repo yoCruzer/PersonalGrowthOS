@@ -5,6 +5,34 @@ import XCTest
 
 @MainActor
 final class WeightFoundationTests: XCTestCase {
+    func testSystemSR02EditorRoundTripPreservesExactWeightAcrossLocalesAndDisk() throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        defer {try? FileManager.default.removeItem(at:root)}
+        let url=root.appendingPathComponent("weight.sqlite"),now=Date(timeIntervalSince1970:1_792_368_000)
+        var expected: [UUID:Double]=[:]
+        try autoreleasepool {
+            let c=try PersistenceContainerFactory.makeOnDisk(at:url)
+            let service=WeightRecordService(context:c.mainContext,now:{now})
+            for locale in ["en_US","zh_CN","de_DE"] {
+                for value in [1000.0,72.345,65.2] {
+                    let record=try service.create(weightKilograms:value,recordedAt:now.addingTimeInterval(-86400))
+                    let text=WeightRules.editingKilograms(record.weightKilograms,locale:Locale(identifier:locale))
+                    let parsed=try WeightRules.kilograms(from:text)
+                    XCTAssertEqual(parsed,value,"No-op editor must round trip \(value) in \(locale)")
+                    try service.update(record,weightKilograms:parsed,recordedAt:now)
+                    expected[record.id]=value
+                }
+            }
+            for input in ["72.4","72,4"] {XCTAssertEqual(try WeightRules.kilograms(from:input),72.4)}
+            for input in ["1,000.2","72,3.4","NaN","inf","1e999"] {XCTAssertThrowsError(try WeightRules.kilograms(from:input))}
+        }
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+        for record in try reopened.mainContext.fetch(FetchDescriptor<WeightRecord>()) {
+            XCTAssertEqual(record.weightKilograms,expected[record.id]);XCTAssertEqual(record.recordedAt,now)
+        }
+    }
+
     func testReviewDailyMeansAreEqualWeightAndLatestIsAnActualMeasurement() throws {
         let zone = TimeZone(identifier: "Asia/Shanghai")!
         func instant(_ day: Int, _ hour: Int) -> Date { ImportantCivilDay(year: 2026, month: 10, day: day).instant(minutes: hour * 60, timeZone: zone)! }

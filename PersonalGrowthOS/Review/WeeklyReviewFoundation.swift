@@ -314,16 +314,24 @@ enum WeeklySummaryService {
         weightRecords: [WeightRecord],
         tags: [Tag] = [],
         links: [ObjectLink] = [],
+        dayMetadata: [HabitLogDayMetadata] = [],
+        asOf: Date = Date(),
         timeZone: TimeZone = .current
     ) -> WeeklySummary {
         let calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        let metadataByLogID=HabitLogDayResolver.metadataByLogID(dayMetadata)
+        let firstDay=HabitLocalDay(date:period.start,timeZone:timeZone)
+        let lastDay=HabitLocalDay(date:period.end,timeZone:timeZone)
+        func businessDay(_ log:HabitLog) -> HabitLocalDay {
+            HabitLogDayResolver.localDay(for:log,metadataByLogID:metadataByLogID,fallbackTimeZone:timeZone)
+        }
         let weeklyEntries = entries.filter {
-            $0.kind == .quickNote && period.contains($0.occurredAt)
+            $0.kind == .quickNote && $0.occurredAt <= asOf && period.contains($0.occurredAt)
         }
         let weeklyLogs = habitLogs.filter {
-            $0.isCompleted && period.contains($0.occurredAt)
+            $0.isCompleted && $0.occurredAt <= asOf && businessDay($0) >= firstDay && businessDay($0) <= lastDay
         }
-        let weeklyWeights = weightRecords.filter { period.contains($0.recordedAt) }
+        let weeklyWeights = weightRecords.filter { $0.recordedAt <= asOf && period.contains($0.recordedAt) }
 
         return WeeklySummary(
             entryCount: weeklyEntries.isEmpty ? nil : weeklyEntries.count,
@@ -335,7 +343,7 @@ enum WeeklySummaryService {
             habitHighlight: habitHighlight(
                 logs: weeklyLogs,
                 habits: habits,
-                calendar: calendar
+                businessDay: businessDay
             ),
             weight: weightSummary(records: weeklyWeights),
             topTags: topTags(entries: weeklyEntries, tags: tags, links: links),
@@ -364,7 +372,7 @@ enum WeeklySummaryService {
     private static func habitHighlight(
         logs: [HabitLog],
         habits: [Habit],
-        calendar: Calendar
+        businessDay: (HabitLog) -> HabitLocalDay
     ) -> WeeklyHabitHighlight? {
         let names = Dictionary(
             habits.map { ($0.id, $0.name) },
@@ -377,7 +385,7 @@ enum WeeklySummaryService {
                     habitID: habitID,
                     habitName: name,
                     checkInCount: logs.count,
-                    activeDayCount: Set(logs.map { calendar.startOfDay(for: $0.occurredAt) }).count
+                    activeDayCount: Set(logs.map(businessDay)).count
                 )
             }
             .sorted {

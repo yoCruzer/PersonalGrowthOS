@@ -162,6 +162,7 @@ enum HabitCheckInError: Error, Equatable {
     case recentlyCheckedIn
     case checkInIsNotLatest
     case futureOccurrence
+    case invalidQuantity
     case notScheduled
 }
 
@@ -718,6 +719,18 @@ enum HabitAnalyticsEngine {
 enum HabitCheckInPolicy {
     static let duplicatePreventionInterval: TimeInterval = 2.5
     static let undoPresentationInterval: TimeInterval = 6
+}
+
+enum HabitQuantityRules {
+    static func validate(_ quantity:Double?) throws {
+        guard quantity?.isFinite != false else {throw HabitCheckInError.invalidQuantity}
+    }
+    static func parse(_ text:String) throws -> Double? {
+        let trimmed=text.trimmingCharacters(in:.whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {return nil}
+        guard let value=Double(trimmed),value.isFinite else {throw HabitCheckInError.invalidQuantity}
+        return value
+    }
 }
 
 struct HabitLogDraft {

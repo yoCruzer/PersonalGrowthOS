@@ -1474,3 +1474,31 @@ extension TodoFoundationTests {
         }
     }
 }
+
+@MainActor extension TodoFoundationTests {
+    func testSystemSR01ExplicitZeroLeadAndLargerOffsetsKeepOverrideGenerationAndTermination() throws {
+        for offset in [0,-1,7,366] {
+            let c=try PersistenceContainerFactory.makeInMemory(),now=date("2026-01-01").addingTimeInterval(-12*3600)
+            func writer() -> TodoTaskService {TodoTaskService(context:ModelContext(c),now:{now},timeZone:{self.zone})}
+            let list=try writer().createList(name:"Explicit offsets")
+            let anchor=TodoDay("2026-01-02")!,reminderDay=try TodoRecurrence.reminderDay(occurrence:anchor,offset:offset)
+            let root=try writer().create(.init(title:"Explicit \(offset)",plannedDay:anchor.description,remindAt:TodoRecurrence.reminder(day:reminderDay,minutes:600,timeZone:zone),listID:list.id,frequency:.daily))
+            try writer().rescheduleReminder(id:root.id,to:now.addingTimeInterval(600))
+            try writer().transition(id:root.id,to:.canceled,skip:true)
+            func open() throws -> TodoTask {try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})}
+            let next=try open(),oldGeneration=try XCTUnwrap(writer().reminderIntent(for:next.id)).generation
+            XCTAssertEqual(next.reminderLocalDay,try TodoRecurrence.reminderDay(occurrence:TodoDay(next.plannedDay!)!,offset:offset).description)
+            try writer().transition(id:root.id,to:.open)
+            try writer().transition(id:root.id,to:.completed)
+            XCTAssertEqual(try open().id,next.id)
+            XCTAssertNotEqual(try writer().reminderIntent(for:next.id)?.generation,oldGeneration)
+            try writer().stopSeries(taskID:next.id)
+            var edit=try writer().draft(id:next.id);edit.remindAt=nil;try writer().edit(id:next.id,draft:edit)
+            try writer().deleteList(id:list.id)
+            XCTAssertTrue(try ModelContext(c).fetch(FetchDescriptor<TodoTask>()).allSatisfy {$0.listID == nil})
+            XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset,offset)
+            XCTAssertTrue(try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<TodoSeries>()).first).isStopped)
+            try TodoIntegrity.validate(context:ModelContext(c));try UsagePreferencesIntegrity.validate(context:ModelContext(c))
+        }
+    }
+}

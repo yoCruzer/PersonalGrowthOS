@@ -1206,3 +1206,175 @@ extension InvestmentPersistenceTests {
         XCTAssertEqual(editor.error,InvestmentFailure.duplicate.localizedDescription)
     }
 }
+
+private final class SystemExportBarrier: @unchecked Sendable {
+    let semaphore=DispatchSemaphore(value:0)
+    private let lock=NSLock()
+    private var released=false
+    var isReleased:Bool {lock.lock();defer {lock.unlock()};return released}
+    func release() {lock.lock();let first = !released;released=true;lock.unlock();if first {semaphore.signal()}}
+}
+
+@MainActor
+extension InvestmentPersistenceTests {
+    func testSystemSR04RealExportLeaseLifecycleCheckpointDoesNotBlockMainActorAndEventuallyCommits() async throws {
+        let folder=try root(),url=folder.appendingPathComponent("system-lock.sqlite")
+        let c=try PersistenceContainerFactory.makeOnDisk(at:url)
+        var readings=InvestmentClockTestReadings()
+        let (service,id)=try f1DiskStart(c,clock:{readings.sample()})
+        readings.advance(wall:60,continuous:60,awake:60)
+        let cutoff=readings.sample(),entered=expectation(description:"Real export holds store and media lease"),barrier=SystemExportBarrier()
+        let exporter=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:folder),availableCapacity:{.max},investmentClock:{cutoff},exportCheckpoint:{
+            entered.fulfill();barrier.semaphore.wait()
+        })
+        let exporting=Task {try await exporter.exportPackage()}
+        await fulfillment(of:[entered],timeout:5)
+        // Independent worker prevents a red baseline from hanging the test host.
+        DispatchQueue.global().asyncAfter(deadline:.now()+5) {barrier.release()}
+        let committed=expectation(description:"Queued lifecycle checkpoint committed")
+        let observer=NotificationCenter.default.addObserver(forName:.investmentChanged,object:nil,queue:nil) {notification in
+            if notification.object as? ModelContainer === c {committed.fulfill()}
+        }
+        defer {NotificationCenter.default.removeObserver(observer);barrier.release()}
+        readings.advance(wall:60,continuous:60,awake:60)
+        c.mainContext.autosaveEnabled=false
+        c.mainContext.insert(Entry(body:"Unrelated unsaved draft",createdAt:readings.wall))
+        let workspace=InvestmentWorkspace()
+        workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+        XCTAssertFalse(barrier.isReleased,"MainActor probe must execute while export still holds the lease")
+        barrier.release()
+        let package=try await exporting.value;defer {package.cleanup()}
+        await fulfillment(of:[committed],timeout:5)
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let op=try XCTUnwrap(InvestmentService(context:reopened.mainContext).operations().first {$0.id == id})
+        XCTAssertEqual(op.timer.values.seconds,120)
+        XCTAssertEqual(op.timer.state,.running)
+        XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<Entry>()),0)
+        XCTAssertTrue(c.mainContext.hasChanges)
+        let (data,_)=try zipData(package.url)
+        XCTAssertEqual(data.investmentOperations.first?.timer.values.seconds,60,"Backup keeps its original cutoff")
+        XCTAssertEqual(try service.operations().count,1)
+    }
+}
+
+@MainActor
+extension InvestmentPersistenceTests {
+    func testSystemSR06SuccessfulEditorsReleaseWithoutErasingDurableEvidenceOrOtherDrafts() throws {
+        let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("editors.sqlite"))
+        var readings=InvestmentClockTestReadings()
+        let service=InvestmentService(context:c.mainContext,clock:{readings.sample()})
+        let activity=try service.createActivity(name:"Editor lifetime")
+        let workspace=InvestmentWorkspace();workspace.refresh(c.mainContext)
+        let kept=try workspace.newEditor(activityID:activity);kept.values.note="Keep this unsaved input"
+        XCTAssertTrue(kept.persist(c.mainContext));workspace.refresh(c.mainContext)
+        for index in 0..<3 {
+            let editor=try workspace.newEditor(activityID:activity)
+            editor.values.changeDuration(Double(index+1)*60);editor.durationText=String(index+1);editor.values.note="Saved manual \(index)"
+            XCTAssertTrue(editor.persist(c.mainContext))
+            if index == 0 {
+                XCTAssertThrowsError(try workspace.saveEditor(editor,context:c.mainContext,confirmDuplicate:true,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                XCTAssertFalse(editor.finished);XCTAssertTrue(workspace.editors[editor.id] === editor);XCTAssertEqual(editor.values.note,"Saved manual 0")
+            }
+            try workspace.saveEditor(editor,context:c.mainContext,confirmDuplicate:true)
+            XCTAssertTrue(editor.finished);XCTAssertNil(workspace.editors[editor.id])
+            XCTAssertEqual(try service.operations().first {$0.id == editor.id}?.timer.state,.saved)
+            XCTAssertNotNil(try workspace.session(id:editor.id,context:c.mainContext))
+            let id=UUID(),participant=try XCTUnwrap(workspace.me)
+            try service.start(activityID:activity,participantID:participant,operationID:id,zone:zone)
+            readings.advance(wall:60,continuous:60,awake:60)
+            try f1Command(service,id,.finish);workspace.refresh(c.mainContext)
+            let op=try XCTUnwrap(workspace.operations.first {$0.id == id}),confirmation=workspace.editor(for:op)
+            confirmation.values.note="Timer confirmation \(index)"
+            try workspace.saveEditor(confirmation,context:c.mainContext,confirmDuplicate:true)
+            XCTAssertNil(workspace.editors[id]);XCTAssertEqual(try service.operations().first {$0.id == id}?.timer.state,.saved)
+            try service.saveTimer(id:id,revision:op.revision,values:confirmation.values,confirmDuplicate:true)
+            XCTAssertNotNil(try workspace.session(id:id,context:c.mainContext))
+            XCTAssertEqual(workspace.editors.count,1);XCTAssertTrue(workspace.editors[kept.id] === kept)
+            XCTAssertEqual(kept.values.note,"Keep this unsaved input")
+        }
+        XCTAssertEqual(try c.mainContext.fetchCount(FetchDescriptor<InvestmentSession>()),6)
+        let fact=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentSession>()).first)
+        let editing=workspace.edit(try InvestmentSessionTransfer(fact))
+        editing.values.note="Formal edit remains durable";XCTAssertTrue(editing.persist(c.mainContext))
+        try workspace.saveEditor(editing,context:c.mainContext,confirmDuplicate:true)
+        XCTAssertNil(workspace.editors[editing.id]);XCTAssertEqual(editing.values.note,"")
+        XCTAssertEqual(try workspace.session(id:fact.id,context:c.mainContext)?.values.note,"Formal edit remains durable")
+    }
+
+    func testSystemSR04CoalescedLateCheckpointCannotOverrideExplicitPauseOrFinish() async throws {
+        for finish in [false,true] {
+            let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("late.sqlite"))
+            var readings=InvestmentClockTestReadings()
+            let (service,id)=try f1DiskStart(c,clock:{readings.sample()})
+            let barrier=SystemExportBarrier(),entered=expectation(description:"Real export lease")
+            let cutoff=readings.sample()
+            let exporter=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:folder),availableCapacity:{.max},investmentClock:{cutoff},exportCheckpoint:{entered.fulfill();barrier.semaphore.wait()})
+            let exporting=Task {try await exporter.exportPackage()}
+            await fulfillment(of:[entered],timeout:5)
+            DispatchQueue.global().asyncAfter(deadline:.now()+5) {barrier.release()}
+            let workspace=InvestmentWorkspace(),ready=expectation(description:"Queued checkpoint about to re-read current state")
+            var continuation:CheckedContinuation<Void,Never>?
+            workspace.beforeCheckpointRetry={ready.fulfill();await withCheckedContinuation {continuation=$0}}
+            readings.advance(wall:60,continuous:60,awake:60)
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            XCTAssertFalse(barrier.isReleased)
+            barrier.release();let package=try await exporting.value;defer {package.cleanup()}
+            await fulfillment(of:[ready],timeout:5)
+            try f1Command(service,id,finish ? .finish:.pause)
+            let authoritative=try XCTUnwrap(service.operations().first {$0.id == id})
+            readings.advance(wall:600,continuous:600,awake:600)
+            try XCTUnwrap(continuation).resume()
+            await workspace.waitForCheckpoint()
+            XCTAssertEqual(try service.operations().first {$0.id == id},authoritative)
+            XCTAssertEqual(authoritative.timer.values.seconds,60)
+            XCTAssertEqual(authoritative.timer.state,finish ? .pendingSave:.paused)
+        }
+    }
+}
+
+@MainActor extension InvestmentPersistenceTests {
+    func testSystemSR04PausedContrastAndRetainedDraftSurviveCanceledOrFailedExport() async throws {
+        for mode in 0..<3 {
+            let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("export-outcome.sqlite"))
+            var readings=InvestmentClockTestReadings()
+            let (service,id)=try f1DiskStart(c,clock:{readings.sample()})
+            readings.advance(wall:60,continuous:60,awake:60);try f1Command(service,id,.pause)
+            let workspace=InvestmentWorkspace();workspace.refresh(c.mainContext)
+            var editor:InvestmentEditorState?
+            if mode > 0 {
+                let draft=try workspace.newEditor(activityID:try XCTUnwrap(workspace.myActivities.first).id)
+                draft.values.note="Before export";XCTAssertTrue(draft.persist(c.mainContext));editor=draft
+                draft.values.note="Unsaved current input"
+                XCTAssertFalse(draft.persist(c.mainContext,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                XCTAssertEqual(draft.values.note,"Unsaved current input")
+            }
+            let authoritative=try XCTUnwrap(service.operations().first {$0.id == id})
+            let cutoff=readings.sample(),entered=expectation(description:"Export snapshot owns publication lease"),barrier=SystemExportBarrier()
+            let exporter=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:folder),availableCapacity:{.max},investmentClock:{cutoff},exportCheckpoint:{
+                entered.fulfill();barrier.semaphore.wait()
+                if mode == 2 {throw CocoaError(.fileWriteOutOfSpace)}
+            })
+            let exporting=Task {try await exporter.exportPackage()}
+            await fulfillment(of:[entered],timeout:5)
+            DispatchQueue.global().asyncAfter(deadline:.now()+5) {barrier.release()}
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            XCTAssertFalse(barrier.isReleased)
+            if mode == 0 {await workspace.waitForCheckpoint();XCTAssertFalse(barrier.isReleased,"Pure paused has no work to queue")}
+            if mode == 1 {exporting.cancel()}
+            barrier.release()
+            do {let package=try await exporting.value;package.cleanup();XCTAssertEqual(mode,0)}
+            catch is CancellationError {XCTAssertEqual(mode,1)}
+            catch {XCTAssertEqual(mode,2)}
+            await workspace.waitForCheckpoint()
+            XCTAssertEqual(try service.operations().first {$0.id == id},authoritative,"Paused time never accrues")
+            if let editor {
+                XCTAssertTrue(workspace.editors[editor.id] === editor);XCTAssertFalse(editor.finished);XCTAssertNil(editor.error)
+                let op=try XCTUnwrap(service.operations().first {$0.id == editor.id})
+                XCTAssertEqual(op.timer.values.note,"Unsaved current input")
+                XCTAssertEqual(editor.values.note,"Unsaved current input")
+            }
+        }
+    }
+}

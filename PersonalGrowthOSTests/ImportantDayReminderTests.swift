@@ -179,3 +179,76 @@ extension ImportantDayReminderTests {
         XCTAssertEqual(coordinator.status(for: task), .scheduled); XCTAssertEqual(coordinator.status(for: day).status, .scheduled)
     }
 }
+
+@MainActor
+private final class SystemSettingsLateClient: LocalReminderNotificationClient {
+    var pending: [String:DateComponents]=[:]
+    var entered: XCTestExpectation?
+    var continuation: CheckedContinuation<Void,Error>?
+    var suspendFirst=true
+    var failCurrent=false
+    func authorizationStatus() async -> UNAuthorizationStatus {.authorized}
+    func requestAuthorization() async throws -> Bool {true}
+    func pendingIdentifiers() async -> Set<String> {Set(pending.keys)}
+    func remove(_ ids:[String]) {for id in ids {pending.removeValue(forKey:id)}}
+    func addRepeating(identifier:String,components:DateComponents,title:String,body:String) async throws {
+        if suspendFirst {
+            suspendFirst=false
+            try await withCheckedThrowingContinuation { continuation in self.continuation=continuation;entered?.fulfill() }
+        }
+        if failCurrent {throw CocoaError(.fileWriteUnknown)}
+        pending[identifier]=components
+    }
+}
+
+@MainActor
+extension ImportantDayReminderTests {
+    func testSystemSR05ChangedPreferenceSnapshotRejectsResultsBeforeNextSubmission() async throws {
+        for succeeds in [false,true] {
+            let owner=ReminderSettingsUpdate(),client=SystemSettingsLateClient()
+            let entered=expectation(description:"Actual scheduler add entered");client.entered=entered
+            var current=true,applied=false
+            let task=owner.submit(operation:{try await LocalReminderScheduler(client:client).updateDaily(enabled:true,minutesAfterMidnight:480,requestPermission:false)},isCurrent:{current},apply:{_ in applied=true})
+            await fulfillment(of:[entered],timeout:3)
+            current=false // Preference binding changed; its onChange task need not have run yet.
+            if succeeds {try XCTUnwrap(client.continuation).resume()} else {try XCTUnwrap(client.continuation).resume(throwing:CocoaError(.fileWriteUnknown))}
+            await task.value;XCTAssertFalse(applied)
+        }
+    }
+
+    func testSystemSR05ActualDailyWeeklySettingsBoundaryRejectsAllLateOutcomes() async throws {
+        for weekly in [false,true] {
+            for enabled in [false,true] {
+                for outcome in 0..<3 {
+                    let client=SystemSettingsLateClient(),owner=ReminderSettingsUpdate()
+                    let entered=expectation(description:"A entered actual addRepeating");client.entered=entered
+                    let scheduler=LocalReminderScheduler(client:client)
+                    var applied:[ReminderUpdateResult]=[],failures=0
+                    func operation(_ enabled:Bool,_ minutes:Int,_ weekday:Int) async throws -> ReminderUpdateResult {
+                        if weekly {return try await scheduler.updateWeekly(enabled:enabled,weekday:weekday,minutesAfterMidnight:minutes,requestPermission:false)}
+                        return try await scheduler.updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:false)
+                    }
+                    func apply(_ result:Result<ReminderUpdateResult,Error>) {
+                        switch result {case .success(let value):applied.append(value);case .failure:failures += 1}
+                    }
+                    let old=owner.submit(operation:{try await operation(true,480,2)},apply:apply)
+                    await fulfillment(of:[entered],timeout:3)
+                    let latest=owner.submit(operation:{try await operation(enabled,690,6)},apply:apply)
+                    let continuation=try XCTUnwrap(client.continuation)
+                    if outcome == 0 {continuation.resume(throwing:CocoaError(.fileWriteUnknown))}
+                    else if outcome == 1 {continuation.resume()}
+                    else {continuation.resume(throwing:CancellationError())}
+                    await old.value;await latest.value
+                    XCTAssertEqual(applied,[enabled ? .scheduled:.removed]);XCTAssertEqual(failures,0)
+                    let id=weekly ? LocalReminderScheduler.weeklyIdentifier:LocalReminderScheduler.dailyIdentifier
+                    XCTAssertEqual(client.pending[id]?.hour,enabled ? 11:nil)
+                    XCTAssertEqual(client.pending[id]?.minute,enabled ? 30:nil)
+                    if weekly {XCTAssertEqual(client.pending[id]?.weekday,enabled ? 6:nil)}
+                    client.failCurrent=true
+                    await owner.submit(operation:{try await operation(true,720,3)},apply:apply).value
+                    XCTAssertEqual(failures,1,"A current ordinary failure must still reach settings feedback")
+                }
+            }
+        }
+    }
+}

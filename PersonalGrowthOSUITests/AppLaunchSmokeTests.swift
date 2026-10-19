@@ -69,7 +69,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         continueAfterFailure=false
         for large in [false,true] {
             let app=XCUIApplication()
-            app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSQuietWinsTest","-PGOSUsageWeightTest","-PGOSImportantDaysTest","-PGOSInvestmentSegmentReview","-AppleLanguages",large ? "(zh-Hans)" : "(en)","-AppleLocale",large ? "zh_CN" : "en_US","-AppleInterfaceStyle",large ? "Dark" : "Light","-UIPreferredContentSizeCategoryName",large ? UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue : UIContentSizeCategory.large.rawValue]
+            app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSQuietWinsTest","-PGOSUsageHabitVariantsTest","-PGOSUsageWeightTest","-PGOSImportantDaysTest","-PGOSInvestmentSegmentReview","-AppleLanguages",large ? "(zh-Hans)" : "(en)","-AppleLocale",large ? "zh_CN" : "en_US","-AppleInterfaceStyle",large ? "Dark" : "Light","-UIPreferredContentSizeCategoryName",large ? UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue : UIContentSizeCategory.large.rawValue]
             print(large ? "PGOS_USAGE_STYLE_DARK" : "PGOS_USAGE_STYLE_LIGHT");fflush(stdout);Thread.sleep(forTimeInterval:1)
             app.launch()
             func shot(_ name: String) {let a=XCTAttachment(screenshot:app.screenshot());a.name="Usage-mixed-\(large ? "Chinese-Dark-maxAX" : "English-Light-default")-"+name;a.lifetime = .keepAlways;add(a)}
@@ -91,11 +91,12 @@ final class AppLaunchSmokeTests: XCTestCase {
                 let bottom=app.tabBars.firstMatch.frame.minY-56
                 if goalRow.exists,goalRow.frame.minY >= top,goalRow.frame.maxY <= bottom {break}
                 if !goalRow.exists || goalRow.frame.minY < top {
-                    app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.35)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.55)))
+                    app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.45)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.55)),withVelocity:.slow,thenHoldForDuration:0.2)
                 } else {
-                    app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.65)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.45)))
+                    app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.55)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.45)),withVelocity:.slow,thenHoldForDuration:0.2)
                 }
             }
+            print("PGOS_GROWTH_GOAL_GEOMETRY row=\(goalRow.frame) nav=\(app.navigationBars.firstMatch.frame) tab=\(app.tabBars.firstMatch.frame)");fflush(stdout)
             XCTAssertGreaterThanOrEqual(goalRow.frame.minY,app.navigationBars.firstMatch.frame.maxY+8)
             XCTAssertLessThanOrEqual(goalRow.frame.maxY,app.tabBars.firstMatch.frame.minY-56)
             let geometry=XCTAttachment(string:"row=\(goalRow.frame) nav=\(app.navigationBars.firstMatch.frame) tab=\(app.tabBars.firstMatch.frame)")
@@ -113,6 +114,32 @@ final class AppLaunchSmokeTests: XCTestCase {
                 XCTAssertTrue(row.isHittable,app.debugDescription);XCTAssertGreaterThanOrEqual(row.frame.height,44);shot(id)
             }
             app.tabBars.buttons[large ? "今天" : "Today"].tap()
+            for id in ["today-habit-synthetic daily multiple long habit-increase","habit-synthetic weekly long habit","habit-synthetic monthly long habit"] {
+                let row=app.buttons[id]
+                for _ in 0..<30 {
+                    let top=app.navigationBars.firstMatch.frame.maxY+8,bottom=app.tabBars.firstMatch.frame.minY-(id.hasPrefix("habit-") ? 60:12)
+                    if row.exists,row.frame.minY >= top,row.frame.maxY <= bottom,row.isHittable {break}
+                    if !row.exists || row.frame.minY >= bottom {app.swipeUp();continue}
+                    if row.frame.maxY <= top {app.swipeDown();continue}
+                    let down=row.frame.minY < top
+                    app.coordinate(withNormalizedOffset:CGVector(dx:0.1,dy:down ? 0.45:0.55)).press(forDuration:0,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.1,dy:down ? 0.55:0.45)),withVelocity:.fast,thenHoldForDuration:0.2)
+                }
+                XCTAssertTrue(row.isHittable,app.debugDescription)
+                XCTAssertGreaterThanOrEqual(row.frame.minY,app.navigationBars.firstMatch.frame.maxY+8)
+                XCTAssertLessThanOrEqual(row.frame.maxY,app.tabBars.firstMatch.frame.minY-12)
+                // XCTest returns a binary CGFloat such as 43.99999999999997 for 44pt.
+                XCTAssertGreaterThanOrEqual(row.frame.height+0.000001,44)
+                shot(id)
+                row.tap()
+                if id.hasPrefix("habit-") {
+                    let title=id.contains("weekly") ? "Synthetic weekly long habit":"Synthetic monthly long habit"
+                    XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout:5),app.debugDescription)
+                    app.navigationBars.buttons.firstMatch.tap()
+                } else {
+                    let count=app.staticTexts["today-habit-synthetic daily multiple long habit-count"]
+                    expectation(for:NSPredicate(format:"value == %@","1"),evaluatedWith:count);waitForExpectations(timeout:5)
+                }
+            }
             for index in 0..<7 {shot("Today-\(index)");app.swipeUp()}
             XCTAssertTrue(app.buttons["today-weekly-review"].exists)
             let todayGoal=app.buttons["today-goal-synthetic active focus"]
@@ -3052,5 +3079,90 @@ extension AppLaunchSmokeTests {
         let row=app.buttons.matching(identifier:"weight-record-row").firstMatch;reveal(row)
         XCTAssertFalse(row.label.contains("77.0"),row.label)
         let detail=XCTAttachment(screenshot:app.screenshot());detail.name="ReviewFix-Weight-Chinese-Dark-maxAX-cutoff-records";detail.lifetime = .keepAlways;add(detail)
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testSystemWeightNoOpAndDateOnlyEditsPreserveFullValueAfterRelaunch() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeightLosslessTest","-PGOSWeightReviewNow","2026-10-18","-AppleLanguages","(en)","-AppleLocale","en_US"]
+        app.launch();app.buttons["today-weight"].tap()
+        let rows=app.buttons.matching(identifier:"weight-record-row")
+        func reveal(_ element:XCUIElement) {
+            for _ in 0..<24 {
+                let top=app.navigationBars.firstMatch.frame.maxY+8,bottom=app.tabBars.firstMatch.frame.minY-24
+                if element.exists,element.frame.minY >= top,element.frame.maxY <= bottom,element.isHittable {return}
+                let down=element.exists && element.frame.minY < top
+                app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:down ? 0.35:0.65)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:down ? 0.55:0.45)))
+            }
+            XCTFail("Weight row must be wholly visible before tapping: \(app.debugDescription)")
+        }
+        let first=rows.firstMatch;reveal(first);first.tap()
+        let value=app.textFields["weight-editor-value"]
+        XCTAssertTrue(value.waitForExistence(timeout:5));XCTAssertEqual(value.value as? String,"72.345")
+        app.buttons["weight-editor-save"].tap()
+        reveal(first);first.tap()
+        XCTAssertTrue(value.waitForExistence(timeout:5));XCTAssertEqual(value.value as? String,"72.345")
+        let date=app.datePickers["weight-editor-date"];date.buttons.firstMatch.tap()
+        XCTAssertEqual(app.buttons["DatePicker.Show"].value as? String,"October 2026")
+        let eleventh=app.buttons.matching(NSPredicate(format:"label CONTAINS %@","October 11")).firstMatch
+        XCTAssertTrue(eleventh.waitForExistence(timeout:5));eleventh.tap();app.navigationBars["Edit Weight"].tap()
+        app.buttons["weight-editor-save"].tap()
+        reveal(first);first.tap();XCTAssertTrue(value.waitForExistence(timeout:5));XCTAssertEqual(value.value as? String,"72.345")
+        app.buttons["weight-editor-save"].tap()
+        let thousand=rows.element(boundBy:1);reveal(thousand);thousand.tap()
+        XCTAssertEqual(value.value as? String,"1000");app.buttons["weight-editor-save"].tap()
+        app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData"};app.launch();app.buttons["today-weight"].tap()
+        reveal(first);first.tap();XCTAssertTrue(value.waitForExistence(timeout:5));XCTAssertEqual(value.value as? String,"72.345")
+        let shot=XCTAttachment(screenshot:app.screenshot());shot.name="System-Weight-date-only-precision-after-relaunch";shot.lifetime = .keepAlways;add(shot)
+    }
+
+    func testSystemWeeklyCurrentCutoffAndHistoricalLateWeekSummary() {
+        continueAfterFailure=false
+        for historical in [false,true] {
+            let app=XCUIApplication()
+            app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSWeeklyCutoffTest","-AppleLanguages","(en)","-AppleLocale","en_US"]
+            if historical {app.launchArguments.append("-PGOSWeeklyPreviousWeekTest")}
+            app.launch()
+            let open=app.buttons["today-weekly-review"]
+            for _ in 0..<15 where !open.isHittable {app.swipeUp()};XCTAssertTrue(open.isHittable);open.tap()
+            let entries=app.descendants(matching:.any)["weekly-summary-entries"]
+            XCTAssertTrue(entries.waitForExistence(timeout:5),app.debugDescription)
+            XCTAssertTrue(entries.label.contains("1"),entries.label)
+            let weight=app.descendants(matching:.any)["weekly-summary-weight"]
+            for _ in 0..<12 where !weight.isHittable {app.swipeUp()}
+            XCTAssertTrue(weight.label.contains(historical ? "69.0":"70.0"),weight.label)
+            if !historical {
+                let habits=app.descendants(matching:.any)["weekly-summary-habits"]
+                XCTAssertTrue(habits.label.contains("1"),habits.label)
+            }
+            let expected=app.staticTexts[historical ? "Historical Sunday entry":"Current occurred entry"]
+            for _ in 0..<12 where !expected.isHittable {app.swipeUp()}
+            XCTAssertTrue(expected.exists,app.debugDescription);XCTAssertFalse(app.staticTexts["Future occurred entry"].exists)
+            let shot=XCTAttachment(screenshot:app.screenshot());shot.name=historical ? "System-Weekly-historical-Sunday-included":"System-Weekly-future-facts-excluded";shot.lifetime = .keepAlways;add(shot)
+            app.terminate()
+        }
+    }
+}
+
+
+extension AppLaunchSmokeTests {
+    func testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-PGOSUITesting","-PGOSResetData","-PGOSSettingsPreferenceTest","-AppleLanguages","(en)","-AppleLocale","en_US","-UIPreferredContentSizeCategoryName",UIContentSizeCategory.large.rawValue]
+        app.launch();app.buttons["Settings"].tap()
+        for id in ["daily-reminder-toggle","weekly-reminder-toggle"] {
+            let toggle=app.switches[id]
+            XCTAssertTrue(toggle.waitForExistence(timeout:5));XCTAssertEqual(toggle.value as? String,"1")
+            toggle.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+            expectation(for:NSPredicate(format:"value == %@","0"),evaluatedWith:toggle);waitForExpectations(timeout:5)
+        }
+        XCTAssertFalse(app.datePickers["daily-reminder-time"].exists)
+        XCTAssertFalse(app.datePickers["weekly-reminder-time"].exists)
+        XCTAssertFalse(app.alerts.firstMatch.exists)
+        app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData"};app.launch();app.buttons["Settings"].tap()
+        for id in ["daily-reminder-toggle","weekly-reminder-toggle"] {XCTAssertTrue(app.switches[id].waitForExistence(timeout:5));XCTAssertEqual(app.switches[id].value as? String,"0")}
     }
 }

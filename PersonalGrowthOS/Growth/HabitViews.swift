@@ -59,7 +59,9 @@ struct GrowthView: View {
         }
         .navigationTitle("Growth").accessibilityIdentifier("growth-view")
         .onAppear { refreshCounts() }
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in refreshCounts() }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { notification in
+            if GrowthEntryCounts.needsRefresh(notification) {refreshCounts()}
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refreshCounts() }
         .onChange(of: phase) { _, value in if value == .active { refreshCounts() } }
     }
@@ -71,24 +73,53 @@ struct GrowthView: View {
 }
 
 /// Read-only entry statistics. No workspace bootstrap or default settings writes.
-struct GrowthEntryCounts {
+@MainActor struct GrowthEntryCounts {
     var habits: Int
     var goals: Int
     var weightDays: Int
     var sleepNights: Int
     var activities: Int
     var importantDays: Int
+    static func needsRefresh(_ notification:Notification) -> Bool {
+        // Never dereference the sender context after RunLoop delivery: its container
+        // may already have ended its lifetime. Persistent identifiers are value evidence.
+        // Skip only positively identified operation/session writes. Unknown payloads,
+        // bulk invalidation, metadata, imports and formal Growth facts stay conservative.
+        guard let info=notification.userInfo else {return true}
+        func value(_ key:ModelContext.NotificationKey) -> Any? {info[key] ?? info[key.rawValue]}
+        if let invalidation=value(.invalidatedAllIdentifiers) {
+            if let flag=invalidation as? Bool {if flag {return true}}
+            else if let ids=invalidation as? [PersistentIdentifier] {if !ids.isEmpty {return true}}
+            else if let ids=invalidation as? Set<PersistentIdentifier> {if !ids.isEmpty {return true}}
+            else {return true}
+        }
+        var identifiers:[PersistentIdentifier]=[]
+        for key in [ModelContext.NotificationKey.insertedIdentifiers,.updatedIdentifiers,.deletedIdentifiers] {
+            guard let raw=value(key) else {continue}
+            if let array=raw as? [PersistentIdentifier] {identifiers += array}
+            else if let set=raw as? Set<PersistentIdentifier> {identifiers += set}
+            else {return true}
+        }
+        guard !identifiers.isEmpty else {return true}
+        return !identifiers.allSatisfy {["InvestmentOperation","InvestmentSession"].contains($0.entityName)}
+    }
     init(context: ModelContext, now: Date = Date(), zone: TimeZone = .current) throws {
         let read = ModelContext(context.container)
         habits = try read.fetchCount(FetchDescriptor<Habit>(predicate: #Predicate { $0.statusRawValue == "active" }))
         goals = try read.fetchCount(FetchDescriptor<Goal>(predicate: #Predicate { $0.statusRawValue == "active" }))
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
-        weightDays = Set(try read.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.recordedAt <= now }))
-            .map { calendar.startOfDay(for: $0.recordedAt) }).count
-        sleepNights = Set(try read.fetch(FetchDescriptor<SleepRecord>()).map(\.wakeDay)).count
+        let weights=try read.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.recordedAt <= now }))
+        let sleeps=try read.fetch(FetchDescriptor<SleepRecord>())
+        weightDays=Set(weights.map {calendar.startOfDay(for:$0.recordedAt)}).count
+        sleepNights=Set(sleeps.map(\.wakeDay)).count
         let me = try read.fetch(FetchDescriptor<InvestmentParticipant>()).first(where: \.isDefault)?.id
         activities = try read.fetch(FetchDescriptor<InvestmentActivity>()).filter { $0.participantID == me && !$0.isArchived }.count
         importantDays = try read.fetchCount(FetchDescriptor<ImportantDay>(predicate: #Predicate { !$0.isArchived }))
+#if DEBUG
+        GrowthCountReadProbe.reads.append((weights.count,sleeps.count))
+        GrowthCountReadProbe.last=self
+        GrowthCountReadProbe.didRead?()
+#endif
     }
 }
 
@@ -413,13 +444,7 @@ struct HabitOverviewRow: View {
                 thumbnailStore: thumbnailStore
             )
         } label: {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(habit.name)
-                Text(periodProgressText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            ModuleEntryRow(title:habit.name,subtitle:periodProgressText,systemImage:"repeat")
         }
         .accessibilityIdentifier("habit-\(habit.normalizedName)")
     }
@@ -1900,16 +1925,9 @@ private struct DetailedHabitCheckInView: View {
     }
 
     private func saveCheckIn() {
-        let trimmedQuantity = quantity.trimmingCharacters(in: .whitespacesAndNewlines)
-        let parsedQuantity: Double?
-        if trimmedQuantity.isEmpty {
-            parsedQuantity = nil
-        } else if let value = Double(trimmedQuantity) {
-            parsedQuantity = value
-        } else {
-            errorMessage = String(localized: "Quantity must be a number.")
-            return
-        }
+        let parsedQuantity:Double?
+        do {parsedQuantity=try HabitQuantityRules.parse(quantity)}
+        catch {errorMessage=String(localized:"Quantity must be a finite number.");return}
 
         do {
             try save(HabitLogDraft(
@@ -1925,3 +1943,12 @@ private struct DetailedHabitCheckInView: View {
         }
     }
 }
+
+#if DEBUG
+/// Test-only observations at the actual database read, not notification counts.
+@MainActor enum GrowthCountReadProbe {
+    static var reads:[(Int,Int)]=[]
+    static var last:GrowthEntryCounts?
+    static var didRead:(() -> Void)?
+}
+#endif

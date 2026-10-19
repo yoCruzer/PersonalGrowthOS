@@ -2814,3 +2814,232 @@ extension ImportExportRecoveryTests {
         }
     }
 }
+
+@MainActor
+extension ImportExportRecoveryTests {
+    /// Same original V11 model used by the immutable-fixture and CR03 tests.
+    private func systemLegacyNilStore(_ f: TransferTestFixture, override: Bool = false) throws -> (ModelContainer,UUID,UUID,Date,TimeZone) {
+        let url=f.root.appendingPathComponent("system-legacy.sqlite"),id=UUID(),sid=UUID(),list=UUID()
+        let zone=TimeZone(identifier:TimeZone.current.identifier == "America/Los_Angeles" ? "Asia/Shanghai":"America/Los_Angeles")!
+        let now=TodoDay("2026-10-19")!.date(timeZone:zone)!,fire=TodoRecurrence.reminder(day:TodoDay("2026-10-20")!,minutes:600,timeZone:zone)!
+        try autoreleasepool {
+            let schema=Schema(versionedSchema:PersonalGrowthSchemaV11Original.self)
+            let old=try ModelContainer(for:schema,configurations:[ModelConfiguration("PersonalGrowthOSV1",schema:schema,url:url,cloudKitDatabase:.none)])
+            let draft=TodoDraft(title:"Original nil",plannedDay:"2026-10-20",remindAt:fire,listID:list,frequency:.daily)
+            let task=TodoTask(id:id,title:draft.title,plannedDay:draft.plannedDay,remindAt:fire,listID:list,seriesID:sid,occurrenceIndex:0,createdAt:now)
+            task.reminderLocalDay="2026-10-20";task.reminderMinutes=600;task.reminderTimeZoneID=zone.identifier
+            let source=Entry(body:"Legacy source retains original",createdAt:now)
+            old.mainContext.insert(source);old.mainContext.insert(TodoTaskSource(taskID:id,entryID:source.id))
+            old.mainContext.insert(TodoList(id:list,name:"Legacy",createdAt:now));old.mainContext.insert(task)
+            old.mainContext.insert(PersonalGrowthSchemaV11Original.TodoSeries(id:sid,frequency:.daily,anchorDay:"2026-10-20",draft:draft,reminderMinutes:600,createdAt:now))
+            old.mainContext.insert(TodoTaskEvent(taskID:id,sequence:0,kind:.created,occurredAt:now,createdAt:now,beforeValue:nil,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
+            try old.mainContext.save()
+        }
+        let c=try PersistenceContainerFactory.makeOnDisk(at:url)
+        if override {try fix2OldF1Override(c,id:id,fire:fire.addingTimeInterval(400*86400),now:now.addingTimeInterval(60),zone:zone)}
+        return (c,id,list,now,zone)
+    }
+
+    func testSystemSR01StoppedNilDefaultEditsListCleanupAndReopen() async throws {
+        for mode in 0..<4 {
+            let f=try TransferTestFixture();defer {f.remove()}
+            let (c,id,list,now,zone)=try systemLegacyNilStore(f,override:mode == 1)
+            let service=TodoTaskService(context:ModelContext(c),now:{now.addingTimeInterval(120)},timeZone:{zone})
+            if mode == 2 {try service.delete(id:id)} else {try service.stopSeries(taskID:id)}
+            let before=try TransferSnapshot.make(context:ModelContext(c))
+            if mode < 2 {
+                var draft=try service.draft(id:id)
+                if mode == 0 {draft.remindAt=nil} else {draft.title="Stopped metadata";draft.notes="Preserve override"}
+                try service.edit(id:id,draft:draft)
+                XCTAssertEqual(try service.task(id:id).remindAt,draft.remindAt)
+            }
+            let events=try ModelContext(c).fetch(FetchDescriptor<TodoTaskEvent>()).map {TodoTaskEventTransfer($0)}
+            let afterEdit=try TransferSnapshot.make(context:ModelContext(c))
+            let failing=TodoTaskService(context:ModelContext(c),now:{now},save:{throw CocoaError(.fileWriteOutOfSpace)})
+            XCTAssertThrowsError(try failing.deleteList(id:list))
+            XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(c)),afterEdit)
+            try service.deleteList(id:list)
+            let travel=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{TimeZone(identifier:"Asia/Shanghai")!})
+            try travel.refreshRepeatingReminderTimes()
+            let read=ModelContext(try PersistenceContainerFactory.makeOnDisk(at:f.root.appendingPathComponent("system-legacy.sqlite")))
+            XCTAssertTrue(try read.fetch(FetchDescriptor<TodoList>()).isEmpty)
+            XCTAssertEqual(try read.fetch(FetchDescriptor<Entry>()).map(\.body),["Legacy source retains original"])
+            XCTAssertTrue(try read.fetch(FetchDescriptor<TodoTask>()).allSatisfy {$0.listID == nil})
+            XCTAssertTrue(try read.fetch(FetchDescriptor<TodoSeries>()).allSatisfy {$0.isStopped && $0.listID == nil})
+            XCTAssertTrue(events.allSatisfy {event in (try? read.fetch(FetchDescriptor<TodoTaskEvent>()).map {TodoTaskEventTransfer($0)}.contains(event)) == true})
+            try TodoIntegrity.validate(context:read)
+            XCTAssertFalse(before.todoSeries.isEmpty)
+            let exporter=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:f.root),availableCapacity:{.max})
+            let archive=try await exporter.exportPackage();defer {archive.cleanup()}
+            let restored=try f.makeEmptyStore(named:"system-restored",onDisk:true)
+            _ = try await restored.service.importPackage(from:archive.url)
+            try TodoIntegrity.validate(context:ModelContext(restored.container))
+        }
+    }
+
+    func testSystemSR01StoppedNilTravelDoesNotBlockHealthySharedReminders() async throws {
+        let f=try TransferTestFixture();defer {f.remove()}
+        let (c,id,_,now,zone)=try systemLegacyNilStore(f)
+        let service=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{zone})
+        try service.stopSeries(taskID:id)
+        let healthy=try service.create(.init(title:"Healthy Todo",remindAt:now.addingTimeInterval(3600)))
+        var preferences=ImportantDayPreferences();preferences.reminderOffsets=[0]
+        let future=ImportantCivilDay(now,timeZone:.current).adding(days:1)!
+        let day=try ImportantDay(title:"Healthy Important Day",rule:.init(year:future.year,month:future.month,day:future.day),preferences:preferences)
+        c.mainContext.insert(day);try c.mainContext.save()
+        let client=TodoNotificationStub(),coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init(enabled:true,minute:540)},sleepHistory:SleepReminderHistory(defaults:nil))
+        await coordinator.reconcile(context:ModelContext(c))
+        XCTAssertEqual(coordinator.status(for:day).status,.scheduled)
+        XCTAssertEqual(coordinator.sleepStatus().status,.scheduled)
+        XCTAssertEqual(coordinator.status(for:try service.task(id:healthy.id)),.scheduled)
+        XCTAssertEqual(coordinator.status(for:try service.task(id:id)),.none)
+        XCTAssertFalse(client.addCalls.contains {$0.taskID == id})
+    }
+}
+
+@MainActor
+extension ImportExportRecoveryTests {
+    func testSystemBV02BoundedNonfiniteQuantityDiskAndActualExportProbe() async throws {
+        for (index,input) in ["inf","NaN","1e999","2.5"].enumerated() {
+            let f=try TransferTestFixture();defer {f.remove()}
+            let store=try f.makeEmptyStore(named:"quantity",onDisk:true)
+            let now=Date(),value=try XCTUnwrap(Double(input))
+            let habit=try HabitService(context:store.container.mainContext,now:{now}).create(name:"Quantity probe")
+            let service=HabitCheckInService(context:store.container.mainContext,mediaStore:store.mediaStore,now:{now})
+            do {
+                let log=try service.checkIn(habit,draft:HabitLogDraft(occurredAt:now,quantity:value))
+                let url=store.container.configurations.first!.url
+                let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+                let persisted=try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<HabitLog>()).first {$0.id == log.id})
+                let exporter=ImportExportService(context:reopened.mainContext,mediaStore:store.mediaStore,availableCapacity:{.max})
+                do {
+                    let archive=try await exporter.exportPackage();defer {archive.cleanup()}
+                    print("PGOS_BV02 probe=\(index) input=\(input) saved=true persisted=\(String(describing:persisted.quantity)) export=PASS")
+                } catch {
+                    print("PGOS_BV02 probe=\(index) input=\(input) saved=true persisted=\(String(describing:persisted.quantity)) export=FAIL error=\(error)")
+                }
+            } catch {print("PGOS_BV02 probe=\(index) input=\(input) saved=false error=\(error)")}
+        }
+    }
+}
+
+@MainActor
+extension ImportExportRecoveryTests {
+    func testSystemBV02RejectsNonfiniteBeforeSaveAndPreservesOldInvalidFactInRawRecovery() async throws {
+        let f=try TransferTestFixture();defer {f.remove()}
+        let root=f.root.appendingPathComponent("LegacyQuantity"),store=root.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at:store.deletingLastPathComponent(),withIntermediateDirectories:true)
+        let c=try PersistenceContainerFactory.makeOnDisk(at:store),context=c.mainContext,now=Date()
+        let media=MediaStore(rootURL:root),habit=try HabitService(context:context,now:{now}).create(name:"Legacy quantity")
+        let service=HabitCheckInService(context:context,mediaStore:media,now:{now})
+        for text in ["inf","-inf","NaN","1e999"] {
+            XCTAssertThrowsError(try HabitQuantityRules.parse(text))
+            let value=try XCTUnwrap(Double(text))
+            XCTAssertThrowsError(try service.checkIn(habit,draft:.init(occurredAt:now,quantity:value))) {XCTAssertEqual($0 as? HabitCheckInError,.invalidQuantity)}
+            XCTAssertThrowsError(try service.checkInWithInsight(habit,logDraft:.init(occurredAt:now,quantity:value),entryDraft:.init(body:"Must not publish")))
+        }
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<HabitLog>()),0);XCTAssertEqual(try context.fetchCount(FetchDescriptor<Entry>()),0)
+        let finite=try service.checkIn(habit,draft:.init(occurredAt:now,quantity:HabitQuantityRules.parse("2.5"),unit:"km",result:"Original result"))
+        let exporter=ImportExportService(context:context,mediaStore:media,availableCapacity:{.max})
+        let good=try await exporter.exportPackage();defer {good.cleanup()}
+        let restored=try f.makeEmptyStore(named:"finite-restored",onDisk:true);_ = try await restored.service.importPackage(from:good.url)
+        XCTAssertEqual(try restored.container.mainContext.fetch(FetchDescriptor<HabitLog>()).first?.quantity,2.5)
+        // Reconstruct the exact old service's accepted persisted infinity, proved by
+        // bv02 probe (no synthetic schema or invalid event chain is involved).
+        finite.quantity = .infinity;try context.save()
+        do {let archive=try await exporter.exportPackage();archive.cleanup();XCTFail("Do not claim a complete normal backup")}
+        catch let error as NonfiniteHabitQuantityError {XCTAssertEqual(error.logIDs,[finite.id])}
+        let raw=try await exporter.exportRetainedQuantityData(),extracted=f.root.appendingPathComponent("raw-quantity")
+        try ZIPArchiveReader(archiveURL:raw,availableCapacity:.max).extractAll(to:extracted)
+        XCTAssertFalse(FileManager.default.fileExists(atPath:extracted.appendingPathComponent("data.json").path))
+        XCTAssertTrue(try String(contentsOf:extracted.appendingPathComponent("RECOVERY.txt"),encoding:.utf8).contains("NOT"))
+        let recovered=try PersistenceContainerFactory.makeOnDisk(at:extracted.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        let original=try XCTUnwrap(recovered.mainContext.fetch(FetchDescriptor<HabitLog>()).first)
+        XCTAssertEqual(original.id,finite.id);XCTAssertEqual(original.quantity?.bitPattern,Double.infinity.bitPattern)
+        XCTAssertEqual(original.result,"Original result");XCTAssertEqual(original.unit,"km")
+        XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<HabitLog>()).first?.quantity?.bitPattern,Double.infinity.bitPattern)
+    }
+}
+
+@MainActor
+extension ImportExportRecoveryTests {
+    func testSystemSR01UnrecoverableActivePolicyIsLocalAndExplicitRuleCanCorrectIt() async throws {
+        let f=try TransferTestFixture();defer {f.remove()}
+        let (c,id,list,now,zone)=try systemLegacyNilStore(f,override:true)
+        let overridden=try TodoTaskService(context:ModelContext(c)).task(id:id).remindAt!
+        try fix2OldF1Override(c,id:id,fire:overridden.addingTimeInterval(86460),now:now.addingTimeInterval(90),zone:zone)
+        let before=try ModelContext(c).fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init)
+        let service=TodoTaskService(context:ModelContext(c),now:{now},timeZone:{zone})
+        let healthy=try service.create(.init(title:"Healthy beside unknown legacy",remindAt:now.addingTimeInterval(3600)))
+        var preferences=ImportantDayPreferences();preferences.reminderOffsets=[0]
+        let future=ImportantCivilDay(now,timeZone:.current).adding(days:1)!
+        let day=try ImportantDay(title:"Healthy neighbour",rule:.init(year:future.year,month:future.month,day:future.day),preferences:preferences)
+        c.mainContext.insert(day);try c.mainContext.save()
+        let client=TodoNotificationStub(),coordinator=TodoReminderCoordinator(client:client,now:{now},sleepPreferences:{.init(enabled:true,minute:540)},sleepHistory:SleepReminderHistory(defaults:nil))
+        // A current native request can predate the newer policy-recovery guard.
+        // Use the actual intent scheduler to retain its valid durable ownership.
+        let scheduling=TodoIntentScheduling(notifications:client,alarms:TodoAlarmStub(),now:{now})
+        _ = try await scheduling.reconcile(container:c,requestNotifications:false,requestAlarms:false,selectedNotificationTaskIDs:[id],isCurrent:{true})
+        let alreadySubmitted=client.addCalls.count
+        client.failedRemovalIdentifiers=Set(client.pending.values.filter {$0.taskID == id}.map(\.id))
+        XCTAssertFalse(client.failedRemovalIdentifiers.isEmpty)
+        await coordinator.reconcile(context:ModelContext(c))
+        XCTAssertTrue(coordinator.hasPendingCancellation)
+        XCTAssertEqual(coordinator.status(for:try service.task(id:id)),.cancellationPending)
+        client.failedRemovalIdentifiers=[]
+        for _ in 0..<2 {await coordinator.reconcile(context:ModelContext(c))}
+        XCTAssertFalse(coordinator.hasPendingCancellation)
+        XCTAssertEqual(coordinator.status(for:try service.task(id:id)),.legacyRuleNeedsCorrection)
+        XCTAssertEqual(coordinator.status(for:healthy),.scheduled)
+        XCTAssertEqual(coordinator.status(for:day).status,.scheduled);XCTAssertEqual(coordinator.sleepStatus().status,.scheduled)
+        XCTAssertFalse(client.addCalls.dropFirst(alreadySubmitted).contains {$0.taskID == id})
+        let elapsed=TodoReminderCoordinator(client:client,now:{overridden.addingTimeInterval(3*86400)},sleepPreferences:{.init()})
+        await elapsed.reconcile(context:ModelContext(c))
+        XCTAssertEqual(elapsed.status(for:try service.task(id:id)),.legacyRuleNeedsCorrection,"An elapsed one-off must still explain the unknown future policy")
+        try service.deleteList(id:list) // Category cleanup never needs a guessed future policy.
+        var correction=try service.draft(id:id)
+        correction.remindAt=TodoRecurrence.reminder(day:TodoDay(correction.plannedDay!)!,minutes:600,timeZone:zone)
+        try service.edit(id:id,draft:correction,futureSeries:true)
+        XCTAssertEqual(try ModelContext(c).fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset,0)
+        XCTAssertTrue(before.allSatisfy {event in (try? ModelContext(c).fetch(FetchDescriptor<TodoTaskEvent>()).map(TodoTaskEventTransfer.init).contains(event)) == true})
+        try TodoIntegrity.validate(context:ModelContext(c))
+    }
+
+    func testSystemSR01OriginalMultiOccurrenceDeleteSiblingThenUnlinkAndCloseReminder() throws {
+        let source=try XCTUnwrap(Bundle(for:Self.self).resourceURL?.appendingPathComponent("OriginalV11Fixture"))
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.copyItem(at:source,to:root);defer {try? FileManager.default.removeItem(at:root)}
+        let c=try PersistenceContainerFactory.makeOnDisk(at:root.appendingPathComponent("store.sqlite"))
+        let service=TodoTaskService(context:c.mainContext)
+        let rootID=try XCTUnwrap(UUID(uuidString:String(contentsOf:root.appendingPathComponent("task-id.txt"),encoding:.utf8)))
+        let sibling=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open})
+        let list=try service.createList(name:"Sibling list")
+        var edit=try service.draft(id:sibling.id);edit.listID=list.id;try service.edit(id:sibling.id,draft:edit)
+        XCTAssertNil(try c.mainContext.fetch(FetchDescriptor<TodoSeries>()).first?.reminderDayOffset)
+        try service.delete(id:rootID)
+        try TodoTaskService(context:ModelContext(c),timeZone:{.gmt}).refreshRepeatingReminderTimes()
+        try service.deleteList(id:list.id)
+        var close=try service.draft(id:sibling.id);close.remindAt=nil;try service.edit(id:sibling.id,draft:close)
+        XCTAssertNil(try service.task(id:sibling.id).remindAt);XCTAssertNil(try service.task(id:sibling.id).listID)
+        XCTAssertTrue(try c.mainContext.fetch(FetchDescriptor<TodoSeries>()).allSatisfy(\.isStopped))
+        try TodoIntegrity.validate(context:ModelContext(c))
+    }
+}
+
+@MainActor extension ImportExportRecoveryTests {
+    func testSystemSR01InjectedIntegrityReadFailureIsNotSwallowedAsLocalLegacyPolicy() async throws {
+        let f=try TransferTestFixture();defer {f.remove()}
+        let (c,id,_,now,zone)=try systemLegacyNilStore(f)
+        let healthy=try TodoTaskService(context:ModelContext(c),now:{now},timeZone:{zone}).create(.init(title:"Healthy beside an injected integrity failure",remindAt:now.addingTimeInterval(3600)))
+        // Negative guard only: this is deliberately broken evidence, not a claim
+        // that an ordinary production lifecycle creates this state.
+        let read=ModelContext(c),event=try XCTUnwrap(read.fetch(FetchDescriptor<TodoTaskEvent>()).first {$0.taskID == id})
+        event.afterValue=Data([0xff]);try read.save()
+        XCTAssertThrowsError(try TodoIntegrity.validate(context:ModelContext(c)))
+        let client=TodoNotificationStub(),coordinator=TodoReminderCoordinator(client:client,now:{now})
+        await coordinator.reconcile(context:ModelContext(c))
+        XCTAssertTrue(client.addCalls.isEmpty)
+        XCTAssertEqual(coordinator.status(for:healthy),.confirmationRequired)
+        XCTAssertNotEqual(coordinator.status(for:try TodoTaskService(context:ModelContext(c)).task(id:id)),.legacyRuleNeedsCorrection)
+    }
+}

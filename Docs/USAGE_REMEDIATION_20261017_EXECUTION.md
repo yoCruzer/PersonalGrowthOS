@@ -441,3 +441,53 @@ xcodebuild test-without-building -xctestrun /tmp/pgos-pr13-fix-derived/Build/Pro
 ```sh
 xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination generic/platform=iOS -derivedDataPath /tmp/pgos-pr13-fix-release -resultBundlePath /tmp/pgos-pr13-fix2-evidence/final-release1.xcresult CODE_SIGNING_ALLOWED=NO build
 ```
+
+
+## 2026-10-19 系统整改 — FIXES_IN_PROGRESS
+
+SYSTEM_FIX_GOAL_SHA=3dad3b04e3ff703c2e799899035285f64a5976a4。原任务干净62210d9仅快进到固定规格；远端head=3dad3b0、base=5a70f01、PR13 OPEN Draft。主工作区未知project.pbxproj/Localizable.xcstrings/xcodecloud改动不触碰。当前未运行本轮原生门，不复用旧PASS关闭SR。
+
+### 实施前不变量、全部相关生产消费者与合法后续操作
+
+| 项 | 不变量 | 生产调用者/消费者 | 代表状态与验证边界 |
+| --- | --- | --- | --- |
+| SR01 | 终止/清理不依赖未来策略；未知策略仅局部失败 | TodoTaskService.preserveLegacyReminderOffset→rescheduleReminder/edit；reminderOffset→applyReminder/applyTemplate/generateNext/deleteList/refreshRepeatingReminderTimes；stopSeries/delete/transition；TodoReminderCoordinator→intentScheduling及Todo/ImportantDay/Sleep预算 | 真V11/旧f1 nil，stopped有根/无根/兄弟期；Stop→切区/默认编辑/关提醒/删清单；active可恢复/歧义，0/-1；回滚/重开/ZIP恢复。未来生成仍要求可信原offset |
+| SR02 | 编辑文本无分组且Double无损往返；展示精度独立 | WeightEditorView初值→WeightRules.kilograms→WeightRecordService；WeightReviewReader/Trend/BMI/History/Today/Growth/Weekly | en_US/zh_CN/de_DE；1000/72.345/普通值，no-op/日期-only/真改值/混合错误 |
+| SR03 | Entry/Habit/Weight共同asOf；Habit用保存业务日 | WeeklySummaryService.make全部派生、WeeklyReviewView；HabitLogDayResolver/analytics/QuietWins；Weight/Today/Growth截止与全历史 | 洛杉矶周日晚→上海、同业务日两次、跨年/DST/旧缺元数据/撤销；未来三事实推进时钟；历史选周与统计时钟分离；编辑删除刷新 |
+| SR04 | MainActor不等待发布锁且最终checkpoint可靠；备份媒体一致 | StorePublication所有使用方：InvestmentService全mutation/Workspace.checkpoint/AppShell.scenePhase；ImportantDay save/createEntry/delete；ExternalCaptureImporter、ImportExportService worker | 真export持锁barrier→生命周期checkpoint→主probe；释放后落盘；pause/finish/revision、paused对照、草稿/取消/失败/重试/合并 |
+| SR05 | 旧success/cancel/普通error不写最新设置 | AppShell daily/weekly设置onChange→ReminderScheduler→NotificationMutationGate→结果回流 | A进入addRepeating→B→A普通失败/成功；B明确off；当前真失败；授权显示/时间/weekday保持 |
+| SR06 | 仅成功结束编辑器释放；持久saved证据保留 | InvestmentWorkspace.editor/refresh/finished；新manual/timer确认/正式edit/draft/稍后/失败/删除；Editor保存落点 | 连续新manual/timer成功缓存不累计；失败/保留/稍后保留输入；幂等、CR05双层关闭/F5计数 |
+| SR07 | 同动作/同入口使用相同语义 | Today daily once/multiple及HabitOverviewRow weekly/monthly；Sleep/ImportantDay反馈；Weight截止连贯性；mixed UI fixture | 默认与中文真Dark最大AX，图标/标题列、44pt动作和自然行高；只收反馈不改事实；Record独立草稿 |
+| BV01 | 只对生产实际读取定性 | GrowthView didSave→GrowthEntryCounts、Weight/Sleep/活动；真实InvestmentService事件及挂载生命周期 | 约10k混合数据，可见/切离；实际fetch/模型读取与主probe；正式事实/import/日期/时区/错误刷新保护 |
+| BV02 | 非有限quantity不可悄悄破坏完整备份 | Habit输入Double→HabitCheckInService→磁盘→TransferSnapshot→实际export | inf/NaN/指数溢出/finite正例；如确认则有限数校验及明确可恢复处理，不删旧事实 |
+
+新原始证据根：/tmp/pgos-pr13-system-evidence。所有阶段定向测试和最终完整Unit/关键UI、固定干净SHA双构建、独立审查均待完成。
+
+
+### 系统整改阶段证据（尚未集中交付）
+
+当前所有产品/测试改动仍是固定3dad3b0后的dirty候选；不得把本节阶段结果冒称最终干净SHA的完整门。原始逐轮命令、退出码、xcresult摘要及日志SHA256由 `/tmp/pgos-pr13-system-evidence/system-runs.json` 记录，最终小型摘要将随交付入Git。
+
+- red-a：3项=1PASS/2FAIL。真V11停止后默认编辑抛invalidReminderOffset；Weight实际编辑表达→解析→Service→重开复现1000→1及72.345舍入。此轮coordinator夹具与模拟器同区，未触发切区，不能把该1PASS当切区证明；随后夹具显式选择不同于.current的原区并补健康三类别、歧义active和真实多期兄弟删除。
+- red-b：4项=2PASS/2FAIL。SR01/02局部已绿，Weekly三事实未来截止与LA周日→上海业务日仍红；仅先追加asOf/metadata参数以便编译，红候选未使用它们，旧算法主体保留于本机red-WeeklyReviewFoundation.swift。
+- green-a：新增六项6/6PASS；daily/weekly真实LocalReminderScheduler→addRepeating挂起→B→A普通错/成功/取消，每日/每周、B off/on和当前真失败通过生产结果归属边界验证，不是系统原生晚错捕获。
+- red-c：真实export已取得同一发布锁后悬停，生命周期checkpoint使主执行器直到独立5秒fail-safe释放才返回，1FAIL。green-c随后2/2PASS，主probe先于释放、最终120秒而导出原cutoff60秒；同时完成BV02原始有界探针。
+- BV02原探针：inf和1e999能正式落盘为inf并阻断JSON导出；NaN被SQLite归一成nil、导出成功；finite2.5落盘/导出成功。新输入在普通/带心得Service写入前均拒绝非有限数；已有inf普通备份明确失败，不改值/删日志，单独提供原始保留数据支持恢复包，明确不能当普通备份导入。不能声称恢复过去已被SQLite丢掉的NaN或旧体重精度。
+- BV01原探针：UIHostingController真实挂载Growth与Tab切离、10k Weight+10k Sleep，经实际Service草稿+正常checkpoint，两个状态各发生2次真实fetch，各读Weight20000/Sleep20000模型；主probe均可运行，未声称实测卡顿。限定过滤已明确识别的InvestmentOperation/Session标识；未知、批量失效、活动/参与者、正式Growth事实继续保守刷新。
+- green-d：5/5PASS。包括BV01两状态实际历史读取0；BV02有限数拒绝/finite ZIP恢复/旧inf原始SQLite恢复保留ID、bitPattern、unit/result；导出排队合并后明确pause/finish不被晚checkpoint覆写；新manual/timer各连续3次成功缓存释放，keep/失败/持久saved幂等证据保持。
+- green-e：5项=4PASS/1crash，exit65，绝非全绿。原始ips已确认新Growth过滤器对延迟通知发送方ModelContext.container的访问触发SwiftData断言；非XCTest/环境豁免。已去除发送方活对象访问，仅检查稳定PersistentIdentifier值。focused-green随后原组合与加强Weekly共7/7PASS；focused-green2新导出完成/取消/失败、纯paused/保留编辑器和正式编辑正文清理、源Entry保留/过期局部提示共4/4PASS。
+- 原生UI分轮：focused-ui=1PASS/2FAIL（Weekly当前/历史通过；Weight保存后列表重载返回顶部，mixed新44pt几何为43.99999999999997）。focused-ui2=1PASS/1FAIL（mixed默认/真实中文Dark最大AX通过；Weight返回列表后一部分可见行的tap被滚动消费）。focused-ui3=2PASS/2FAIL：Weight no-op/日期-only/1000/重启精度85.585秒PASS、Sleep反馈收起+原CRUD57.208秒PASS；mixed中文Growth手势在滚动条区域往返未收敛；ImportantDay默认未开启提醒，不应期待提醒反馈。业务断言保留，进一步修正手势/实际合法起点，不将失败抹成产品PASS。
+- 编译失败也保留：red-c-build参数顺序；green-c-build首轮类型推断诊断，拆出既有Picker绑定后暴露保存路径提取时取消分支可见性误改，已恢复原discard语义；BV01 instrumentation需明确MainActor；focused-green-build2补强测试遗漏try。相应后续build分别成功，未混称首轮通过。
+
+Weekly加强回归已覆盖2026-10-18、跨年2027-01-03、春/秋DST周日，正式CheckIn→重开→Weekly/Habit analytics/QuietWins同源1日2次、Undo及缺metadata既有回退；三类未来事实同asOf、真实带图Entry/Tag、时间推进纳入、实际编辑删除刷新及只读不写。View显式所选周ID不随切区重选，使用环境时区与实际当前截止，闲置页面亦推进截止。所有旧schema/transfer版本保持。
+
+SR01～07、BV01/02均有实现候选与区分证据，但最终完整Unit、关键UI组合、固定干净SHA Debug/unsigned Release/实包、独立未写实现reviewer及普通push仍未完成，因此保持FIXES_IN_PROGRESS。D1–D4、AlarmKit正向、Share/Safari、物理低空间、CI旧未通过状态不变。
+
+
+### 收敛候选与集中门入口
+
+pre-final-unit新增五项5/5PASS：局部规则问题+真实旧native请求取消未确认仍保留global重查，确认后才回局部待纠正；真正损坏事件证据仍阻止安排（仅明确注入的负向保护，不声称合法操作造坏库）；显式0/-1/7/366完整override/skip/reopen/generation/Stop/list；偏好已变而onChange尚未提交时旧结果仍不回写；Growth批量失效保守刷新。pre-final-ui扩展mixed默认/中文真Dark最大AX完整行、直接打卡、周/月真实导航1/1PASS（142.271秒）。ImportantDay反馈按More settings实际开启提醒后，focused-ui5该方法PASS；默认无提醒不显示该反馈的旧前提错误不改产品。
+
+focused-ui4=1PASS/2FAIL：最新Weekly当前/历史15秒内组合PASS，mixed周行未移入视口、ImportantDay未展开More settings；focused-ui5=1PASS/1FAIL：ImportantDay40.825秒PASS，mixed细拖仍未移动离屏行。pre-final-ui采用标准滚动先移入离屏目标、再微调已可见部分，保留完整可见/44pt/计数与导航断言，实际通过。全部失败仍在原始xcresult与机器摘要。
+
+最终集中门从下一个干净产品/测试提交开始：一次完整PersonalGrowthOSTests、一组有范围的关键UI、有效Debug build-for-testing、unsigned generic iOS Release与App/Share/Widget/provenance/AlarmKit实包；然后未编写本轮实现的reviewer独立先列反例再核对本机证据。当前仅候选提交，不标READY，不以阶段结果替代集中门。最后追加的每日/每周设置明确off/relaunch原生UI将纳入该组合；系统授权/晚错仍按Unit协议和设备门分层说明。

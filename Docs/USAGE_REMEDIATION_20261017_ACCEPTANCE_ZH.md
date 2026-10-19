@@ -469,3 +469,10 @@ xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configu
 固定输入为产品 c296a3691d53ce7f5b5bff36fbf7de525d86510f／交付 62210d9910bae50acf0d58e6cb928e52a67c4a6f。SYSTEM_FIX_GOAL_SHA 由 Owner prompt 固定。详细合法起点、相反操作、失败回滚、消费者和停止条件以新 [Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md) 为准。结果追加产品SHA、selector、命令/环境/退出码、证据层级和复用范围，不把多轮相加成一次全绿。
 
 D1–D4未通过，AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN原样保留。本次审查/规格准备不改变它们。
+
+
+### 系统整改实现候选（2026-10-19，未恢复READY）
+
+SR01～07已进入本地候选；BV01实测确认重复无关全历史读，候选限定过滤后可见/切离两状态均0次额外Weight/Sleep读取；BV02实测确认inf落库阻断备份，候选拒绝新非有限输入，对旧异常明确阻止普通备份并提供原样保留数据支持恢复，不自动改事实。具体反例、全部消费者/状态矩阵、真实失败及分轮补验见EXECUTION最新系统整改节。
+
+当前不以阶段PASS关闭最终门：集中完整Unit、关键UI组合、干净产品SHA双构建/实包、独立reviewer和普通push尚待完成。green-e的1crash为新增过滤器的活Context寿命错误，已修并定向补验；UI驱动/前提失败与编译失败均逐轮保留。旧设备/环境门状态保持。

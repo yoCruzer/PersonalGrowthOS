@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import UIKit
 import XCTest
 @testable import PersonalGrowthOS
 
@@ -447,5 +448,100 @@ private struct WeeklyReviewFixture {
 
     func remove() {
         try? FileManager.default.removeItem(at: root)
+    }
+}
+
+@MainActor
+extension WeeklyReviewFoundationTests {
+    func testSystemSR03SavedCivilDayAndActualCutoffAcrossZonesAndHistoricalWeeks() async throws {
+        for day in ["2026-10-18","2027-01-03","2026-03-08","2026-11-01"] {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        defer {try? FileManager.default.removeItem(at:root)}
+        let url=root.appendingPathComponent("weekly.sqlite")
+        let la=TimeZone(identifier:"America/Los_Angeles")!,sh=TimeZone(identifier:"Asia/Shanghai")!
+        var calendar=Calendar(identifier:.gregorian);calendar.timeZone=la
+        func instant(_ day: String,_ minutes: Int) -> Date {ImportantCivilDay(identifier:day)!.instant(minutes:minutes,timeZone:la)!}
+        let sunday=instant(day,1410),early=instant(day,480)
+        let monday=instant(ImportantCivilDay(identifier:day)!.adding(days:1)!.identifier,600)
+        let c=try PersistenceContainerFactory.makeOnDisk(at:url),context=c.mainContext
+        let habit=try HabitService(context:context,now:{early.addingTimeInterval(-86400)}).create(name:"Civil day",recordingMode:.multiplePerDay,dailyTargetCount:2)
+        var clock=early
+        let check=HabitCheckInService(context:context,mediaStore:MediaStore(rootURL:root),now:{clock},calendar:calendar)
+        _ = try check.incrementCount(habit,occurredAt:early)
+        clock=sunday
+        let late=try check.incrementCount(habit,occurredAt:sunday)
+        let historical=try WeeklyReviewPeriod(containing:sunday,timeZone:la)
+        let selected=try WeeklyReviewPeriod(identifier:historical.identifier,timeZone:sh)
+        let read=ModelContext(try PersistenceContainerFactory.makeOnDisk(at:url))
+        let logs=try read.fetch(FetchDescriptor<HabitLog>()),metadata=try read.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        let before=metadata.map(\.localDayIdentifier)
+        func summary(_ period:WeeklyReviewPeriod,_ cutoff:Date,_ zone:TimeZone) -> WeeklySummary {
+            WeeklySummaryService.make(period:period,entries:[],habits:[habit],habitLogs:logs,weightRecords:[],dayMetadata:metadata,asOf:cutoff,timeZone:zone)
+        }
+        XCTAssertEqual(summary(selected,monday,sh).habitCheckInCount,2)
+        XCTAssertEqual(summary(selected,monday,sh).habitHighlight?.activeDayCount,1)
+        XCTAssertEqual(summary(historical,early,la).habitCheckInCount,1)
+        XCTAssertNil(summary(try WeeklyReviewPeriod(containing:monday,timeZone:sh),monday,sh).habitCheckInCount)
+        XCTAssertEqual(try read.fetch(FetchDescriptor<HabitLogDayMetadata>()).map(\.localDayIdentifier),before)
+        XCTAssertFalse(read.hasChanges)
+        // A historical week is selected by identity; its Monday must never become the cutoff.
+        XCTAssertEqual(summary(selected,monday,sh).habitCheckInCount,2)
+        let analytics=HabitAnalyticsSnapshotBuilder.summary(habit:habit,logs:logs,dayMetadata:metadata,
+            plans:try read.fetch(FetchDescriptor<HabitPlanRevision>()),lifecycleEvents:try read.fetch(FetchDescriptor<HabitLifecycleEvent>()),legacyConfigurations:try read.fetch(FetchDescriptor<HabitConfiguration>()),asOf:monday,timeZone:sh)
+        XCTAssertEqual(analytics.activityByDay[HabitLocalDay(day)!],2)
+        let projection=try await QuietWinsReader(modelContainer:c).read(window:.init(days:7,asOf:monday,timeZone:sh))
+        let card=try XCTUnwrap(projection.evidenceCards.first {$0.kind == .habit})
+        XCTAssertEqual(card.habitDays.count,1);XCTAssertEqual(card.sources.count,2)
+        XCTAssertEqual(card.habitDays.first?.day,HabitLocalDay(day))
+        try check.undoLatestCheckIn(habitID:habit.id,logID:late.id)
+        let remaining=try ModelContext(c).fetch(FetchDescriptor<HabitLog>())
+        XCTAssertEqual(WeeklySummaryService.make(period:selected,entries:[],habits:[habit],habitLogs:remaining,weightRecords:[],dayMetadata:try ModelContext(c).fetch(FetchDescriptor<HabitLogDayMetadata>()),asOf:monday,timeZone:sh).habitCheckInCount,1)
+        // Legacy logs without day metadata use the existing Habit resolver fallback;
+        // a read does not invent metadata or alter the actual timestamp.
+        let legacy=HabitLog(habitID:habit.id,occurredAt:early,isCompleted:true,createdAt:early)
+        XCTAssertEqual(WeeklySummaryService.make(period:historical,entries:[],habits:[habit],habitLogs:[legacy],weightRecords:[],asOf:monday,timeZone:la).habitCheckInCount,1)
+        }
+    }
+
+    func testSystemSR03AllWeeklyDerivedFactsUseSameActualAsOf() throws {
+        let zone=TimeZone(identifier:"Asia/Shanghai")!,c=try PersistenceContainerFactory.makeInMemory(),context=c.mainContext
+        let now=ImportantCivilDay(identifier:"2026-10-19")!.instant(minutes:600,timeZone:zone)!,future=now.addingTimeInterval(240)
+        let habit=try HabitService(context:context,now:{now.addingTimeInterval(-86400)}).create(name:"Future tolerance")
+        var calendar=Calendar(identifier:.gregorian);calendar.timeZone=zone
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        defer {try? FileManager.default.removeItem(at:root)}
+        let media=MediaStore(rootURL:root),source=root.appendingPathComponent("future.png")
+        let renderer=UIGraphicsImageRenderer(size:CGSize(width:2,height:2))
+        try renderer.pngData {_ in UIColor.blue.setFill();UIRectFill(CGRect(x:0,y:0,width:2,height:2))}.write(to:source)
+        let check=HabitCheckInService(context:context,mediaStore:media,now:{now},calendar:calendar)
+        let log=try check.checkIn(habit,draft:HabitLogDraft(occurredAt:future))
+        let entry=try EntryCreationService(persistence:ModelContextEntryPersistence(context:context),mediaStore:media,now:{now}).create(.init(body:"future",occurredAt:future,image:MediaSource(url:source,originalFilename:"future.png",contentType:"image/png")))
+        let weight=try WeightRecordService(context:context,now:{now}).create(weightKilograms:72.345,recordedAt:future)
+        let tag=Tag(displayName:"Future tag",normalizedName:"future tag",createdAt:now)
+        context.insert(tag);context.insert(ObjectLink(sourceType:.entry,sourceID:entry.id,targetType:.tag,targetID:tag.id,kind:.entryUsesTag,createdAt:now))
+        try context.save()
+        let period=try WeeklyReviewPeriod(containing:now,timeZone:zone)
+        func summary(_ cutoff:Date) throws -> WeeklySummary {
+            WeeklySummaryService.make(period:period,entries:try context.fetch(FetchDescriptor<Entry>()),habits:[habit],habitLogs:try context.fetch(FetchDescriptor<HabitLog>()),weightRecords:try context.fetch(FetchDescriptor<WeightRecord>()),tags:[tag],links:try context.fetch(FetchDescriptor<ObjectLink>()),dayMetadata:try context.fetch(FetchDescriptor<HabitLogDayMetadata>()),asOf:cutoff,timeZone:zone)
+        }
+        let before=try summary(now)
+        XCTAssertNil(before.entryCount);XCTAssertNil(before.entryDayCount);XCTAssertTrue(before.recentEntries.isEmpty);XCTAssertTrue(before.topTags.isEmpty)
+        XCTAssertNil(before.habitCheckInCount);XCTAssertNil(before.weight);XCTAssertNil(before.imageEntryCount)
+        let after=try summary(future)
+        XCTAssertEqual(after.entryCount,1);XCTAssertEqual(after.entryDayCount,1);XCTAssertEqual(after.recentEntries.map(\.id),[entry.id]);XCTAssertEqual(after.topTags,[tag.displayName])
+        XCTAssertEqual(after.habitCheckInCount,1);XCTAssertEqual(after.weight?.latestKilograms,72.345)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<Entry>()),1);XCTAssertEqual(after.imageEntryCount,1)
+        try EntryEditingService(persistence:ModelContextEntryPersistence(context:context),mediaStore:media,now:{now}).update(entry,with:.init(title:"Current after edit",body:"Edited fact",occurredAt:now,retainedImageIDs:entry.images.map(\.id),addedImages:[]))
+        XCTAssertEqual(try summary(now).recentEntries.first?.title,"Current after edit")
+        XCTAssertEqual(try summary(now).imageEntryCount,1);XCTAssertEqual(try summary(now).topTags,[tag.displayName])
+        try WeightRecordService(context:context,now:{now}).update(weight,weightKilograms:73.125,recordedAt:now)
+        XCTAssertEqual(try summary(now).weight?.latestKilograms,73.125)
+        try check.undoLatestCheckIn(habitID:habit.id,logID:log.id)
+        XCTAssertNil(try summary(future).habitCheckInCount)
+        try EntryDeletionService(persistence:ModelContextEntryPersistence(context:context),mediaStore:media).permanentlyDelete(entry)
+        try WeightRecordService(context:context).delete(weight)
+        XCTAssertFalse(try summary(future).hasActivity);XCTAssertTrue(try summary(future).recentEntries.isEmpty);XCTAssertTrue(try summary(future).topTags.isEmpty)
     }
 }

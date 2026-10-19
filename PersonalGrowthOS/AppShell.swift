@@ -1022,6 +1022,8 @@ private struct MediaStorageView: View {
     @State private var isSharing = false
     @State private var exportLease: ExportPackageLease?
     @State private var transferMessage: String?
+    @State private var offersQuantityRecovery=false
+    @State private var quantityRecoveryURL:URL?
     @State private var transferTask: Task<Void, Never>?
     @State private var isTransferring = false
     @AppStorage("dailyRecordingReminderEnabled") private var dailyReminderEnabled = false
@@ -1032,8 +1034,8 @@ private struct MediaStorageView: View {
     @State private var notificationPermissionDenied = false
     @State private var reminderMessage: String?
     @State private var reminderAlertOffersSettings = false
-    @State private var dailyReminderTask: Task<Void, Never>?
-    @State private var weeklyReminderTask: Task<Void, Never>?
+    @State private var dailyReminderUpdate=ReminderSettingsUpdate()
+    @State private var weeklyReminderUpdate=ReminderSettingsUpdate()
 
     var body: some View {
         NavigationStack {
@@ -1134,6 +1136,15 @@ private struct MediaStorageView: View {
                     .accessibilityIdentifier("settings-import-button")
                     .disabled(isTransferring)
 
+                    if offersQuantityRecovery {
+                        Text("A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup.").font(.caption)
+                        if let quantityRecoveryURL {
+                            ShareLink("Save Retained Data",item:quantityRecoveryURL).accessibilityIdentifier("settings-share-quantity-recovery")
+                        } else {
+                            Button("Prepare Retained Data Export") {prepareQuantityRecovery()}
+                                .disabled(isTransferring).accessibilityIdentifier("settings-quantity-recovery")
+                        }
+                    }
                     if isTransferring {
                         HStack {
                             ProgressView()
@@ -1344,42 +1355,27 @@ private struct MediaStorageView: View {
     }
 
     private func updateDailyReminder(requestPermission: Bool) {
-        dailyReminderTask?.cancel()
-        dailyReminderTask = Task {
-            do {
-                let result = try await LocalReminderScheduler().updateDaily(
-                    enabled: dailyReminderEnabled,
-                    minutesAfterMidnight: dailyReminderMinutes,
-                    requestPermission: requestPermission
-                )
-                handleReminderResult(result) { dailyReminderEnabled = false }
-            } catch is CancellationError {
-                return
-            } catch {
-                dailyReminderEnabled = false
-                showReminderError()
+        let enabled=dailyReminderEnabled,minutes=dailyReminderMinutes
+        dailyReminderUpdate.submit(operation: {
+            try await LocalReminderScheduler().updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:requestPermission)
+        },isCurrent:{dailyReminderEnabled == enabled && dailyReminderMinutes == minutes},apply: {result in
+            switch result {
+            case .success(let value): handleReminderResult(value) {dailyReminderEnabled=false}
+            case .failure: dailyReminderEnabled=false;showReminderError()
             }
-        }
+        })
     }
 
     private func updateWeeklyReminder(requestPermission: Bool) {
-        weeklyReminderTask?.cancel()
-        weeklyReminderTask = Task {
-            do {
-                let result = try await LocalReminderScheduler().updateWeekly(
-                    enabled: weeklyReminderEnabled,
-                    weekday: weeklyReminderWeekday,
-                    minutesAfterMidnight: weeklyReminderMinutes,
-                    requestPermission: requestPermission
-                )
-                handleReminderResult(result) { weeklyReminderEnabled = false }
-            } catch is CancellationError {
-                return
-            } catch {
-                weeklyReminderEnabled = false
-                showReminderError()
+        let enabled=weeklyReminderEnabled,minutes=weeklyReminderMinutes,weekday=weeklyReminderWeekday
+        weeklyReminderUpdate.submit(operation: {
+            try await LocalReminderScheduler().updateWeekly(enabled:enabled,weekday:weekday,minutesAfterMidnight:minutes,requestPermission:requestPermission)
+        },isCurrent:{weeklyReminderEnabled == enabled && weeklyReminderMinutes == minutes && weeklyReminderWeekday == weekday},apply: {result in
+            switch result {
+            case .success(let value): handleReminderResult(value) {weeklyReminderEnabled=false}
+            case .failure: weeklyReminderEnabled=false;showReminderError()
             }
-        }
+        })
     }
 
     private func handleReminderResult(
@@ -1415,6 +1411,15 @@ private struct MediaStorageView: View {
         UIApplication.shared.open(url)
     }
 
+    private func prepareQuantityRecovery() {
+        isTransferring=true
+        transferTask=Task {
+            defer {isTransferring=false;transferTask=nil}
+            do {quantityRecoveryURL=try await importExportService.exportRetainedQuantityData()}
+            catch {transferMessage=transferErrorMessage(error)}
+        }
+    }
+
     private func startExport() {
         transferTask?.cancel()
         isTransferring = true
@@ -1433,6 +1438,7 @@ private struct MediaStorageView: View {
                 cleanupExport()
                 transferMessage = String(localized: "Export cancelled. Temporary files were removed.")
             } catch {
+                if error is NonfiniteHabitQuantityError {offersQuantityRecovery=true}
                 transferMessage = transferErrorMessage(error)
             }
         }
@@ -1490,6 +1496,7 @@ private struct MediaStorageView: View {
 
     private func transferErrorMessage(_ error: Error) -> String {
         switch error {
+        case let invalid as NonfiniteHabitQuantityError: invalid.localizedDescription
         case TransferPackageError.targetNotEmpty:
             String(localized: "Import requires an empty database. Existing data was left unchanged.")
         case TransferPackageError.unsupportedSchema:

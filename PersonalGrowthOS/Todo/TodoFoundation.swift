@@ -412,7 +412,7 @@ final class TodoTaskService {
     private func preserveLegacyReminderOffset(_ task: TodoTask) throws {
         if let seriesID=task.seriesID {
             let rule=try series(seriesID)
-            if rule.reminderDayOffset == nil,rule.reminderMinutes != nil {rule.reminderDayOffset=try reminderOffset(for:rule)}
+            if !rule.isStopped,rule.reminderDayOffset == nil,rule.reminderMinutes != nil {rule.reminderDayOffset=try reminderOffset(for:rule)}
         }
     }
     /// A deliberate current-occurrence reminder; never changes the plan, deadline or series anchor.
@@ -652,15 +652,20 @@ final class TodoTaskService {
             context.insert(TodoTaskSource(taskID: nextTask.id, entryID: source.entryID))
         }
     }
-    func refreshRepeatingReminderTimes() throws {
+    /// Only an unresolvable legacy policy is local to one task. Storage/integrity
+    /// failures still abort reconciliation, before any stale snapshot is scheduled.
+    @discardableResult func refreshRepeatingReminderTimes() throws -> Set<UUID> {
         let zone = timeZone()
         let tasks = try context.fetch(FetchDescriptor<TodoTask>()).filter {
             $0.state == .open && $0.seriesID != nil && $0.remindAt != nil && $0.reminderTimeZoneID != zone.identifier
         }
-        guard !tasks.isEmpty else { return }
-        try transaction {
+        guard !tasks.isEmpty else { return [] }
+        return try transaction {
+            var unresolved=Set<UUID>()
             for task in tasks {
-                try preserveLegacyReminderOffset(task)
+                guard let seriesID=task.seriesID,try !series(seriesID).isStopped else {continue}
+                do {try preserveLegacyReminderOffset(task)}
+                catch TodoFailure.invalidReminderOffset {unresolved.insert(task.id);continue}
                 guard let dayString = task.reminderLocalDay, let day = TodoDay(dayString),
                       let minutes = task.reminderMinutes else { throw TodoFailure.corruptData }
                 let before = try TodoEventValue(task)
@@ -668,6 +673,7 @@ final class TodoTaskService {
                 task.remindAt = adjusted; task.reminderTimeZoneID = zone.identifier
                 try record(task, kind: .edited, before: before, at: now())
             }
+            return unresolved
         }
     }
     func stopSeries(taskID: UUID) throws {
@@ -713,8 +719,12 @@ final class TodoTaskService {
             let rules=try context.fetch(FetchDescriptor<TodoSeries>()).filter {$0.listID == id || taskSeriesIDs.contains($0.id)}
             // Freeze before either task history or the rule timestamp changes. A
             // single-occurrence list edit can leave task and rule lists different.
-            for rule in rules where rule.reminderDayOffset == nil && rule.reminderMinutes != nil {
-                rule.reminderDayOffset=try reminderOffset(for:rule)
+            for rule in rules where !rule.isStopped && rule.reminderDayOffset == nil && rule.reminderMinutes != nil {
+                do {rule.reminderDayOffset=try reminderOffset(for:rule)}
+                catch TodoFailure.invalidReminderOffset {
+                    // Unlinking a category does not require inventing a future policy.
+                    // Preserve the unknown policy; explicit rule correction stays available.
+                }
             }
             for task in tasks {
                 let before = try TodoEventValue(task); task.listID = nil

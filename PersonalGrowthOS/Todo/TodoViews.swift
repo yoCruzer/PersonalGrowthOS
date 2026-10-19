@@ -749,6 +749,8 @@ private struct TodoReminderControls: View {
                                 Button("Change reminder method or time") {settingTime=true}.accessibilityIdentifier("todo-reminder-reset")
                             case .failed:
                                 Button("Retry setting reminder") {retry(snapshot)}.accessibilityIdentifier("todo-reminder-retry")
+                            case .legacyRuleNeedsCorrection:
+                                EmptyView() // The parent task's Edit action supplies an explicit future rule.
                             case .confirmationRequired:
                                 Button("Recheck reminder") {recheck()}
                                 Button("Set reminder again") {settingTime=true}.accessibilityIdentifier("todo-reminder-reset")

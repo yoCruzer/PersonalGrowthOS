@@ -264,9 +264,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         container = context.container; self.clock = clock; self.commit = commit
     }
     private func transaction<T>(change: InvestmentChange = .all, _ body: (ModelContext, InvestmentClock) throws -> T) throws -> T {
-        let store = container.configurations.first!.url
-        let parent = store.deletingLastPathComponent()
-        let root = parent.lastPathComponent == "Store" ? parent.deletingLastPathComponent() : parent
+        let root=StorePublication.root(for:container)
         var commitAttempted=false
         do {
             let result = try StorePublication.perform(at: root) {

@@ -525,7 +525,7 @@ struct SleepFeedbackView: View {
     }
     var body: some View {
         if let message = workspace.message {
-            HStack { Text(feedback(message)).font(.caption); Spacer(); Button("Dismiss") { workspace.message = nil } }.padding(8).background(.bar).accessibilityIdentifier("sleep-save-feedback")
+            HStack { Text(feedback(message)).font(.caption); Spacer(); Button("Got it") { workspace.message = nil } }.padding(8).background(.bar).accessibilityIdentifier("sleep-save-feedback")
         }
     }
 }

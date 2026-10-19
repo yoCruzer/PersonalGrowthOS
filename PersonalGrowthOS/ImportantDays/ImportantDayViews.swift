@@ -575,7 +575,7 @@ struct ImportantDayReminderFeedbackView: View {
                     Text(reminders.status(for: day).status.label).font(.caption)
                 }
                 Spacer()
-                Button("Dismiss") { reminders.savedImportantDayID = nil }
+                Button("Got it") { reminders.savedImportantDayID = nil }
             }.padding(10).background(.regularMaterial).accessibilityIdentifier("important-day-save-feedback")
         }
     }

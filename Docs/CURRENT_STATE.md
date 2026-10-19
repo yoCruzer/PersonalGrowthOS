@@ -1,3 +1,14 @@
+# PR #13 真机前系统整改 — FIXES_IN_PROGRESS（2026-10-19）
+
+已在原任务工作树安全快进到固定SYSTEM_FIX_GOAL_SHA `3dad3b04e3ff703c2e799899035285f64a5976a4`，核对PR13 OPEN Draft/head/base与祖先关系，主工作区未知改动保留。固定Goal/系统报告与必要上下文已读取。实际消费者、不变量与合法后续操作矩阵见既有EXECUTION最新章节。
+
+SR01～07已进入实现候选，新增真旧状态/跨区跨年DST/未来三事实/导出持锁/晚设置结果/成功缓存测试及BV实际观察已执行；BV01/02均确认并补限定候选。详细真实分轮含green-e新增过滤器寿命crash及修复、UI驱动失败保留在EXECUTION最新节。当前仍在收敛定向UI，未运行最终完整Unit、未固定干净产品SHA双构建、未完成独立终审或push。
+
+连续完成SR01～07、BV01/02、定向反例、集中完整Unit/关键UI、干净产品SHA双构建/实包及未写实现reviewer独立反证后才恢复READY。当前本轮测试和修复尚在执行，不以旧PASS代替。原D1–D4/AlarmKit/Share/Safari/低空间/CI状态及设备发行禁区不变。
+
+---
+以下为历史记录，最新执行状态以上文与固定Goal为准。
+
 # PR #13 系统复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-19）
 
 本轮固定审查产品 c296a3691d53ce7f5b5bff36fbf7de525d86510f、交付 62210d9910bae50acf0d58e6cb928e52a67c4a6f。用户要求原因复盘与系统 review，并把真机前问题和 Codex 执行目标记录到 GitHub；本次只修改文档，未实施产品修复或运行新原生测试。

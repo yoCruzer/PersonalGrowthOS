@@ -26,6 +26,13 @@ struct PersonalGrowthOSApp: App {
                 for key in ["sleep.showToday", "sleep.introductionDismissed", "sleep.morningReminder.plannedFires", SleepReminderPreferences.enabledKey, SleepReminderPreferences.minuteKey] { UserDefaults.standard.removeObject(forKey: key) }
             }
             if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSSettingsPreferenceTest") {
+                for (key,value) in [("dailyRecordingReminderEnabled",true),("weeklyReviewReminderEnabled",true)] {UserDefaults.standard.set(value,forKey:key)}
+                UserDefaults.standard.set(480,forKey:"dailyRecordingReminderMinutes")
+                UserDefaults.standard.set(690,forKey:"weeklyReviewReminderMinutes")
+                UserDefaults.standard.set(6,forKey:"weeklyReviewReminderWeekday")
+            }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSUsageElapsedTodoTest") {
                 let zone=TimeZone.current,then=TodoDay("2020-01-01")!.date(timeZone:TimeZone.current)!.addingTimeInterval(12*3600)
                 let service=TodoTaskService(context:container.modelContainer.mainContext,now:{then},timeZone:{zone})
@@ -42,6 +49,29 @@ struct PersonalGrowthOSApp: App {
                     container.modelContainer.mainContext.insert(WeightRecord(weightKilograms: kilograms, recordedAt: at, createdAt: at))
                 }
                 try container.modelContainer.mainContext.save()
+            }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSWeightLosslessTest") {
+                let service=WeightRecordService(context:container.modelContainer.mainContext)
+                for (value,day) in [(72.345,"2026-10-10"),(1000.0,"2026-10-09")] {
+                    _ = try service.create(weightKilograms:value,recordedAt:ImportantCivilDay(identifier:day)!.instant(minutes:720,timeZone:.current)!)
+                }
+            }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSWeeklyCutoffTest") {
+                let context=container.modelContainer.mainContext,now=Date(),future=now.addingTimeInterval(120)
+                let previous=try WeeklyReviewPeriod(containing:now).previous()
+                let historical=previous.end.addingTimeInterval(12*3600)
+                let entries=EntryCreationService(persistence:ModelContextEntryPersistence(context:context),mediaStore:container.mediaStore,now:{now})
+                _ = try entries.create(.init(title:"Current occurred entry",body:"Current fact",occurredAt:now.addingTimeInterval(-60)))
+                _ = try entries.create(.init(title:"Future occurred entry",body:"Future fact",occurredAt:future))
+                _ = try entries.create(.init(title:"Historical Sunday entry",body:"Late in the selected historical week",occurredAt:historical))
+                let habit=try HabitService(context:context,now:{historical}).create(name:"Actual cutoff habit")
+                let check=HabitCheckInService(context:context,mediaStore:container.mediaStore,now:{now})
+                _ = try check.incrementCount(habit,occurredAt:now.addingTimeInterval(-60))
+                _ = try check.incrementCount(habit,occurredAt:future)
+                let weights=WeightRecordService(context:context,now:{now})
+                for (value,date) in [(69.0,historical),(70.0,now.addingTimeInterval(-60)),(99.0,future)] {_ = try weights.create(weightKilograms:value,recordedAt:date)}
             }
             if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSWeightReviewFixDates") {

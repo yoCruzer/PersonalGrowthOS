@@ -1,6 +1,7 @@
 import XCTest
 import SwiftData
 import UIKit
+import SwiftUI
 @testable import PersonalGrowthOS
 
 @MainActor
@@ -410,5 +411,73 @@ extension AppCompositionTests {
         XCTAssertEqual(loaded.commit, values["Commit"] as? String)
         XCTAssertEqual(loaded.commit?.count, 40)
         XCTAssertEqual(loaded.source, "localGit")
+    }
+}
+
+
+@MainActor @Observable private final class SystemGrowthTabSelection {var tab=0}
+@MainActor private struct SystemGrowthMountedTabs:View {
+    @Bindable var selection:SystemGrowthTabSelection
+    let media:MediaStore
+    let thumbnail:ThumbnailStore
+    var body:some View {
+        TabView(selection:$selection.tab) {
+            NavigationStack {GrowthView(mediaStore:media,thumbnailStore:thumbnail)}.tabItem {Text("Growth")}.tag(0)
+            Text("Other tab").tabItem {Text("Other")}.tag(1)
+        }
+    }
+}
+
+@MainActor extension AppCompositionTests {
+    func testSystemBV01MountedGrowthActualReadsOnInvestmentSavesVisibleAndHiddenProbe() async throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        let c=try PersistenceContainerFactory.makeOnDisk(at:root.appendingPathComponent("growth.sqlite")),context=c.mainContext
+        let now=Date(),zone=TimeZone.current
+        for index in 0..<10_000 {
+            let stamp=now.addingTimeInterval(-Double(index)*86400)
+            context.insert(WeightRecord(weightKilograms:70,recordedAt:stamp,createdAt:stamp))
+            context.insert(try SleepRecord(wakeDay:ImportantCivilDay(stamp,timeZone:zone).identifier,timeZoneID:zone.identifier,values:.init(note:"Synthetic"),createdAt:stamp))
+        }
+        try context.save()
+        var clock=InvestmentClock.current()
+        let service=InvestmentService(context:context,clock:{clock})
+        let activity=try service.createActivity(name:"Mounted Growth probe")
+        let participant=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentParticipant>()).first).id,timer=UUID()
+        try service.start(activityID:activity,participantID:participant,operationID:timer)
+        let media=MediaStore(rootURL:root),selection=SystemGrowthTabSelection()
+        let thumbnail=ThumbnailStore(rootURL:root.appendingPathComponent("Thumbnails"),mediaStore:media)
+        let mounted=expectation(description:"Production Growth onAppear read completed")
+        GrowthCountReadProbe.reads=[];GrowthCountReadProbe.didRead={mounted.fulfill()}
+        let window=UIWindow(frame:UIScreen.main.bounds)
+        let host=UIHostingController(rootView:SystemGrowthMountedTabs(selection:selection,media:media,thumbnail:thumbnail).modelContainer(c))
+        window.rootViewController=host;window.makeKeyAndVisible();host.view.layoutIfNeeded()
+        defer {GrowthCountReadProbe.didRead=nil;window.isHidden=true;window.rootViewController=nil}
+        await fulfillment(of:[mounted],timeout:5)
+        GrowthCountReadProbe.didRead=nil
+        func settle() async {let done=expectation(description:"Drain main RunLoop delivery");DispatchQueue.main.asyncAfter(deadline:.now()+0.2) {done.fulfill()};await fulfillment(of:[done],timeout:3)}
+        await settle()
+        for visible in [true,false] {
+            if !visible {selection.tab=1;await settle()}
+            GrowthCountReadProbe.reads=[]
+            _ = try service.storeDraft(id:UUID(),participantID:participant,activityID:activity,values:.init(day:ImportantCivilDay(now).identifier,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual),durationText:"1",editingSessionID:nil,editingRevision:nil,expectedRevision:nil,timerConfirmation:false)
+            clock.wall=clock.wall.addingTimeInterval(1);clock.uptime += 1
+            let workspace=InvestmentWorkspace();workspace.checkpoint(context,clock:{clock})
+            var probe=false;Task { @MainActor in probe=true };await settle()
+            let actual=GrowthCountReadProbe.reads
+            print("PGOS_BV01 visible=\(visible) actualFetches=\(actual.count) weightModels=\(actual.reduce(0){$0+$1.0}) sleepModels=\(actual.reduce(0){$0+$1.1}) mainProbe=\(probe)")
+            XCTAssertTrue(probe)
+            XCTAssertTrue(actual.isEmpty,"Identified Investment operation writes must not re-fetch Weight or Sleep")
+        }
+        let weightService=WeightRecordService(context:context)
+        let record=try weightService.create(weightKilograms:72.345,recordedAt:now.addingTimeInterval(-10010*86400))
+        await settle();XCTAssertEqual(GrowthCountReadProbe.last?.weightDays,10001)
+        try weightService.delete(record);await settle();XCTAssertEqual(GrowthCountReadProbe.last?.weightDays,10000)
+        _ = try service.createActivity(name:"Metadata refresh")
+        await settle();XCTAssertEqual(GrowthCountReadProbe.last?.activities,2)
+        XCTAssertTrue(GrowthEntryCounts.needsRefresh(Notification(name:ModelContext.didSave)))
+        XCTAssertTrue(GrowthEntryCounts.needsRefresh(Notification(name:ModelContext.didSave,userInfo:[ModelContext.NotificationKey.invalidatedAllIdentifiers:true])))
+        let op=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<InvestmentOperation>()).first)
+        XCTAssertTrue(GrowthEntryCounts.needsRefresh(Notification(name:ModelContext.didSave,userInfo:[ModelContext.NotificationKey.invalidatedAllIdentifiers:[record.persistentModelID],ModelContext.NotificationKey.updatedIdentifiers:[op.persistentModelID]])))
     }
 }

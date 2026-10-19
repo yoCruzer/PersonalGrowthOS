@@ -100,6 +100,11 @@ enum QuietWinsUITestFixture {
         let ranking = ProcessInfo.processInfo.arguments.contains("-PGOSQuietWinsRankingTest")
         let usageDays = ProcessInfo.processInfo.arguments.contains("-PGOSUsageHabitDaysTest")
         let habit = try HabitService(context: context, now: { created }).create(name: "Quiet reading", recordingMode: ranking || usageDays ? .multiplePerDay : .oncePerDay)
+        if ProcessInfo.processInfo.arguments.contains("-PGOSUsageHabitVariantsTest") {
+            _ = try HabitService(context:context,now:{created}).create(name:"Synthetic daily multiple long habit",recordingMode:.multiplePerDay,dailyTargetCount:3)
+            _ = try HabitService(context:context,now:{created}).create(name:"Synthetic weekly long habit",plan:.init(recordingMode:.oncePerDay,period:.week,goal:.count,targetCount:3,weekdays:[]))
+            _ = try HabitService(context:context,now:{created}).create(name:"Synthetic monthly long habit",plan:.init(recordingMode:.oncePerDay,period:.month,goal:.count,targetCount:10,weekdays:[]))
+        }
         let log = HabitLog(habitID: habit.id, occurredAt: completed, isCompleted: true, createdAt: completed)
         if usageDays { log.result = "Synthetic check-in 1" }
         context.insert(log)

@@ -44,6 +44,11 @@ struct ImportResult: Equatable {
     let restoredMediaCount: Int
 }
 
+struct NonfiniteHabitQuantityError: LocalizedError {
+    let logIDs:[UUID]
+    var errorDescription:String? {String(localized:"A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup.")}
+}
+
 @MainActor
 final class ImportExportService {
     typealias Log = (String) -> Void
@@ -138,6 +143,8 @@ final class ImportExportService {
                     try LinkIntegrityService.validate(context: snapshotContext)
                     try ImportantDayIntegrity.validate(context: snapshotContext)
                     let transfer = try TransferSnapshot.make(context: snapshotContext, investmentClock: timerClock())
+                    let invalidQuantities=transfer.habitLogs.filter {$0.quantity?.isFinite == false}.map(\.id)
+                    guard invalidQuantities.isEmpty else {throw NonfiniteHabitQuantityError(logIDs:invalidQuantities)}
                     try snapshotCheckpoint?()
                     let inputs = try transfer.mediaAssets.map { record in
                         ExportMediaInput(
@@ -180,6 +187,22 @@ final class ImportExportService {
             log("export.failed")
             throw error
         }
+    }
+
+    func exportRetainedQuantityData() async throws -> URL {
+        let root=mediaStore.rootURL
+        let configuredStore=container.configurations.first!.url.standardizedFileURL.resolvingSymlinksInPath()
+        let source=root.appendingPathComponent("Store/PersonalGrowthOS.sqlite").standardizedFileURL.resolvingSymlinksInPath()
+        guard configuredStore == source else {throw CocoaError(.fileReadUnsupportedScheme)}
+        let worker=Task.detached {
+            try StorePublication.perform(at:root) {
+                let retained=try StartupRetainedData.capture(rootURL:root)
+                return try retained.archive(diagnostic:"Nonfinite Habit quantity: source data retained without correction. This is raw support recovery, not an importable normal backup.")
+            }
+        }
+        let result=try await withTaskCancellationHandler {try await worker.value} onCancel: {worker.cancel()}
+        try Task.checkCancellation()
+        return result
     }
 
     private struct ExportMediaInput {
