@@ -1,3 +1,26 @@
+# 当前任务 — PR #13 集成边界修复（2026-10-19）
+
+固定已审产品/测试 c55dc10fde79f1fe4dec18b03195119c2049830f；已审交付 c1fe56477f2573930a65a95c46d4b7ab7296d6af。新 [独立审查](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md) 确认 IR-01～04 四项P2和IR-05一项P3测试收尾；V-01为必须完成一次的raw SQLite写竞争原生有界验证，尚未确认卡顿；O-01为Weekly已打开页的非阻断UNCONFIRMED观察。未发现P0/P1。
+
+本地停点更新为 **LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY**，不再沿用下方c55交接的仅等设备状态。Owner已批准按 [集成边界修复Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 继续；INTEGRATION_FIX_GOAL_SHA由短引导prompt固定。IF-A～IF-D为同一连续本地授权，沿原分支codex/usage-remediation-20261017、唯一OPEN Draft PR #13、base codex/time-investment-v1续接；轻量核对工作树/祖先关系，保留未知改动和有效后续提交。
+
+本次仅记录独立审查并准备执行规格，没有实施产品修复、运行新原生测试、读取Mac原始xcresult/录屏/实包，不能产生新的产品PASS。旧完整Unit 557=556PASS/0FAIL/1SKIP、UI18PASS/3FAIL后补4/4及双构建是既有c55/00b记录，其原始证据边界和真实失败保持。SR02/03主体、SR06/07、BV01过滤及BV02原值保留等已认可部分作为保护，不重开整套整改。
+
+D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN为既有状态，不能由源码/桩/unsigned验证改写。当前不进行私人设备/库、签名安装、merge、force push、tag、Archive或TestFlight。规格接收/文档交付不触发产品构建。
+
+执行顺序：
+1. 完整阅读固定Goal/Review，轻量续接原worktree，不重复全量基线。
+2. IF-A：IR01实际事件桥有限收敛；IR02两渠道存量未来请求隔离/取消确认；IR03跨Settings重建的最新意图。
+3. IF-B：IR04重命名失败后的可达草稿/重试；IR05按受控业务日和时钟修两组新夹具。
+4. IF-C：V01真实raw写事务→独立生产对账→真实SwiftData保存/主响应及恢复；有证据才最小修复。O01可顺带观察，不单独阻断。
+5. IF-D：阶段定向收敛，最终候选一次必要完整Unit/关键UI及既有双构建/实包，独立reviewer检查实际消费者和原始证据，范围内问题同批闭环，普通commit/push原PR。
+
+IR01～05有明确关闭或严格反证、V01以VERIFIED_SAFE/DISPROVED/CONFIRMED_AND_FIXED及对应原生证据关闭、必要本地门与独立终审完成后才恢复READY_FOR_OWNER_DEVICE_GATE；否则记录REVIEW_BLOCKED或VALIDATION_BLOCKED并完成未受阻工作。O01仅保持UNCONFIRMED不构成单独阻断。内部阶段不再次申请继续，纯文档收尾不重新构建同产品。
+
+---
+
+以下是原样保留的历史任务与运行记录。其中旧READY、下一步仅设备门等停点已由上文替代。
+
 # PR #13 真机前系统整改 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
 固定SYSTEM_FIX_GOAL_SHA `3dad3b04e3ff703c2e799899035285f64a5976a4`；最终干净产品/测试 `c55dc10fde79f1fe4dec18b03195119c2049830f`。SR01～07逐项关闭，BV01/02均CONFIRMED_AND_FIXED；完整不变量/消费者/合法后续状态矩阵、原错/selector/哈希在既有EXECUTION、ACCEPTANCE与SYSTEM_FIX_RUNS.json最新节。原SYSTEM_REVIEW与各轮失败保持。

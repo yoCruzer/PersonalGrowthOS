@@ -1,3 +1,19 @@
+# PR #13 集成边界独立复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-19）
+
+固定已审产品/测试 c55dc10fde79f1fe4dec18b03195119c2049830f；已审交付 c1fe56477f2573930a65a95c46d4b7ab7296d6af。新 [独立审查](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md) 确认 IR-01～04 四项P2和IR-05一项P3测试收尾；V-01为必须完成一次的raw SQLite写竞争原生有界验证，尚未确认卡顿；O-01为Weekly已打开页的非阻断UNCONFIRMED观察。未发现P0/P1。
+
+本地停点更新为 **LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY**，不再沿用下方c55交接的仅等设备状态。Owner已批准按 [集成边界修复Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 继续；INTEGRATION_FIX_GOAL_SHA由短引导prompt固定。IF-A～IF-D为同一连续本地授权，沿原分支codex/usage-remediation-20261017、唯一OPEN Draft PR #13、base codex/time-investment-v1续接；轻量核对工作树/祖先关系，保留未知改动和有效后续提交。
+
+本次仅记录独立审查并准备执行规格，没有实施产品修复、运行新原生测试、读取Mac原始xcresult/录屏/实包，不能产生新的产品PASS。旧完整Unit 557=556PASS/0FAIL/1SKIP、UI18PASS/3FAIL后补4/4及双构建是既有c55/00b记录，其原始证据边界和真实失败保持。SR02/03主体、SR06/07、BV01过滤及BV02原值保留等已认可部分作为保护，不重开整套整改。
+
+D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN为既有状态，不能由源码/桩/unsigned验证改写。当前不进行私人设备/库、签名安装、merge、force push、tag、Archive或TestFlight。规格接收/文档交付不触发产品构建。
+
+本次远端再次核对head仍c1fe564，Draft/base保持；实际38文件差异及130个审查文件blob一致。此前“范围内无未关闭P2”是前轮审查结论，原文保留，其本地放行判断由本次具体集成反例和新Goal更新。当前Mac工作树状态需由执行Codex实际核对，本文不把旧clean报告当新事实。
+
+---
+
+以下是原样保留的历史交接与运行记录。最新任务、授权和本地停点以上文及新Goal为准；旧运行数字与审查原文不被改写。
+
 # PR #13 真机前系统整改 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
 
 固定SYSTEM_FIX_GOAL_SHA `3dad3b04e3ff703c2e799899035285f64a5976a4`；最终干净产品/测试 `c55dc10fde79f1fe4dec18b03195119c2049830f`。SR01～07逐项关闭，BV01/02均CONFIRMED_AND_FIXED；完整不变量/消费者/合法后续状态矩阵、原错/selector/哈希在既有EXECUTION、ACCEPTANCE与SYSTEM_FIX_RUNS.json最新节。原SYSTEM_REVIEW与各轮失败保持。

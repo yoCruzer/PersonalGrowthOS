@@ -167,3 +167,8 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ### 2026-10-19 PR #13 系统复盘与真机前修复
 
 [系统审查与原因复盘](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md) 固定审查产品 c296a369 / 交付 62210d9，记录7组SR工作、两项有界BV、完整消费者/生命周期矩阵及证据边界。[真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md) 是下一次给 Codex 的执行规格，SYSTEM_FIX_GOAL_SHA 由短 prompt 固定。当前 LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY，纯文档准备，产品修复和新原生测试未执行；两份CURRENT顶部与新Goal取代旧仅等设备的本地停点。原PR/base、旧关闭/失败证据和设备/发行边界保持。
+
+
+## 2026-10-19 PR #13 集成边界独立复核与限定续修
+
+固定复核产品c55dc10/交付c1fe564的 [独立审查](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md) 记录IR01～04四项P2、IR05测试P3、V01原始恢复导出的必要有界验证及O01非阻断观察。[集成边界修复Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 为Owner已批准的下一轮本地连续执行规格，INTEGRATION_FIX_GOAL_SHA由短prompt固定。当前LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY，仅文档准备；两份CURRENT顶部替代旧仅等设备的停点。原PR/base、有效修复、旧失败/原生证据边界和设备/发行边界保持。

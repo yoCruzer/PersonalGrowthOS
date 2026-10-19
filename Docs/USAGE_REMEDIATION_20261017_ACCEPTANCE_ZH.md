@@ -498,3 +498,22 @@ SR01～07关闭、BV01/02限定处置完成，必要本地门与独立终审完�
 最终逐项判定：SR01/02/03/04/05 CLOSED；明确P3 SR06/07 CLOSED；BV01/02 CONFIRMED_AND_FIXED。BV02已有异常仍普通export明确失败，原始支持恢复包保留原事实，不是正常可导入备份；不能声称恢复旧NaN/体重精度损失。SR03缺metadata旧Habit沿既有fallback，QuietWins既有信任边界不外推。SR04删除终态复用源码及原删除/擦除测试，不声称另做了“导出等待后删除”专门原生实验。审查完整原文见[REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)，终审SHA256 `97a2b772840552d3ae5f56d34f2017c5332f10d4d4ebd5ddf5a124897ca5f469`。
 
 本批达到本地停点即交接，不开展未授权的设备/签名/发布操作；下一步仅Owner另行授权D1–D4。最终文档提交相对c55只有Docs，产品证据继续同源有效。
+
+
+## 2026-10-19 集成边界复核 — 新验收登记（未实施）
+
+基于已审c55产品/测试及c1fe交付，当前LOCAL_REVIEW_FIX_REQUIRED。详见 [固定审查](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md) 和 [执行Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md)。本表只登记下一轮验收，未运行新原生测试；旧分轮和审查原文保持。
+
+| 项目 | 当前状态 | 必须提供的关闭证据 |
+| --- | --- | --- |
+| IR-01 / P2 | OPEN；原生回归NOT_RUN | 实际事件桥下stopped/unresolved和混合健康数据有限收敛；健康三类/Settings gate waiter可完成；真实变化和回滚保持 |
+| IR-02 / P2 | OPEN；NOT_RUN | 两渠道accepted future隔离、取消/持久确认失败、冷重开、明确纠正恢复；ringing/Stop/retired及容量保护 |
+| IR-03 / P2 | OPEN；NOT_RUN | Settings关闭重建/共享owner、同值新意图、旧普通错/成功/取消、当前失败/明确off和无新B时A合法完成 |
+| IR-04 / P2 | OPEN；NOT_RUN | 真实import持锁下重命名busy，失败草稿可见可重试、成功仅一次、普通错/取消/不串活动 |
+| IR-05 / P3 | OPEN；NOT_RUN | BV01自然日基数与真实mounted读取链；Weekly受控seed/reader/选周/未来推进；LA午夜DST/周一边界 |
+| V-01 | REQUIRED_BOUNDED_VALIDATION / NOT_RUN | 真实raw SQLite写事务barrier→独立生产对账→SwiftData.save/MainActor probe；快速错误或阻塞的真实证据及释放后恢复 |
+| O-01 | UNCONFIRMED；非阻断 | 可随IR05观察已打开Weekly选周/草稿寿命；未证实不先改产品、不单独阻断 |
+
+新V01不改写已完成BV02原值保留结论；源码写竞争不等于已经复现主线程阻塞。IR05不推翻旧条件下实际PASS/actualFetches=0。完整生产触发、反证、selector、最终SHA、原始证据与复用依新Goal登记。
+
+恢复READY条件：IR01～05明确关闭/有效生产反证；V01为VERIFIED_SAFE/DISPROVED/CONFIRMED_AND_FIXED且有原生证据，VALIDATION_BLOCKED不能放行；必要最终门、双构建/实包和未参与实现reviewer终审完成；无范围内confirmed P0/P1/P2及明确P3收尾。O01仅UNCONFIRMED不阻断。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN仍保留。

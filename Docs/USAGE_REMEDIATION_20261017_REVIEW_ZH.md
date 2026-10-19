@@ -388,3 +388,14 @@ F5本轮原日志还有 `REVIEW_F5_CHAIN factDecoded=10000 operationBatchDecoded
 剩余状态继续原样：D1–D4 **NOT_PASSED**；AlarmKit原生正向 **NOT_RUN**；Public Share **FAIL/environment**；unsigned Safari **FAIL**；物理低空间 **SKIP/NOT_RUN**；远端CI **NOT_RUN**。没有重新执行签名安装、不卸载升级、私人库/私人设备、Archive、tag、TestFlight、merge或force push。fake、模拟器、直接intent和unsigned包不能填这些门为PASS。
 
 本结论支持固定c55候选的本地修复交付与后续Owner另行授权设备门；它是有限范围的独立代码/证据审查，不是对未知数据组合或所有设备不存在缺陷的保证。报告写定后请原文追加，不由实施者改写独立结论。
+
+
+## 2026-10-19 外部集成边界复核补充 — LOCAL_REVIEW_FIX_REQUIRED
+
+新的独立完整报告见 [INTEGRATION_REVIEW](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md)，固定产品/测试c55dc10fde79f1fe4dec18b03195119c2049830f、交付c1fe56477f2573930a65a95c46d4b7ab7296d6af。该报告按提醒、持久化/异步、事实/界面并行阅读，主审交叉反证；未编写本轮产品、未在Linux运行原生测试或读取开发机原始大产物。源码及测试设计结论不能冒称新native PASS。
+
+确认IR01～04四项P2和IR05一项P3测试收尾，无P0/P1。原始raw导出的SQLite写竞争列为V01必须有界验证，尚未确认卡顿；Weekly活动页周身份O01保持非阻断UNCONFIRMED。完整合法起点、源码、现有测试为何不足、修复边界及已认可矩阵均在新报告中。
+
+本次更新当前本地放行判断，不覆盖或代写上方开发机独立reviewer原文，不把旧通过/失败改成不存在。SR02/03主体、SR06/07、BV01过滤和BV02原值保留等继续作为保护；IR01/02补SR01完整集成，IR03补SR05页面寿命，IR04补SR04旧调用方失败落点，IR05补新夹具稳定性。
+
+Owner已批准 [新Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 的连续本地修复。实施和新原生回归仍待执行；不能以这次文档交付关闭IR/V或恢复READY。后续独立审查原文及最终证据另追加，D1–D4和设备/环境/发布边界保持。

@@ -565,3 +565,16 @@ Reviewer `/root/pr13_system_independent_reviewer` 未写本轮实现，先独立
 SR01～07及BV01/02逐项处置、全部相关消费者/代表合法状态、真旧数据/回滚/重开/ZIP、集中完整Unit/关键UI、固定干净产品SHA双构建/实包及独立终审均已有证据。恢复READY_FOR_OWNER_DEVICE_GATE仅代表本地批次完成；原D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持。未签名安装、不卸载升级、私人设备/库、merge/force push/tag/Archive/TestFlight均不在本批执行。
 
 交付前fetch确认远端仍3dad3b04、base5a70f011、PR13 OPEN Draft、statusCheckRollup=[]，没有后续并发提交被覆盖。沿原分支普通push，不发PR外部评论/消息，不改base或另开PR。最终产品/测试c55dc10与之后仅文档交付SHA分开，交付SHA以实际commit/PR head和本机final-delivery-proof.json确认；主工作区d72c016及原三项未知改动保留。文档变化无需重建同产品。
+
+
+## 2026-10-19 集成边界独立复核与规格交付
+
+状态：LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。Owner批准按本次独立review继续，当前只准备文档；产品修复和新原生回归均NOT_RUN。
+
+固定已审产品c55dc10fde79f1fe4dec18b03195119c2049830f／交付c1fe56477f2573930a65a95c46d4b7ab7296d6af；远端仍OPEN Draft PR13、原分支/base。对前Goal3dad→交付的3提交/38文件及130个审查文件blob进行了核对，c55相对00b只有三个UI测试文件，生产/Unit不变。审查环境Linux，未运行Xcode/SwiftData或读取Mac原始产物；独立日期复算是夹具数学验证，不是新的原生PASS。
+
+完整问题与原因见 [INTEGRATION_REVIEW](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md)；下一步执行见 [INTEGRATION_FIX_GOAL](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md)。IR01事件自触发、IR02Alarm存量隔离、IR03跨sheet旧结果、IR04失败重命名均OPEN/P2；IR05两组时间夹具OPEN/P3。V01只确认结构写竞争，原生影响待有界验证；O01保持非阻断UNCONFIRMED。
+
+本次文档提交只增加新Review/Goal并更新INDEX、CURRENT两份、EXECUTION/ACCEPTANCE/REVIEW；不改产品/测试/旧机器摘要、不发起构建。规格SHA在Owner短prompt固定；后续Codex按同一连续授权完成IF-A～D，再记录产品/测试SHA和纯文档交付SHA。
+
+已认可SR与BV部分和旧R/F/CR保护保留；旧FAIL/SKIP/NOT_RUN不改写。D1–D4未通过及AlarmKit/Share/Safari/物理低空间/CI遗留状态保持；不进入设备、签名或发布。后续实际进展追加本节之后，不能以历史READY或旧测试数量替代本轮闭合。
