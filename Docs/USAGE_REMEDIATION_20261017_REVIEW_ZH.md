@@ -640,3 +640,62 @@ daily/weekly 各自跑旧08→09失败→两次 remove 未确认→off 已保存
 ## 终审门
 
 待固定候选及本机原证据：审产品与测试 diff、上述未改调用者、原 red/green 分轮、xcresult 实数、代表设置/编辑器图与最终 Debug/unsigned Release 三包。独立复算 manifest/hash/provenance、App/Share/Widget IDs、1.0(7)/min17、SHA/Dirty=false、AlarmKit weak 与中英用途；集中 Unit/必要关键 UI 与候选一致。旧 RR-02/IR/Stop/取消/容量/计时/迁移/raw/F5 证据只按依赖不变复用，不要求重做。D1–D4、AlarmKit 正向、Share/Safari、物理低空间、CI 保持既有未通过/未运行。当前不作 READY 结论。
+
+
+## 2026-10-20 TERMINAL_RECHECK 固定候选独立终审
+
+原文 `/tmp/pgos-pr13-recheck-evidence/reviewer-final.md`，SHA256 `6b75465420b1cfd5043d275ea4c8ba56373f0dddc4cee95cdcf39677e9dbe3f9`；审查者未写本轮产品或测试代码。以下原样追加，不替换预登记或旧轮次。
+
+# TC-01～03 独立终审原文（2026-10-20）
+
+审查者 `/root/terminal_recheck_reviewer` 未参与本轮产品/测试实现；先于实现者关闭表保存独立预登记 `reviewer-preflight.md`（SHA256 `36b5bcae182232fc524304fd5690bca57a847403874e12c2bd0e2f6b6afd307c`）。本次固定 Goal 为 `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`，终审产品/测试候选为 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`；最后产品修改包含于 `2b0d4917342d03b0f9e5323a1ef2cf58447953fb`，2b→1b 仅旧 roundtrip 测试增加 disabled synthetic sleepPreferences 一行。直接读 Git 时 HEAD=1b、工作树 clean。本审查仅在本机读取/复算既有运行，不冒称另行重跑产品测试。
+
+## 结论
+
+支持恢复本批本地 `READY_FOR_OWNER_DEVICE_GATE`。TC-01、TC-02 均有具有区分力的生产链红例并完成最小修复，TC-03 成功反馈收尾完成；无本 Goal 范围内未关闭 confirmed P0/P1/P2，明确 P3 已完成。此结论只针对本批本地门和独立终审，不代替 Owner 设备门或发行授权。
+
+## 固定代码及未改调用者
+
+相对固定 Goal，产品只改 ReminderFoundation、AppShell、TodoFoundation 三文件。逐行审查后，规则纠正不再用来源状态代表受影响后继状态；来源的 correction renew 仍限定 open，successor 循环仍限定同系列、较后且 open，已 Stop 规则和可解析健康规则均不进入 correctingPolicy。事务、历史事件、源关联、截止/计划与系统取消 ownership 规则没有被替换。
+
+启动/前台从已持久化 off 偏好重建清理责任，符合最小设备本地对账方案；仅处理 daily/weekly 两个固定 ID，不新增 Schema/备份账本、不申请权限/开启提醒。两渠道共用根 Scope 和 NotificationMutationGate；removeAfterFailure 在 gate 内及 native query 后检查当前票据，submit 在 recover await 后再次检查 generation/取消/最新偏好。updating 仅由当前 token 完成时释放，避免旧任务清新状态。取消或过期启动 A 不能发布错误/成功到新 B。
+
+检查未改调用者包括：TodoEditorView 的实际 save 与 affectedOpenSuccessor 报告、TodoTaskService 的 applyTemplate/setIntent/transaction、TodoIntentScheduling 的 retired/取消确认边界、MediaStorageView 每日/每周 onChange、失败后 off 引发的二次 submit、handleReminderResult、原共享预算及其他类别协调。success(.removed) 仅在当前 cleanupPending 时清当前未确认文案；原已确认清理后的历史更新失败说明仍可保留。上述逻辑与调用者一致，未发现范围内新的 confirmed 问题。
+
+## TC-01 证据
+
+旧 f1 Service 不是改造后 helper：独立从固定 `f1b52b58fd11c41f508ec665d583827879ffa202` 抽取 TodoTaskService 类体，与测试 TerminalRecheckOldF1Service 仅归一类名后逐字相等。本审查 hash 边界是类声明后的首个 `{` 到配对 `}`，不含注解和类名；双方 SHA256 `9b0532bbeb10bc4c340e721115ca66c7fe372bfa785272c496e96d681fbad960`。执行者另存包含 @MainActor/首尾 strip 的 `927023…`，边界不同而非内容矛盾。
+
+真实 V11 nil offset → 旧 f1 完成/跳过 A → B → 旧 deleteList 构成合法前提。两渠道×completed/canceled 四组合先 accepted，生产 refresh(Hong_Kong) 检出等偏移不同 identifier 的不可解析规则，再通过生产 quarantine 隔离；返回原设备区后，从实际 TodoEditorView 同值/同渠道应用未来。`red-a-proper` 的两个方法均 FAIL，stopped/native0/旧代次与目标失败完全对应。更早 `red-chains` 内 TC-01 受 NSTimeZone.default 未改变 .current 的隔离前提失败，不能当 TC-01 产品红例；原记录保持。
+
+最终同方法完整 PASS：B 新代次和唯一 native 请求，旧 ID 不存在；A 原 completed/canceled 状态及来源 generation 不复活，B 原时刻/计划/截止不变，Entry/source 和既有事件保留；重复提交幂等、磁盘冷开、失败全快照回滚、取消未确认仍旧 ownership 且没有第二请求、确认后恢复唯一请求均断言。健康 metadata、System Stop 与 series Stop 相反操作不换代不重排。方法末端 `PGOS_TC01 native=0` 是后续 Stop 负例终态，之前恢复成功的唯一 native=1 由完整方法断言证明；不将该末端打印误读为恢复失败。
+
+## TC-02/03 证据
+
+`red-chains` 独立原生失败包含：完整旧根 daily/weekly Scope 均已释放，新根偏好 off 而旧08:00请求仍存在；同 Scope 确认重试后 pending=false 仍显示中文“尚未确认…”文本。不是只重开 sheet 的测试。
+
+最终 Unit 覆盖 daily/weekly × 冷开请求仍在/已无/首次再清失败三分支。旧 UIHostingController/AppShell/Scope 通过 weak=nil 验证销毁；同隔离 UserDefaults suite 和外部 client 保留，新根实际 .task 自动对账。未确认可见且可重试，随后 confirmed → native0/pending=false/当前未确认文本=nil；denied/notDetermined 零权限申请。实际 AppShell 启动 query 挂起，再经 MediaStorageView onChange 提交同值 B/异值 B/明确 off，2×3组合通过；旧 A 不删新 B，不污染另渠道和其他/未知 ID。helper 级 2×3矩阵为补充，实际根链并未被 helper 替代。
+
+直接查看最终 Unit 导出的六张中文设置图：两种冷根失败保留未确认文案和 Try Again，两种确认成功均展示 daily/weekly off 且当前未确认文案/重试按钮消失；旧 IC-02 重开图继续显示已确认清理后的历史“无法更新提醒”说明。单独重读 daily 成功原图确认两开关完整可见，其与 weekly 成功图像素 hash 相同。我此前在多图合并输出时一度误判 daily 行滚出可见区，已向执行者更正；该误判不是图或产品缺口。另直接查看最终 UI Sleep 实际设置截图，未用黑图替代可见证据。真实 TodoEditorView 保存入口由挂载测试/回调及最终 native 断言证明，没有虚称其额外截图。
+
+## 独立核验与真实失败保留
+
+通过本机 xcrun xcresulttool 直接读取 red-chains、red-a-proper、green-chains、expanded-matrix、focused-matrix、todo-isolation-probe、adjacent-todo 原始结果，逐项与保存摘要比对一致。阶段结果分别为 0/4、0/2、4/4、18/21、22/22、0/1、31/31；真实失败未被改标通过。旧 ImportantDay/Todo 测试的额外 sleep 请求与专用合成模拟器已开启的睡眠偏好相符，测试显式注入 disabled synthetic sleepPreferences，未删除宿主偏好或弱化断言。TodoReminderTests 去掉新增依赖注入后与固定 Goal 逐字相等。
+
+原 2b 完整 Unit 直接读取为 579=577 PASS/1 FAIL/1 SKIP；唯一失败为旧 roundtrip 依赖同类宿主 sleep 偏好，1b 只修该测试依赖，产品三文件不变。最终候选 1b 集中门直接读取：
+
+- 完整 Unit：579=578 PASS/0 FAIL/1 SKIP，runtimeWarnings=[]。跳过节点明确是需隔离32MB HFS+图的物理低空间用例。
+- 必要关键 UI：3/3 PASS、0 FAIL/0 SKIP，runtimeWarnings=[]；覆盖每日重复完成/跳过/Stop/Restart、daily/weekly 明确 off 冷重开、睡眠目标/入口/拒绝提醒独立性。UI 仅 Sleep 方法导出一张 PNG，另外两方法无附件，结论由原始 xcresult 与方法断言支持，未声称三方法都有图。
+- Debug build-for-testing 和 generic iOS unsigned Release 原始 log 有明确成功标记、运行记录 exit=0，均使用同一 clean 1b 候选。
+
+独立新写只读复算脚本 `reviewer-verify.py` 并执行，输出 `reviewer-final-verification.json`：21轮 record/log及10份摘要共52个 hash 全匹配；最终四份 source manifest 同字节（SHA256 `391c632f1e57e157bcfd794bd717f8989ea355b9cf458eff9331e34ca841f449`），各142文件逐一匹配1b Git blob；三个附件目录共17文件（含manifest）hash匹配。
+
+直接读 Debug/Release 各 App/Widget/Share 六个实包 Info.plist 和二进制，复算 executable/debug dylib hash均与 proof 相符；原 Bundle IDs、1.0(7)、minOS17 保持。两 App 的 BuildProvenance 实为完整1b/Dirty=false/localGit；直接读两 App 中英文 AlarmKit 用途，otool 确认 App实际加载二进制的 AlarmKit 为 LC_LOAD_WEAK_DYLIB。独立 codesign -dv 三个 Release 包均返回未签名。未把 unsigned构建外推为原生AlarmKit正向或设备验证。
+
+RR-02二次busy/fence/回拨、IR事件与取消/Stop/容量、计时checkpoint/pause/finish/F5、迁移/恢复/raw原值等生产相关代码未改；完整 Unit 已覆盖其现有方法，未要求重做 A–D。未受影响旧 UI 只按相应方法/依赖 blob 不变的既有证据复用，不拼成一次历史全绿。
+
+## 保留的外部门禁
+
+D1–D4 NOT_PASSED、AlarmKit 正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 维持。O-01仍非阻断UNCONFIRMED，没有借本批扩大未知观察。没有操作私人设备/库、签名安装、merge、force push、tag、Archive或TestFlight。
+
+上述本地核实支持 TC-01/02关闭与TC-03收尾；后续只需按既有授权完成文档/PR描述与普通交付，不因纯文档变更重建产品。

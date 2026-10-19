@@ -796,3 +796,48 @@ RR02最终因果：writer-frozen→production-observe-entry→independent-probe-
 分轮真实结果保留：red-a-build exit65是旧服务自引用/字段名测试接线编译错，red-a-build2恢复；red-chains 4方法0PASS/4FAIL，其中TC01的NSTimeZone.default未影响current，隔离前提失败仅算夹具错误，TC02/03是真实产品红例。改用显式生产refresh→quarantine后 red-a-proper 2方法0PASS/2FAIL，前提成立，TC01两个来源/渠道组合均stopped/native0/旧代次。green-chains 4/4PASS。expanded-matrix 21=18PASS/3FAIL，三项旧ImportantDay测试读取前轮sleep UI留下的standard enabled偏好而额外排程；诊断JSON保存读取源/hash/true事实，未清偏好。为该类注入disabled合成sleepPreferences后，强化后的focused-matrix 22/22PASS。Todo相邻单项同依赖探针1FAIL明确观察8请求包含sleep前缀；同类独立依赖修正后adjacent-todo 31/31PASS，断言未弱化。原FAIL均不改写。
 
 已查看focused-matrix导出的四张实际中文冷根设置图：daily/weekly未确认时红字+Try Again，成功后两者均无；off保持，权限已拒绝提示与清理反馈独立。现仍FIXES_IN_PROGRESS；待同一干净候选的集中完整Unit、关键UI、双构建/实包及独立终审，才可恢复READY。旧RR02/IR/计时/迁移/raw/F5和设备限制保留，不重做A–D。
+
+
+### TERMINAL_RECHECK S-C 最终集中门、独立终审与交付
+
+产品实现`2b0d4917342d03b0f9e5323a1ef2cf58447953fb`后的首轮完整Unit579=577PASS/1FAIL/1SKIP，唯一FAIL为旧TodoV7往返方法同样读取专用宿主已开启sleep偏好，实际8请求包含sleep前缀却期待1；原xcresult/log不改写。仅一行注入disabled合成sleepPreferences，普通提交`1b150068e76f4d7e7a6defcd51f10622951f4b4b`，三处产品blob与2b完全相同，未弱化任何断言。
+
+最终同一clean `1b150068e76f4d7e7a6defcd51f10622951f4b4b`完成：candidate2-debug-build exit0；candidate2-unit579=578PASS/0FAIL/1SKIP、runtimeWarnings=[]；candidate2-ui3/3PASS/0SKIP、runtimeWarnings=[]；candidate2-release unsigned generic iOS build exit0。精确command/destination、耗时、source manifest和record/log/summary SHA256见本轮JSON。环境arm64/macOS27.0.1(26A434)、Xcode27.1(27A9275)/SDK27.1，专用iPhone18Pro/iOS27.0(24A434)/42609456-859D-41F8-8977-4B2D85A74082；未更改宿主时钟或时区。唯一SKIP为TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure，需要隔离32MB HFS+图，未填主卷。
+
+关键UI完整selectors：AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence、AppLaunchSmokeTests/testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch、SleepUITests/testGoalVisibilityAndDeniedReminderRemainIndependentOfSavedFacts。前两方法无保留附件，第三有1张实际睡眠设置图；TC01真实editor与TC02整个根销毁/冷开/真实设置B由完整Unit挂载生产链证明。最终Unit的四张冷根设置图已逐张读取：daily/weekly未确认时有红字+Try Again，成功图两开关off且文字/按钮均消失。曾在多图合并展示中误判daily行滚出，单独原图与SHA证明daily/weekly成功PNG相同（`0517a71a016d13a4406ff45f06dea352d4c7143558f11cd279eb45c84bf8133c`），已更正，不是黑图/证据缺口，不需改码补跑。
+
+实包Debug/Release各App/Share/Widget的原Bundle IDs、1.0(7)、min17.0，App完整SHA/Dirty=false/localGit/空Tag、Mach-O AlarmKit LC_LOAD_WEAK_DYLIB及en/zh-Hans用途非空均核对；Release三包codesign -dv输出not signed at all。四份142文件manifest完全一致并逐文件比Git。详细二进制hash/签名输出及附件hash位于final-bundle-and-gates.json；本轮JSON记录proof和复用依赖文件hash。本机原始文件索引evidence-file-hashes.json可定位log、xcresult内部文件及图，独立reviewer另行复算，不把副本描述充当实际执行。
+
+本轮之外的Weight/Investment/Sleep/ImportExport/Schema/ZIP原实现blob未改，UI测试文件也与744e772相同；具体路径/hash见reused-evidence-dependencies.json。AppShell启动链改变，因此重跑上述关键UI及真实editor/root Unit；其他旧有效UI仅按原方法/依赖复用，未声称本轮全量UI。RR02二次busy/fence/回拨、V01/raw原量/原图、Investment checkpoint/pause/finish/F5读取、迁移与取消/Stop/ringing/容量等在本轮完整Unit中保护，不重新扩展扫描。
+
+独立reviewer `/root/terminal_recheck_reviewer` 未参与实现，先预登记反例再读固定候选/未改消费者、直接读取原始xcresult/log/真实图与六实包并复算。终审原文sha256 `6b75465420b1cfd5043d275ea4c8ba56373f0dddc4cee95cdcf39677e9dbe3f9` 原样附REVIEW，支持关闭TC-01～03、恢复本地READY；无范围内未关闭confirmed P0/P1/P2与明确P3。O-01仍非阻断UNCONFIRMED。
+
+本轮21次实际分轮如下；原先终态19轮/集成38轮全部保留。编译接线错、TC01首轮时区前提错、旧测试偏好污染FAIL、最终唯一SKIP不被拼成历史全绿。
+
+| 实际轮次 | source HEAD/状态 | exit | total/PASS/FAIL/SKIP |
+| --- | --- | --- | --- |
+| red-a-build | ae92c71e7f4b/dirty | 65 | 无测试体（构建） |
+| red-a-build2 | ae92c71e7f4b/dirty | 0 | 无测试体（构建） |
+| red-chains-build | ae92c71e7f4b/dirty | 0 | 无测试体（构建） |
+| red-chains | ae92c71e7f4b/dirty | 65 | 4/0/4/0 |
+| red-a-proper-build | ae92c71e7f4b/dirty | 0 | 无测试体（构建） |
+| red-a-proper | ae92c71e7f4b/dirty | 65 | 2/0/2/0 |
+| green-chains-build | ae92c71e7f4b/dirty | 0 | 无测试体（构建） |
+| green-chains | ae92c71e7f4b/dirty | 0 | 4/4/0/0 |
+| expanded-build | ae92c71e7f4b/dirty | 0 | 无测试体（构建） |
+| expanded-matrix | ae92c71e7f4b/dirty | 65 | 21/18/3/0 |
+| focused-build | ae92c71e7f4b/dirty | 0 | 无测试体（构建） |
+| focused-matrix | ae92c71e7f4b/dirty | 0 | 22/22/0/0 |
+| todo-isolation-probe | ae92c71e7f4b/dirty | 65 | 1/0/1/0 |
+| adjacent-build | ae92c71e7f4b/dirty | 0 | 无测试体（构建） |
+| adjacent-todo | ae92c71e7f4b/dirty | 0 | 31/31/0/0 |
+| final-debug-build | 2b0d4917342d/clean | 0 | 无测试体（构建） |
+| final-unit | 2b0d4917342d/clean | 65 | 579/577/1/1 |
+| candidate2-debug-build | 1b150068e76f/clean | 0 | 无测试体（构建） |
+| candidate2-unit | 1b150068e76f/clean | 0 | 579/578/0/1 |
+| candidate2-ui | 1b150068e76f/clean | 0 | 3/3/0/0 |
+| candidate2-release | 1b150068e76f/clean | 0 | 无测试体（构建） |
+
+普通commit/push原分支/唯一Draft PR #13，base不变。之后纯Markdown/机器摘要不重建；产品/测试SHA固定1b15006，文档交付SHA以实际commit/PR head及本机final-delivery-proof核对，PR描述和最终回复列完整值。主目录三项未知改动保持。D1–D4、AlarmKit正向、Share/Safari、物理低空间和CI旧状态全部保持；不操作私人设备/库、签名安装、merge、force push、tag、Archive或TestFlight，停在Owner设备门。
+
+补充原始日志判读：TC01完整方法末端PGOS_TC01 native=0是恢复成功后SystemStop/seriesStop负例终态；恢复段的唯一native=1由完整断言验证，不能误读末端print为恢复失败。独立复算明细reviewer-final-verification.json SHA256 `11497620957cb9bc03ccffe68d33c6065178df6d230aa88af46bf874db9b2399`；其21轮52个记录/log/摘要、四份142文件manifest、17附件文件与六包核对均直接通过。

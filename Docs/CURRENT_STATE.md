@@ -1,3 +1,22 @@
+# PR #13 终态复核限定补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-20）
+
+固定 RECHECK_GOAL_SHA `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`；最终干净产品/测试 SHA `1b150068e76f4d7e7a6defcd51f10622951f4b4b`，产品实现 `2b0d4917342d03b0f9e5323a1ef2cf58447953fb`（之后仅旧往返测试一行依赖隔离）。S-A→S-C 连续完成，TC-01/P2、TC-02/P2、TC-03/P3 均经生产链红例确认并关闭；无本轮范围内未关闭 confirmed P0/P1/P2 或明确 P3。旧 READY 未被当作本轮通过依据，原 FAIL/SKIP 与分轮保留。
+
+- TC-01：真V11→冻结旧f1真实complete/skip与deleteList→两渠道B accepted→等偏移不同identifier的生产refresh/quarantine→实际终止祖先编辑器同值/同渠道应用未来；仅开放后继新代次/native唯一，来源状态/代次、历史/计划/截止/Entry/来源关系保留。未确认取消不并行、失败回滚、冷开/幂等与SystemStop/seriesStop/健康metadata反证完成，原open入口保持。
+- TC-02/03：真实AppShell/设置修改失败→未确认移除→off持久→整个旧根和两Scope弱引用释放→新根启动对账。native仍在/已无/首次冷清失败，daily/weekly均覆盖；真实根query挂起→实际设置新B同值/异值/off受票据+共享gate保护，不删其他类别、不申请权限/开启提醒。未确认清理真实设置重试成功后native0、pending=false、未确认文案与重试按钮同步消失；同Scope成功终态亦覆盖。
+
+同一clean `1b15006`：完整 Unit **579=578PASS/0FAIL/1SKIP**；关键 UI **3/3PASS**；Debug 与 unsigned generic iOS Release **PASS**。唯一SKIP仍为需隔离32MB HFS+图的物理低空间方法。实包App/Share/Widget原IDs、1.0(7)/min17、完整provenance/Dirty=false、AlarmKit弱链接/中英用途均核对；Release三包未签名。四轮142文件manifest同字节且匹配Git。独立reviewer未写实现，先提反例再审固定候选、未改消费者及本机原始证据，终审原文SHA256 `6b75465420b1cfd5043d275ea4c8ba56373f0dddc4cee95cdcf39677e9dbe3f9` 见REVIEW。
+
+[EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md)、[ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)、[REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md) 与 [本轮21次运行台账](USAGE_REMEDIATION_20261020_TERMINAL_RECHECK_RUNS.json) 保存实际命令/环境/计数/hash和复用依据；原证据根 `/tmp/pgos-pr13-recheck-evidence`。此前完整Unit在2b为579=577PASS/1FAIL/1SKIP（旧往返方法依赖宿主睡眠偏好）；仅测试隔离后重新完整运行最终门，未拼称历史全绿。旧19/38轮、黑图局限及补验保持。
+
+沿原worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、原分支 `codex/usage-remediation-20261017`、唯一OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13) 普通commit/push，base `codex/time-investment-v1` / `5a70f01` 不变。此后纯文档交付SHA以本交付提交/PR head与本机final-delivery-proof.json核对，PR描述及最终回复列出完整值；纯Docs不重建产品。主目录三项未知改动保留。
+
+本地READY只表示本授权批次完成并停在Owner后续设备门。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、CI NOT_RUN保持；O-01非阻断UNCONFIRMED。不操作私人设备/库、签名安装、merge、force push、tag、Archive或TestFlight。
+
+---
+
+以下为历史状态与原始结果，不能替代本轮结论。
+
 # PR #13 终态复核限定补修 — LOCAL_REVIEW_FIX_REQUIRED / FIXES_IN_PROGRESS（2026-10-20）
 
 固定 RECHECK_GOAL_SHA `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`；[Goal](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md) 与 [独立复核](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md) 已全文读取。原干净 worktree 从 `d04fbf7` 安全快进至固定规格；远端无额外后续提交，唯一 OPEN Draft PR #13 / base `codex/time-investment-v1` (`5a70f01`) 已核对。本轮连续执行 S-A→S-C，旧 READY 只保留为历史，不代表本轮完成；规格接收未跑全量基线。

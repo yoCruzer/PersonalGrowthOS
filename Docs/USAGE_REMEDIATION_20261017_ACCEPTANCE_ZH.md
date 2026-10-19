@@ -701,3 +701,20 @@ RR02最终因果：writer-frozen→production-observe-entry→independent-probe-
 
 
 交付仅普通commit/push原分支和更新唯一Draft PR13描述；base保持codex/time-investment-v1。不为纯Docs重建；交付SHA以实际commit/PR head+final-delivery-proof核对，主目录三项未知改动保留。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持；设备/私人库/签名安装/merge/force/tag/Archive/TestFlight均未执行，停在Owner设备门。
+
+
+## 2026-10-20 TERMINAL_RECHECK 最终验收 — READY_FOR_OWNER_DEVICE_GATE
+
+固定Goal `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`；最终干净产品/测试 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`；产品实现 `2b0d4917342d03b0f9e5323a1ef2cf58447953fb`，之后仅旧往返测试依赖隔离。独立终审原文见REVIEW（SHA256 `6b75465420b1cfd5043d275ea4c8ba56373f0dddc4cee95cdcf39677e9dbe3f9`）。三项均CONFIRMED_AND_FIXED，无本轮范围未关闭confirmed P0/P1/P2与明确P3。
+
+| 编号 | 最终验收与相反操作 | 实际完整方法 |
+| --- | --- | --- |
+| TC-01/P2 | completed与skip/canceled祖先真实旧事务产生B；两渠道相同时间/渠道，等偏移不同标识refresh/quarantine后从实际editor确认未来，只恢复开放B且native新ID唯一；A不复活/不因纠正续代，历史/来源/原计划截止保留；失败回滚/未确认取消不并行/确认后磁盘冷开/幂等及健康metadata、SystemStop/seriesStop反证 | ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor；testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation；原TerminalRR01两完整方法仍通过 |
+| TC-02/P2 | daily/weekly实际设置修改失败清理未确认，off跨整个根与两Scope弱释放；新AppShell自动发现仍在/已无/冷清再次失败，denied/notDetermined零权限申请；新B同值/异值/off在冷query内到达不误删，其他渠道/类别和共享预算保持 | AppCompositionTests/testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests；testRecheckTC02ActualColdRootQueryProtectsSettingsNewIntent；ImportantDayReminderTests/testRecheckTC02ColdOffCleanupQueryProtectsNewSameChangedAndOffIntents及原共享容量/跨sheet/当前失败完整方法 |
+| TC-03/P3 | 同Scope与新根从未确认→真实retry确认后native0/pending=false，当前中文未确认文字与Try Again消失；偏好仍off，不要求重开提醒 | 上述整根完整方法的4张真实中文前后图及ImportantDayReminderTests/testTerminalIC02StableFailureCleanupLatestIntentAndRetryMatrix最终文字断言 |
+
+最终四轮同一clean SHA：Debug PASS、完整Unit579=578PASS/0FAIL/1SKIP、关键UI3/3PASS、unsigned generic iOS Release PASS；runtimeWarnings=[]。唯一低空间方法需隔离32MB HFS+图，保留SKIP。六实包原身份/版本/最低系统/完整构建SHA/Dirty=false/AlarmKit弱链接中英用途及Release三包未签名核对，四轮142文件manifest同字节并匹配Git。
+
+原始21轮包含red-chains4FAIL（TC01前提夹具错，TC02/03真实红例）、修正TC01前提后2FAIL、green4PASS、expanded18PASS/3FAIL（偏好污染）、focused22PASS、Todo探针1FAIL后整类31PASS、2b首完整577PASS/1FAIL/1SKIP后1b最终完整578PASS/0FAIL/1SKIP。原编译失败、历史19/38轮与黑图局限保留；精确命令/分轮/hash见EXECUTION及本轮JSON，不拼称历史全绿。未受影响旧UI只依方法/实现blob复用，未冒称全量UI或真机系统Alarm通过。
+
+本地批次完成，纯Docs不重建，原worktree/分支、唯一OPEN Draft PR #13/base不变，普通commit/push。文档交付SHA由实际commit/PR head与final-delivery-proof核对并在PR描述/最终回复列出。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、CI NOT_RUN及O-01非阻断UNCONFIRMED保持；不触碰私人设备/库、签名安装或发布动作。
