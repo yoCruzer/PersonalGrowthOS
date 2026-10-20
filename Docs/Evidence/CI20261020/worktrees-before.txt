@@ -1,0 +1,33 @@
+worktree /Users/himini/Development/Projects/PersonalGrowthOS
+HEAD d72c016dd34c8114cf44744d0e061b95bd312091
+branch refs/heads/codex/todo-v1-personal-actions
+
+worktree /private/tmp/PersonalGrowthOS-important-days-v1
+HEAD 5614246f98ae63732ccd4fd8a6b66f4a425336f2
+branch refs/heads/codex/important-days-v1
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/PersonalGrowthOS-ui-20261020
+HEAD 50f726391f4f548647694368ad6378a901667189
+branch refs/heads/codex/ui-readability-localization-20261020
+
+worktree /private/tmp/PersonalGrowthOS-usage-remediation-20261017
+HEAD c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c
+branch refs/heads/codex/usage-remediation-20261017
+
+worktree /Users/himini/.codex/worktrees/quiet-wins-on-d72/PersonalGrowthOS
+HEAD 2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af
+branch refs/heads/codex/quiet-wins-on-d72
+
+worktree /Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS
+HEAD 20d315a62179ad29a6cbcf76c33c11638412e54e
+detached
+
+worktree /Users/himini/.codex/worktrees/sleep-routine-v1/PersonalGrowthOS
+HEAD ad0720ad743f495ac6f2ee3e97b16577266351db
+branch refs/heads/codex/sleep-routine-v1
+
+worktree /Users/himini/.codex/worktrees/time-investment-v1/PersonalGrowthOS
+HEAD 5a70f0110b151f8a45ac7c33d3f443823b1cff24
+branch refs/heads/codex/time-investment-v1
+
