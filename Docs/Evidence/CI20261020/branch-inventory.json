@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-20T06:14:38.359743+00:00",
+  "capturedAt": "2026-10-20T06:18:29.620763+00:00",
   "scope": "read-only; fetch --no-prune; no deletion, retarget, tag, reset or cleanup",
   "apiPages": {
     "branches": 1,
@@ -14,7 +14,7 @@
     "main": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
     "candidate": "50f726391f4f548647694368ad6378a901667189",
     "base": "5a70f0110b151f8a45ac7c33d3f443823b1cff24",
-    "localCheckout": "5fa55602fda148bec552c33ebd49d63757a9a322"
+    "localCheckout": "220090d7629673e4454f7e5c81e8adc42ced732e"
   },
   "classificationCounts": {
     "叠加链基底": 11,
@@ -26,6 +26,7 @@
     {
       "branch": "codex/external-capture-v1",
       "remoteSHA": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-09-26T21:31:43+08:00",
@@ -34,6 +35,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -203,29 +205,41 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        }
+      ],
       "documentReferences": [
-        "Docs/TODO_IPHONE_STORE_OPEN_259.md:86:真实私人库、原ZIP检查、真机再安装/恢复、真机数据保留验证均 NOT_RUN。远端 `gh api repos/yoCruzer/PersonalGrowthOS/actions/workflows` total_count=0，独立CI NOT_RUN，不把空checks当通过。只普通推送原 `codex/todo-v1-personal-actions` / OPEN Draft PR #8，base `codex/external-capture-v1`；不合并、改Ready状态、打Tag、改发行号、触发TestFlight。最终推送与候选一致性另记录。独立审查仅对本轮诊断变更与合成证据成立，不作为手机重装授权。",
+        "Docs/TODO_V1_SCOPE.md:7:远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，独立 Draft PR #8 base codex/external-capture-v1（https://github.com/yoCruzer/PersonalGrowthOS/pull/8）。",
         "Docs/EXTERNAL_CAPTURE_EXECUTION_PLAN.md:9:2026-09-22 Owner request authorizes text, images, URL and Safari selected content through public iOS Share Sheet APIs. Owner explicitly selected Build 9 `ae14f10` as the baseline despite PR #6 remaining Draft. Starting branch: `feature/build9-today-entry-followups`; execution branch: `codex/external-capture-v1`. Draft PR base is the Build 9 branch. No merge, release tag, build-number increment, Archive or TestFlight. Stop at independent review; full article capture is excluded.",
         "Docs/EXTERNAL_CAPTURE_EXECUTION_PLAN.md:95:**COMPLETE — READY_FOR_INDEPENDENT_REVIEW.** Tested product implementation: `068a27a`. Ordinary push succeeded; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets `feature/build9-today-entry-followups` from `codex/external-capture-v1`. Following documentation-only commit records the handoff; it does not change tested product code. Both current-context documents are updated. No merge, Ready-for-review conversion, tag, build-number change, Archive or TestFlight occurred. Stop here; independent review and Owner device checks are the next boundary.",
         "Docs/EXTERNAL_CAPTURE_EXECUTION_PLAN.md:361:产品代码完整 SHA `a0728d77d63e27af4ffeb9341105d62f4d4e5842`，审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`。沿用 `codex/external-capture-v1` 和 Draft PR #7 / Build9 base；所有后续修复保留。最终交接提交只增加 Files 系统保存完成同步断言及文档。未改变迁移、版本、图片上限、发布流程或 Foundation。",
-        "Docs/CURRENT_TASK.md:545:本轮Review基线8be670cd7375c0c7f0352d7749bf8a7ff3114767；产品/测试候选70f37908dc87b00afe7b71025568b7ef8b1143ac。后续仅文档，最终仓库HEAD以原Draft PR #8 head为准。原分支codex/todo-v1-personal-actions、base codex/external-capture-v1保持，普通push并更新原PR，不merge/tag/改号/Archive/TestFlight。",
-        "Docs/CURRENT_TASK.md:571:Repo `yoCruzer/PersonalGrowthOS`，原分支 `codex/todo-v1-personal-actions`、[Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8)、base `codex/external-capture-v1` 均保持。起点 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`；最终产品提交 `2065065e87863de5a452ade8609bac561a0bd096`；强化UI截图/断言候选 `678e47b4816b9ae92ab1768b4603159a3af3863b`（完整SHA以实际git/PR为准）。后续仅文档交接，最终仓库HEAD以PR head为准。候选已普通push；本次交接文档随后普通push同一PR，不merge/tag/改号/Archive/TestFlight。",
-        "Docs/CURRENT_TASK.md:587:Owner Goal Pack Rev2 整体范围已实现并验证。分支 codex/todo-v1-personal-actions，从 Build12 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871 派生；远端 base codex/external-capture-v1、旧 annotated tag 均再次核对为该提交，旧 PR #1–#7 仍 OPEN Draft。最终产品/测试提交 837b619e5f2d6a0367aa31d61e3829acf731b4e4；后续交接只有文档，最终仓库 HEAD 以新 PR head 为准。",
-        "Docs/CURRENT_TASK.md:595:普通推送与独立 [Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8) 已完成，base codex/external-capture-v1；**READY_FOR_INDEPENDENT_REVIEW**。下一步仅独立审查，不继续实现或发布。最终文档提交后本地 Debug 构建核对最终 HEAD（final-handoff-debug.log / final-handoff-debug-bundle.json）；源码与远端一致性以 PR head 为准。远端 workflows=0，独立CI **NOT_RUN**；Owner私人Build12库覆盖、真机通知/签名/AppGroup、VoiceOver朗读、实际Xcode Cloud发行 **OWNER_DEVICE_GATE**。未 merge/close/tag/改号/Archive/TestFlight，未清私人库。",
-        "Docs/CURRENT_TASK.md:606:沿用 `codex/external-capture-v1` / [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7)，base `feature/build9-today-entry-followups` 不变。起点 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`；产品与回归实现 `404d1d939e7c49f000718939f71843fa3ba90cb3` 已普通推送；Safari 测试交互补验提交 `1415a5b55b1870736275d546719b389b6c1a7e45`，后续交接仅文档，不改产品代码。最终仓库 HEAD 以 PR head 为准。",
-        "Docs/CURRENT_TASK.md:630:- 分支 `codex/external-capture-v1`；审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`；最终产品代码 `a0728d77d63e27af4ffeb9341105d62f4d4e5842` 已推送。后续交接提交仅补 Files 测试保存完成同步及文档；最终仓库 HEAD 以 PR head 为准。",
-        "Docs/CURRENT_TASK.md:649:2026-09-22: Owner authorized External Capture v1 and explicitly selected Build 9 `ae14f107f7eebb89a1549e00de3d941e6a996281` as its baseline. Active branch: `codex/external-capture-v1`; Draft PR base: `feature/build9-today-entry-followups`. The previous PR #6 handoff below is historical.",
-        "Docs/CURRENT_TASK.md:655:Delivery complete: implementation commit `068a27a` is pushed on `codex/external-capture-v1`; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets the Owner-selected Build 9 branch. **READY_FOR_INDEPENDENT_REVIEW** — stop implementation. Subsequent commits only record this handoff. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture.",
         "Docs/TODO_IPHONE_PREMIGRATION_259.md:3:日期：2026-10-10。审查基线 `fb830a1d555b9738d15867546d395239d38e1edc`；原分支 `codex/todo-v1-personal-actions`、原 OPEN Draft PR #8、base `codex/external-capture-v1` 保持。本轮只处理与新诊断相匹配的保护阶段路径缺陷及细粒度诊断。",
-        "Docs/TODO_P1_DATA_PRESERVATION.md:3:范围：Review 基线 `8be670cd7375c0c7f0352d7749bf8a7ff3114767`；只处理正常启动的全库复制依赖与损坏恢复快照生命周期。原分支 `codex/todo-v1-personal-actions`、Draft PR #8/base `codex/external-capture-v1` 保持。无 Todo 产品增量、合并、Tag、改号、Archive 或 TestFlight。",
-        "Docs/QUIET_WINS_V0.md:5:原 worktree 属于另一任务，未改变其归属或内容；本任务从同一 HEAD 创建 Codex 管理工作树 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`。普通推送目标仍为 `codex/quiet-wins-on-d72`，PR base 仍为 `codex/todo-v1-personal-actions`，没有另建 PR、强推或重置。原工作区的 project、xcstrings、xcodecloud 未提交改动保留。只读核对 PR #8 仍 OPEN Draft、head=`d72c016dd34c8114cf44744d0e061b95bd312091`、base=`codex/external-capture-v1`。",
-        "Docs/QUIET_WINS_V0.md:66:- 2026-10-13 只读 `gh pr view 8 --json headRefOid,headRefName,baseRefName,state,isDraft,url`：PR #8 OPEN Draft，head=d72c016，base=`codex/external-capture-v1`。原 PR/分支不修改；新 Draft PR #9 的 base 为 `codex/todo-v1-personal-actions`。最终交接仅补本文和两份当前上下文；最终完整HEAD以本地git/PR远端一致性核对为准。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:8:1. `codex/external-capture-v1`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。",
-        "Docs/TODO_V1_SCOPE.md:7:远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，独立 Draft PR #8 base codex/external-capture-v1（https://github.com/yoCruzer/PersonalGrowthOS/pull/8）。",
         "Docs/TODO_V1_EXECUTION_LOG.md:5:2026-10-09：完整读取 Goal Pack Rev2 五文件，按 AGENTS 顺序读取 Foundation/Contract/Current；git status 起始干净 main/dd09975。实际 git fetch 成功；PR 栈 #1–#7 均 OPEN Draft。annotated tag 与 origin/codex/external-capture-v1 均 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871。创建 codex/todo-v1-personal-actions，未改旧 PR/标签/编号/签名。Owner 当前安装 Build 12 的事实与仓库 App 1.0(7) 分开。",
         "Docs/TODO_V1_EXECUTION_LOG.md:149:普通 git push origin codex/todo-v1-personal-actions 成功，独立 Draft PR #8 已创建并附加到本任务：https://github.com/yoCruzer/PersonalGrowthOS/pull/8 。base=codex/external-capture-v1；远端该分支、annotated tag和实际 merge-base 均 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871。旧 #1–#7 状态仍 OPEN Draft，未改base/close/merge。后续交接提交只更新文档；最终HEAD以PR head为准，已验证产品/测试仍837b619e5f2d6a0367aa31d61e3829acf731b4e4。",
         "Docs/TODO_V1_EXECUTION_LOG.md:157:本轮唯一目标为 Owner 附件 `PersonalGrowthOS_TodoV1_ReviewFix_Usability_Goal.zip/CODEX_GOAL_ZH.md`，完整解压阅读，连续 S0→S4，不按阶段请求确认。实际 `git fetch origin` 与 `gh pr view 8 --json ...`：local/upstream/PR head 均 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`，clean，OPEN Draft；base 仍 `codex/external-capture-v1`。初次沙箱 fetch/网络读未获环境访问，常规提权后成功；不是远端异常。",
+        "Docs/TODO_IPHONE_STORE_OPEN_259.md:86:真实私人库、原ZIP检查、真机再安装/恢复、真机数据保留验证均 NOT_RUN。远端 `gh api repos/yoCruzer/PersonalGrowthOS/actions/workflows` total_count=0，独立CI NOT_RUN，不把空checks当通过。只普通推送原 `codex/todo-v1-personal-actions` / OPEN Draft PR #8，base `codex/external-capture-v1`；不合并、改Ready状态、打Tag、改发行号、触发TestFlight。最终推送与候选一致性另记录。独立审查仅对本轮诊断变更与合成证据成立，不作为手机重装授权。",
+        "Docs/QUIET_WINS_V0.md:5:原 worktree 属于另一任务，未改变其归属或内容；本任务从同一 HEAD 创建 Codex 管理工作树 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`。普通推送目标仍为 `codex/quiet-wins-on-d72`，PR base 仍为 `codex/todo-v1-personal-actions`，没有另建 PR、强推或重置。原工作区的 project、xcstrings、xcodecloud 未提交改动保留。只读核对 PR #8 仍 OPEN Draft、head=`d72c016dd34c8114cf44744d0e061b95bd312091`、base=`codex/external-capture-v1`。",
+        "Docs/QUIET_WINS_V0.md:66:- 2026-10-13 只读 `gh pr view 8 --json headRefOid,headRefName,baseRefName,state,isDraft,url`：PR #8 OPEN Draft，head=d72c016，base=`codex/external-capture-v1`。原 PR/分支不修改；新 Draft PR #9 的 base 为 `codex/todo-v1-personal-actions`。最终交接仅补本文和两份当前上下文；最终完整HEAD以本地git/PR远端一致性核对为准。",
+        "Docs/TODO_P1_DATA_PRESERVATION.md:3:范围：Review 基线 `8be670cd7375c0c7f0352d7749bf8a7ff3114767`；只处理正常启动的全库复制依赖与损坏恢复快照生命周期。原分支 `codex/todo-v1-personal-actions`、Draft PR #8/base `codex/external-capture-v1` 保持。无 Todo 产品增量、合并、Tag、改号、Archive 或 TestFlight。",
         "Docs/CURRENT_STATE.md:526:本轮Review基线8be670cd7375c0c7f0352d7749bf8a7ff3114767；产品/测试候选70f37908dc87b00afe7b71025568b7ef8b1143ac。后续仅文档，最终仓库HEAD以原Draft PR #8 head为准。原分支codex/todo-v1-personal-actions、base codex/external-capture-v1保持，普通push并更新原PR，不merge/tag/改号/Archive/TestFlight。",
         "Docs/CURRENT_STATE.md:552:Repo `yoCruzer/PersonalGrowthOS`，原分支 `codex/todo-v1-personal-actions`、[Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8)、base `codex/external-capture-v1` 均保持。起点 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`；最终产品提交 `2065065e87863de5a452ade8609bac561a0bd096`；强化UI截图/断言候选 `678e47b4816b9ae92ab1768b4603159a3af3863b`（完整SHA以实际git/PR为准）。后续仅文档交接，最终仓库HEAD以PR head为准。候选已普通push；本次交接文档随后普通push同一PR，不merge/tag/改号/Archive/TestFlight。",
         "Docs/CURRENT_STATE.md:568:Owner Goal Pack Rev2 整体范围已实现并验证。分支 codex/todo-v1-personal-actions，从 Build12 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871 派生；远端 base codex/external-capture-v1、旧 annotated tag 均再次核对为该提交，旧 PR #1–#7 仍 OPEN Draft。最终产品/测试提交 837b619e5f2d6a0367aa31d61e3829acf731b4e4；后续交接只有文档，最终仓库 HEAD 以新 PR head 为准。",
@@ -233,7 +247,15 @@
         "Docs/CURRENT_STATE.md:587:沿用 `codex/external-capture-v1` / [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7)，base `feature/build9-today-entry-followups` 不变。起点 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`；产品与回归实现 `404d1d939e7c49f000718939f71843fa3ba90cb3` 已普通推送；Safari 测试交互补验提交 `1415a5b55b1870736275d546719b389b6c1a7e45`，后续交接仅文档，不改产品代码。最终仓库 HEAD 以 PR head 为准。",
         "Docs/CURRENT_STATE.md:611:- 分支 `codex/external-capture-v1`；审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`；最终产品代码 `a0728d77d63e27af4ffeb9341105d62f4d4e5842` 已推送。后续交接提交仅补 Files 测试保存完成同步及文档；最终仓库 HEAD 以 PR head 为准。",
         "Docs/CURRENT_STATE.md:630:2026-09-22: Owner authorized External Capture v1 and explicitly selected Build 9 `ae14f107f7eebb89a1549e00de3d941e6a996281` as its baseline. Active branch: `codex/external-capture-v1`; Draft PR base: `feature/build9-today-entry-followups`. The previous PR #6 handoff below is historical.",
-        "Docs/CURRENT_STATE.md:636:Delivery complete: implementation commit `068a27a` is pushed on `codex/external-capture-v1`; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets the Owner-selected Build 9 branch. **READY_FOR_INDEPENDENT_REVIEW** — stop implementation. Subsequent commits only record this handoff. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture."
+        "Docs/CURRENT_STATE.md:636:Delivery complete: implementation commit `068a27a` is pushed on `codex/external-capture-v1`; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets the Owner-selected Build 9 branch. **READY_FOR_INDEPENDENT_REVIEW** — stop implementation. Subsequent commits only record this handoff. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture.",
+        "Docs/CURRENT_TASK.md:545:本轮Review基线8be670cd7375c0c7f0352d7749bf8a7ff3114767；产品/测试候选70f37908dc87b00afe7b71025568b7ef8b1143ac。后续仅文档，最终仓库HEAD以原Draft PR #8 head为准。原分支codex/todo-v1-personal-actions、base codex/external-capture-v1保持，普通push并更新原PR，不merge/tag/改号/Archive/TestFlight。",
+        "Docs/CURRENT_TASK.md:571:Repo `yoCruzer/PersonalGrowthOS`，原分支 `codex/todo-v1-personal-actions`、[Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8)、base `codex/external-capture-v1` 均保持。起点 `4625602b27d8b4e4df4f6da20b7f11bf30b21d8c`；最终产品提交 `2065065e87863de5a452ade8609bac561a0bd096`；强化UI截图/断言候选 `678e47b4816b9ae92ab1768b4603159a3af3863b`（完整SHA以实际git/PR为准）。后续仅文档交接，最终仓库HEAD以PR head为准。候选已普通push；本次交接文档随后普通push同一PR，不merge/tag/改号/Archive/TestFlight。",
+        "Docs/CURRENT_TASK.md:587:Owner Goal Pack Rev2 整体范围已实现并验证。分支 codex/todo-v1-personal-actions，从 Build12 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871 派生；远端 base codex/external-capture-v1、旧 annotated tag 均再次核对为该提交，旧 PR #1–#7 仍 OPEN Draft。最终产品/测试提交 837b619e5f2d6a0367aa31d61e3829acf731b4e4；后续交接只有文档，最终仓库 HEAD 以新 PR head 为准。",
+        "Docs/CURRENT_TASK.md:595:普通推送与独立 [Draft PR #8](https://github.com/yoCruzer/PersonalGrowthOS/pull/8) 已完成，base codex/external-capture-v1；**READY_FOR_INDEPENDENT_REVIEW**。下一步仅独立审查，不继续实现或发布。最终文档提交后本地 Debug 构建核对最终 HEAD（final-handoff-debug.log / final-handoff-debug-bundle.json）；源码与远端一致性以 PR head 为准。远端 workflows=0，独立CI **NOT_RUN**；Owner私人Build12库覆盖、真机通知/签名/AppGroup、VoiceOver朗读、实际Xcode Cloud发行 **OWNER_DEVICE_GATE**。未 merge/close/tag/改号/Archive/TestFlight，未清私人库。",
+        "Docs/CURRENT_TASK.md:606:沿用 `codex/external-capture-v1` / [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7)，base `feature/build9-today-entry-followups` 不变。起点 `04f1ee0abf70b0121b4261d7ceafc9dea2fbe0b0`；产品与回归实现 `404d1d939e7c49f000718939f71843fa3ba90cb3` 已普通推送；Safari 测试交互补验提交 `1415a5b55b1870736275d546719b389b6c1a7e45`，后续交接仅文档，不改产品代码。最终仓库 HEAD 以 PR head 为准。",
+        "Docs/CURRENT_TASK.md:630:- 分支 `codex/external-capture-v1`；审计起点 `ab79c734f1f53a60484ba4bc5f6247cbe9b14b3b`；最终产品代码 `a0728d77d63e27af4ffeb9341105d62f4d4e5842` 已推送。后续交接提交仅补 Files 测试保存完成同步及文档；最终仓库 HEAD 以 PR head 为准。",
+        "Docs/CURRENT_TASK.md:649:2026-09-22: Owner authorized External Capture v1 and explicitly selected Build 9 `ae14f107f7eebb89a1549e00de3d941e6a996281` as its baseline. Active branch: `codex/external-capture-v1`; Draft PR base: `feature/build9-today-entry-followups`. The previous PR #6 handoff below is historical.",
+        "Docs/CURRENT_TASK.md:655:Delivery complete: implementation commit `068a27a` is pushed on `codex/external-capture-v1`; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets the Owner-selected Build 9 branch. **READY_FOR_INDEPENDENT_REVIEW** — stop implementation. Subsequent commits only record this handoff. Physical signing/App Group provisioning, Photos/WeChat host variations, actual offline metadata and Owner database overlay remain **Owner Device Verification**. No merge, tag, Archive, TestFlight or full article capture."
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -246,6 +268,7 @@
     {
       "branch": "codex/important-days-v1",
       "remoteSHA": "5614246f98ae63732ccd4fd8a6b66f4a425336f2",
+      "remoteProtected": false,
       "local": {
         "sha": "5614246f98ae63732ccd4fd8a6b66f4a425336f2",
         "upstream": "origin/codex/important-days-v1"
@@ -260,6 +283,7 @@
       },
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -429,7 +453,9 @@
           "branch": "refs/heads/codex/important-days-v1",
           "prunable": "gitdir file points to non-existent location",
           "exists": true,
-          "status": []
+          "statusReturnCode": 128,
+          "statusError": "fatal: not a git repository (or any of the parent directories): .git",
+          "status": null
         }
       ],
       "prs": [
@@ -476,6 +502,32 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
         "Docs/Reviews/SLEEP_ROUTINE_V1_EXTERNAL_R1_R3/PR11_INDEPENDENT_REVIEW_ZH.md:9:- 仓库：yoCruzer/PersonalGrowthOS；PR #11，Open Draft，base `codex/important-days-v1`。",
         "Docs/Reviews/important-days-v1-pr10/PR10_INDEPENDENT_REVIEW_ZH.md:13:| PR | #10，OPEN Draft；head `codex/important-days-v1`，base `codex/quiet-wins-on-d72` |",
@@ -509,8 +561,6 @@
         "Docs/IMPORTANT_DAYS_V1_EXECUTION.md:49:工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`，分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`，[原PR #10](https://github.com/yoCruzer/PersonalGrowthOS/pull/10)保持OPEN Draft，base `codex/quiet-wins-on-d72`=`20d315a62179ad29a6cbcf76c33c11638412e54e`。已授权普通push原分支和更新PR正文；最后读取远端核对，完整proof位于下述证据根。旧PR#8/#9和原主workspace的project/catalog/xcodecloud未知改动不变。",
         "Docs/IMPORTANT_DAYS_V1_EXECUTION.md:107:- 工作树 `/private/tmp/PersonalGrowthOS-important-days-v1`；分支/upstream `codex/important-days-v1` / `origin/codex/important-days-v1`；产品/测试固定HEAD **b3cc408d323e5828e9550decac72ae534f1b0b20**。最后交付为本文件所在的文档commit：完整delivery SHA由 `git rev-parse HEAD` / PR head及本地 `final-delivery-proof.json`核对，不自引用hash。最后生产代码9f34034357ea9329730ab18bfbf6d4b6e426b4b4；b3只改测试。",
         "Docs/SLEEP_ROUTINE_V1_REVIEW_ZH.md:15:批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:9:2. `codex/important-days-v1`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。",
         "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:10:- 唯一产品工作分支：`codex/important-days-v1`",
         "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:31:3. 首次执行：从精确文档提交创建 `codex/important-days-v1`，优先独立 worktree。若已有同名工作分支/PR，则核对祖先、日志和任务归属后续接，不覆盖、不重置、不重新做已完成工作。文档分支保持只读。",
         "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:192:已授权在 `codex/important-days-v1` 做合理 commit、普通 push、新建/更新一个 Draft PR（base 固定见开头）。不需要每次请求确认；可在里程碑 push，不能把 push/PR 当作执行完成。不得修改旧 PR #8/#9 的 head/base/state、目标分支或描述，不 merge main，不 force-push，不删分支、不打任何 tag。"
@@ -526,6 +576,7 @@
     {
       "branch": "codex/quiet-wins-on-d72",
       "remoteSHA": "20d315a62179ad29a6cbcf76c33c11638412e54e",
+      "remoteProtected": false,
       "local": {
         "sha": "2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af",
         "upstream": "origin/codex/quiet-wins-on-d72"
@@ -540,6 +591,7 @@
       },
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -688,6 +740,8 @@
           "HEAD": "2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af",
           "branch": "refs/heads/codex/quiet-wins-on-d72",
           "exists": true,
+          "statusReturnCode": 0,
+          "statusError": null,
           "status": []
         }
       ],
@@ -735,6 +789,32 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
         "Docs/Reviews/important-days-v1-pr10/PR10_INDEPENDENT_REVIEW_ZH.md:13:| PR | #10，OPEN Draft；head `codex/important-days-v1`，base `codex/quiet-wins-on-d72` |",
         "Docs/IMPORTANT_DAYS_V1_REVIEW_FIX_GOAL_ZH.md:12:- PR base：`codex/quiet-wins-on-d72` / `20d315a62179ad29a6cbcf76c33c11638412e54e`。不更新 PR #8/#9、不改 base、不从 main 重做。",
@@ -756,9 +836,7 @@
         "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:11:- 新 Draft PR 的 base：`codex/quiet-wins-on-d72`；不改 PR #8 / #9",
         "Docs/QUIET_WINS_V0.md:5:原 worktree 属于另一任务，未改变其归属或内容；本任务从同一 HEAD 创建 Codex 管理工作树 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`。普通推送目标仍为 `codex/quiet-wins-on-d72`，PR base 仍为 `codex/todo-v1-personal-actions`，没有另建 PR、强推或重置。原工作区的 project、xcstrings、xcodecloud 未提交改动保留。只读核对 PR #8 仍 OPEN Draft、head=`d72c016dd34c8114cf44744d0e061b95bd312091`、base=`codex/external-capture-v1`。",
         "Docs/QUIET_WINS_V0.md:65:- 原工作区保留未提交 project、xcstrings、xcodecloud 配置。使用 Codex 管理的工作树 `/Users/himini/.codex/worktrees/quiet-wins-on-d72/PersonalGrowthOS`，正常新分支 `codex/quiet-wins-on-d72`；没有覆盖、stash/reset/rebase 原工作区。",
-        "Docs/IMPORTANT_DAYS_V1_DESIGN_ZH.md:7:- 分支：`codex/quiet-wins-on-d72`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:10:3. `codex/quiet-wins-on-d72`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。"
+        "Docs/IMPORTANT_DAYS_V1_DESIGN_ZH.md:7:- 分支：`codex/quiet-wins-on-d72`"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -771,6 +849,7 @@
     {
       "branch": "codex/sleep-routine-v1",
       "remoteSHA": "ad0720ad743f495ac6f2ee3e97b16577266351db",
+      "remoteProtected": false,
       "local": {
         "sha": "ad0720ad743f495ac6f2ee3e97b16577266351db",
         "upstream": "origin/codex/sleep-routine-v1"
@@ -785,6 +864,7 @@
       },
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -972,6 +1052,8 @@
           "HEAD": "ad0720ad743f495ac6f2ee3e97b16577266351db",
           "branch": "refs/heads/codex/sleep-routine-v1",
           "exists": true,
+          "statusReturnCode": 0,
+          "statusError": null,
           "status": [
             " M PersonalGrowthOS/Localizable.xcstrings",
             "?? PersonalGrowthOS.xcodeproj/xcshareddata/xcodecloud/"
@@ -1022,6 +1104,32 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
         "Docs/TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md:77:固定 Goal 1.1：`72ee8bdf954a5628806db867682a6b021e63545b`；BASE：`ad0720ad743f495ac6f2ee3e97b16577266351db`。沿原 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接，base 保持 `codex/sleep-routine-v1`。最终产品/测试与最后生产提交均为 **`2ae01f3d2af2117a3f957ee6cd275d50e19b892d`**；之后交付只改六份Markdown（五份交接文档及INDEX一句状态指引）。delivery SHA 以 Git、远端 PR head 与本地 final-delivery-proof.json 为准，避免自引用。",
         "Docs/TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md:160:当前状态：**RUNNING_NATIVE_GATES（2026-10-17，环境已恢复）**，尚未达到READY_FOR_OWNER_DEVICE_GATE。规格固定GOAL_SHA `72ee8bdf954a5628806db867682a6b021e63545b`，BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`；产品工作树 `codex/time-investment-v1`，唯一新 [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)，base为 `codex/sleep-routine-v1`。固定产品/测试检查点及对应实际命令见[执行记录](TIME_INVESTMENT_V1_EXECUTION.md)，真实独立Reviewer报告见[独立审查](TIME_INVESTMENT_V1_REVIEW_ZH.md)。",
@@ -1051,9 +1159,7 @@
         "Docs/CURRENT_STATE.md:418:独立worktree `/Users/himini/.codex/worktrees/sleep-routine-v1/PersonalGrowthOS`，分支/upstream `codex/sleep-routine-v1` / `origin/codex/sleep-routine-v1`，普通推送 [新Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base `codex/important-days-v1`。原workspace project/catalog/xcodecloud未知dirty保持，原PR#8/#9/#10 head/base/OPEN Draft保持。未merge/tag/Archive/发布，不操作真实手机/私库。",
         "Docs/USAGE_REMEDIATION_20261017_GOAL_ZH.md:7:- 基线分支 / PR：`codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)。其 base 为 `codex/sleep-routine-v1`，原反馈提交 `ad0720ad743f495ac6f2ee3e97b16577266351db` 是 BASE 的祖先；不从旧提交或 main 重做。",
         "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:17:- 启动只读 `gh pr list --state all --json number,headRefName,baseRefName,isDraft,state,headRefOid,url`：旧 #1–#12 均 OPEN Draft；#12 head=BASE/base=codex/sleep-routine-v1；没有整改 PR。未改旧 PR。",
-        "Docs/SLEEP_ROUTINE_V1_REVIEW_ZH.md:15:批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:11:4. `codex/sleep-routine-v1`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。"
+        "Docs/SLEEP_ROUTINE_V1_REVIEW_ZH.md:15:批准输入 `9e9e29564565a3b6396dc51bb179c29f71bdc726`，起始交付 `5f7dc3eeba4d159d72e03029f487cf67bf77ab1a`。沿原worktree、`codex/sleep-routine-v1` 与[原Open Draft PR #11](https://github.com/yoCruzer/PersonalGrowthOS/pull/11)，base保持 `codex/important-days-v1`。五份输入原样导入，manifest三个SHA-256逐项核对；探针/旧输出未修改、未执行，不是App测试。"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -1066,6 +1172,7 @@
     {
       "branch": "codex/time-investment-v1",
       "remoteSHA": "5a70f0110b151f8a45ac7c33d3f443823b1cff24",
+      "remoteProtected": false,
       "local": {
         "sha": "5a70f0110b151f8a45ac7c33d3f443823b1cff24",
         "upstream": "origin/codex/time-investment-v1"
@@ -1080,6 +1187,7 @@
       },
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -1308,6 +1416,8 @@
           "HEAD": "5a70f0110b151f8a45ac7c33d3f443823b1cff24",
           "branch": "refs/heads/codex/time-investment-v1",
           "exists": true,
+          "statusReturnCode": 0,
+          "statusError": null,
           "status": []
         }
       ],
@@ -1353,6 +1463,32 @@
         {
           "tag": "testflight-xcode27-retry-20261020",
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
+        }
+      ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
         }
       ],
       "documentReferences": [
@@ -1439,16 +1575,14 @@
         "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:786:交付仅普通commit/push原分支和更新唯一Draft PR13描述；base保持codex/time-investment-v1。不为纯Docs重建；交付SHA以实际commit/PR head+final-delivery-proof核对，主目录三项未知改动保留。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持；设备/私人库/签名安装/merge/force/tag/Archive/TestFlight均未执行，停在Owner设备门。",
         "Docs/USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md:15:| 原 base 分支／BASE | codex/time-investment-v1 / 5a70f0110b151f8a45ac7c33d3f443823b1cff24 |",
         "Docs/USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md:5:仓库 `yoCruzer/PersonalGrowthOS`；唯一OPEN Draft PR #13；原分支 `codex/usage-remediation-20261017`；base保持 `codex/time-investment-v1`（`5a70f0110b151f8a45ac7c33d3f443823b1cff24`）。已审产品/测试 `744e7729f103549184574e99e311ce5c380a4a16`，交付 `d04fbf7f39a6ce77e995202118a0ca78f0d0ccf6`；前Goal `6430a8570ce2d3528c37d491c1252f97066e8da9`。本文件及[配套独立审查](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md)由手机prompt中的 `RECHECK_GOAL_SHA` 固定。",
+        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:15:| base 分支／BASE | codex/time-investment-v1 / 5a70f0110b151f8a45ac7c33d3f443823b1cff24 |",
+        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:6:- 规划时唯一最新集成候选：Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，head `codex/usage-remediation-20261017`，base `codex/time-investment-v1`。核对时交付 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`，最近干净产品/测试 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`。开始前以实时 Git 为准，保留后续有效提交，不从 `main` 直接替换当前完整产品。",
+        "Docs/UI_READABILITY_LOCALIZATION_20261020_ZH.md:7:用户实测基线 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`；首次及推送前 fetch 均确认后续 `cd8786b06bb984041ad9968a6736b624ba60d3f3` 的 CI/设备门/分支规划，全部保留。唯一 OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`。",
+        "Docs/USAGE_REMEDIATION_20261019_TERMINAL_FIX_GOAL_ZH.md:6:- 原分支：`codex/usage-remediation-20261017`；base：`codex/time-investment-v1`，`5a70f0110b151f8a45ac7c33d3f443823b1cff24`。",
         "Docs/Evidence/UI20261020/reviewer-final-raw.txt:5:固定候选：537a6f9103f6ccbf08b8634edf6dfc976247b4c8。审查基线：cd8786b06bb984041ad9968a6736b624ba60d3f3。完整审查两者间20文件diff，包含所有产品、资源、DEBUG合成夹具、Unit、UI及当前交接文档；未将用户实测旧提交c7f5a383作为回退起点。PR #13应保持OPEN Draft与base codex/time-investment-v1，未要求合并或发行。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:12:5. `codex/time-investment-v1`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。",
         "Docs/TIME_INVESTMENT_V1_REVIEW_ZH.md:3:沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接；固定审查输入 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[外部 F1/P1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)已完成反例、限定修复和真正独立只读复核。原外部 R1–R3 已关闭，本轮仅回归。BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。",
         "Docs/TIME_INVESTMENT_V1_REVIEW_ZH.md:37:本轮沿原 `codex/time-investment-v1` / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 处理固定 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[完整外部复审 F1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)。外部已关闭 R1–R3，本轮不重新扩修。`systemUptime` 不含设备睡眠，而当前 `projected` 将其与 wallDelta 比较后会持久化异常恢复状态；F1 关闭及本地门禁完成前，不能沿用下方历史 READY 结论。",
-        "Docs/TIME_INVESTMENT_V1_REVIEW_ZH.md:70:本轮按 Owner 新授权处理固定 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 Review](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)，仅 R1/P1、R2/P2、R3/P2 及关联数据安全/可靠性。原 `codex/time-investment-v1` / Draft PR #12 与固定 Goal1.1/BASE 保持；真实独立只读 Reviewer 已确认三项。当前不能沿用旧 READY 结论，先补修复前反例，再限定修复、原生磁盘/ZIP/UI及独立复核。旧失败/警告/Safari unsigned FAIL、物理低空间 SKIP、真实设备/签名/CI NOT_RUN 保持。",
-        "Docs/USAGE_REMEDIATION_20261019_TERMINAL_FIX_GOAL_ZH.md:6:- 原分支：`codex/usage-remediation-20261017`；base：`codex/time-investment-v1`，`5a70f0110b151f8a45ac7c33d3f443823b1cff24`。",
-        "Docs/UI_READABILITY_LOCALIZATION_20261020_ZH.md:7:用户实测基线 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`；首次及推送前 fetch 均确认后续 `cd8786b06bb984041ad9968a6736b624ba60d3f3` 的 CI/设备门/分支规划，全部保留。唯一 OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`。",
-        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:15:| base 分支／BASE | codex/time-investment-v1 / 5a70f0110b151f8a45ac7c33d3f443823b1cff24 |",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:6:- 规划时唯一最新集成候选：Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，head `codex/usage-remediation-20261017`，base `codex/time-investment-v1`。核对时交付 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`，最近干净产品/测试 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`。开始前以实时 Git 为准，保留后续有效提交，不从 `main` 直接替换当前完整产品。"
+        "Docs/TIME_INVESTMENT_V1_REVIEW_ZH.md:70:本轮按 Owner 新授权处理固定 `92dc10a47add519604546e597672af9afb87d10e` 的[外部 Review](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#issuecomment-6234984209)，仅 R1/P1、R2/P2、R3/P2 及关联数据安全/可靠性。原 `codex/time-investment-v1` / Draft PR #12 与固定 Goal1.1/BASE 保持；真实独立只读 Reviewer 已确认三项。当前不能沿用旧 READY 结论，先补修复前反例，再限定修复、原生磁盘/ZIP/UI及独立复核。旧失败/警告/Safari unsigned FAIL、物理低空间 SKIP、真实设备/签名/CI NOT_RUN 保持。"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -1461,6 +1595,7 @@
     {
       "branch": "codex/todo-v1-personal-actions",
       "remoteSHA": "d72c016dd34c8114cf44744d0e061b95bd312091",
+      "remoteProtected": false,
       "local": {
         "sha": "d72c016dd34c8114cf44744d0e061b95bd312091",
         "upstream": "origin/codex/todo-v1-personal-actions"
@@ -1475,6 +1610,7 @@
       },
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -1615,6 +1751,8 @@
           "HEAD": "d72c016dd34c8114cf44744d0e061b95bd312091",
           "branch": "refs/heads/codex/todo-v1-personal-actions",
           "exists": true,
+          "statusReturnCode": 0,
+          "statusError": null,
           "status": [
             " M PersonalGrowthOS.xcodeproj/project.pbxproj",
             " M PersonalGrowthOS/Localizable.xcstrings",
@@ -1666,6 +1804,32 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
         "Docs/CURRENT_TASK.md:491:原 Draft [PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9)，head 分支 `codex/quiet-wins-on-d72`、base `codex/todo-v1-personal-actions` 保持。起点 `2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af`；固定产品/测试修复 **`69ad37fc12ddf6fbf15853f0a0174d6f5e5d9218`**，之后仅交接文档，最终完整 SHA 以本地/原PR head/实包构建同源证据为准。任务 worktree 为 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`；原 worktree 及 PR #8 的未提交改动保留，PR #8 head=d72/base不变。",
         "Docs/CURRENT_TASK.md:507:Owner唯一Goal为2026-10-13附件 `GOAL_QUIET_WINS_TODO_FIRST_ZH.md`。精确父提交 `d72c016dd34c8114cf44744d0e061b95bd312091`；独立工作树/分支 `codex/quiet-wins-on-d72`，原工作区未提交改动保留。新 [Draft PR #9](https://github.com/yoCruzer/PersonalGrowthOS/pull/9) base=`codex/todo-v1-personal-actions`；原PR#8仍OPEN Draft、head=d72/base不变。QuietWins产品/13项测试提交a4a716d，两个后续提交只修Safari测试原生键盘交互；最终D3边界修订 `4c13d9f746238305c91fd6faa4321dd3ff6a0c61` 仅收紧新投影对未知Habit日期不猜测，旧存储/Todo未改；其后交接只改三份文档，最终HEAD以git/PR同源核对为准。",
@@ -1685,12 +1849,10 @@
         "Docs/CURRENT_STATE.md:568:Owner Goal Pack Rev2 整体范围已实现并验证。分支 codex/todo-v1-personal-actions，从 Build12 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871 派生；远端 base codex/external-capture-v1、旧 annotated tag 均再次核对为该提交，旧 PR #1–#7 仍 OPEN Draft。最终产品/测试提交 837b619e5f2d6a0367aa31d61e3829acf731b4e4；后续交接只有文档，最终仓库 HEAD 以新 PR head 为准。",
         "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:18:- 原工作区 `codex/todo-v1-personal-actions` / d72c016 保留三项未知 dirty：project.pbxproj、Localizable.xcstrings、xcshareddata/xcodecloud/。无 stash/reset/restore/clean。",
         "Docs/TODO_V1_SCOPE.md:7:远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，独立 Draft PR #8 base codex/external-capture-v1（https://github.com/yoCruzer/PersonalGrowthOS/pull/8）。",
-        "Docs/QUIET_WINS_V0.md:5:原 worktree 属于另一任务，未改变其归属或内容；本任务从同一 HEAD 创建 Codex 管理工作树 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`。普通推送目标仍为 `codex/quiet-wins-on-d72`，PR base 仍为 `codex/todo-v1-personal-actions`，没有另建 PR、强推或重置。原工作区的 project、xcstrings、xcodecloud 未提交改动保留。只读核对 PR #8 仍 OPEN Draft、head=`d72c016dd34c8114cf44744d0e061b95bd312091`、base=`codex/external-capture-v1`。",
-        "Docs/QUIET_WINS_V0.md:66:- 2026-10-13 只读 `gh pr view 8 --json headRefOid,headRefName,baseRefName,state,isDraft,url`：PR #8 OPEN Draft，head=d72c016，base=`codex/external-capture-v1`。原 PR/分支不修改；新 Draft PR #9 的 base 为 `codex/todo-v1-personal-actions`。最终交接仅补本文和两份当前上下文；最终完整HEAD以本地git/PR远端一致性核对为准。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:13:6. `codex/todo-v1-personal-actions`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。",
         "Docs/TODO_IPHONE_PREMIGRATION_259.md:3:日期：2026-10-10。审查基线 `fb830a1d555b9738d15867546d395239d38e1edc`；原分支 `codex/todo-v1-personal-actions`、原 OPEN Draft PR #8、base `codex/external-capture-v1` 保持。本轮只处理与新诊断相匹配的保护阶段路径缺陷及细粒度诊断。",
-        "Docs/IMPORTANT_DAYS_V1_DESIGN_ZH.md:8:- PR：#9，OPEN Draft；base 为 `codex/todo-v1-personal-actions` / `d72c016dd34c8114cf44744d0e061b95bd312091`"
+        "Docs/IMPORTANT_DAYS_V1_DESIGN_ZH.md:8:- PR：#9，OPEN Draft；base 为 `codex/todo-v1-personal-actions` / `d72c016dd34c8114cf44744d0e061b95bd312091`",
+        "Docs/QUIET_WINS_V0.md:5:原 worktree 属于另一任务，未改变其归属或内容；本任务从同一 HEAD 创建 Codex 管理工作树 `/Users/himini/.codex/worktrees/quiet-wins-review-fix/PersonalGrowthOS`。普通推送目标仍为 `codex/quiet-wins-on-d72`，PR base 仍为 `codex/todo-v1-personal-actions`，没有另建 PR、强推或重置。原工作区的 project、xcstrings、xcodecloud 未提交改动保留。只读核对 PR #8 仍 OPEN Draft、head=`d72c016dd34c8114cf44744d0e061b95bd312091`、base=`codex/external-capture-v1`。",
+        "Docs/QUIET_WINS_V0.md:66:- 2026-10-13 只读 `gh pr view 8 --json headRefOid,headRefName,baseRefName,state,isDraft,url`：PR #8 OPEN Draft，head=d72c016，base=`codex/external-capture-v1`。原 PR/分支不修改；新 Draft PR #9 的 base 为 `codex/todo-v1-personal-actions`。最终交接仅补本文和两份当前上下文；最终完整HEAD以本地git/PR远端一致性核对为准。"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -1703,6 +1865,7 @@
     {
       "branch": "codex/ui-readability-localization-20261020",
       "remoteSHA": null,
+      "remoteProtected": null,
       "local": {
         "sha": "50f726391f4f548647694368ad6378a901667189",
         "upstream": "origin/codex/usage-remediation-20261017"
@@ -1717,6 +1880,7 @@
       },
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -2056,12 +2220,44 @@
           "HEAD": "50f726391f4f548647694368ad6378a901667189",
           "branch": "refs/heads/codex/ui-readability-localization-20261020",
           "exists": true,
+          "statusReturnCode": 0,
+          "statusError": null,
           "status": []
         }
       ],
       "prs": [],
       "openDependentPRs": [],
       "tagsContainingBranchTip": [],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        },
+        {
+          "tag": "testflight-xcode27-retry-20261020",
+          "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
+        }
+      ],
       "documentReferences": [
         "Docs/UI_READABILITY_LOCALIZATION_20261020_ZH.md:9:主目录另任务及未知工程/翻译/Cloud 改动未触碰。独立工作树 `/private/tmp/PersonalGrowthOS-ui-20261020`，任务分支 `codex/ui-readability-localization-20261020`，仅普通推送原 PR 分支。本轮最终产品/测试固定候选 `537a6f9103f6ccbf08b8634edf6dfc976247b4c8`（前一验证候选 `fe4b0f77d4ea31cc2d3510952355dbf5a02a8301` 之后只修 Investment UI 测试的子开关定位）；后续交付只增加 Docs，交付完整 SHA 由 PR head、最终回复与本机 `final-delivery-proof.json` 核对，不把 Docs 提交冒称成构建 SHA。"
       ],
@@ -2076,8 +2272,9 @@
     {
       "branch": "codex/usage-remediation-20261017",
       "remoteSHA": "50f726391f4f548647694368ad6378a901667189",
+      "remoteProtected": false,
       "local": {
-        "sha": "5fa55602fda148bec552c33ebd49d63757a9a322",
+        "sha": "220090d7629673e4454f7e5c81e8adc42ced732e",
         "upstream": "origin/codex/usage-remediation-20261017"
       },
       "lastCommit": {
@@ -2085,69 +2282,21 @@
         "subject": "Record UI readability localization validation and independent review"
       },
       "upstreamAheadBehind": {
-        "ahead": 3,
+        "ahead": 4,
         "behind": 0
       },
       "unpushedCommits": [
+        "220090d7629673e4454f7e5c81e8adc42ced732e",
         "5fa55602fda148bec552c33ebd49d63757a9a322",
         "13f0409adccc0e0216461ec9ff00a3a11f90e67c",
         "e5b486a8c3f5746a09fc5afb5650944e55be0743"
       ],
-      "exclusiveToOtherBranchTips": [
-        "50f726391f4f548647694368ad6378a901667189",
-        "537a6f9103f6ccbf08b8634edf6dfc976247b4c8",
-        "fe4b0f77d4ea31cc2d3510952355dbf5a02a8301",
-        "6a1ab6a15f62a28e66c46b3941b5d98d08fa567d",
-        "4961eecaa0f87bc60d8d4eab935d886f38a26439",
-        "3d9a50878f7e80ce7b8eb1b9302ae140ef147166",
-        "2cfa757b444ea27b0abd8c8ff701151fbda5afb8",
-        "d17f43cc9da502a30e54224c22de14d0b8723d89",
-        "cd8786b06bb984041ad9968a6736b624ba60d3f3",
-        "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c",
-        "1b150068e76f4d7e7a6defcd51f10622951f4b4b",
-        "2b0d4917342d03b0f9e5323a1ef2cf58447953fb",
-        "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
-        "d04fbf7f39a6ce77e995202118a0ca78f0d0ccf6",
-        "744e7729f103549184574e99e311ce5c380a4a16",
-        "fcd1c9b0c310d757918133c2abd8868da6030b13",
-        "6430a8570ce2d3528c37d491c1252f97066e8da9",
-        "8cc085e353fc6508b9a003d1e633370326cb7799",
-        "53eeb1d3410630f836bbc3e713c79f9f157a4081",
-        "cf3d3208206f50f805e252da2f17d42f063a6329",
-        "b495bead6c9910ec1e15631227c1146176819583",
-        "c1fe56477f2573930a65a95c46d4b7ab7296d6af",
-        "c55dc10fde79f1fe4dec18b03195119c2049830f",
-        "00b65b70d988ef26455d719ccf35eda61233120a",
-        "3dad3b04e3ff703c2e799899035285f64a5976a4",
-        "62210d9910bae50acf0d58e6cb928e52a67c4a6f",
-        "c296a3691d53ce7f5b5bff36fbf7de525d86510f",
-        "b45ce36f4332ee8d48353622c3be67d52cb370af",
-        "c98e3e2100e31d6590f08f23bc53c70b47d3ea5f",
-        "302e3109c8e010794307d28a93989917eaef2b83",
-        "cec2e4d4cc9e68ce4acacfe2d0ad7420657e9b95",
-        "395f3bf5dd3505cfcab005676a586fe8bbd81824",
-        "41ef47c384464823f9456e9816d574ba7edff563",
-        "e75ac56110cb9c4f58158eaf494087b2ed946324",
-        "597552a020eab22673feed108d8676359efd8822",
-        "f946d651ecc940b8b5693916bd4dcdc69926749c",
-        "c2ddf188b41a495bb6b824855e3818be7809a460",
-        "2add10b0c67d064b7e77478fb18a11479d3c94dc",
-        "f1b52b58fd11c41f508ec665d583827879ffa202",
-        "4734551e15c525ee2f1e2aea74bade483fe9be1c",
-        "9601ff211fbdafc954e32f9e25206a38479e972b",
-        "531ccba26334e5d998c6d05aef979c58db7122c0",
-        "229e0468f60e42c5a906fbcfe07cfb9e9ff62a7d",
-        "1bfceef60b5849b3004f5b96854cbdb8e7d230a7",
-        "6691d8c41df1b47bbfbe3db05a8c23d094cc34bb",
-        "24703e86c0f06cb2fa9e14c7a97460fb5fdc257a",
-        "6db49ab91c8b1ffb384724634ebbc8913b2857e0",
-        "50e9cfa190637feb022569ff793a9f360032b781",
-        "c909821b498492e133c726fd4e36f2191920e026",
-        "266c9cab7b3745fd8d217793e7acf7a9cfbbb715",
-        "4ec5d18a551f5b472856b439cf5407b20e5f8519",
-        "f2d02fafdda186269e00b49f76b2d84a5294b727",
-        "15417fd3cfce376f5b835c448305f362ba00ef6c",
-        "2792cdd4b0c6c27f03d219cb010a48a50fc5102a"
+      "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [
+        "220090d7629673e4454f7e5c81e8adc42ced732e",
+        "5fa55602fda148bec552c33ebd49d63757a9a322",
+        "13f0409adccc0e0216461ec9ff00a3a11f90e67c",
+        "e5b486a8c3f5746a09fc5afb5650944e55be0743"
       ],
       "relations": {
         "main": {
@@ -2485,10 +2634,19 @@
       "worktrees": [
         {
           "worktree": "/private/tmp/PersonalGrowthOS-usage-remediation-20261017",
-          "HEAD": "5fa55602fda148bec552c33ebd49d63757a9a322",
+          "HEAD": "220090d7629673e4454f7e5c81e8adc42ced732e",
           "branch": "refs/heads/codex/usage-remediation-20261017",
           "exists": true,
-          "status": []
+          "statusReturnCode": 0,
+          "statusError": null,
+          "status": [
+            " M Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md",
+            " M Docs/Evidence/CI20261020/branch-inventory.json",
+            " M Docs/Evidence/CI20261020/inventory.py",
+            " M PersonalGrowthOSUITests/AppLaunchSmokeTests.swift",
+            "?? Docs/Evidence/CI20261020/pr-pages.json",
+            "?? Docs/Evidence/CI20261020/remote-branch-pages.json"
+          ]
         }
       ],
       "prs": [
@@ -2512,6 +2670,36 @@
       ],
       "openDependentPRs": [],
       "tagsContainingBranchTip": [],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        },
+        {
+          "tag": "testflight-xcode27-retry-20261020",
+          "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
+        }
+      ],
       "documentReferences": [
         "Docs/USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md:7:| 唯一实施分支／PR | codex/usage-remediation-20261017；[Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13) |",
         "Docs/USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md:8:- 唯一 OPEN Draft PR #13；head 分支 `codex/usage-remediation-20261017`；base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`。",
@@ -2529,11 +2717,7 @@
         "Docs/CURRENT_TASK.md:244:独立执行分支codex/usage-remediation-20261017，PR base codex/time-investment-v1；原工作区三项未知dirty、旧PR #1–#12保持。不merge/force/tag/Archive/TestFlight，不进入新模块或操作真实手机/私人库。证据根/tmp/pgos-usage-remediation-evidence；最终文档相对产品仅Markdown，无需重建同一产品。",
         "Docs/CURRENT_TASK.md:262:已按固定 BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24` / GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73` 核验祖先与七 Markdown 增量，从 GOAL_SHA 建立独立 `/private/tmp/PersonalGrowthOS-usage-remediation-20261017` / `codex/usage-remediation-20261017`。原工作区三项未知 dirty 与旧 PR #1–#12 保持；#12 head 仍 BASE。新 PR base 固定 codex/time-investment-v1，尚未创建。",
         "Docs/CURRENT_TASK.md:294:下一步：在 Owner 固定 SHA 引导下，只读确认基线/dirty/祖先/七文件差异，以 GOAL_SHA 建立独立 worktree 和 codex/usage-remediation-20261017，按 0→A→B→C→D 连续推进；新 Draft PR base codex/time-investment-v1。已有同任务工作安全续接，不改旧 PR，不逐阶段等 Owner 确认。阶段是本 Goal 内部检查点；正常实现、影响验证、真正独立只读 review、范围内修复及普通 push 由 Codex 完成。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:6:- 规划时唯一最新集成候选：Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，head `codex/usage-remediation-20261017`，base `codex/time-investment-v1`。核对时交付 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`，最近干净产品/测试 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`。开始前以实时 Git 为准，保留后续有效提交，不从 `main` 直接替换当前完整产品。",
         "Docs/USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md:9:| PR／分支 | [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)；codex/usage-remediation-20261017 |",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:14:7. `codex/usage-remediation-20261017`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。",
-        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:14:| head 分支 | codex/usage-remediation-20261017 |",
         "Docs/USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md:12:| 继续开发的分支 | `codex/usage-remediation-20261017` |",
         "Docs/CURRENT_STATE.md:32:沿原worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、原分支 `codex/usage-remediation-20261017`、唯一OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13) 普通commit/push，base `codex/time-investment-v1` / `5a70f01` 不变。此后纯文档交付SHA以本交付提交/PR head与本机final-delivery-proof.json核对，PR描述及最终回复列出完整值；纯Docs不重建产品。主目录三项未知改动保留。",
         "Docs/CURRENT_STATE.md:62:原worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、分支 `codex/usage-remediation-20261017`、唯一OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base `codex/time-investment-v1` 保持。随后纯文档交付普通commit/push，文档交付SHA以所在交付提交/PR head和本机final-delivery-proof.json核对；纯Docs不重建产品。主目录三项未知改动保留。",
@@ -2548,14 +2732,16 @@
         "Docs/CURRENT_STATE.md:231:独立执行分支codex/usage-remediation-20261017，PR base codex/time-investment-v1；原工作区三项未知dirty、旧PR #1–#12保持。不merge/force/tag/Archive/TestFlight，不进入新模块或操作真实手机/私人库。证据根/tmp/pgos-usage-remediation-evidence；最终文档相对产品仅Markdown，无需重建同一产品。",
         "Docs/CURRENT_STATE.md:249:已按固定 BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24` / GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73` 核验祖先与七 Markdown 增量，从 GOAL_SHA 建立独立 `/private/tmp/PersonalGrowthOS-usage-remediation-20261017` / `codex/usage-remediation-20261017`。原工作区三项未知 dirty 与旧 PR #1–#12 保持；#12 head 仍 BASE。新 PR base 固定 codex/time-investment-v1，尚未创建。",
         "Docs/CURRENT_STATE.md:281:规划分支 plan/usage-remediation-20261017-goal；后续产品分支 codex/usage-remediation-20261017，新 Draft PR base 为 codex/time-investment-v1。A 统一展示/操作反馈，B 可信回顾/体重/BMI/时间历史，C 星期重复/闹钟，D 集中验证与独立 review。新授权在新分支替代旧“只等设备、不再开发”的停点，保留全部历史失败/设备门禁及 F1、R1–R3 数据与计时保护线。旧 PR、原 dirty 工作区、私人库及发行边界保持。",
-        "Docs/USAGE_REMEDIATION_20261017_GOAL_ZH.md:9:- 新产品分支：`codex/usage-remediation-20261017`；新 Draft PR base：`codex/time-investment-v1`。",
-        "Docs/USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md:5:仓库 `yoCruzer/PersonalGrowthOS`；唯一OPEN Draft PR #13；原分支 `codex/usage-remediation-20261017`；base保持 `codex/time-investment-v1`（`5a70f0110b151f8a45ac7c33d3f443823b1cff24`）。已审产品/测试 `744e7729f103549184574e99e311ce5c380a4a16`，交付 `d04fbf7f39a6ce77e995202118a0ca78f0d0ccf6`；前Goal `6430a8570ce2d3528c37d491c1252f97066e8da9`。本文件及[配套独立审查](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md)由手机prompt中的 `RECHECK_GOAL_SHA` 固定。",
-        "Docs/USAGE_REMEDIATION_20261019_TERMINAL_FIX_GOAL_ZH.md:6:- 原分支：`codex/usage-remediation-20261017`；base：`codex/time-investment-v1`，`5a70f0110b151f8a45ac7c33d3f443823b1cff24`。",
         "Docs/USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md:12:| 继续开发分支 | `codex/usage-remediation-20261017` |",
-        "Docs/USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md:14:| 目标分支 | codex/usage-remediation-20261017 |",
+        "Docs/USAGE_REMEDIATION_20261017_GOAL_ZH.md:9:- 新产品分支：`codex/usage-remediation-20261017`；新 Draft PR base：`codex/time-investment-v1`。",
         "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:15:- 从 GOAL_SHA 创建 `codex/usage-remediation-20261017`，独立 worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`。没有同名现存任务工作。",
         "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:129:远端只读 `git ls-remote --heads origin refs/heads/codex/usage-remediation-20261017 refs/heads/plan/usage-remediation-20261017-goal refs/heads/codex/time-investment-v1`：新整改远端分支不存在；规划仍GOAL_SHA，时间投入仍BASE。尚未push/建PR。",
-        "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:265:普通push成功；`gh pr list --head ... --state all`确认此前为空后，仅创建一次[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base=codex/time-investment-v1/baseRefOid=固定BASE，head=codex/usage-remediation-20261017。已调用attach_artifact附到本任务。没有更改旧PR。"
+        "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:265:普通push成功；`gh pr list --head ... --state all`确认此前为空后，仅创建一次[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base=codex/time-investment-v1/baseRefOid=固定BASE，head=codex/usage-remediation-20261017。已调用attach_artifact附到本任务。没有更改旧PR。",
+        "Docs/USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md:14:| 目标分支 | codex/usage-remediation-20261017 |",
+        "Docs/USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md:5:仓库 `yoCruzer/PersonalGrowthOS`；唯一OPEN Draft PR #13；原分支 `codex/usage-remediation-20261017`；base保持 `codex/time-investment-v1`（`5a70f0110b151f8a45ac7c33d3f443823b1cff24`）。已审产品/测试 `744e7729f103549184574e99e311ce5c380a4a16`，交付 `d04fbf7f39a6ce77e995202118a0ca78f0d0ccf6`；前Goal `6430a8570ce2d3528c37d491c1252f97066e8da9`。本文件及[配套独立审查](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md)由手机prompt中的 `RECHECK_GOAL_SHA` 固定。",
+        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:14:| head 分支 | codex/usage-remediation-20261017 |",
+        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:6:- 规划时唯一最新集成候选：Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，head `codex/usage-remediation-20261017`，base `codex/time-investment-v1`。核对时交付 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`，最近干净产品/测试 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`。开始前以实时 Git 为准，保留后续有效提交，不从 `main` 直接替换当前完整产品。",
+        "Docs/USAGE_REMEDIATION_20261019_TERMINAL_FIX_GOAL_ZH.md:6:- 原分支：`codex/usage-remediation-20261017`；base：`codex/time-investment-v1`，`5a70f0110b151f8a45ac7c33d3f443823b1cff24`。"
       ],
       "classification": "必须保留",
       "retainedReference": {
@@ -2568,6 +2754,7 @@
     {
       "branch": "docs/foundation-consistency-v0.2",
       "remoteSHA": "ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-16T00:01:29+08:00",
@@ -2576,6 +2763,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -2641,9 +2829,8 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
-      "documentReferences": [
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:15:8. `docs/foundation-consistency-v0.2`"
-      ],
+      "tagsReachableFromBranch": [],
+      "documentReferences": [],
       "classification": "合并后候选",
       "retainedReference": {
         "candidate": "50f726391f4f548647694368ad6378a901667189",
@@ -2655,6 +2842,7 @@
     {
       "branch": "docs/v1-autonomous-governance",
       "remoteSHA": "a750d00ac914cdab16fc9418a39771c9bfb27676",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-18T21:52:26+08:00",
@@ -2663,6 +2851,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -2728,8 +2917,8 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [],
       "documentReferences": [
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:16:9. `docs/v1-autonomous-governance`",
         "Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md:122:* 当前 `docs/v1-autonomous-governance` 治理分支处于此状态。"
       ],
       "classification": "合并后候选",
@@ -2743,6 +2932,7 @@
     {
       "branch": "feat/s0a-project-bootstrap",
       "remoteSHA": "2bf1be85c01d8d96af035a12684bd2d98c7f183e",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-17T07:58:46+08:00",
@@ -2751,6 +2941,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -2816,10 +3007,10 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [],
       "documentReferences": [
         "Docs/S0A_TASK.md:99:feat/s0a-project-bootstrap",
-        "Docs/S0A_TASK.md:276:2. 从已核对的 `main` HEAD 创建 `feat/s0a-project-bootstrap`，记录 Branch 和 Starting HEAD。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:17:10. `feat/s0a-project-bootstrap`"
+        "Docs/S0A_TASK.md:276:2. 从已核对的 `main` HEAD 创建 `feat/s0a-project-bootstrap`，记录 Branch 和 Starting HEAD。"
       ],
       "classification": "合并后候选",
       "retainedReference": {
@@ -2832,6 +3023,7 @@
     {
       "branch": "feat/v1-autonomous-build",
       "remoteSHA": "2e31e8a753005f8bb40bce348820529775aa2e9d",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-19T11:39:32+08:00",
@@ -2840,6 +3032,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -2905,13 +3098,13 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [],
       "documentReferences": [
         "Docs/V1_AUTONOMOUS_STATUS.md:9:| Current branch | `feat/v1-autonomous-build` |",
         "Docs/V1_AUTONOMOUS_STATUS.md:19:`feat/v1-autonomous-build`, created directly from the Program baseline.",
         "Docs/V1_AUTONOMOUS_STATUS.md:68:- All S1–S10 product work occurs only on `feat/v1-autonomous-build`.",
         "Docs/V1_AUTONOMOUS_STATUS.md:118:- Current branch: `feat/v1-autonomous-build`.",
         "Docs/V1_CANDIDATE_REPORT.md:6:| Branch | `feat/v1-autonomous-build` |",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:18:11. `feat/v1-autonomous-build`",
         "Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md:12:| Proposed Working Branch  | `feat/v1-autonomous-build`                   |",
         "Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md:121:* 不得创建 `feat/v1-autonomous-build`；",
         "Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md:128:* `feat/v1-autonomous-build` 尚未创建；",
@@ -2936,6 +3129,7 @@
     {
       "branch": "feature/build8-habit-analytics-dashboard",
       "remoteSHA": "ae8f7cb6577f2d1bc479471bcd98d6f437670210",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-09-06T19:52:11+08:00",
@@ -2944,6 +3138,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -3099,6 +3294,20 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        }
+      ],
       "documentReferences": [
         "Docs/BUILD8_HABIT_ANALYTICS.md:6:| Branch | `feature/build8-habit-analytics-dashboard` |",
         "Docs/BUILD8_HABIT_ANALYTICS.md:53:- Review-closure implementation commit `41194b8` follows reviewed head `9bb435c` on `feature/build8-habit-analytics-dashboard`; Draft PR [#5](https://github.com/yoCruzer/PersonalGrowthOS/pull/5) continues to target the exact Build 7 handoff branch.",
@@ -3107,8 +3316,7 @@
         "Docs/CURRENT_STATE.md:652:2026-09-16：本轮六项功能、自动验证、提交/普通推送与独立 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) 完成。执行分支 `feature/build9-today-entry-followups`，base 为 `feature/build8-habit-analytics-dashboard` 的实际 `ae8f7cb`；没有追加旧 PR #5。",
         "Docs/CURRENT_STATE.md:666:| Current branch | `feature/build8-habit-analytics-dashboard` |",
         "Docs/BUILD9_EXECUTION_PLAN.md:7:- 起始分支：`feature/build8-habit-analytics-dashboard`，干净 HEAD `ae8f7cb6577f2d1bc479471bcd98d6f437670210`，与 upstream 一致。",
-        "Docs/BUILD9_EXECUTION_PLAN.md:101:本地实现提交 `7c65413`，普通推送成功；独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)，base `feature/build8-habit-analytics-dashboard`，head `feature/build9-today-entry-followups`。未修改 PR #5 范围。正文明确必要验收待补齐，不将远端交付成功当作 Goal COMPLETE。自动审批问题仅剩模拟器验收，提交/推送/创建 Draft 均通过各自正式环境审批。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:19:12. `feature/build8-habit-analytics-dashboard`"
+        "Docs/BUILD9_EXECUTION_PLAN.md:101:本地实现提交 `7c65413`，普通推送成功；独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)，base `feature/build8-habit-analytics-dashboard`，head `feature/build9-today-entry-followups`。未修改 PR #5 范围。正文明确必要验收待补齐，不将远端交付成功当作 Goal COMPLETE。自动审批问题仅剩模拟器验收，提交/推送/创建 Draft 均通过各自正式环境审批。"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -3121,6 +3329,7 @@
     {
       "branch": "feature/build9-today-entry-followups",
       "remoteSHA": "ae14f107f7eebb89a1549e00de3d941e6a996281",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-09-16T22:36:59+08:00",
@@ -3129,6 +3338,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -3286,6 +3496,24 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        }
+      ],
       "documentReferences": [
         "Docs/EXTERNAL_CAPTURE_EXECUTION_PLAN.md:9:2026-09-22 Owner request authorizes text, images, URL and Safari selected content through public iOS Share Sheet APIs. Owner explicitly selected Build 9 `ae14f10` as the baseline despite PR #6 remaining Draft. Starting branch: `feature/build9-today-entry-followups`; execution branch: `codex/external-capture-v1`. Draft PR base is the Build 9 branch. No merge, release tag, build-number increment, Archive or TestFlight. Stop at independent review; full article capture is excluded.",
         "Docs/EXTERNAL_CAPTURE_EXECUTION_PLAN.md:95:**COMPLETE — READY_FOR_INDEPENDENT_REVIEW.** Tested product implementation: `068a27a`. Ordinary push succeeded; [Draft PR #7](https://github.com/yoCruzer/PersonalGrowthOS/pull/7) targets `feature/build9-today-entry-followups` from `codex/external-capture-v1`. Following documentation-only commit records the handoff; it does not change tested product code. Both current-context documents are updated. No merge, Ready-for-review conversion, tag, build-number change, Archive or TestFlight occurred. Stop here; independent review and Owner device checks are the next boundary.",
@@ -3302,8 +3530,7 @@
         "Docs/CURRENT_STATE.md:652:2026-09-16：本轮六项功能、自动验证、提交/普通推送与独立 [Draft PR #6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6) 完成。执行分支 `feature/build9-today-entry-followups`，base 为 `feature/build8-habit-analytics-dashboard` 的实际 `ae8f7cb`；没有追加旧 PR #5。",
         "Docs/BUILD9_EXECUTION_PLAN.md:9:- 本轮分支：`feature/build9-today-entry-followups`，从上述 HEAD 创建；本轮 PR base 使用 Build 8 分支以隔离 diff。`main` 的祖先仍为 `dd09975`，不作为起点。",
         "Docs/BUILD9_EXECUTION_PLAN.md:101:本地实现提交 `7c65413`，普通推送成功；独立 Draft PR [#6](https://github.com/yoCruzer/PersonalGrowthOS/pull/6)，base `feature/build8-habit-analytics-dashboard`，head `feature/build9-today-entry-followups`。未修改 PR #5 范围。正文明确必要验收待补齐，不将远端交付成功当作 Goal COMPLETE。自动审批问题仅剩模拟器验收，提交/推送/创建 Draft 均通过各自正式环境审批。",
-        "Docs/TODO_V1_SCOPE.md:7:远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，独立 Draft PR #8 base codex/external-capture-v1（https://github.com/yoCruzer/PersonalGrowthOS/pull/8）。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:20:13. `feature/build9-today-entry-followups`"
+        "Docs/TODO_V1_SCOPE.md:7:远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，独立 Draft PR #8 base codex/external-capture-v1（https://github.com/yoCruzer/PersonalGrowthOS/pull/8）。"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -3316,6 +3543,7 @@
     {
       "branch": "feature/usability-s2-review-loop",
       "remoteSHA": "1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-08-13T14:28:40+08:00",
@@ -3324,6 +3552,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -3447,10 +3676,10 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [],
       "documentReferences": [
-        "Docs/USABILITY_S2_REVIEW_LOOP.md:6:| Branch | `feature/usability-s2-review-loop` |",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:21:14. `feature/usability-s2-review-loop`",
-        "Docs/CURRENT_STATE.md:846:Review [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) against `feature/usability-s2-review-loop`. After review, the Owner decides whether to create a TestFlight build and perform the listed physical-device checks. Do not merge or publish automatically. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`."
+        "Docs/CURRENT_STATE.md:846:Review [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) against `feature/usability-s2-review-loop`. After review, the Owner decides whether to create a TestFlight build and perform the listed physical-device checks. Do not merge or publish automatically. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.",
+        "Docs/USABILITY_S2_REVIEW_LOOP.md:6:| Branch | `feature/usability-s2-review-loop` |"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -3463,6 +3692,7 @@
     {
       "branch": "feature/v1-completion-push",
       "remoteSHA": "19475fe0830d9a2c8ceff4f27adc63ed4ecab7a7",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-31T20:14:31+08:00",
@@ -3471,6 +3701,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -3563,12 +3794,12 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [],
       "documentReferences": [
         "Docs/V1_COMPLETION_TRACKER.md:19:| Execution branch | `feature/v1-completion-push` |",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:22:15. `feature/v1-completion-push`",
-        "Docs/USABILITY_S2_REVIEW_LOOP.md:54:The current work is the Build 6 / Draft PR #3 independent-review closure. Any later TestFlight upload and physical-device validation remain Owner-controlled. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate.",
         "Docs/CURRENT_STATE.md:693:The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first Owner-supplied iPhone smoke test. It was safely fast-forwarded to `main` before the isolated `feature/v1-completion-push` branch was created. `main` remains unchanged; the V1 distribution branch and the newer S2 branch remain unmerged.",
-        "Docs/CURRENT_STATE.md:846:Review [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) against `feature/usability-s2-review-loop`. After review, the Owner decides whether to create a TestFlight build and perform the listed physical-device checks. Do not merge or publish automatically. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`."
+        "Docs/CURRENT_STATE.md:846:Review [Draft PR #3](https://github.com/yoCruzer/PersonalGrowthOS/pull/3) against `feature/usability-s2-review-loop`. After review, the Owner decides whether to create a TestFlight build and perform the listed physical-device checks. Do not merge or publish automatically. The V1 Build 3 distribution handoff remains separate and Owner-only on `feature/v1-completion-push`.",
+        "Docs/USABILITY_S2_REVIEW_LOOP.md:54:The current work is the Build 6 / Draft PR #3 independent-review closure. Any later TestFlight upload and physical-device validation remain Owner-controlled. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate."
       ],
       "classification": "必须保留",
       "retainedReference": {
@@ -3581,6 +3812,7 @@
     {
       "branch": "fix/build6-owner-feedback-round1",
       "remoteSHA": "c15513f2389d01f28c12ba351933580b37afe4b7",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-09-02T17:49:11+08:00",
@@ -3589,6 +3821,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -3718,9 +3951,8 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
-      "documentReferences": [
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:23:16. `fix/build6-owner-feedback-round1`"
-      ],
+      "tagsReachableFromBranch": [],
+      "documentReferences": [],
       "classification": "叠加链基底",
       "retainedReference": {
         "candidate": "50f726391f4f548647694368ad6378a901667189",
@@ -3732,6 +3964,7 @@
     {
       "branch": "fix/build7-owner-feedback-round2",
       "remoteSHA": "95076bf5c2a86122fbd327903d80bccdfb8c768d",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-09-04T20:07:10+08:00",
@@ -3740,6 +3973,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -3875,10 +4109,19 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        }
+      ],
       "documentReferences": [
         "Docs/BUILD8_HABIT_ANALYTICS.md:8:| Draft PR | [#5](https://github.com/yoCruzer/PersonalGrowthOS/pull/5), base `fix/build7-owner-feedback-round2` |",
-        "Docs/BUILD9_EXECUTION_PLAN.md:8:- 只读 GitHub 核验：PR #5 OPEN / Draft / 未合并，head 同上，base `fix/build7-owner-feedback-round2`。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:24:17. `fix/build7-owner-feedback-round2`"
+        "Docs/BUILD9_EXECUTION_PLAN.md:8:- 只读 GitHub 核验：PR #5 OPEN / Draft / 未合并，head 同上，base `fix/build7-owner-feedback-round2`。"
       ],
       "classification": "叠加链基底",
       "retainedReference": {
@@ -3891,6 +4134,7 @@
     {
       "branch": "fix/v1-device-smoke-round1",
       "remoteSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-31T14:41:49+08:00",
@@ -3899,6 +4143,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -3964,10 +4209,10 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [],
       "documentReferences": [
         "Docs/V1_COMPLETION_TRACKER.md:110:| Safe `main` baseline | VERIFIED | `main...fix/v1-device-smoke-round1` was `0 25`; merge-base was prior `main`; `git merge --ff-only` succeeded |",
         "Docs/CURRENT_STATE.md:693:The previously verified `fix/v1-device-smoke-round1` commit `dd09975` passed Internal TestFlight installation and the first Owner-supplied iPhone smoke test. It was safely fast-forwarded to `main` before the isolated `feature/v1-completion-push` branch was created. `main` remains unchanged; the V1 distribution branch and the newer S2 branch remain unmerged.",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:25:18. `fix/v1-device-smoke-round1`",
         "Docs/V1_DEVICE_VALIDATION_REPORT.md:12:| Round 1 branch | `fix/v1-device-smoke-round1` |"
       ],
       "classification": "合并后候选",
@@ -3981,6 +4226,7 @@
     {
       "branch": "main",
       "remoteSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
+      "remoteProtected": false,
       "local": {
         "sha": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
         "upstream": "origin/main"
@@ -3995,6 +4241,7 @@
       },
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -4095,6 +4342,7 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [],
       "documentReferences": [
         "DEVELOPMENT_CONTRACT.md:7:The Foundation Documents remain the highest authority for product direction. This contract governs how work proceeds when it does not conflict with those documents.",
         "Docs/BUILD8_HABIT_ANALYTICS.md:12:- SwiftData V8 adds `HabitLogDayMetadata`, `HabitPlanRevision` and `HabitLifecycleEvent`. The exact V7 `HabitLog` shape remains unchanged; immutable Local Day, time-zone and provenance live in the additive metadata entity keyed uniquely by HabitLog ID.",
@@ -4360,31 +4608,15 @@
         "Docs/BUILD9_EXECUTION_PLAN.md:9:- 本轮分支：`feature/build9-today-entry-followups`，从上述 HEAD 创建；本轮 PR base 使用 Build 8 分支以隔离 diff。`main` 的祖先仍为 `dd09975`，不作为起点。",
         "Docs/SLEEP_ROUTINE_V1_REVIEW_ZH.md:67:主实现者发现固定轴裁晚起区间，Reviewer确认P2，要求一并修24刻度日期。47f3d95按实际区间端点扩domain并标次日，实际SleepService反例与23/23 Unit通过，P2关闭。后续ChartVisible2新增AX query失败，视频证明图存在但长日期标签重叠；Reviewer确认限定改三刻度/日期时间分行、用可操作绘图来源入口验证合理，无需扩大设计或重跑全量。",
         "Docs/TODO_V1_SCOPE.md:7:远端重新 fetch：main 为 dd09975d3a3736b24f8646fa4f197cc883ab1796；annotated tag testflight-external-capture-c5a3c0a 与 origin/codex/external-capture-v1 同源 c5a3c0ac859efc3ffa4e5d9f77909ec43565c871；PR #7 OPEN Draft，base feature/build9-today-entry-followups。Owner 确认当前真机 Build 12，失败的 Build 10/11 只是编号递增。本轮分支 codex/todo-v1-personal-actions，独立 Draft PR #8 base codex/external-capture-v1（https://github.com/yoCruzer/PersonalGrowthOS/pull/8）。",
-        "Docs/Evidence/UI20261020/final-source-manifest.json:17:  \"PersonalGrowthOS/Domain/Entry/EntryDomain.swift\": \"10fedcf2f8909a13311b77bb1ed3e0b554ce799321eab7a57b57b5ff143d1e52\",",
-        "Docs/Evidence/UI20261020/final-source-manifest.json:18:  \"PersonalGrowthOS/Domain/Goal/GoalDomain.swift\": \"03b5c3429a580052cb1243db6f89c40b7f800807b8a47222560c79da1272984d\",",
-        "Docs/Evidence/UI20261020/final-source-manifest.json:19:  \"PersonalGrowthOS/Domain/Habit/HabitDomain.swift\": \"c562b7e966c01c1ecb9c1ec3c9fd653c2418d685487c201276929f59f2c20002\",",
-        "Docs/Evidence/UI20261020/final-source-manifest.json:67:  \"PersonalGrowthOSTests/EntryDomainTests.swift\": \"712eaab1202b3e870b3e84e728070d4fa09f2cc470c8af62cde0a0bcb8ce33f7\",",
         "Docs/USAGE_REMEDIATION_20261020_TERMINAL_RECHECK_RUNS.json:723:        \"-only-testing:PersonalGrowthOSUITests/SleepUITests/testGoalVisibilityAndDeniedReminderRemainIndependentOfSavedFacts\"",
-        "Docs/Evidence/UI20261020/reviewer-final-raw.txt:8:1. RepeatableHabitCounter无名模式只移除伸展Spacer；Today每日、Today/Growth周月、Habit详情所有消费者均已检查。概览只移除冗余remaining，周期actual/target与胶囊当日HabitTodayProgress保持独立。未修改打卡、计时、持久化或业务日期算法。ModuleEntryRow的其他时间投入、睡眠、重要日子、QuietWins消费者未受全局截断/固定行高影响。",
-        "Docs/Evidence/UI20261020/conditional-string-audit.txt:1:PersonalGrowthOS/Domain/Habit/HabitDomain.swift:590:            id: \"\\(plan?.period.rawValue ?? \"none\")-\\(start.description)\", start: start, end: end,",
-        "Docs/Evidence/UI20261020/conditional-string-audit.txt:21:PersonalGrowthOS/AppShell.swift:1813:                ? \"The saved entry will remain. Only this Inbox copy will be removed.\"",
-        "Docs/Evidence/UI20261020/conditional-string-audit.txt:50:PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:144:    var processingVersion = \"\\(Bundle.main.infoDictionary?[\"CFBundleShortVersionString\"] as? String ?? \"unknown\")/\\(Bundle.main.infoDictionary?[\"CFBundleVersion\"] as? String ?? \"unknown\")/capture1\"",
-        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_FIX_RUNS.json:1784:      \"note\": \"Reuse actual unchanged source cases; final-ui1 failures remain failures. Do not concatenate rounds into one green run.\"",
+        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:6:| Result | PASS — no Critical, High or Medium findings remain |",
+        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:41:- Data/architecture: PASS, no remaining Critical, High or Medium finding.",
+        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:42:- Product/Foundation: PASS, no remaining Critical/High finding or V2 scope creep.",
+        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:43:- Tests/evidence: PASS, no remaining blocker or evidence gap.",
+        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:72:The representative local fixture contains 5,000 Entries including 250 Reviews, 250 Tags, 100 Habits and 100 Goals/Flags. Three measured normalized scans completed in 0.588, 0.507 and 0.500 seconds on the simulator, below the retained 1.0-second threshold. The simple local scan remains sufficient; no FTS or separate Review index is justified.",
+        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:76:- UI mutation services still share the main `ModelContext`; operation-scoped contexts remain a non-blocking architectural follow-up until a low-risk boundary is justified.",
+        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:77:- Real Photos Picker, camera permission/capture and resource behavior on a physical iPhone remain Owner-deferred.",
         "Docs/IMPORTANT_DAYS_V1_DESIGN_ZH.md:17:本次核对远端 PR #9、分支列表与指定提交，确认上述 HEAD。`main` 仍为 `dd09975d3a3736b24f8646fa4f197cc883ab1796`，不能从默认 main 直接推断当前候选功能。远端 HEAD 不等于用户手机当前安装版本，也不代表本机未推送改动已纳入本设计。",
-        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:30:2. 获取承载分支后按用户给定的文档 SHA 读取这两个文件，核验该提交含固定产品基线且相对基线仅有预期 Markdown 文档变更。不得读取 main 上的同名文件替代，不从过旧 main 开发。",
-        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:33:5. 执行期间不得自动追逐移动的“最新 HEAD”、merge/rebase 新的 PR #9 或切回 main。若上游确有新提交，只读判断是否影响新功能/数据安全；不影响则记录并继续固定基线，必要且有风险才请求基线升级。若原 base 分支被删除，保留成果并报告 PR 建立阻塞，不擅自改 base 到旧 main。",
-        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:192:已授权在 `codex/important-days-v1` 做合理 commit、普通 push、新建/更新一个 Draft PR（base 固定见开头）。不需要每次请求确认；可在里程碑 push，不能把 push/PR 当作执行完成。不得修改旧 PR #8/#9 的 head/base/state、目标分支或描述，不 merge main，不 force-push，不删分支、不打任何 tag。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:5:- 仓库 `yoCruzer/PersonalGrowthOS`，公开，默认分支 `main`。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:6:- 规划时唯一最新集成候选：Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，head `codex/usage-remediation-20261017`，base `codex/time-investment-v1`。核对时交付 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`，最近干净产品/测试 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`。开始前以实时 Git 为准，保留后续有效提交，不从 `main` 直接替换当前完整产品。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:19:2. 优先使用标准 `runs-on: xcode-27`（Apple Silicon，Xcode 27 GA），不可默认使用付费 `xcode-27-xlarge`、自托管 Mac mini 或私人 Runner。使用 checkout 的受支持稳定版本，根/作业权限 `contents: read`，`pull_request` 与必要的 `push`（`main`及当前正在开发的整合分支），不使用 `pull_request_target`，不触发 tag、发布、上传商店。可按需求对 default branch 添加 `workflow_dispatch`，但其在默认分支尚无工作流时不能依赖 UI 手动触发作首次验收。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:47:根据 [BRANCH_INVENTORY](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md) 的初始29分支快照，使用实时 `git ls-remote --heads` + GitHub PR open/closed/merged + `git merge-base --is-ancestor` + 远端保护/默认分支/关联 tag（必要时 `git log --cherry`）建立带完整 SHA 的分支依赖图，特别记录 Draft PR #8→#13 的祖先/base/子分支，不能只按年龄或 `git branch --merged main` 删除。",
-        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:6:| Result | PASS — no Critical or High findings remain |",
-        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:13:- `5b00f49f36e9022f37e4876c03f125d56707e5bb` — S1 Entry Domain Foundation.",
-        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:34:Resolved directly related Medium findings include global capture from Timeline and Settings, unified retained/new photo ordering, incremental picker additions, archive recovery, stable Timeline tie-breaking, camera accessibility labels, main-queue camera completion, stale-thumbnail invalidation and integrated idempotent startup recovery coverage.",
-        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:40:- Product/UX/accessibility: no blocking findings at `afe809e`; the remaining picker-replacement Medium was fixed and the `90d7ff5` delta passed targeted re-review.",
-        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:92:The provisional 25 MiB original limit, 80MP pixel limit and 100 MiB free-space reserve are retained. The accepted boundaries completed without instability, previews are bounded by URL downsampling, and the reserve exceeds the 50 MiB staging-plus-final peak for one maximum-size original. These remain implementation configuration, not schema or Foundation contracts. Oldest-supported physical-device measurement remains Owner-deferred.",
-        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:96:- Entry mutation services currently roll back the shared main `ModelContext`; operation-scoped contexts should be introduced before unrelated pending edits across S5–S10 can coexist. This is not a low-risk Milestone A patch and did not block the current single-operation flows.",
-        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:97:- Real Photos Picker, camera permission/capture and resource behavior on a physical iPhone remain Owner-deferred validation.",
         "Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md:126:* Governance 机制已经被 Owner 接受并进入 `main`；",
         "Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md:135:* 已从准确、clean 的 `main` SHA 创建 `feat/v1-autonomous-build`；",
         "Docs/V1_AUTONOMOUS_EXECUTION_PLAN.md:154:> 在一个与 `main` 隔离的开发分支上，自主实现 Personal Growth OS Macro Stage S1–S10，交付一个可以构建、运行、测试并供 Owner 真实体验和统一审查的 V1 Candidate。",
@@ -4421,32 +4653,42 @@
         "Docs/QUIET_WINS_V0.md:107:一项 P2：`QuietWinsReader.read` 中 Goal 生命周期按最大 occurredAt 保守验证；创建后时钟回拨再完成时，当前 completedAt 虽在窗口内，较晚日期的 created/resumed 事件会使卡片漏显。无虚假成就/写入/数据丢失。`testGoalClockRollbackRemainsConservativeAndReadOnly` 固定这种保守行为，不为它改模型或扩展事件顺序协议。旧 WeeklyReview 导航与原Todo重复详情的 `Invalid frame dimension` 运行警告在集中 UI 组各复现一次，记录为原相邻页面风险，未声称根因消除。",
         "Docs/QUIET_WINS_V0.md:135:初始定向性能真实指标（D3收紧前）：pure projection（4000Todo/4000Entry/20000Log/25Habit）0.240077916s；磁盘reader（4000Entry/4000Todo/20000Log，半数为400天前数据）0.464396209s，main heartbeat0.013036875s，进程peakRSS读取前/后均516145152bytes。RSS含fixture构建与测试进程，不称功能占用516MB或“零内存分配”；90天投影只保留2000Todo/2000Entry/10000Log。单设备Debug合成指标不是真机性能承诺。 最后D3源码的day-guard-green同规模实测：projection=0.220890417s、reader=0.245807s、main heartbeat=0.012273084s；进程peakRSS前/后均541278208bytes。所有读写保护/计数断言保持。",
         "Docs/QUIET_WINS_V0.md:176:| A11 | 公开合成load真正磁盘查询+main heartbeat+peakRSS，真实规模/耗时见上。 |",
-        "Docs/TODO_IPHONE_PREMIGRATION_259.md:7:Owner 报告本地 Xcode Run Build16：stage=storeOpen、startupStep=preMigrationProtection、NSCocoaErrorDomain/259、schemaEvidence=notCollected。只读核对本机现存 Debug-iphoneos App：1.0(16)、内嵌 SHA=上述基线、Source=localGit、Dirty=true、Tag空；不能据此独立证明已安装二进制身份或构建时无未提交差异。仓库/PR起点 SHA 相同且工作区干净，仓库发行设置仍为1.0(7)，本轮不改号。",
-        "Docs/TODO_IPHONE_PREMIGRATION_259.md:16:| withFrozenStore | SQLite open/BEGIN/SELECT 失败主动抛 `SQLite` domain 数字错误，不是 Cocoa259；readerOpen/writerOpen/writerTransaction/readerTransaction。闭包抛错可透传。 |",
+        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:5:- 仓库 `yoCruzer/PersonalGrowthOS`，公开，默认分支 `main`。",
+        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:6:- 规划时唯一最新集成候选：Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，head `codex/usage-remediation-20261017`，base `codex/time-investment-v1`。核对时交付 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`，最近干净产品/测试 `1b150068e76f4d7e7a6defcd51f10622951f4b4b`。开始前以实时 Git 为准，保留后续有效提交，不从 `main` 直接替换当前完整产品。",
+        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:19:2. 优先使用标准 `runs-on: xcode-27`（Apple Silicon，Xcode 27 GA），不可默认使用付费 `xcode-27-xlarge`、自托管 Mac mini 或私人 Runner。使用 checkout 的受支持稳定版本，根/作业权限 `contents: read`，`pull_request` 与必要的 `push`（`main`及当前正在开发的整合分支），不使用 `pull_request_target`，不触发 tag、发布、上传商店。可按需求对 default branch 添加 `workflow_dispatch`，但其在默认分支尚无工作流时不能依赖 UI 手动触发作首次验收。",
+        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md:47:根据 [BRANCH_INVENTORY](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md) 的初始29分支快照，使用实时 `git ls-remote --heads` + GitHub PR open/closed/merged + `git merge-base --is-ancestor` + 远端保护/默认分支/关联 tag（必要时 `git log --cherry`）建立带完整 SHA 的分支依赖图，特别记录 Draft PR #8→#13 的祖先/base/子分支，不能只按年龄或 `git branch --merged main` 删除。",
+        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_FIX_RUNS.json:1784:      \"note\": \"Reuse actual unchanged source cases; final-ui1 failures remain failures. Do not concatenate rounds into one green run.\"",
         "Docs/V1_DEVICE_VALIDATION_REPORT.md:38:- The profile includes device UDID `00008140-00096D1E21D0801C`, so device registration remains confirmed.",
         "Docs/V1_DEVICE_VALIDATION_REPORT.md:50:- [x] Data remains after force-quitting and reopening the App.",
         "Docs/V1_DEVICE_VALIDATION_REPORT.md:162:- No TestFlight upload, App Store Connect configuration, release or `main` merge was performed.",
         "Docs/V1_DEVICE_VALIDATION_REPORT.md:181:- [ ] Existing test data remains after overlay installation.",
         "Docs/V1_DEVICE_VALIDATION_REPORT.md:200:- Goal and Flag editing remains intentionally limited to existing core fields; no reminder or project-management state machine was added.",
         "Docs/V1_DEVICE_VALIDATION_REPORT.md:201:- Timeline uses bounded aspect-fit thumbnails; full original viewing remains in entry detail.",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:5:这是一次**名称级初始快照**；29个远端分支来自当时的GitHub搜索，**没有逐条验证 SHA、合并状态、独有提交与 PR 依赖，不能据此删除任意分支**。默认分支 main，PR #8～#13 当前均开放并存在多层叠加依赖。实时状态须由Codex重新fetch验证，逐条生成完整 SHA 和分类。此文档不授权删分支。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:26:19. `main`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:40:- **KEEP_ACTIVE / STACK_BASE 优先核实**：`main`，`codex/external-capture-v1`、`codex/todo-v1-personal-actions`、`codex/quiet-wins-on-d72`、`codex/important-days-v1`、`codex/sleep-routine-v1`、`codex/time-investment-v1`、`codex/usage-remediation-20261017`。PR#8–13的真实base/head顺序由GitHub API核实，不能按此文字猜测。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:41:- **REVIEW_AFTER_MERGE**：`plan/*`、`docs/*`、`feature/*`、`fix/*`、`feat/*`、`test/*` 等，只有在证明内容由 main 或受保护保留提交/签发归档完整覆盖，且不是任何开放/关联PR基点，才可能成为安全候选。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:48:| `main` | TO_VERIFY | TO_VERIFY | 默认分支 | TO_VERIFY | TO_VERIFY | KEEP_ACTIVE | 永不因本任务删除 |",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:50:命令建议：`git fetch --prune --tags`（仅更新本地远端引用，不是GitHub远端删除）、`git ls-remote --heads origin`、`gh pr list --state all --json number,state,isDraft,baseRefName,headRefName,mergeCommit`、`git merge-base --is-ancestor`、`git log --cherry`、`git branch -r --merged`。一个命令不能代替综合证据。尤其要防止“PR已合并到未合入main的祖先分支”被错误认定为可删。",
-        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:6:| Result | PASS — no Critical, High or Medium findings remain |",
-        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:41:- Data/architecture: PASS, no remaining Critical, High or Medium finding.",
-        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:42:- Product/Foundation: PASS, no remaining Critical/High finding or V2 scope creep.",
-        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:43:- Tests/evidence: PASS, no remaining blocker or evidence gap.",
-        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:72:The representative local fixture contains 5,000 Entries including 250 Reviews, 250 Tags, 100 Habits and 100 Goals/Flags. Three measured normalized scans completed in 0.588, 0.507 and 0.500 seconds on the simulator, below the retained 1.0-second threshold. The simple local scan remains sufficient; no FTS or separate Review index is justified.",
-        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:76:- UI mutation services still share the main `ModelContext`; operation-scoped contexts remain a non-blocking architectural follow-up until a low-risk boundary is justified.",
-        "Docs/MILESTONE_B_REVIEW_MANIFEST.md:77:- Real Photos Picker, camera permission/capture and resource behavior on a physical iPhone remain Owner-deferred.",
-        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:106:**A：习惯业务日。** Domain 明确保存后的民用日不随设备时区改变；正式打卡保存 HabitLogDayMetadata，Habit analytics/QuietWins 使用它。WeeklySummary 未读取该元数据，而是按 occurredAt 是否落入当前时区的周区间过滤，再用当前 startOfDay 去重。",
-        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:112:**源码证据**：[Habit 不变量](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Domain/Habit/HabitDomain.swift#L25-L26)、[正式写入业务日](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Habit/HabitFoundation.swift#L1164-L1188)、[Weekly 统计](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Review/WeeklyReviewFoundation.swift#L309-L404)、[Weekly 真实调用者](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Review/WeeklyReviewViews.swift#L15-L68)。",
         "Docs/USABILITY_S2_REVIEW_LOOP.md:26:- Backup package schema v3 serializes weekly reviews. Package schemas v1 and v2 remain valid when they contain no weekly review data; schema v1 continues to reject Weight and schema v2 continues to reject weekly reviews.",
         "Docs/USABILITY_S2_REVIEW_LOOP.md:52:Backup validation intentionally does not recompute a review's identifier from its stored period: package v3 does not retain the exporting device's time zone, so receiver-side recomputation could reject an otherwise valid local-week review. The existing non-empty identifier, unique identifier and ordered-period checks remain in place; timezone-aware package metadata would be a separate non-blocking follow-up.",
-        "Docs/USABILITY_S2_REVIEW_LOOP.md:54:The current work is the Build 6 / Draft PR #3 independent-review closure. Any later TestFlight upload and physical-device validation remain Owner-controlled. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate."
+        "Docs/USABILITY_S2_REVIEW_LOOP.md:54:The current work is the Build 6 / Draft PR #3 independent-review closure. Any later TestFlight upload and physical-device validation remain Owner-controlled. Build 3 TestFlight export remains a separate Owner-owned activity on `feature/v1-completion-push` and is not evidence for this S2 candidate.",
+        "Docs/TODO_IPHONE_PREMIGRATION_259.md:7:Owner 报告本地 Xcode Run Build16：stage=storeOpen、startupStep=preMigrationProtection、NSCocoaErrorDomain/259、schemaEvidence=notCollected。只读核对本机现存 Debug-iphoneos App：1.0(16)、内嵌 SHA=上述基线、Source=localGit、Dirty=true、Tag空；不能据此独立证明已安装二进制身份或构建时无未提交差异。仓库/PR起点 SHA 相同且工作区干净，仓库发行设置仍为1.0(7)，本轮不改号。",
+        "Docs/TODO_IPHONE_PREMIGRATION_259.md:16:| withFrozenStore | SQLite open/BEGIN/SELECT 失败主动抛 `SQLite` domain 数字错误，不是 Cocoa259；readerOpen/writerOpen/writerTransaction/readerTransaction。闭包抛错可透传。 |",
+        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:6:| Result | PASS — no Critical or High findings remain |",
+        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:13:- `5b00f49f36e9022f37e4876c03f125d56707e5bb` — S1 Entry Domain Foundation.",
+        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:34:Resolved directly related Medium findings include global capture from Timeline and Settings, unified retained/new photo ordering, incremental picker additions, archive recovery, stable Timeline tie-breaking, camera accessibility labels, main-queue camera completion, stale-thumbnail invalidation and integrated idempotent startup recovery coverage.",
+        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:40:- Product/UX/accessibility: no blocking findings at `afe809e`; the remaining picker-replacement Medium was fixed and the `90d7ff5` delta passed targeted re-review.",
+        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:92:The provisional 25 MiB original limit, 80MP pixel limit and 100 MiB free-space reserve are retained. The accepted boundaries completed without instability, previews are bounded by URL downsampling, and the reserve exceeds the 50 MiB staging-plus-final peak for one maximum-size original. These remain implementation configuration, not schema or Foundation contracts. Oldest-supported physical-device measurement remains Owner-deferred.",
+        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:96:- Entry mutation services currently roll back the shared main `ModelContext`; operation-scoped contexts should be introduced before unrelated pending edits across S5–S10 can coexist. This is not a low-risk Milestone A patch and did not block the current single-operation flows.",
+        "Docs/MILESTONE_A_REVIEW_MANIFEST.md:97:- Real Photos Picker, camera permission/capture and resource behavior on a physical iPhone remain Owner-deferred validation.",
+        "Docs/Evidence/UI20261020/conditional-string-audit.txt:1:PersonalGrowthOS/Domain/Habit/HabitDomain.swift:590:            id: \"\\(plan?.period.rawValue ?? \"none\")-\\(start.description)\", start: start, end: end,",
+        "Docs/Evidence/UI20261020/conditional-string-audit.txt:21:PersonalGrowthOS/AppShell.swift:1813:                ? \"The saved entry will remain. Only this Inbox copy will be removed.\"",
+        "Docs/Evidence/UI20261020/conditional-string-audit.txt:50:PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:144:    var processingVersion = \"\\(Bundle.main.infoDictionary?[\"CFBundleShortVersionString\"] as? String ?? \"unknown\")/\\(Bundle.main.infoDictionary?[\"CFBundleVersion\"] as? String ?? \"unknown\")/capture1\"",
+        "Docs/Evidence/UI20261020/reviewer-final-raw.txt:8:1. RepeatableHabitCounter无名模式只移除伸展Spacer；Today每日、Today/Growth周月、Habit详情所有消费者均已检查。概览只移除冗余remaining，周期actual/target与胶囊当日HabitTodayProgress保持独立。未修改打卡、计时、持久化或业务日期算法。ModuleEntryRow的其他时间投入、睡眠、重要日子、QuietWins消费者未受全局截断/固定行高影响。",
+        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:106:**A：习惯业务日。** Domain 明确保存后的民用日不随设备时区改变；正式打卡保存 HabitLogDayMetadata，Habit analytics/QuietWins 使用它。WeeklySummary 未读取该元数据，而是按 occurredAt 是否落入当前时区的周区间过滤，再用当前 startOfDay 去重。",
+        "Docs/USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md:112:**源码证据**：[Habit 不变量](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Domain/Habit/HabitDomain.swift#L25-L26)、[正式写入业务日](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Habit/HabitFoundation.swift#L1164-L1188)、[Weekly 统计](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Review/WeeklyReviewFoundation.swift#L309-L404)、[Weekly 真实调用者](https://github.com/yoCruzer/PersonalGrowthOS/blob/c296a3691d53ce7f5b5bff36fbf7de525d86510f/PersonalGrowthOS/Review/WeeklyReviewViews.swift#L15-L68)。",
+        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:30:2. 获取承载分支后按用户给定的文档 SHA 读取这两个文件，核验该提交含固定产品基线且相对基线仅有预期 Markdown 文档变更。不得读取 main 上的同名文件替代，不从过旧 main 开发。",
+        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:33:5. 执行期间不得自动追逐移动的“最新 HEAD”、merge/rebase 新的 PR #9 或切回 main。若上游确有新提交，只读判断是否影响新功能/数据安全；不影响则记录并继续固定基线，必要且有风险才请求基线升级。若原 base 分支被删除，保留成果并报告 PR 建立阻塞，不擅自改 base 到旧 main。",
+        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:192:已授权在 `codex/important-days-v1` 做合理 commit、普通 push、新建/更新一个 Draft PR（base 固定见开头）。不需要每次请求确认；可在里程碑 push，不能把 push/PR 当作执行完成。不得修改旧 PR #8/#9 的 head/base/state、目标分支或描述，不 merge main，不 force-push，不删分支、不打任何 tag。",
+        "Docs/Evidence/UI20261020/final-source-manifest.json:17:  \"PersonalGrowthOS/Domain/Entry/EntryDomain.swift\": \"10fedcf2f8909a13311b77bb1ed3e0b554ce799321eab7a57b57b5ff143d1e52\",",
+        "Docs/Evidence/UI20261020/final-source-manifest.json:18:  \"PersonalGrowthOS/Domain/Goal/GoalDomain.swift\": \"03b5c3429a580052cb1243db6f89c40b7f800807b8a47222560c79da1272984d\",",
+        "Docs/Evidence/UI20261020/final-source-manifest.json:19:  \"PersonalGrowthOS/Domain/Habit/HabitDomain.swift\": \"c562b7e966c01c1ecb9c1ec3c9fd653c2418d685487c201276929f59f2c20002\",",
+        "Docs/Evidence/UI20261020/final-source-manifest.json:67:  \"PersonalGrowthOSTests/EntryDomainTests.swift\": \"712eaab1202b3e870b3e84e728070d4fa09f2cc470c8af62cde0a0bcb8ce33f7\","
       ],
       "classification": "必须保留",
       "retainedReference": {
@@ -4459,6 +4701,7 @@
     {
       "branch": "plan/important-days-v1-goal",
       "remoteSHA": "3365561c5888701ce662ac6c8655ad1629ded6d0",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-10-14T15:18:52+08:00",
@@ -4467,6 +4710,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -4620,9 +4864,34 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
-        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:9:- Goal 承载分支：`plan/important-days-v1-goal`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:27:20. `plan/important-days-v1-goal`"
+        "Docs/IMPORTANT_DAYS_V1_GOAL_ZH.md:9:- Goal 承载分支：`plan/important-days-v1-goal`"
       ],
       "classification": "合并后候选",
       "retainedReference": {
@@ -4635,6 +4904,7 @@
     {
       "branch": "plan/important-days-v1-review-fix-goal",
       "remoteSHA": "d98306f219ed5929d38856216cd9af52fa5c7744",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-10-15T17:16:46+08:00",
@@ -4645,6 +4915,7 @@
       "exclusiveToOtherBranchTips": [
         "d98306f219ed5929d38856216cd9af52fa5c7744"
       ],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -4829,9 +5100,34 @@
       "prs": [],
       "openDependentPRs": [],
       "tagsContainingBranchTip": [],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
-        "Docs/IMPORTANT_DAYS_V1_REVIEW_FIX_GOAL_ZH.md:13:- 文档承载分支：`plan/important-days-v1-review-fix-goal`。任务文件：本文；完整审查报告：`Docs/Reviews/important-days-v1-pr10/PR10_INDEPENDENT_REVIEW_ZH.md`。固定任务提交以 Owner 引导 prompt 的完整 SHA 为准。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:28:21. `plan/important-days-v1-review-fix-goal`"
+        "Docs/IMPORTANT_DAYS_V1_REVIEW_FIX_GOAL_ZH.md:13:- 文档承载分支：`plan/important-days-v1-review-fix-goal`。任务文件：本文；完整审查报告：`Docs/Reviews/important-days-v1-pr10/PR10_INDEPENDENT_REVIEW_ZH.md`。固定任务提交以 Owner 引导 prompt 的完整 SHA 为准。"
       ],
       "classification": "疑似重复待确认",
       "retainedReference": {
@@ -4844,6 +5140,7 @@
     {
       "branch": "plan/s0-execution-foundation",
       "remoteSHA": "1eed293a4860bf08ea2105bed076c3db956db642",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-16T07:42:27+08:00",
@@ -4852,6 +5149,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -4917,9 +5215,8 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
-      "documentReferences": [
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:29:22. `plan/s0-execution-foundation`"
-      ],
+      "tagsReachableFromBranch": [],
+      "documentReferences": [],
       "classification": "合并后候选",
       "retainedReference": {
         "candidate": "50f726391f4f548647694368ad6378a901667189",
@@ -4931,6 +5228,7 @@
     {
       "branch": "plan/s0a-task-definition",
       "remoteSHA": "b14bde742a187a29cc8e511c375fb0d25e07941e",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-16T11:25:18+08:00",
@@ -4939,6 +5237,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -5004,9 +5303,8 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
-      "documentReferences": [
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:30:23. `plan/s0a-task-definition`"
-      ],
+      "tagsReachableFromBranch": [],
+      "documentReferences": [],
       "classification": "合并后候选",
       "retainedReference": {
         "candidate": "50f726391f4f548647694368ad6378a901667189",
@@ -5018,6 +5316,7 @@
     {
       "branch": "plan/sleep-routine-v1-goal",
       "remoteSHA": "1bed2f46b08c547d52e1ca2f28d74ac0f6696003",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-10-15T20:06:23+08:00",
@@ -5026,6 +5325,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -5198,9 +5498,34 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
-        "Docs/SLEEP_ROUTINE_V1_GOAL_ZH.md:9:- Goal 承载分支：`plan/sleep-routine-v1-goal`",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:31:24. `plan/sleep-routine-v1-goal`"
+        "Docs/SLEEP_ROUTINE_V1_GOAL_ZH.md:9:- Goal 承载分支：`plan/sleep-routine-v1-goal`"
       ],
       "classification": "合并后候选",
       "retainedReference": {
@@ -5213,6 +5538,7 @@
     {
       "branch": "plan/sleep-routine-v1-review-fix",
       "remoteSHA": "9e9e29564565a3b6396dc51bb179c29f71bdc726",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-10-15T22:34:06+08:00",
@@ -5223,6 +5549,7 @@
       "exclusiveToOtherBranchTips": [
         "9e9e29564565a3b6396dc51bb179c29f71bdc726"
       ],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -5428,9 +5755,34 @@
       "prs": [],
       "openDependentPRs": [],
       "tagsContainingBranchTip": [],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
-        "Docs/SLEEP_ROUTINE_V1_REVIEW_FIX_GOAL_ZH.md:10:- 本 Goal 的承载分支：`plan/sleep-routine-v1-review-fix`。精确输入快照 SHA 由用户短引导指定，不写自引用 hash。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:32:25. `plan/sleep-routine-v1-review-fix`"
+        "Docs/SLEEP_ROUTINE_V1_REVIEW_FIX_GOAL_ZH.md:10:- 本 Goal 的承载分支：`plan/sleep-routine-v1-review-fix`。精确输入快照 SHA 由用户短引导指定，不写自引用 hash。"
       ],
       "classification": "疑似重复待确认",
       "retainedReference": {
@@ -5443,6 +5795,7 @@
     {
       "branch": "plan/time-investment-v1-goal",
       "remoteSHA": "72ee8bdf954a5628806db867682a6b021e63545b",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-10-16T20:13:48+08:00",
@@ -5451,6 +5804,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -5644,9 +5998,34 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
-        "Docs/TIME_INVESTMENT_V1_GOAL_ZH.md:7:- Goal 承载分支：plan/time-investment-v1-goal；实际执行输入 GOAL_SHA 以 Owner 最新引导 prompt 提供的完整 SHA 为准，不追随浮动分支。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:33:26. `plan/time-investment-v1-goal`"
+        "Docs/TIME_INVESTMENT_V1_GOAL_ZH.md:7:- Goal 承载分支：plan/time-investment-v1-goal；实际执行输入 GOAL_SHA 以 Owner 最新引导 prompt 提供的完整 SHA 为准，不追随浮动分支。"
       ],
       "classification": "合并后候选",
       "retainedReference": {
@@ -5659,6 +6038,7 @@
     {
       "branch": "plan/usage-remediation-20261017-goal",
       "remoteSHA": "68373d4edf10cff8ca3e212b9ff10a28e6da9c73",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-10-18T14:08:09+08:00",
@@ -5667,6 +6047,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -5901,12 +6282,37 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
+      "tagsReachableFromBranch": [
+        {
+          "tag": "testflight-1.0-b7",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0-b7-r2",
+          "target": "95076bf5c2a86122fbd327903d80bccdfb8c768d"
+        },
+        {
+          "tag": "testflight-1.0.0-build9",
+          "target": "ae14f107f7eebb89a1549e00de3d941e6a996281"
+        },
+        {
+          "tag": "testflight-build8-owner-validation-1",
+          "target": "ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+        },
+        {
+          "tag": "testflight-external-capture-c5a3c0a",
+          "target": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+        },
+        {
+          "tag": "testflight-todo-v1-dc4bacc",
+          "target": "dc4bacc930f9490128896c4e6b66d67540a074ac"
+        }
+      ],
       "documentReferences": [
         "Docs/CURRENT_STATE.md:281:规划分支 plan/usage-remediation-20261017-goal；后续产品分支 codex/usage-remediation-20261017，新 Draft PR base 为 codex/time-investment-v1。A 统一展示/操作反馈，B 可信回顾/体重/BMI/时间历史，C 星期重复/闹钟，D 集中验证与独立 review。新授权在新分支替代旧“只等设备、不再开发”的停点，保留全部历史失败/设备门禁及 F1、R1–R3 数据与计时保护线。旧 PR、原 dirty 工作区、私人库及发行边界保持。",
         "Docs/USAGE_REMEDIATION_20261017_GOAL_ZH.md:8:- 规划分支：`plan/usage-remediation-20261017-goal`；固定执行文档提交 GOAL_SHA 以用户引导 prompt 的完整 SHA 为准。",
         "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:16:- `git fetch origin plan/usage-remediation-20261017-goal codex/time-investment-v1` 后远端规划为 GOAL_SHA，时间投入分支仍为 BASE；新 PR base 固定 `codex/time-investment-v1`。",
-        "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:129:远端只读 `git ls-remote --heads origin refs/heads/codex/usage-remediation-20261017 refs/heads/plan/usage-remediation-20261017-goal refs/heads/codex/time-investment-v1`：新整改远端分支不存在；规划仍GOAL_SHA，时间投入仍BASE。尚未push/建PR。",
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:34:27. `plan/usage-remediation-20261017-goal`"
+        "Docs/USAGE_REMEDIATION_20261017_EXECUTION.md:129:远端只读 `git ls-remote --heads origin refs/heads/codex/usage-remediation-20261017 refs/heads/plan/usage-remediation-20261017-goal refs/heads/codex/time-investment-v1`：新整改远端分支不存在；规划仍GOAL_SHA，时间投入仍BASE。尚未push/建PR。"
       ],
       "classification": "合并后候选",
       "retainedReference": {
@@ -5919,6 +6325,7 @@
     {
       "branch": "plan/v1-implementation-foundation",
       "remoteSHA": "c8d82d27e546f9fa3297d70c10efaef94fca990e",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-16T00:51:53+08:00",
@@ -5927,6 +6334,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -5992,9 +6400,8 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
-      "documentReferences": [
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:35:28. `plan/v1-implementation-foundation`"
-      ],
+      "tagsReachableFromBranch": [],
+      "documentReferences": [],
       "classification": "合并后候选",
       "retainedReference": {
         "candidate": "50f726391f4f548647694368ad6378a901667189",
@@ -6006,6 +6413,7 @@
     {
       "branch": "test/v1-device-validation-round1",
       "remoteSHA": "2ea01741f4fd36462ed3f2d36c06558958d47b1c",
+      "remoteProtected": false,
       "local": null,
       "lastCommit": {
         "date": "2026-07-28T00:53:58+08:00",
@@ -6014,6 +6422,7 @@
       "upstreamAheadBehind": null,
       "unpushedCommits": [],
       "exclusiveToOtherBranchTips": [],
+      "localExclusiveToOtherBranchTips": [],
       "relations": {
         "main": {
           "referenceSHA": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
@@ -6079,9 +6488,8 @@
           "target": "c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c"
         }
       ],
-      "documentReferences": [
-        "Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md:36:29. `test/v1-device-validation-round1`"
-      ],
+      "tagsReachableFromBranch": [],
+      "documentReferences": [],
       "classification": "合并后候选",
       "retainedReference": {
         "candidate": "50f726391f4f548647694368ad6378a901667189",
@@ -6320,6 +6728,8 @@
       "HEAD": "d72c016dd34c8114cf44744d0e061b95bd312091",
       "branch": "refs/heads/codex/todo-v1-personal-actions",
       "exists": true,
+      "statusReturnCode": 0,
+      "statusError": null,
       "status": [
         " M PersonalGrowthOS.xcodeproj/project.pbxproj",
         " M PersonalGrowthOS/Localizable.xcstrings",
@@ -6332,27 +6742,42 @@
       "branch": "refs/heads/codex/important-days-v1",
       "prunable": "gitdir file points to non-existent location",
       "exists": true,
-      "status": []
+      "statusReturnCode": 128,
+      "statusError": "fatal: not a git repository (or any of the parent directories): .git",
+      "status": null
     },
     {
       "worktree": "/private/tmp/PersonalGrowthOS-ui-20261020",
       "HEAD": "50f726391f4f548647694368ad6378a901667189",
       "branch": "refs/heads/codex/ui-readability-localization-20261020",
       "exists": true,
+      "statusReturnCode": 0,
+      "statusError": null,
       "status": []
     },
     {
       "worktree": "/private/tmp/PersonalGrowthOS-usage-remediation-20261017",
-      "HEAD": "5fa55602fda148bec552c33ebd49d63757a9a322",
+      "HEAD": "220090d7629673e4454f7e5c81e8adc42ced732e",
       "branch": "refs/heads/codex/usage-remediation-20261017",
       "exists": true,
-      "status": []
+      "statusReturnCode": 0,
+      "statusError": null,
+      "status": [
+        " M Docs/CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md",
+        " M Docs/Evidence/CI20261020/branch-inventory.json",
+        " M Docs/Evidence/CI20261020/inventory.py",
+        " M PersonalGrowthOSUITests/AppLaunchSmokeTests.swift",
+        "?? Docs/Evidence/CI20261020/pr-pages.json",
+        "?? Docs/Evidence/CI20261020/remote-branch-pages.json"
+      ]
     },
     {
       "worktree": "/Users/himini/.codex/worktrees/quiet-wins-on-d72/PersonalGrowthOS",
       "HEAD": "2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af",
       "branch": "refs/heads/codex/quiet-wins-on-d72",
       "exists": true,
+      "statusReturnCode": 0,
+      "statusError": null,
       "status": []
     },
     {
@@ -6360,6 +6785,8 @@
       "HEAD": "20d315a62179ad29a6cbcf76c33c11638412e54e",
       "detached": true,
       "exists": true,
+      "statusReturnCode": 0,
+      "statusError": null,
       "status": []
     },
     {
@@ -6367,6 +6794,8 @@
       "HEAD": "ad0720ad743f495ac6f2ee3e97b16577266351db",
       "branch": "refs/heads/codex/sleep-routine-v1",
       "exists": true,
+      "statusReturnCode": 0,
+      "statusError": null,
       "status": [
         " M PersonalGrowthOS/Localizable.xcstrings",
         "?? PersonalGrowthOS.xcodeproj/xcshareddata/xcodecloud/"
@@ -6377,6 +6806,8 @@
       "HEAD": "5a70f0110b151f8a45ac7c33d3f443823b1cff24",
       "branch": "refs/heads/codex/time-investment-v1",
       "exists": true,
+      "statusReturnCode": 0,
+      "statusError": null,
       "status": []
     }
   ],

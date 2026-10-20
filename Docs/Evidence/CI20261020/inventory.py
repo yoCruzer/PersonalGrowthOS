@@ -15,7 +15,10 @@ for block in git('worktree','list','--porcelain').split('\n\n'):
  for line in block.splitlines():
   k,_,v=line.partition(' ');d[k]=v or True
  path=d.get('worktree');d['exists']=pathlib.Path(path).is_dir()
- d['status']=cmd('git','-C',path,'status','--porcelain=v1').stdout.splitlines() if d['exists'] else None
+ status=cmd('git','-C',path,'status','--porcelain=v1') if d['exists'] else None
+ d['statusReturnCode']=status.returncode if status else None
+ d['statusError']=status.stderr.strip() if status and status.returncode else None
+ d['status']=status.stdout.splitlines() if status and status.returncode==0 else None
  worktrees.append(d)
 tags=git('for-each-ref','--format=%(refname:short)\t%(*objectname)\t%(objectname)','refs/tags').splitlines()
 rem={x['name']:x['commit']['sha'] for x in remote}
@@ -34,13 +37,16 @@ for name in names:
  for label,ref in [('main',main),('integrationCandidate',candidate),('actualPRBase',base)]:
   a,b=map(int,git('rev-list','--left-right','--count',sha+'...'+ref).split())
   rel[label]={'referenceSHA':ref,'branchOnlyCount':a,'referenceOnlyCount':b,'isAncestor':cmd('git','merge-base','--is-ancestor',sha,ref).returncode==0,'mergeBase':git('merge-base',sha,ref),'treeIdentical':cmd('git','diff','--quiet',sha,ref).returncode==0,'branchOnlyCommits':commits(sha,'--not',ref)}
- unique=commits(sha,'--not',*[v for k,v in alltips.items() if k!=name and v!=sha])
+ otherTips=[v for k,v in list(rem.items())+[(k,v['sha']) for k,v in locals.items()] if k!=name]
+ unique=commits(sha,'--not',*otherTips)
+ localUnique=commits(lp,'--not',*otherTips) if lp else []
  cherry=git('cherry',candidate,sha).splitlines() if not rel['integrationCandidate']['isAncestor'] else []
- docrefs=cmd('rg','-n','-F','--',name,'Docs','DEVELOPMENT_CONTRACT.md','ci_scripts').stdout.splitlines()
- tagrefs=[]
+ docrefs=cmd('rg','-n','-F','--glob','!**/CI20261020/**','--glob','!CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md','--',name,'Docs','DEVELOPMENT_CONTRACT.md','ci_scripts').stdout.splitlines()
+ tagrefs=[];reachableTags=[]
  for t in tags:
   tag,deref,obj=t.split('\t');target=deref or obj
   if cmd('git','merge-base','--is-ancestor',sha,target).returncode==0:tagrefs.append({'tag':tag,'target':target})
+  if cmd('git','merge-base','--is-ancestor',target,sha).returncode==0:reachableTags.append({'tag':tag,'target':target})
  changedPaths=git('diff','--name-only',rel['integrationCandidate']['mergeBase'],sha).splitlines()
  fileCoverage=[{'path':p,'identicalInCandidate':cmd('git','diff','--quiet',sha,candidate,'--',p).returncode==0} for p in changedPaths]
  occupied=[w for w in worktrees if w.get('branch')=='refs/heads/'+name]
@@ -55,7 +61,7 @@ for name in names:
  elif rel['integrationCandidate']['isAncestor']:cat='合并后候选'
  elif cherry and all(x.startswith('-') for x in cherry):cat='疑似重复待确认'
  else:cat='信息不足'
- row={'branch':name,'remoteSHA':rem.get(name),'local':local,'lastCommit':json.loads(git('show','-s','--format={"date":"%cI","subject":%s}',sha)) if False else {'date':git('show','-s','--format=%cI',sha),'subject':git('show','-s','--format=%s',sha)},'upstreamAheadBehind':aheadbehind,'unpushedCommits':unpushed,'exclusiveToOtherBranchTips':unique,'relations':rel,'cherryAgainstCandidate':cherry,'changedPathCoverageInCandidate':fileCoverage,'secondaryUnsynchronizedOrDirty':bool(dirty or unpushed),'worktrees':occupied,'prs':association,'openDependentPRs':dependents,'tagsContainingBranchTip':tagrefs,'documentReferences':docrefs,'classification':cat,'retainedReference':{'candidate':candidate,'remoteBranch':name if name in rem else None,'localBranch':name if local else None},'preconditions':'只读清点不授权删除；未来须Owner逐条批准固定SHA，重新核对ref/工作树/未推送工作/PR依赖，先保存未同步内容。'+('须先按依赖链合并所有后续开放PR至main并验证最终差异。' if dependents else '候选完整进入main且验证实际合并结果/补丁等价后方可考虑。')}
+ row={'branch':name,'remoteSHA':rem.get(name),'remoteProtected':next((r['protected'] for r in remote if r['name']==name),None),'local':local,'lastCommit':json.loads(git('show','-s','--format={"date":"%cI","subject":%s}',sha)) if False else {'date':git('show','-s','--format=%cI',sha),'subject':git('show','-s','--format=%s',sha)},'upstreamAheadBehind':aheadbehind,'unpushedCommits':unpushed,'exclusiveToOtherBranchTips':unique,'localExclusiveToOtherBranchTips':localUnique,'relations':rel,'cherryAgainstCandidate':cherry,'changedPathCoverageInCandidate':fileCoverage,'secondaryUnsynchronizedOrDirty':bool(dirty or unpushed),'worktrees':occupied,'prs':association,'openDependentPRs':dependents,'tagsContainingBranchTip':tagrefs,'tagsReachableFromBranch':reachableTags,'documentReferences':docrefs,'classification':cat,'retainedReference':{'candidate':candidate,'remoteBranch':name if name in rem else None,'localBranch':name if local else None},'preconditions':'只读清点不授权删除；未来须Owner逐条批准固定SHA，重新核对ref/工作树/未推送工作/PR依赖，先保存未同步内容。'+('须先按依赖链合并所有后续开放PR至main并验证最终差异。' if dependents else '候选完整进入main且验证实际合并结果/补丁等价后方可考虑。')}
  rows.append(row)
 report={'capturedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'scope':'read-only; fetch --no-prune; no deletion, retarget, tag, reset or cleanup','apiPages':{'branches':len(json.loads((root/'remote-branch-pages.json').read_text())),'prs':len(json.loads((root/'pr-pages.json').read_text()))},'remoteBranchCount':len(rem),'localBranchCount':len(locals),'unionBranchCount':len(names),'openPRCount':sum(p['state']=='open' for p in prdata),'openDraftCount':sum(p['state']=='open' and p['draft'] for p in prdata),'references':{'main':main,'candidate':candidate,'base':base,'localCheckout':git('rev-parse','HEAD')},'classificationCounts':dict(collections.Counter(r['classification'] for r in rows)),'branches':rows,'pullRequests':prdata,'worktrees':worktrees,'tags':tags}
 (root/'branch-inventory.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
