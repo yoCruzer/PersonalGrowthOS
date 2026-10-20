@@ -1746,7 +1746,7 @@ private struct ActivityHeatmap: View {
     }
 }
 
-private struct PeriodActivityGrid: View {
+struct PeriodActivityGrid: View {
     @Environment(\.locale) private var locale
     let evaluation: HabitPeriodEvaluation
     let activity: [HabitLocalDay: Int]

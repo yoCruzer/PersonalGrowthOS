@@ -3311,11 +3311,18 @@ extension AppLaunchSmokeTests {
         app.navigationBars.buttons.firstMatch.tap(); app.navigationBars.buttons.firstMatch.tap(); app.navigationBars.buttons.firstMatch.tap()
         app.buttons["growth-habits"].tap()
         let daily = app.buttons["habit-每天喝水几次"]; readabilityReveal(daily, app); daily.tap()
-        let today = app.collectionViews.staticTexts["今天"].firstMatch; readabilityReveal(today, app); XCTAssertTrue(today.exists)
+        let mondayHeader = app.collectionViews.staticTexts["一"].firstMatch
+        readabilityReveal(mondayHeader, app); XCTAssertTrue(mondayHeader.exists)
+        readabilityShot(app, "zh-habit-month-calendar-weekdays")
         let weekday = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "星期一")).firstMatch
         readabilityReveal(weekday, app); XCTAssertTrue(weekday.exists)
         XCTAssertFalse(app.staticTexts["Monday"].exists)
         readabilityShot(app, "zh-weekday-pattern-VoiceOver")
+        app.navigationBars.buttons.firstMatch.tap()
+        let weekly = app.buttons["habit-每周锻炼几次"]; readabilityReveal(weekly, app); weekly.tap()
+        let grid = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "当前周期活动")).firstMatch
+        readabilityReveal(grid, app); XCTAssertTrue(grid.exists)
+        readabilityShot(app, "zh-current-week-grid-weekdays")
     }
 }
 
@@ -3350,5 +3357,23 @@ extension AppLaunchSmokeTests {
         let weekly = app.buttons["today-weekly-review"]; readabilityReveal(weekly, app); weekly.tap()
         let begin = app.buttons["start-weekly-review"]; readabilityReveal(begin, app)
         XCTAssertTrue(begin.label.contains("开始每周回顾")); readabilityShot(app, "zh-empty-start-weekly-review-visible-icon")
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testUIReadabilitySleepIntroductionUsesFullHitTarget() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let dismiss = app.buttons["sleep-dismiss-introduction"]; readabilityReveal(dismiss, app)
+        XCTAssertGreaterThanOrEqual(dismiss.frame.width + 0.001, 44); XCTAssertGreaterThanOrEqual(dismiss.frame.height + 0.001, 44)
+        readabilityShot(app, "sleep-introduction-full-44pt-before-edge-tap")
+        dismiss.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.05)).tap()
+        XCTAssertTrue(dismiss.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Today"].exists)
+        app.buttons["today-sleep"].tap()
+        XCTAssertTrue(app.staticTexts["sleep-wake-day"].waitForExistence(timeout: 5))
+        readabilityShot(app, "sleep-introduction-dismissed-and-entry-still-opens")
     }
 }

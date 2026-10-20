@@ -134,7 +134,14 @@ struct SleepTodaySection: View {
                 if !introduced {
                     HStack(alignment: .top) {
                         Text("Remember when you began trying to sleep and when you got up. No goal or reminder is required.").font(.caption)
-                        Button { introduced = true } label: { Image(systemName: "xmark").frame(minWidth: 44, minHeight: 44) }.accessibilityLabel("Dismiss introduction")
+                        Button { introduced = true } label: {
+                            Image(systemName: "xmark")
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(.rect)
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("Dismiss introduction")
+                        .accessibilityIdentifier("sleep-dismiss-introduction")
                     }
                 }
             }

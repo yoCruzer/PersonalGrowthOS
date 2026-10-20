@@ -831,3 +831,23 @@ extension AppCompositionTests {
         XCTAssertEqual(business.locale?.identifier, "en_US_POSIX")
     }
 }
+
+extension AppCompositionTests {
+    func testUIReadabilityActualPeriodGridDailyAndWeekLabels() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene); window.frame = UIScreen.main.bounds; window.windowLevel = .normal + 1
+        window.overrideUserInterfaceStyle = .light
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let day = HabitLocalDay(year: 2026, month: 10, day: 20)
+        let daily = HabitPeriodEvaluation(id: "daily", start: day, end: day, period: .day, actual: 0, target: 3, progress: 0, outcome: .open, plan: nil)
+        let week = HabitPeriodEvaluation(id: "week", start: .init(year: 2026, month: 10, day: 19), end: .init(year: 2026, month: 10, day: 25), period: .week, actual: 2, target: 3, progress: 2.0/3, outcome: .open, plan: nil)
+        let chinese = Bundle.main.preferredLocalizations.first == "zh-Hans"
+        window.rootViewController = UIHostingController(rootView: List {
+            Section("Production daily grid (not routed from current daily dashboard)") { PeriodActivityGrid(evaluation: daily, activity: [:]) }
+            Section("Production current-week grid") { PeriodActivityGrid(evaluation: week, activity: [:]) }
+        }.environment(\.locale, Locale(identifier: chinese ? "zh_CN" : "en_US")).dynamicTypeSize(.large))
+        window.makeKeyAndVisible(); try await Task.sleep(for: .milliseconds(500)); window.layoutIfNeeded()
+        let shot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+        let attachment = XCTAttachment(image: shot); attachment.name = "Actual-period-grid-" + (chinese ? "Chinese" : "English"); attachment.lifetime = .keepAlways; add(attachment)
+    }
+}
