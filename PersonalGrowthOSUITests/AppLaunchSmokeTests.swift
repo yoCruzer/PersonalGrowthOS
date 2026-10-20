@@ -3215,13 +3215,21 @@ extension AppLaunchSmokeTests {
         let tree = XCTAttachment(string: app.debugDescription); tree.name = name + "-AX"; tree.lifetime = .keepAlways; add(tree)
     }
     private func readabilityReveal(_ element: XCUIElement, _ app: XCUIApplication) {
-        for _ in 0..<25 {
-            let top = app.navigationBars.firstMatch.frame.maxY + 4
-            let bottom = app.tabBars.firstMatch.exists ? app.tabBars.firstMatch.frame.minY - 8 : app.frame.height - 30
-            if element.exists, element.frame.minY >= top, element.frame.maxY <= bottom, element.isHittable { return }
-            if element.exists, element.frame.minY < top { app.swipeDown() } else { app.swipeUp() }
+        for _ in 0..<50 {
+            let top = app.navigationBars.firstMatch.frame.maxY + 8
+            let bottom = app.tabBars.firstMatch.exists ? app.tabBars.firstMatch.frame.minY - 12 : app.frame.height - 30
+            if element.exists {
+                let frame = element.frame
+                if frame.height <= bottom - top, frame.minY >= top, frame.maxY <= bottom, element.isHittable { return }
+                // A truly long accessibility label can exceed one viewport. Its title and
+                // separate controls are scrolled into view independently, without truncation.
+                if frame.height > bottom - top, frame.minY >= top, frame.minY < top + 80, element.isHittable { return }
+                let down = frame.minY < top
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: down ? 0.40 : 0.58)).press(forDuration: 0.02,
+                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: down ? 0.54 : 0.44)), withVelocity: .slow, thenHoldForDuration: 0.1)
+            } else { app.swipeUp() }
         }
-        XCTAssertTrue(element.isHittable, app.debugDescription)
+        XCTFail("Could not reveal target with bounded small scrolls: \(element)\n" + app.debugDescription)
     }
     private func readabilityApp(chinese: Bool = true, category: UIContentSizeCategory = .large, dark: Bool = false) -> XCUIApplication {
         continueAfterFailure = false
@@ -3229,8 +3237,18 @@ extension AppLaunchSmokeTests {
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSQuietWinsTest", "-PGOSUIReadabilityTest", "-PGOSInvestmentSegmentReview", "-AppleLanguages", chinese ? "(zh-Hans)" : "(en)", "-AppleLocale", chinese ? "zh_CN" : "en_US", "-AppleInterfaceStyle", dark ? "Dark" : "Light", "-UIPreferredContentSizeCategoryName", category.rawValue]
         app.launch(); return app
     }
-    func testUIReadabilityScreenshots() {
-        for (chinese, category, dark, name) in [(true, UIContentSizeCategory.large, false, "zh-default"), (true, .extraExtraExtraLarge, false, "zh-XXXL"), (true, .accessibilityExtraExtraExtraLarge, true, "zh-AX-dark"), (false, .large, false, "en-default")] {
+    func testUIReadabilityChineseDefaultAndLargerText() {
+        runReadabilityMatrix(chinese: true, category: .large, dark: false, name: "zh-default")
+        runReadabilityMatrix(chinese: true, category: .extraExtraExtraLarge, dark: false, name: "zh-XXXL")
+    }
+    func testUIReadabilityEnglishDefault() {
+        runReadabilityMatrix(chinese: false, category: .large, dark: false, name: "en-default")
+    }
+    // Runner must set `simctl ui <dedicated device> appearance dark` before this method.
+    func testUIReadabilityChineseDarkAccessibilityText() {
+        runReadabilityMatrix(chinese: true, category: .accessibilityExtraExtraExtraLarge, dark: true, name: "zh-AX-dark")
+    }
+    private func runReadabilityMatrix(chinese: Bool, category: UIContentSizeCategory, dark: Bool, name: String) {
             let app = readabilityApp(chinese: chinese, category: category, dark: dark)
             readabilityShot(app, name + "-Today-daily-zero")
             let dailyMinus = app.buttons["today-habit-每天喝水几次-decrease"]
@@ -3274,7 +3292,6 @@ extension AppLaunchSmokeTests {
                 app.navigationBars.buttons.firstMatch.tap()
             }
             app.terminate()
-        }
     }
     func testUIReadabilityChineseFallbackAndWeekdays() {
         let app = readabilityApp()
@@ -3285,7 +3302,7 @@ extension AppLaunchSmokeTests {
         XCTAssertTrue(add.isEnabled); XCTAssertTrue(add.label.contains("添加目标")); readabilityShot(app, "zh-add-goal-enabled-visible-plus")
         app.segmentedControls["new-goal-kind"].buttons["标记"].tap()
         XCTAssertTrue(add.label.contains("添加标记")); readabilityShot(app, "zh-add-flag-enabled-visible-plus")
-        let goal = app.buttons["本地化验证目标"]; readabilityReveal(goal, app); goal.tap()
+        let goal = app.buttons["goal-本地化验证目标"]; readabilityReveal(goal, app); goal.tap()
         XCTAssertTrue(app.buttons["记录"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Entry"].exists, "User title is preserved verbatim")
         readabilityShot(app, "zh-photo-only-default-entry-and-user-Entry")
@@ -3319,5 +3336,19 @@ extension AppLaunchSmokeTests {
         let fact = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-source-habitLog-")).firstMatch
         readabilityReveal(fact, app); fact.tap()
         XCTAssertTrue(app.staticTexts["数量"].waitForExistence(timeout: 5)); readabilityShot(app, "zh-quiet-wins-quantity")
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testUIReadabilityChineseHabitAndWeeklyEmptyStateIcons() {
+        let app = XCUIApplication(); continueAfterFailure = false
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
+        app.launch(); app.tabBars.buttons["成长"].tap(); app.buttons["growth-habits"].tap()
+        let add = app.buttons["add-habit"]; readabilityReveal(add, app)
+        XCTAssertTrue(add.label.contains("添加习惯")); readabilityShot(app, "zh-empty-add-habit-visible-plus")
+        app.tabBars.buttons["今天"].tap()
+        let weekly = app.buttons["today-weekly-review"]; readabilityReveal(weekly, app); weekly.tap()
+        let begin = app.buttons["start-weekly-review"]; readabilityReveal(begin, app)
+        XCTAssertTrue(begin.label.contains("开始每周回顾")); readabilityShot(app, "zh-empty-start-weekly-review-visible-icon")
     }
 }
