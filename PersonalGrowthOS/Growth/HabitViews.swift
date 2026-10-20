@@ -181,7 +181,7 @@ struct RepeatableHabitCounter: View {
                 Button(action: decrease) {
                     Image(systemName: "minus")
                         .font(.subheadline.weight(.semibold))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 44, height: 45)
                         .contentShape(.rect)
                 }
                 .buttonStyle(.borderless)
@@ -203,7 +203,7 @@ struct RepeatableHabitCounter: View {
                 Button(action: increase) {
                     Image(systemName: "plus")
                         .font(.subheadline.weight(.semibold))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 44, height: 45)
                         .contentShape(.rect)
                 }
                 .buttonStyle(.borderless)
