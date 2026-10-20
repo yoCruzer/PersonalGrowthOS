@@ -3254,6 +3254,26 @@ extension AppLaunchSmokeTests {
     func testCounterContrastChineseDarkDefault() {
         runReadabilityMatrix(chinese: true, category: .large, dark: true, name: "contrast-zh-default-dark")
     }
+    // A short dedicated capture keeps raw framebuffer evidence of both pressed icons.
+    // The runner controls the real simulator appearance before invoking this method.
+    func testCounterContrastPressStates() {
+        for category in [UIContentSizeCategory.large, .accessibilityExtraExtraExtraLarge] {
+            let app = readabilityApp(category: category)
+            let plus = app.buttons["today-habit-每天喝水几次-increase"]
+            let minus = app.buttons["today-habit-每天喝水几次-decrease"]
+            readabilityReveal(plus, app)
+            let name = category == .large ? "contrast-press-default" : "contrast-press-maxAX"
+            readabilityShot(app, name + "-zero")
+            XCTAssertFalse(minus.isEnabled)
+            plus.press(forDuration: 1.0)
+            XCTAssertTrue(minus.isEnabled)
+            readabilityShot(app, name + "-one")
+            minus.press(forDuration: 1.0)
+            XCTAssertFalse(minus.isEnabled)
+            XCTAssertEqual(app.staticTexts["today-habit-每天喝水几次-count"].value as? String, "0")
+            app.terminate()
+        }
+    }
     func testQuickCaptureSettingsUsesRealSystemMaterial() {
         let app = readabilityApp()
         app.buttons["settings-button"].tap()
