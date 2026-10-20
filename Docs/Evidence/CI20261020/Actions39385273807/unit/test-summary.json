@@ -1,0 +1,72 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "E0FBD607-E976-444D-9EB3-4FDED4D537B6",
+        "deviceName" : "PGOS-CI-unit",
+        "modelName" : "iPhone 13 mini",
+        "osBuildNumber" : "24A434",
+        "osVersion" : "27.0",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 2,
+      "passedTests" : 579,
+      "skippedTests" : 1,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "PersonalGrowthOS · Built with macOS 27.0.1",
+  "expectedFailures" : 0,
+  "failedTests" : 2,
+  "finishTime" : 1792481267.679,
+  "passedTests" : 579,
+  "result" : "Failed",
+  "runtimeWarnings" : [
+
+  ],
+  "skippedTests" : 1,
+  "startTime" : 1792480776.546,
+  "statistics" : [
+    {
+      "subtitle" : "3 test runs",
+      "title" : "3 tests collected performance metrics"
+    }
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "XCTAssertEqual failed: (\"Optional(2026-02-09 20:00:00 +0000)\") is not equal to (\"Optional(2026-02-09 12:00:00 +0000)\")",
+      "targetName" : "PersonalGrowthOSTests",
+      "testIdentifier" : 520,
+      "testIdentifierString" : "TodoReminderTests/testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation()",
+      "testIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSTests/TodoReminderTests/testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation",
+      "testName" : "testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation()"
+    },
+    {
+      "failureText" : "XCTAssertEqual failed: (\"legacyRuleNeedsCorrection\") is not equal to (\"stopped\") - Returning to the original device zone must not revive the quarantined generation",
+      "targetName" : "PersonalGrowthOSTests",
+      "testIdentifier" : 189,
+      "testIdentifierString" : "ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()",
+      "testIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor",
+      "testName" : "testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()"
+    }
+  ],
+  "title" : "Test - PersonalGrowthOS",
+  "topInsights" : [
+    {
+      "category" : "Common Failures",
+      "impact" : "50% of failures",
+      "text" : "4 runs of 1 test failed with XCTAssertEqual failed: (\"legacyRuleNeedsCorrection\") is not equal to (\"stopped\") - Returning to the original device zone must not revive the quarantined generation"
+    },
+    {
+      "category" : "Longest Test Runs",
+      "impact" : "49% of duration",
+      "text" : "5 longest test runs with outlier durations exceeding 5.69s (three standard deviations)"
+    }
+  ],
+  "totalTestCount" : 582
+}

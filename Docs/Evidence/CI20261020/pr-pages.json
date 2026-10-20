@@ -7,10 +7,10 @@
       "merged_at": null,
       "closed_at": null,
       "html_url": "https://github.com/yoCruzer/PersonalGrowthOS/pull/13",
-      "merge_commit_sha": "563382af6bf46f62d973c277bbab9e72feea7474",
+      "merge_commit_sha": "0e5169a79cc530f063fa730666fd849538340281",
       "head": {
         "ref": "codex/usage-remediation-20261017",
-        "sha": "50f726391f4f548647694368ad6378a901667189"
+        "sha": "3ee3cb6a846a296baca7f91b705a67c10dcbe51f"
       },
       "base": {
         "ref": "codex/time-investment-v1",

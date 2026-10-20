@@ -1,3 +1,17 @@
+# 2026-10-20 计数器、真实Actions与只读清点 — READY_FOR_OWNER_DEVICE_GATE
+
+本授权批次已完成。产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`；最终产品/测试候选 **`3ee3cb6a846a296baca7f91b705a67c10dcbe51f`**。Owner直接批准后均普通推送原Draft PR #13，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`不变；本交付随后只有Docs，交付完整SHA由PR head、最终回复与本机final-delivery-proof.json核对。
+
+真实[run39387986862](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862)必选检查全部PASS：App/Share/Widget unsigned Release；完整托管iOS Unit **583=582PASS/0FAIL/1SKIP**；关键UI smoke **5/5PASS**。唯一方法SKIP仍是需隔离32MB HFS+卷的原低空间方法；optional extended job在PR事件按设计SKIPPED。实际checkout为PR merge **`0e5169a79cc530f063fa730666fd849538340281`**，与head tree相同，不能称为直接checkout head。标准GitHub-hosted ARM64 xcode-27 / image 20261012.0260.1，macOS27.0.1(26A434)、Xcode27.0(27A266a)、iOS SDK/runtime27.0(24A434)、动态新建iPhone13mini。
+
+首轮[run39385273807](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39385273807)仍为FAIL：Release PASS、smoke5/5PASS、Unit579PASS/2FAIL/1SKIP。两测试夹具写死Shanghai，已改为真实current前置并新增未回原区继续隔离反例，未改生产逻辑/删断言/增加skip；本机相关37/37PASS。未成功改变Swift current的NSTimeZone.default探针不是业务红例，记录保留。独立reviewer核对固定候选、原图/测量、真实CI与30分支分类，无必须补项，见[证据与原文](Evidence/CI20261020/README.md)。
+
+P2实际生产PNG20样本最低 **7.273152:1**（旧2.305181:1），浅/深/按下、普通/最大辅助字号与Today/Growth/详情0→1→0/周期累计/导航已验证；44×45pt与禁用状态保持。只读清点29远端/8本地/30并集、13开放Draft：11叠加基底、3必须保留、13合并后候选、3疑似重复，其余主分类0；Todo脏改动与失效worktree UNKNOWN另列保留。没有删除、改base、merge、force、tag或发布。
+
+停在Owner设备门。真机D1–D4、真实VoiceOver/相机权限、AlarmKit正向、Share/Safari环境失败、物理低空间SKIP/NOT_RUN与O-01非阻断UNCONFIRMED保持；不以CI替代设备结论。[完整执行](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md) / [分支清单](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)。以下均为历史阶段。
+
+---
+
 # 2026-10-20 计数器、Actions与只读清点 — WAITING_DIRECT_PUSH_AUTHORIZATION
 
 最后产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`，最后产品/测试 `d84bd5f1529214b57e503cd89904c011302a0154`。计数器本地共享消费者矩阵浅/深各2/2、窄按下各1/1、相邻Habit+Composition Unit99/99与Debug/unsigned Release PASS；20个实际PNG样本最低7.273:1，原2.305缺陷已补修；设置加号为宿主取图差异。初轮2PASS/2FAIL及两轮sourceUnchanged=false、1秒采集抓帧不足的边界原样保留，详见 [本轮执行](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md)。

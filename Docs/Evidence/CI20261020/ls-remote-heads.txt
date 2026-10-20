@@ -4,7 +4,7 @@ c5a3c0ac859efc3ffa4e5d9f77909ec43565c871	refs/heads/codex/external-capture-v1
 ad0720ad743f495ac6f2ee3e97b16577266351db	refs/heads/codex/sleep-routine-v1
 5a70f0110b151f8a45ac7c33d3f443823b1cff24	refs/heads/codex/time-investment-v1
 d72c016dd34c8114cf44744d0e061b95bd312091	refs/heads/codex/todo-v1-personal-actions
-50f726391f4f548647694368ad6378a901667189	refs/heads/codex/usage-remediation-20261017
+3ee3cb6a846a296baca7f91b705a67c10dcbe51f	refs/heads/codex/usage-remediation-20261017
 ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd	refs/heads/docs/foundation-consistency-v0.2
 a750d00ac914cdab16fc9418a39771c9bfb27676	refs/heads/docs/v1-autonomous-governance
 2bf1be85c01d8d96af035a12684bd2d98c7f183e	refs/heads/feat/s0a-project-bootstrap

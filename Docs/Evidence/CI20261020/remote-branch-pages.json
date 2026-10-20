@@ -1,1 +1,236 @@
-[[{"name":"codex/external-capture-v1","commit":{"sha":"c5a3c0ac859efc3ffa4e5d9f77909ec43565c871","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/codex/external-capture-v1/protection"},{"name":"codex/important-days-v1","commit":{"sha":"5614246f98ae63732ccd4fd8a6b66f4a425336f2","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/5614246f98ae63732ccd4fd8a6b66f4a425336f2"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/codex/important-days-v1/protection"},{"name":"codex/quiet-wins-on-d72","commit":{"sha":"20d315a62179ad29a6cbcf76c33c11638412e54e","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/20d315a62179ad29a6cbcf76c33c11638412e54e"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/codex/quiet-wins-on-d72/protection"},{"name":"codex/sleep-routine-v1","commit":{"sha":"ad0720ad743f495ac6f2ee3e97b16577266351db","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ad0720ad743f495ac6f2ee3e97b16577266351db"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/codex/sleep-routine-v1/protection"},{"name":"codex/time-investment-v1","commit":{"sha":"5a70f0110b151f8a45ac7c33d3f443823b1cff24","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/5a70f0110b151f8a45ac7c33d3f443823b1cff24"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/codex/time-investment-v1/protection"},{"name":"codex/todo-v1-personal-actions","commit":{"sha":"d72c016dd34c8114cf44744d0e061b95bd312091","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/d72c016dd34c8114cf44744d0e061b95bd312091"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/codex/todo-v1-personal-actions/protection"},{"name":"codex/usage-remediation-20261017","commit":{"sha":"50f726391f4f548647694368ad6378a901667189","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/50f726391f4f548647694368ad6378a901667189"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/codex/usage-remediation-20261017/protection"},{"name":"docs/foundation-consistency-v0.2","commit":{"sha":"ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/docs/foundation-consistency-v0.2/protection"},{"name":"docs/v1-autonomous-governance","commit":{"sha":"a750d00ac914cdab16fc9418a39771c9bfb27676","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/a750d00ac914cdab16fc9418a39771c9bfb27676"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/docs/v1-autonomous-governance/protection"},{"name":"feat/s0a-project-bootstrap","commit":{"sha":"2bf1be85c01d8d96af035a12684bd2d98c7f183e","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/2bf1be85c01d8d96af035a12684bd2d98c7f183e"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/feat/s0a-project-bootstrap/protection"},{"name":"feat/v1-autonomous-build","commit":{"sha":"2e31e8a753005f8bb40bce348820529775aa2e9d","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/2e31e8a753005f8bb40bce348820529775aa2e9d"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/feat/v1-autonomous-build/protection"},{"name":"feature/build8-habit-analytics-dashboard","commit":{"sha":"ae8f7cb6577f2d1bc479471bcd98d6f437670210","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ae8f7cb6577f2d1bc479471bcd98d6f437670210"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/feature/build8-habit-analytics-dashboard/protection"},{"name":"feature/build9-today-entry-followups","commit":{"sha":"ae14f107f7eebb89a1549e00de3d941e6a996281","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ae14f107f7eebb89a1549e00de3d941e6a996281"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/feature/build9-today-entry-followups/protection"},{"name":"feature/usability-s2-review-loop","commit":{"sha":"1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/feature/usability-s2-review-loop/protection"},{"name":"feature/v1-completion-push","commit":{"sha":"19475fe0830d9a2c8ceff4f27adc63ed4ecab7a7","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/19475fe0830d9a2c8ceff4f27adc63ed4ecab7a7"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/feature/v1-completion-push/protection"},{"name":"fix/build6-owner-feedback-round1","commit":{"sha":"c15513f2389d01f28c12ba351933580b37afe4b7","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/c15513f2389d01f28c12ba351933580b37afe4b7"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/fix/build6-owner-feedback-round1/protection"},{"name":"fix/build7-owner-feedback-round2","commit":{"sha":"95076bf5c2a86122fbd327903d80bccdfb8c768d","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/95076bf5c2a86122fbd327903d80bccdfb8c768d"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/fix/build7-owner-feedback-round2/protection"},{"name":"fix/v1-device-smoke-round1","commit":{"sha":"dd09975d3a3736b24f8646fa4f197cc883ab1796","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/dd09975d3a3736b24f8646fa4f197cc883ab1796"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/fix/v1-device-smoke-round1/protection"},{"name":"main","commit":{"sha":"dd09975d3a3736b24f8646fa4f197cc883ab1796","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/dd09975d3a3736b24f8646fa4f197cc883ab1796"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/main/protection"},{"name":"plan/important-days-v1-goal","commit":{"sha":"3365561c5888701ce662ac6c8655ad1629ded6d0","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/3365561c5888701ce662ac6c8655ad1629ded6d0"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/important-days-v1-goal/protection"},{"name":"plan/important-days-v1-review-fix-goal","commit":{"sha":"d98306f219ed5929d38856216cd9af52fa5c7744","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/d98306f219ed5929d38856216cd9af52fa5c7744"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/important-days-v1-review-fix-goal/protection"},{"name":"plan/s0-execution-foundation","commit":{"sha":"1eed293a4860bf08ea2105bed076c3db956db642","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/1eed293a4860bf08ea2105bed076c3db956db642"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/s0-execution-foundation/protection"},{"name":"plan/s0a-task-definition","commit":{"sha":"b14bde742a187a29cc8e511c375fb0d25e07941e","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/b14bde742a187a29cc8e511c375fb0d25e07941e"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/s0a-task-definition/protection"},{"name":"plan/sleep-routine-v1-goal","commit":{"sha":"1bed2f46b08c547d52e1ca2f28d74ac0f6696003","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/1bed2f46b08c547d52e1ca2f28d74ac0f6696003"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/sleep-routine-v1-goal/protection"},{"name":"plan/sleep-routine-v1-review-fix","commit":{"sha":"9e9e29564565a3b6396dc51bb179c29f71bdc726","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/9e9e29564565a3b6396dc51bb179c29f71bdc726"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/sleep-routine-v1-review-fix/protection"},{"name":"plan/time-investment-v1-goal","commit":{"sha":"72ee8bdf954a5628806db867682a6b021e63545b","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/72ee8bdf954a5628806db867682a6b021e63545b"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/time-investment-v1-goal/protection"},{"name":"plan/usage-remediation-20261017-goal","commit":{"sha":"68373d4edf10cff8ca3e212b9ff10a28e6da9c73","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/68373d4edf10cff8ca3e212b9ff10a28e6da9c73"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/usage-remediation-20261017-goal/protection"},{"name":"plan/v1-implementation-foundation","commit":{"sha":"c8d82d27e546f9fa3297d70c10efaef94fca990e","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/c8d82d27e546f9fa3297d70c10efaef94fca990e"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/plan/v1-implementation-foundation/protection"},{"name":"test/v1-device-validation-round1","commit":{"sha":"2ea01741f4fd36462ed3f2d36c06558958d47b1c","url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/2ea01741f4fd36462ed3f2d36c06558958d47b1c"},"protected":false,"protection":{"enabled":false,"required_status_checks":{"enforcement_level":"off","contexts":[],"checks":[]}},"protection_url":"https://api.github.com/repos/yoCruzer/PersonalGrowthOS/branches/test/v1-device-validation-round1/protection"}]]
+[
+  [
+    {
+      "name": "codex/external-capture-v1",
+      "commit": {
+        "sha": "c5a3c0ac859efc3ffa4e5d9f77909ec43565c871",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/c5a3c0ac859efc3ffa4e5d9f77909ec43565c871"
+      },
+      "protected": false
+    },
+    {
+      "name": "codex/important-days-v1",
+      "commit": {
+        "sha": "5614246f98ae63732ccd4fd8a6b66f4a425336f2",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/5614246f98ae63732ccd4fd8a6b66f4a425336f2"
+      },
+      "protected": false
+    },
+    {
+      "name": "codex/quiet-wins-on-d72",
+      "commit": {
+        "sha": "20d315a62179ad29a6cbcf76c33c11638412e54e",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/20d315a62179ad29a6cbcf76c33c11638412e54e"
+      },
+      "protected": false
+    },
+    {
+      "name": "codex/sleep-routine-v1",
+      "commit": {
+        "sha": "ad0720ad743f495ac6f2ee3e97b16577266351db",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ad0720ad743f495ac6f2ee3e97b16577266351db"
+      },
+      "protected": false
+    },
+    {
+      "name": "codex/time-investment-v1",
+      "commit": {
+        "sha": "5a70f0110b151f8a45ac7c33d3f443823b1cff24",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/5a70f0110b151f8a45ac7c33d3f443823b1cff24"
+      },
+      "protected": false
+    },
+    {
+      "name": "codex/todo-v1-personal-actions",
+      "commit": {
+        "sha": "d72c016dd34c8114cf44744d0e061b95bd312091",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/d72c016dd34c8114cf44744d0e061b95bd312091"
+      },
+      "protected": false
+    },
+    {
+      "name": "codex/usage-remediation-20261017",
+      "commit": {
+        "sha": "3ee3cb6a846a296baca7f91b705a67c10dcbe51f",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/3ee3cb6a846a296baca7f91b705a67c10dcbe51f"
+      },
+      "protected": false
+    },
+    {
+      "name": "docs/foundation-consistency-v0.2",
+      "commit": {
+        "sha": "ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ce18ed36ce4a4866e36ab15d4b55eab4a0d410dd"
+      },
+      "protected": false
+    },
+    {
+      "name": "docs/v1-autonomous-governance",
+      "commit": {
+        "sha": "a750d00ac914cdab16fc9418a39771c9bfb27676",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/a750d00ac914cdab16fc9418a39771c9bfb27676"
+      },
+      "protected": false
+    },
+    {
+      "name": "feat/s0a-project-bootstrap",
+      "commit": {
+        "sha": "2bf1be85c01d8d96af035a12684bd2d98c7f183e",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/2bf1be85c01d8d96af035a12684bd2d98c7f183e"
+      },
+      "protected": false
+    },
+    {
+      "name": "feat/v1-autonomous-build",
+      "commit": {
+        "sha": "2e31e8a753005f8bb40bce348820529775aa2e9d",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/2e31e8a753005f8bb40bce348820529775aa2e9d"
+      },
+      "protected": false
+    },
+    {
+      "name": "feature/build8-habit-analytics-dashboard",
+      "commit": {
+        "sha": "ae8f7cb6577f2d1bc479471bcd98d6f437670210",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ae8f7cb6577f2d1bc479471bcd98d6f437670210"
+      },
+      "protected": false
+    },
+    {
+      "name": "feature/build9-today-entry-followups",
+      "commit": {
+        "sha": "ae14f107f7eebb89a1549e00de3d941e6a996281",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/ae14f107f7eebb89a1549e00de3d941e6a996281"
+      },
+      "protected": false
+    },
+    {
+      "name": "feature/usability-s2-review-loop",
+      "commit": {
+        "sha": "1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/1a1f6bb6d4b95470a7add37d15c5cfdbc5edd0ed"
+      },
+      "protected": false
+    },
+    {
+      "name": "feature/v1-completion-push",
+      "commit": {
+        "sha": "19475fe0830d9a2c8ceff4f27adc63ed4ecab7a7",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/19475fe0830d9a2c8ceff4f27adc63ed4ecab7a7"
+      },
+      "protected": false
+    },
+    {
+      "name": "fix/build6-owner-feedback-round1",
+      "commit": {
+        "sha": "c15513f2389d01f28c12ba351933580b37afe4b7",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/c15513f2389d01f28c12ba351933580b37afe4b7"
+      },
+      "protected": false
+    },
+    {
+      "name": "fix/build7-owner-feedback-round2",
+      "commit": {
+        "sha": "95076bf5c2a86122fbd327903d80bccdfb8c768d",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/95076bf5c2a86122fbd327903d80bccdfb8c768d"
+      },
+      "protected": false
+    },
+    {
+      "name": "fix/v1-device-smoke-round1",
+      "commit": {
+        "sha": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/dd09975d3a3736b24f8646fa4f197cc883ab1796"
+      },
+      "protected": false
+    },
+    {
+      "name": "main",
+      "commit": {
+        "sha": "dd09975d3a3736b24f8646fa4f197cc883ab1796",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/dd09975d3a3736b24f8646fa4f197cc883ab1796"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/important-days-v1-goal",
+      "commit": {
+        "sha": "3365561c5888701ce662ac6c8655ad1629ded6d0",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/3365561c5888701ce662ac6c8655ad1629ded6d0"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/important-days-v1-review-fix-goal",
+      "commit": {
+        "sha": "d98306f219ed5929d38856216cd9af52fa5c7744",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/d98306f219ed5929d38856216cd9af52fa5c7744"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/s0-execution-foundation",
+      "commit": {
+        "sha": "1eed293a4860bf08ea2105bed076c3db956db642",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/1eed293a4860bf08ea2105bed076c3db956db642"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/s0a-task-definition",
+      "commit": {
+        "sha": "b14bde742a187a29cc8e511c375fb0d25e07941e",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/b14bde742a187a29cc8e511c375fb0d25e07941e"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/sleep-routine-v1-goal",
+      "commit": {
+        "sha": "1bed2f46b08c547d52e1ca2f28d74ac0f6696003",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/1bed2f46b08c547d52e1ca2f28d74ac0f6696003"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/sleep-routine-v1-review-fix",
+      "commit": {
+        "sha": "9e9e29564565a3b6396dc51bb179c29f71bdc726",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/9e9e29564565a3b6396dc51bb179c29f71bdc726"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/time-investment-v1-goal",
+      "commit": {
+        "sha": "72ee8bdf954a5628806db867682a6b021e63545b",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/72ee8bdf954a5628806db867682a6b021e63545b"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/usage-remediation-20261017-goal",
+      "commit": {
+        "sha": "68373d4edf10cff8ca3e212b9ff10a28e6da9c73",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/68373d4edf10cff8ca3e212b9ff10a28e6da9c73"
+      },
+      "protected": false
+    },
+    {
+      "name": "plan/v1-implementation-foundation",
+      "commit": {
+        "sha": "c8d82d27e546f9fa3297d70c10efaef94fca990e",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/c8d82d27e546f9fa3297d70c10efaef94fca990e"
+      },
+      "protected": false
+    },
+    {
+      "name": "test/v1-device-validation-round1",
+      "commit": {
+        "sha": "2ea01741f4fd36462ed3f2d36c06558958d47b1c",
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/commits/2ea01741f4fd36462ed3f2d36c06558958d47b1c"
+      },
+      "protected": false
+    }
+  ]
+]

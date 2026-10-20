@@ -199,3 +199,5 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 - [实际执行与验证边界](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md)
 - [计数器原图与像素复算](Evidence/CounterContrast20261020/contrast-results.json)
 - [完整只读分支报告](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)
+
+- [2026-10-20 GitHub Actions真实run、测试夹具补修与独立证据](Evidence/CI20261020/README.md)

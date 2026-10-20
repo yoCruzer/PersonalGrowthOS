@@ -1,3 +1,45 @@
+# 2026-10-20 计数器、真实Actions与只读清点 — READY_FOR_OWNER_DEVICE_GATE
+
+本授权批次已完成。产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`；最终产品/测试候选 **`3ee3cb6a846a296baca7f91b705a67c10dcbe51f`**。Owner直接批准后均普通推送原Draft PR #13，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`不变；本交付随后只有Docs，交付完整SHA由PR head、最终回复与本机final-delivery-proof.json核对。
+
+真实[run39387986862](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862)必选检查全部PASS：App/Share/Widget unsigned Release；完整托管iOS Unit **583=582PASS/0FAIL/1SKIP**；关键UI smoke **5/5PASS**。唯一方法SKIP仍是需隔离32MB HFS+卷的原低空间方法；optional extended job在PR事件按设计SKIPPED。实际checkout为PR merge **`0e5169a79cc530f063fa730666fd849538340281`**，与head tree相同，不能称为直接checkout head。标准GitHub-hosted ARM64 xcode-27 / image 20261012.0260.1，macOS27.0.1(26A434)、Xcode27.0(27A266a)、iOS SDK/runtime27.0(24A434)、动态新建iPhone13mini。
+
+首轮[run39385273807](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39385273807)仍为FAIL：Release PASS、smoke5/5PASS、Unit579PASS/2FAIL/1SKIP。两测试夹具写死Shanghai，已改为真实current前置并新增未回原区继续隔离反例，未改生产逻辑/删断言/增加skip；本机相关37/37PASS。未成功改变Swift current的NSTimeZone.default探针不是业务红例，记录保留。独立reviewer核对固定候选、原图/测量、真实CI与30分支分类，无必须补项，见[证据与原文](Evidence/CI20261020/README.md)。
+
+P2实际生产PNG20样本最低 **7.273152:1**（旧2.305181:1），浅/深/按下、普通/最大辅助字号与Today/Growth/详情0→1→0/周期累计/导航已验证；44×45pt与禁用状态保持。只读清点29远端/8本地/30并集、13开放Draft：11叠加基底、3必须保留、13合并后候选、3疑似重复，其余主分类0；Todo脏改动与失效worktree UNKNOWN另列保留。没有删除、改base、merge、force、tag或发布。
+
+停在Owner设备门。真机D1–D4、真实VoiceOver/相机权限、AlarmKit正向、Share/Safari环境失败、物理低空间SKIP/NOT_RUN与O-01非阻断UNCONFIRMED保持；不以CI替代设备结论。[完整执行](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md) / [分支清单](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)。以下均为历史阶段。
+
+---
+
+## 本轮真实远端终态与补修闭环
+
+| run / PR head / 实际checkout | Release | 完整Unit方法数 | UI smoke | 结论 |
+|---|---|---|---|---|
+| [39385273807](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39385273807) / cbbb2c68d39ac1218c2936f58ffef72f72dbe942 / d74f75b8fa25f4be7866ef540e5b8494839cff22 | PASS 4m11s | 582=579PASS/2FAIL/1SKIP | 5/5PASS 18m20s | FAIL，原始失败保留 |
+| [39387986862](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862) / 3ee3cb6a846a296baca7f91b705a67c10dcbe51f / 0e5169a79cc530f063fa730666fd849538340281 | PASS | 583=582PASS/0FAIL/1SKIP | 5/5PASS | PASS |
+
+| 新run job | 终态 | UTC开始 → 结束 |
+|---|---|---|
+| [iOS release](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512386907) | success | 2026-10-20T07:39:56Z → 2026-10-20T07:42:41Z |
+| [iOS unit](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512387176) | success | 2026-10-20T07:39:54Z → 2026-10-20T07:53:50Z |
+| [iOS smoke](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512387285) | success | 2026-10-20T07:39:55Z → 2026-10-20T07:59:53Z |
+| [Optional extended UI](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512388947) | skipped | 2026-10-20T07:39:48Z → 2026-10-20T07:39:48Z |
+
+三个独立runner：release `GitHub Actions 1000000178`、unit `GitHub Actions 1000000179`、smoke `GitHub Actions 1000000180`，labels xcode-27，标准GitHub Actions组，不是large/self-hosted。实际环境及命令逐lane保存，[首轮原始产物](Evidence/CI20261020/Actions39385273807/actions-run-final.json)、[通过轮原始产物](Evidence/CI20261020/Actions39387986862/actions-run-final.json)、[SHA256](Evidence/CI20261020/actions-evidence-sha256.json)。两轮均为正常PR synchronize，非手工刷旧SHA；没有重跑首轮已成功job。测试修正改变Unit target，现有PR工作流自然触发基础三lane；未引入skip-CI或临时条件伪造通过。新轮未失败，不继续重复全量；之后纯Docs不改变已验证产品/测试/CI blob，若正常推送触发新run则追踪其真实终态并在PR/最终回复记录，不为记录run反复产生Docs提交。
+
+首轮两个失败方法分别为 `TodoReminderTests/testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation()` 与 `ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()`。前者UTC比Shanghai预期偏8小时，后者未实际回原区却期望stopped；日志6次failure是断言数，非6方法。修正只改2测试文件65+/6-，使用真实TimeZone.current、不同identifier同偏移旅行区且校验actual fire偏移，原positive恢复/取消回滚断言保留。新negative四组合完整证明未返回原区继续legacyRuleNeedsCorrection、native0、旧generation/日期/来源终态/entries/sources/events不变。没有全局时区修改或生产行为变化。本机[37项原始summary](Evidence/CI20261020/ZoneFixtureFix/ci-unit-zone-fix-focused-summary.json)、记录与失败探针见[说明](Evidence/CI20261020/README.md)。
+
+本机相关运行在固定3ee、sourceUnchanged=true，源文件摘要与Git一致，工作树脏仅Docs，未称整树clean。原NSTimeZone.default=GMT探针没有改变Swift current，仅前置断言失败，不能宣称业务红→绿。远端真实UTC首轮红与补修轮通过分别保留。
+
+只读清点采样以机器JSON capturedAt与candidate3ee为准，之后纯Docs可能增加候选提交计数，不使分类成为实时删除授权。完整29/8/30和13Draft分页结果、刷新前refs/no-prune、重要tag/引用、工作树未知状态都已保存。未来建议先由Owner确定#1与#2整合，再按#2→#13依赖方向集成验证，最后另批逐条批准清理；本轮无清理。
+
+独立原文：[本地P2/清点](Evidence/CounterContrast20261020/independent-review-local.txt)、[首轮CI与测试夹具](Evidence/CI20261020/independent-review-ci-fixture.txt)、[通过轮终审](Evidence/CI20261020/independent-review-ci-final.txt)。未参与实现的reviewer对固定候选与原始产物独立核对，无未闭环必须项。
+
+---
+
+以下保留授权等待、配置未运行及本地失败等历史，不替代上述最新结论。
+
 # 计数器补修、GitHub Actions 与分支清点实际执行（2026-10-20）
 
 状态：**LOCAL_VALIDATION_COMPLETE / WAITING_DIRECT_PUSH_AUTHORIZATION**。整体目标尚未完成；没有真实 Actions run，不能恢复 READY_FOR_OWNER_DEVICE_GATE。Owner 最新授权取代旧 G2/清理阶段：本轮只做计数器 P2、真实 CI 和分支只读清点，不执行真机或删除门。

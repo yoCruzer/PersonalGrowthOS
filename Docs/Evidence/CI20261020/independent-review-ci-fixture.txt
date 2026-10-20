@@ -1,0 +1,32 @@
+独立审查：首轮真实Actions证据归档及UTC夹具补修（2026-10-20）
+Reviewer：/root/independent_review。只读核查产品、测试、CI和分支；本文件仅为审查报告，未修改实现、PR或运行/重跑原生测试与远端job。
+
+结论：首轮失败证据归档及3ee3cb6a846a296baca7f91b705a67c10dcbe51f测试补修通过独立审查，无必须补项；支持普通推送后的真实远端验证。新run39387986862仍在运行，不能据本报告宣布CI通过或整体Goal完成。
+
+首轮真实run
+https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39385273807
+PR head cbbb2c68d39ac1218c2936f58ffef72f72dbe942；实际pull_request checkout merge d74f75b8fa25f4be7866ef540e5b8494839cff22。API commit证据核merge parents为base 5a70f0110b151f8a45ac7c33d3f443823b1cff24与head cbbb；两者tree均d119817c4d2df30836cfd62d37edcefe70ec8112。报告准确区分head与实际merge构建。
+终态failure：Release成功；smoke5/5成功；完整托管iOS Unit582方法=579PASS/2FAIL/1SKIP。日志6 failures为断言次数，不是6个失败方法。Optional extended job为PR事件设计跳过，不是Unit测试跳过。
+已核标准GitHub Actions xcode-27 ARM64，三个独立runner名1000000175/176/177，image20261012.0260.1，Xcode27.0(27A266a)，macOS27.0.1(26A434)，SDK iOS27.0，测试实际iPhone13mini/iOS27.0(24A434)。environment中head与checkout分别匹配上述两个完整SHA。Release日志有BUILD SUCCEEDED及三bundle产物断言/上传成功。
+
+归档完整性
+Docs/Evidence/CI20261020/actions-evidence-sha256.json所列48项已独立逐文件重算SHA256，全部相符。Actions39385273807/actions-artifact-hashes.json所列32项原始下载产物，与归档release/unit/smoke相应文件字节哈希全部一致。归档保留完整测试命令、环境、test-summary/tests、日志、job状态、API merge/head证据和artifact元数据；三artifact实际创建/3天到期记录存在，没有用摘要替换失败证据。
+Unit两失败方法确为：
+- TodoReminderTests/testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation：fixture创建/预期Shanghai，真实coordinator.current=UTC触发生产时区刷新，实际UTC instant比预期+8小时；本地墙钟保持行为与生产规则一致。
+- ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor：预期“回原区后stopped”，但实际设备UTC从未返回Shanghai，仍legacyRuleNeedsCorrection；四组合断言失败符合保守隔离。
+唯一SKIP仍为TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure，日志注明隔离32MB HFS+卷前置；未新增skip或静默跳过失败。
+
+补修范围与反证
+3ee3cb6相对cbbb仅两个测试文件65增6删，生产及CI blob未改。FutureTemplate使用真实.current建立fixture，保持原fireAt、请求替换、title、取消等全部断言。
+TC01原fixture区默认.current，peer必须不同identifier且同offset；在fixture now及实际fire都有同偏移断言，找不到peer将XCTUnwrap失败而非skip。正例明确fixture zone==当前设备区，保留accepted→unresolved/quarantine→回原区stopped/native0→实际编辑器同值明确future只为开放后继生成新代次，来源终态/历史/日期和SystemStop/seriesStop保护不变。取消回滚测试同样使用合法peer。
+新增未返回原区负例覆盖notification/alarm×completed/skipped四组合：原区peer、真实current home；accepted/native1→home refresh只隔离后继→quarantine及真实coordinator→legacy/native0、原generation不变、原提醒/计划/截止不变、来源终态以及entries/sources/events保持。它正面保留首次UTC红例所暴露的真实产品迁区语义，未用固定全局Shanghai绕过产品规则。
+本机focused原xcresult与保存JSON完全一致：37PASS/0FAIL/0SKIP、runtimeWarnings[]。覆盖整个TodoReminderTests以及TC01正反、取消回滚、真实迁区失败回滚/重试、SystemStop和Shanghai→NY本地钟保护。record为3ee、sourceUnchanged=true；sourceBefore逐文件与3ee Git blob一致。执行时存在未提交Docs，报告未称整树clean。
+
+无效本地UTC探针边界
+ZoneFixtureFix保留NSTimeZone.default=GMT的原probe patch和exit65记录；实际日志只在两条“TimeZone.current应为GMT”前置断言失败，仍为Asia/Shanghai。不能将其当作成功业务红例复现。最终测试没有此全局状态修改；真正业务红例为首轮远端UTC的两个方法失败。README清楚说明，未追认探针为有效复现。
+
+刷新后只读清点
+采样2026-10-20T07:41:34.910609+00:00，candidate/local为3ee，远端29、本地8、并集30、开放13Draft；分类11叠加基底/3必须保留/13合并后候选/3疑似重复不变。我从快照全部local+remote refs重算30分支两类exclusive列表，与JSON全部一致。旧prepush快照、UNKNOWN/prunable/detached、未知dirty和不删除边界保留。
+
+未完成项
+新run39387986862当前未终审。必须等其真实Unit/其他required job终态、实际checkout/runner/runtime与完整计数/artifacts后，才能判CI验收通过。现有产品P2与分支只读清点的本地通过结论保留，普通push后不得把新run运行中误写PASS；真机/VoiceOver/相机弹窗等设备门保持未验。

@@ -1,0 +1,30 @@
+diff --git a/PersonalGrowthOSTests/ImportExportRecoveryTests.swift b/PersonalGrowthOSTests/ImportExportRecoveryTests.swift
+index 65e403e..f48243d 100644
+--- a/PersonalGrowthOSTests/ImportExportRecoveryTests.swift
++++ b/PersonalGrowthOSTests/ImportExportRecoveryTests.swift
+@@ -3992,6 +3992,10 @@ private final class TerminalRecheckOldF1Service {
+     }
+ 
+     func testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor() async throws {
++        let originalDeviceZone = NSTimeZone.default
++        defer { NSTimeZone.default = originalDeviceZone }
++        NSTimeZone.default = TimeZone(secondsFromGMT: 0)!
++        XCTAssertEqual(TimeZone.current, TimeZone(secondsFromGMT: 0)!, "UTC red probe must actually change the device zone")
+         let changedZone=TimeZone(identifier:"Asia/Hong_Kong")!
+         for channel:TodoReminderChannel in [.notification,.alarm] {
+             for skipped in [false,true] {
+diff --git a/PersonalGrowthOSTests/TodoReminderTests.swift b/PersonalGrowthOSTests/TodoReminderTests.swift
+index 5e28f58..34bb27e 100644
+--- a/PersonalGrowthOSTests/TodoReminderTests.swift
++++ b/PersonalGrowthOSTests/TodoReminderTests.swift
+@@ -193,6 +193,10 @@ extension TodoReminderTests {
+ @MainActor
+ extension TodoReminderTests {
+     func testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation() async throws {
++        let originalDeviceZone = NSTimeZone.default
++        defer { NSTimeZone.default = originalDeviceZone }
++        NSTimeZone.default = TimeZone(secondsFromGMT: 0)!
++        XCTAssertEqual(TimeZone.current, TimeZone(secondsFromGMT: 0)!, "UTC red probe must actually change the device zone")
+         let zone = TimeZone(identifier: "Asia/Shanghai")!
+         let clock = TodoDay("2026-01-10")!.date(timeZone: zone)!.addingTimeInterval(12 * 3600)
+         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
