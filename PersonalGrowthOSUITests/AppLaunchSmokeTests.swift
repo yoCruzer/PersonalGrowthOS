@@ -3248,17 +3248,40 @@ extension AppLaunchSmokeTests {
     func testUIReadabilityChineseDarkAccessibilityText() {
         runReadabilityMatrix(chinese: true, category: .accessibilityExtraExtraExtraLarge, dark: true, name: "zh-AX-dark")
     }
+    func testCounterContrastChineseLightMaximumAccessibilityText() {
+        runReadabilityMatrix(chinese: true, category: .accessibilityExtraExtraExtraLarge, dark: false, name: "contrast-zh-AX-light")
+    }
+    func testCounterContrastChineseDarkDefault() {
+        runReadabilityMatrix(chinese: true, category: .large, dark: true, name: "contrast-zh-default-dark")
+    }
+    func testQuickCaptureSettingsUsesRealSystemMaterial() {
+        let app = readabilityApp()
+        app.buttons["settings-button"].tap()
+        XCTAssertTrue(app.switches["daily-reminder-toggle"].waitForExistence(timeout: 5))
+        readabilityShot(app, "contrast-real-App-settings-quick-capture")
+    }
     private func runReadabilityMatrix(chinese: Bool, category: UIContentSizeCategory, dark: Bool, name: String) {
             let app = readabilityApp(chinese: chinese, category: category, dark: dark)
             readabilityShot(app, name + "-Today-daily-zero")
             let dailyMinus = app.buttons["today-habit-每天喝水几次-decrease"]
             XCTAssertFalse(dailyMinus.isEnabled)
             let dailyPlus = app.buttons["today-habit-每天喝水几次-increase"]
-            readabilityReveal(dailyPlus, app); dailyPlus.tap()
+            readabilityReveal(dailyPlus, app); dailyPlus.press(forDuration: 1.0)
             XCTAssertTrue(dailyMinus.isEnabled); dailyMinus.tap(); XCTAssertFalse(dailyMinus.isEnabled)
             for habit in ["每周锻炼几次", "深度阅读几篇文章"] {
                 let row = app.buttons["habit-" + habit]; readabilityReveal(row, app)
                 readabilityShot(app, name + "-Today-" + habit)
+                let minus = app.buttons["today-habit-" + habit + "-decrease"]
+                let plus = app.buttons["today-habit-" + habit + "-increase"]
+                readabilityReveal(plus, app)
+                let before = row.label
+                XCTAssertFalse(minus.isEnabled)
+                plus.press(forDuration: 1.0)
+                XCTAssertTrue(minus.isEnabled)
+                XCTAssertEqual(app.staticTexts["today-habit-" + habit + "-count"].value as? String, "1")
+                readabilityShot(app, name + "-Today-" + habit + "-one")
+                minus.tap(); XCTAssertFalse(minus.isEnabled)
+                XCTAssertEqual(row.label, before)
             }
             app.tabBars.buttons[chinese ? "成长" : "Growth"].tap(); app.buttons["growth-habits"].tap()
             for habit in ["每周锻炼几次", "深度阅读几篇文章", "这是一个真正很长需要合理换行的每周习惯名称"] {
@@ -3291,6 +3314,16 @@ extension AppLaunchSmokeTests {
                 readabilityReveal(row, app)
                 row.tap(); XCTAssertTrue(app.navigationBars[habit].waitForExistence(timeout: 5), "Name opens detail without incrementing")
                 readabilityShot(app, name + "-Detail-" + habit)
+                let detailMinus = app.buttons["habit-detail-counter-decrease"]
+                let detailPlus = app.buttons["habit-detail-counter-increase"]
+                readabilityReveal(detailPlus, app)
+                let before = app.descendants(matching: .any)["habit-detail-current-progress"].label
+                XCTAssertFalse(detailMinus.isEnabled)
+                detailPlus.press(forDuration: 1.0); XCTAssertTrue(detailMinus.isEnabled)
+                XCTAssertEqual(app.staticTexts["habit-detail-counter-count"].value as? String, "1")
+                readabilityShot(app, name + "-Detail-" + habit + "-one")
+                detailMinus.tap(); XCTAssertFalse(detailMinus.isEnabled)
+                XCTAssertEqual(app.descendants(matching: .any)["habit-detail-current-progress"].label, before)
                 app.navigationBars.buttons.firstMatch.tap()
             }
             app.terminate()

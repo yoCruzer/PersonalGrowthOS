@@ -148,6 +148,7 @@ struct RepeatableHabitCounter: View {
     let accessibilityIdentifierPrefix: String
     var showsHabitName = true
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.colorScheme) private var colorScheme
     @ScaledMetric(relativeTo: .subheadline) private var capsuleHeight: CGFloat = 30
     let decrease: () -> Void
     let increase: () -> Void
@@ -172,7 +173,9 @@ struct RepeatableHabitCounter: View {
     private var controls: some View {
         ZStack {
             Capsule()
-                .fill(.quaternary)
+                .fill(colorScheme == .dark
+                    ? Color(.sRGB, red: 40/255, green: 55/255, blue: 68/255, opacity: 1)
+                    : Color(.sRGB, red: 230/255, green: 236/255, blue: 242/255, opacity: 1))
                 .frame(height: capsuleHeight)
             Capsule()
                 .stroke(.separator.opacity(0.35), lineWidth: 0.5)
@@ -184,7 +187,7 @@ struct RepeatableHabitCounter: View {
                         .frame(width: 44, height: 45)
                         .contentShape(.rect)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(HabitCounterButtonStyle())
                 .disabled(progress.count == 0)
                 .accessibilityLabel("Decrease \(habitName)")
                 .accessibilityValue("Current count: \(progress.count)")
@@ -206,7 +209,7 @@ struct RepeatableHabitCounter: View {
                         .frame(width: 44, height: 45)
                         .contentShape(.rect)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(HabitCounterButtonStyle())
                 .accessibilityLabel("Increase \(habitName)")
                 .accessibilityValue("Current count: \(progress.count)")
                 .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
@@ -220,6 +223,31 @@ struct RepeatableHabitCounter: View {
             return "\(progress.count)/\(target)"
         }
         return "\(progress.count)"
+    }
+}
+
+// Match the custom capsule with opaque icon colors in every interaction state.
+// Keeping this on each button lets the zero-count decrement remain visibly disabled.
+private struct HabitCounterButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.colorScheme) private var colorScheme
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.foregroundStyle(iconColor(pressed: configuration.isPressed))
+    }
+
+    private func iconColor(pressed: Bool) -> Color {
+        if !isEnabled {
+            return colorScheme == .dark
+                ? Color(.sRGB, red: 105/255, green: 123/255, blue: 136/255, opacity: 1)
+                : Color(.sRGB, red: 146/255, green: 154/255, blue: 161/255, opacity: 1)
+        }
+        if colorScheme == .dark {
+            return pressed ? .white : Color(.sRGB, red: 213/255, green: 234/255, blue: 254/255, opacity: 1)
+        }
+        return pressed
+            ? Color(.sRGB, red: 16/255, green: 59/255, blue: 93/255, opacity: 1)
+            : Color(.sRGB, red: 23/255, green: 79/255, blue: 120/255, opacity: 1)
     }
 }
 
