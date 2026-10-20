@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 lane = sys.argv[1]
-assert lane in ('release', 'unit', 'smoke')
+assert lane in ('release', 'unit', 'smoke', 'extended')
 root = Path(os.environ['RUNNER_TEMP']) / ('pgos-' + lane)
 root.mkdir(parents=True, exist_ok=True)
 os.environ['DEVELOPER_DIR'] = '/Applications/Xcode_27.app/Contents/Developer'
@@ -72,6 +72,10 @@ else:
                      '-collect-test-diagnostics', 'never', '-resultBundlePath', str(root / 'tests.xcresult')]
     if lane == 'unit':
         args += ['-only-testing:PersonalGrowthOSTests']  # Entire hosted iOS Unit target, no method filter.
+    elif lane == 'extended':
+        suite = {'sleep': 'SleepUITests', 'investment': 'InvestmentUITests',
+                 'important-days': 'ImportantDayUITests'}[sys.argv[2]]
+        args += ['-only-testing:PersonalGrowthOSUITests/' + suite]
     else:
         args += ['-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/' + name for name in [
             'testUITestingLaunchShowsAppShell', 'testCoreShellRemainsOperableAtLargestAccessibilityTextSize',
