@@ -1,0 +1,44 @@
+独立只读终审：计数器对比度、CI配置及分支清点（2026-10-20）
+Reviewer：/root/independent_review；未参与实现，未修改产品、测试、CI或分支，未运行原生测试或操作模拟器。本文件仅保存审查结论。
+
+固定候选：51f491c29577e225afda8c92197306cbed4a4776。
+产品实现：e5b486a8c3f5746a09fc5afb5650944e55be0743。
+最终产品/测试：d84bd5f1529214b57e503cd89904c011302a0154。
+CI配置：13f0409adccc0e0216461ec9ff00a3a11f90e67c及30b7a9b384d64922fdaf42fa4a33d5f13edcec73。
+清点补修：b9ac72507be54f4b4bd15c7ca8b6947742bab2e2。
+已核d84至固定候选仅Docs变化；终审时工作树新增的clean Release报告/runs增量仍仅Docs证据，不能冒称已提交。
+
+结论
+1. 本地计数器对比度P2可以关闭；已审范围没有尚未关闭的confirmed产品缺陷。
+2. 分支只读清点可以交付；这是带采样时间和固定SHA的保留/未来候选报告，不是删除批准。
+3. CI配置静态审查通过，但真实Actions为NOT_RUN，缺少run/job URL、实际runner及完整远端Unit结果。普通推送与远端验收未完成，整体目标未完成，不能恢复READY_FOR_OWNER_DEVICE_GATE，也不能把本地99项Unit或YAML审查称为CI验收通过。
+
+产品与像素证据
+旧两张sRGB PNG的#0088FF/#D1D1D1按sRGB线性化独立复算为2.3051814506161445:1，确认原启用图标P2；零次禁用减号不适用该3:1门槛。
+已审HabitViews.swift完整产品diff和Today/Overview/详情共享调用者。独立ButtonStyle只作用于两个按钮，显式读取isEnabled/colorScheme/isPressed；数字primary保留，不再以整组primary覆盖禁用。背景与前景成对、完全不透明；44×45pt及contentShape、ScaledMetric、完整名称与紧凑排列未被削弱。模型、当天计数服务、周期analytics和持久化未改。
+已查看真实生产截图：浅/深、普通/最大辅助字号、最大字号完整长名、Today/Overview/详情；常态、禁用及按下可区分。31项manifest逐项SHA256与本地原始source字节相同。20个样本的坐标与PNG实际像素逐项独立读取复算：浅常态最低7.273151834302554:1，深常态最低9.899899:1；浅按下9.771907:1，深按下12.208099:1，均明显超过3:1。不是只核palette常量、isHittable或语义AX。
+8张按下图来自真实2秒hold期间simctl原始framebuffer PNG；watch_presses采集事件与原始dark/light XCTest日志的四个Press时间/控件身份一致，manifest事件和截图颜色匹配，没有用有损视频帧代替原图。普通和最大字号均含启用加号、减号。
+真实App设置截图显示黑色加号和完整系统材质圆按钮，并有系统状态栏；旧layer.render图中的白+和材质缺失支持归因为宿主取图差异，无需设置产品补修。
+
+运行证据与复用边界
+独立从原始xcresult重新读取六组summary，与仓库JSON完全相同：首轮light为2PASS/2FAIL，light2为2/2，dark为2/2，press2-dark和press2-light各1/1，Unit为99/99；均按实际整轮结果记录，首轮失败未涂绿。无新增SKIP或断言放宽。
+Today日计数、Today周/月Overview、Growth周/月/长名和详情实际0→1→0；Growth明确核昨日周期事实与当日0/1独立，名称导航后仍保持0。默认短名密度与按钮>=44断言保留；XXXL与最大辅助字号分开运行。
+14轮runs中的sourceBefore摘要已逐文件独立复算，全部对应命名head的Git blob。两轮sourceUnchanged=false如实保留：light期间修测试定位；dark期间只加独立按下采集方法，实际test-without-building复用5fa构建。未改矩阵方法与产品定义范围的复用成立，不支持声称整测试文件未变或这些轮次整树clean。d84只将窄按下方法1秒延长为2秒；两轮最终按下sourceUnchanged=true。
+clean unsigned Release记录固定51f491c、status为空、exit0、sourceUnchanged=true。已直接读取三个实际bundle的Info.plist/可执行文件并核SHA256：App/Share/Widget身份、1.0(7)、min17及无_CodeSignature与报告一致；实际App BuildProvenance.plist Commit=51f491c29577e225afda8c92197306cbed4a4776、Dirty=false。这是本机generic iOS Release，不是Archive或远端构建。
+
+CI配置
+静态核最小contents:read、无pull_request_target、checkout不保留凭据、固定Actions提交、Draft无跳过、pull_request不限制base、main必要push避免当前PR重复运行、PR/ref concurrency、35分钟timeout、3天精简失败产物。release/unit/smoke在独立标准hosted VM，原生测试串行，products在RUNNER_TEMP；Unit为整个托管iOS测试target；release实际断言三个bundle。复杂UI独立dispatch可选，默认none。首次验收仍须普通push触发真实PR事件；默认分支注册限制不能通过改base/合main规避。
+已独立核官方当前runner清单和xcode-27工具链路径，以及checkout v7.0.1与upload-artifact v7.0.2发布提交。来源：
+https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md
+https://github.blog/changelog/2026-10-15-xcode-27-runner-image-generally-available/
+https://github.com/actions/checkout/releases/tag/v7.0.1
+https://github.com/actions/upload-artifact/releases/tag/v7.0.2
+当前没有实际CI run，不能判定选择的device/runtime在远端创建成功，也不能提前填测试通过数量。首次远端完整Unit及真实job日志仍是必须交付项；既有HFS+环境SKIP须单列，新失败须分析修复。Xcode Cloud标签发行链未改。
+
+分支清点
+29远端、8本地、30并集、13开放Draft的分页输入和完整SHA快照存在；保留fetch前引用，明确no-prune。#1单独指向main且仍开放；#2至#13逐层base依赖图与API相符。11叠加基底、3必须保留、13合并后候选、3疑似重复为保守分类，无立即删除建议。
+前次三个finding已闭环：important-days status exit128/error/status:null及UNKNOWN，不再误写clean；UI分支upstream与中文一致；独有覆盖保留同SHA其他分支，并分别记录local/remote独有列表。我从全部快照refs独立重算30分支两类列表完全一致，Usage远端0/本地4、UI0符合采样点。Todo/Sleep脏状态与detached/prunable事实保留，主分类0不代表无未知工作。
+两条plan各有git cherry+且独有历史提交，改动路径分别5/5与候选字节相同；维持疑似重复待确认而非宣称patch等价或可删。重要tag/文档、后继PR、保留引用和未来顺序均记录；所有候选须将来重新核对实际合并结果和Owner固定ref批准，本轮无删除/改名/改base/worktree清理。
+
+范围限制
+本地P2与只读清点可关闭，不代表全部Goal完成。真实Actions、普通推送及最终远端独立终审仍缺；当前整体保持active/未完成。真机、真实VoiceOver、系统相机权限弹窗、AlarmKit正向、Share/Safari和物理低空间等历史未通过/未运行门原样保留，不代Owner验收。终审不新增产品必须补项；下一必需证据是真实远端run及最终同步SHA。

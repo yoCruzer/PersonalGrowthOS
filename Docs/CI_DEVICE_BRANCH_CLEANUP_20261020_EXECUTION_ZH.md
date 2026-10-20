@@ -49,6 +49,8 @@ Today 日计数、Today 周/月共享 Overview、Growth 周/月与长名、详�
 
 原首轮 light 和 dark 的 `sourceUnchanged=false` 如实保留：前者运行中修测试定位，原失败不重标；后者运行中仅新增窄按下证据方法，实际 test-without-building 仍使用5fa构建，矩阵方法/生产实现未改。最终d84只把新窄方法按住延长，产品实现、所有已通过矩阵方法、99项Unit及旧持久化/设置方法均未改；按具体定义/方法范围复用，不宣称整个测试文件相同。源码摘要与Git blob可复算。后续清洁Release核对单列实际结果。
 
+`contrast-release-clean` 在干净固定交付候选 `51f491c29577e225afda8c92197306cbed4a4776` 增量PASS（1.74s，status空/sourceUnchanged=true）。[实包核对](Evidence/CounterContrast20261020/release-bundles-clean.json)：App provenance Commit=51f491c… / Dirty=false；App/Share/Widget原IDs、1.0(7)、min17均保持且三包未签名。上一轮d84的Dirty=true记录保留，不追认为clean；两者产品/测试源码相同。
+
 ## GitHub Actions：配置已实现，真实远端 NOT_RUN
 
 已查当前分支与 origin/main 的 `.github/workflows` 均无配置；只读 API workflows total_count=0，避免重复。新增 `.github/workflows/ios-regression.yml` + `Scripts/ci/run_ios.py`，YAML Ruby解析、Python编译检查通过；本机原生构建/99 Unit/定向UI可执行，不能替代新CI验收。
@@ -78,6 +80,6 @@ Xcode Cloud `testflight-`→发布链、项目身份/版本/schema/数据模型/
 
 ## 停点与尚未通过门
 
-当前继续条件只是真实推送授权；随后必须完成实际Actions验收与最终独立审查，再恢复READY_FOR_OWNER_DEVICE_GATE。未参与实现的独立reviewer已核配置/分类/原图与20样本，但CI真实run当前不存在，整体目标保持active。
+当前继续条件只是真实推送授权；随后必须完成实际Actions验收与最终独立审查，再恢复READY_FOR_OWNER_DEVICE_GATE。未参与实现的独立reviewer对固定候选51f491c完成本地终审：[原文](Evidence/CounterContrast20261020/independent-review-local.txt)，SHA256 `06cb6a203a7d4b2b797623857d7ba7d14fe077287640ac007d5074e7fff2e986`。其独立核对14轮源摘要/Git、原始xcresult汇总、3实包/hash/provenance、31原图/hash、20像素样本及8次实际2秒按住事件，支持本地关闭P2并交付只读清点，无新增必须补修项。CI真实run当前不存在，未审为通过，整体目标保持active。
 
 真机D1–D4、真实VoiceOver/系统相机权限弹窗、AlarmKit正向、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、O-01非阻断UNCONFIRMED等既有状态保留。本轮不执行旧G2或代Owner通过设备门。

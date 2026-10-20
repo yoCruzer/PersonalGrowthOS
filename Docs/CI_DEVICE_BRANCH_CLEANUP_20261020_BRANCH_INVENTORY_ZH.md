@@ -1,6 +1,6 @@
 # GitHub 与本地分支只读清点（2026-10-20）
 
-采样 `2026-10-20T06:18:29.620763+00:00`；远端29，本地8，并集30；开放PR13，全部Draft。分支/PR REST API 均 `--paginate --slurp` / per_page=100，各1页，没有遗漏后续页。已保存fetch前refs，刷新明确使用`git fetch --no-prune origin`。本轮无删除/改名/改base/merge/rebase/reset/worktree清理/清理tag。清点完成即交付，不等待删除批准。
+采样 `2026-10-20T06:18:29.620763+00:00`；远端29，本地8，并集30；开放PR13，全部Draft。分支/PR REST API 均 `--paginate --slurp` / per_page=100，各1页，没有遗漏后续页。已保存fetch前refs，刷新明确使用`git fetch --no-prune origin`。清点采样过程无删除/改名/改base/merge/rebase/reset/worktree清理/清理tag；启动同步仅此前原任务工作树安全快进。清点完成即交付，不等待删除批准。
 
 [逐条机器数据与可复算脚本](Evidence/CI20261020/branch-inventory.json)（完整SHA、时间、upstream/ahead/behind、未推送/独有提交ID、三组祖先与最终差异、patch标记、逐文件内容比较、全部PR、worktree、tag/Docs引用）；[刷新前引用](Evidence/CI20261020/refs-before.txt)。
 
