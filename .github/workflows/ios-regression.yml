@@ -1,0 +1,40 @@
+name: iOS regression
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ios-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  ios:
+    name: iOS ${{ matrix.lane }}
+    runs-on: xcode-27
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [release, unit, smoke]
+    env:
+      PGOS_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run native gate
+        run: python3 Scripts/ci/run_ios.py '${{ matrix.lane }}'
+      - name: Save compact evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ios-${{ matrix.lane }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/pgos-${{ matrix.lane }}/*.json
+            ${{ runner.temp }}/pgos-${{ matrix.lane }}/*.log
+          if-no-files-found: warn
+          retention-days: 3
+          compression-level: 9
