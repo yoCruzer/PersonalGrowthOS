@@ -148,6 +148,7 @@ struct RepeatableHabitCounter: View {
     let accessibilityIdentifierPrefix: String
     var showsHabitName = true
     @Environment(\.dynamicTypeSize) private var typeSize
+    @ScaledMetric(relativeTo: .subheadline) private var capsuleHeight: CGFloat = 30
     let decrease: () -> Void
     let increase: () -> Void
 
@@ -172,10 +173,10 @@ struct RepeatableHabitCounter: View {
         ZStack {
             Capsule()
                 .fill(.quaternary)
-                .frame(height: 30)
+                .frame(height: capsuleHeight)
             Capsule()
                 .stroke(.separator.opacity(0.35), lineWidth: 0.5)
-                .frame(height: 30)
+                .frame(height: capsuleHeight)
             HStack(spacing: 0) {
                 Button(action: decrease) {
                     Image(systemName: "minus")

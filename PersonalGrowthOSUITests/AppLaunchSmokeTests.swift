@@ -3263,6 +3263,7 @@ extension AppLaunchSmokeTests {
             app.tabBars.buttons[chinese ? "成长" : "Growth"].tap(); app.buttons["growth-habits"].tap()
             for habit in ["每周锻炼几次", "深度阅读几篇文章", "这是一个真正很长需要合理换行的每周习惯名称"] {
                 let row = app.buttons["habit-" + habit]; readabilityReveal(row, app)
+                if category.isAccessibilityCategory { readabilityShot(app, name + "-Growth-" + habit + "-full-title") }
                 let minus = app.buttons["habit-overview-" + habit + "-counter-decrease"]
                 let plus = app.buttons["habit-overview-" + habit + "-counter-increase"]
                 readabilityReveal(plus, app)
@@ -3287,6 +3288,7 @@ extension AppLaunchSmokeTests {
                 readabilityShot(app, name + "-Growth-" + habit + "-one")
                 minus.tap(); XCTAssertFalse(minus.isEnabled)
                 XCTAssertEqual(row.label, periodCount, "Removing only today restores prior period facts")
+                readabilityReveal(row, app)
                 row.tap(); XCTAssertTrue(app.navigationBars[habit].waitForExistence(timeout: 5), "Name opens detail without incrementing")
                 readabilityShot(app, name + "-Detail-" + habit)
                 app.navigationBars.buttons.firstMatch.tap()
