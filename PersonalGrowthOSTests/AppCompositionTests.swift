@@ -756,3 +756,78 @@ extension AppCompositionTests {
         }
     }
 }
+
+// 原生 List 渲染对照：原结构与局部候选，附件需要实际查看。
+extension AppCompositionTests {
+    func testUIReadabilityNativeListLabelComparison() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.frame = UIScreen.main.bounds; window.windowLevel = .normal + 1
+        defer { window.isHidden = true; window.rootViewController = nil }
+        for dark in [false, true] {
+            for page in 0..<2 {
+                window.overrideUserInterfaceStyle = dark ? .dark : .light
+                window.rootViewController = UIHostingController(rootView: List {
+                    if page == 0 {
+                        Section("Original List structure") {
+                            ViewThatFits(in: .horizontal) {
+                                HStack {
+                                    Button {} label: { Label("Start timing", systemImage: "play.fill").frame(minHeight: 44) }.buttonStyle(.borderedProminent)
+                                    Button {} label: { Label("Record activity", systemImage: "square.and.pencil").frame(minHeight: 44) }.buttonStyle(.bordered)
+                                }
+                            }
+                        }
+                        Section("Explicit titleAndIcon") {
+                            Button {} label: { Label("Start timing", systemImage: "play.fill").labelStyle(.titleAndIcon).frame(minHeight: 44) }.buttonStyle(.borderedProminent)
+                        }
+                        Section("Unified white foreground") {
+                            Button {} label: { Label("Start timing", systemImage: "play.fill").foregroundStyle(.white).frame(minHeight: 44) }.buttonStyle(.borderedProminent)
+                        }
+                    } else {
+                        Section("Original goal / empty-state label") {
+                            Button {} label: { Label(String(localized: "Add Goal"), systemImage: "plus") }.buttonStyle(.borderedProminent)
+                            Button {} label: { Label("Add Habit", systemImage: "plus").font(.headline).frame(maxWidth: .infinity, minHeight: 44) }.buttonStyle(.borderedProminent).controlSize(.large)
+                        }
+                        Section("Fixed shared empty-state") {
+                            GrowthEmptyStateAddButton(title: "Add Habit", systemImage: "plus") {}
+                            GrowthEmptyStateAddButton(title: "Add Weight", systemImage: "plus") {}
+                            GrowthEmptyStateAddButton(title: "Start Weekly Review", systemImage: "square.and.pencil") {}
+                        }
+                        Section("Disabled explicit titleAndIcon") {
+                            Button {} label: { Label("Start timing", systemImage: "play.fill").labelStyle(.titleAndIcon).frame(minHeight: 44) }.buttonStyle(.borderedProminent).disabled(true)
+                        }
+                    }
+                }.id(page))
+                window.makeKeyAndVisible()
+                try await Task.sleep(for: .milliseconds(500)); window.layoutIfNeeded()
+                let shot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+                let attachment = XCTAttachment(image: shot); attachment.name = "List-label-\(dark ? "dark" : "light")-page\(page)"; attachment.lifetime = .keepAlways; add(attachment)
+                window.rootViewController = nil
+            }
+        }
+        print("UIReadability native List OS=\(ProcessInfo.processInfo.operatingSystemVersionString)")
+    }
+
+    func testUIReadabilityCompiledLocalizationAndWeekdayPolicy() throws {
+        let translations = ["Archive activity": "归档活动", "Restore activity": "恢复活动", "Previous month": "上个月", "Next month": "下个月", "Try Again": "重试", "No data": "暂无数据", "Quantity": "数量", "This todo changed. Reload its reminder settings before trying again.": "此待办已更改。请重新载入提醒设置后再试。"]
+        for language in ["en", "zh-Hans"] {
+            let path = try XCTUnwrap(Bundle.main.path(forResource: language, ofType: "lproj"))
+            let bundle = try XCTUnwrap(Bundle(path: path))
+            for (key, chinese) in translations {
+                XCTAssertEqual(bundle.localizedString(forKey: key, value: nil, table: "Localizable"), language == "en" ? key : chinese)
+            }
+            XCTAssertEqual(bundle.localizedString(forKey: "NSCameraUsageDescription", value: nil, table: "InfoPlist"), language == "en" ? "Capture photos you choose to save in your private entries." : "拍摄你选择保存在私人记录中的照片。")
+        }
+        // Run this method with -testLanguage zh-Hans; this invokes the actual error producer.
+        XCTAssertEqual(TodoFailure.staleTask.localizedDescription, Bundle.main.preferredLocalizations.first == "zh-Hans" ? "此待办已更改。请重新载入提醒设置后再试。" : "This todo changed. Reload its reminder settings before trying again.")
+        let zone = TimeZone(identifier: "Asia/Shanghai")!
+        let business = WeeklyReviewCalendarPolicy.calendar(timeZone: zone)
+        let chinese = HabitDisplayCalendar.calendar(locale: Locale(identifier: "zh_CN"), timeZone: zone)
+        let english = HabitDisplayCalendar.calendar(locale: Locale(identifier: "en_US"), timeZone: zone)
+        XCTAssertEqual(chinese.identifier, .gregorian); XCTAssertEqual(chinese.firstWeekday, business.firstWeekday)
+        XCTAssertEqual(chinese.minimumDaysInFirstWeek, business.minimumDaysInFirstWeek); XCTAssertEqual(chinese.timeZone, zone)
+        XCTAssertEqual(HabitMonthCalendarPresentation.veryShortWeekdaySymbols(calendar: chinese), ["一", "二", "三", "四", "五", "六", "日"])
+        XCTAssertEqual(HabitMonthCalendarPresentation.veryShortWeekdaySymbols(calendar: english), ["M", "T", "W", "T", "F", "S", "S"])
+        XCTAssertEqual(business.locale?.identifier, "en_US_POSIX")
+    }
+}

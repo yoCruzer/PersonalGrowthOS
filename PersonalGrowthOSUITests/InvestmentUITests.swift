@@ -541,3 +541,34 @@ extension InvestmentUITests {
         screenshot(app,"Integration-IR04-success-cancel-and-distinct-activity")
     }
 }
+
+extension InvestmentUITests {
+    func testUIReadabilityChineseIconsArchiveRestoreAndMonthLabels() {
+        let app = launch(chinese: true, extra: ["-PGOSInvestmentSegmentReview"])
+        openHub(app, chinese: true)
+        let start = button("investment-start-", app); reveal(start, app)
+        XCTAssertTrue(start.label.contains("开始计时")); XCTAssertTrue(start.isEnabled)
+        screenshot(app, "UIReadability-zh-investment-visible-play")
+        print("UIReadability_PRESS_START \(Date().timeIntervalSince1970)"); fflush(stdout)
+        start.press(forDuration: 1.5)
+        print("UIReadability_PRESS_END \(Date().timeIntervalSince1970)"); fflush(stdout)
+        let collapse = app.buttons["investment-collapse-timer"]; XCTAssertTrue(collapse.waitForExistence(timeout: 5)); collapse.tap()
+        let edit = button("investment-edit-activity-", app); reveal(edit, app); edit.tap()
+        let archive = app.buttons["investment-rename-archive"]
+        XCTAssertEqual(archive.label, "归档活动"); screenshot(app, "UIReadability-zh-archive-activity"); archive.tap()
+        XCTAssertTrue(archive.waitForNonExistence(timeout: 5))
+        let showArchived = app.switches["包含已归档活动"]; reveal(showArchived, app); showArchived.tap()
+        reveal(edit, app); edit.tap()
+        XCTAssertEqual(archive.label, "恢复活动"); screenshot(app, "UIReadability-zh-restore-activity"); archive.tap()
+        XCTAssertTrue(archive.waitForNonExistence(timeout: 5))
+        let history = app.buttons["investment-history"]; for _ in 0..<8 where !history.isHittable { app.swipeDown() }; reveal(history, app); history.tap()
+        let preview = app.switches["预览所选月份"]; reveal(preview, app, avoidingWheel: true); preview.tap()
+        let previous = app.buttons["investment-previous-month"], next = app.buttons["investment-next-month"]
+        reveal(previous, app, avoidingWheel: true); XCTAssertEqual(previous.label, "上个月"); XCTAssertEqual(next.label, "下个月")
+        let range = app.staticTexts["investment-preview-range"]; reveal(range, app, avoidingWheel: true); let original = range.label
+        reveal(previous, app, avoidingWheel: true); previous.tap(); reveal(range, app, avoidingWheel: true); XCTAssertNotEqual(range.label, original)
+        screenshot(app, "UIReadability-zh-previous-month")
+        reveal(next, app, avoidingWheel: true); next.tap(); reveal(range, app, avoidingWheel: true); XCTAssertEqual(range.label, original)
+        screenshot(app, "UIReadability-zh-next-month")
+    }
+}

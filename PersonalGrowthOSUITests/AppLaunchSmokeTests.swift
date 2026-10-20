@@ -3207,3 +3207,117 @@ extension AppLaunchSmokeTests {
         }
     }
 }
+
+// 窄屏矩阵包含真实名称、周期累计与当日计数的独立断言。
+extension AppLaunchSmokeTests {
+    private func readabilityShot(_ app: XCUIApplication, _ name: String) {
+        let image = XCTAttachment(screenshot: app.screenshot()); image.name = name; image.lifetime = .keepAlways; add(image)
+        let tree = XCTAttachment(string: app.debugDescription); tree.name = name + "-AX"; tree.lifetime = .keepAlways; add(tree)
+    }
+    private func readabilityReveal(_ element: XCUIElement, _ app: XCUIApplication) {
+        for _ in 0..<25 {
+            let top = app.navigationBars.firstMatch.frame.maxY + 4
+            let bottom = app.tabBars.firstMatch.exists ? app.tabBars.firstMatch.frame.minY - 8 : app.frame.height - 30
+            if element.exists, element.frame.minY >= top, element.frame.maxY <= bottom, element.isHittable { return }
+            if element.exists, element.frame.minY < top { app.swipeDown() } else { app.swipeUp() }
+        }
+        XCTAssertTrue(element.isHittable, app.debugDescription)
+    }
+    private func readabilityApp(chinese: Bool = true, category: UIContentSizeCategory = .large, dark: Bool = false) -> XCUIApplication {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSQuietWinsTest", "-PGOSUIReadabilityTest", "-PGOSInvestmentSegmentReview", "-AppleLanguages", chinese ? "(zh-Hans)" : "(en)", "-AppleLocale", chinese ? "zh_CN" : "en_US", "-AppleInterfaceStyle", dark ? "Dark" : "Light", "-UIPreferredContentSizeCategoryName", category.rawValue]
+        app.launch(); return app
+    }
+    func testUIReadabilityScreenshots() {
+        for (chinese, category, dark, name) in [(true, UIContentSizeCategory.large, false, "zh-default"), (true, .extraExtraExtraLarge, false, "zh-XXXL"), (true, .accessibilityExtraExtraExtraLarge, true, "zh-AX-dark"), (false, .large, false, "en-default")] {
+            let app = readabilityApp(chinese: chinese, category: category, dark: dark)
+            readabilityShot(app, name + "-Today-daily-zero")
+            let dailyMinus = app.buttons["today-habit-每天喝水几次-decrease"]
+            XCTAssertFalse(dailyMinus.isEnabled)
+            let dailyPlus = app.buttons["today-habit-每天喝水几次-increase"]
+            readabilityReveal(dailyPlus, app); dailyPlus.tap()
+            XCTAssertTrue(dailyMinus.isEnabled); dailyMinus.tap(); XCTAssertFalse(dailyMinus.isEnabled)
+            for habit in ["每周锻炼几次", "深度阅读几篇文章"] {
+                let row = app.buttons["habit-" + habit]; readabilityReveal(row, app)
+                readabilityShot(app, name + "-Today-" + habit)
+            }
+            app.tabBars.buttons[chinese ? "成长" : "Growth"].tap(); app.buttons["growth-habits"].tap()
+            for habit in ["每周锻炼几次", "深度阅读几篇文章", "这是一个真正很长需要合理换行的每周习惯名称"] {
+                let row = app.buttons["habit-" + habit]; readabilityReveal(row, app)
+                let minus = app.buttons["habit-overview-" + habit + "-counter-decrease"]
+                let plus = app.buttons["habit-overview-" + habit + "-counter-increase"]
+                readabilityReveal(plus, app)
+                XCTAssertGreaterThanOrEqual(plus.frame.height + 0.001, 44); XCTAssertGreaterThanOrEqual(plus.frame.width + 0.001, 44)
+                XCTAssertFalse(minus.isEnabled); XCTAssertTrue(plus.isEnabled)
+                if category == .large, habit != "这是一个真正很长需要合理换行的每周习惯名称" {
+                    let title = app.staticTexts["habit-title-" + habit]
+                    XCTAssertLessThanOrEqual(title.frame.height, 25, "Short Chinese name stays on one line")
+                    XCTAssertLessThanOrEqual(row.frame.height, 70, "Compact title and one progress line")
+                    XCTAssertLessThanOrEqual(minus.frame.minX - row.frame.maxX, 20, "No hidden expanding gap")
+                }
+                XCTAssertFalse(row.label.contains("remaining")); XCTAssertFalse(row.label.contains("还需"))
+                readabilityShot(app, name + "-Growth-" + habit + "-zero")
+                let periodCount = row.label
+                let calendar = Calendar(identifier: .gregorian)
+                let prior = habit == "每周锻炼几次" ? (calendar.component(.weekday, from: Date()) == 2 ? 0 : 2) : (calendar.component(.day, from: Date()) == 1 ? 0 : 2)
+                let target = habit == "每周锻炼几次" ? 3 : 10
+                if habit != "这是一个真正很长需要合理换行的每周习惯名称" { XCTAssertTrue(periodCount.contains("\(prior)/\(target)"), periodCount) }
+                plus.tap(); XCTAssertTrue(minus.isEnabled)
+                if habit != "这是一个真正很长需要合理换行的每周习惯名称" { XCTAssertTrue(row.label.contains("\(prior + 1)/\(target)"), row.label) }
+                XCTAssertEqual(app.staticTexts["habit-overview-" + habit + "-counter-count"].value as? String, "1")
+                readabilityShot(app, name + "-Growth-" + habit + "-one")
+                minus.tap(); XCTAssertFalse(minus.isEnabled)
+                XCTAssertEqual(row.label, periodCount, "Removing only today restores prior period facts")
+                row.tap(); XCTAssertTrue(app.navigationBars[habit].waitForExistence(timeout: 5), "Name opens detail without incrementing")
+                readabilityShot(app, name + "-Detail-" + habit)
+                app.navigationBars.buttons.firstMatch.tap()
+            }
+            app.terminate()
+        }
+    }
+    func testUIReadabilityChineseFallbackAndWeekdays() {
+        let app = readabilityApp()
+        app.tabBars.buttons["成长"].tap(); app.buttons["growth-goals"].tap()
+        let add = app.buttons["add-goal"]
+        XCTAssertFalse(add.isEnabled); readabilityShot(app, "zh-add-goal-disabled")
+        let title = app.textFields["new-goal-title"]; title.tap(); title.typeText("新增验证\n")
+        XCTAssertTrue(add.isEnabled); XCTAssertTrue(add.label.contains("添加目标")); readabilityShot(app, "zh-add-goal-enabled-visible-plus")
+        app.segmentedControls["new-goal-kind"].buttons["标记"].tap()
+        XCTAssertTrue(add.label.contains("添加标记")); readabilityShot(app, "zh-add-flag-enabled-visible-plus")
+        let goal = app.buttons["本地化验证目标"]; readabilityReveal(goal, app); goal.tap()
+        XCTAssertTrue(app.buttons["记录"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Entry"].exists, "User title is preserved verbatim")
+        readabilityShot(app, "zh-photo-only-default-entry-and-user-Entry")
+        app.buttons["记录"].tap(); XCTAssertTrue(app.navigationBars["记录"].waitForExistence(timeout: 5))
+        readabilityShot(app, "zh-photo-only-entry-detail")
+        app.navigationBars.buttons.firstMatch.tap(); app.navigationBars.buttons.firstMatch.tap(); app.navigationBars.buttons.firstMatch.tap()
+        app.buttons["growth-habits"].tap()
+        let daily = app.buttons["habit-每天喝水几次"]; readabilityReveal(daily, app); daily.tap()
+        let today = app.staticTexts["今天"].firstMatch; readabilityReveal(today, app); XCTAssertTrue(today.exists)
+        let weekday = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "星期一")).firstMatch
+        readabilityReveal(weekday, app); XCTAssertTrue(weekday.exists)
+        XCTAssertFalse(app.staticTexts["Monday"].exists)
+        readabilityShot(app, "zh-weekday-pattern-VoiceOver")
+    }
+}
+
+extension AppLaunchSmokeTests {
+    func testUIReadabilityChineseEmptyStateButtonsAndQuantity() {
+        let app = readabilityApp()
+        app.tabBars.buttons["成长"].tap()
+        let weight = app.buttons["growth-weight"]; readabilityReveal(weight, app); weight.tap()
+        let addWeight = app.buttons["add-weight"]; readabilityReveal(addWeight, app)
+        XCTAssertTrue(addWeight.label.contains("添加体重")); readabilityShot(app, "zh-empty-add-weight-visible-plus")
+        let mean = app.switches["weight-average-week"]; readabilityReveal(mean, app)
+        XCTAssertTrue(mean.label.contains("暂无数据"), mean.label); readabilityShot(app, "zh-weight-range-no-data")
+        app.navigationBars.buttons.firstMatch.tap()
+        let quiet = app.buttons["growth-quiet-wins"]; readabilityReveal(quiet, app); quiet.tap()
+        let card = app.buttons["quiet-wins-card-habit"]; readabilityReveal(card, app); card.tap()
+        let expand = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-habit-day-")).firstMatch
+        readabilityReveal(expand, app); expand.tap()
+        let fact = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quiet-wins-source-habitLog-")).firstMatch
+        readabilityReveal(fact, app); fact.tap()
+        XCTAssertTrue(app.staticTexts["数量"].waitForExistence(timeout: 5)); readabilityShot(app, "zh-quiet-wins-quantity")
+    }
+}

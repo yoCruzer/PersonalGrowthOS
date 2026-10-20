@@ -237,7 +237,7 @@ struct WeeklyReviewView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Recent Entries")
                     ForEach(summary.recentEntries) { entry in
-                        Text(entry.title ?? entry.body ?? "Entry")
+                        Text(entry.title ?? entry.body ?? String(localized: "Entry"))
                             .lineLimit(1)
                             .foregroundStyle(.secondary)
                     }

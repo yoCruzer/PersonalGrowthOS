@@ -89,7 +89,7 @@ enum QuietWinsUITestFixture {
         return arguments.contains("-PGOSUITesting") && arguments.contains("-PGOSQuietWinsIntegrationTest")
     }
 
-    static func seed(context: ModelContext) throws {
+    static func seed(context: ModelContext, mediaStore: MediaStore? = nil) throws {
         let now = Date()
         let created = now.addingTimeInterval(-60), completed = now.addingTimeInterval(-30)
         let goalService = GoalService(context: context, now: { created })
@@ -105,7 +105,35 @@ enum QuietWinsUITestFixture {
             _ = try HabitService(context:context,now:{created}).create(name:"Synthetic weekly long habit",plan:.init(recordingMode:.oncePerDay,period:.week,goal:.count,targetCount:3,weekdays:[]))
             _ = try HabitService(context:context,now:{created}).create(name:"Synthetic monthly long habit",plan:.init(recordingMode:.oncePerDay,period:.month,goal:.count,targetCount:10,weekdays:[]))
         }
-        let log = HabitLog(habitID: habit.id, occurredAt: completed, isCompleted: true, createdAt: completed)
+        if ProcessInfo.processInfo.arguments.contains("-PGOSUIReadabilityTest") {
+            let service = HabitService(context: context, now: { created })
+            _ = try service.create(name: "每天喝水几次", recordingMode: .multiplePerDay, dailyTargetCount: 8)
+            for (name, period, target) in [("每周锻炼几次", HabitPlanPeriod.week, 3), ("深度阅读几篇文章", .month, 10), ("这是一个真正很长需要合理换行的每周习惯名称", .week, 4)] {
+                let earlier = now.addingTimeInterval(-40 * 86400)
+                let seeded = try HabitService(context: context, now: { earlier }).create(name: name, plan: .init(recordingMode: .multiplePerDay, period: period, goal: .count, targetCount: target, weekdays: []))
+                if name != "这是一个真正很长需要合理换行的每周习惯名称" {
+                    let yesterday = WeeklyReviewCalendarPolicy.calendar().date(byAdding: .day, value: -1, to: now)!
+                    for _ in 0..<2 {
+                        let fact = HabitLog(habitID: seeded.id, occurredAt: yesterday, isCompleted: true, createdAt: yesterday)
+                        context.insert(fact)
+                        context.insert(HabitLogDayMetadata(habitLogID: fact.id, localDayIdentifier: HabitLocalDay(date: yesterday).description, localTimeZoneIdentifier: TimeZone.current.identifier, provenance: .capturedAtWrite))
+                    }
+                }
+            }
+        }
+        if ProcessInfo.processInfo.arguments.contains("-PGOSUIReadabilityTest"), let mediaStore {
+            let imageURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".png")
+            let png = Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=")!
+            try png.write(to: imageURL); defer { try? FileManager.default.removeItem(at: imageURL) }
+            let imageEntry = try EntryCreationService(persistence: ModelContextEntryPersistence(context: context), mediaStore: mediaStore).create(.init(image: .init(url: imageURL, originalFilename: "synthetic.png", contentType: "image/png")))
+            let activeGoal = try goalService.create(title: "本地化验证目标", kind: .standard)
+            let userEntry = Entry(title: "Entry", body: "Today", createdAt: created)
+            context.insert(userEntry)
+            for entry in [imageEntry, userEntry] {
+                context.insert(ObjectLink(sourceType: .entry, sourceID: entry.id, targetType: .goal, targetID: activeGoal.id, kind: .entryRelatesGoal, createdAt: created))
+            }
+        }
+        let log = HabitLog(habitID: habit.id, occurredAt: completed, isCompleted: true, quantity: ProcessInfo.processInfo.arguments.contains("-PGOSUIReadabilityTest") ? 2 : nil, createdAt: completed)
         if usageDays { log.result = "Synthetic check-in 1" }
         context.insert(log)
         context.insert(HabitLogDayMetadata(habitLogID: log.id, localDayIdentifier: HabitLocalDay(date: completed).description,

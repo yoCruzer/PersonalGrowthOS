@@ -132,6 +132,7 @@ struct GrowthEmptyStateAddButton: View {
     var body: some View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
+                .labelStyle(.titleAndIcon)
                 .font(.headline)
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
                 .contentShape(.rect)
@@ -160,7 +161,7 @@ struct RepeatableHabitCounter: View {
             } else {
                 HStack(spacing: 8) {
                     if showsHabitName { ModuleEntryRow(title: habitName, systemImage: "repeat") }
-                    Spacer(minLength: 4)
+                    if showsHabitName { Spacer(minLength: 4) }
                     controls
                 }
             }
@@ -189,6 +190,7 @@ struct RepeatableHabitCounter: View {
                 .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-decrease")
 
                 Text(countText)
+                    .foregroundStyle(.primary)
                     .font(.subheadline.weight(.semibold).monospacedDigit())
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
@@ -209,7 +211,6 @@ struct RepeatableHabitCounter: View {
                 .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
             }
         }
-        .foregroundStyle(.primary)
         .fixedSize(horizontal: true, vertical: false)
     }
 
@@ -445,7 +446,7 @@ struct HabitOverviewRow: View {
                 thumbnailStore: thumbnailStore
             )
         } label: {
-            ModuleEntryRow(title:habit.name,subtitle:periodProgressText,systemImage:"repeat")
+            ModuleEntryRow(title:habit.name,subtitle:periodProgressText,systemImage:"repeat", titleID: "habit-title-\(habit.normalizedName)")
         }
         .accessibilityIdentifier("habit-\(habit.normalizedName)")
     }
@@ -478,7 +479,6 @@ struct HabitOverviewRow: View {
         if current.period == .trackingOnly || current.target == nil {
             return recordedText(current.actual)
         }
-        let remaining = max((current.target ?? 0) - current.actual, 0)
         let scope: String = switch current.period {
         case .day: String(localized: "today")
         case .week: String(localized: "this week")
@@ -492,15 +492,10 @@ struct HabitOverviewRow: View {
                 )
                 : String(localized: "Rest day")
         }
-        return remaining > 0
-            ? String.localizedStringWithFormat(
-                String(localized: "%lld/%lld %@ · %lld remaining"),
-                current.actual, current.target ?? 0, scope, remaining
-            )
-            : String.localizedStringWithFormat(
-                String(localized: "%lld/%lld %@"),
-                current.actual, current.target ?? 0, scope
-            )
+        return String.localizedStringWithFormat(
+            String(localized: "%lld/%lld %@"),
+            current.actual, current.target ?? 0, scope
+        )
     }
 
     private func recordedText(_ count: Int) -> String {
@@ -1564,6 +1559,7 @@ private struct HabitAnalyticsDashboard: View {
 }
 
 private struct HabitMonthCalendar: View {
+    @Environment(\.locale) private var locale
     let summary: HabitAnalyticsSummary
     let asOf: HabitLocalDay
 
@@ -1581,7 +1577,7 @@ private struct HabitMonthCalendar: View {
     }
 
     var body: some View {
-        let calendar = WeeklyReviewCalendarPolicy.calendar()
+        let calendar = HabitDisplayCalendar.calendar(locale: locale)
         let weekdaySymbols = HabitMonthCalendarPresentation.veryShortWeekdaySymbols(
             calendar: calendar
         )
@@ -1658,10 +1654,11 @@ private struct HabitMonthCalendar: View {
 }
 
 private struct WeekdayPatternView: View {
+    @Environment(\.locale) private var locale
     let pattern: HabitWeekdayPattern
 
     var body: some View {
-        let calendar = WeeklyReviewCalendarPolicy.calendar()
+        let calendar = HabitDisplayCalendar.calendar(locale: locale)
         HStack(spacing: 8) {
             ForEach(pattern.buckets) { bucket in
                 VStack(spacing: 2) {
@@ -1750,6 +1747,7 @@ private struct ActivityHeatmap: View {
 }
 
 private struct PeriodActivityGrid: View {
+    @Environment(\.locale) private var locale
     let evaluation: HabitPeriodEvaluation
     let activity: [HabitLocalDay: Int]
 
@@ -1796,10 +1794,10 @@ private struct PeriodActivityGrid: View {
 
     private func dayLabel(_ day: HabitLocalDay) -> String {
         switch evaluation.period {
-        case .day: return "Today"
+        case .day: return String(localized: "Today")
         case .week:
             guard let date = day.date() else { return day.description }
-            return WeeklyReviewCalendarPolicy.calendar().veryShortWeekdaySymbols[
+            return HabitDisplayCalendar.calendar(locale: locale).veryShortWeekdaySymbols[
                 WeeklyReviewCalendarPolicy.calendar().component(.weekday, from: date) - 1
             ]
         case .month: return "\(day.day)"
@@ -1953,3 +1951,12 @@ private struct DetailedHabitCheckInView: View {
     static var didRead:(() -> Void)?
 }
 #endif
+
+/// Display symbols only; Gregorian dates and Monday-first business periods remain policy-owned.
+enum HabitDisplayCalendar {
+    static func calendar(locale: Locale, timeZone: TimeZone = .current) -> Calendar {
+        var calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        calendar.locale = locale
+        return calendar
+    }
+}

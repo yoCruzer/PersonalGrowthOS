@@ -156,7 +156,7 @@ private struct ReviewComposerView: View {
                     Section("Entries") {
                         ForEach(entries) { entry in
                             selectionButton(
-                                entry.title ?? entry.body ?? "Entry",
+                                entry.title ?? entry.body ?? String(localized: "Entry"),
                                 selected: selectedEntryIDs.contains(entry.id),
                                 identifier: "review-entry-\(entry.id.uuidString)"
                             ) {

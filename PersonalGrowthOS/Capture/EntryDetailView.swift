@@ -205,7 +205,7 @@ struct EntryDetailView: View {
                                 thumbnailStore: thumbnailStore
                             )
                         } label: {
-                            Label(reviewed.title ?? reviewed.body ?? "Entry", systemImage: "doc.text")
+                            Label(reviewed.title ?? reviewed.body ?? String(localized: "Entry"), systemImage: "doc.text")
                         }
                     }
                     ForEach(reviewedHabits) { habit in

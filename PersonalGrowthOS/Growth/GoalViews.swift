@@ -33,7 +33,7 @@ struct GoalsView: View {
                             ? String(localized: "Add Flag")
                             : String(localized: "Add Goal"),
                         systemImage: "plus"
-                    )
+                    ).labelStyle(.titleAndIcon)
                 }
                     .buttonStyle(.borderedProminent)
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -155,7 +155,7 @@ struct GoalDetailView: View {
                             thumbnailStore: thumbnailStore
                         )
                     } label: {
-                        Label(entry.title ?? entry.body ?? "Entry", systemImage: "doc.text")
+                        Label(entry.title ?? entry.body ?? String(localized: "Entry"), systemImage: "doc.text")
                     }
                 }
                 Button("Manage Supporting Habits") { isManagingHabits = true }
@@ -358,7 +358,7 @@ struct EntryRelationshipsEditor: View {
                 if entry.kind == .review {
                     Section("Entries") {
                         ForEach(entries.filter { $0.id != entry.id }) { reviewed in
-                            relationButton(reviewed.title ?? reviewed.body ?? "Entry", linked: isReviewed(reviewed)) {
+                            relationButton(reviewed.title ?? reviewed.body ?? String(localized: "Entry"), linked: isReviewed(reviewed)) {
                                 try CoreLinkService(context: modelContext).setReview(
                                     entry, reviews: reviewed, linked: !isReviewed(reviewed)
                                 )
@@ -532,7 +532,7 @@ private struct GoalEntryEditor: View {
                     }
                 } label: {
                     HStack {
-                        Text(entry.title ?? entry.body ?? "Entry")
+                        Text(entry.title ?? entry.body ?? String(localized: "Entry"))
                         Spacer()
                         if linked { Image(systemName: "checkmark") }
                     }

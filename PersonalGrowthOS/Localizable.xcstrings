@@ -1,6 +1,134 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Archive activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive activity"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档活动"
+          }
+        }
+      }
+    },
+    "Restore activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore activity"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复活动"
+          }
+        }
+      }
+    },
+    "Previous month": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous month"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上个月"
+          }
+        }
+      }
+    },
+    "Next month": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next month"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下个月"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重试"
+          }
+        }
+      }
+    },
+    "No data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No data"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无数据"
+          }
+        }
+      }
+    },
+    "Quantity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantity"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "数量"
+          }
+        }
+      }
+    },
+    "This todo changed. Reload its reminder settings before trying again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This todo changed. Reload its reminder settings before trying again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此待办已更改。请重新载入提醒设置后再试。"
+          }
+        }
+      }
+    },
   "Reminder removal is not confirmed. Please try again.": {
     "localizations": {
       "en": { "stringUnit": { "state": "translated", "value": "Reminder removal is not confirmed. Please try again." } },
@@ -5634,7 +5762,7 @@
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Today 入口"
+          "value": "今天入口"
         }
       }
     }
@@ -5651,7 +5779,7 @@
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "在 Today 显示睡眠入口"
+          "value": "在今天显示睡眠入口"
         }
       }
     }
@@ -17041,7 +17169,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "始终在 Today 显示"
+            "value": "始终在今天显示"
           }
         }
       }
@@ -17942,7 +18070,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "不在 Today 显示"
+            "value": "不在今天显示"
           }
         }
       }
@@ -19081,7 +19209,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Today 展示"
+            "value": "今天展示"
           }
         }
       }

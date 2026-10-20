@@ -461,7 +461,7 @@ struct InvestmentHubView: View {
         }
     }
     private func startButton(_ activity: InvestmentActivityTransfer) -> some View {
-        Button { let id = UUID(); run { try InvestmentService(context:context).start(activityID:activity.id,participantID:activity.participantID,operationID:id,target:target == 0 ? nil : Double(target*60)); operationID = id } } label: { Label("Start timing",systemImage:"play.fill").frame(minHeight:44) }
+        Button { let id = UUID(); run { try InvestmentService(context:context).start(activityID:activity.id,participantID:activity.participantID,operationID:id,target:target == 0 ? nil : Double(target*60)); operationID = id } } label: { Label("Start timing",systemImage:"play.fill").labelStyle(.titleAndIcon).frame(minHeight:44) }
             .buttonStyle(.borderedProminent).accessibilityIdentifier("investment-start-\(activity.id)")
     }
     private func recordButton(_ activity: InvestmentActivityTransfer) -> some View {
@@ -489,7 +489,7 @@ struct InvestmentActivityEditView:View {
             if let error {Text(error).foregroundStyle(.red).accessibilityIdentifier("investment-rename-error")}
             Button("Save name") {nameFocused=false;save(name:name,archived:activity.isArchived)}.accessibilityIdentifier("investment-rename-save")
                 .disabled(name.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)
-            Button(activity.isArchived ? "Restore activity":"Archive activity") {
+            Button(activity.isArchived ? String(localized: "Restore activity") : String(localized: "Archive activity")) {
                 save(name:activity.name,archived:!activity.isArchived)
             }.accessibilityIdentifier("investment-rename-archive")
 #if DEBUG
@@ -796,8 +796,8 @@ struct InvestmentHistoryView: View {
                     if days == 0 {
                         Toggle("Preview selected month",isOn:$earlierMonth)
                         if earlierMonth {
-                            Button("Previous month") { moveMonth(-1) }.accessibilityIdentifier("investment-previous-month")
-                            Button("Next month") { moveMonth(1) }.accessibilityIdentifier("investment-next-month")
+                            Button(String(localized: "Previous month")) { moveMonth(-1) }.accessibilityIdentifier("investment-previous-month")
+                            Button(String(localized: "Next month")) { moveMonth(1) }.accessibilityIdentifier("investment-next-month")
                         }
                     }
                     let bounds = previewBounds

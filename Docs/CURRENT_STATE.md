@@ -1,3 +1,15 @@
+# 2026-10-20 UI 可读性与本地化专项 — FIXES_IN_PROGRESS
+
+用户实测基线 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`；远端核对 PR #13 OPEN Draft/base `codex/time-investment-v1`，新增规划文档 `cd8786b06bb984041ad9968a6736b624ba60d3f3` 已保留。主目录未知工程/翻译/Cloud 改动不动；独立工作树 `/private/tmp/PersonalGrowthOS-ui-20261020`、分支 `codex/ui-readability-localization-20261020` 执行本轮用户新授权批次，最终普通推送原 PR 分支。并行 CI 工作保持。
+
+本轮只改习惯呈现、按钮 Label 样式、默认文案/星期展示与用途资源及必要验证；不改计时/打卡/持久化/业务周期语义。A/B 修改前在专用 iPhone 13 mini/iOS 27.0 真实复现；最小修复与独立 reviewer 预审完成，最终矩阵/固定候选审查仍在进行。首轮受影响 Unit109/109 PASS不能替代最终 UI 门。实际分轮、失败与证据见 [执行与验收](UI_READABILITY_LOCALIZATION_20261020_ZH.md)。
+
+当前不得沿用历史 READY 宣称本批通过。最终补齐中文浅色窄屏、较大普通字号、中文深色最大无障碍、英文对照、真实图标/禁用/按下态与本地化标签；固定候选独立审查后才到 READY_FOR_OWNER_DEVICE_GATE。不操作私人设备/库，不合并/force push/tag/Archive/TestFlight。
+
+---
+
+以下为历史交接，不能替代本轮结论。
+
 # PR #13 终态复核限定补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-20）
 
 固定 RECHECK_GOAL_SHA `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`；最终干净产品/测试 SHA `1b150068e76f4d7e7a6defcd51f10622951f4b4b`，产品实现 `2b0d4917342d03b0f9e5323a1ef2cf58447953fb`（之后仅旧往返测试一行依赖隔离）。S-A→S-C 连续完成，TC-01/P2、TC-02/P2、TC-03/P3 均经生产链红例确认并关闭；无本轮范围内未关闭 confirmed P0/P1/P2 或明确 P3。旧 READY 未被当作本轮通过依据，原 FAIL/SKIP 与分轮保留。

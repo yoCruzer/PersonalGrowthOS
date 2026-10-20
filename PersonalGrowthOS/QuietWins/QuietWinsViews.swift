@@ -331,7 +331,7 @@ private struct QuietWinsHabitLogDetailView: View {
                     Text(verbatim: source.day.description).accessibilityIdentifier("quiet-wins-habit-log-day")
                     Text("Recorded that day. A precise occurrence time is not inferred.").font(.caption).foregroundStyle(.secondary)
                     if let quantity = log.quantity {
-                        LabeledContent("Quantity", value: quantity.formatted() + (log.unit.map { " " + $0 } ?? ""))
+                        LabeledContent(String(localized: "Quantity"), value: quantity.formatted() + (log.unit.map { " " + $0 } ?? ""))
                     }
                     if let result = log.result { Text(result).textSelection(.enabled).accessibilityIdentifier("quiet-wins-habit-log-result") }
                 }

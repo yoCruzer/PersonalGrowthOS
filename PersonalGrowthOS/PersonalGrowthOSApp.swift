@@ -79,7 +79,7 @@ struct PersonalGrowthOSApp: App {
             }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSQuietWinsTest") {
-                try QuietWinsUITestFixture.seed(context: container.modelContainer.mainContext)
+                try QuietWinsUITestFixture.seed(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             }
             if configuration.launchMode == .uiTesting,
                ProcessInfo.processInfo.arguments.contains("-PGOSStartupFailureTest") {

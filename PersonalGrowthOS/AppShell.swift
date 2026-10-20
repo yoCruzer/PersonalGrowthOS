@@ -987,7 +987,7 @@ private struct TimelineView: View {
                                     Label("Goal Change", systemImage: "target")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
-                                    Text(goalsByID[event.goalID]?.title ?? "Goal")
+                                    Text(goalsByID[event.goalID]?.title ?? String(localized: "Goal"))
                                     LabeledContent(
                                         event.kind.localizedName,
                                         value: event.occurredAt.formatted(date: .abbreviated, time: .shortened)
@@ -1101,7 +1101,7 @@ struct MediaStorageView: View {
                     if let message=reminderSettingsIntents.daily.failureMessage {
                         Text(message).foregroundStyle(.red).accessibilityIdentifier("daily-reminder-failure")
                         if reminderSettingsIntents.daily.cleanupPending {
-                            Button("Try Again") {updateDailyReminder(requestPermission:false)}
+                            Button(String(localized: "Try Again")) {updateDailyReminder(requestPermission:false)}
                         }
                     }
                     Toggle("Weekly Review Reminder", isOn: $weeklyReminderEnabled)
@@ -1125,7 +1125,7 @@ struct MediaStorageView: View {
                     if let message=reminderSettingsIntents.weekly.failureMessage {
                         Text(message).foregroundStyle(.red).accessibilityIdentifier("weekly-reminder-failure")
                         if reminderSettingsIntents.weekly.cleanupPending {
-                            Button("Try Again") {updateWeeklyReminder(requestPermission:false)}
+                            Button(String(localized: "Try Again")) {updateWeeklyReminder(requestPermission:false)}
                         }
                     }
                     if notificationPermissionDenied {

@@ -1365,7 +1365,10 @@ extension TodoFoundationTests {
         try service.rescheduleReminder(id:id,to:now.addingTimeInterval(1200),channel:.alarm,expectedRevision:revision)
         let persisted=try TransferSnapshot.make(context:ModelContext(container))
         XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<Entry>()),0);XCTAssertTrue(context.hasChanges)
-        XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:now.addingTimeInterval(1800),channel:.notification,expectedRevision:revision)) {XCTAssertEqual($0 as? TodoFailure,.staleTask)}
+        XCTAssertThrowsError(try service.rescheduleReminder(id:id,to:now.addingTimeInterval(1800),channel:.notification,expectedRevision:revision)) {
+            XCTAssertEqual($0 as? TodoFailure,.staleTask)
+            XCTAssertEqual($0.localizedDescription, Bundle.main.preferredLocalizations.first == "zh-Hans" ? "此待办已更改。请重新载入提醒设置后再试。" : "This todo changed. Reload its reminder settings before trying again.")
+        }
         XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(container)),persisted)
         XCTAssertTrue(context.hasChanges)
     }

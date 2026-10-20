@@ -16,6 +16,22 @@
           }
         }
       }
+    },
+    "NSCameraUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture photos you choose to save in your private entries."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拍摄你选择保存在私人记录中的照片。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
