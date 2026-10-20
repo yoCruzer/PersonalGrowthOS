@@ -2,11 +2,12 @@ import XCTest
 import Darwin
 
 final class ImportantDayUITests: XCTestCase {
-    private func launch(seed: Bool = false, chinese: Bool = false) -> XCUIApplication {
+    private func launch(seed: Bool = false, chinese: Bool = false, denied:Bool = false) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", chinese ? "(zh-Hans)" : "(en)", "-AppleLocale", chinese ? "zh_CN" : "en_US"]
         if seed { app.launchArguments += ["-PGOSImportantDaysTest"] }
+        if denied {app.launchArguments += ["-PGOSTodoReminderDeniedTest"]}
         app.launch(); return app
     }
     private func scrollTo(_ element: XCUIElement, app: XCUIApplication) {
@@ -24,13 +25,36 @@ final class ImportantDayUITests: XCTestCase {
         }
     }
     func testMinimalCreateWriteRelatedEntryAndRelaunch() {
-        let app = launch()
+        let app = launch(denied:true)
         app.tabBars.buttons["Growth"].tap(); app.buttons["growth-important-days"].tap()
         XCTAssertTrue(app.otherElements["important-days-list"].waitForExistence(timeout: 5) || app.navigationBars["Important Days"].exists)
         app.buttons["important-day-add"].tap()
         let title = app.textFields["important-day-title"]
         XCTAssertTrue(title.waitForExistence(timeout: 5)); title.tap(); title.typeText("A synthetic day")
+        let more=app.buttons["More settings"];scrollTo(more,app:app);more.tap()
+        let onDay=app.switches["On the day"]
+        func revealWholeReminder() {
+            for _ in 0..<20 {
+                let top=app.navigationBars.firstMatch.frame.maxY+8
+                let bottom=app.keyboards.firstMatch.exists ? app.keyboards.firstMatch.frame.minY-8:app.frame.maxY-40
+                if onDay.exists,onDay.frame.minY >= top,onDay.frame.maxY <= bottom,onDay.isHittable {break}
+                let down=onDay.exists && onDay.frame.minY < top
+                app.coordinate(withNormalizedOffset:CGVector(dx:0.06,dy:down ? 0.35:0.50)).press(forDuration:0,
+                    thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.06,dy:down ? 0.45:0.35)))
+            }
+            XCTAssertTrue(onDay.isHittable,app.debugDescription)
+            XCTAssertGreaterThanOrEqual(onDay.frame.minY,app.navigationBars.firstMatch.frame.maxY+8)
+            if app.keyboards.firstMatch.exists {XCTAssertLessThanOrEqual(onDay.frame.maxY,app.keyboards.firstMatch.frame.minY-8)}
+        }
+        revealWholeReminder()
+        let reminderShot=XCTAttachment(screenshot:app.screenshot());reminderShot.name="System-ImportantDay-reminder-fully-visible";reminderShot.lifetime = .keepAlways;add(reminderShot)
+        onDay.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        XCTAssertTrue(app.navigationBars["Add Important Day"].exists)
+        revealWholeReminder()
+        XCTAssertEqual(onDay.value as? String,"1")
         XCTAssertTrue(app.buttons["important-day-save"].isEnabled); app.buttons["important-day-save"].tap()
+        let acknowledge=app.buttons["Got it"];XCTAssertTrue(acknowledge.waitForExistence(timeout:5));acknowledge.tap()
+        XCTAssertFalse(app.otherElements["important-day-save-feedback"].exists)
         app.staticTexts["A synthetic day"].firstMatch.tap()
         app.buttons["important-day-write"].tap()
         let body = app.textViews["capture-body"]

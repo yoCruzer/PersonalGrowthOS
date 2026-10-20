@@ -12,6 +12,28 @@ final class QuietWinsTests: XCTestCase {
     private var now: Date { date("2026-10-13T12:00:00Z") }
     private func window(_ days: Int = 30) -> QuietWinsWindow { .init(days: days, asOf: now, timeZone: utc) }
 
+    func testUsageHabitDailyEvidencePreservesFourPlusTwoDistinctFactsAndStableLocalDays() throws {
+        let habit = UUID(), instant = now.addingTimeInterval(-60)
+        var input = QuietWinsInput(habits: [.init(id: habit, title: "Water")])
+        for day in ["2026-10-13", "2026-10-12"] {
+            for _ in 0..<(day == "2026-10-13" ? 4 : 2) {
+                input.logs.append(.init(id: UUID(), habitID: habit, occurredAt: instant, isCompleted: true, localDay: day))
+            }
+        }
+        input.logs.append(input.logs[0]) // Repeated read of the same ID, distinct from equal-valued real facts.
+        let card = try XCTUnwrap(QuietWinsEngine.build(input, window: window()).evidenceCards.first)
+        XCTAssertEqual(card.count, 2); XCTAssertEqual(card.sources.count, 6)
+        XCTAssertEqual(card.habitDays.map { $0.sources.count }, [4, 2])
+        XCTAssertEqual(Set(card.habitDays.flatMap { $0.sources.map(\.sourceID) }).count, 6)
+        let other = try XCTUnwrap(QuietWinsEngine.build(input, window: .init(days: 30, asOf: now, timeZone: TimeZone(identifier: "America/Los_Angeles")!)).evidenceCards.first)
+        XCTAssertEqual(card.habitDays.map(\.id), other.habitDays.map(\.id))
+        input.logs.removeAll { $0.id == card.sources[0].sourceID }
+        let removed = try XCTUnwrap(QuietWinsEngine.build(input, window: window()).evidenceCards.first)
+        XCTAssertEqual(removed.sources.count, 5); XCTAssertEqual(removed.count, 2)
+        XCTAssertEqual(removed.habitDays.map { $0.sources.count }.reduce(0, +), 5)
+        XCTAssertFalse(removed.fact.contains("%"))
+    }
+
     func testEmptyAndOnlyUnfinishedOrExternalFactsHaveNoCards() {
         var input = QuietWinsInput()
         XCTAssertTrue(QuietWinsEngine.build(input, window: window()).cards.isEmpty)
@@ -295,7 +317,7 @@ final class QuietWinsReaderTests: XCTestCase {
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
         let manifest = try decoder.decode(ExportManifest.self,from:Data(contentsOf:legacyRoot.appendingPathComponent("manifest.json")))
         var payload = try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:legacyRoot.appendingPathComponent("data.json"))) as? [String:Any])
-        for key in ["importantDays","importantDayEntryLinks","importantDayTodoLinks","importantDayCovers","sleepRecords","sleepGoals","investmentParticipants","investmentActivities","investmentSessions","investmentOperations"] {
+        for key in ["importantDays","importantDayEntryLinks","importantDayTodoLinks","importantDayCovers","sleepRecords","sleepGoals","investmentParticipants","investmentActivities","investmentSessions","investmentOperations","todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {
             XCTAssertEqual((payload[key] as? [Any])?.count,0); payload.removeValue(forKey:key)
         }
         XCTAssertEqual((payload["captureReceipts"] as? [Any])?.count,3)

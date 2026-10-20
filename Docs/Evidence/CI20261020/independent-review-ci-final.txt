@@ -1,0 +1,35 @@
+独立终审：计数器P2、真实GitHub Actions及分支只读清点（2026-10-20）
+Reviewer：/root/independent_review。未参与实现；仅只读核查并保存本审查报告，未修改产品/测试/CI/PR/分支，未运行原生测试或重跑Actions job。
+
+结论
+固定产品/测试3ee3cb6a846a296baca7f91b705a67c10dcbe51f（最后产品实现e5b486a8c3f5746a09fc5afb5650944e55be0743）在本轮授权范围内无未关闭confirmed finding。计数器P2本地关闭、真实Actions基础门通过、分支只读清点可交付；支持在纯Docs最终交付普通推送并核对同步后恢复READY_FOR_OWNER_DEVICE_GATE。真机/VoiceOver/相机权限弹窗等历史门不因此通过。纯Docs交付SHA不冒称本轮产品/测试构建SHA。
+
+真实远端终态
+Run：https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862
+我独立直连gh run view核completed/success，event=pull_request，head=3ee3cb6a846a296baca7f91b705a67c10dcbe51f。全部三个必选job成功，未取消/忽略失败：
+- Release：https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512386907，2m45。
+- Unit：https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512387176，13m56。
+- Smoke：https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512387285，19m58。
+Optional extended job118512388947在PR事件按设计skipped；它是默认none的按需复杂UI，不计入三个必选job或Unit方法SKIP。
+
+真实构建身份与环境
+实际checkout/githubSHA=0e5169a79cc530f063fa730666fd849538340281，是PR merge ref，不是head checkout。我独立直连GitHub commit API并核归档：parents=[base 5a70f0110b151f8a45ac7c33d3f443823b1cff24, head 3ee3cb6a846a296baca7f91b705a67c10dcbe51f]；merge与head tree均ecd363c611b9904c654a5196f32a9926845574c5，亦匹配本地head^{tree}。可说明源码树一致，但不能把merge构建改称head构建。
+三个独立标准GitHub Actions runner，labels=[xcode-27]、runner_group=GitHub Actions，名1000000178/179/180；无large/xlarge/self-hosted。真实image20261012.0260.1/ARM64；macOS27.0.1(26A434)，Xcode27.0(27A266a)，SDK iOS27.0；测试实际iPhone13mini/iOS27.0(24A434)。Unit/smoke的动态模拟器UDID分别4060BE58-4D57-4EF0-9F18-D159DDFB2255与6A8A0C8A-7BFA-41B3-AB5D-B903A9C69B2B，彼此隔离，原生测试串行。
+
+必选检查的直接证据
+Release原日志包含generic/platform=iOS、Release、CODE_SIGNING_ALLOWED=NO和BUILD SUCCEEDED；bundles.json为App/ShareExtension/ImportantDaysWidget三bundle，脚本在写该文件前实际断言存在且无_CodeSignature。所审脚本未吞失败。工具产物在RUNNER_TEMP，权限Contents:read，未获取签名/发布凭据。
+Unit命令为-only-testing:PersonalGrowthOSTests整个托管iOS target，未筛选方法。原test-tests树独立递归计数583方法=582Passed/0Failed/1Skipped，与summary、tests.log一致，runtimeWarnings[]、testFailures[]。逐方法集合对比首轮582没有任何移除，仅新增未返回原区隔离负例。首轮两失败方法及新增负例均真实执行Passed；唯一Skipped仍TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure，原32MB HFS+隔离卷前置不满足，未新增skip。
+Smoke原test-tests树及summary/log均为5Passed/0Failed/0Skipped、runtimeWarnings[]。真实执行启动AppShell、最大辅助字号核心导航、计数持久化、中文普通/XXXL布局、英文本地化五个方法。未以本机PASS或配置lint代替。
+三artifact分别ios-release-1/12247963406(32148bytes)、ios-unit-1/12249001775(108238bytes)、ios-smoke-1/12248744038(51541bytes)，上传成功，元数据明确创建后3天到期。最终Actions39387986862目录sha256.json的46项已独立重算全部一致，含job原始/净化日志、环境、完整命令、summary/tests、API head/merge证据及artifact元数据。
+
+首轮失败与补修未被覆盖
+首次真实run39385273807仍保留failure：Release成功、smoke5/5成功、Unit582=579PASS/2FAIL/1原HFS+SKIP。6 failures是断言次数，不是6个失败方法。首轮48项归档hash、32项原artifact hash此前已独立复算全部相同。
+两处失败由硬编码Shanghai fixture与真实UTC.current前置不一致引起：模板提醒发生正确本地时钟迁区+8h；TC01没有真正回原区，正确保守状态为legacy。3ee仅改两测试文件，原业务断言未删除，生产/CI未改。真实.current home和等偏移不同ID peer使TC01原正例成立，保留实际editor同值明确future只恢复后继、来源终态/历史/取消/SystemStop保护；新增未回原区四组合负例继续验证legacy/native0/原generation及事实不变。37项本地定向与完整远端583方法共同证明，未通过固定全CI时区、删断言或新skip刷绿。无效NSTimeZone.default探针只失败真实时区前置断言，已明确不算业务红例。
+
+P2与清点结论复核
+沿用我此前固定51f的独立原图/像素/消费者审查：20个实际sRGB样本最低7.273151834302554:1，浅/深常态与8张真实按住原始framebuffer均>=3，31项原始source字节/hash一致；0→1→0、Today/Growth/详情、周期累计与当天计数分离、完整名称/导航、44×45目标/动态胶囊保留。3ee之后无产品改动；设置真实App黑+与系统材质排除旧宿主layer.render取图缺失。无须重开已证实P2。
+分支29远端/8本地/30并集、13开放Draft；11叠加基底、3必须保留、13合并后候选、3疑似重复。三清点finding已闭环，全部30分支local/remote独有列表曾从完整refs独立重算一致；最新3ee候选快照保留初始快照、无prune刷新、UNKNOWN/prunable/detached及未知dirty。#1单独指main、#2至#13叠加关系与后续依赖保留；两条plan只是5/5文件相同的疑似重复，不宣称git cherry+历史可丢。报告完成即交付，不等待删除批准，本轮无分支/worktree删除。
+
+边界
+本轮基础Actions回归验收已经真实通过；复杂extended UI尚未按需运行，默认分支注册限制已记录。现有Xcode Cloud testflight标签发行链不变，无tag/发布/branch protection。D1–D4、真实VoiceOver、系统相机权限弹窗、AlarmKit正向、Share/Safari及物理低空间等历史失败/未运行门保留。READY只表示本轮授权的可执行三项收敛并交接Owner设备门，不代表设备或发行通过。
+最终尚须主代理将纯Docs报告普通提交/推送原PR并核最终head/base/差异；无需重建未改产品，若出现产品/测试/CI变化则本结论需重新界定。

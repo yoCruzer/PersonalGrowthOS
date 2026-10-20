@@ -22,11 +22,30 @@ enum StorePublication {
         let lock = locks[key] ?? NSLock()
         locks[key] = lock
         registryLock.unlock()
-        lock.lock()
+        // Main-actor commands keep their input and report a retryable busy result.
+        // Background import/export workers still wait for exclusive snapshot ownership.
+        if Thread.isMainThread {
+            guard lock.try() else {throw StorePublicationFailure.busy}
+        } else {lock.lock()}
         defer { lock.unlock() }
         try Task.checkCancellation()
         return try operation()
     }
+    static func root(for container:ModelContainer) -> URL {
+        let parent=container.configurations.first!.url.deletingLastPathComponent()
+        return parent.lastPathComponent == "Store" ? parent.deletingLastPathComponent():parent
+    }
+
+    /// Only a URL crosses executors. No live persistence object waits on the worker.
+    static func waitUntilAvailable(at root:URL) async throws {
+        try await Task.detached(priority:.utility) {try perform(at:root) {}}.value
+    }
+
+}
+
+enum StorePublicationFailure: LocalizedError, Equatable {
+    case busy
+    var errorDescription:String? {String(localized:"Storage is busy. Your input is kept. Please try again.")}
 }
 
 @Model

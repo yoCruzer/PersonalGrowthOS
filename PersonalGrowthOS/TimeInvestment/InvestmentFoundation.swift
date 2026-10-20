@@ -263,17 +263,29 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
          commit: @escaping (ModelContext) throws -> Void = { try $0.save() }) {
         container = context.container; self.clock = clock; self.commit = commit
     }
-    private func transaction<T>(_ body: (ModelContext, InvestmentClock) throws -> T) throws -> T {
-        let store = container.configurations.first!.url
-        let parent = store.deletingLastPathComponent()
-        let root = parent.lastPathComponent == "Store" ? parent.deletingLastPathComponent() : parent
-        let result = try StorePublication.perform(at: root) {
-            let context = ModelContext(container); context.autosaveEnabled = false
-            do { let result = try body(context, clock()); try commit(context); return result }
-            catch { context.rollback(); throw error }
+    private func transaction<T>(change: InvestmentChange = .all, _ body: (ModelContext, InvestmentClock) throws -> T) throws -> T {
+        let root=StorePublication.root(for:container)
+        var commitAttempted=false
+        do {
+            let result = try StorePublication.perform(at: root) {
+                let context = ModelContext(container); context.autosaveEnabled = false
+                do {
+                    let result = try body(context, clock())
+                    commitAttempted=true
+                    try commit(context)
+                    return result
+                }
+                catch { context.rollback(); throw error }
+            }
+            InvestmentChanges.publish(change,container:container)
+            return result
+        } catch {
+            // A transport/commit error can follow a durable write in the injected
+            // fault contract. Invalidate the same scope and let canonical reads
+            // determine what committed; still report the original command failure.
+            if commitAttempted {InvestmentChanges.publish(change,container:container)}
+            throw error
         }
-        NotificationCenter.default.post(name: .investmentChanged, object: container)
-        return result
     }
     /// Cleanup only after successful startup integrity checks. Fresh context and the same
     /// publication lock keep unrelated editor drafts outside this logical privacy rewrite.
@@ -305,16 +317,16 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         let model = InvestmentParticipant(isDefault: true); context.insert(model); return model.id
     }
     @discardableResult func createActivity(name: String, participantID: UUID? = nil, id: UUID = UUID()) throws -> UUID {
-        try transaction { context, _ in
+        try transaction(change:.metadata) { context, _ in
             let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty, name.count <= 100 else { throw InvestmentFailure.invalid }
-            if let existing = try context.fetch(FetchDescriptor<InvestmentActivity>()).first(where: { $0.id == id }) { return existing.id }
+            if let existing = try context.fetch(FetchDescriptor<InvestmentActivity>(predicate:#Predicate {$0.id == id})).first { return existing.id }
             context.insert(InvestmentActivity(id: id, participantID: try participant(participantID, in: context), name: name)); return id
         }
     }
     func updateActivity(id: UUID, name: String, archived: Bool) throws {
-        try transaction { context, _ in
-            guard let model = try context.fetch(FetchDescriptor<InvestmentActivity>()).first(where: { $0.id == id }) else { throw InvestmentFailure.missing }
+        try transaction(change:.metadata) { context, _ in
+            guard let model = try context.fetch(FetchDescriptor<InvestmentActivity>(predicate:#Predicate {$0.id == id})).first else { throw InvestmentFailure.missing }
             let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty, name.count <= 100 else { throw InvestmentFailure.invalid }
             model.name = name; model.isArchived = archived
@@ -324,13 +336,14 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         try ModelContext(container).fetch(FetchDescriptor<InvestmentOperation>()).map(InvestmentOperationSnapshot.init)
     }
     @discardableResult func start(activityID: UUID, participantID: UUID, operationID: UUID, target: Double? = nil, zone: TimeZone = .current) throws -> UUID {
-        try transaction { context, now in
-            let all = try context.fetch(FetchDescriptor<InvestmentOperation>())
-            if let existing = all.first(where: { $0.id == operationID }) {
+        try transaction(change:.operation(operationID)) { context, now in
+            let own = try context.fetch(FetchDescriptor<InvestmentOperation>(predicate:#Predicate {$0.id == operationID}))
+            if let existing = own.first {
                 guard existing.participantID == participantID, existing.activityID == activityID else { throw InvestmentFailure.conflict }
                 return operationID // Even terminal IDs remain consumed; an old callback cannot resurrect them.
             }
-            guard !(try all.filter { $0.participantID == participantID }.contains { try $0.timer().state.unfinished }) else { throw InvestmentFailure.unfinished }
+            let all=try context.fetch(FetchDescriptor<InvestmentOperation>(predicate:#Predicate {$0.participantID == participantID}))
+            guard !(try all.contains { try $0.timer().state.unfinished }) else { throw InvestmentFailure.unfinished }
             try activity(activityID, participantID: participantID, context: context, allowArchived: false)
             var timer = InvestmentTimer(state: .paused, values: .init(day: ImportantCivilDay(now.wall, timeZone: zone).identifier,
                 timeZoneID: zone.identifier, seconds: 0, evidence: .intervals, source: .timer), target: target, checkpointAt: now.wall)
@@ -340,13 +353,13 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
         }
     }
     private func activity(_ id: UUID, participantID: UUID, context: ModelContext, allowArchived: Bool) throws {
-        guard let activity = try context.fetch(FetchDescriptor<InvestmentActivity>()).first(where: { $0.id == id && $0.participantID == participantID }) else { throw InvestmentFailure.missing }
+        guard let activity = try context.fetch(FetchDescriptor<InvestmentActivity>(predicate:#Predicate {$0.id == id && $0.participantID == participantID})).first else { throw InvestmentFailure.missing }
         if !allowArchived && activity.isArchived { throw InvestmentFailure.archived }
     }
     enum Command { case checkpoint, pause, resume, finish, discard }
     func command(_ command: Command, id: UUID, revision: Int) throws {
-        try transaction { context, clock in
-            guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>()).first(where: { $0.id == id }) else { throw InvestmentFailure.missing }
+        try transaction(change:.operation(id)) { context, clock in
+            guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>(predicate:#Predicate {$0.id == id})).first else { throw InvestmentFailure.missing }
             var timer = try op.timer()
             guard !timer.state.terminal else { return }
             guard op.revision == revision else { throw InvestmentFailure.conflict }
@@ -370,7 +383,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
     }
     @discardableResult func saveTimer(id: UUID, revision: Int, values: InvestmentValues, confirmDuplicate: Bool = false) throws -> UUID {
         try transaction { context, now in
-            guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>()).first(where: { $0.id == id }) else { throw InvestmentFailure.missing }
+            guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>(predicate:#Predicate {$0.id == id})).first else { throw InvestmentFailure.missing }
             var timer = try op.timer()
             if timer.state == .saved { return id }
             guard op.revision == revision, [.pendingSave, .targetReached, .recoveryRequired].contains(timer.state) else { throw InvestmentFailure.conflict }
@@ -383,19 +396,35 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
             return id
         }
     }
-    private func duplicates(values: InvestmentValues, participantID: UUID, excluding: UUID, context: ModelContext, confirmed: Bool) throws {
-        guard !confirmed else { return }
-        for model in try context.fetch(FetchDescriptor<InvestmentSession>()) where model.participantID == participantID && model.id != excluding {
-            let other = try model.values()
+    // Business duplicate/overlap validation deliberately scans all formal time evidence.
+    // It runs on an explicit save/review command, never on draft event refresh.
+    func matchingSessionIDs(values: InvestmentValues,participantID: UUID,excluding: UUID) throws -> [UUID] {
+        try matchingSessionIDs(values:values,participantID:participantID,excluding:excluding,context:ModelContext(container))
+    }
+    private func matchingSessionIDs(values: InvestmentValues,participantID: UUID,excluding: UUID,context: ModelContext) throws -> [UUID] {
+        var matches: [(UUID,String,Date)] = []
+        try context.enumerate(FetchDescriptor<InvestmentSession>(predicate:#Predicate {$0.participantID == participantID}),batchSize:256) {model in
+            guard model.id != excluding else {return}
+            let other=try model.values()
             if values.evidence == .intervals && other.evidence == .intervals {
-                if values.spans.contains(where: { a in other.spans.contains { b in a.start < b.end && b.start < a.end } }) { throw InvestmentFailure.duplicate }
-            } else if values.day == other.day && values.seconds == other.seconds { throw InvestmentFailure.duplicate }
+                if values.spans.contains(where:{a in other.spans.contains {b in a.start < b.end && b.start < a.end}}) {matches.append((model.id,other.day,model.createdAt))}
+            } else if values.day == other.day && values.seconds == other.seconds {matches.append((model.id,other.day,model.createdAt))}
         }
+        return matches.sorted {
+            if $0.1 != $1.1 {return $0.1 > $1.1}
+            if $0.2 != $1.2 {return $0.2 > $1.2}
+            return $0.0.uuidString < $1.0.uuidString
+        }.map {$0.0}
+    }
+    private func duplicates(values: InvestmentValues, participantID: UUID, excluding: UUID, context: ModelContext, confirmed: Bool) throws {
+        guard !confirmed else {return}
+        if try !matchingSessionIDs(values:values,participantID:participantID,excluding:excluding,context:context).isEmpty {throw InvestmentFailure.duplicate}
     }
     @discardableResult func saveManual(id: UUID, participantID: UUID, activityID: UUID, values: InvestmentValues, expectedRevision: Int? = nil, confirmDuplicate: Bool = false, draftID: UUID? = nil) throws -> UUID {
         try transaction { context, now in
-            let records = try context.fetch(FetchDescriptor<InvestmentSession>())
-            let operations = try context.fetch(FetchDescriptor<InvestmentOperation>())
+            let records = try context.fetch(FetchDescriptor<InvestmentSession>(predicate:#Predicate {$0.id == id}))
+            let operationKeys=[id]+(draftID.map {[$0]} ?? [])
+            let operations = try context.fetch(FetchDescriptor<InvestmentOperation>(predicate:#Predicate {operationKeys.contains($0.id)}))
             let existing = records.first { $0.id == id }
             if existing == nil, let consumed = operations.first(where: { $0.id == id }), try consumed.timer().state != .draft { throw InvestmentFailure.conflict }
             if let existing {
@@ -438,15 +467,15 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
     @discardableResult func storeDraft(id: UUID, participantID: UUID, activityID: UUID, values: InvestmentValues,
         durationText: String, editingSessionID: UUID? = nil, editingRevision: Int? = nil,
         expectedRevision: Int? = nil, timerConfirmation: Bool = false) throws -> Int {
-        try transaction { context, now in
+        try transaction(change:.operation(id)) { context, now in
             try activity(activityID, participantID: participantID, context: context, allowArchived: true)
             guard values.seconds.isFinite, values.seconds >= 0, values.seconds <= 366 * 86400,
                   durationText.count <= 50, values.note.count <= 4000, values.feeling.map({ (1...5).contains($0) }) ?? true,
                   TimeZone(identifier: values.timeZoneID) != nil, ImportantCivilDay(identifier: values.day) != nil else { throw InvestmentFailure.invalid }
             if let editingSessionID {
-                guard try context.fetch(FetchDescriptor<InvestmentSession>()).contains(where: {$0.id == editingSessionID && $0.participantID == participantID}) else {throw InvestmentFailure.missing}
+                guard try context.fetchCount(FetchDescriptor<InvestmentSession>(predicate:#Predicate {$0.id == editingSessionID && $0.participantID == participantID})) == 1 else {throw InvestmentFailure.missing}
             }
-            let all = try context.fetch(FetchDescriptor<InvestmentOperation>())
+            let all = try context.fetch(FetchDescriptor<InvestmentOperation>(predicate:#Predicate {$0.id == id}))
             let model: InvestmentOperation
             if let existing = all.first(where: { $0.id == id }) {
                 guard existing.participantID == participantID else {throw InvestmentFailure.conflict}
@@ -479,9 +508,9 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
     }
     func delete(id: UUID, revision: Int) throws {
         try transaction { context, clock in
-            guard let model = try context.fetch(FetchDescriptor<InvestmentSession>()).first(where: { $0.id == id }) else { throw InvestmentFailure.missing }
+            guard let model = try context.fetch(FetchDescriptor<InvestmentSession>(predicate:#Predicate {$0.id == id})).first else { throw InvestmentFailure.missing }
             guard model.revision == revision else { throw InvestmentFailure.conflict }
-            guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>()).first(where: { $0.id == id }) else { throw InvestmentFailure.invalid }
+            guard let op = try context.fetch(FetchDescriptor<InvestmentOperation>(predicate:#Predicate {$0.id == id})).first else { throw InvestmentFailure.invalid }
             var timer = try op.timer(); timer.state = .deleted; timer = timer.erasingConsumedContent()
             op.payload = try JSONEncoder().encode(timer); op.revision = try InvestmentRevision.next(op.revision); op.updatedAt = max(op.updatedAt, clock.wall); context.delete(model)
             for draft in try context.fetch(FetchDescriptor<InvestmentOperation>()) where draft.id != id {
@@ -529,5 +558,165 @@ enum InvestmentReview {
         let lower = days.flatMap { today.adding(days: 1 - $0)?.identifier }
         return rows.filter { (activityID == nil || $0.activityID == activityID) && (lower == nil || ($0.day >= lower! && $0.day <= today.identifier)) }
     }
+    static func periodForInspection(days: Int, day: ImportantCivilDay, today: ImportantCivilDay) -> Int {
+        guard days != 0 else {return 0}
+        return day < today.adding(days:1-days)! || day > today ? 0:days
+    }
     static func count(_ rows: [InvestmentContribution]) -> Int { Set(rows.map(\.sessionID)).count }
+}
+
+
+/// Derived only from one immutable formal-fact snapshot. Drafts and timer projections never enter it.
+struct InvestmentReviewSnapshot {
+    let contributions: [InvestmentContribution]
+    let activitySeconds: [UUID: Double]
+    let orderedSessionIDs: [UUID]
+    init(contributions: [InvestmentContribution], orderedSessionIDs: [UUID]) {
+        self.contributions=contributions;self.orderedSessionIDs=orderedSessionIDs
+        activitySeconds=contributions.reduce(into:[:]) {$0[$1.activityID,default:0] += $1.seconds}
+    }
+    init(sessions: [InvestmentSessionTransfer], participantID: UUID?) throws {
+        let facts = sessions.filter { $0.participantID == participantID }
+        contributions = try facts.flatMap { try InvestmentReview.contributions(id:$0.id,activityID:$0.activityID,values:$0.values) }
+        activitySeconds = contributions.reduce(into:[:]) { $0[$1.activityID,default:0] += $1.seconds }
+        orderedSessionIDs = facts.sorted {
+            if $0.values.day != $1.values.day { return $0.values.day > $1.values.day }
+            if $0.createdAt != $1.createdAt { return $0.createdAt > $1.createdAt }
+            return $0.id.uuidString < $1.id.uuidString
+        }.map(\.id)
+    }
+    func selection(days: Int?, today: ImportantCivilDay, activityID: UUID?, day: String?) -> InvestmentReviewSelection {
+        let period = InvestmentReview.window(contributions,days:days,today:today,activityID:activityID)
+        let rows = day.map { chosen in period.filter { $0.day == chosen } } ?? period
+        let ids = Set(rows.map(\.sessionID))
+        return .init(rows:rows,daySeconds:period.reduce(into:[:]) { $0[$1.day,default:0] += $1.seconds },
+                     orderedSessionIDs:orderedSessionIDs.filter { ids.contains($0) })
+    }
+}
+struct InvestmentReviewSelection {
+    let rows: [InvestmentContribution]
+    let daySeconds: [String: Double]
+    let orderedSessionIDs: [UUID]
+    var seconds: Double { rows.reduce(0) { $0 + $1.seconds } }
+    var count: Int { orderedSessionIDs.count }
+    func pageIDs(offset: Int, limit: Int = 20) -> [UUID] {
+        Array(orderedSessionIDs.dropFirst(max(0,offset)).prefix(min(50,max(0,limit))))
+    }
+}
+
+/// Process-local invalidation metadata contains identities only, never saved content.
+/// Unclassified import/restore changes invalidate everything; draft commands name one operation.
+enum InvestmentChange {
+    case all, metadata, operation(UUID)
+}
+@MainActor enum InvestmentChanges {
+    final class Version {
+        weak var container: ModelContainer?
+        var sequence=0, facts=0, metadata=0, operations=0
+        var operationIDs: [UUID:Int] = [:]
+        init(_ container: ModelContainer) {self.container=container}
+    }
+    private static var versions: [ObjectIdentifier:Version] = [:]
+    static func version(_ container: ModelContainer) -> Version {
+        versions=versions.filter {$0.value.container != nil}
+        let key=ObjectIdentifier(container)
+        if let version=versions[key],version.container === container {return version}
+        let value=Version(container);versions[key]=value;return value
+    }
+    static func publish(_ change: InvestmentChange, container: ModelContainer) {
+        let value=version(container);value.sequence += 1
+        switch change {
+        case .all: value.facts=value.sequence;value.metadata=value.sequence;value.operations=value.sequence;value.operationIDs=[:]
+        case .metadata: value.metadata=value.sequence
+        case .operation(let id): value.operationIDs[id]=value.sequence
+        }
+        NotificationCenter.default.post(name:.investmentChanged,object:container,userInfo:["sequence":value.sequence])
+    }
+}
+
+struct InvestmentReadEvent {
+    enum Purpose: String {case metadata, factBatch, operationBatch, operationIDs, page, detail}
+    let purpose: Purpose
+    let rows: Int
+    let decoded: Int
+}
+/// Full old payloads are decoded only in bounded temporary batches. The workspace
+/// keeps civil-day contributions and ordering identities, never all notes or spans.
+@MainActor final class InvestmentUIReader {
+    var observe: (InvestmentReadEvent) throws -> Void
+    init(observe: @escaping (InvestmentReadEvent) throws -> Void = {_ in}) {self.observe=observe}
+    func metadata(_ container: ModelContainer) throws -> ([InvestmentParticipantTransfer],[InvestmentActivityTransfer]) {
+        try observe(.init(purpose:.metadata,rows:0,decoded:0))
+        let context=ModelContext(container)
+        return (try context.fetch(FetchDescriptor<InvestmentParticipant>()).map(InvestmentParticipantTransfer.init),try context.fetch(FetchDescriptor<InvestmentActivity>()).map(InvestmentActivityTransfer.init))
+    }
+    func review(_ container: ModelContainer, participantID: UUID?) throws -> InvestmentReviewSnapshot {
+        var rows: [InvestmentContribution] = [],order: [(UUID,String,Date)] = []
+        var query=FetchDescriptor<InvestmentSession>(sortBy:[SortDescriptor(\.id)])
+        if let participantID {query.predicate = #Predicate {$0.participantID == participantID}}
+        else {return .init(contributions:[],orderedSessionIDs:[])}
+        var offset=0
+        while true {
+            query.fetchOffset=offset;query.fetchLimit=256
+            let count=try autoreleasepool {
+                try observe(.init(purpose:.factBatch,rows:0,decoded:0))
+                let batchContext=ModelContext(container);batchContext.autosaveEnabled=false
+                let batch=try batchContext.fetch(query)
+                for model in batch {
+                    try observe(.init(purpose:.factBatch,rows:1,decoded:1))
+                    let values=try model.values()
+                    rows += try InvestmentReview.contributions(id:model.id,activityID:model.activityID,values:values)
+                    order.append((model.id,values.day,model.createdAt))
+                }
+                return batch.count
+            }
+            if count < 256 {break};offset += count
+        }
+        order.sort {if $0.1 != $1.1 {return $0.1 > $1.1};if $0.2 != $1.2 {return $0.2 > $1.2};return $0.0.uuidString < $1.0.uuidString}
+        return .init(contributions:rows,orderedSessionIDs:order.map {$0.0})
+    }
+    struct OperationRead {
+        var active: [InvestmentOperationSnapshot] = []
+        var erased: Set<UUID> = []
+        var touched: Set<UUID> = []
+    }
+    func operations(_ container: ModelContainer, ids: Set<UUID>? = nil) throws -> OperationRead {
+        var query=FetchDescriptor<InvestmentOperation>(sortBy:[SortDescriptor(\.id)])
+        let purpose: InvestmentReadEvent.Purpose=ids == nil ? .operationBatch:.operationIDs
+        if let ids {let keys=Array(ids);query.predicate = #Predicate {keys.contains($0.id)}}
+        var result=OperationRead(),offset=0
+        while true {
+            query.fetchOffset=offset;query.fetchLimit=256
+            let count=try autoreleasepool {
+                try observe(.init(purpose:purpose,rows:0,decoded:0))
+                let batchContext=ModelContext(container);batchContext.autosaveEnabled=false
+                let batch=try batchContext.fetch(query)
+                for model in batch {
+                    try observe(.init(purpose:purpose,rows:1,decoded:1))
+                    let op=try InvestmentOperationSnapshot(model)
+                    // A full scan releases all saved payloads; an ID scan also reports tombstones.
+                    result.touched.insert(op.id)
+                    if op.timer.erasesContent {result.erased.insert(op.id)}
+                    if !op.timer.state.terminal {result.active.append(op)}
+                }
+                return batch.count
+            }
+            if count < 256 {break};offset += count
+        }
+        return result
+    }
+    func page(_ container: ModelContainer,ids: [UUID],detail: Bool = false) throws -> [InvestmentSessionTransfer] {
+        guard !ids.isEmpty else {return []}
+        guard ids.count <= 20 else {throw InvestmentFailure.invalid}
+        let purpose: InvestmentReadEvent.Purpose=detail ? .detail:.page
+        try observe(.init(purpose:purpose,rows:0,decoded:0))
+        let read=ModelContext(container)
+        var query=FetchDescriptor<InvestmentSession>(predicate:#Predicate {ids.contains($0.id)});query.fetchLimit=20
+        let rows=try read.fetch(query).map {model in
+            try observe(.init(purpose:purpose,rows:1,decoded:1))
+            return try InvestmentSessionTransfer(model)
+        }
+        let lookup=Dictionary(uniqueKeysWithValues:rows.map {($0.id,$0)})
+        return ids.compactMap {lookup[$0]}
+    }
 }

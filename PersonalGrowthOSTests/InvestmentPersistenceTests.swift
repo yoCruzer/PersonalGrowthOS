@@ -3,6 +3,8 @@ import SwiftData
 import XCTest
 import UIKit
 import CryptoKit
+import Combine
+import Darwin
 @testable import PersonalGrowthOS
 
 @MainActor final class InvestmentPersistenceTests: XCTestCase {
@@ -218,9 +220,12 @@ import CryptoKit
             var op=try InvestmentOperationTransfer(model);op.timer=try model.timer();return op
         }.sorted {$0.id.uuidString < $1.id.uuidString}
         let encoder=JSONEncoder();encoder.dateEncodingStrategy = .secondsSince1970
-        let bytes=try encoder.encode(legacy);try bytes.write(to:extracted.appendingPathComponent("data.json"))
+        var payload=try XCTUnwrap(JSONSerialization.jsonObject(with:encoder.encode(legacy)) as? [String:Any])
+        for key in ["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {payload.removeValue(forKey:key)}
+        let bytes=try JSONSerialization.data(withJSONObject:payload,options:.sortedKeys);try bytes.write(to:extracted.appendingPathComponent("data.json"))
         let manifestURL=extracted.appendingPathComponent("manifest.json")
         var manifest=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:manifestURL)) as? [String:Any])
+        manifest["packageSchemaVersion"]=10;manifest["objectCounts"]=legacy.objectCounts(forPackageSchemaVersion:10)
         var dataFile=try XCTUnwrap(manifest["dataFile"] as? [String:Any]);dataFile["byteCount"]=bytes.count;dataFile["sha256"]=SHA256.hash(data:bytes).map {String(format:"%02x",$0)}.joined();manifest["dataFile"]=dataFile
         try JSONSerialization.data(withJSONObject:manifest,options:.sortedKeys).write(to:manifestURL)
         let archive=folder.appendingPathComponent("legacy-terminal.zip")
@@ -740,7 +745,7 @@ import CryptoKit
             timeZoneID:zone.identifier,seconds:seconds,evidence:.dateDuration,source:.manual)
         try service.saveManual(id:id,participantID:participant,activityID:activity,values:values)
         let workspace = InvestmentWorkspace(); workspace.refresh(c.mainContext)
-        let editor = workspace.edit(try XCTUnwrap(workspace.sessions.first))
+        let editor = workspace.edit(try XCTUnwrap(workspace.session(id:id,context:c.mainContext)))
         XCTAssertEqual(InvestmentFormatting.minutes(2700),"45")
         XCTAssertTrue(editor.hasValidDuration,editor.durationText)
         XCTAssertGreaterThan(try XCTUnwrap(Double(editor.durationText)),0)
@@ -780,7 +785,7 @@ import CryptoKit
         _ = try await ImportExportService(context:target.mainContext,mediaStore:MediaStore(rootURL:targetRoot),availableCapacity:{.max}).importPackage(from:lease.url)
         let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
         let restored=InvestmentWorkspace();restored.refresh(reopened.mainContext)
-        XCTAssertTrue(restored.sessions.isEmpty)
+        XCTAssertTrue(restored.review?.orderedSessionIDs.isEmpty == true)
         let draft=try XCTUnwrap(restored.drafts.first);XCTAssertEqual(draft.id,editor.id)
         let restoredEditor=restored.editor(for:draft)
         XCTAssertEqual(restoredEditor.durationText,"invalid synthetic duration")
@@ -797,4 +802,579 @@ import CryptoKit
         XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(source)),before)
     }
 
+    func testUsageFiveYearSnapshotReusesStatisticsAndBoundsRealDiskPageThenRefreshesChanges() async throws {
+        let folder=try root(),container=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("usage-review.sqlite"))
+        let context=ModelContext(container),p=InvestmentParticipant(name:"Synthetic default",isDefault:true)
+        let a=InvestmentActivity(participantID:p.id,name:"Synthetic archive history")
+        a.isArchived=true;context.insert(p);context.insert(a)
+        let today=ImportantCivilDay(identifier:"2026-10-18")!
+        for i in 0..<10000 {
+            let day=today.adding(days:-(i % 1826))!
+            var values=InvestmentValues(day:day.identifier,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual)
+            if i % 100 == 0 {
+                let start=day.instant(minutes:600,timeZone:zone)!
+                values.evidence = .intervals;values.spans=[.init(start:start,end:start.addingTimeInterval(30)),.init(start:start.addingTimeInterval(60),end:start.addingTimeInterval(90))]
+                values.note=String(repeating:"Synthetic long saved note ",count:100)
+            }
+            let id=UUID()
+            context.insert(try InvestmentSession(id:id,participantID:p.id,activityID:a.id,values:values,now:day.date!.addingTimeInterval(86400)))
+            context.insert(try InvestmentOperation(id:id,participantID:p.id,activityID:a.id,
+                timer:.init(state:.saved,values:values,target:nil,checkpointAt:day.date!.addingTimeInterval(86400)),now:day.date!.addingTimeInterval(86400)))
+        }
+        try context.save();try InvestmentIntegrity.validate(context:ModelContext(container))
+        var events: [InvestmentReadEvent] = [],readFailure=false
+        let reader=InvestmentUIReader(observe:{event in
+            events.append(event) // Count attempts before any injected read failure.
+            if readFailure && event.purpose == .factBatch {throw CocoaError(.fileReadUnknown)}
+        })
+        func peakResidentBytes() -> Int64 {var value=rusage();getrusage(RUSAGE_SELF,&value);return Int64(value.ru_maxrss)}
+        let peakBefore=peakResidentBytes()
+        let workspace=InvestmentWorkspace(reader:reader),start=Date();workspace.refresh(context)
+        print("USAGE_INVESTMENT_10000_DISK_REFRESH_SECONDS=\(Date().timeIntervalSince(start))")
+        print("REVIEW_F5_HOST_PEAK_RSS_BYTES beforeRefresh=\(peakBefore) afterRefresh=\(peakResidentBytes()) includesFixtureAndTestHost=true")
+        XCTAssertNil(workspace.reviewError)
+        let snapshot=try XCTUnwrap(workspace.review)
+        XCTAssertEqual(snapshot.activitySeconds[a.id],600000)
+        XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:a.id,day:nil).daySeconds.count,1826)
+        XCTAssertEqual(events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded},10000)
+        XCTAssertEqual(events.filter {$0.purpose == .operationBatch}.reduce(0) {$0+$1.decoded},10000)
+        XCTAssertTrue(workspace.operations.isEmpty) // no saved Operation payloads are retained
+        var delivered: XCTestExpectation?,awaitedSequences=Set<Int>()
+        let subscription=NotificationCenter.default.publisher(for:.investmentChanged).receive(on:RunLoop.main).sink {notification in
+            MainActor.assumeIsolated {
+                guard notification.object as? ModelContainer === container else {return}
+                workspace.receive(notification,context:context)
+                if let sequence=notification.userInfo?["sequence"] as? Int,awaitedSequences.remove(sequence) != nil {delivered?.fulfill()}
+            }
+        }
+        defer {subscription.cancel()}
+        func event(count: Int = 1,_ action: () throws -> Void) async throws {
+            let expected=expectation(description:"Service → event → Workspace")
+            expected.expectedFulfillmentCount=count;delivered=expected
+            let before=InvestmentChanges.version(container).sequence
+            try action()
+            let after=InvestmentChanges.version(container).sequence
+            XCTAssertEqual(after-before,count)
+            awaitedSequences=Set((before+1)...after)
+            await fulfillment(of:[expected],timeout:5);delivered=nil
+        }
+        var time=InvestmentClock(wall:Date(),uptime:100,processID:"review-f5-continuous")
+        let live=InvestmentService(context:context,clock:{time})
+        let originalFactReads=events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded}
+        let originalOperationReads=events.filter {$0.purpose == .operationBatch}.reduce(0) {$0+$1.decoded}
+        let initialFactFetches=events.filter {$0.purpose == .factBatch && $0.rows == 0}.count
+        let initialOperationFetches=events.filter {$0.purpose == .operationBatch && $0.rows == 0}.count
+        XCTAssertEqual(initialFactFetches,40);XCTAssertEqual(initialOperationFetches,40)
+        try await event {try live.updateActivity(id:a.id,name:"Renamed history",archived:false)}
+        let draft=try workspace.newEditor(activityID:a.id)
+        for i in 0..<4 {
+            draft.values.note="Last durable draft \(i)";draft.durationText=String(31+i);draft.values.changeDuration(Double(31+i)*60)
+            try await event {XCTAssertTrue(draft.persist(context))}
+        }
+        let timerID=UUID()
+        try await event {_ = try live.start(activityID:a.id,participantID:p.id,operationID:timerID,zone:zone)}
+        time.wall.addTimeInterval(10);time.uptime += 10
+        try await event(count:2) {workspace.checkpoint(context,clock:{time})}
+        try await event {try live.command(.pause,id:timerID,revision:XCTUnwrap(workspace.unfinished.first?.revision))}
+        try await event {try live.command(.resume,id:timerID,revision:XCTUnwrap(workspace.unfinished.first?.revision))}
+        XCTAssertEqual(events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded},originalFactReads)
+        XCTAssertEqual(events.filter {$0.purpose == .operationBatch}.reduce(0) {$0+$1.decoded},originalOperationReads)
+        let cold=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("usage-review.sqlite"))
+        let recovered=InvestmentWorkspace();recovered.refresh(cold.mainContext)
+        XCTAssertEqual(recovered.drafts.first?.timer.values.note,"Last durable draft 3")
+        XCTAssertEqual(recovered.drafts.first?.timer.durationText,"34")
+        draft.values.note="Unsaved retained input"
+        XCTAssertFalse(draft.persist(context,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+        XCTAssertNotNil(draft.error);XCTAssertEqual(draft.values.note,"Unsaved retained input")
+        let disk=try InvestmentService(context:cold.mainContext).operations().first {$0.id == draft.id}
+        XCTAssertEqual(disk?.timer.values.note,"Last durable draft 3")
+        print("REVIEW_F5_CHAIN factDecoded=\(originalFactReads) operationBatchDecoded=\(originalOperationReads) initialFactFetches=\(initialFactFetches) initialOperationFetches=\(initialOperationFetches) afterDraftAndTimerFactFetches=\(events.filter {$0.purpose == .factBatch && $0.rows == 0}.count) afterDraftAndTimerOperationFetches=\(events.filter {$0.purpose == .operationBatch && $0.rows == 0}.count) afterDraftAndTimerFactDecoded=\(events.filter {$0.purpose == .factBatch}.reduce(0) {$0+$1.decoded}) operationIDDecoded=\(events.filter {$0.purpose == .operationIDs}.reduce(0) {$0+$1.decoded})")
+        let generation=workspace.reviewGeneration
+        workspace.refresh(context);XCTAssertEqual(workspace.reviewGeneration,generation)
+        let chosen=snapshot.selection(days:nil,today:today,activityID:a.id,day:nil)
+        let first=chosen.pageIDs(offset:0),second=chosen.pageIDs(offset:20)
+        XCTAssertEqual(first.count,20);XCTAssertEqual(second.count,20);XCTAssertTrue(Set(first).isDisjoint(with:second))
+        let decodedBefore=events.reduce(0) {$0+($1.purpose == .page ? $1.decoded:0)}
+        let page=try reader.page(container,ids:first)
+        let nextPage=try reader.page(container,ids:second)
+        XCTAssertEqual(nextPage.map(\.id),second)
+        XCTAssertEqual(events.reduce(0) {$0+($1.purpose == .page ? $1.decoded:0)}-decodedBefore,40)
+        let detailed=try workspace.session(id:second[0],context:context)
+        XCTAssertEqual(detailed?.id,second[0]);XCTAssertEqual(events.filter {$0.purpose == .detail}.reduce(0) {$0+$1.decoded},1)
+        XCTAssertEqual(page.count,20);XCTAssertEqual(Set(page.map(\.id)),Set(first))
+        let edit=try XCTUnwrap(page.first)
+        let service=InvestmentService(context:context)
+        var values=edit.values;values.changeDuration(120)
+        try service.saveManual(id:edit.id,participantID:p.id,activityID:a.id,values:values,expectedRevision:edit.revision,confirmDuplicate:true)
+        workspace.refresh(context);XCTAssertEqual(workspace.review?.activitySeconds[a.id],600060)
+        XCTAssertGreaterThan(workspace.reviewGeneration,generation)
+        let changed=try XCTUnwrap(workspace.session(id:edit.id,context:context))
+        try service.delete(id:edit.id,revision:changed.revision)
+        workspace.refresh(context);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+        XCTAssertEqual(workspace.review?.orderedSessionIDs.count,9999)
+        // Corrupt payload is an explicit read failure, followed by successful retry, never a false zero.
+        let read=ModelContext(container),bad=try XCTUnwrap(read.fetch(FetchDescriptor<InvestmentSession>()).first)
+        let original=bad.valueData;bad.valueData=Data("invalid synthetic payload".utf8);try read.save();InvestmentChanges.publish(.all,container:container)
+        workspace.refresh(context);XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
+        bad.valueData=original;try read.save();InvestmentChanges.publish(.all,container:container);workspace.refresh(context)
+        XCTAssertNil(workspace.reviewError);XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+        readFailure=true;InvestmentChanges.publish(.all,container:container);workspace.refresh(context)
+        XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
+        let failedReads=events.filter {$0.purpose == .factBatch}.count
+        for index in 0..<2 {
+            draft.values.note="Draft while statistics unavailable \(index)"
+            try await event {XCTAssertTrue(draft.persist(context))}
+        }
+        XCTAssertNil(workspace.review);XCTAssertNotNil(workspace.reviewError)
+        XCTAssertEqual(events.filter {$0.purpose == .factBatch}.count,failedReads)
+        readFailure=false;workspace.refresh(context,retry:true)
+        XCTAssertEqual(workspace.review?.activitySeconds[a.id],599940)
+        let export=try await transfer(container,folder).exportPackage();defer {export.cleanup()}
+        let targetRoot=try root(),target=try PersistenceContainerFactory.makeOnDisk(at:targetRoot.appendingPathComponent("imported.sqlite"))
+        let imported=InvestmentWorkspace();imported.refresh(target.mainContext)
+        XCTAssertEqual(imported.review?.orderedSessionIDs.count,0)
+        let importedEvent=expectation(description:"Import → event → Workspace")
+        let importSubscription=NotificationCenter.default.publisher(for:.investmentChanged).receive(on:RunLoop.main).sink {notification in
+            MainActor.assumeIsolated {
+                guard notification.object as? ModelContainer === target else {return}
+                imported.receive(notification,context:target.mainContext);importedEvent.fulfill()
+            }
+        }
+        _ = try await transfer(target,targetRoot).importPackage(from:export.url)
+        await fulfillment(of:[importedEvent],timeout:5);importSubscription.cancel()
+        XCTAssertEqual(imported.review?.orderedSessionIDs.count,9999)
+        XCTAssertEqual(imported.review?.activitySeconds[a.id],599940)
+        XCTAssertNil(try imported.session(id:edit.id,context:target.mainContext))
+        let importedIDs=Array(try XCTUnwrap(imported.review?.orderedSessionIDs).prefix(20))
+        XCTAssertEqual(try imported.reader.page(target,ids:importedIDs).map(\.id),importedIDs)
+        print("REVIEW_F5_PAGE pageDecoded=40 detailDecodedBeforeEdits=1 initialSavedPayloadsRetained=0 batchesOfAtMost=256 peakRSSScope=wholeHostIncludingFixture")
+    }
+
+    func testUsageV14StartupMigrationKeepsLatestProtectionAndAddsNoDefaultSettings() throws {
+        let folder=try root(),url=folder.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        try FileManager.default.createDirectory(at:url.deletingLastPathComponent(),withIntermediateDirectories:true)
+        let entryID=UUID(),factID=UUID(),taskID=UUID()
+        var latestProtection: URL!
+        try autoreleasepool {
+            let schema=Schema(versionedSchema:PersonalGrowthSchemaV14.self)
+            let old=try ModelContainer(for:schema,configurations:[ModelConfiguration(schema:schema,url:url,cloudKitDatabase:.none)])
+            let context=old.mainContext
+            let entry=Entry(id:entryID,body:"Synthetic older protection",createdAt:clock.wall);context.insert(entry)
+            let participant=InvestmentParticipant(),activity=InvestmentActivity(participantID:participant.id,name:"Synthetic V14 activity")
+            context.insert(participant);context.insert(activity)
+            let values=InvestmentValues(day:"2026-10-15",timeZoneID:zone.identifier,seconds:300,evidence:.dateDuration,source:.manual)
+            context.insert(try InvestmentSession(id:factID,participantID:participant.id,activityID:activity.id,values:values,now:clock.wall))
+            context.insert(try InvestmentOperation(id:factID,participantID:participant.id,activityID:activity.id,timer:.init(state:.saved,values:values,target:nil,checkpointAt:clock.wall),now:clock.wall))
+            let task=TodoTask(id:taskID,title:"Synthetic V14 todo",createdAt:clock.wall);context.insert(task)
+            context.insert(TodoTaskEvent(taskID:task.id,sequence:0,kind:.created,occurredAt:clock.wall,createdAt:clock.wall,beforeValue:nil,afterValue:try JSONEncoder().encode(TodoEventValue(task))))
+            context.insert(WeightRecord(weightKilograms:72,recordedAt:clock.wall,createdAt:clock.wall))
+            context.insert(try SleepRecord(wakeDay:"2026-10-15",timeZoneID:zone.identifier,values:SleepValues(feeling:4),createdAt:clock.wall))
+            try context.save()
+            let older=try StartupRetainedData.capture(rootURL:folder,purpose:.beforeMigration)
+            entry.body="Synthetic latest V14 fact";try context.save()
+            latestProtection=try StartupRetainedData.capture(rootURL:folder,purpose:.beforeMigration).snapshotURL
+            XCTAssertNotEqual(older.snapshotURL,latestProtection)
+            XCTAssertFalse(StartupStoreProtection.isCurrentStore(at:url))
+        }
+        let app=try AppContainer.make(configuration:AppConfiguration(launchMode:.uiTesting,resetDataOnLaunch:false),rootURLOverride:folder)
+        let read=ModelContext(app.modelContainer)
+        XCTAssertTrue(StartupStoreProtection.isCurrentStore(at:url))
+        XCTAssertEqual(try read.fetch(FetchDescriptor<Entry>()).first?.body,"Synthetic latest V14 fact")
+        XCTAssertEqual(try read.fetch(FetchDescriptor<TodoTask>()).first?.id,taskID)
+        XCTAssertEqual(try read.fetch(FetchDescriptor<InvestmentSession>()).first?.id,factID)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<BodyReferenceSettings>()),0)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoSeriesPreferences>()),0)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoReminderIntent>()),0)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoReminderDeviceRecord>()),0)
+        let schema=Schema(versionedSchema:PersonalGrowthSchemaV14.self),retainedURL=latestProtection.appendingPathComponent("Store/PersonalGrowthOS.sqlite")
+        let retained=try ModelContainer(for:schema,configurations:[ModelConfiguration(schema:schema,url:retainedURL,allowsSave:false,cloudKitDatabase:.none)])
+        XCTAssertEqual(try retained.mainContext.fetch(FetchDescriptor<Entry>()).first?.body,"Synthetic latest V14 fact")
+        let expected=try TransferSnapshot.make(context:read),reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(reopened)),expected)
+    }
+    func testUsageV11ActualZIPSettingsRoundTripRollbackEmptyGuardAndDeviceJournalExclusion() async throws {
+        let folder=try root(),source=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("source.sqlite"))
+        let service=TodoTaskService(context:source.mainContext,now:{self.clock.wall})
+        let task=try service.create(.init(title:"Synthetic alarm intent",plannedDay:"2026-10-16",remindAt:clock.wall.addingTimeInterval(3600),frequency:.daily,reminderChannel:.alarm))
+        try service.rescheduleReminder(id:task.id,to:clock.wall.addingTimeInterval(4800),channel:.alarm)
+        let intent=try XCTUnwrap(service.reminderIntent(for:task.id))
+        XCTAssertTrue(intent.isInstanceOverride)
+        source.mainContext.insert(BodyReferenceSettings(heightCentimeters:175.5,reference:.who))
+        source.mainContext.insert(TodoReminderDeviceRecord(taskID:task.id,intentGeneration:intent.generation,channel:.alarm,fireAt:try XCTUnwrap(service.task(id:task.id).remindAt),phase:.accepted))
+        try source.mainContext.save();try UsagePreferencesIntegrity.validate(context:ModelContext(source))
+        let before=try TransferSnapshot.make(context:ModelContext(source))
+        let lease=try await transfer(source,folder).exportPackage();defer {lease.cleanup()}
+        let (exported,extracted)=try zipData(lease.url)
+        XCTAssertEqual(exported,before);XCTAssertEqual(ExportManifest.currentPackageSchemaVersion,11)
+        let bytes=try Data(contentsOf:extracted.appendingPathComponent("data.json"))
+        XCTAssertFalse(String(decoding:bytes,as:UTF8.self).contains("intentGeneration"))
+        let destination=try root(),targetURL=destination.appendingPathComponent("target.sqlite"),target=try PersistenceContainerFactory.makeOnDisk(at:targetURL)
+        let failing=transfer(target,destination,checkpoint:{if $0 == .beforeSave {throw CocoaError(.fileWriteOutOfSpace)}})
+        do {_ = try await failing.importPackage(from:lease.url);XCTFail("Injected publication failure ignored")} catch {}
+        XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(target)).totalObjectCount,0)
+        _ = try await transfer(target,destination).importPackage(from:lease.url)
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:targetURL),read=ModelContext(reopened)
+        XCTAssertEqual(try TransferSnapshot.make(context:read),before)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<TodoReminderDeviceRecord>()),0)
+        let onlySettings=try root(),settingsStore=try PersistenceContainerFactory.makeOnDisk(at:onlySettings.appendingPathComponent("settings.sqlite"))
+        settingsStore.mainContext.insert(BodyReferenceSettings(heightCentimeters:180));try settingsStore.mainContext.save()
+        do {_ = try await transfer(settingsStore,onlySettings).importPackage(from:lease.url);XCTFail("Settings-only target accepted")} catch {XCTAssertEqual(error as? TransferPackageError,.targetNotEmpty)}
+        XCTAssertEqual(try ModelContext(settingsStore).fetch(FetchDescriptor<BodyReferenceSettings>()).first?.heightCentimeters,180)
+        XCTAssertThrowsError(try exported.validateUsagePreferences(packageVersion:10))
+        var body=try XCTUnwrap(exported.bodyReferenceSettings.first);body.heightCentimeters = .infinity
+        let invalid=TransferData(entries:[],images:[],tags:[],links:[],habits:[],habitLogs:[],goals:[],goalEvents:[],bodyReferenceSettings:[body])
+        XCTAssertThrowsError(try invalid.validateUsagePreferences(packageVersion:11))
+    }
+
+    func testUsageV11RawRequiredArraysRejectAndRealLegacyV10DefaultsRestore() async throws {
+        let folder=try root(),source=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("wire-source.sqlite"))
+        source.mainContext.insert(Entry(body:"Synthetic v10 compatibility fact",createdAt:clock.wall))
+        source.mainContext.insert(BodyReferenceSettings(heightCentimeters:180,reference:.who));try source.mainContext.save()
+        let lease=try await transfer(source,folder).exportPackage();defer {lease.cleanup()}
+        let (data,extracted)=try zipData(lease.url)
+        let originalPayload=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:extracted.appendingPathComponent("data.json"))) as? [String:Any])
+        let originalManifest=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:extracted.appendingPathComponent("manifest.json"))) as? [String:Any])
+        let keys=["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"]
+        for scenario in 0..<5 {
+            var payload=originalPayload,manifest=originalManifest
+            let version=scenario < 3 ? 11 : 10
+            if scenario < 3 {payload.removeValue(forKey:keys[scenario])}
+            if scenario == 4 {for key in keys {payload.removeValue(forKey:key)}}
+            let bytes=try JSONSerialization.data(withJSONObject:payload,options:.sortedKeys)
+            let dataURL=extracted.appendingPathComponent("data.json"),manifestURL=extracted.appendingPathComponent("manifest.json")
+            try bytes.write(to:dataURL)
+            manifest["packageSchemaVersion"]=version;manifest["objectCounts"]=data.objectCounts(forPackageSchemaVersion:version)
+            var file=try XCTUnwrap(manifest["dataFile"] as? [String:Any]);file["byteCount"]=bytes.count
+            file["sha256"]=SHA256.hash(data:bytes).map {String(format:"%02x",$0)}.joined();manifest["dataFile"]=file
+            try JSONSerialization.data(withJSONObject:manifest,options:.sortedKeys).write(to:manifestURL)
+            let archive=folder.appendingPathComponent("usage-wire-\(scenario).zip")
+            try ZIPArchiveWriter.write(sources:[.init(path:"manifest.json",fileURL:manifestURL),.init(path:"data.json",fileURL:dataURL)],to:archive)
+            let destination=try root(),target=try PersistenceContainerFactory.makeOnDisk(at:destination.appendingPathComponent("target.sqlite"))
+            if scenario < 4 {
+                do {_ = try await transfer(target,destination).importPackage(from:archive);XCTFail("Invalid usage metadata accepted")} catch {}
+                XCTAssertEqual(try TransferSnapshot.make(context:ModelContext(target)).totalObjectCount,0)
+            } else {
+                _ = try await transfer(target,destination).importPackage(from:archive)
+                XCTAssertEqual(try ModelContext(target).fetch(FetchDescriptor<Entry>()).first?.body,"Synthetic v10 compatibility fact")
+                XCTAssertEqual(try ModelContext(target).fetchCount(FetchDescriptor<BodyReferenceSettings>()),0)
+                XCTAssertEqual(try ModelContext(target).fetchCount(FetchDescriptor<TodoReminderIntent>()),0)
+            }
+        }
+        // The actual new-format ZIP retains the custom weekday set through import and successor generation.
+        let task=try TodoTaskService(context:source.mainContext,now:{self.clock.wall},timeZone:{self.zone}).create(.init(title:"Synthetic exported weekdays",plannedDay:"2026-10-16",frequency:.customWeekdays,weekdays:[2,7]))
+        let current=try await transfer(source,folder).exportPackage();defer {current.cleanup()}
+        let destination=try root(),target=try PersistenceContainerFactory.makeOnDisk(at:destination.appendingPathComponent("current.sqlite"))
+        _ = try await transfer(target,destination).importPackage(from:current.url)
+        let service=TodoTaskService(context:target.mainContext,now:{self.clock.wall},timeZone:{self.zone})
+        XCTAssertEqual(try service.preferences(for:XCTUnwrap(task.seriesID))?.weekdaysMask,66)
+        try service.transition(id:task.id,to:.completed)
+        XCTAssertEqual(try target.mainContext.fetch(FetchDescriptor<TodoTask>()).first {$0.state == .open}?.plannedDay,"2026-10-18")
+    }
+
+}
+
+extension InvestmentPersistenceTests {
+    func testReviewFixF5PageDetailReadFailureRetriesAndDeletionErasesCachedEditor() throws {
+        let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("cache-errors.sqlite"))
+        let service=InvestmentService(context:c.mainContext),a=try service.createActivity(name:"Synthetic cache")
+        let p=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentParticipant>()).first).id,id=UUID()
+        let start=ImportantCivilDay(identifier:"2026-09-01")!.instant(minutes:600,timeZone:zone)!
+        let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.intervals,source:.manual,
+            spans:[.init(start:start,end:start.addingTimeInterval(1200)),.init(start:start.addingTimeInterval(1500),end:start.addingTimeInterval(3000))],note:"Synthetic detail to erase")
+        try service.saveManual(id:id,participantID:p,activityID:a,values:values)
+        var failing=false,metadataFailure=false
+        let reader=InvestmentUIReader(observe:{event in
+            if metadataFailure && event.purpose == .metadata {throw CocoaError(.fileReadUnknown)}
+            if failing && [.page,.detail].contains(event.purpose) {throw CocoaError(.fileReadUnknown)}
+        })
+        let workspace=InvestmentWorkspace(reader:reader);workspace.refresh(c.mainContext)
+        failing=true
+        XCTAssertThrowsError(try reader.page(c,ids:[id]))
+        XCTAssertThrowsError(try workspace.session(id:id,context:c.mainContext))
+        failing=false
+        metadataFailure=true;InvestmentChanges.publish(.metadata,container:c);workspace.refresh(c.mainContext)
+        XCTAssertNotNil(workspace.error);XCTAssertTrue(workspace.activities.isEmpty)
+        metadataFailure=false;workspace.refresh(c.mainContext)
+        XCTAssertNotNil(workspace.error)
+        workspace.refresh(c.mainContext,retry:true)
+        XCTAssertNil(workspace.error);XCTAssertEqual(workspace.myActivities.count,1)
+        XCTAssertEqual(try reader.page(c,ids:[id]).map(\.id),[id])
+        let editor=workspace.edit(try XCTUnwrap(workspace.session(id:id,context:c.mainContext)))
+        editor.showDuplicates([id]);editor.values.note="Changed input invalidates candidate cache"
+        XCTAssertTrue(editor.persist(c.mainContext))
+        XCTAssertFalse(editor.duplicate);XCTAssertNil(editor.duplicateValues)
+        editor.showDuplicates([id])
+        XCTAssertFalse(try editor.requestExactInterval(start:start,end:start.addingTimeInterval(3000),now:Date()))
+        XCTAssertNotNil(editor.pendingExactInterval)
+        XCTAssertNotNil(editor.duplicateValues)
+        XCTAssertTrue(editor.persist(c.mainContext));workspace.refresh(c.mainContext)
+        XCTAssertEqual(workspace.drafts.count,1)
+        try service.delete(id:id,revision:0);workspace.refresh(c.mainContext)
+        XCTAssertNil(try workspace.session(id:id,context:c.mainContext))
+        XCTAssertTrue(workspace.drafts.isEmpty);XCTAssertTrue(workspace.editors.isEmpty)
+        XCTAssertTrue(editor.finished);XCTAssertEqual(editor.values.note,"");XCTAssertTrue(editor.values.spans.isEmpty)
+        XCTAssertEqual(editor.durationText,"")
+        XCTAssertNil(editor.duplicateValues);XCTAssertNil(editor.duplicateDuration);XCTAssertNil(editor.duplicateActivity)
+        XCTAssertTrue(editor.duplicateIDs.isEmpty);XCTAssertFalse(editor.duplicate);XCTAssertNil(editor.pendingExactInterval)
+    }
+}
+
+extension InvestmentPersistenceTests {
+    func testFix2CR04FormalCandidateChangesInvalidateUnchangedDraftWithoutErasingInput() throws {
+        for mode in 0..<3 {
+            let c=try PersistenceContainerFactory.makeInMemory(),s=InvestmentService(context:c.mainContext)
+            let a=try s.createActivity(name:"A"),p=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentParticipant>()).first).id,b=UUID()
+            let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual)
+            try s.saveManual(id:b,participantID:p,activityID:a,values:values)
+            let w=InvestmentWorkspace();w.refresh(c.mainContext)
+            let editor=try w.newEditor(activityID:a);editor.values=values;editor.values.note="Last successful draft";editor.durationText="45"
+            XCTAssertTrue(editor.persist(c.mainContext));w.refresh(c.mainContext)
+            let durable=try XCTUnwrap(s.operations().first {$0.id == editor.id})
+            editor.values.note="Unsaved input remains";editor.showDuplicates([b]);editor.error=InvestmentFailure.duplicate.localizedDescription
+            let input=editor.values
+            if mode == 1 {try s.delete(id:b,revision:0)}
+            else {var edited=values;edited.changeDuration(mode == 0 ? 2760:2700);edited.note="Changed formal B";try s.saveManual(id:b,participantID:p,activityID:a,values:edited,expectedRevision:0)}
+            w.refresh(c.mainContext)
+            XCTAssertFalse(editor.duplicate);XCTAssertFalse(editor.showDuplicateDialog);XCTAssertTrue(editor.duplicateIDs.isEmpty)
+            XCTAssertNil(editor.duplicateValues);XCTAssertNil(editor.error);XCTAssertEqual(editor.values,input);XCTAssertEqual(editor.durationText,"45");XCTAssertFalse(editor.finished)
+            XCTAssertEqual(try s.operations().first {$0.id == editor.id},durable)
+            if mode == 2 {
+                XCTAssertThrowsError(try s.saveManual(id:editor.id,participantID:p,activityID:a,values:editor.values,draftID:editor.id))
+                XCTAssertEqual(try s.matchingSessionIDs(values:editor.values,participantID:p,excluding:editor.id),[b])
+            } else {
+                try s.saveManual(id:editor.id,participantID:p,activityID:a,values:editor.values,draftID:editor.id)
+                w.refresh(c.mainContext);XCTAssertEqual(try w.session(id:editor.id,context:c.mainContext)?.values.note,input.note)
+                XCTAssertEqual(w.review?.orderedSessionIDs.count,mode == 1 ? 1:2)
+            }
+        }
+    }
+    func testFix2OBS01SameWarmWorkspaceRecoversActualCommitReportedErrorAndLaterCommands() throws {
+        for committed in [false,true] {
+            var readings=InvestmentClockTestReadings()
+            let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("warm.sqlite"))
+            let (s,id)=try f1DiskStart(c,clock:{readings.sample()})
+            let w=InvestmentWorkspace();w.refresh(c.mainContext)
+            let initial=try XCTUnwrap(w.operations.first {$0.id == id})
+            readings.advance(wall:60,continuous:60,awake:60)
+            let failure=InvestmentService(context:c.mainContext,clock:{readings.sample()},commit:{context in
+                if committed {try context.save()};throw CocoaError(.fileWriteUnknown)
+            })
+            XCTAssertThrowsError(try failure.command(.pause,id:id,revision:initial.revision))
+            let disk=try XCTUnwrap(s.operations().first {$0.id == id})
+            XCTAssertEqual(disk.revision,initial.revision+(committed ? 1:0));XCTAssertEqual(disk.timer.state,committed ? .paused:.running)
+            w.refresh(c.mainContext)
+            XCTAssertEqual(w.operations.first {$0.id == id},disk,"Same prewarmed Workspace must see durable state after a reported error")
+            w.refresh(c.mainContext,retry:true);XCTAssertEqual(w.operations.first {$0.id == id},disk);XCTAssertNil(w.error)
+            if committed {try w.resume(id:id,context:c.mainContext,clock:{readings.sample()})}
+            readings.advance(wall:30,continuous:30,awake:30)
+            w.checkpoint(c.mainContext,clock:{readings.sample()});XCTAssertNil(w.error)
+            XCTAssertEqual(w.operations.first {$0.id == id},try s.operations().first {$0.id == id})
+            let activity=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentActivity>()).first),participant=activity.participantID,fact=UUID()
+            let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual,note:"Sensitive cached detail")
+            try s.saveManual(id:fact,participantID:participant,activityID:activity.id,values:values);w.refresh(c.mainContext)
+            let editor=w.edit(try XCTUnwrap(w.session(id:fact,context:c.mainContext)));editor.values.note="Sensitive editing copy";XCTAssertTrue(editor.persist(c.mainContext));w.refresh(c.mainContext)
+            XCTAssertThrowsError(try failure.delete(id:fact,revision:0));w.refresh(c.mainContext)
+            if committed {XCTAssertNil(try w.session(id:fact,context:c.mainContext));XCTAssertTrue(editor.finished);XCTAssertEqual(editor.values.note,"");XCTAssertNil(w.editors[editor.id])}
+            else {XCTAssertNotNil(try w.session(id:fact,context:c.mainContext));XCTAssertEqual(editor.values.note,"Sensitive editing copy");XCTAssertFalse(editor.finished)}
+        }
+    }
+}
+
+extension InvestmentPersistenceTests {
+    func testFix2OBS01BusinessDuplicateRejectionKeepsCandidatesAfterRealEventDelivery() async throws {
+        let c=try PersistenceContainerFactory.makeInMemory(),s=InvestmentService(context:c.mainContext)
+        let a=try s.createActivity(name:"Duplicate event scope"),p=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentParticipant>()).first).id,b=UUID()
+        let values=InvestmentValues(day:"2026-09-01",timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual)
+        try s.saveManual(id:b,participantID:p,activityID:a,values:values)
+        let w=InvestmentWorkspace();w.refresh(c.mainContext)
+        let editor=try w.newEditor(activityID:a);editor.values=values;editor.durationText="45"
+        XCTAssertTrue(editor.persist(c.mainContext));w.refresh(c.mainContext)
+        let beforeFacts=InvestmentChanges.version(c).facts,beforeSequence=InvestmentChanges.version(c).sequence
+        let subscription=NotificationCenter.default.publisher(for:.investmentChanged).receive(on:RunLoop.main).sink {notification in
+            MainActor.assumeIsolated {w.receive(notification,context:c.mainContext)}
+        }
+        defer {subscription.cancel()}
+        XCTAssertThrowsError(try s.saveManual(id:editor.id,participantID:p,activityID:a,values:values,draftID:editor.id))
+        editor.showDuplicates(try s.matchingSessionIDs(values:values,participantID:p,excluding:editor.id))
+        editor.error=InvestmentFailure.duplicate.localizedDescription
+        let after=InvestmentChanges.version(c)
+        XCTAssertEqual(after.facts,beforeFacts);XCTAssertEqual(after.sequence,beforeSequence,"No commit was attempted: business rejection must not publish a fact invalidation")
+        let delivered=expectation(description:"Drain actual main RunLoop event delivery")
+        RunLoop.main.perform {delivered.fulfill()}
+        await fulfillment(of:[delivered],timeout:5)
+        XCTAssertEqual(editor.duplicateIDs,[b]);XCTAssertTrue(editor.duplicate);XCTAssertTrue(editor.showDuplicateDialog)
+        XCTAssertEqual(editor.error,InvestmentFailure.duplicate.localizedDescription)
+    }
+}
+
+private final class SystemExportBarrier: @unchecked Sendable {
+    let semaphore=DispatchSemaphore(value:0)
+    private let lock=NSLock()
+    private var released=false
+    var isReleased:Bool {lock.lock();defer {lock.unlock()};return released}
+    func release() {lock.lock();let first = !released;released=true;lock.unlock();if first {semaphore.signal()}}
+}
+
+@MainActor
+extension InvestmentPersistenceTests {
+    func testSystemSR04RealExportLeaseLifecycleCheckpointDoesNotBlockMainActorAndEventuallyCommits() async throws {
+        let folder=try root(),url=folder.appendingPathComponent("system-lock.sqlite")
+        let c=try PersistenceContainerFactory.makeOnDisk(at:url)
+        var readings=InvestmentClockTestReadings()
+        let (service,id)=try f1DiskStart(c,clock:{readings.sample()})
+        readings.advance(wall:60,continuous:60,awake:60)
+        let cutoff=readings.sample(),entered=expectation(description:"Real export holds store and media lease"),barrier=SystemExportBarrier()
+        let exporter=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:folder),availableCapacity:{.max},investmentClock:{cutoff},exportCheckpoint:{
+            entered.fulfill();barrier.semaphore.wait()
+        })
+        let exporting=Task {try await exporter.exportPackage()}
+        await fulfillment(of:[entered],timeout:5)
+        // Independent worker prevents a red baseline from hanging the test host.
+        DispatchQueue.global().asyncAfter(deadline:.now()+5) {barrier.release()}
+        let committed=expectation(description:"Queued lifecycle checkpoint committed")
+        let observer=NotificationCenter.default.addObserver(forName:.investmentChanged,object:nil,queue:nil) {notification in
+            if notification.object as? ModelContainer === c {committed.fulfill()}
+        }
+        defer {NotificationCenter.default.removeObserver(observer);barrier.release()}
+        readings.advance(wall:60,continuous:60,awake:60)
+        c.mainContext.autosaveEnabled=false
+        c.mainContext.insert(Entry(body:"Unrelated unsaved draft",createdAt:readings.wall))
+        let workspace=InvestmentWorkspace()
+        workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+        XCTAssertFalse(barrier.isReleased,"MainActor probe must execute while export still holds the lease")
+        barrier.release()
+        let package=try await exporting.value;defer {package.cleanup()}
+        await fulfillment(of:[committed],timeout:5)
+        let reopened=try PersistenceContainerFactory.makeOnDisk(at:url)
+        let op=try XCTUnwrap(InvestmentService(context:reopened.mainContext).operations().first {$0.id == id})
+        XCTAssertEqual(op.timer.values.seconds,120)
+        XCTAssertEqual(op.timer.state,.running)
+        XCTAssertEqual(try reopened.mainContext.fetchCount(FetchDescriptor<Entry>()),0)
+        XCTAssertTrue(c.mainContext.hasChanges)
+        let (data,_)=try zipData(package.url)
+        XCTAssertEqual(data.investmentOperations.first?.timer.values.seconds,60,"Backup keeps its original cutoff")
+        XCTAssertEqual(try service.operations().count,1)
+    }
+}
+
+@MainActor
+extension InvestmentPersistenceTests {
+    func testSystemSR06SuccessfulEditorsReleaseWithoutErasingDurableEvidenceOrOtherDrafts() throws {
+        let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("editors.sqlite"))
+        var readings=InvestmentClockTestReadings()
+        let service=InvestmentService(context:c.mainContext,clock:{readings.sample()})
+        let activity=try service.createActivity(name:"Editor lifetime")
+        let workspace=InvestmentWorkspace();workspace.refresh(c.mainContext)
+        let kept=try workspace.newEditor(activityID:activity);kept.values.note="Keep this unsaved input"
+        XCTAssertTrue(kept.persist(c.mainContext));workspace.refresh(c.mainContext)
+        for index in 0..<3 {
+            let editor=try workspace.newEditor(activityID:activity)
+            editor.values.changeDuration(Double(index+1)*60);editor.durationText=String(index+1);editor.values.note="Saved manual \(index)"
+            XCTAssertTrue(editor.persist(c.mainContext))
+            if index == 0 {
+                XCTAssertThrowsError(try workspace.saveEditor(editor,context:c.mainContext,confirmDuplicate:true,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                XCTAssertFalse(editor.finished);XCTAssertTrue(workspace.editors[editor.id] === editor);XCTAssertEqual(editor.values.note,"Saved manual 0")
+            }
+            try workspace.saveEditor(editor,context:c.mainContext,confirmDuplicate:true)
+            XCTAssertTrue(editor.finished);XCTAssertNil(workspace.editors[editor.id])
+            XCTAssertEqual(try service.operations().first {$0.id == editor.id}?.timer.state,.saved)
+            XCTAssertNotNil(try workspace.session(id:editor.id,context:c.mainContext))
+            let id=UUID(),participant=try XCTUnwrap(workspace.me)
+            try service.start(activityID:activity,participantID:participant,operationID:id,zone:zone)
+            readings.advance(wall:60,continuous:60,awake:60)
+            try f1Command(service,id,.finish);workspace.refresh(c.mainContext)
+            let op=try XCTUnwrap(workspace.operations.first {$0.id == id}),confirmation=workspace.editor(for:op)
+            confirmation.values.note="Timer confirmation \(index)"
+            try workspace.saveEditor(confirmation,context:c.mainContext,confirmDuplicate:true)
+            XCTAssertNil(workspace.editors[id]);XCTAssertEqual(try service.operations().first {$0.id == id}?.timer.state,.saved)
+            try service.saveTimer(id:id,revision:op.revision,values:confirmation.values,confirmDuplicate:true)
+            XCTAssertNotNil(try workspace.session(id:id,context:c.mainContext))
+            XCTAssertEqual(workspace.editors.count,1);XCTAssertTrue(workspace.editors[kept.id] === kept)
+            XCTAssertEqual(kept.values.note,"Keep this unsaved input")
+        }
+        XCTAssertEqual(try c.mainContext.fetchCount(FetchDescriptor<InvestmentSession>()),6)
+        let fact=try XCTUnwrap(c.mainContext.fetch(FetchDescriptor<InvestmentSession>()).first)
+        let editing=workspace.edit(try InvestmentSessionTransfer(fact))
+        editing.values.note="Formal edit remains durable";XCTAssertTrue(editing.persist(c.mainContext))
+        try workspace.saveEditor(editing,context:c.mainContext,confirmDuplicate:true)
+        XCTAssertNil(workspace.editors[editing.id]);XCTAssertEqual(editing.values.note,"")
+        XCTAssertEqual(try workspace.session(id:fact.id,context:c.mainContext)?.values.note,"Formal edit remains durable")
+    }
+
+    func testSystemSR04CoalescedLateCheckpointCannotOverrideExplicitPauseOrFinish() async throws {
+        for finish in [false,true] {
+            let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("late.sqlite"))
+            var readings=InvestmentClockTestReadings()
+            let (service,id)=try f1DiskStart(c,clock:{readings.sample()})
+            let barrier=SystemExportBarrier(),entered=expectation(description:"Real export lease")
+            let cutoff=readings.sample()
+            let exporter=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:folder),availableCapacity:{.max},investmentClock:{cutoff},exportCheckpoint:{entered.fulfill();barrier.semaphore.wait()})
+            let exporting=Task {try await exporter.exportPackage()}
+            await fulfillment(of:[entered],timeout:5)
+            DispatchQueue.global().asyncAfter(deadline:.now()+5) {barrier.release()}
+            let workspace=InvestmentWorkspace(),ready=expectation(description:"Queued checkpoint about to re-read current state")
+            var continuation:CheckedContinuation<Void,Never>?
+            workspace.beforeCheckpointRetry={ready.fulfill();await withCheckedContinuation {continuation=$0}}
+            readings.advance(wall:60,continuous:60,awake:60)
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            XCTAssertFalse(barrier.isReleased)
+            barrier.release();let package=try await exporting.value;defer {package.cleanup()}
+            await fulfillment(of:[ready],timeout:5)
+            try f1Command(service,id,finish ? .finish:.pause)
+            let authoritative=try XCTUnwrap(service.operations().first {$0.id == id})
+            readings.advance(wall:600,continuous:600,awake:600)
+            try XCTUnwrap(continuation).resume()
+            await workspace.waitForCheckpoint()
+            XCTAssertEqual(try service.operations().first {$0.id == id},authoritative)
+            XCTAssertEqual(authoritative.timer.values.seconds,60)
+            XCTAssertEqual(authoritative.timer.state,finish ? .pendingSave:.paused)
+        }
+    }
+}
+
+@MainActor extension InvestmentPersistenceTests {
+    func testSystemSR04PausedContrastAndRetainedDraftSurviveCanceledOrFailedExport() async throws {
+        for mode in 0..<3 {
+            let folder=try root(),c=try PersistenceContainerFactory.makeOnDisk(at:folder.appendingPathComponent("export-outcome.sqlite"))
+            var readings=InvestmentClockTestReadings()
+            let (service,id)=try f1DiskStart(c,clock:{readings.sample()})
+            readings.advance(wall:60,continuous:60,awake:60);try f1Command(service,id,.pause)
+            let workspace=InvestmentWorkspace();workspace.refresh(c.mainContext)
+            var editor:InvestmentEditorState?
+            if mode > 0 {
+                let draft=try workspace.newEditor(activityID:try XCTUnwrap(workspace.myActivities.first).id)
+                draft.values.note="Before export";XCTAssertTrue(draft.persist(c.mainContext));editor=draft
+                draft.values.note="Unsaved current input"
+                XCTAssertFalse(draft.persist(c.mainContext,commit:{_ in throw CocoaError(.fileWriteOutOfSpace)}))
+                XCTAssertEqual(draft.values.note,"Unsaved current input")
+            }
+            let authoritative=try XCTUnwrap(service.operations().first {$0.id == id})
+            let cutoff=readings.sample(),entered=expectation(description:"Export snapshot owns publication lease"),barrier=SystemExportBarrier()
+            let exporter=ImportExportService(context:c.mainContext,mediaStore:MediaStore(rootURL:folder),availableCapacity:{.max},investmentClock:{cutoff},exportCheckpoint:{
+                entered.fulfill();barrier.semaphore.wait()
+                if mode == 2 {throw CocoaError(.fileWriteOutOfSpace)}
+            })
+            let exporting=Task {try await exporter.exportPackage()}
+            await fulfillment(of:[entered],timeout:5)
+            DispatchQueue.global().asyncAfter(deadline:.now()+5) {barrier.release()}
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            workspace.checkpoint(c.mainContext,clock:{readings.sample()})
+            XCTAssertFalse(barrier.isReleased)
+            if mode == 0 {await workspace.waitForCheckpoint();XCTAssertFalse(barrier.isReleased,"Pure paused has no work to queue")}
+            if mode == 1 {exporting.cancel()}
+            barrier.release()
+            do {let package=try await exporting.value;package.cleanup();XCTAssertEqual(mode,0)}
+            catch is CancellationError {XCTAssertEqual(mode,1)}
+            catch {XCTAssertEqual(mode,2)}
+            await workspace.waitForCheckpoint()
+            XCTAssertEqual(try service.operations().first {$0.id == id},authoritative,"Paused time never accrues")
+            if let editor {
+                XCTAssertTrue(workspace.editors[editor.id] === editor);XCTAssertFalse(editor.finished);XCTAssertNil(editor.error)
+                let op=try XCTUnwrap(service.operations().first {$0.id == editor.id})
+                XCTAssertEqual(op.timer.values.note,"Unsaved current input")
+                XCTAssertEqual(editor.values.note,"Unsaved current input")
+            }
+        }
+    }
 }

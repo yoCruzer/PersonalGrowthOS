@@ -1,0 +1,200 @@
+[
+  {
+    "file": "before-growth.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/baseline2-attachments/6069BBFD-F26E-466F-AF48-8657FE2E8D59.png",
+    "attachmentName": "UIReadability-Growth-weekly_0_BD5DA428-00AF-49C4-B246-6416627233D7.png",
+    "sha256": "b41c883137bc460e294c0d32aceb5d4601ee9d1e9ff5849dfb6bb56c9c4589ff"
+  },
+  {
+    "file": "before-start-icon.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/baseline2-attachments/D429C6E5-0F49-4A58-904E-0FCDD6E8B25A.png",
+    "attachmentName": "UIReadability-Investment-start_0_1A8AE2AB-970D-4016-9391-555AEC8A8ED8.png",
+    "sha256": "69e4ec5973dbacdc5e148272c7f9e47d45b07f5635a2984184551a9831a562a3"
+  },
+  {
+    "file": "native-list-comparison-light.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/fix1-unit-attachments/D0857206-1A17-4DCB-9FDC-D04022E0C0F4.png",
+    "attachmentName": "List-label-light-page0_0_DD6FEA7C-C5F1-4F16-9357-4FBC4C1AFF13.png",
+    "sha256": "d6ed6e1da7280d3c10b8e402240d7bdee249b0c9e82e140845818b6114e93a51"
+  },
+  {
+    "file": "native-list-comparison-dark.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/fix1-unit-attachments/2462F801-4289-43F4-85C5-75D884FB833E.png",
+    "attachmentName": "List-label-dark-page0_0_3A12A9F4-76FD-4361-8C1E-9C03D097D127.png",
+    "sha256": "f074d3812aeee9f544c3373162bc580cb767e52d3b7cbe371f9f6bc0e5097e3a"
+  },
+  {
+    "file": "real-reminder-retry.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/fix1-unit-attachments/1723F4BC-A4DD-4DCF-A3C4-84E063838933.png",
+    "attachmentName": "TC02-cold-daily-unconfirmed_0_B8BF6F48-24C7-431A-B7DE-1CC712BE7B04.png",
+    "sha256": "befeb6fa0568d0725488a8ab6fcf90a795391aa151e15035be105322f6fe3391"
+  },
+  {
+    "file": "fallback-record-user-entry.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate4-ui-light-attachments/CFF038B7-4305-484D-A86E-7E056E450F3C.png",
+    "attachmentName": "zh-photo-only-default-entry-and-user-Entry_0_E04CA646-E52C-46AA-A781-70DCB3B03DE6.png",
+    "sha256": "933e43985493b91b52b948c17724afd99207d0d4412fc61297dd20113d1d578a"
+  },
+  {
+    "file": "actual-current-week-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate4-ui-light-attachments/242F176B-6A66-4230-BABF-C8811C384118.png",
+    "attachmentName": "zh-current-week-grid-weekdays_0_C513A70B-EE46-4AEC-9768-FBCFE081B628.png",
+    "sha256": "94acd92d3e7fa886b7c634d013c7c697f29280384277db03a7dc12ad32a96dbe"
+  },
+  {
+    "file": "final-dark-zero.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final2-ui-dark-attachments/A55E8909-4437-4B6C-B314-88C9F87C88BE.png",
+    "attachmentName": "zh-AX-dark-Growth-每周锻炼几次-zero_0_27E0A1B1-E7B3-469A-A0CA-045FE77B4F18.png",
+    "sha256": "b7e4fa6da146401650052630bc43162aef608ca27070f29c13beae1bac33b09a"
+  },
+  {
+    "file": "final-dark-one.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final2-ui-dark-attachments/8FE531DE-5F2D-44D4-A69D-A396D12D7CA9.png",
+    "attachmentName": "zh-AX-dark-Growth-每周锻炼几次-one_0_31D1F00E-EFAB-440D-A8F3-ACF537C02574.png",
+    "sha256": "50b0dc948ec0ce2020668340d6420dc50ad99f3cf116db915acb0f53d78ef35c"
+  },
+  {
+    "file": "final-dark-long-title.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final2-ui-dark-attachments/510B0DA1-7B89-4486-A83C-0EFDA2428F35.png",
+    "attachmentName": "zh-AX-dark-Growth-这是一个真正很长需要合理换行的每周习惯名称-full-title_0_EF9AC451-4B6A-4A48-B6CC-D6EB825430A6.png",
+    "sha256": "4c311dd0b23cb0d7cace9280cf2854570cbc1aa9deacbcece59b83703e7869d0"
+  },
+  {
+    "file": "final-light-default.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final-ui-light-attachments/2C88E0D3-707D-4E9A-8C76-560FDD5831BA.png",
+    "attachmentName": "zh-default-Growth-每周锻炼几次-zero_0_45AD7BBB-BA6D-4247-9801-14DD870D043D.png",
+    "sha256": "4bd1f1164c2d1afacd878b046540a00513734f904f8c08198c396b92ec7a204c"
+  },
+  {
+    "file": "final-light-XXXL.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final-ui-light-attachments/C5031D9F-574D-4FAB-BB37-FD28268CA0D5.png",
+    "attachmentName": "zh-XXXL-Growth-深度阅读几篇文章-zero_0_5808C505-7001-496A-97E4-2AA2DD56DCD2.png",
+    "sha256": "1fb4d3b0242f427dc1e1b4b48dbb6387358f36986359c1f1ef3fef1f0bc0963c"
+  },
+  {
+    "file": "final-english-default.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final-ui-light-attachments/AB0F56F3-FF18-4D24-AADE-AF97E821E756.png",
+    "attachmentName": "en-default-Growth-每周锻炼几次-zero_0_1986C53F-39BB-462D-83E0-566712AF17FF.png",
+    "sha256": "6a4255cc0999563902979c98f038071fd890eff52e5b7e1748a0b33d3f211d4e"
+  },
+  {
+    "file": "archive-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final2-investment-attachments/4513EEB8-42D5-45F0-8779-DF0689EDDA60.png",
+    "attachmentName": "UIReadability-zh-archive-activity_0_60D4A692-A23C-4297-B1A6-44A92F06DC10.png",
+    "sha256": "188564ccda2b2c658d747eefd4ce557c9b05804d71d3ac2bea823f72259a2de3"
+  },
+  {
+    "file": "restore-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final2-investment-attachments/DAE07D53-B1D4-4C7E-9434-B0595206F591.png",
+    "attachmentName": "UIReadability-zh-restore-activity_0_578AC352-13FF-4CD5-AACC-E35175762796.png",
+    "sha256": "a2871385918870c76ceefa88ca5964f5279caef3e1f3ae20edaa58fcbfc12427"
+  },
+  {
+    "file": "previous-month-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final2-investment-attachments/461D916C-CB02-4619-ABC8-F121FF94698C.png",
+    "attachmentName": "UIReadability-zh-previous-month_0_B0F85625-8D7E-48BD-8FFF-393135CABA76.png",
+    "sha256": "adc9ad1291801c413abb2154d854942ea3b9fac9ce3981949c5fcd0210cbe1b4"
+  },
+  {
+    "file": "next-month-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final2-investment-attachments/F777ECF1-08AF-470F-BD5D-FABCB72D8CF7.png",
+    "attachmentName": "UIReadability-zh-next-month_0_E02685BB-CECF-4023-B368-1BDFDF4F7BE4.png",
+    "sha256": "d23c0b314f6cf1da786fd6d6ec760c97697d214e35cc1a88cdc2b4245b0059b0"
+  },
+  {
+    "file": "quantity-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate3-ui-light-attachments/4AD22882-6521-4575-9760-F932AB9EBBC9.png",
+    "attachmentName": "zh-quiet-wins-quantity_0_22284249-8560-480F-BE8B-4C5F687142B9.png",
+    "sha256": "3a351514f0ca0b43a8eb5c3e977e2950674e488956e193363f0dde97e0788b0e"
+  },
+  {
+    "file": "no-data-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate3-ui-light-attachments/3F93CF33-6751-4364-945E-6643D955797D.png",
+    "attachmentName": "zh-weight-range-no-data_0_0177AE10-F2C3-4D91-ACA7-0495653CF893.png",
+    "sha256": "bdb21d1a7a65969c8fec0961a7fcaa79b8d02d9dd191ae9eab90830586406156"
+  },
+  {
+    "file": "weekly-empty-icon.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate3-ui-light-attachments/905657BB-A1D8-4D7B-8F64-C81F7524425E.png",
+    "attachmentName": "zh-empty-start-weekly-review-visible-icon_0_430B5018-54D1-4E2C-AE34-3B5A6A6856EA.png",
+    "sha256": "3ff2ca8a7df4d6e961daadcf2f616bc7ee6018e4fb28f7af8951b3bc9aa6755e"
+  },
+  {
+    "file": "habit-empty-icon.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate3-ui-light-attachments/E08D4948-1509-4B50-A570-427EC617B900.png",
+    "attachmentName": "zh-empty-add-habit-visible-plus_0_62728475-B35B-4878-A181-00AD9429AEEF.png",
+    "sha256": "74bf242011448bff3d0ad5fdfaabbcef38906c3b41843959aac5599c466c7e56"
+  },
+  {
+    "file": "weight-empty-icon.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate3-ui-light-attachments/E47EB8F1-2F8E-4EEF-92D9-01D22C6A5F92.png",
+    "attachmentName": "zh-empty-add-weight-visible-plus_0_11651D7A-7916-4565-A23C-9509B0B4C64E.png",
+    "sha256": "2f2b739b477e043d299524077681960b4b6a071d32ab5d0d660a736c6a0fdd3b"
+  },
+  {
+    "file": "production-grid-chinese.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final-unit-zh-attachments/D1B006C8-304C-4124-BB63-B8AFA2AD653D.png",
+    "attachmentName": "Actual-period-grid-Chinese_0_0E99E132-168F-4E2B-835A-D3EE15737DA8.png",
+    "sha256": "88f3a810f47f83ec148704274025d343082eb5e0eff8cd23d63d03ba8b6ce8e6"
+  },
+  {
+    "file": "production-grid-english.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/final-unit-en-attachments/31CEBD09-2417-4BE4-A470-87B27E50A822.png",
+    "attachmentName": "Actual-period-grid-English_0_92DDDBED-06CB-4C23-8794-82EB8AE3BD22.png",
+    "sha256": "c2a467f810f90a52645a2cab9ce2ad68c58209f8a4de4c83160ec1b1cd8051b4"
+  },
+  {
+    "file": "start-before-press.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/pressed-10.86.png",
+    "video": "final2-investment-press.mp4",
+    "sha256": "ccad6811c7fef0a74f720d3def9533e08759950ca3ea2e2378aae4f1a3f69ccd"
+  },
+  {
+    "file": "start-during-press.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/pressed-12.26.png",
+    "video": "final2-investment-press.mp4",
+    "sha256": "0fe8118937dbdf24731465ea490e9a7e0723b17550880616727bef57c748bf0c"
+  },
+  {
+    "file": "start-after-press.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/pressed-13.66.png",
+    "video": "final2-investment-press.mp4",
+    "sha256": "fe729a4483c6b19059bc51bea385002f343ca7aa194ec1231410a9e272740fdf"
+  },
+  {
+    "file": "dark-start-before-press.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/dark-pressed-9.77.png",
+    "video": "final-dark-investment-press.mp4",
+    "sha256": "988c404b40d4f08b882fcc2cc1bab897efb15ca836807073acd68457d0bbeb57"
+  },
+  {
+    "file": "dark-start-during-press.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/dark-pressed-11.17.png",
+    "video": "final-dark-investment-press.mp4",
+    "sha256": "a2b44d87994790430a74c8a5272b640485ad2140118f5cbfbde325f6773a3cdc"
+  },
+  {
+    "file": "dark-start-after-press.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/dark-pressed-12.57.png",
+    "video": "final-dark-investment-press.mp4",
+    "sha256": "a4d36399dd781379881d0407375dda1d1f1a735678879cc602fcff0673c73d32"
+  },
+  {
+    "file": "flag-enabled-icon.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate4-ui-light-attachments/98AC86DE-E6F2-4263-8371-B7DBCF187275.png",
+    "attachmentName": "zh-add-flag-enabled-visible-plus_0_1BB32BF2-C1B9-47A7-AFD5-3A4E38239ED8.png",
+    "sha256": "0b7fcd80dc7e0972338dd4e0703c5e14b1c4dec9b38be9d54d9dc7e135a66a15"
+  },
+  {
+    "file": "goal-enabled-icon.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate4-ui-light-attachments/4965A24F-A4CB-438A-B644-9DB3EF97474C.png",
+    "attachmentName": "zh-add-goal-enabled-visible-plus_0_BA047210-8C5D-4053-A1D1-7B87B655A5C9.png",
+    "sha256": "d50993ec5648b62d9269cfe475db673e5599927eb4e0eef722e3f4609ec650ad"
+  },
+  {
+    "file": "goal-disabled-icon.png",
+    "source": "/private/tmp/pgos-ui-20261020-evidence/candidate4-ui-light-attachments/7D372F6A-3FD9-46A8-AD57-4E648ABC6EAD.png",
+    "attachmentName": "zh-add-goal-disabled_0_80BF2646-C1CC-4686-9D02-8865FF84F716.png",
+    "sha256": "a2050ee3599ef8753cebc15a8e4294903df259416ebeba0a777c772b80984035"
+  }
+]

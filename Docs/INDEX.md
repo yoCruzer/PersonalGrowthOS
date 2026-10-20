@@ -149,3 +149,55 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## 时间投入 V1 批准增量 — 2026-10-16
 
 时间投入 V1：`TIME_INVESTMENT_V1_DESIGN_ZH.md` / `TIME_INVESTMENT_V1_GOAL_ZH.md` 为固定1.1批准增量；执行、独立审查及验收分别见 `TIME_INVESTMENT_V1_EXECUTION.md`、`TIME_INVESTMENT_V1_REVIEW_ZH.md`、`TIME_INVESTMENT_V1_ACCEPTANCE_ZH.md`。当前状态以 `CURRENT_STATE.md` / `CURRENT_TASK.md` 及验收记录为准，不代表设备或发行通过。
+
+## 使用反馈统一整改批准增量 — 2026-10-18
+
+基于时间投入 V1 最终交接 5a70f0110b151f8a45ac7c33d3f443823b1cff24，统一处理使用反馈 20261017 九项与时间投入同类展示问题。执行规格：[USAGE_REMEDIATION_20261017_GOAL_ZH.md](USAGE_REMEDIATION_20261017_GOAL_ZH.md) / [DESIGN](USAGE_REMEDIATION_20261017_DESIGN_ZH.md) / [ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)，均为同一固定提交的 1.0。阶段属于一个连续执行目标，现仅规格准备；不表示实现、独立实现 review 或设备门禁通过。范围增量见 V1_SCOPE，本轮进展以 CURRENT 两份文件与新验收记录为准，旧历史原样保留。
+
+
+## PR #13 独立复核后的本地修复 — 2026-10-18
+
+[PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md)：基于已审交付 f1b52b58fd11c41f508ec665d583827879ffa202，连续修复新 F1–F5 并落实 UX1 / UX2，沿用既有 PR #13 与原 base。新 FIX_GOAL_SHA 由引导 prompt 固定。当前仅规格准备，执行 / 验证均待完成；本地执行停点由新 Goal 和 CURRENT 最新章节替代，旧 A–D / R1–R8 证据及设备 / 发行边界保留。
+
+## PR #13 第二轮独立复核限定补修 — 2026-10-18
+
+[第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)：基于已审交付 e75ac561 / 产品597552a，处理 CR-01～06 和 OBS-01/02 的限定补验。Owner 已批准沿同一 Draft PR #13 / 原 base 连续执行，FIX2_GOAL_SHA 由短引导 prompt 固定。本次仅规格准备，新的实现与原生验证均未执行；两份 CURRENT 最新章节和新 Goal 取代前轮仅等设备的本地停点。已认可修复作为保护，旧失败轮次和设备/发行边界保留。
+
+
+### 2026-10-19 PR #13 系统复盘与真机前修复
+
+[系统审查与原因复盘](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md) 固定审查产品 c296a369 / 交付 62210d9，记录7组SR工作、两项有界BV、完整消费者/生命周期矩阵及证据边界。[真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md) 是下一次给 Codex 的执行规格，SYSTEM_FIX_GOAL_SHA 由短 prompt 固定。当前 LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY，纯文档准备，产品修复和新原生测试未执行；两份CURRENT顶部与新Goal取代旧仅等设备的本地停点。原PR/base、旧关闭/失败证据和设备/发行边界保持。
+
+
+## 2026-10-19 PR #13 集成边界独立复核与限定续修
+
+固定复核产品c55dc10/交付c1fe564的 [独立审查](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md) 记录IR01～04四项P2、IR05测试P3、V01原始恢复导出的必要有界验证及O01非阻断观察。[集成边界修复Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 为Owner已批准的下一轮本地连续执行规格，INTEGRATION_FIX_GOAL_SHA由短prompt固定。当前LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY，仅文档准备；两份CURRENT顶部替代旧仅等设备的停点。原PR/base、有效修复、旧失败/原生证据边界和设备/发行边界保持。
+
+## 2026-10-19 PR #13 最新批准续接：终态一致性补修
+
+[终态一致性补修 Goal、审查归并与验收要求](USAGE_REMEDIATION_20261019_TERMINAL_FIX_GOAL_ZH.md) 绑定产品 `53eeb1d3410630f836bbc3e713c79f9f157a4081` / 交付 `8cc085e353fc6508b9a003d1e633370326cb7799`。Owner 已批准连续执行 TF-A→TF-D。RR-01 对应 IC-01；RR-02 对应 IC-V1 且原生影响待有界验证；前一份审查提出、后一份摘要漏列的 IC-02 保留确认/修复或反证，不因漏列视为关闭。O-01 仍非阻断。
+
+本次投递仅添加完整 Goal 并追加本索引，不修改产品/测试或历史证据；状态为 LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。Codex 接收固定规格后按 TF-A 在两份 CURRENT 顶部追加本轮边界，保留长历史原文；旧 READY 不代表本次修复完成。原 PR/base、已认可修复及设备/发行边界不变。后续必要修复建议须同时交付执行 prompt，不增加一次询问是否准备的往返。
+
+
+## 2026-10-20 PR #13 终态复核限定补修
+
+固定 `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627` 的 [TC-01～03 Goal](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md) / [独立复核](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md) 为当前连续 S-A→S-C 边界。当前 LOCAL_REVIEW_FIX_REQUIRED / FIXES_IN_PROGRESS；旧 READY 不代表本轮完成，实际进展以两份 CURRENT 顶部及既有 EXECUTION / ACCEPTANCE / REVIEW 新增节为准。
+
+
+## 2026-10-20 PR #13 终态复核限定补修完成
+
+固定`ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`的TC-01～03沿S-A→S-C关闭；干净产品/测试`1b150068e76f4d7e7a6defcd51f10622951f4b4b`（实现`2b0d491`）完成Unit579=578PASS/0FAIL/1SKIP、关键UI3/3、Debug/unsigned Release、六实包核对及独立终审，恢复本地READY_FOR_OWNER_DEVICE_GATE。实际21轮及旧FAIL/SKIP、设备/发行边界见两份CURRENT、既有EXECUTION/ACCEPTANCE/REVIEW和[本轮JSON](USAGE_REMEDIATION_20261020_TERMINAL_RECHECK_RUNS.json)；纯文档交付不重建，原PR/base不变。
+
+
+## 2026-10-20 GitHub Actions、系统真机验收与分支安全收口
+
+[持续集成/设备门/分支安全收口 Goal](CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md) 为本次 Owner 批准的新阶段（G1 CI→G2 设备→G3 分支候选清点与获批删除），[设备验收矩阵](CI_DEVICE_BRANCH_CLEANUP_20261020_DEVICE_GATE_ZH.md) 与 [初始分支台账](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md) 为执行模板。当前仅规划文档，尚未新增GitHub Actions或完成真机验收，也未清理任何分支。Xcode Cloud此前成功由Owner反馈，源SHA与本次候选对齐仍待核对。私人设备/数据库操作和实际远端分支删除保留Owner单独授权门。
+
+## 2026-10-20 计数器补修 / CI真实验收 / 只读清点
+
+- [实际执行与验证边界](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md)
+- [计数器原图与像素复算](Evidence/CounterContrast20261020/contrast-results.json)
+- [完整只读分支报告](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)
+
+- [2026-10-20 GitHub Actions真实run、测试夹具补修与独立证据](Evidence/CI20261020/README.md)

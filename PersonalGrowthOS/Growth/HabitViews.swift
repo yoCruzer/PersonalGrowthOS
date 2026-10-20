@@ -5,84 +5,122 @@ import UIKit
 struct GrowthView: View {
     let mediaStore: MediaStore
     let thumbnailStore: ThumbnailStore
+    var countClock: () -> (Date,TimeZone) = {(Date(),.current)}
 
-    @Query private var habits: [Habit]
-    @Query private var goals: [Goal]
-    @Query private var weightRecords: [WeightRecord]
+    @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var phase
+    @State private var counts: GrowthEntryCounts?
+    @State private var loadFailed = false
 
     var body: some View {
         List {
-            NavigationLink {
-                HabitsView(
-                    mediaStore: mediaStore,
-                    thumbnailStore: thumbnailStore
-                )
-            } label: {
-                HStack {
-                    Label("Habits", systemImage: "repeat")
-                        .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
-                    Spacer()
-                    Text("\(habits.count)")
+            if loadFailed {
+                Section {
+                    Text("Could not load growth counts").foregroundStyle(.secondary)
+                    Button("Retry") { refreshCounts() }
                 }
             }
-            .accessibilityIdentifier("growth-habits")
             NavigationLink {
-                GoalsView(
-                    mediaStore: mediaStore,
-                    thumbnailStore: thumbnailStore
-                )
+                HabitsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                HStack {
-                    Label("Goals and Flags", systemImage: "target")
-                        .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
-                    Spacer()
-                    Text("\(goals.count)")
-                }
-            }
-            .accessibilityIdentifier("growth-goals")
+                ModuleEntryRow(title: String(localized: "Habits"), subtitle: String(localized: "Small habits, day by day"),
+                    systemImage: "repeat", value: counts.map { String(localized: "\($0.habits) active habits") })
+            }.accessibilityIdentifier("growth-habits")
             NavigationLink {
-                WeightHistoryView()
+                GoalsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                HStack {
-                    Label("Weight", systemImage: "scalemass")
-                        .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
-                    Spacer()
-                    Text("\(weightRecords.count)")
-                }
-            }
-            .accessibilityIdentifier("growth-weight")
-            NavigationLink { InvestmentHubView() } label: { Label("Time investment", systemImage: "timer") }
-            .accessibilityIdentifier("growth-investment")
+                ModuleEntryRow(title: String(localized: "Goals and Flags"), subtitle: String(localized: "Make room for what matters"),
+                    systemImage: "target", value: counts.map { String(localized: "\($0.goals) active goals") })
+            }.accessibilityIdentifier("growth-goals")
+            NavigationLink { WeightHistoryView() } label: {
+                ModuleEntryRow(title: String(localized: "Weight"), subtitle: String(localized: "Record weight, see the trend"),
+                    systemImage: "scalemass", value: counts.map { String(localized: "\($0.weightDays) recorded days") })
+            }.accessibilityIdentifier("growth-weight")
             NavigationLink {
                 SleepHubView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
-            } label: { Label("Sleep and Routine", systemImage: "moon.zzz") }
-            .accessibilityIdentifier("growth-sleep")
+            } label: {
+                ModuleEntryRow(title: String(localized: "Sleep and Routine"), subtitle: String(localized: "Recall last night, understand your routine"),
+                    systemImage: "moon.zzz", value: counts.map { String(localized: "\($0.sleepNights) recorded nights") })
+            }.accessibilityIdentifier("growth-sleep")
+            NavigationLink { InvestmentHubView() } label: {
+                ModuleEntryRow(title: String(localized: "Time investment"), subtitle: String(localized: "Record effort, see it add up"),
+                    systemImage: "timer", value: counts.map { String(localized: "\($0.activities) activities") })
+            }.accessibilityIdentifier("growth-investment")
             NavigationLink {
                 ImportantDaysView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Label("Important Days", systemImage: "calendar")
-                    Text("Remember days worth anticipating and revisiting").font(.subheadline).foregroundStyle(.secondary)
-                }
+                ModuleEntryRow(title: String(localized: "Important Days"), subtitle: String(localized: "Remember anticipation and milestones"),
+                    systemImage: "calendar", value: counts.map { String(localized: "\($0.importantDays) days") })
             }.accessibilityIdentifier("growth-important-days")
             NavigationLink {
                 QuietWinsView(mediaStore: mediaStore, thumbnailStore: thumbnailStore)
             } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Label("Quiet Wins", systemImage: "leaf")
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text("Look back on things you've done")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .accessibilityIdentifier("growth-quiet-wins")
+                ModuleEntryRow(title: String(localized: "Quiet Wins"), subtitle: String(localized: "Look at all you've done"), systemImage: "leaf")
+            }.accessibilityIdentifier("growth-quiet-wins")
         }
-        .navigationTitle("Growth")
-        .accessibilityIdentifier("growth-view")
+        .navigationTitle("Growth").accessibilityIdentifier("growth-view")
+        .onAppear { refreshCounts() }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { notification in
+            if GrowthEntryCounts.needsRefresh(notification) {refreshCounts()}
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refreshCounts() }
+        .onChange(of: phase) { _, value in if value == .active { refreshCounts() } }
+    }
+
+    private func refreshCounts() {
+        do { let (now,zone)=countClock(); counts = try GrowthEntryCounts(context: context,now:now,zone:zone); loadFailed = false }
+        catch { counts = nil; loadFailed = true }
+    }
+}
+
+/// Read-only entry statistics. No workspace bootstrap or default settings writes.
+@MainActor struct GrowthEntryCounts {
+    var habits: Int
+    var goals: Int
+    var weightDays: Int
+    var sleepNights: Int
+    var activities: Int
+    var importantDays: Int
+    static func needsRefresh(_ notification:Notification) -> Bool {
+        // Never dereference the sender context after RunLoop delivery: its container
+        // may already have ended its lifetime. Persistent identifiers are value evidence.
+        // Skip only positively identified operation/session writes. Unknown payloads,
+        // bulk invalidation, metadata, imports and formal Growth facts stay conservative.
+        guard let info=notification.userInfo else {return true}
+        func value(_ key:ModelContext.NotificationKey) -> Any? {info[key] ?? info[key.rawValue]}
+        if let invalidation=value(.invalidatedAllIdentifiers) {
+            if let flag=invalidation as? Bool {if flag {return true}}
+            else if let ids=invalidation as? [PersistentIdentifier] {if !ids.isEmpty {return true}}
+            else if let ids=invalidation as? Set<PersistentIdentifier> {if !ids.isEmpty {return true}}
+            else {return true}
+        }
+        var identifiers:[PersistentIdentifier]=[]
+        for key in [ModelContext.NotificationKey.insertedIdentifiers,.updatedIdentifiers,.deletedIdentifiers] {
+            guard let raw=value(key) else {continue}
+            if let array=raw as? [PersistentIdentifier] {identifiers += array}
+            else if let set=raw as? Set<PersistentIdentifier> {identifiers += set}
+            else {return true}
+        }
+        guard !identifiers.isEmpty else {return true}
+        return !identifiers.allSatisfy {["InvestmentOperation","InvestmentSession"].contains($0.entityName)}
+    }
+    init(context: ModelContext, now: Date = Date(), zone: TimeZone = .current) throws {
+        let read = ModelContext(context.container)
+        habits = try read.fetchCount(FetchDescriptor<Habit>(predicate: #Predicate { $0.statusRawValue == "active" }))
+        goals = try read.fetchCount(FetchDescriptor<Goal>(predicate: #Predicate { $0.statusRawValue == "active" }))
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = zone
+        let weights=try read.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.recordedAt <= now }))
+        let sleeps=try read.fetch(FetchDescriptor<SleepRecord>())
+        weightDays=Set(weights.map {calendar.startOfDay(for:$0.recordedAt)}).count
+        sleepNights=Set(sleeps.map(\.wakeDay)).count
+        let me = try read.fetch(FetchDescriptor<InvestmentParticipant>()).first(where: \.isDefault)?.id
+        activities = try read.fetch(FetchDescriptor<InvestmentActivity>()).filter { $0.participantID == me && !$0.isArchived }.count
+        importantDays = try read.fetchCount(FetchDescriptor<ImportantDay>(predicate: #Predicate { !$0.isArchived }))
+#if DEBUG
+        GrowthCountReadProbe.reads.append((weights.count,sleeps.count))
+        GrowthCountReadProbe.last=self
+        GrowthCountReadProbe.didRead?()
+#endif
     }
 }
 
@@ -94,6 +132,7 @@ struct GrowthEmptyStateAddButton: View {
     var body: some View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
+                .labelStyle(.titleAndIcon)
                 .font(.headline)
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .center)
                 .contentShape(.rect)
@@ -108,44 +147,54 @@ struct RepeatableHabitCounter: View {
     let progress: HabitTodayProgress
     let accessibilityIdentifierPrefix: String
     var showsHabitName = true
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.colorScheme) private var colorScheme
+    @ScaledMetric(relativeTo: .subheadline) private var capsuleHeight: CGFloat = 30
     let decrease: () -> Void
     let increase: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
-            if showsHabitName {
-                Text(habitName)
-                    .lineLimit(2)
-                    .layoutPriority(1)
+        Group {
+            if typeSize.isAccessibilitySize && showsHabitName {
+                VStack(alignment: .leading, spacing: 4) {
+                    ModuleEntryRow(title: habitName, systemImage: "repeat")
+                    HStack { Spacer(); controls }
+                }
+            } else {
+                HStack(spacing: 8) {
+                    if showsHabitName { ModuleEntryRow(title: habitName, systemImage: "repeat") }
+                    if showsHabitName { Spacer(minLength: 4) }
+                    controls
+                }
             }
-            Spacer(minLength: 4)
-            controls
-        }
-        .frame(minHeight: 52)
+        }.frame(minHeight: 44)
     }
 
     private var controls: some View {
         ZStack {
             Capsule()
-                .fill(.quaternary)
-                .frame(height: 30)
+                .fill(colorScheme == .dark
+                    ? Color(.sRGB, red: 40/255, green: 55/255, blue: 68/255, opacity: 1)
+                    : Color(.sRGB, red: 230/255, green: 236/255, blue: 242/255, opacity: 1))
+                .frame(height: capsuleHeight)
             Capsule()
                 .stroke(.separator.opacity(0.35), lineWidth: 0.5)
-                .frame(height: 30)
+                .frame(height: capsuleHeight)
             HStack(spacing: 0) {
                 Button(action: decrease) {
                     Image(systemName: "minus")
                         .font(.subheadline.weight(.semibold))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 44, height: 45)
                         .contentShape(.rect)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(HabitCounterButtonStyle())
                 .disabled(progress.count == 0)
                 .accessibilityLabel("Decrease \(habitName)")
                 .accessibilityValue("Current count: \(progress.count)")
                 .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-decrease")
 
                 Text(countText)
+                    .foregroundStyle(.primary)
                     .font(.subheadline.weight(.semibold).monospacedDigit())
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
@@ -157,16 +206,15 @@ struct RepeatableHabitCounter: View {
                 Button(action: increase) {
                     Image(systemName: "plus")
                         .font(.subheadline.weight(.semibold))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 44, height: 45)
                         .contentShape(.rect)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(HabitCounterButtonStyle())
                 .accessibilityLabel("Increase \(habitName)")
                 .accessibilityValue("Current count: \(progress.count)")
                 .accessibilityIdentifier("\(accessibilityIdentifierPrefix)-increase")
             }
         }
-        .foregroundStyle(.primary)
         .fixedSize(horizontal: true, vertical: false)
     }
 
@@ -175,6 +223,31 @@ struct RepeatableHabitCounter: View {
             return "\(progress.count)/\(target)"
         }
         return "\(progress.count)"
+    }
+}
+
+// Match the custom capsule with opaque icon colors in every interaction state.
+// Keeping this on each button lets the zero-count decrement remain visibly disabled.
+private struct HabitCounterButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.colorScheme) private var colorScheme
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.foregroundStyle(iconColor(pressed: configuration.isPressed))
+    }
+
+    private func iconColor(pressed: Bool) -> Color {
+        if !isEnabled {
+            return colorScheme == .dark
+                ? Color(.sRGB, red: 105/255, green: 123/255, blue: 136/255, opacity: 1)
+                : Color(.sRGB, red: 146/255, green: 154/255, blue: 161/255, opacity: 1)
+        }
+        if colorScheme == .dark {
+            return pressed ? .white : Color(.sRGB, red: 213/255, green: 234/255, blue: 254/255, opacity: 1)
+        }
+        return pressed
+            ? Color(.sRGB, red: 16/255, green: 59/255, blue: 93/255, opacity: 1)
+            : Color(.sRGB, red: 23/255, green: 79/255, blue: 120/255, opacity: 1)
     }
 }
 
@@ -402,13 +475,7 @@ struct HabitOverviewRow: View {
                 thumbnailStore: thumbnailStore
             )
         } label: {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(habit.name)
-                Text(periodProgressText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            ModuleEntryRow(title:habit.name,subtitle:periodProgressText,systemImage:"repeat", titleID: "habit-title-\(habit.normalizedName)")
         }
         .accessibilityIdentifier("habit-\(habit.normalizedName)")
     }
@@ -441,7 +508,6 @@ struct HabitOverviewRow: View {
         if current.period == .trackingOnly || current.target == nil {
             return recordedText(current.actual)
         }
-        let remaining = max((current.target ?? 0) - current.actual, 0)
         let scope: String = switch current.period {
         case .day: String(localized: "today")
         case .week: String(localized: "this week")
@@ -455,15 +521,10 @@ struct HabitOverviewRow: View {
                 )
                 : String(localized: "Rest day")
         }
-        return remaining > 0
-            ? String.localizedStringWithFormat(
-                String(localized: "%lld/%lld %@ · %lld remaining"),
-                current.actual, current.target ?? 0, scope, remaining
-            )
-            : String.localizedStringWithFormat(
-                String(localized: "%lld/%lld %@"),
-                current.actual, current.target ?? 0, scope
-            )
+        return String.localizedStringWithFormat(
+            String(localized: "%lld/%lld %@"),
+            current.actual, current.target ?? 0, scope
+        )
     }
 
     private func recordedText(_ count: Int) -> String {
@@ -1527,6 +1588,7 @@ private struct HabitAnalyticsDashboard: View {
 }
 
 private struct HabitMonthCalendar: View {
+    @Environment(\.locale) private var locale
     let summary: HabitAnalyticsSummary
     let asOf: HabitLocalDay
 
@@ -1544,7 +1606,7 @@ private struct HabitMonthCalendar: View {
     }
 
     var body: some View {
-        let calendar = WeeklyReviewCalendarPolicy.calendar()
+        let calendar = HabitDisplayCalendar.calendar(locale: locale)
         let weekdaySymbols = HabitMonthCalendarPresentation.veryShortWeekdaySymbols(
             calendar: calendar
         )
@@ -1621,10 +1683,11 @@ private struct HabitMonthCalendar: View {
 }
 
 private struct WeekdayPatternView: View {
+    @Environment(\.locale) private var locale
     let pattern: HabitWeekdayPattern
 
     var body: some View {
-        let calendar = WeeklyReviewCalendarPolicy.calendar()
+        let calendar = HabitDisplayCalendar.calendar(locale: locale)
         HStack(spacing: 8) {
             ForEach(pattern.buckets) { bucket in
                 VStack(spacing: 2) {
@@ -1712,7 +1775,8 @@ private struct ActivityHeatmap: View {
     }
 }
 
-private struct PeriodActivityGrid: View {
+struct PeriodActivityGrid: View {
+    @Environment(\.locale) private var locale
     let evaluation: HabitPeriodEvaluation
     let activity: [HabitLocalDay: Int]
 
@@ -1759,10 +1823,10 @@ private struct PeriodActivityGrid: View {
 
     private func dayLabel(_ day: HabitLocalDay) -> String {
         switch evaluation.period {
-        case .day: return "Today"
+        case .day: return String(localized: "Today")
         case .week:
             guard let date = day.date() else { return day.description }
-            return WeeklyReviewCalendarPolicy.calendar().veryShortWeekdaySymbols[
+            return HabitDisplayCalendar.calendar(locale: locale).veryShortWeekdaySymbols[
                 WeeklyReviewCalendarPolicy.calendar().component(.weekday, from: date) - 1
             ]
         case .month: return "\(day.day)"
@@ -1889,16 +1953,9 @@ private struct DetailedHabitCheckInView: View {
     }
 
     private func saveCheckIn() {
-        let trimmedQuantity = quantity.trimmingCharacters(in: .whitespacesAndNewlines)
-        let parsedQuantity: Double?
-        if trimmedQuantity.isEmpty {
-            parsedQuantity = nil
-        } else if let value = Double(trimmedQuantity) {
-            parsedQuantity = value
-        } else {
-            errorMessage = String(localized: "Quantity must be a number.")
-            return
-        }
+        let parsedQuantity:Double?
+        do {parsedQuantity=try HabitQuantityRules.parse(quantity)}
+        catch {errorMessage=String(localized:"Quantity must be a finite number.");return}
 
         do {
             try save(HabitLogDraft(
@@ -1912,5 +1969,23 @@ private struct DetailedHabitCheckInView: View {
         } catch {
             errorMessage = String(localized: "The check-in was not saved.")
         }
+    }
+}
+
+#if DEBUG
+/// Test-only observations at the actual database read, not notification counts.
+@MainActor enum GrowthCountReadProbe {
+    static var reads:[(Int,Int)]=[]
+    static var last:GrowthEntryCounts?
+    static var didRead:(() -> Void)?
+}
+#endif
+
+/// Display symbols only; Gregorian dates and Monday-first business periods remain policy-owned.
+enum HabitDisplayCalendar {
+    static func calendar(locale: Locale, timeZone: TimeZone = .current) -> Calendar {
+        var calendar = WeeklyReviewCalendarPolicy.calendar(timeZone: timeZone)
+        calendar.locale = locale
+        return calendar
     }
 }

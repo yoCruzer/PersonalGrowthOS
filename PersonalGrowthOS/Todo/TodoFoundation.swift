@@ -5,14 +5,15 @@ import SwiftData
 typealias TodoDay = HabitLocalDay
 
 enum TodoTaskState: String, Codable, CaseIterable { case open, completed, canceled }
-enum TodoFrequency: String, Codable, CaseIterable { case daily, weekly, monthly, yearly }
+enum TodoFrequency: String, Codable, CaseIterable { case daily, weekly, monthly, yearly, weekdays, weekends, customWeekdays }
 enum TodoEventKind: String, Codable {
     case created, edited, completed, reopened, canceled, skipped, successorWithdrawn, seriesStopped, convertedToSeries
 }
 enum TodoFailure: Error, LocalizedError {
-    case invalidTitle, invalidDate, invalidReminder, invalidReminderOffset, conversionRequiresOpen, missingTask, missingList, missingSource, invalidSeries, corruptData
+    case invalidTitle, invalidDate, invalidReminder, invalidReminderOffset, conversionRequiresOpen, missingTask, missingList, missingSource, invalidSeries, corruptData, staleTask
     var errorDescription: String? {
         switch self {
+        case .staleTask: return String(localized:"This todo changed. Reload its reminder settings before trying again.")
         case .invalidTitle: return String(localized: "Enter a task title of up to 4,000 characters.")
         case .invalidDate: return String(localized: "Choose a valid calendar day.")
         case .invalidReminder: return String(localized: "Choose a future reminder time.")
@@ -141,13 +142,16 @@ struct TodoDraft: Equatable {
     var remindAt: Date?
     var listID: UUID?
     var frequency: TodoFrequency?
+    var weekdays: Set<Int> = [1,2,3,4,5]
+    var reminderChannel: TodoReminderChannel? = nil
 
     init(title: String = "", notes: String = "", isImportant: Bool = false,
          plannedDay: String? = nil, deadlineDay: String? = nil, remindAt: Date? = nil,
-         listID: UUID? = nil, frequency: TodoFrequency? = nil) {
+         listID: UUID? = nil, frequency: TodoFrequency? = nil, weekdays: Set<Int> = [1,2,3,4,5],
+         reminderChannel: TodoReminderChannel? = nil) {
         self.title = title; self.notes = notes; self.isImportant = isImportant
         self.plannedDay = plannedDay; self.deadlineDay = deadlineDay; self.remindAt = remindAt
-        self.listID = listID; self.frequency = frequency
+        self.listID = listID; self.frequency = frequency;self.weekdays=weekdays;self.reminderChannel=reminderChannel
     }
     init(_ task: TodoTask) {
         self.init(title: task.title, notes: task.notes, isImportant: task.isImportant,
@@ -162,6 +166,7 @@ struct TodoDraft: Equatable {
         }
         if let remindAt, !remindAt.timeIntervalSince1970.isFinite { throw TodoFailure.invalidReminder }
         if frequency != nil && plannedDay == nil && deadlineDay == nil { throw TodoFailure.invalidSeries }
+        if frequency == .customWeekdays {_ = try TodoWeekdayRule.mask(weekdays)}
     }
     func validateReminderForSave(now: Date, existingReminder: Date?, usesExistingFutureTemplate: Bool) throws {
         // A past civil day is a valid reference when updating an existing repeat
@@ -190,9 +195,34 @@ struct TodoEventValue: Codable, Equatable {
     }
 }
 
+enum TodoWeekdayRule {
+    static func mask(_ weekdays: Set<Int>) throws -> Int {
+        guard !weekdays.isEmpty,weekdays.allSatisfy({(1...7).contains($0)}) else {throw TodoFailure.invalidSeries}
+        return weekdays.reduce(0) {$0 | (1 << ($1-1))}
+    }
+    static func weekdays(_ mask: Int) throws -> Set<Int> {
+        guard (1...127).contains(mask) else {throw TodoFailure.invalidSeries}
+        return Set((1...7).filter {mask & (1 << ($0-1)) != 0})
+    }
+    static func day(anchor: TodoDay,index: Int,mask: Int) throws -> TodoDay {
+        guard index >= 0,index <= 3_000_000,let date=anchor.date(timeZone:TodoRecurrence.utc) else {throw TodoFailure.invalidSeries}
+        let selected=try weekdays(mask)
+        // Index zero is the explicitly dated current occurrence. Only its successors follow this set.
+        if index == 0 {return anchor}
+        var calendar=Calendar(identifier:.gregorian);calendar.timeZone=TodoRecurrence.utc
+        let native=calendar.component(.weekday,from:date),iso=native == 1 ? 7 : native-1
+        let offsets=(1...7).filter {selected.contains((iso+$0-1)%7+1)}
+        let offset=((index-1)/offsets.count)*7+offsets[(index-1)%offsets.count]
+        guard let next=calendar.date(byAdding:.day,value:offset,to:date) else {throw TodoFailure.invalidSeries}
+        let result=TodoDay(date:next,timeZone:TodoRecurrence.utc)
+        guard result.year <= 9999 else {throw TodoFailure.invalidSeries}
+        return result
+    }
+}
+
 enum TodoRecurrence {
     static let utc = TimeZone(secondsFromGMT: 0)!
-    static func day(anchor: String, frequency: TodoFrequency, index: Int) throws -> TodoDay {
+    static func day(anchor: String, frequency: TodoFrequency, index: Int, weekdaysMask: Int? = nil) throws -> TodoDay {
         guard index >= 0, index <= 3_000_000, let anchor = TodoDay(anchor), let date = anchor.date(timeZone: utc) else {
             throw TodoFailure.invalidSeries
         }
@@ -201,6 +231,10 @@ enum TodoRecurrence {
         switch frequency {
         case .daily: result = calendar.date(byAdding: .day, value: index, to: date)
         case .weekly: result = calendar.date(byAdding: .day, value: index * 7, to: date)
+        case .weekdays, .weekends, .customWeekdays:
+            let mask = frequency == .weekdays ? 31 : frequency == .weekends ? 96 : weekdaysMask
+            guard let mask else {throw TodoFailure.invalidSeries}
+            return try TodoWeekdayRule.day(anchor:anchor,index:index,mask:mask)
         case .monthly, .yearly:
             let start = calendar.date(from: DateComponents(year: anchor.year, month: anchor.month, day: 1))!
             let shifted = calendar.date(byAdding: frequency == .monthly ? .month : .year, value: index, to: start)
@@ -215,15 +249,15 @@ enum TodoRecurrence {
         return day
     }
 
-    static func nextIndex(anchor: String, frequency: TodoFrequency, after index: Int, today: TodoDay) throws -> Int {
+    static func nextIndex(anchor: String, frequency: TodoFrequency, after index: Int, today: TodoDay, weekdaysMask: Int? = nil) throws -> Int {
         var low = index + 1, high = low
-        while try day(anchor: anchor, frequency: frequency, index: high) <= today {
+        while try day(anchor: anchor, frequency: frequency, index: high, weekdaysMask: weekdaysMask) <= today {
             high = min(3_000_000, max(high + 1, high * 2))
             if high == 3_000_000 { throw TodoFailure.invalidSeries }
         }
         while low < high {
             let mid = low + (high - low) / 2
-            if try day(anchor: anchor, frequency: frequency, index: mid) <= today { low = mid + 1 }
+            if try day(anchor: anchor, frequency: frequency, index: mid, weekdaysMask: weekdaysMask) <= today { low = mid + 1 }
             else { high = mid }
         }
         return low
@@ -264,9 +298,17 @@ final class TodoTaskService {
         self.context = context; self.now = now; self.timeZone = timeZone
         self.save = save ?? { try context.save() }
     }
-    private func transaction<T>(_ operation: () throws -> T) throws -> T {
-        do { let result = try operation(); try save(); NotificationCenter.default.post(name: .todoTasksChanged, object: context.container); return result }
-        catch { context.rollback(); throw error }
+    private func transaction<T>(onlyIfChanged: Bool = false,_ operation: () throws -> T) throws -> T {
+        do {
+            return try StorePublication.perform(at:StorePublication.root(for:context.container)) {
+                let result=try operation()
+                if !onlyIfChanged || context.hasChanges {
+                    try save()
+                    NotificationCenter.default.post(name:.todoTasksChanged,object:context.container)
+                }
+                return result
+            }
+        } catch {context.rollback();throw error}
     }
     func task(id: UUID) throws -> TodoTask {
         guard let task = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == id })).first else { throw TodoFailure.missingTask }
@@ -306,7 +348,11 @@ final class TodoTaskService {
             return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
         }
         let offset = try draft.remindAt.map { try TodoRecurrence.reminderOffset(localDay: TodoDay(date: $0, timeZone: zone).description, anchor: anchor) }
-        return TodoSeries(frequency: frequency, anchorDay: anchor, draft: draft, reminderMinutes: minutes, reminderDayOffset: offset, createdAt: date)
+        let series=TodoSeries(frequency: frequency, anchorDay: anchor, draft: draft, reminderMinutes: minutes, reminderDayOffset: offset, createdAt: date)
+        if frequency == .customWeekdays || (draft.reminderChannel ?? .notification) != .notification {
+            context.insert(TodoSeriesPreferences(seriesID:series.id,weekdaysMask:frequency == .customWeekdays ? try TodoWeekdayRule.mask(draft.weekdays) : nil,channel:draft.reminderChannel ?? .notification))
+        }
+        return series
     }
     @discardableResult
     func create(_ draft: TodoDraft, sourceEntryID: UUID? = nil, id: UUID = UUID(), importantDayID: UUID? = nil, importantDayOccurrence: ImportantCivilDay? = nil) throws -> TodoTask {
@@ -333,6 +379,7 @@ final class TodoTaskService {
                 listID: draft.listID, seriesID: seriesID, occurrenceIndex: seriesID == nil ? nil : 0, createdAt: date)
             setReminderWallTime(task, from: draft.remindAt)
             context.insert(task)
+            try setIntent(task,channel:draft.reminderChannel ?? .notification,override:false,renew:false)
             try record(task, kind: .created, before: nil, at: date)
             if let sourceEntryID { context.insert(TodoTaskSource(taskID: task.id, entryID: sourceEntryID)) }
             if let relatedDay { context.insert(ImportantDayTodoLink(dayID: relatedDay.id, taskID: task.id,
@@ -340,30 +387,128 @@ final class TodoTaskService {
             return task
         }
     }
+    func preferences(for seriesID: UUID) throws -> TodoSeriesPreferences? {
+        try context.fetch(FetchDescriptor<TodoSeriesPreferences>(predicate:#Predicate {$0.id == seriesID})).first
+    }
+    func occurrence(_ rule: TodoSeries,index: Int) throws -> TodoDay {
+        guard let frequency=TodoFrequency(rawValue:rule.frequencyRawValue) else {throw TodoFailure.invalidSeries}
+        return try TodoRecurrence.day(anchor:rule.anchorDay,frequency:frequency,index:index,weekdaysMask:preferences(for:rule.id)?.weekdaysMask)
+    }
+    func reminderIntent(for id: UUID) throws -> TodoReminderIntent? {
+        try context.fetch(FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id})).first
+    }
+    func draft(id: UUID) throws -> TodoDraft {
+        let task=try task(id:id)
+        var draft=TodoDraft(task)
+        if let intent=try reminderIntent(for:id) {
+            guard let channel=TodoReminderChannel(rawValue:intent.channelRawValue) else {throw TodoFailure.corruptData}
+            draft.reminderChannel=channel
+        }
+        if let seriesID=task.seriesID,let mask=try preferences(for:seriesID)?.weekdaysMask {draft.weekdays=try TodoWeekdayRule.weekdays(mask)}
+        return draft
+    }
+    private func setIntent(_ task: TodoTask,channel: TodoReminderChannel,override: Bool,renew: Bool) throws {
+        if let intent=try reminderIntent(for:task.id) {
+            if renew || intent.channelRawValue != channel.rawValue || intent.isInstanceOverride != override {
+                guard intent.revision >= 0,intent.revision < Int.max-1 else {throw TodoFailure.corruptData}
+                intent.generation=UUID();intent.revision += 1;intent.channelRawValue=channel.rawValue;intent.isInstanceOverride=override
+            }
+        } else if task.remindAt != nil || channel != .notification || override {
+            context.insert(TodoReminderIntent(taskID:task.id,channel:channel,isInstanceOverride:override))
+        }
+    }
+    private func preserveLegacyReminderOffset(_ task: TodoTask) throws {
+        if let seriesID=task.seriesID {
+            let rule=try series(seriesID)
+            if !rule.isStopped,rule.reminderDayOffset == nil,rule.reminderMinutes != nil {rule.reminderDayOffset=try reminderOffset(for:rule)}
+        }
+    }
+    /// A deliberate current-occurrence reminder; never changes the plan, deadline or series anchor.
+    func rescheduleReminder(id: UUID,to fireAt: Date,channel: TodoReminderChannel? = nil,
+                            expectedRevision: Int? = nil,commit: ((ModelContext) throws -> Void)? = nil) throws {
+        let write=ModelContext(context.container);write.autosaveEnabled=false
+        let writer=TodoTaskService(context:write,now:now,timeZone:timeZone,save:{try (commit ?? {try $0.save()})(write)})
+        try writer.rescheduleOwnedReminder(id:id,to:fireAt,channel:channel,expectedRevision:expectedRevision)
+    }
+    private func rescheduleOwnedReminder(id: UUID,to fireAt: Date,channel: TodoReminderChannel?,expectedRevision: Int?) throws {
+        let task=try task(id:id)
+        if let expectedRevision,expectedRevision != task.revision {throw TodoFailure.staleTask}
+        guard task.state == .open,fireAt.timeIntervalSinceReferenceDate.isFinite,fireAt > now() else {throw TodoFailure.invalidReminder}
+        if let seriesID=task.seriesID,try series(seriesID).isStopped {throw TodoFailure.invalidSeries}
+        let existing=try reminderIntent(for:id)
+        let selected=try channel ?? existing.map {value in
+            guard let channel=TodoReminderChannel(rawValue:value.channelRawValue) else {throw TodoFailure.corruptData};return channel
+        } ?? .notification
+        try transaction {
+            guard task.state == .open,fireAt > now() else {throw TodoFailure.invalidReminder}
+            // Freeze a legacy rule while the original wall-day/minutes still exist.
+            // This is part of the same transaction as the override and event.
+            try preserveLegacyReminderOffset(task)
+            let before=try TodoEventValue(task)
+            task.remindAt=fireAt;setReminderWallTime(task,from:fireAt)
+            try setIntent(task,channel:selected,override:task.seriesID != nil,renew:true)
+            try record(task,kind:.edited,before:before,at:now())
+        }
+    }
     private func reminderOffset(for rule: TodoSeries) throws -> Int {
         if let offset = rule.reminderDayOffset { return offset }
-        // Old V11 candidates have no offset. Recover the first matching saved wall-day
-        // without changing task/event bytes; an absent reminder needs no policy.
-        guard let minutes = rule.reminderMinutes, let frequency = TodoFrequency(rawValue: rule.frequencyRawValue) else { return 0 }
-        let id = rule.id
-        let candidates = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == id }))
-            .filter { $0.reminderMinutes == minutes && $0.reminderLocalDay != nil }
-            .sorted { ($0.occurrenceIndex ?? 0) < ($1.occurrenceIndex ?? 0) }
-        guard let first = candidates.first, let index = first.occurrenceIndex, let local = first.reminderLocalDay else { return 0 }
-        return try TodoRecurrence.reminderOffset(localDay: local, anchor: TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index).description)
+        // A nil rule has no stored policy. Only an unchanged legacy rule can be
+        // reconstructed from its original per-occurrence event chain. A later explicit
+        // series edit already has a non-nil offset and takes the path above.
+        guard let minutes=rule.reminderMinutes else {return 0}
+        guard rule.updatedAt == rule.createdAt else {throw TodoFailure.invalidReminderOffset}
+        let id=rule.id
+        let roots=try context.fetch(FetchDescriptor<TodoTask>(predicate:#Predicate {$0.seriesID == id})).filter {$0.occurrenceIndex == 0}
+        guard roots.count == 1,let task=roots.first else {throw TodoFailure.invalidReminderOffset}
+        let taskID=task.id
+        let history=try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate:#Predicate {$0.taskID == taskID})).sorted {$0.sequence < $1.sequence}
+        var previous: TodoEventValue?,source: TodoEventValue?
+        var reminderEdits=0,lastEdit: Int?,lastReminderEdit: Int?
+        for (sequence,event) in history.enumerated() {
+            let after=try JSONDecoder().decode(TodoEventValue.self,from:event.afterValue)
+            let before=try event.beforeValue.map {try JSONDecoder().decode(TodoEventValue.self,from:$0)}
+            guard event.sequence == sequence,before == previous else {throw TodoFailure.corruptData}
+            if source == nil,event.createdAt >= rule.createdAt,after.reminderMinutes == minutes,after.reminderLocalDay != nil,
+               event.kindRawValue == TodoEventKind.created.rawValue || event.kindRawValue == TodoEventKind.convertedToSeries.rawValue {
+                source=after
+            }
+            if event.kindRawValue == TodoEventKind.edited.rawValue {
+                lastEdit=sequence
+                if before?.reminderLocalDay != after.reminderLocalDay || before?.reminderMinutes != after.reminderMinutes {
+                    reminderEdits += 1;lastReminderEdit=sequence
+                }
+            }
+            previous=after
+        }
+        if reminderEdits > 0 {
+            // Older events do not label instance vs series edits. Only a single
+            // final wall-time edit with an explicit current override has an
+            // unambiguous original rule; more complex legacy histories need correction.
+            guard try reminderIntent(for:taskID)?.isInstanceOverride == true,
+                  reminderEdits == 1,lastEdit == lastReminderEdit else {throw TodoFailure.invalidReminderOffset}
+        }
+        guard !history.isEmpty,previous == (try TodoEventValue(task)),history.last?.sequence == task.revision else {throw TodoFailure.corruptData}
+        guard let source,source.reminderMinutes == minutes,let local=source.reminderLocalDay else {throw TodoFailure.invalidReminderOffset}
+        // Original V11 could materialize a successor with a lost lead day.
+        // Only the verified root creation/conversion is independent evidence;
+        // derived successors, even if consistent, cannot establish the old policy.
+        return try TodoRecurrence.reminderOffset(localDay:local,anchor:occurrence(rule,index:0).description)
     }
-    private func applyTemplate(_ rule: TodoSeries, to task: TodoTask, at date: Date) throws {
-        let before = try TodoEventValue(task)
+
+    private func applyTemplate(_ rule: TodoSeries, to task: TodoTask, at date: Date, reactivating: Bool = false) throws {
+        let before = try TodoEventValue(task),oldReminder=task.remindAt
         task.title = rule.title; task.notes = rule.notes; task.isImportant = rule.isImportant; task.listID = rule.listID
         try applyReminder(rule, to: task)
+        let channel=try preferences(for:rule.id).flatMap {TodoReminderChannel(rawValue:$0.reminderChannelRawValue)} ?? .notification
+        try setIntent(task,channel:channel,override:false,renew:reactivating || oldReminder != task.remindAt)
         try record(task, kind: .edited, before: before, at: date)
     }
     private func applyReminder(_ rule: TodoSeries, to task: TodoTask) throws {
         guard let minutes = rule.reminderMinutes else {
             task.remindAt = nil; setReminderWallTime(task, from: nil); return
         }
-        guard let frequency = TodoFrequency(rawValue: rule.frequencyRawValue), let index = task.occurrenceIndex else { throw TodoFailure.invalidSeries }
-        let occurrence = try TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index)
+        guard TodoFrequency(rawValue: rule.frequencyRawValue) != nil, let index = task.occurrenceIndex else { throw TodoFailure.invalidSeries }
+        let occurrence = try occurrence(rule,index:index)
         let day = try TodoRecurrence.reminderDay(occurrence: occurrence, offset: reminderOffset(for: rule))
         guard let reminder = TodoRecurrence.reminder(day: day, minutes: minutes, timeZone: timeZone()) else { throw TodoFailure.invalidReminder }
         task.remindAt = reminder; task.reminderLocalDay = day.description
@@ -376,15 +521,35 @@ final class TodoTaskService {
             guard task.state == .open else { throw TodoFailure.conversionRequiresOpen }
             if let seriesID = task.seriesID {
                 let rule = try series(seriesID)
-                var existing = TodoDraft(task); existing.frequency = frequency
+                var existing = try self.draft(id:task.id); existing.frequency = frequency
+                var requested=draft
+                let current=existing.reminderChannel ?? .notification
+                existing.reminderChannel=current;requested.reminderChannel=draft.reminderChannel ?? current
                 let history = try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate: #Predicate { $0.taskID == id }))
                 // A committed conversion retry is idempotent, not an arbitrary rule edit.
-                guard rule.frequencyRawValue == frequency.rawValue, existing == draft,
+                guard rule.frequencyRawValue == frequency.rawValue, existing == requested,
                       history.contains(where: { $0.kindRawValue == TodoEventKind.convertedToSeries.rawValue }) else { throw TodoFailure.invalidSeries }
                 return
             }
         }
+        let previousIntent=try reminderIntent(for:id)
+        let currentChannel=previousIntent.flatMap {TodoReminderChannel(rawValue:$0.channelRawValue)} ?? .notification
+        let selectedChannel=draft.reminderChannel ?? currentChannel
+        let reminderChanged=task.remindAt != draft.remindAt
+        // Explicit correction belongs to the live rule, independently of the
+        // entry occurrence state. Only affected open occurrences renew intent.
+        // Healthy nil bootstrap, metadata and Stop stay terminal.
+        var correctingPolicy=false
+        if futureSeries,draft.remindAt != nil,let sid=task.seriesID {
+            let rule=try series(sid)
+            if !rule.isStopped,rule.reminderDayOffset == nil,rule.reminderMinutes != nil {
+                do {_ = try reminderOffset(for:rule)}
+                catch TodoFailure.invalidReminderOffset {correctingPolicy=true}
+            }
+        }
+        let retainOverride=previousIntent?.isInstanceOverride == true && !reminderChanged && !futureSeries && draft.remindAt != nil
         try transaction {
+            if !futureSeries && (reminderChanged || previousIntent?.isInstanceOverride == true) {try preserveLegacyReminderOffset(task)}
             let before = try TodoEventValue(task)
             if draft.frequency != nil {
                 let rule = try makeSeries(draft, at: now())
@@ -394,27 +559,30 @@ final class TodoTaskService {
             }
             task.title = draft.title; task.notes = draft.notes; task.isImportant = draft.isImportant
             task.plannedDay = draft.plannedDay; task.deadlineDay = draft.deadlineDay
-            if task.remindAt != draft.remindAt { setReminderWallTime(task, from: draft.remindAt) }
+            if reminderChanged || correctingPolicy { setReminderWallTime(task, from: draft.remindAt) }
             task.remindAt = draft.remindAt; task.listID = draft.listID
-            if let seriesID = task.seriesID, let local = task.reminderLocalDay, let index = task.occurrenceIndex {
+            if !retainOverride,let seriesID = task.seriesID, let local = task.reminderLocalDay, let index = task.occurrenceIndex {
                 let rule = try series(seriesID)
-                guard let frequency = TodoFrequency(rawValue: rule.frequencyRawValue) else { throw TodoFailure.invalidSeries }
-                _ = try TodoRecurrence.reminderOffset(localDay: local, anchor: TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index).description)
+                guard TodoFrequency(rawValue: rule.frequencyRawValue) != nil else { throw TodoFailure.invalidSeries }
+                _ = try TodoRecurrence.reminderOffset(localDay: local, anchor: occurrence(rule,index:index).description)
             }
             if futureSeries, let seriesID = task.seriesID {
                 let series = try series(seriesID)
                 series.title = draft.title; series.notes = draft.notes; series.isImportant = draft.isImportant
                 series.listID = draft.listID
+                if let preference=try preferences(for:seriesID) {preference.reminderChannelRawValue=selectedChannel.rawValue}
+                else if selectedChannel != .notification {context.insert(TodoSeriesPreferences(seriesID:seriesID,channel:selectedChannel))}
                 series.reminderMinutes = task.reminderMinutes
-                if let local = task.reminderLocalDay, let index = task.occurrenceIndex, let frequency = TodoFrequency(rawValue: series.frequencyRawValue) {
-                    series.reminderDayOffset = try TodoRecurrence.reminderOffset(localDay: local, anchor: TodoRecurrence.day(anchor: series.anchorDay, frequency: frequency, index: index).description)
+                if let local = task.reminderLocalDay, let index = task.occurrenceIndex, TodoFrequency(rawValue: series.frequencyRawValue) != nil {
+                    series.reminderDayOffset = try TodoRecurrence.reminderOffset(localDay: local, anchor: occurrence(series,index:index).description)
                 } else { series.reminderDayOffset = nil }
                 for successor in try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == seriesID }))
                     where successor.id != task.id && successor.state == .open && (successor.occurrenceIndex ?? -1) > (task.occurrenceIndex ?? -1) {
-                    try applyTemplate(series, to: successor, at: now())
+                    try applyTemplate(series, to: successor, at: now(), reactivating:correctingPolicy)
                 }
                 series.updatedAt = TechnicalTimestamp.updated(now: now(), createdAt: series.createdAt, previous: series.updatedAt)
             }
+            try setIntent(task,channel:selectedChannel,override:retainOverride,renew:reminderChanged || (correctingPolicy && task.state == .open))
             try record(task, kind: draft.frequency == nil ? .edited : .convertedToSeries, before: before, at: now())
         }
     }
@@ -433,6 +601,12 @@ final class TodoTaskService {
                 }
             }
             task.stateRawValue = state.rawValue
+            if state == .open,let fire=task.remindAt,fire > now(),
+               try task.seriesID.map({try !series($0).isStopped}) ?? true {
+                let intent=try reminderIntent(for:id)
+                let channel=intent.flatMap {TodoReminderChannel(rawValue:$0.channelRawValue)} ?? .notification
+                try setIntent(task,channel:channel,override:intent?.isInstanceOverride ?? false,renew:true)
+            }
             task.completedAt = state == .completed ? date : nil
             task.canceledAt = state == .canceled ? date : nil
             try record(task, kind: state == .completed ? .completed : state == .open ? .reopened : skip ? .skipped : .canceled, before: before, at: date)
@@ -445,7 +619,7 @@ final class TodoTaskService {
         guard !series.isStopped, let frequency = TodoFrequency(rawValue: series.frequencyRawValue), let index = task.occurrenceIndex else { return }
         let siblings = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.seriesID == seriesID }))
         guard !siblings.contains(where: { $0.state == .open }) else { return }
-        var next = try TodoRecurrence.nextIndex(anchor: series.anchorDay, frequency: frequency, after: index, today: TodoDay(date: date, timeZone: timeZone()))
+        var next = try TodoRecurrence.nextIndex(anchor: series.anchorDay, frequency: frequency, after: index, today: TodoDay(date: date, timeZone: timeZone()),weekdaysMask:preferences(for:series.id)?.weekdaysMask)
         // Completed or deliberately skipped facts are never reopened as a side effect.
         while let existing = siblings.first(where: { $0.occurrenceIndex == next }) {
             let existingID = existing.id
@@ -458,14 +632,26 @@ final class TodoTaskService {
             let before = try TodoEventValue(existing)
             existing.stateRawValue = TodoTaskState.open.rawValue; existing.canceledAt = nil; existing.completedAt = nil
             try record(existing, kind: .reopened, before: before, at: date)
-            try applyTemplate(series, to: existing, at: date)
+            try applyTemplate(series, to: existing, at: date, reactivating: true)
             return
         }
+        let occurrence = try occurrence(series,index:next)
         func shifted(_ anchor: String?) throws -> String? {
-            try anchor.map { try TodoRecurrence.day(anchor: $0, frequency: frequency, index: next).description }
+            try anchor.map { value in
+                if [.weekdays,.weekends,.customWeekdays].contains(frequency) {
+                    guard let origin=TodoDay(series.anchorDay)?.date(timeZone:TodoRecurrence.utc),let endpoint=TodoDay(value)?.date(timeZone:TodoRecurrence.utc),let base=occurrence.date(timeZone:TodoRecurrence.utc) else {throw TodoFailure.invalidSeries}
+                    var calendar=Calendar(identifier:.gregorian);calendar.timeZone=TodoRecurrence.utc
+                    let offset=calendar.dateComponents([.day],from:origin,to:endpoint).day!
+                    guard let result=calendar.date(byAdding:.day,value:offset,to:base) else {throw TodoFailure.invalidSeries}
+                    let day=TodoDay(date:result,timeZone:TodoRecurrence.utc)
+                    guard TodoDay(day.description) != nil else {throw TodoFailure.invalidSeries}
+                    return day.description
+                }
+                return try TodoRecurrence.day(anchor:value,frequency:frequency,index:next).description
+            }
         }
         let planned = try shifted(series.plannedAnchorDay), deadline = try shifted(series.deadlineAnchorDay)
-        let occurrence = try TodoRecurrence.day(anchor: series.anchorDay, frequency: frequency, index: next)
+        if series.reminderDayOffset == nil,series.reminderMinutes != nil {series.reminderDayOffset=try reminderOffset(for:series)}
         let reminderDay = try TodoRecurrence.reminderDay(occurrence: occurrence, offset: reminderOffset(for: series))
         let reminder = series.reminderMinutes.flatMap { TodoRecurrence.reminder(day: reminderDay, minutes: $0, timeZone: timeZone()) }
         let nextTask = TodoTask(title: series.title, notes: series.notes, isImportant: series.isImportant,
@@ -476,20 +662,32 @@ final class TodoTaskService {
             nextTask.reminderLocalDay = reminderDay.description
             nextTask.reminderMinutes = series.reminderMinutes
         }
-        context.insert(nextTask); try record(nextTask, kind: .created, before: nil, at: date)
+        context.insert(nextTask)
+        let channel=try preferences(for:series.id).flatMap {TodoReminderChannel(rawValue:$0.reminderChannelRawValue)} ?? .notification
+        try setIntent(nextTask,channel:channel,override:false,renew:false)
+        try record(nextTask, kind: .created, before: nil, at: date)
         let sourceTaskID = task.id
         if let source = try context.fetch(FetchDescriptor<TodoTaskSource>(predicate: #Predicate { $0.taskID == sourceTaskID })).first {
             context.insert(TodoTaskSource(taskID: nextTask.id, entryID: source.entryID))
         }
     }
-    func refreshRepeatingReminderTimes() throws {
+    /// Only an unresolvable legacy policy is local to one task. Storage/integrity
+    /// failures still abort reconciliation, before any stale snapshot is scheduled.
+    @discardableResult func refreshRepeatingReminderTimes() throws -> Set<UUID> {
         let zone = timeZone()
-        let tasks = try context.fetch(FetchDescriptor<TodoTask>()).filter {
+        let candidates = try context.fetch(FetchDescriptor<TodoTask>()).filter {
             $0.state == .open && $0.seriesID != nil && $0.remindAt != nil && $0.reminderTimeZoneID != zone.identifier
         }
-        guard !tasks.isEmpty else { return }
-        try transaction {
+        let tasks=try candidates.filter { task in
+            guard let id=task.seriesID else {return false}
+            return try !series(id).isStopped
+        }
+        guard !tasks.isEmpty else { return [] }
+        return try transaction(onlyIfChanged:true) {
+            var unresolved=Set<UUID>()
             for task in tasks {
+                do {try preserveLegacyReminderOffset(task)}
+                catch TodoFailure.invalidReminderOffset {unresolved.insert(task.id);continue}
                 guard let dayString = task.reminderLocalDay, let day = TodoDay(dayString),
                       let minutes = task.reminderMinutes else { throw TodoFailure.corruptData }
                 let before = try TodoEventValue(task)
@@ -497,6 +695,7 @@ final class TodoTaskService {
                 task.remindAt = adjusted; task.reminderTimeZoneID = zone.identifier
                 try record(task, kind: .edited, before: before, at: now())
             }
+            return unresolved
         }
     }
     func stopSeries(taskID: UUID) throws {
@@ -521,6 +720,7 @@ final class TodoTaskService {
             try context.fetch(FetchDescriptor<TodoTaskEvent>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
             try context.fetch(FetchDescriptor<TodoTaskSource>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
             try context.fetch(FetchDescriptor<ImportantDayTodoLink>(predicate: #Predicate { $0.taskID == id })).forEach(context.delete)
+            if let intent=try reminderIntent(for:id) {context.delete(intent)}
             context.delete(task)
         }
     }
@@ -536,7 +736,19 @@ final class TodoTaskService {
     func deleteList(id: UUID) throws {
         guard let list = try context.fetch(FetchDescriptor<TodoList>(predicate: #Predicate { $0.id == id })).first else { throw TodoFailure.missingList }
         try transaction {
-            for task in try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.listID == id })) {
+            let tasks=try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.listID == id }))
+            let taskSeriesIDs=Set(tasks.compactMap(\.seriesID))
+            let rules=try context.fetch(FetchDescriptor<TodoSeries>()).filter {$0.listID == id || taskSeriesIDs.contains($0.id)}
+            // Freeze before either task history or the rule timestamp changes. A
+            // single-occurrence list edit can leave task and rule lists different.
+            for rule in rules where !rule.isStopped && rule.reminderDayOffset == nil && rule.reminderMinutes != nil {
+                do {rule.reminderDayOffset=try reminderOffset(for:rule)}
+                catch TodoFailure.invalidReminderOffset {
+                    // Unlinking a category does not require inventing a future policy.
+                    // Preserve the unknown policy; explicit rule correction stays available.
+                }
+            }
+            for task in tasks {
                 let before = try TodoEventValue(task); task.listID = nil
                 try record(task, kind: .edited, before: before, at: now())
             }
@@ -593,10 +805,12 @@ enum TodoIntegrity {
             lists: context.fetch(FetchDescriptor<TodoList>()),
             series: context.fetch(FetchDescriptor<TodoSeries>()),
             sources: context.fetch(FetchDescriptor<TodoTaskSource>()),
-            entryIDs: Set(context.fetch(FetchDescriptor<Entry>()).map(\.id)))
+            entryIDs: Set(context.fetch(FetchDescriptor<Entry>()).map(\.id)),
+            preferences:context.fetch(FetchDescriptor<TodoSeriesPreferences>()))
     }
     static func validate(tasks: [TodoTask], events: [TodoTaskEvent], lists: [TodoList],
-                         series: [TodoSeries], sources: [TodoTaskSource], entryIDs: Set<UUID>) throws {
+                         series: [TodoSeries], sources: [TodoTaskSource], entryIDs: Set<UUID>,
+                         preferences: [TodoSeriesPreferences] = []) throws {
         func require(_ condition: Bool) throws { if !condition { throw TodoFailure.corruptData } }
         func dates(_ created: Date, _ updated: Date) throws {
             try require(created.timeIntervalSince1970.isFinite && updated.timeIntervalSince1970.isFinite && updated >= created)
@@ -606,6 +820,8 @@ enum TodoIntegrity {
         try unique(series.map(\.id)); try unique(sources.map(\.id)); try unique(sources.map(\.taskID))
         try unique(tasks.compactMap(\.occurrenceKey))
         let taskIDs = Set(tasks.map(\.id)), listIDs = Set(lists.map(\.id)), seriesIDs = Set(series.map(\.id))
+        try unique(preferences.map(\.id))
+        let preferencesByID=Dictionary(uniqueKeysWithValues:preferences.map {($0.id,$0)})
         let rulesByID = Dictionary(uniqueKeysWithValues: series.map { ($0.id, $0) })
         let byTask = Dictionary(grouping: events, by: \.taskID)
         let openBySeries = Dictionary(grouping: tasks.filter { $0.seriesID != nil && $0.state == .open }, by: { $0.seriesID! })
@@ -629,6 +845,10 @@ enum TodoIntegrity {
             let draft = TodoDraft(title: rule.title, notes: rule.notes, plannedDay: rule.plannedAnchorDay, deadlineDay: rule.deadlineAnchorDay)
             try draft.validate(); try dates(rule.createdAt, rule.updatedAt)
             try require(TodoFrequency(rawValue: rule.frequencyRawValue) != nil && TodoDay(rule.anchorDay) != nil)
+            if rule.frequencyRawValue == TodoFrequency.customWeekdays.rawValue {
+                guard let mask=preferencesByID[rule.id]?.weekdaysMask else {throw TodoFailure.corruptData}
+                _ = try TodoWeekdayRule.weekdays(mask)
+            }
             try require(rule.anchorDay == (rule.plannedAnchorDay ?? rule.deadlineAnchorDay))
             if let id = rule.listID { try require(listIDs.contains(id)) }
             if let minutes = rule.reminderMinutes { try require((0..<1440).contains(minutes)) }
@@ -649,7 +869,7 @@ enum TodoIntegrity {
                 guard let index = task.occurrenceIndex else { throw TodoFailure.corruptData }
                 try require(index >= 0 && index <= 3_000_000 && task.occurrenceKey == "\(id.uuidString)/\(index)")
                 guard let rule = rulesByID[id], let frequency = TodoFrequency(rawValue: rule.frequencyRawValue) else { throw TodoFailure.corruptData }
-                _ = try TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index)
+                _ = try TodoRecurrence.day(anchor: rule.anchorDay, frequency: frequency, index: index,weekdaysMask:preferencesByID[id]?.weekdaysMask)
             } else { try require(task.occurrenceIndex == nil && task.occurrenceKey == nil) }
             let history = (byTask[task.id] ?? []).sorted { $0.sequence < $1.sequence }
             try require(!history.isEmpty && task.revision == history.count - 1)
@@ -692,3 +912,82 @@ enum TodoIntegrity {
 }
 
 extension Notification.Name { static let todoTasksChanged = Notification.Name("TodoTasksChanged") }
+
+// Additive usage-remediation metadata. Historical TodoTask/TodoSeries layouts remain unchanged.
+enum TodoReminderChannel: String, Codable, CaseIterable { case notification, alarm }
+@Model final class TodoSeriesPreferences {
+    @Attribute(.unique) var id: UUID // Series identity.
+    /// ISO weekdays: bit 0 is Monday, bit 6 is Sunday. Nil uses the fixed frequency's rule.
+    var weekdaysMask: Int?
+    var reminderChannelRawValue: String
+    init(seriesID: UUID, weekdaysMask: Int? = nil, channel: TodoReminderChannel = .notification) {
+        id=seriesID;self.weekdaysMask=weekdaysMask;reminderChannelRawValue=channel.rawValue
+    }
+}
+@Model final class TodoReminderIntent {
+    @Attribute(.unique) var id: UUID // Task/occurrence identity, independent of any OS request.
+    var generation: UUID
+    var revision: Int
+    var channelRawValue: String
+    var isInstanceOverride: Bool
+    init(taskID: UUID, channel: TodoReminderChannel, isInstanceOverride: Bool = false,
+         generation: UUID = UUID(), revision: Int = 0) {
+        id=taskID;self.generation=generation;self.revision=revision;channelRawValue=channel.rawValue
+        self.isInstanceOverride=isInstanceOverride
+    }
+}
+/// Device-only recovery journal. Never encoded in a user backup or copied as authorization.
+@Model final class TodoReminderDeviceRecord {
+    @Attribute(.unique) var id: UUID // Native request identity, allocated on this device.
+    var taskID: UUID
+    var intentGeneration: UUID
+    var channelRawValue: String
+    var fireAt: Date
+    var phaseRawValue: String
+    var requestedTitle: String?
+    init(id: UUID = UUID(), taskID: UUID, intentGeneration: UUID, channel: TodoReminderChannel,
+         fireAt: Date, phase: TodoReminderDevicePhase = .prepared, requestedTitle: String? = nil) {
+        self.id=id;self.taskID=taskID;self.intentGeneration=intentGeneration
+        channelRawValue=channel.rawValue;self.fireAt=fireAt;phaseRawValue=phase.rawValue;self.requestedTitle=requestedTitle
+    }
+}
+enum TodoReminderDevicePhase: String, Codable {
+    case ready, prepared, accepted, cancellationPending, retired, capacityWaiting, capacityCancellationPending
+}
+
+struct TodoReminderDisplaySnapshot: Equatable {
+    let task: TodoTaskTransfer
+    let channel: TodoReminderChannel
+    let active: Bool
+    let cancellationUnverified: Bool
+    static func read(id: UUID,container: ModelContainer) throws -> Self? {
+        let read=ModelContext(container)
+        var query=FetchDescriptor<TodoTask>(predicate:#Predicate {$0.id == id});query.fetchLimit=1
+        guard let task=try read.fetch(query).first else {return nil}
+        let intent=try read.fetch(FetchDescriptor<TodoReminderIntent>(predicate:#Predicate {$0.id == id})).first
+        let channel=try intent.map {value in
+            guard let channel=TodoReminderChannel(rawValue:value.channelRawValue) else {throw TodoFailure.corruptData};return channel
+        } ?? .notification
+        var active=task.state == .open && task.remindAt != nil
+        if let seriesID=task.seriesID {
+            let rule=try read.fetch(FetchDescriptor<TodoSeries>(predicate:#Predicate {$0.id == seriesID})).first
+            active = active && rule?.isStopped == false
+        }
+        let records=try read.fetch(FetchDescriptor<TodoReminderDeviceRecord>(predicate:#Predicate {$0.taskID == id}))
+        let pending=records.contains {
+            $0.phaseRawValue == TodoReminderDevicePhase.cancellationPending.rawValue || $0.phaseRawValue == TodoReminderDevicePhase.capacityCancellationPending.rawValue ||
+                (!active && [TodoReminderDevicePhase.prepared.rawValue,TodoReminderDevicePhase.accepted.rawValue].contains($0.phaseRawValue))
+        }
+        return .init(task:TodoTaskTransfer(task),channel:channel,active:active,cancellationUnverified:pending)
+    }
+}
+enum TodoRescheduleDate {
+    static func tomorrow(reminder: Date?,wallMinutes: Int?,now: Date,zone: TimeZone) -> Date? {
+        guard let reminder,reminder.timeIntervalSinceReferenceDate.isFinite else {return nil}
+        var calendar=Calendar(identifier:.gregorian);calendar.timeZone=zone
+        let parts=calendar.dateComponents([.hour,.minute],from:reminder)
+        let minutes=wallMinutes ?? (parts.hour! * 60 + parts.minute!)
+        guard let next=calendar.date(byAdding:.day,value:1,to:calendar.startOfDay(for:now)) else {return nil}
+        return TodoRecurrence.reminder(day:TodoDay(date:next,timeZone:zone),minutes:minutes,timeZone:zone)
+    }
+}

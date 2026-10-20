@@ -23,7 +23,10 @@ import Charts
     var sessions: [String: SleepDraftSession] = [:]
     var message: String?
     var loadError: String?
-    func refresh(_ context: ModelContext) {
+    private var publicationRetry:Task<Void,Never>?
+    private var publicationDeferred=false
+    func refresh(_ context: ModelContext) {refresh(context,deferBusy:true)}
+    private func refresh(_ context:ModelContext,deferBusy:Bool) {
         do {
             let timestamp = now()
             try SleepGoalSemantics.observe(context: context, now: timestamp)
@@ -33,7 +36,32 @@ import Charts
             // Publish complete facts and their evaluation instant in the same main-actor turn.
             records = freshRecords; goals = freshGoals; reference = timestamp
             loadError = nil
-        } catch { loadError = SleepFailure.corrupt.localizedDescription }
+        } catch StorePublicationFailure.busy {
+            loadError=StorePublicationFailure.busy.localizedDescription
+            publicationDeferred=true
+            #if DEBUG
+            SleepGoalObservationProbe.didDefer?(context.container)
+            #endif
+            guard deferBusy,publicationRetry == nil else {return}
+            let container=context.container,root=StorePublication.root(for:context.container)
+            publicationRetry=Task { @MainActor [weak self] in
+                do {
+                    while !Task.isCancelled {
+                        try await StorePublication.waitUntilAvailable(at:root)
+                        guard !Task.isCancelled,let self else {return}
+                        #if DEBUG
+                        await SleepGoalObservationProbe.beforeRetry?(container)
+                        #endif
+                        self.publicationDeferred=false
+                        // Another legitimate publisher may acquire before MainActor resumes.
+                        // Re-wait only on actual contention; I/O failures never loop.
+                        self.refresh(ModelContext(container),deferBusy:false)
+                        if !self.publicationDeferred {break}
+                    }
+                    self?.publicationRetry=nil
+                } catch {self?.publicationRetry=nil}
+            }
+        } catch { loadError = error.localizedDescription }
     }
     func session(day: String) throws -> SleepDraftSession {
         if let existing = sessions[day] { return existing }
@@ -97,19 +125,23 @@ struct SleepTodaySection: View {
         if showToday {
             Section {
                 Button { open(day) } label: {
-                    HStack {
-                        Image(systemName: "moon.zzz")
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(SleepFormatting.summary(workspace.records.first { $0.wakeDay == day }))
-                            Text("Wake day: \(day)").font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer(); Image(systemName: "chevron.right").font(.caption)
+                    HStack(spacing: 8) {
+                        ModuleEntryRow(title: String(localized: "Last night's sleep"),
+                            subtitle: SleepFormatting.summary(workspace.records.first { $0.wakeDay == day }), systemImage: "moon.zzz")
+                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary).accessibilityHidden(true)
                     }.frame(minHeight: 44).contentShape(Rectangle())
                 }.buttonStyle(.plain).accessibilityIdentifier("today-sleep")
                 if !introduced {
                     HStack(alignment: .top) {
                         Text("Remember when you began trying to sleep and when you got up. No goal or reminder is required.").font(.caption)
-                        Button { introduced = true } label: { Image(systemName: "xmark").frame(minWidth: 44, minHeight: 44) }.accessibilityLabel("Dismiss introduction")
+                        Button { introduced = true } label: {
+                            Image(systemName: "xmark")
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(.rect)
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("Dismiss introduction")
+                        .accessibilityIdentifier("sleep-dismiss-introduction")
                     }
                 }
             }
@@ -528,7 +560,7 @@ struct SleepFeedbackView: View {
     }
     var body: some View {
         if let message = workspace.message {
-            HStack { Text(feedback(message)).font(.caption); Spacer(); Button("Dismiss") { workspace.message = nil } }.padding(8).background(.bar).accessibilityIdentifier("sleep-save-feedback")
+            HStack { Text(feedback(message)).font(.caption); Spacer(); Button("Got it") { workspace.message = nil } }.padding(8).background(.bar).accessibilityIdentifier("sleep-save-feedback")
         }
     }
 }

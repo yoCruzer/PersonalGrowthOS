@@ -1,0 +1,130 @@
+Attributes: Application, 0x107dded00, pid: 85926, label: '随心log'
+Element subtree:
+ →Application, 0x107dded00, pid: 85926, label: '随心log'
+    Window (Main), 0x107ddf5c0, {{0.0, 0.0}, {375.0, 812.0}}
+      Other, 0x107ddcb40, {{0.0, 0.0}, {375.0, 812.0}}
+      Other, 0x107ddc3c0, {{0.0, 0.0}, {375.0, 812.0}}
+        Other, 0x107ddf980, {{0.0, 0.0}, {375.0, 812.0}}
+          Other, 0x107dde940, {{0.0, 0.0}, {375.0, 812.0}}
+            Other, 0x107dde300, {{0.0, 0.0}, {375.0, 812.0}}
+              Other, 0x107ddf340, {{0.0, 0.0}, {375.0, 812.0}}, identifier: 'app-shell'
+                Other, 0x107ddef80, {{0.0, 0.0}, {375.0, 812.0}}
+                  Other, 0x107ddfc00, {{0.0, 0.0}, {375.0, 812.0}}
+                    Other, 0x107ddcf00, {{0.0, 0.0}, {375.0, 812.0}}
+                      Other, 0x107ddcc80, {{0.0, 0.0}, {375.0, 812.0}}
+                        Other, 0x107ddf840, {{0.0, 0.0}, {375.0, 812.0}}
+                          Other, 0x107ddcdc0, {{0.0, 0.0}, {375.0, 812.0}}
+                            NavigationBar, 0x107ddd680, {{0.0, 50.0}, {375.0, 54.0}}, identifier: '习惯'
+                              Button, 0x107ddc640, {{16.0, 50.0}, {44.0, 44.0}}, identifier: 'BackButton', label: '成长'
+                              StaticText, 0x107ddf0c0, {{167.3, 59.3}, {40.3, 25.3}}, label: '习惯'
+                              Button, 0x107ddc140, {{319.0, 54.0}, {36.0, 36.0}}, identifier: 'add-habit', label: '添加习惯'
+                            Other, 0x107ddd900, {{0.0, 0.0}, {375.0, 812.0}}
+                              Other, 0x107ddd180, {{0.0, 0.0}, {375.0, 812.0}}
+                                Other, 0x107ddf480, {{0.0, 0.0}, {375.0, 812.0}}
+                                  Other, 0x107ddd7c0, {{0.0, 0.0}, {375.0, 812.0}}
+                                    CollectionView, 0x107ddea80, {{0.0, 0.0}, {375.0, 812.0}}
+                                      Other, 0x103637c00, {{-16.0, -246.0}, {407.0, 973.3}}
+                                      Cell, 0x103637d40, {{16.0, -162.7}, {343.0, 312.0}}
+                                        Other, 0x103637340, {{16.0, -162.7}, {343.0, 312.0}}
+                                          Other, 0x103637700, {{16.0, -162.7}, {343.0, 312.0}}
+                                        Other, 0x103637ac0, {{16.0, -162.7}, {343.0, 312.0}}
+                                          Other, 0x103637840, {{16.0, -162.7}, {343.0, 312.0}}
+                                            Other, 0x103635540, {{16.0, -162.7}, {343.0, 312.0}}
+                                              Button, 0x103635400, {{32.0, -147.7}, {302.3, 187.0}}, identifier: 'habit-每周锻炼几次', label: '每周锻炼几次、2/3 本周'
+                                                StaticText, 0x103637980, {{68.0, -147.7}, {200.3, 125.3}}, identifier: 'habit-title-每周锻炼几次', label: '每周锻炼几次'
+                                                Image, 0x103637480, {{312.7, -72.7}, {21.7, 37.3}}, identifier: 'chevron.forward'
+                                                Image, 0x106fada40, {{33.7, -63.0}, {21.0, 17.7}}, identifier: 'repeat', label: '重复播放一首'
+                                                StaticText, 0x106fac000, {{68.0, -19.3}, {174.3, 58.7}}, label: '2/3 本周'
+                                              Button, 0x106fad900, {{215.7, 68.3}, {44.0, 45.0}}, identifier: 'habit-overview-每周锻炼几次-counter-decrease', label: '减少“每周锻炼几次”一次', value: 当前次数：0, Disabled
+                                              StaticText, 0x106fafd40, {{263.7, 61.5}, {31.3, 58.7}}, identifier: 'habit-overview-每周锻炼几次-counter-count', label: '当前次数', value: 0
+                                              Button, 0x106fafe80, {{299.0, 68.3}, {44.0, 45.0}}, identifier: 'habit-overview-每周锻炼几次-counter-increase', label: '增加“每周锻炼几次”一次', value: 当前次数：0
+                                      Other, 0x10649a080, {{0.0, 0.0}, {375.0, 812.0}}
+                                        Other, 0x106499a40, {{0.0, 0.0}, {375.0, 144.0}}
+                                        Other, 0x10649a1c0, {{0.0, 679.0}, {375.0, 133.0}}
+                                      Other, 0x106499540, {{0.0, 0.0}, {375.0, 812.0}}
+                                        Other, 0x10649bc00, {{0.0, 0.0}, {375.0, 144.0}}
+                                        Other, 0x10649a300, {{0.0, 679.0}, {375.0, 133.0}}
+                                      Cell, 0x10649b5c0, {{16.0, 149.3}, {343.0, 560.3}}
+                                        Other, 0x106498500, {{16.0, 149.3}, {343.0, 560.3}}
+                                          Other, 0x10649b700, {{16.0, 149.3}, {343.0, 560.3}}
+                                        Other, 0x10649a940, {{16.0, 149.3}, {343.0, 560.3}}
+                                          Other, 0x106499b80, {{16.0, 149.3}, {343.0, 560.3}}
+                                            Other, 0x10649aa80, {{16.0, 149.3}, {343.0, 560.3}}
+                                              Button, 0x106499e00, {{32.0, 164.3}, {302.3, 435.3}}, identifier: 'habit-这是一个真正很长需要合理换行的每周习惯名称', label: '这是一个真正很长需要合理换行的每周习惯名称、0/4 本周'
+                                                StaticText, 0x10649a800, {{68.0, 164.3}, {200.3, 373.7}}, identifier: 'habit-title-这是一个真正很长需要合理换行的每周习惯名称', label: '这是一个真正很长需要合理换行的每周习惯名称'
+                                                Image, 0x10649b340, {{312.7, 363.3}, {21.7, 37.3}}, identifier: 'chevron.forward'
+                                                Image, 0x106499cc0, {{33.7, 373.0}, {21.0, 17.7}}, identifier: 'repeat', label: '重复播放一首'
+                                                StaticText, 0x106498dc0, {{68.0, 541.0}, {177.0, 58.7}}, label: '0/4 本周'
+                                              Button, 0x10649af80, {{215.7, 628.7}, {44.0, 45.0}}, identifier: 'habit-overview-这是一个真正很长需要合理换行的每周习惯名称-counter-decrease', label: '减少“这是一个真正很长需要合理换行的每周习惯名称”一次', value: 当前次数：0, Disabled
+                                              StaticText, 0x10649b0c0, {{263.7, 621.8}, {31.3, 58.7}}, identifier: 'habit-overview-这是一个真正很长需要合理换行的每周习惯名称-counter-count', label: '当前次数', value: 0
+                                              Button, 0x10649a580, {{299.0, 628.7}, {44.0, 45.0}}, identifier: 'habit-overview-这是一个真正很长需要合理换行的每周习惯名称-counter-increase', label: '增加“这是一个真正很长需要合理换行的每周习惯名称”一次', value: 当前次数：0
+                                      Other, 0x106499400, {{68.0, 148.3}, {275.0, 1.0}}
+                                      Other, 0x10649bd40, {{-16.0, 727.0}, {407.0, 2039.3}}
+                                      Cell, 0x10649b980, {{16.0, 727.0}, {343.0, 83.3}}
+                                        Other, 0x10649ad00, {{16.0, 727.0}, {343.0, 83.3}}
+                                        Other, 0x10649ae40, {{16.0, 727.0}, {343.0, 83.3}}
+                                          Other, 0x106498780, {{16.0, 727.0}, {343.0, 83.3}}
+                                            Other, 0x10649abc0, {{16.0, 727.0}, {343.0, 83.3}}
+                                              StaticText, 0x10649a6c0, {{16.0, 727.0}, {343.0, 83.3}}, label: '本月'
+                                      Cell, 0x1064992c0, {{16.0, 810.3}, {343.0, 312.0}}
+                                        Other, 0x10649b200, {{16.0, 810.3}, {343.0, 312.0}}
+                                          Other, 0x106499f40, {{16.0, 810.3}, {343.0, 312.0}}
+                                        Other, 0x10649b840, {{16.0, 810.3}, {343.0, 312.0}}
+                                          Other, 0x106499040, {{16.0, 810.3}, {343.0, 312.0}}
+                                            Other, 0x10649be80, {{16.0, 810.3}, {343.0, 312.0}}
+                                              Button, 0x10649bac0, {{32.0, 825.3}, {302.3, 187.0}}, identifier: 'habit-深度阅读几篇文章', label: '深度阅读几篇文章、2/10 本月'
+                                                StaticText, 0x10649a440, {{68.0, 825.3}, {200.3, 125.3}}, identifier: 'habit-title-深度阅读几篇文章', label: '深度阅读几篇文章'
+                                                Image, 0x10649b480, {{312.7, 900.3}, {21.7, 37.3}}, identifier: 'chevron.forward'
+                                                Image, 0x107dc8000, {{33.7, 910.0}, {21.0, 17.7}}, identifier: 'repeat', label: '重复播放一首'
+                                                StaticText, 0x107dc8140, {{68.0, 953.7}, {197.3, 58.7}}, label: '2/10 本月'
+                                              Button, 0x107dc8280, {{215.7, 1041.3}, {44.0, 45.0}}, identifier: 'habit-overview-深度阅读几篇文章-counter-decrease', label: '减少“深度阅读几篇文章”一次', value: 当前次数：0, Disabled
+                                              StaticText, 0x107dc83c0, {{263.7, 1034.5}, {31.3, 58.7}}, identifier: 'habit-overview-深度阅读几篇文章-counter-count', label: '当前次数', value: 0
+                                              Button, 0x107dc8500, {{299.0, 1041.3}, {44.0, 45.0}}, identifier: 'habit-overview-深度阅读几篇文章-counter-increase', label: '增加“深度阅读几篇文章”一次', value: 当前次数：0
+                                      Other, 0x107dc8640, {{342.0, 104.0}, {30.0, 625.0}}, label: '垂直滚动条, 4页', value: 71%
+                                        Other, 0x107dc8780, {{369.0, 390.0}, {3.0, 222.7}}
+                                      Other, 0x107dc88c0, {{342.0, 104.0}, {30.0, 625.0}}, label: '垂直滚动条, 4页', value: 71%
+                                        Other, 0x107dc8a00, {{369.0, 390.0}, {3.0, 222.7}}
+                            Toolbar, 0x107dc8b40, {{0.0, 0.0}, {375.0, 812.0}}, identifier: 'Toolbar', label: '工具栏'
+                              Other, 0x107dc8c80, {{0.0, 0.0}, {375.0, 812.0}}
+                Other, 0x107dc8dc0, {{0.0, 0.0}, {375.0, 812.0}}
+                  Other, 0x107dc8f00, {{0.0, 729.0}, {375.0, 83.0}}
+                    Other, 0x107dc9040, {{0.0, 0.0}, {375.0, 812.0}}
+                      TabBar, 0x107dc9180, {{0.0, 729.0}, {375.0, 83.0}}, label: '标签页栏'
+                        Other, 0x107dc92c0, {{21.0, 729.0}, {333.0, 62.0}}
+                          Other, 0x107dc9400, {{21.0, 729.0}, {81.0, 54.0}}
+                          Other, 0x107dc9540, {{21.0, 729.0}, {333.0, 62.0}}
+                            Button, 0x107dc9680, {{25.0, 733.0}, {81.0, 54.0}}, identifier: 'sun.max', label: '今天'
+                              Image, 0x107dc97c0, {{51.0, 738.0}, {29.0, 29.3}}, identifier: 'sun.max.fill', label: '调高亮度'
+                            Button, 0x107dc9900, {{86.0, 733.0}, {81.0, 54.0}}, identifier: 'clock', label: '时间线'
+                              Image, 0x107dc9a40, {{113.0, 739.3}, {27.3, 27.3}}, identifier: 'clock.fill', label: '时钟'
+                            Button, 0x107dc9b80, {{147.0, 733.0}, {81.0, 54.0}}, identifier: 'plus.circle.fill', label: '记录'
+                              Image, 0x107dc9cc0, {{174.0, 739.3}, {27.3, 27.3}}, identifier: 'plus.circle.fill', label: '添加'
+                            Button, 0x107dc9e00, {{208.0, 733.0}, {81.0, 54.0}}, identifier: 'leaf', label: '成长', Selected
+                              Image, 0x107dc9f40, {{234.3, 740.3}, {28.7, 25.3}}, identifier: 'leaf.fill', label: '叶子'
+                            Button, 0x107dca080, {{269.0, 733.0}, {81.0, 54.0}}, identifier: 'books.vertical', label: '资料库'
+                              Image, 0x107dca1c0, {{293.0, 738.0}, {33.3, 29.3}}, identifier: 'books.vertical.fill', label: '书架'
+                          Other, 0x107dca300, {{21.0, 729.0}, {333.0, 62.0}}
+                          Other, 0x107dca440, {{208.0, 733.0}, {81.0, 54.0}}
+                            Other, 0x107dca580, {{208.0, 733.0}, {81.0, 54.0}}
+                              Other, 0x107dca6c0, {{208.0, 733.0}, {81.0, 54.0}}
+                              Other, 0x107dca800, {{208.0, 733.0}, {81.0, 54.0}}
+                                Other, 0x107dca940, {{208.0, 733.0}, {81.0, 54.0}}
+                                  Other, 0x107dcaa80, {{208.0, 733.0}, {81.0, 54.0}}
+                                    Other, 0x107dcabc0, {{208.0, 733.0}, {81.0, 54.0}}
+                                  Other, 0x107dcad00, {{208.0, 733.0}, {81.0, 54.0}}
+                                Other, 0x107dcae40, {{208.0, 733.0}, {81.0, 54.0}}
+                    Other, 0x107dcaf80, {{0.0, 729.0}, {375.0, 83.0}}
+                      Other, 0x107dcb0c0, {{0.0, 729.0}, {375.0, 83.0}}
+                        Other, 0x107dcb200, {{0.0, 729.0}, {375.0, 83.0}}
+                          Other, 0x107dcb340, {{0.0, 729.0}, {375.0, 83.0}}
+                            Other, 0x107dcb480, {{0.0, 729.0}, {375.0, 83.0}}
+                              Other, 0x107dcb5c0, {{0.0, 729.0}, {375.0, 83.0}}
+                          Other, 0x107dcb700, {{0.0, 729.0}, {375.0, 83.0}}
+                            Other, 0x107dcb840, {{0.0, 729.0}, {375.0, 83.0}}
+Path to element:
+ →Application, 0x107dded00, pid: 85926, label: '随心log'
+Query chain:
+ →Find: Target Application 'com.yocruzer.PersonalGrowthOS'
+  Output: {
+    Application, 0x107dcb980, pid: 85926, label: '随心log'
+  }

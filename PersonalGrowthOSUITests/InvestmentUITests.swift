@@ -47,12 +47,12 @@ final class InvestmentUITests: XCTestCase {
         app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.09)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.95)))
         XCTAssertTrue(nav.exists,"Interactive dismissal must not lose a failed draft")
         screenshot(app,"External-R2-background-and-interactive-failure-retained")
-        let close=app.buttons["Close and keep draft"];reveal(close,app);close.tap()
+        let close=app.buttons["Keep draft"];reveal(close,app);close.tap()
         XCTAssertTrue(app.navigationBars["Record activity"].exists,"Failed keep must not dismiss the editor")
         let error=app.staticTexts["investment-save-error"];reveal(error,app)
         screenshot(app,"External-R2-close-failure-retains-editor")
         reveal(note,app);XCTAssertEqual(note.value as? String,"Synthetic retry draft")
-        let retry=app.buttons["Close and keep draft"];reveal(retry,app);retry.tap()
+        let retry=app.buttons["Keep draft"];reveal(retry,app);retry.tap()
         XCTAssertTrue(retry.waitForNonExistence(timeout:5))
         app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData"};app.launch();openHub(app)
         let draft=app.buttons["Synthetic Reading"];reveal(draft,app);draft.tap()
@@ -102,7 +102,7 @@ final class InvestmentUITests: XCTestCase {
     func testExternalR3ChineseDarkAXConfirmationPreservesOrExplicitlyReplacesSegments() {
         let app=launch(chinese:true,darkLarge:true,extra:["-PGOSInvestmentSegmentReview"]);openHub(app,chinese:true)
         let history=app.buttons["investment-history"];reveal(history,app);history.tap()
-        let row=button("investment-session-",app);reveal(row,app);row.tap()
+        let row=button("investment-session-",app);reveal(row,app,avoidingWheel:true);row.tap()
         let edit=app.buttons["investment-edit-session"];reveal(edit,app);edit.tap()
         let exact=app.buttons["精确起止（选填）"];reveal(exact,app,avoidingWheel:true);exact.tap()
         let warning=app.staticTexts["这条记录含多段有效时间。改为连续区间可能把暂停时间算入投入。"]
@@ -140,6 +140,48 @@ final class InvestmentUITests: XCTestCase {
         let total=app.staticTexts["investment-review-total"];reveal(total,app);XCTAssertTrue(total.label.contains("0:25:00"))
         let count=app.staticTexts["investment-review-count"];reveal(count,app);XCTAssertTrue(count.label.contains("1"))
         screenshot(app,"External-R3-Chinese-Dark-AX-confirmed-duration-reopened-statistics")
+    }
+    func testUsageHistoryNaturalWindowMonthPagingAndExactCrossDayFact() {
+        let app=launch(extra:["-PGOSInvestmentUsageHistory"]);openHub(app)
+        let history=app.buttons["investment-history"];reveal(history,app);history.tap()
+        XCTAssertTrue(app.staticTexts["investment-review-total"].waitForExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("1:10:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("51"))
+        let toggle=app.switches["Preview selected month"];reveal(toggle,app)
+        screenshot(app,"Usage-Investment-before-month-switch")
+        toggle.coordinate(withNormalizedOffset:CGVector(dx:0.9,dy:0.5)).tap()
+        XCTAssertEqual(toggle.value as? String,"1",app.debugDescription)
+        screenshot(app,"Usage-Investment-after-month-switch")
+        let previous=app.buttons["investment-previous-month"];reveal(previous,app)
+        let range=app.staticTexts["investment-preview-range"]
+        let initial=range.label
+        previous.tap()
+        XCTAssertNotEqual(range.label,initial)
+        screenshot(app,"Usage-Investment-previous-month-full-history")
+        app.buttons["investment-next-month"].tap()
+        XCTAssertEqual(range.label,initial)
+        let next=app.buttons["Next page"];reveal(next,app);next.tap()
+        let prior=app.buttons["Previous page"];reveal(prior,app);XCTAssertTrue(prior.isHittable)
+        screenshot(app,"Usage-Investment-bounded-second-page")
+        for _ in 0..<12 {app.swipeDown()}
+        let period=app.segmentedControls["investment-review-period"];XCTAssertTrue(period.isHittable)
+        period.buttons["7 days"].tap()
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:27:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("8"))
+        let day=button("investment-day-",app);reveal(day,app);day.tap()
+        for _ in 0..<6 {app.swipeDown()}
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:16:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("2"))
+        let clear=app.buttons["investment-clear-day"];reveal(clear,app);clear.tap()
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:27:00"))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("8"))
+        let fact=app.buttons["investment-session-30000001-1111-4222-8333-444444444444"]
+        reveal(fact,app);fact.tap()
+        XCTAssertTrue(app.staticTexts["Synthetic paused cross-day fact"].waitForExistence(timeout:5))
+        let original=app.staticTexts.matching(NSPredicate(format:"identifier BEGINSWITH %@ AND label CONTAINS %@","investment-original-day-","0:05:00")).firstMatch
+        reveal(original,app);XCTAssertTrue(original.exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format:"identifier BEGINSWITH %@ AND label CONTAINS %@","investment-original-day-","0:15:00")).firstMatch.exists)
+        screenshot(app,"Usage-Investment-exact-cross-day-original")
     }
     func testManualSaveHistoryNilFeelingEditAndDeleteRefreshSameReview() {
         let app=launch();openHub(app);create(app)
@@ -198,7 +240,7 @@ final class InvestmentUITests: XCTestCase {
         let finish=app.buttons["investment-finish"];reveal(finish,app);finish.tap()
         XCTAssertTrue(app.buttons["investment-save"].waitForExistence(timeout:5))
         screenshot(app,"Investment-English-frozen-confirmation")
-        let keep=app.buttons["Close and keep pending"];reveal(keep,app);keep.tap()
+        let keep=app.buttons["investment-keep-draft"];reveal(keep,app);keep.tap()
         let pendingResume=app.buttons["investment-resume"];reveal(pendingResume,app);pendingResume.tap()
         XCTAssertTrue(app.staticTexts["investment-timer-state"].label.contains("Timer running"))
         let finishAgain=app.buttons["investment-finish"];reveal(finishAgain,app);finishAgain.tap()
@@ -264,7 +306,7 @@ final class InvestmentUITests: XCTestCase {
         screenshot(app,"Investment-English-running-cold-recovery")
         app.buttons["investment-review-save"].tap()
         XCTAssertTrue(app.buttons["investment-save"].waitForExistence(timeout:5))
-        let pending=app.buttons["Close and keep pending"];reveal(pending,app);pending.tap()
+        let pending=app.buttons["investment-keep-draft"];reveal(pending,app);pending.tap()
         XCTAssertTrue(app.buttons["investment-save"].waitForNonExistence(timeout:5))
         let discard=app.buttons["Discard timer"];reveal(discard,app);discard.tap()
         app.sheets.buttons["Discard timer"].tap()
@@ -279,10 +321,257 @@ final class InvestmentUITests: XCTestCase {
         XCTAssertEqual(app.textFields["investment-duration"].value as? String,"45")
         let restoredNote=app.textFields["investment-note"];reveal(restoredNote,app)
         XCTAssertEqual(restoredNote.value as? String,"Synthetic durable manual draft")
-        let keep=app.buttons["Close and keep draft"];reveal(keep,app);keep.tap()
+        let keep=app.buttons["Keep draft"];reveal(keep,app);keep.tap()
         let history=app.buttons["investment-history"];reveal(history,app);history.tap()
-        XCTAssertTrue(app.staticTexts["No records in this selection"].waitForExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].waitForExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("0"))
+        XCTAssertTrue(app.staticTexts["investment-review-total"].label.contains("0:00:00"))
+        let empty=app.staticTexts["No records in this selection"].firstMatch;reveal(empty,app)
+        XCTAssertTrue(empty.exists)
         screenshot(app,"Investment-English-durable-draft-not-counted")
     }
 
+}
+
+extension InvestmentUITests {
+    func testReviewFixUX1OutsideWindowDateSwitchRetainsDateMonthAndDetailChineseDarkAX() {
+        print("PGOS_USAGE_STYLE_DARK");fflush(stdout)
+        let app=launch(chinese:true,darkLarge:true,extra:["-PGOSInvestmentReviewFixDates"]);openHub(app,chinese:true)
+        let history=app.buttons["investment-history"];reveal(history,app);history.tap()
+        let period=app.segmentedControls["investment-review-period"]
+        period.buttons["7 天"].tap()
+        let date=app.datePickers["investment-inspect-date"];reveal(date,app)
+        XCTAssertGreaterThanOrEqual(app.pickerWheels.count,3)
+        app.pickerWheels.element(boundBy:0).adjust(toPickerWheelValue:"2026年")
+        app.pickerWheels.element(boundBy:1).adjust(toPickerWheelValue:"9月")
+        app.pickerWheels.element(boundBy:2).adjust(toPickerWheelValue:"1日")
+        let inspect=app.buttons["查看所选日期"];reveal(inspect,app,avoidingWheel:true);inspect.tap()
+        for _ in 0..<18 where !period.isHittable {
+            app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.30)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.80)))
+        }
+        XCTAssertTrue(period.buttons["全部累计"].isSelected)
+        let total=app.staticTexts["investment-review-total"];reveal(total,app)
+        XCTAssertTrue(total.label.contains("0:45:00"),total.label)
+        XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("1"))
+        screenshot(app,"ReviewFix-UX1-Chinese-Dark-maxAX-selected-September1-45min")
+        let range=app.staticTexts["investment-preview-range"];reveal(range,app,avoidingWheel:true)
+        XCTAssertTrue(range.label.contains("2026-09-01 → 2026-09-30"),range.label)
+        let row=app.buttons["investment-session-30000002-1111-4222-8333-444444444444"];reveal(row,app);row.tap()
+        let note=app.staticTexts["Synthetic September 1 detail"];reveal(note,app)
+        XCTAssertTrue(note.exists)
+        screenshot(app,"ReviewFix-UX1-by-ID-detail")
+    }
+}
+
+extension InvestmentUITests {
+    func testReviewFixDuplicateCandidatesShowActualDurationAndClearAfterInputChanges() {
+        let app=launch();openHub(app);create(app)
+        let record=button("investment-record-",app);reveal(record,app);record.tap()
+        let note=app.textFields["investment-note"];reveal(note,app);note.tap();note.typeText("Synthetic matching detail")
+        app.buttons["Done"].tap()
+        let save=app.buttons["investment-save"];reveal(save,app);save.tap()
+        XCTAssertTrue(save.waitForNonExistence(timeout:5))
+        for _ in 0..<12 where !record.isHittable {app.swipeDown()}
+        record.tap();reveal(save,app);save.tap()
+        let keep=app.buttons["Keep editing"],confirm=app.buttons["Save anyway"]
+        XCTAssertTrue(confirm.waitForExistence(timeout:5))
+        if keep.exists {keep.tap()} else {app.coordinate(withNormalizedOffset:CGVector(dx:0.05,dy:0.30)).tap()}
+        XCTAssertTrue(confirm.waitForNonExistence(timeout:5))
+        let candidate=button("investment-session-",app);reveal(candidate,app)
+        XCTAssertTrue(candidate.label.contains("0:45:00"),candidate.label)
+        XCTAssertFalse(candidate.label.contains("0:00:00"),candidate.label)
+        screenshot(app,"ReviewFix-duplicate-candidate-real-duration")
+        candidate.tap()
+        let detail=app.staticTexts["Synthetic matching detail"];reveal(detail,app);XCTAssertTrue(detail.exists)
+        app.navigationBars.buttons.firstMatch.tap()
+        let minutes=app.textFields["investment-duration"]
+        for _ in 0..<18 {
+            if minutes.exists,minutes.frame.minY >= app.navigationBars["Record activity"].frame.maxY+8,minutes.frame.maxY < app.frame.height*0.75 {break}
+            app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.35)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:0.55)))
+        }
+        XCTAssertGreaterThanOrEqual(minutes.frame.minY,app.navigationBars["Record activity"].frame.maxY+8)
+        minutes.tap();XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout:5))
+        minutes.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:2)+"46")
+        app.buttons["Done"].tap()
+        XCTAssertFalse(candidate.exists,"Time input change invalidates matching IDs without rescanning history")
+        reveal(save,app);save.tap()
+        XCTAssertTrue(save.waitForNonExistence(timeout:5))
+    }
+}
+
+extension InvestmentUITests {
+    private func revealFix2EarlierDuration(_ app: XCUIApplication,chinese: Bool,timerConfirmation: Bool = false) -> XCUIElement {
+        let title=timerConfirmation ? (chinese ? "确认本次投入":"Confirm time investment"):(chinese ? "记录活动":"Record activity")
+        let field=app.textFields["investment-duration"],nav=app.navigationBars[title]
+        for _ in 0..<24 {
+            if field.exists,field.frame.minY >= nav.frame.maxY+8,field.frame.maxY <= app.frame.height*0.75 {break}
+            let scrollDown = !field.exists || field.frame.minY < nav.frame.maxY+8
+            let from=app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:scrollDown ? 0.35:0.65))
+            let to=app.coordinate(withNormalizedOffset:CGVector(dx:0.94,dy:scrollDown ? 0.60:0.40))
+            from.press(forDuration:0.05,thenDragTo:to)
+        }
+        XCTAssertTrue(field.exists,app.debugDescription)
+        XCTAssertGreaterThanOrEqual(field.frame.minY,nav.frame.maxY+8)
+        XCTAssertLessThanOrEqual(field.frame.maxY,app.frame.height*0.75)
+        return field
+    }
+    func testFix2CR05TimerSaveReturnsToHubDefaultAndChineseDarkMaximumText() {
+        for chinese in [false,true] {
+            print(chinese ? "PGOS_USAGE_STYLE_DARK":"PGOS_USAGE_STYLE_LIGHT");fflush(stdout)
+            let app=launch(chinese:chinese,darkLarge:chinese,extra:["-PGOSInvestmentSaveWriteFailure"])
+            openHub(app,chinese:chinese);create(app)
+            let start=button("investment-start-",app);reveal(start,app);start.tap()
+            let finish=app.buttons["investment-finish"];reveal(finish,app);finish.tap()
+            let duration=app.textFields["investment-duration"];reveal(duration,app,avoidingWheel:true);duration.tap()
+            XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout:5))
+            duration.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:20)+"3")
+            app.buttons[chinese ? "完成":"Done"].tap()
+            let note=app.textFields["investment-note"];reveal(note,app,avoidingWheel:true);note.tap();note.typeText("Synthetic timer retained")
+            app.buttons[chinese ? "完成":"Done"].tap()
+            let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
+            let error=app.staticTexts["investment-save-error"];reveal(error,app);XCTAssertTrue(error.exists)
+            XCTAssertEqual(note.value as? String,"Synthetic timer retained")
+            screenshot(app,"Fix2-CR05-retained-note-before-duration-\(chinese)")
+            let retainedDuration=revealFix2EarlierDuration(app,chinese:chinese,timerConfirmation:true)
+            XCTAssertEqual(retainedDuration.value as? String,"3")
+            screenshot(app,"Fix2-CR05-save-failure-retains-input-\(chinese)")
+            reveal(save,app,avoidingWheel:true);save.tap()
+            screenshot(app,"Fix2-CR05-after-save-landing-\(chinese)")
+            XCTAssertTrue(app.navigationBars[chinese ? "计时":"Timer"].waitForNonExistence(timeout:5),"Outer Timer must close after successful confirmation")
+            XCTAssertTrue(app.navigationBars[chinese ? "时间投入":"Time investment"].waitForExistence(timeout:5))
+            let history=app.buttons["investment-history"];for _ in 0..<12 where !history.isHittable {app.swipeDown()};reveal(history,app);XCTAssertTrue(history.isHittable);screenshot(app,"Fix2-CR05-stable-Hub-\(chinese)");history.tap()
+            let total=app.staticTexts["investment-review-total"];reveal(total,app)
+            XCTAssertTrue(total.label.contains("0:03:00"),total.label)
+            XCTAssertTrue(app.staticTexts["investment-review-count"].label.contains("1"))
+            let row=button("investment-session-",app);reveal(row,app);XCTAssertEqual(app.buttons.matching(NSPredicate(format:"identifier BEGINSWITH %@","investment-session-")).count,1)
+            screenshot(app,"Fix2-CR05-one-saved-fact-\(chinese)")
+            row.tap();let savedNote=app.staticTexts["Synthetic timer retained"];reveal(savedNote,app);XCTAssertTrue(savedNote.exists)
+        }
+    }
+    func testFix2CR04CandidateEditAndDeleteInvalidateUnchangedDraft() {
+        for deleting in [false,true] {
+            let chinese=deleting
+            print(chinese ? "PGOS_USAGE_STYLE_DARK":"PGOS_USAGE_STYLE_LIGHT");fflush(stdout)
+            let app=launch(chinese:chinese,darkLarge:chinese);openHub(app,chinese:chinese);create(app)
+            let record=button("investment-record-",app);reveal(record,app);record.tap()
+            let note=app.textFields["investment-note"];reveal(note,app,avoidingWheel:true);note.tap();note.typeText("Synthetic formal B")
+            app.buttons[chinese ? "完成":"Done"].tap();let save=app.buttons["investment-save"];reveal(save,app,avoidingWheel:true);save.tap()
+            XCTAssertTrue(save.waitForNonExistence(timeout:5))
+            for _ in 0..<12 where !record.isHittable {app.swipeDown()};record.tap()
+            reveal(note,app,avoidingWheel:true);note.tap();note.typeText("Synthetic unchanged draft A");app.buttons[chinese ? "完成":"Done"].tap()
+            reveal(save,app,avoidingWheel:true);save.tap();let confirm=app.buttons[chinese ? "仍然保存":"Save anyway"];XCTAssertTrue(confirm.waitForExistence(timeout:5))
+            let keep=app.buttons[chinese ? "继续编辑":"Keep editing"]
+            if keep.exists {keep.tap()} else {app.coordinate(withNormalizedOffset:CGVector(dx:0.05,dy:0.30)).tap()}
+            XCTAssertTrue(confirm.waitForNonExistence(timeout:5))
+            let candidate=button("investment-session-",app);reveal(candidate,app);candidate.tap()
+            if deleting {
+                let delete=app.buttons["investment-delete-session"];reveal(delete,app);delete.tap();app.sheets.buttons[chinese ? "删除记录":"Delete record"].tap()
+            } else {
+                let edit=app.buttons["investment-edit-session"];reveal(edit,app);edit.tap()
+                let minutes=app.textFields["investment-duration"];reveal(minutes,app);minutes.tap()
+                XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout:5))
+                minutes.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:2)+"46");app.buttons[chinese ? "完成":"Done"].tap()
+                reveal(save,app,avoidingWheel:true);save.tap();XCTAssertTrue(app.navigationBars["Time investment detail"].waitForExistence(timeout:5))
+                app.navigationBars.buttons.firstMatch.tap()
+            }
+            XCTAssertTrue(app.navigationBars[chinese ? "记录活动":"Record activity"].waitForExistence(timeout:5))
+            XCTAssertFalse(candidate.exists,"Formal B change must remove A's cached candidate page")
+            XCTAssertEqual(note.value as? String,"Synthetic unchanged draft A")
+            screenshot(app,"Fix2-CR04-retained-note-before-duration-\(deleting ? "delete":"edit")")
+            let retainedDuration=revealFix2EarlierDuration(app,chinese:chinese)
+            XCTAssertEqual(retainedDuration.value as? String,"45")
+            screenshot(app,"Fix2-CR04-unchanged-draft-after-\(deleting ? "delete":"edit")-B")
+            reveal(save,app,avoidingWheel:true);save.tap();XCTAssertTrue(save.waitForNonExistence(timeout:5));XCTAssertFalse(confirm.exists)
+        }
+    }
+}
+
+extension InvestmentUITests {
+    func testIntegrationIR04RealImporterBusyKeepsRenameVisibleAndRetryable() {
+        let app=launch(extra:["-PGOSRenameImporterTest"]);openHub(app);create(app)
+        let start=app.buttons["rename-test-import-start"];reveal(start,app);start.tap()
+        let state=app.staticTexts["rename-test-import-state"]
+        expectation(for:NSPredicate(format:"label == %@","Importer holds publication"),evaluatedWith:state);waitForExpectations(timeout:5)
+        let edit=button("investment-edit-activity-",app);reveal(edit,app);edit.tap()
+        let name=app.alerts.firstMatch.exists ? app.alerts.textFields.firstMatch:app.textFields["investment-rename-name"];XCTAssertTrue(name.waitForExistence(timeout:5));name.tap()
+        name.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:(name.value as? String ?? "").count)+"Retained busy name")
+        app.buttons["Save name"].tap()
+        XCTAssertTrue(name.waitForExistence(timeout:3),"A busy save must keep the actual input reachable")
+        XCTAssertEqual(name.value as? String,"Retained busy name")
+        let error=app.staticTexts["investment-rename-error"]
+        XCTAssertTrue(error.waitForExistence(timeout:3));XCTAssertTrue(error.label.contains("busy"),error.label)
+        let form=app.collectionViews["investment-activity-edit-form"]
+        XCTAssertTrue(form.staticTexts["rename-test-canonical-name"].label.contains("Synthetic Reading"))
+        XCTAssertFalse(form.staticTexts["rename-test-canonical-name"].label.contains("Retained busy name"))
+        screenshot(app,"Integration-IR04-busy-input-retained-before-release")
+        let release=form.buttons["rename-test-import-release"];reveal(release,app);release.tap()
+        XCTAssertTrue(form.staticTexts["rename-test-import-finished"].waitForExistence(timeout:5))
+        let save=app.buttons["Save name"];for _ in 0..<4 where !save.isHittable {app.swipeDown()};reveal(save,app);save.tap()
+        XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["Retained busy name"].waitForExistence(timeout:5))
+        XCTAssertEqual(app.staticTexts["rename-test-activity-count"].label,"1")
+        screenshot(app,"Integration-IR04-importer-release-retry-saved")
+    }
+}
+
+extension InvestmentUITests {
+    func testIntegrationIR04OrdinarySaveFailureRetryCancelAndAnotherActivity() {
+        let app=launch(extra:["-PGOSRenameWriteFailure"]);openHub(app);create(app)
+        let edit=button("investment-edit-activity-",app);reveal(edit,app);edit.tap()
+        let name=app.textFields["investment-rename-name"];XCTAssertTrue(name.waitForExistence(timeout:5));name.tap()
+        name.typeText(String(repeating:XCUIKeyboardKey.delete.rawValue,count:(name.value as? String ?? "").count)+"Retry name")
+        app.buttons["Save name"].tap()
+        XCTAssertTrue(app.staticTexts["investment-rename-error"].waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Retry name")
+        screenshot(app,"Integration-IR04-save-error-visible-input")
+        app.buttons["Save name"].tap();XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        XCTAssertTrue(app.staticTexts["Retry name"].waitForExistence(timeout:5))
+        let field=app.textFields["investment-activity-name"];reveal(field,app);field.tap();field.typeText("Second activity")
+        app.buttons["investment-create-activity"].tap();XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout:5))
+        let edits=app.buttons.matching(NSPredicate(format:"identifier BEGINSWITH %@","investment-edit-activity-"))
+        for _ in 0..<5 {app.swipeDown()}
+        let first=edits.element(boundBy:0);reveal(first,app);first.tap();XCTAssertTrue(name.waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Retry name")
+        name.tap();name.typeText(" canceled draft");app.buttons["Cancel"].tap()
+        XCTAssertTrue(name.waitForNonExistence(timeout:5));first.tap();XCTAssertTrue(name.waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Retry name");app.buttons["Cancel"].tap();XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        let second=edits.element(boundBy:1);reveal(second,app);second.tap();XCTAssertTrue(name.waitForExistence(timeout:5))
+        XCTAssertEqual(name.value as? String,"Second activity")
+        app.buttons["Cancel"].tap();XCTAssertTrue(name.waitForNonExistence(timeout:5))
+        screenshot(app,"Integration-IR04-success-cancel-and-distinct-activity")
+    }
+}
+
+extension InvestmentUITests {
+    func testUIReadabilityChineseIconsArchiveRestoreAndMonthLabels() {
+        let app = launch(chinese: true, extra: ["-PGOSInvestmentSegmentReview"])
+        openHub(app, chinese: true)
+        let start = button("investment-start-", app); reveal(start, app)
+        XCTAssertTrue(start.label.contains("开始计时")); XCTAssertTrue(start.isEnabled)
+        screenshot(app, "UIReadability-zh-investment-visible-play")
+        print("UIReadability_PRESS_START \(Date().timeIntervalSince1970)"); fflush(stdout)
+        start.press(forDuration: 1.5)
+        print("UIReadability_PRESS_END \(Date().timeIntervalSince1970)"); fflush(stdout)
+        let collapse = app.buttons["investment-collapse-timer"]; XCTAssertTrue(collapse.waitForExistence(timeout: 5)); collapse.tap()
+        let edit = button("investment-edit-activity-", app); reveal(edit, app); edit.tap()
+        let archive = app.buttons["investment-rename-archive"]
+        XCTAssertEqual(archive.label, "归档活动"); screenshot(app, "UIReadability-zh-archive-activity"); archive.tap()
+        XCTAssertTrue(archive.waitForNonExistence(timeout: 5))
+        let showArchived = app.switches["包含已归档活动"]; reveal(showArchived, app)
+        // The labelled AX row wraps a native Switch; tap the actual trailing control.
+        showArchived.switches.firstMatch.tap(); XCTAssertEqual(showArchived.value as? String, "1")
+        reveal(edit, app); edit.tap()
+        XCTAssertEqual(archive.label, "恢复活动"); screenshot(app, "UIReadability-zh-restore-activity"); archive.tap()
+        XCTAssertTrue(archive.waitForNonExistence(timeout: 5))
+        let history = app.buttons["investment-history"]; for _ in 0..<8 where !history.isHittable { app.swipeDown() }; reveal(history, app); history.tap()
+        let preview = app.switches["预览所选月份"]; reveal(preview, app, avoidingWheel: true)
+        preview.switches.firstMatch.tap(); XCTAssertEqual(preview.value as? String, "1")
+        let previous = app.buttons["investment-previous-month"], next = app.buttons["investment-next-month"]
+        reveal(previous, app, avoidingWheel: true); XCTAssertEqual(previous.label, "上个月"); XCTAssertEqual(next.label, "下个月")
+        let range = app.staticTexts["investment-preview-range"]; reveal(range, app, avoidingWheel: true); let original = range.label
+        reveal(previous, app, avoidingWheel: true); previous.tap(); reveal(range, app, avoidingWheel: true); XCTAssertNotEqual(range.label, original)
+        screenshot(app, "UIReadability-zh-previous-month")
+        reveal(next, app, avoidingWheel: true); next.tap(); reveal(range, app, avoidingWheel: true); XCTAssertEqual(range.label, original)
+        screenshot(app, "UIReadability-zh-next-month")
+    }
 }

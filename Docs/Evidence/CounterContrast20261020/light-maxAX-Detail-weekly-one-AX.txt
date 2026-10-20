@@ -1,0 +1,132 @@
+Attributes: Application, 0x107ddd680, pid: 85926, label: '随心log'
+Element subtree:
+ →Application, 0x107ddd680, pid: 85926, label: '随心log'
+    Window (Main), 0x107ddcdc0, {{0.0, 0.0}, {375.0, 812.0}}
+      Other, 0x107ddf980, {{0.0, 0.0}, {375.0, 812.0}}
+      Other, 0x107ddf840, {{0.0, 0.0}, {375.0, 812.0}}
+        Other, 0x107ddf480, {{0.0, 0.0}, {375.0, 812.0}}
+          Other, 0x107ddcc80, {{0.0, 0.0}, {375.0, 812.0}}
+            Other, 0x107ddf700, {{0.0, 0.0}, {375.0, 812.0}}
+              Other, 0x107ddde00, {{0.0, 0.0}, {375.0, 812.0}}, identifier: 'app-shell'
+                Other, 0x107ddea80, {{0.0, 0.0}, {375.0, 812.0}}
+                  Other, 0x107ddcf00, {{0.0, 0.0}, {375.0, 812.0}}
+                    Other, 0x107ddc640, {{0.0, 0.0}, {375.0, 812.0}}
+                      Other, 0x107ddca00, {{0.0, 0.0}, {375.0, 812.0}}
+                        Other, 0x107dde440, {{0.0, 0.0}, {375.0, 812.0}}
+                          Other, 0x107ddc280, {{0.0, 0.0}, {375.0, 812.0}}
+                            NavigationBar, 0x107dddb80, {{0.0, 50.0}, {375.0, 54.0}}, identifier: '每周锻炼几次'
+                              Button, 0x107ddc000, {{16.0, 50.0}, {44.0, 44.0}}, identifier: 'BackButton', label: '习惯'
+                              StaticText, 0x107dde300, {{72.0, 59.3}, {120.3, 25.3}}, label: '每周锻炼几次'
+                              Other, 0x107ddfd40, {{238.7, 54.0}, {54.3, 36.0}}
+                                Other, 0x107ddd180, {{238.7, 54.0}, {54.3, 36.0}}
+                                  Button, 0x107dddf40, {{238.7, 54.0}, {54.3, 36.0}}, identifier: 'habit-edit', label: '编辑'
+                              Other, 0x107ddd400, {{309.0, 54.0}, {46.0, 36.0}}
+                                Other, 0x107ddee40, {{309.0, 54.0}, {46.0, 36.0}}
+                                  Button, 0x107dde1c0, {{309.0, 54.0}, {46.0, 36.0}}, identifier: 'habit-actions', label: '更多'
+                                    Button, 0x107ddf200, {{309.0, 54.0}, {46.0, 36.0}}
+                                      Image, 0x107ddebc0, {{318.3, 58.3}, {27.3, 27.3}}, identifier: 'ellipsis.circle', label: '更多'
+                            Other, 0x107ddfe80, {{0.0, 0.0}, {375.0, 812.0}}
+                              Other, 0x107dde080, {{0.0, 0.0}, {375.0, 812.0}}
+                                Other, 0x107ddfc00, {{0.0, 0.0}, {375.0, 812.0}}
+                                  Other, 0x107ddd040, {{0.0, 0.0}, {375.0, 812.0}}
+                                    CollectionView, 0x107ddd2c0, {{0.0, 0.0}, {375.0, 812.0}}
+                                      Other, 0x107ddd7c0, {{-16.0, -1550.7}, {407.0, 3023.3}}
+                                      Other, 0x107ddf0c0, {{0.0, 0.0}, {375.0, 812.0}}
+                                        Other, 0x107ddda40, {{0.0, 0.0}, {375.0, 144.0}}
+                                        Other, 0x107ddc140, {{0.0, 679.0}, {375.0, 133.0}}
+                                      Other, 0x107ddef80, {{0.0, 0.0}, {375.0, 812.0}}
+                                        Other, 0x107ddd540, {{0.0, 0.0}, {375.0, 144.0}}
+                                        Other, 0x107ddd900, {{0.0, 679.0}, {375.0, 133.0}}
+                                      Cell, 0x107ddc780, {{16.0, 73.3}, {343.0, 83.3}}
+                                        Other, 0x107ddf340, {{16.0, 73.3}, {343.0, 83.3}}
+                                        Other, 0x107ddc500, {{16.0, 73.3}, {343.0, 83.3}}
+                                          Other, 0x107ddc8c0, {{16.0, 73.3}, {343.0, 83.3}}
+                                            Other, 0x10649a440, {{16.0, 73.3}, {343.0, 83.3}}
+                                              StaticText, 0x10649be80, {{16.0, 73.3}, {343.0, 83.3}}, label: '当前'
+                                      Cell, 0x10649b340, {{16.0, 156.7}, {343.0, 160.7}}
+                                        Other, 0x10649a580, {{16.0, 156.7}, {343.0, 160.7}}
+                                          Other, 0x10649b480, {{16.0, 156.7}, {343.0, 160.7}}
+                                        Other, 0x10649a1c0, {{16.0, 156.7}, {343.0, 160.7}}
+                                          Other, 0x10649b0c0, {{16.0, 156.7}, {343.0, 160.7}}
+                                            Other, 0x10649bd40, {{16.0, 156.7}, {343.0, 160.7}}
+                                              StaticText, 0x10649ad00, {{16.0, 156.7}, {343.0, 160.7}}, identifier: 'habit-detail-current-progress', label: '进度、3/3 本周'
+                                              StaticText, 0x10649a080, {{32.0, 171.7}, {100.3, 63.3}}, label: '进度'
+                                      Cell, 0x10649a940, {{16.0, 317.3}, {343.0, 160.7}}
+                                        Other, 0x106499a40, {{16.0, 317.3}, {343.0, 160.7}}
+                                          Other, 0x106fb7d40, {{16.0, 317.3}, {343.0, 160.7}}
+                                        Other, 0x106fb7700, {{16.0, 317.3}, {343.0, 160.7}}
+                                          Other, 0x106fb7ac0, {{16.0, 317.3}, {343.0, 160.7}}
+                                            Other, 0x106fb7980, {{16.0, 317.3}, {343.0, 160.7}}
+                                              StaticText, 0x106fb7840, {{16.0, 317.3}, {343.0, 160.7}}, identifier: 'habit-detail-status', label: '状态、进行中'
+                                              StaticText, 0x106fbe300, {{32.0, 332.3}, {100.3, 63.3}}, label: '状态'
+                                      Other, 0x106fbf5c0, {{32.0, 316.3}, {311.0, 1.0}}
+                                      Cell, 0x106fbc780, {{16.0, 478.0}, {343.0, 246.3}}
+                                        Other, 0x106fbcdc0, {{16.0, 478.0}, {343.0, 246.3}}
+                                          Other, 0x106fbf480, {{16.0, 478.0}, {343.0, 246.3}}
+                                        Other, 0x106fbf340, {{16.0, 478.0}, {343.0, 246.3}}
+                                          Other, 0x106fbf200, {{16.0, 478.0}, {343.0, 246.3}}
+                                            Other, 0x106fbcf00, {{16.0, 478.0}, {343.0, 246.3}}
+                                              StaticText, 0x106fbf0c0, {{32.0, 493.0}, {311.0, 125.3}}, label: '每周锻炼几次'
+                                              Image, 0x106fbef80, {{33.7, 547.0}, {21.0, 17.7}}, identifier: 'repeat', label: '重复播放一首'
+                                              Button, 0x106fbd180, {{215.7, 643.3}, {44.0, 45.0}}, identifier: 'habit-detail-counter-decrease', label: '减少“每周锻炼几次”一次', value: 当前次数：1
+                                              StaticText, 0x106fbd040, {{263.7, 636.5}, {31.3, 58.7}}, identifier: 'habit-detail-counter-count', label: '当前次数', value: 1
+                                              Button, 0x106fbc8c0, {{299.0, 643.3}, {44.0, 45.0}}, identifier: 'habit-detail-counter-increase', label: '增加“每周锻炼几次”一次', value: 当前次数：1
+                                      Other, 0x106fbc500, {{32.0, 477.0}, {311.0, 1.0}}
+                                      Cell, 0x106fbea80, {{16.0, 724.3}, {343.0, 93.3}}
+                                        Other, 0x106fbe6c0, {{16.0, 724.3}, {343.0, 93.3}}
+                                          Other, 0x106fbca00, {{16.0, 724.3}, {343.0, 93.3}}
+                                        Other, 0x106fbc3c0, {{16.0, 724.3}, {343.0, 93.3}}
+                                          Other, 0x106fbc280, {{16.0, 724.3}, {343.0, 93.3}}
+                                            Other, 0x106fbda40, {{16.0, 724.3}, {343.0, 93.3}}
+                                              Button, 0x106fbde00, {{16.0, 724.3}, {343.0, 93.3}}, identifier: 'habit-log-details', label: '记录详情'
+                                                StaticText, 0x106fbdf40, {{48.3, 739.3}, {267.7, 63.3}}, label: '记录详情'
+                                                Image, 0x106fbe080, {{48.3, 742.3}, {34.7, 52.3}}, identifier: 'list.bullet.clipboard', label: '剪贴板上的项目符号列表'
+                                      Other, 0x106fbe1c0, {{68.0, 723.3}, {275.0, 1.0}}
+                                      Other, 0x106fbdb80, {{342.0, 104.0}, {30.0, 625.0}}, label: '垂直滚动条, 5页', value: 1%
+                                        Other, 0x106fbdcc0, {{369.0, 113.3}, {3.0, 171.3}}
+                                      Other, 0x106fbd2c0, {{342.0, 104.0}, {30.0, 625.0}}, label: '垂直滚动条, 5页', value: 1%
+                                        Other, 0x106fbd540, {{369.0, 113.3}, {3.0, 171.3}}
+                            Toolbar, 0x106fbd680, {{0.0, 0.0}, {375.0, 812.0}}, identifier: 'Toolbar', label: '工具栏'
+                              Other, 0x106fbd7c0, {{0.0, 0.0}, {375.0, 812.0}}
+                Other, 0x106fbd900, {{0.0, 0.0}, {375.0, 812.0}}
+                  Other, 0x106fbd400, {{0.0, 729.0}, {375.0, 83.0}}
+                    Other, 0x106fbed00, {{0.0, 0.0}, {375.0, 812.0}}
+                      TabBar, 0x106fbee40, {{0.0, 729.0}, {375.0, 83.0}}, label: '标签页栏'
+                        Other, 0x106fbcb40, {{21.0, 729.0}, {333.0, 62.0}}
+                          Other, 0x106fbebc0, {{21.0, 729.0}, {81.0, 54.0}}
+                          Other, 0x106fbe440, {{21.0, 729.0}, {333.0, 62.0}}
+                            Button, 0x106fbc000, {{25.0, 733.0}, {81.0, 54.0}}, identifier: 'sun.max', label: '今天'
+                              Image, 0x106fbc640, {{51.0, 738.0}, {29.0, 29.3}}, identifier: 'sun.max.fill', label: '调高亮度'
+                            Button, 0x106fbe940, {{86.0, 733.0}, {81.0, 54.0}}, identifier: 'clock', label: '时间线'
+                              Image, 0x106fbf980, {{113.0, 739.3}, {27.3, 27.3}}, identifier: 'clock.fill', label: '时钟'
+                            Button, 0x106fbfac0, {{147.0, 733.0}, {81.0, 54.0}}, identifier: 'plus.circle.fill', label: '记录'
+                              Image, 0x106fbfc00, {{174.0, 739.3}, {27.3, 27.3}}, identifier: 'plus.circle.fill', label: '添加'
+                            Button, 0x106fbfd40, {{208.0, 733.0}, {81.0, 54.0}}, identifier: 'leaf', label: '成长', Selected
+                              Image, 0x106fbfe80, {{234.3, 740.3}, {28.7, 25.3}}, identifier: 'leaf.fill', label: '叶子'
+                            Button, 0x106fbf840, {{269.0, 733.0}, {81.0, 54.0}}, identifier: 'books.vertical', label: '资料库'
+                              Image, 0x106fbe580, {{293.0, 738.0}, {33.3, 29.3}}, identifier: 'books.vertical.fill', label: '书架'
+                          Other, 0x106fbe800, {{21.0, 729.0}, {333.0, 62.0}}
+                          Other, 0x106fbc140, {{208.0, 733.0}, {81.0, 54.0}}
+                            Other, 0x106fbcc80, {{208.0, 733.0}, {81.0, 54.0}}
+                              Other, 0x107dc9180, {{208.0, 733.0}, {81.0, 54.0}}
+                              Other, 0x107dc8b40, {{208.0, 733.0}, {81.0, 54.0}}
+                                Other, 0x107dc9e00, {{208.0, 733.0}, {81.0, 54.0}}
+                                  Other, 0x107dc9cc0, {{208.0, 733.0}, {81.0, 54.0}}
+                                    Other, 0x107dc9b80, {{208.0, 733.0}, {81.0, 54.0}}
+                                  Other, 0x107dc9f40, {{208.0, 733.0}, {81.0, 54.0}}
+                                Other, 0x107dca580, {{208.0, 733.0}, {81.0, 54.0}}
+                    Other, 0x107dca440, {{0.0, 729.0}, {375.0, 83.0}}
+                      Other, 0x107dca300, {{0.0, 729.0}, {375.0, 83.0}}
+                        Other, 0x107dc92c0, {{0.0, 729.0}, {375.0, 83.0}}
+                          Other, 0x107dc9a40, {{0.0, 729.0}, {375.0, 83.0}}
+                            Other, 0x107dca080, {{0.0, 729.0}, {375.0, 83.0}}
+                              Other, 0x107dc9900, {{0.0, 729.0}, {375.0, 83.0}}
+                          Other, 0x107dc97c0, {{0.0, 729.0}, {375.0, 83.0}}
+                            Other, 0x107dc9680, {{0.0, 729.0}, {375.0, 83.0}}
+Path to element:
+ →Application, 0x107ddd680, pid: 85926, label: '随心log'
+Query chain:
+ →Find: Target Application 'com.yocruzer.PersonalGrowthOS'
+  Output: {
+    Application, 0x107dca6c0, pid: 85926, label: '随心log'
+  }

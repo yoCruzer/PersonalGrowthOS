@@ -1,0 +1,127 @@
+# 2026-10-20 计数器、真实Actions与只读清点 — READY_FOR_OWNER_DEVICE_GATE
+
+本授权批次已完成。产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`；最终产品/测试候选 **`3ee3cb6a846a296baca7f91b705a67c10dcbe51f`**。Owner直接批准后均普通推送原Draft PR #13，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`不变；本交付随后只有Docs，交付完整SHA由PR head、最终回复与本机final-delivery-proof.json核对。
+
+真实[run39387986862](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862)必选检查全部PASS：App/Share/Widget unsigned Release；完整托管iOS Unit **583=582PASS/0FAIL/1SKIP**；关键UI smoke **5/5PASS**。唯一方法SKIP仍是需隔离32MB HFS+卷的原低空间方法；optional extended job在PR事件按设计SKIPPED。实际checkout为PR merge **`0e5169a79cc530f063fa730666fd849538340281`**，与head tree相同，不能称为直接checkout head。标准GitHub-hosted ARM64 xcode-27 / image 20261012.0260.1，macOS27.0.1(26A434)、Xcode27.0(27A266a)、iOS SDK/runtime27.0(24A434)、动态新建iPhone13mini。
+
+首轮[run39385273807](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39385273807)仍为FAIL：Release PASS、smoke5/5PASS、Unit579PASS/2FAIL/1SKIP。两测试夹具写死Shanghai，已改为真实current前置并新增未回原区继续隔离反例，未改生产逻辑/删断言/增加skip；本机相关37/37PASS。未成功改变Swift current的NSTimeZone.default探针不是业务红例，记录保留。独立reviewer核对固定候选、原图/测量、真实CI与30分支分类，无必须补项，见[证据与原文](Evidence/CI20261020/README.md)。
+
+P2实际生产PNG20样本最低 **7.273152:1**（旧2.305181:1），浅/深/按下、普通/最大辅助字号与Today/Growth/详情0→1→0/周期累计/导航已验证；44×45pt与禁用状态保持。只读清点29远端/8本地/30并集、13开放Draft：11叠加基底、3必须保留、13合并后候选、3疑似重复，其余主分类0；Todo脏改动与失效worktree UNKNOWN另列保留。没有删除、改base、merge、force、tag或发布。
+
+停在Owner设备门。真机D1–D4、真实VoiceOver/相机权限、AlarmKit正向、Share/Safari环境失败、物理低空间SKIP/NOT_RUN与O-01非阻断UNCONFIRMED保持；不以CI替代设备结论。[完整执行](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md) / [分支清单](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)。以下均为历史阶段。
+
+---
+
+## 本轮真实远端终态与补修闭环
+
+| run / PR head / 实际checkout | Release | 完整Unit方法数 | UI smoke | 结论 |
+|---|---|---|---|---|
+| [39385273807](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39385273807) / cbbb2c68d39ac1218c2936f58ffef72f72dbe942 / d74f75b8fa25f4be7866ef540e5b8494839cff22 | PASS 4m11s | 582=579PASS/2FAIL/1SKIP | 5/5PASS 18m20s | FAIL，原始失败保留 |
+| [39387986862](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862) / 3ee3cb6a846a296baca7f91b705a67c10dcbe51f / 0e5169a79cc530f063fa730666fd849538340281 | PASS | 583=582PASS/0FAIL/1SKIP | 5/5PASS | PASS |
+
+| 新run job | 终态 | UTC开始 → 结束 |
+|---|---|---|
+| [iOS release](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512386907) | success | 2026-10-20T07:39:56Z → 2026-10-20T07:42:41Z |
+| [iOS unit](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512387176) | success | 2026-10-20T07:39:54Z → 2026-10-20T07:53:50Z |
+| [iOS smoke](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512387285) | success | 2026-10-20T07:39:55Z → 2026-10-20T07:59:53Z |
+| [Optional extended UI](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862/job/118512388947) | skipped | 2026-10-20T07:39:48Z → 2026-10-20T07:39:48Z |
+
+三个独立runner：release `GitHub Actions 1000000178`、unit `GitHub Actions 1000000179`、smoke `GitHub Actions 1000000180`，labels xcode-27，标准GitHub Actions组，不是large/self-hosted。实际环境及命令逐lane保存，[首轮原始产物](Evidence/CI20261020/Actions39385273807/actions-run-final.json)、[通过轮原始产物](Evidence/CI20261020/Actions39387986862/actions-run-final.json)、[SHA256](Evidence/CI20261020/actions-evidence-sha256.json)。两轮均为正常PR synchronize，非手工刷旧SHA；没有重跑首轮已成功job。测试修正改变Unit target，现有PR工作流自然触发基础三lane；未引入skip-CI或临时条件伪造通过。新轮未失败，不继续重复全量；之后纯Docs不改变已验证产品/测试/CI blob，若正常推送触发新run则追踪其真实终态并在PR/最终回复记录，不为记录run反复产生Docs提交。
+
+首轮两个失败方法分别为 `TodoReminderTests/testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation()` 与 `ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()`。前者UTC比Shanghai预期偏8小时，后者未实际回原区却期望stopped；日志6次failure是断言数，非6方法。修正只改2测试文件65+/6-，使用真实TimeZone.current、不同identifier同偏移旅行区且校验actual fire偏移，原positive恢复/取消回滚断言保留。新negative四组合完整证明未返回原区继续legacyRuleNeedsCorrection、native0、旧generation/日期/来源终态/entries/sources/events不变。没有全局时区修改或生产行为变化。本机[37项原始summary](Evidence/CI20261020/ZoneFixtureFix/ci-unit-zone-fix-focused-summary.json)、记录与失败探针见[说明](Evidence/CI20261020/README.md)。
+
+本机相关运行在固定3ee、sourceUnchanged=true，源文件摘要与Git一致，工作树脏仅Docs，未称整树clean。原NSTimeZone.default=GMT探针没有改变Swift current，仅前置断言失败，不能宣称业务红→绿。远端真实UTC首轮红与补修轮通过分别保留。
+
+只读清点采样以机器JSON capturedAt与candidate3ee为准，之后纯Docs可能增加候选提交计数，不使分类成为实时删除授权。完整29/8/30和13Draft分页结果、刷新前refs/no-prune、重要tag/引用、工作树未知状态都已保存。未来建议先由Owner确定#1与#2整合，再按#2→#13依赖方向集成验证，最后另批逐条批准清理；本轮无清理。
+
+独立原文：[本地P2/清点](Evidence/CounterContrast20261020/independent-review-local.txt)、[首轮CI与测试夹具](Evidence/CI20261020/independent-review-ci-fixture.txt)、[通过轮终审](Evidence/CI20261020/independent-review-ci-final.txt)。未参与实现的reviewer对固定候选与原始产物独立核对，无未闭环必须项。
+
+---
+
+以下保留授权等待、配置未运行及本地失败等历史，不替代上述最新结论。
+
+# 计数器补修、GitHub Actions 与分支清点实际执行（2026-10-20）
+
+状态：**LOCAL_VALIDATION_COMPLETE / WAITING_DIRECT_PUSH_AUTHORIZATION**。整体目标尚未完成；没有真实 Actions run，不能恢复 READY_FOR_OWNER_DEVICE_GATE。Owner 最新授权取代旧 G2/清理阶段：本轮只做计数器 P2、真实 CI 和分支只读清点，不执行真机或删除门。
+
+## 固定身份与实际边界
+
+- 实时只读 PR #13：OPEN Draft，head `codex/usage-remediation-20261017`，远端 `50f726391f4f548647694368ad6378a901667189`；base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24` 不变。
+- 原任务 worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017` 从干净 c7f5a38 安全 fast-forward 到 50f7263；已审产品/测试 537a6f9 及交付 50f7263 全部保留。刷新前 refs/worktrees 已保存，fetch 明确 `--no-prune`。主目录三项未知改动与其他 worktree 原样保留。
+- 最后产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`；最后产品/测试 `d84bd5f1529214b57e503cd89904c011302a0154`（后续只修测试定位和独立按下采集窗口）。CI 实现 `13f0409adccc0e0216461ec9ff00a3a11f90e67c`，按需 UI 增量 `30b7a9b384d64922fdaf42fa4a33d5f13edcec73`。清点初交 220090d、独立审查补修 `b9ac72507be54f4b4bd15c7ca8b6947742bab2e2`。均为本地普通提交，尚未推送。
+
+## 计数器 P2 与生产原图
+
+旧两张 sRGB 原图复算蓝色 `#0088FF` / 灰底 `#D1D1D1` = **2.305181:1**，确认启用非文本图标缺陷；零次禁用减号不计入3:1门。现在只对两个按钮使用独立 ButtonStyle，读取 isEnabled / colorScheme / isPressed，不给整组套 primary；数字仍用 primary。浅/深底色分别 `#E6ECF2` / `#283744`，常态启用前景 `#174F78` / `#D5EAFE`，按下 `#103B5D` / 白；禁用另用低强调灰色。44×45pt实际目标、ScaledMetric 胶囊、完整名称、紧凑布局及所有业务统计/持久化未改。
+
+[31张原始PNG及来源/hash](Evidence/CounterContrast20261020/manifest.json)、[20个实际像素样本与坐标](Evidence/CounterContrast20261020/samples.json)、[复算结果](Evidence/CounterContrast20261020/contrast-results.json)、[复算脚本](Evidence/CounterContrast20261020/measure_contrast.py)。原图直接按字节复制，无裁剪/改色。常态来自 XCUIApplication.screenshot；按下来自真实按钮按住期间的 simctl framebuffer PNG，不使用重绘宿主或有损录像帧。所有测量图保有sRGB元数据，取glyph实心区及实际胶囊底色，不使用抗锯齿边缘冒称最差实心值。
+
+| 实测状态 | 普通/最大辅助字号中最低对比度 |
+|---|---:|
+| 浅色启用 | 7.273152:1 |
+| 深色启用 | 9.899899:1 |
+| 浅色按下加/减号 | 9.771907:1 |
+| 深色按下加/减号 | 12.208099:1 |
+
+松开后的过渡色也在真实截图中测量，均留有余量。禁用状态用真实0→1→0与原图分别核对，没有用isHittable或AX语义审计代替颜色测量。
+
+Today 日计数、Today 周/月共享 Overview、Growth 周/月与长名、详情均实际0→1→0；截图及AX保存昨日合成事实2条与当前日0/1的独立呈现，Growth同时断言周期2/3→3/3→2/3、2/10→3/10→2/10（周期边界动态取真实期望）。名称导航不增加计数；普通短名紧凑断言、最大AX完整名称与>=44pt目标继续通过。普通字号、XXXL与最大辅助字号分别留证，XXXL没有代替最大辅助字号。
+
+设置页 [真实App系统材质原图](Evidence/CounterContrast20261020/real-App-settings-material.png) 显示黑色加号及完整圆形系统材质，系统状态栏也存在。与旧 real-reminder-retry.png 的 layer.render 宿主图对照，独立reviewer支持排除取图差异，无设置产品改动。
+
+## 本机实际验证与保留失败
+
+环境：macOS27.0.1 arm64、Xcode27.1(27A9275)、SDK27.1、专用 iPhone13mini / iOS27.0(24A434)。真实 appearance 通过 simctl 设置并以原图核实；本机 UDID 仅在本机台账，未硬编码到 Actions。所有产物在工作树外 `/private/tmp/pgos-ci-contrast-20261020` 与原UI证据根；全部合成数据。
+
+完整命令、来源SHA、开始/结束时间、exit与源文件摘要见 [runs.json](Evidence/CounterContrast20261020/runs.json)，数量直接取xcresult summary：
+
+| 轮次 | 结果 | 边界 |
+|---|---|---|
+| contrast-build / e5b486a | PASS | 真实App/测试构建 |
+| contrast-ui-light | 2PASS / 2FAIL / 0SKIP | 新Today周/月测试定位误用daily前缀；原计数持久化与设置真实截图分别PASS。保留整轮exit65 |
+| contrast-build2 / 5fa5560 | PASS | 只改Today周/月测试定位为共享Overview前缀，无减断言 |
+| contrast-ui-light2 / 5fa5560 | 2/2PASS | 普通+XXXL、最大AX浅色，生产共享消费者与导航、尺寸/密度 |
+| contrast-ui-dark（实际复用5fa build2） | 2/2PASS | 真深色普通+最大AX，同上 |
+| contrast-build-final / b9ac725 | PASS | 加入窄按下采集方法 |
+| contrast-press-dark / light | 各1/1PASS | 1秒按住行为通过；抓帧串行速度不足，部分原图抓到主屏，未计入按下色通过 |
+| contrast-unit-final / b9ac725 | 99PASS / 0FAIL / 0SKIP | 完整HabitFoundationTests + AppCompositionTests，相邻业务与本地化；不是完整Unit |
+| contrast-build-press2 / d84bd5f | PASS | 仅证据方法按住1秒→2秒，采集每次3张→1张 |
+| contrast-press2-dark / light / d84bd5f | 各1/1PASS | 8张加减号按住原始PNG；两种字号、两种外观 |
+| contrast-release / d84bd5f | PASS | generic iOS unsigned Release；构建时仅新增Docs证据未跟踪，不能称整树clean |
+
+原首轮 light 和 dark 的 `sourceUnchanged=false` 如实保留：前者运行中修测试定位，原失败不重标；后者运行中仅新增窄按下证据方法，实际 test-without-building 仍使用5fa构建，矩阵方法/生产实现未改。最终d84只把新窄方法按住延长，产品实现、所有已通过矩阵方法、99项Unit及旧持久化/设置方法均未改；按具体定义/方法范围复用，不宣称整个测试文件相同。源码摘要与Git blob可复算。后续清洁Release核对单列实际结果。
+
+`contrast-release-clean` 在干净固定交付候选 `51f491c29577e225afda8c92197306cbed4a4776` 增量PASS（1.74s，status空/sourceUnchanged=true）。[实包核对](Evidence/CounterContrast20261020/release-bundles-clean.json)：App provenance Commit=51f491c… / Dirty=false；App/Share/Widget原IDs、1.0(7)、min17均保持且三包未签名。上一轮d84的Dirty=true记录保留，不追认为clean；两者产品/测试源码相同。
+
+## GitHub Actions：配置已实现，真实远端 NOT_RUN
+
+已查当前分支与 origin/main 的 `.github/workflows` 均无配置；只读 API workflows total_count=0，避免重复。新增 `.github/workflows/ios-regression.yml` + `Scripts/ci/run_ios.py`，YAML Ruby解析、Python编译检查通过；本机原生构建/99 Unit/定向UI可执行，不能替代新CI验收。
+
+官方依据：[当前标准runner清单](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)、[xcode-27镜像具体工具链/runtime](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md)、[10月15日GA公告](https://github.blog/changelog/2026-10-15-xcode-27-runner-image-generally-available/)。当前清单的标准 xcode-27 arm64 用于公开仓库，未选large/xlarge或私人self-hosted；默认 Xcode27.0(27A266a) `/Applications/Xcode_27.app` / iOS27.0可用。真实run仍须以实际环境输出为准。
+
+- 三个必选独立VM job：App/Share/Widget generic unsigned Release、整个托管 iOS Unit target、5个稳定关键UI方法（启动、五Tab/设置最大字号、中文普通/XXXL布局、英文本地化、计数持久化）。模拟器在每个测试VM动态创建，列出Xcode/SDK/runtime与实际device；同job原生测试串行。构建job实际断言3个bundle存在且无签名。
+- PR事件不限制base，当前堆叠base与Draft均覆盖；只对main额外push，避免当前分支同次push+PR双跑。未设pull_request_target，只有contents:read，不获取发布/签名凭据，checkout不保留凭据。
+- checkout v7.0.1 固定 `3d3c42e5aac5ba805825da76410c181273ba90b1`，upload-artifact v7.0.2 固定 `cf430e030ddbb5b0abf93d22962f4752f3646cd9`，均已核官方发布与tag。timeout35分钟、按PR/ref concurrency，矩阵失败不连带取消其他lane；没有continue-on-error或新增SKIP。
+- 每job products/DerivedData/xcresult在RUNNER_TEMP；保留精简环境、日志与真实test summary/tests，always上传便于失败诊断，3天后过期，无全量大产物/缓存堆积。只用公开合成夹具。
+- 较复杂Sleep/Investment/ImportantDays UI在独立workflow_dispatch可选job，默认none，NOT_RUN。工作流尚未进入默认分支，dispatch UI/API可能受默认分支注册限制；首次验收必须靠本轮正常推送产生PR事件，不为此合入main或改base。未添加schedule。
+- 既有物理低空间HFS+环境限定SKIP由原测试自身报告，未来完整远端Unit单列；本机本轮99项无SKIP。不得把这些99项冒充完整远端Unit。
+
+**当前无workflow/run/job URL、runner实跑环境或远端通过数量**：首次普通推送被自动审批审查两次拒绝，理由均为当前可信用户消息未直接授权向具体仓库发送代码/CI/测试内容，可能存在代码外传风险。第二次已附目标指令与origin核对依据仍拒绝，没有改用旁路。已向用户发直接确认：目的地 `git@github.com:yoCruzer/PersonalGrowthOS.git`、分支 `codex/usage-remediation-20261017`、产品/公开合成测试/CI/清点文档。等待其回复后才可普通推送；确认到达后继续跟踪真实run/日志并闭环失败。
+
+验收记录必须分别填写 PR head SHA、checkout/merge SHA、run/job URLs、runner/image/Xcode/SDK/runtime、各job PASS/FAIL/SKIP。PR事件默认checkout merge ref，不能冒称head构建。当前这些字段为NOT_RUN，未以本机PASS或YAML代替。
+
+Xcode Cloud `testflight-`→发布链、项目身份/版本/schema/数据模型/签名与branch protection均未改；未打tag、Archive、发布、merge或进行设备验收。
+
+## 分支只读清点与独立补修
+
+[中文清单](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md) / [全部机器事实](Evidence/CI20261020/branch-inventory.json)：29远端、8本地、30并集、13开放Draft；11叠加基底、3必须保留、13合并后候选、3疑似重复、主分类含未同步/独有工作0、信息不足0。主分类之外保留Todo脏状态与失效worktree UNKNOWN，不能因0忽略未知工作。每条有完整SHA/时间、upstream/ahead/behind、未推送与两种tip独有ID、三参考比较、后继PR、tag/Docs引用及未来前置条件/顺序。
+
+独立reviewer先指出三项确认缺口：status错误误记clean、UI分支upstream文案矛盾、同SHA其他引用未参与独有覆盖。已修复且其独立重算全部30分支列表一致。important-days遗留worktree status exit128 → status:null/UNKNOWN，不清理；detached quiet-wins-review-fix完整SHA保留。两条plan各有非祖先历史提交，git cherry为+，5/5改动文件均与候选字节相同，仍为疑似重复并保留ref。#1单独指main且开放；#2至#13完整叠加链不能越过依赖删基底。
+
+清点报告完成即交付，无“等待删除批准所以本任务未完成”的依赖；本轮不执行任何分支删除或worktree清理。
+
+## 停点与尚未通过门
+
+当前继续条件只是真实推送授权；随后必须完成实际Actions验收与最终独立审查，再恢复READY_FOR_OWNER_DEVICE_GATE。未参与实现的独立reviewer对固定候选51f491c完成本地终审：[原文](Evidence/CounterContrast20261020/independent-review-local.txt)，SHA256 `06cb6a203a7d4b2b797623857d7ba7d14fe077287640ac007d5074e7fff2e986`。其独立核对14轮源摘要/Git、原始xcresult汇总、3实包/hash/provenance、31原图/hash、20像素样本及8次实际2秒按住事件，支持本地关闭P2并交付只读清点，无新增必须补修项。CI真实run当前不存在，未审为通过，整体目标保持active。
+
+真机D1–D4、真实VoiceOver/系统相机权限弹窗、AlarmKit正向、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、O-01非阻断UNCONFIRMED等既有状态保留。本轮不执行旧G2或代Owner通过设备门。

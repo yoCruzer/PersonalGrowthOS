@@ -16,6 +16,25 @@ import UIKit
     var operationRevision: Int?
     var timerConfirmation: Bool
     var error: String?
+    private(set) var publicationBlocked=false
+    private(set) var duplicateValues: InvestmentValues?
+    private(set) var duplicateActivity: UUID?
+    private(set) var duplicateDuration: String?
+    var duplicateIDs: [UUID] = []
+    func showDuplicates(_ ids: [UUID]) {
+        duplicateIDs=ids;duplicateValues=values;duplicateActivity=activityID;duplicateDuration=durationText
+        duplicate=true;showDuplicateDialog=true
+    }
+    func clearDuplicateCandidates() {
+        duplicateValues=nil;duplicateActivity=nil;duplicateDuration=nil
+        duplicateIDs=[];duplicate=false;showDuplicateDialog=false
+        if error == InvestmentFailure.duplicate.localizedDescription {error=nil}
+    }
+    func eraseConsumedContent() {
+        finished=true
+        values=InvestmentTimer(state:.discarded,values:values,target:nil,checkpointAt:Date()).erasingConsumedContent().values
+        durationText="";clearDuplicateCandidates();cancelExactIntervalReplacement()
+    }
     var duplicate = false
     var showDuplicateDialog = false
     var finished = false
@@ -55,6 +74,10 @@ import UIKit
     }
     @discardableResult func persist(_ context: ModelContext,commit: ((ModelContext) throws -> Void)? = nil) -> Bool {
         guard !finished else { return true }
+        publicationBlocked=false
+        if duplicate && (duplicateValues != values || duplicateActivity != activityID || duplicateDuration != durationText) {
+            clearDuplicateCandidates()
+        }
         do {
             let save: (ModelContext) throws -> Void = commit ?? {context in
 #if DEBUG
@@ -67,48 +90,130 @@ import UIKit
                 activityID:activityID,values:values,durationText:durationText,editingSessionID:editingSessionID,
                 editingRevision:editingRevision,expectedRevision:operationRevision,timerConfirmation:timerConfirmation)
             error = nil;return true
-        } catch { self.error = error.localizedDescription;return false }
+        } catch {
+            publicationBlocked = (error as? StorePublicationFailure) == .busy
+            self.error = error.localizedDescription;return false
+        }
     }
 }
 
 @MainActor @Observable final class InvestmentWorkspace {
-    var participants: [InvestmentParticipantTransfer] = []
-    var activities: [InvestmentActivityTransfer] = []
-    var sessions: [InvestmentSessionTransfer] = []
-    var operations: [InvestmentOperationSnapshot] = []
+    private(set) var participants: [InvestmentParticipantTransfer] = []
+    private(set) var activities: [InvestmentActivityTransfer] = []
+    private(set) var operations: [InvestmentOperationSnapshot] = []
     var editors: [UUID: InvestmentEditorState] = [:]
     var error: String?
     var reference = Date()
+    private(set) var review: InvestmentReviewSnapshot?
+    private(set) var reviewError: String?
+    private(set) var reviewGeneration = 0
     var me: UUID? { participants.first(where: \.isDefault)?.id }
     var myActivities: [InvestmentActivityTransfer] { activities.filter { $0.participantID == me }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending } }
     var unfinished: [InvestmentOperationSnapshot] { operations.filter { $0.participantID == me && $0.timer.state.unfinished } }
     var drafts: [InvestmentOperationSnapshot] { operations.filter { $0.participantID == me && $0.timer.state == .draft } }
-    func refresh(_ context: ModelContext) {
-        do {
-            let read = ModelContext(context.container)
-            let p = try read.fetch(FetchDescriptor<InvestmentParticipant>()).map(InvestmentParticipantTransfer.init)
-            let a = try read.fetch(FetchDescriptor<InvestmentActivity>()).map(InvestmentActivityTransfer.init)
-            let s = try read.fetch(FetchDescriptor<InvestmentSession>()).map(InvestmentSessionTransfer.init)
-            let o = try read.fetch(FetchDescriptor<InvestmentOperation>()).map(InvestmentOperationSnapshot.init)
-            let erasedIDs=Set(o.filter {$0.timer.erasesContent}.map(\.id))
-            for (id,editor) in editors where erasedIDs.contains(id) || editor.editingSessionID.map({erasedIDs.contains($0)}) == true {
-                editor.finished=true
-                editor.values=InvestmentTimer(state:.discarded,values:editor.values,target:nil,checkpointAt:Date()).erasingConsumedContent().values
-                editor.durationText="";editors.removeValue(forKey:id)
+    let reader: InvestmentUIReader
+    private var storeID: ObjectIdentifier?
+    private var seenSequence = -1
+    private var factsVersion = -1
+    private var metadataVersion = -1
+    private var operationsVersion = -1
+    init(reader: InvestmentUIReader? = nil) {self.reader=reader ?? InvestmentUIReader()}
+    private var metadataError: String?
+    private var operationsError: String?
+    func refresh(_ context: ModelContext, retry: Bool = false) {
+        let container=context.container,version=InvestmentChanges.version(context.container)
+        let newStore=storeID != ObjectIdentifier(container),previousMe=me
+        if newStore {
+            participants=[];activities=[];operations=[];review=nil
+            metadataError=nil;operationsError=nil;reviewError=nil
+            metadataVersion = -1;factsVersion = -1;operationsVersion = -1;seenSequence = -1
+            storeID=ObjectIdentifier(container)
+        }
+        if metadataVersion != version.metadata || (retry && metadataError != nil) {
+            metadataVersion=version.metadata
+            do {let (p,a)=try reader.metadata(container);participants=p;activities=a;metadataError=nil}
+            catch {participants=[];activities=[];metadataError=error.localizedDescription}
+        }
+        let ids=Set(version.operationIDs.filter {$0.value > seenSequence}.map(\.key))
+        let full=operationsVersion != version.operations || (retry && operationsError != nil)
+        if full || (!ids.isEmpty && operationsError == nil) {
+            operationsVersion=version.operations
+            do {
+                let update=try reader.operations(container,ids:full ? nil:ids)
+                let removed=full ? Set(operations.map(\.id)):ids
+                operations.removeAll {removed.contains($0.id)};operations += update.active
+                for (id,editor) in editors where update.erased.contains(id) || editor.editingSessionID.map({update.erased.contains($0)}) == true {
+                    editor.eraseConsumedContent();editors.removeValue(forKey:id)
+                }
+                operationsError=nil
+            } catch {operationsError=error.localizedDescription}
+        }
+        if factsVersion != version.facts || previousMe != me || (retry && review == nil) {
+            // Record the attempted version even on failure. Draft events cannot implicitly
+            // retry an expensive failed history scan; explicit Retry or new formal facts can.
+            if factsVersion != version.facts || previousMe != me {
+                for editor in editors.values {editor.clearDuplicateCandidates()}
             }
-            participants = p; activities = a; sessions = s; operations = o; reference = Date(); error = nil
-        } catch { self.error = error.localizedDescription }
+            factsVersion=version.facts;reviewGeneration += 1
+            do {
+                if let metadataError {throw InvestmentEditorPersistenceFailure(message:metadataError)}
+                review=try reader.review(container,participantID:me);reviewError=nil
+            } catch {review=nil;reviewError=error.localizedDescription}
+        }
+        seenSequence=version.sequence;reference=Date()
+        error=metadataError ?? operationsError ?? reviewError
+    }
+    func receive(_ notification: Notification, context: ModelContext) {
+        guard notification.object as? ModelContainer === context.container else {return}
+        refresh(context)
+    }
+    func session(id: UUID,context: ModelContext) throws -> InvestmentSessionTransfer? {
+        try reader.page(context.container,ids:[id],detail:true).first
+    }
+#if DEBUG
+    var beforeCheckpointRetry:(() async -> Void)?
+#endif
+    private var checkpointTask: Task<Void,Never>?
+    func waitForCheckpoint() async {while let task=checkpointTask {await task.value}}
+    private var pendingCheckpointClock: (() -> InvestmentClock)?
+    private func enqueueCheckpoint(_ container:ModelContainer,clock:@escaping () -> InvestmentClock) {
+        pendingCheckpointClock=clock
+        guard checkpointTask == nil else {return}
+        let root=StorePublication.root(for:container)
+        checkpointTask=Task { @MainActor [weak self] in
+            do {
+                try await StorePublication.waitUntilAvailable(at:root)
+                guard let self else {return}
+#if DEBUG
+                await self.beforeCheckpointRetry?()
+#endif
+                let latestClock=self.pendingCheckpointClock ?? clock
+                self.checkpointTask=nil;self.pendingCheckpointClock=nil
+                // Re-read canonical operations after waiting. A prior pause/finish/delete
+                // owns its revision; no captured running operation is replayed here.
+                self.checkpoint(ModelContext(container),clock:latestClock)
+            } catch {
+                self?.checkpointTask=nil;self?.error=error.localizedDescription
+            }
+        }
     }
     func checkpoint(_ context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current) {
         let service = InvestmentService(context:context,clock:clock)
         do {
-            for op in try service.operations() where op.timer.state == .running {
+            refresh(context)
+            guard operationsError == nil else {return}
+            for op in operations where op.timer.state == .running {
                 try service.command(.checkpoint,id:op.id,revision:op.revision)
             }
             for editor in editors.values where !editor.finished {
-                guard editor.persist(context) else {throw InvestmentEditorPersistenceFailure(message:editor.error ?? InvestmentFailure.invalid.localizedDescription)}
+                guard editor.persist(context) else {
+                    if editor.publicationBlocked {throw StorePublicationFailure.busy}
+                    throw InvestmentEditorPersistenceFailure(message:editor.error ?? InvestmentFailure.invalid.localizedDescription)
+                }
             }
             refresh(context)
+        } catch StorePublicationFailure.busy {
+            enqueueCheckpoint(context.container,clock:clock)
         } catch { self.error = error.localizedDescription }
     }
     func resume(id: UUID, context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current) throws {
@@ -145,9 +250,27 @@ import UIKit
                 seconds:2700,evidence:.dateDuration,source:.manual))
         editors[editor.id] = editor; return editor
     }
+    func saveEditor(_ editor: InvestmentEditorState,context:ModelContext,confirmDuplicate:Bool = false,
+                    commit: @escaping (ModelContext) throws -> Void = {try $0.save()}) throws {
+        guard editor.hasValidDuration else {throw InvestmentFailure.invalid}
+        let service=InvestmentService(context:context,commit:commit)
+            if editor.timerConfirmation {
+                guard let revision = editor.operationRevision else { throw InvestmentFailure.missing }
+                try service.saveTimer(id:editor.id,revision:revision,values:editor.values,confirmDuplicate:confirmDuplicate)
+            } else {
+                try service.saveManual(id:editor.editingSessionID ?? editor.id,participantID:editor.participantID,activityID:editor.activityID,
+                    values:editor.values,expectedRevision:editor.editingRevision,confirmDuplicate:confirmDuplicate,draftID:editor.operationRevision == nil ? nil : editor.id)
+            }
+        completeEditor(editor);refresh(context)
+    }
+    private func completeEditor(_ editor: InvestmentEditorState) {
+        if editor.editingSessionID != nil {editor.eraseConsumedContent()}
+        else {editor.finished=true}
+        if editors[editor.id] === editor {editors.removeValue(forKey:editor.id)}
+    }
     func contributions() throws -> [InvestmentContribution] {
-        guard let me else { return [] }
-        return try InvestmentReview.contributions(sessions:sessions,participantID:me)
+        guard let review else { throw InvestmentEditorPersistenceFailure(message:reviewError ?? String(localized:"Unable to read investment statistics")) }
+        return review.contributions
     }
     func name(_ id: UUID) -> String { activities.first { $0.id == id }?.name ?? String(localized:"Investment activity") }
 }
@@ -178,6 +301,13 @@ enum InvestmentFormatting {
         let total = Int(seconds.rounded(.down))
         return String(format:"%d:%02d:%02d",total / 3600,(total / 60) % 60,total % 60)
     }
+    static func accumulated(_ seconds: Double) -> String {
+        guard seconds.isFinite, seconds >= 0, seconds < Double(Int.max) else { return "—" }
+        if seconds < 1 && seconds > 0 { return String(localized: "Less than 1 second") }
+        let total = Int(seconds.rounded(.down))
+        if total < 60 { return String(localized: "\(total) sec") }
+        return String(localized: "\(total / 3600) h \((total / 60) % 60) min")
+    }
     static func state(_ state: InvestmentTimerState) -> String {
         switch state {
         case .running: String(localized:"Timer running")
@@ -192,7 +322,7 @@ enum InvestmentFormatting {
     }
     static func evidence(_ value: InvestmentEvidence) -> String {
         switch value {
-        case .intervals: String(localized:"Effective time intervals")
+        case .intervals: String(localized:"Includes start and end times")
         case .dateDuration: String(localized:"Date and duration only")
         case .correctedDuration: String(localized:"Corrected duration — no exact interval")
         }
@@ -205,7 +335,12 @@ struct InvestmentTodaySection: View {
         if !workspace.unfinished.isEmpty {
             Section {
                 NavigationLink { InvestmentHubView() } label: {
-                    Label("Unfinished time investment",systemImage:"timer")
+                    TimelineView(.periodic(from: .now, by: 1)) { _ in
+                        if let op = workspace.unfinished.first {
+                            ModuleEntryRow(title: workspace.name(op.activityID),
+                                subtitle: InvestmentFormatting.state(op.timer.projected(at: InvestmentClock.current()).state), systemImage: "timer")
+                        }
+                    }
                 }.accessibilityIdentifier("today-investment")
             }
         }
@@ -223,19 +358,26 @@ struct InvestmentHubView: View {
     @State private var operationID: UUID?
     @State private var editor: InvestmentEditorState?
     @State private var editingActivity: InvestmentActivityTransfer?
-    @State private var rename = ""
     @State private var showArchived = false
     @State private var error: String?
     private var active: [InvestmentActivityTransfer] { workspace.myActivities.filter { (showArchived || !$0.isArchived) && (search.isEmpty || $0.name.localizedStandardContains(search)) } }
     var body: some View {
         List {
+#if DEBUG
+            if InvestmentRenameImporterTestSupport.enabled {InvestmentRenameImporterTestControls()}
+#endif
             if !introduced {
                 Section {
                     Text("You can lock the screen or use other apps while timing. This records self-reported investment, not proof of participation.")
                     Button("Got it") { introduced = true }
                 }
             }
-            if let message = error ?? workspace.error { Section { Text(message).foregroundStyle(.red).accessibilityIdentifier("investment-error") } }
+            if let message = error ?? workspace.error {
+                Section {
+                    Text(message).foregroundStyle(.red).accessibilityIdentifier("investment-error")
+                    Button("Retry") {workspace.refresh(context,retry:true)}
+                }
+            }
             if !workspace.unfinished.isEmpty {
                 Section("Unfinished timer") {
                     ForEach(workspace.unfinished) { op in
@@ -263,11 +405,15 @@ struct InvestmentHubView: View {
                     VStack(alignment:.leading,spacing:8) {
                         HStack {
                             Text(activity.name).font(.headline); Spacer()
-                            Button { editingActivity = activity; rename = activity.name } label: { Image(systemName:"ellipsis").frame(minWidth:44,minHeight:44) }
+                            Button { editingActivity = activity } label: { Image(systemName:"ellipsis").frame(minWidth:44,minHeight:44) }
                                 .accessibilityLabel("Edit activity").accessibilityIdentifier("investment-edit-activity-\(activity.id)")
                         }
-                        let total = (try? workspace.contributions().filter { $0.activityID == activity.id }.reduce(0) { $0 + $1.seconds }) ?? 0
-                        Text(InvestmentFormatting.duration(total)).monospacedDigit().accessibilityLabel("Total recorded investment")
+                        if let review = workspace.review {
+                            Text("Total recorded: \(InvestmentFormatting.accumulated(review.activitySeconds[activity.id,default:0]))").monospacedDigit().accessibilityLabel("Total recorded investment")
+                        } else {
+                            Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+                            Button("Retry") { workspace.refresh(context,retry:true) }
+                        }
                         if activity.isArchived { Text("Archived").font(.caption) }
                         else {
                             ViewThatFits(in:.horizontal) {
@@ -296,7 +442,10 @@ struct InvestmentHubView: View {
         .searchable(text:$search,prompt:"Find activities")
         .task {
 #if DEBUG
-            do {try InvestmentReviewTestSupport.seedSegmentsIfRequested(context)} catch {workspace.error=error.localizedDescription}
+            do {
+                try InvestmentReviewTestSupport.seedUsageHistoryIfRequested(context)
+                try InvestmentReviewTestSupport.seedSegmentsIfRequested(context)
+            } catch {workspace.error=error.localizedDescription}
 #endif
             workspace.refresh(context)
         }
@@ -304,17 +453,15 @@ struct InvestmentHubView: View {
             if let operationID { NavigationStack { InvestmentTimerView(id:operationID) } }
         }
         .sheet(item:$editor) { editor in NavigationStack { InvestmentEditorView(editor:editor) } }
-        .alert("Edit activity",isPresented:Binding(get:{editingActivity != nil},set:{if !$0 {editingActivity = nil}})) {
-            TextField("Activity name",text:$rename)
-            Button("Save name") { if let activity = editingActivity { run { try InvestmentService(context:context).updateActivity(id:activity.id,name:rename,archived:activity.isArchived) } }; editingActivity = nil }
-            Button(editingActivity?.isArchived == true ? "Restore activity" : "Archive activity") {
-                if let activity = editingActivity { run { try InvestmentService(context:context).updateActivity(id:activity.id,name:activity.name,archived:!activity.isArchived) } }; editingActivity = nil
+        .sheet(isPresented:Binding(get:{editingActivity != nil},set:{if !$0 {editingActivity=nil}})) {
+            if let activity=editingActivity {
+                NavigationStack {InvestmentActivityEditView(activity:activity) {workspace.refresh(context)}}
+                    .id(activity.id)
             }
-            Button("Cancel",role:.cancel) { editingActivity = nil }
         }
     }
     private func startButton(_ activity: InvestmentActivityTransfer) -> some View {
-        Button { let id = UUID(); run { try InvestmentService(context:context).start(activityID:activity.id,participantID:activity.participantID,operationID:id,target:target == 0 ? nil : Double(target*60)); operationID = id } } label: { Label("Start timing",systemImage:"play.fill").frame(minHeight:44) }
+        Button { let id = UUID(); run { try InvestmentService(context:context).start(activityID:activity.id,participantID:activity.participantID,operationID:id,target:target == 0 ? nil : Double(target*60)); operationID = id } } label: { Label("Start timing",systemImage:"play.fill").labelStyle(.titleAndIcon).frame(minHeight:44) }
             .buttonStyle(.borderedProminent).accessibilityIdentifier("investment-start-\(activity.id)")
     }
     private func recordButton(_ activity: InvestmentActivityTransfer) -> some View {
@@ -322,6 +469,49 @@ struct InvestmentHubView: View {
             .buttonStyle(.bordered).accessibilityIdentifier("investment-record-\(activity.id)")
     }
     private func run(_ action: () throws -> Void) { do { try action(); error = nil; workspace.refresh(context) } catch { self.error = error.localizedDescription; workspace.refresh(context) } }
+}
+
+/// A failed explicit command keeps the activity-owned form and visible input alive.
+struct InvestmentActivityEditView:View {
+    let activity:InvestmentActivityTransfer
+    let didSave:() -> Void
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var name:String
+    @State private var error:String?
+    @FocusState private var nameFocused:Bool
+    init(activity:InvestmentActivityTransfer,didSave:@escaping () -> Void) {
+        self.activity=activity;self.didSave=didSave;_name=State(initialValue:activity.name)
+    }
+    var body:some View {
+        Form {
+            TextField("Activity name",text:$name).focused($nameFocused).accessibilityIdentifier("investment-rename-name")
+            if let error {Text(error).foregroundStyle(.red).accessibilityIdentifier("investment-rename-error")}
+            Button("Save name") {nameFocused=false;save(name:name,archived:activity.isArchived)}.accessibilityIdentifier("investment-rename-save")
+                .disabled(name.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)
+            Button(activity.isArchived ? String(localized: "Restore activity") : String(localized: "Archive activity")) {
+                save(name:activity.name,archived:!activity.isArchived)
+            }.accessibilityIdentifier("investment-rename-archive")
+#if DEBUG
+            if InvestmentRenameImporterTestSupport.enabled {InvestmentRenameImporterTestControls()}
+#endif
+        }
+        .accessibilityIdentifier("investment-activity-edit-form")
+        .navigationTitle("Edit activity")
+        .toolbar {ToolbarItem(placement:.cancellationAction) {Button("Cancel") {dismiss()}}}
+        .interactiveDismissDisabled()
+    }
+    private func save(name:String,archived:Bool) {
+        do {
+#if DEBUG
+            let service=InvestmentService(context:context,commit:InvestmentReviewTestSupport.renameCommit)
+#else
+            let service=InvestmentService(context:context)
+#endif
+            try service.updateActivity(id:activity.id,name:name,archived:archived)
+            error=nil;didSave();dismiss()
+        } catch {self.error=error.localizedDescription}
+    }
 }
 
 struct InvestmentTimerView: View {
@@ -332,6 +522,7 @@ struct InvestmentTimerView: View {
     @State private var editor: InvestmentEditorState?
     @State private var error: String?
     @State private var discard = false
+    @State private var saved = false
     private var op: InvestmentOperationSnapshot? { workspace.operations.first { $0.id == id } }
     var body: some View {
         Form {
@@ -360,12 +551,26 @@ struct InvestmentTimerView: View {
             }
             if let error { Text(error).foregroundStyle(.red) }
         }.navigationTitle("Timer")
-        .toolbar { ToolbarItem(placement:.confirmationAction) { Button("Close") { dismiss() } } }
+        .toolbar { ToolbarItem(placement:.confirmationAction) {
+            TimelineView(.periodic(from: .now, by: 1)) { _ in
+                Button(closeLabel) { dismiss() }.accessibilityIdentifier("investment-collapse-timer")
+            }
+        } }
         .confirmationDialog("Discard this unfinished timer?",isPresented:$discard,titleVisibility:.visible) {
             Button("Discard timer",role:.destructive) { command(.discard); if error == nil { dismiss() } }
         }
-        .sheet(item:$editor) { editor in NavigationStack { InvestmentEditorView(editor:editor) } }
+        .sheet(item:$editor,onDismiss:{if saved {dismiss()}}) { editor in
+            NavigationStack { InvestmentEditorView(onSaved:{saved=true},editor:editor) }
+        }
         .task { workspace.checkpoint(context) }
+    }
+    private var closeLabel: String {
+        guard let state = op?.timer.projected(at: InvestmentClock.current()).state else { return String(localized: "Close") }
+        switch state {
+        case .running: return String(localized: "Collapse timer")
+        case .paused: return String(localized: "Keep paused")
+        default: return String(localized: "Confirm later")
+        }
     }
     private func command(_ action: InvestmentService.Command) {
         guard let op else { return }
@@ -402,12 +607,14 @@ private struct InvestmentDateField: View {
 }
 
 struct InvestmentEditorView: View {
+    var onSaved: () -> Void = {}
     @Bindable var editor: InvestmentEditorState
     @Environment(InvestmentWorkspace.self) private var workspace
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var phase
     @State private var cancel = false
+    @FocusState private var inputFocused: Bool
     @State private var confirmExact = false
     @State private var start = Date().addingTimeInterval(-2700)
     @State private var end = Date()
@@ -420,13 +627,13 @@ struct InvestmentEditorView: View {
                 }.disabled(editor.timerConfirmation)
                 InvestmentDateField("Occurrence date",selection:Binding(get:{ImportantCivilDay(identifier:editor.values.day)?.instant(minutes:720,timeZone:zone) ?? Date()},set:{ editor.values.day = ImportantCivilDay($0,timeZone:zone).identifier; if editor.values.evidence == .intervals { editor.values.spans = []; editor.values.evidence = .correctedDuration; editor.values.corrected = true }; persist() }),displayedComponents:.date)
                     .environment(\.timeZone,zone).accessibilityIdentifier("investment-date")
-                TextField("Duration in minutes",text:$editor.durationText).keyboardType(.decimalPad).accessibilityIdentifier("investment-duration")
+                TextField("Duration in minutes",text:$editor.durationText).focused($inputFocused).keyboardType(.decimalPad).accessibilityIdentifier("investment-duration")
                     .onChange(of:editor.durationText) { _, text in
                         if let minutes = Double(text), minutes.isFinite, minutes >= 0, minutes <= 527040 { editor.values.changeDuration(minutes * 60) }
                         persist()
                     }
                 Text(InvestmentFormatting.evidence(editor.values.evidence)).font(.caption)
-                Text(editor.values.timeZoneID).font(.caption).foregroundStyle(.secondary)
+                DisclosureGroup("Time details") { Text(editor.values.timeZoneID).font(.caption).foregroundStyle(.secondary) }
                 DisclosureGroup("Optional exact interval") {
                     if editor.values.spans.count > 1 {
                         Text("This record contains separate effective segments. A continuous interval may include paused time.").font(.caption)
@@ -441,39 +648,37 @@ struct InvestmentEditorView: View {
                 }
             }
             Section("Experience (optional)") {
-                Picker("Experience",selection:Binding(get:{editor.values.feeling ?? 0},set:{editor.values.feeling = $0 == 0 ? nil : $0; persist()})) {
+                Picker("Experience",selection:feelingBinding) {
                     Text("Not filled").tag(0)
                     ForEach(1...5,id:\.self) { Text(SleepFormatting.feeling($0)).tag($0) }
                 }.accessibilityIdentifier("investment-feeling")
-                TextField("What did you do or feel?",text:$editor.values.note,axis:.vertical).lineLimit(3...8)
+                TextField("What did you do or feel?",text:$editor.values.note,axis:.vertical).focused($inputFocused).lineLimit(3...8)
                     .accessibilityIdentifier("investment-note").onChange(of:editor.values.note) { _, _ in persist() }
             }
             if let error = editor.error { Section { Text(error).foregroundStyle(.red).accessibilityIdentifier("investment-save-error") } }
             if editor.duplicate {
-                Section("Possible matching records") {
-                    ForEach(workspace.sessions.filter { record in
-                        guard record.participantID == editor.participantID, record.id != editor.editingSessionID else { return false }
-                        let a = editor.values, b = record.values
-                        if a.evidence == .intervals && b.evidence == .intervals { return a.spans.contains { x in b.spans.contains { y in x.start < y.end && y.start < x.end } } }
-                        return a.day == b.day && a.seconds == b.seconds
-                    },id:\.id) { record in
-                        NavigationLink { InvestmentSessionDetailView(id:record.id) } label: { Text(workspace.name(record.activityID) + " · " + record.values.day + " · " + InvestmentFormatting.duration(record.values.seconds)) }
-                    }
-                }
+                InvestmentSessionPage(selection:.init(rows:[],daySeconds:[:],orderedSessionIDs:editor.duplicateIDs),generation:workspace.reviewGeneration,key:editor.id.uuidString,title:"Possible matching records",showsContribution:false)
             }
             Section {
                 Button("Save activity") { save(false) }.accessibilityIdentifier("investment-save")
-                Button(editor.timerConfirmation ? "Close and keep pending" : "Close and keep draft") { if persist(isClosing:true) {dismiss()} }
+                Button(editor.timerConfirmation ? "Confirm later" : "Keep draft") { if persist(isClosing:true) {dismiss()} }.accessibilityIdentifier("investment-keep-draft")
                 if !editor.timerConfirmation { Button("Cancel draft",role:.destructive) { cancel = true } }
             }
         }.navigationTitle(editor.timerConfirmation ? "Confirm time investment" : "Record activity")
         .interactiveDismissDisabled(!editor.finished)
-        .toolbar { ToolbarItemGroup(placement:.keyboard) { Spacer(); Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),to:nil,from:nil,for:nil) } } }
+        .toolbar {
+            ToolbarItem(placement:.confirmationAction) {
+                if inputFocused {
+                    Button { inputFocused=false } label: { Image(systemName:"keyboard.chevron.compact.down").frame(minWidth:44,minHeight:44) }
+                        .accessibilityLabel("Done").accessibilityIdentifier("investment-dismiss-keyboard")
+                }
+            }
+        }
         .confirmationDialog("Cancel this draft?",isPresented:$cancel,titleVisibility:.visible) {
             Button("Cancel draft",role:.destructive) {
                 do {
                     if let revision = editor.operationRevision { try InvestmentService(context:context).command(.discard,id:editor.id,revision:revision) }
-                    editor.finished = true; workspace.refresh(context); dismiss()
+                    editor.finished=true; workspace.refresh(context); onSaved();dismiss()
                 } catch { editor.error = error.localizedDescription }
             }
         }
@@ -509,6 +714,12 @@ struct InvestmentEditorView: View {
             if let first = editor.values.spans.first, let last = editor.values.spans.last { start = first.start; end = last.end }
         }
     }
+    private var feelingBinding: Binding<Int> {
+        Binding(get:{editor.values.feeling ?? 0},set:{value in
+            editor.values.feeling = value == 0 ? nil:value
+            persist()
+        })
+    }
     @discardableResult private func persist(isClosing: Bool = false) -> Bool {
 #if DEBUG
         if isClosing {return editor.persist(context,commit:InvestmentReviewTestSupport.closeCommit)}
@@ -518,88 +729,159 @@ struct InvestmentEditorView: View {
     private func save(_ confirmed: Bool) {
         guard editor.hasValidDuration else { editor.error = InvestmentFailure.invalid.localizedDescription; return }
         do {
-            let service = InvestmentService(context:context)
-            if editor.timerConfirmation {
-                guard let revision = editor.operationRevision else { throw InvestmentFailure.missing }
-                try service.saveTimer(id:editor.id,revision:revision,values:editor.values,confirmDuplicate:confirmed)
-            } else {
-                try service.saveManual(id:editor.editingSessionID ?? editor.id,participantID:editor.participantID,activityID:editor.activityID,
-                    values:editor.values,expectedRevision:editor.editingRevision,confirmDuplicate:confirmed,draftID:editor.operationRevision == nil ? nil : editor.id)
-            }
-            editor.finished = true; workspace.refresh(context); dismiss()
-        } catch InvestmentFailure.duplicate { editor.duplicate = true; editor.showDuplicateDialog = true; editor.error = InvestmentFailure.duplicate.localizedDescription }
+#if DEBUG
+            try workspace.saveEditor(editor,context:context,confirmDuplicate:confirmed,commit:InvestmentReviewTestSupport.saveCommit)
+#else
+            try workspace.saveEditor(editor,context:context,confirmDuplicate:confirmed)
+#endif
+            onSaved();dismiss()
+        } catch InvestmentFailure.duplicate {
+            do {editor.showDuplicates(try InvestmentService(context:context).matchingSessionIDs(values:editor.values,participantID:editor.participantID,excluding:editor.editingSessionID ?? editor.id))}
+            catch {editor.error=error.localizedDescription;return}
+            editor.error = InvestmentFailure.duplicate.localizedDescription
+        }
         catch { editor.error = error.localizedDescription }
     }
 }
 
 struct InvestmentHistoryView: View {
     @Environment(InvestmentWorkspace.self) private var workspace
+    @Environment(\.modelContext) private var context
     @State private var days = 0
     @State private var activity: UUID?
     @State private var selectedDay: String?
-    private var rows: [InvestmentContribution] {
-        InvestmentReview.window((try? workspace.contributions()) ?? [],days:days == 0 ? nil : days,
-            today:ImportantCivilDay(workspace.reference),activityID:activity)
+    @State private var browseDate = Date()
+    @State private var earlierMonth = false
+    private var today: ImportantCivilDay { ImportantCivilDay(workspace.reference) }
+    private var previewBounds: (ImportantCivilDay,ImportantCivilDay) {
+        if days != 0 { return (today.adding(days:1-days)!,today) }
+        if earlierMonth {
+            let chosen = ImportantCivilDay(browseDate)
+            let first = ImportantCivilDay(year:chosen.year,month:chosen.month,day:1)
+            let next = ImportantCivilDay.utcCalendar.date(byAdding:.month,value:1,to:first.date!)!
+            return (first,ImportantCivilDay(next,timeZone:TimeZone(secondsFromGMT:0)!).adding(days:-1)!)
+        }
+        return (today.adding(days:-29)!,today)
     }
-    private var totals: [(day:String,seconds:Double)] {
-        let grouped = Dictionary(grouping:rows,by:\.day)
-        return grouped.keys.sorted().map { ($0,grouped[$0]!.reduce(0) { $0 + $1.seconds }) }
-    }
-    private var visibleSessions: [InvestmentSessionTransfer] {
-        let ids = Set(rows.filter { selectedDay == nil || $0.day == selectedDay }.map(\.sessionID))
-        return workspace.sessions.filter { ids.contains($0.id) }.sorted { a,b in a.values.day == b.values.day ? a.createdAt > b.createdAt : a.values.day > b.values.day }
+    private func moveMonth(_ delta: Int) {
+        var calendar = Calendar(identifier:.gregorian); calendar.timeZone = .current
+        if let next = calendar.date(byAdding:.month,value:delta,to:browseDate) { browseDate=next }
     }
     var body: some View {
         List {
             Section {
-                Picker("Review period",selection:$days) { Text("All time").tag(0); Text("7 days").tag(7); Text("30 days").tag(30) }
+                Picker("Review period",selection:Binding(get:{days},set:{days=$0;selectedDay=nil})) { Text("All time").tag(0); Text("7 days").tag(7); Text("30 days").tag(30) }
                     .pickerStyle(.segmented).accessibilityIdentifier("investment-review-period")
                 Picker("Activity filter",selection:$activity) {
                     Text("All activities").tag(nil as UUID?)
                     ForEach(workspace.myActivities,id:\.id) { Text($0.name).tag(Optional($0.id)) }
                 }
                 Text("Recorded investment is not a measure of skill. Days without records mean no record, not proven zero effort.").font(.caption)
-                let chosen = selectedDay.map { day in rows.filter { $0.day == day } } ?? rows
-                LabeledContent("Recorded duration",value:InvestmentFormatting.duration(chosen.reduce(0) { $0 + $1.seconds }))
-                    .accessibilityIdentifier("investment-review-total")
-                LabeledContent("Sessions",value:String(InvestmentReview.count(chosen))).accessibilityIdentifier("investment-review-count")
             }
-            if !totals.isEmpty {
-                Section("Daily recorded investment") {
-                    Chart(totals.suffix(30),id:\.day) { value in
-                        BarMark(x:.value("Day",value.day),y:.value("Minutes",value.seconds/60))
-                    }.frame(height:180).accessibilityLabel("Daily recorded investment")
-                    Text("Select a day below to inspect its contribution. Cross-day sessions count once in each review period.").font(.caption)
-                    if selectedDay != nil { Button("Show whole period") { selectedDay = nil } }
-                    ForEach(totals.reversed(),id:\.day) { value in
-                        Button { selectedDay = selectedDay == value.day ? nil : value.day } label: {
-                            ViewThatFits(in:.horizontal) {
-                                HStack { Text(value.day); Spacer(); Text(InvestmentFormatting.duration(value.seconds)).monospacedDigit() }
-                                VStack(alignment:.leading,spacing:4) {
-                                    Text(value.day)
-                                    Text(InvestmentFormatting.duration(value.seconds)).monospacedDigit()
-                                }
-                            }
-                        }.accessibilityIdentifier("investment-day-\(value.day)")
+            if let review = workspace.review {
+                let selection = review.selection(days:days == 0 ? nil : days,today:today,activityID:activity,day:selectedDay)
+                Section(selectedDay ?? String(localized:"Current period")) {
+                    LabeledContent("Recorded duration",value:InvestmentFormatting.duration(selection.seconds)).accessibilityIdentifier("investment-review-total")
+                    LabeledContent("Sessions",value:String(selection.count)).accessibilityIdentifier("investment-review-count")
+                    if selectedDay != nil { Button("Show whole period") { selectedDay = nil }.accessibilityIdentifier("investment-clear-day") }
+                    InvestmentDateField("Inspect date",selection:$browseDate,displayedComponents:.date).accessibilityIdentifier("investment-inspect-date")
+                    Button("Inspect selected date") {
+                        let chosen=ImportantCivilDay(browseDate)
+                        let period=InvestmentReview.periodForInspection(days:days,day:chosen,today:today)
+                        if period != days {days=period;earlierMonth=true}
+                        selectedDay=chosen.identifier
                     }
                 }
+                Section("Daily recorded investment") {
+                    if days == 0 {
+                        Toggle("Preview selected month",isOn:$earlierMonth)
+                        if earlierMonth {
+                            Button(String(localized: "Previous month")) { moveMonth(-1) }.accessibilityIdentifier("investment-previous-month")
+                            Button(String(localized: "Next month")) { moveMonth(1) }.accessibilityIdentifier("investment-next-month")
+                        }
+                    }
+                    let bounds = previewBounds
+                    Text(bounds.0.identifier + " → " + bounds.1.identifier).font(.caption).accessibilityIdentifier("investment-preview-range")
+                    Text("The chart previews this date range. All-time totals include the complete saved history.").font(.caption)
+                    let dates = selection.daySeconds.keys.sorted().filter { $0 >= bounds.0.identifier && $0 <= bounds.1.identifier }
+                    Chart(dates,id:\.self) { day in
+                        let parts = day.split(separator:"-").compactMap { Int($0) }
+                        if parts.count == 3, let date = ImportantCivilDay(year:parts[0],month:parts[1],day:parts[2]).date {
+                            BarMark(x:.value("Day",date),y:.value("Minutes",selection.daySeconds[day,default:0]/60))
+                        }
+                    }.chartXScale(domain:bounds.0.date!...bounds.1.adding(days:1)!.date!)
+                        .chartXAxis { AxisMarks(values:.stride(by:.day,count:days == 7 ? 1 : 7)) { _ in AxisGridLine(); AxisValueLabel(format:.dateTime.month().day(),centered:true) } }
+                        .environment(\.timeZone,TimeZone(secondsFromGMT:0)!)
+                        .frame(height:180).accessibilityLabel("Daily recorded investment")
+                    Text("Select a day below to inspect its contribution. Cross-day sessions count once in each review period.").font(.caption)
+                    if dates.isEmpty { Text("No records in this selection") }
+                    ForEach(dates.reversed(),id:\.self) { day in
+                        Button { selectedDay = day } label: {
+                            ViewThatFits(in:.horizontal) {
+                                HStack { Text(day); Spacer(); Text(InvestmentFormatting.duration(selection.daySeconds[day,default:0])).monospacedDigit() }
+                                VStack(alignment:.leading,spacing:4) { Text(day); Text(InvestmentFormatting.duration(selection.daySeconds[day,default:0])).monospacedDigit() }
+                            }.frame(minHeight:44).contentShape(.rect)
+                        }.accessibilityIdentifier("investment-day-\(day)")
+                    }
+                }
+                InvestmentSessionPage(selection:selection,generation:workspace.reviewGeneration,key:"\(today.identifier)-\(days)-\(activity?.uuidString ?? "all")-\(selectedDay ?? "period")")
+            } else {
+                Section {
+                    Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+                    Button("Retry") { workspace.refresh(context,retry:true) }
+                }
             }
-            Section("Saved sessions") {
-                if visibleSessions.isEmpty { Text("No records in this selection") }
-                ForEach(visibleSessions,id:\.id) { session in
+        }.navigationTitle("History and review")
+        .onReceive(NotificationCenter.default.publisher(for:.NSCalendarDayChanged)) { _ in workspace.reference=Date() }
+        .onReceive(NotificationCenter.default.publisher(for:UIApplication.significantTimeChangeNotification)) { _ in workspace.reference=Date() }
+        .onChange(of:activity) { _, _ in selectedDay = nil }
+    }
+}
+
+/// Only the IDs on this page are fetched again as full formal records. A missing selected day stays empty.
+private struct InvestmentSessionPage: View {
+    let selection: InvestmentReviewSelection
+    let generation: Int
+    let key: String
+    var title: LocalizedStringKey = "Saved sessions"
+    var showsContribution = true
+    @Environment(InvestmentWorkspace.self) private var workspace
+    @Environment(\.modelContext) private var context
+    @State private var offset = 0
+    @State private var records: [InvestmentSessionTransfer] = []
+    @State private var loadedKey: String?
+    @State private var error: String?
+    @State private var retry = 0
+    private var loadKey: String { "\(generation)-\(key)-\(offset)-\(retry)" }
+    var body: some View {
+        Section(title) {
+            Text("Newest first · 20 records per page").font(.caption).task(id:loadKey) { load() }
+            if let error { Text(error).foregroundStyle(.red); Button("Retry") { retry += 1 } }
+            else if loadedKey != loadKey { ProgressView() }
+            else if records.isEmpty { Text("No records in this selection") }
+            else {
+                ForEach(records,id:\.id) { session in
                     NavigationLink { InvestmentSessionDetailView(id:session.id) } label: {
                         VStack(alignment:.leading) {
-                            Text(workspace.name(session.activityID)); Text(session.values.day + " · " + InvestmentFormatting.duration(session.values.seconds)).font(.caption)
-                            let contribution = rows.filter { $0.sessionID == session.id && (selectedDay == nil || $0.day == selectedDay) }.reduce(0) { $0 + $1.seconds }
-                            if abs(contribution-session.values.seconds) > 0.001 { Text("Contribution in selection: \(InvestmentFormatting.duration(contribution))").font(.caption) }
+                            Text(workspace.name(session.activityID))
+                            Text(session.values.day + " · " + InvestmentFormatting.duration(session.values.seconds)).font(.caption)
+                            let contribution = selection.rows.filter { $0.sessionID == session.id }.reduce(0) { $0 + $1.seconds }
+                            if showsContribution && abs(contribution-session.values.seconds) > 0.001 { Text("Contribution in selection: \(InvestmentFormatting.duration(contribution))").font(.caption) }
                         }
                     }.accessibilityIdentifier("investment-session-\(session.id)")
                 }
             }
-        }.navigationTitle("History and review")
-        .onChange(of:days) { _, _ in selectedDay = nil }
-        .onChange(of:activity) { _, _ in selectedDay = nil }
-        .onChange(of:workspace.sessions) { _, _ in if let selectedDay, !rows.contains(where: { $0.day == selectedDay }) { self.selectedDay = nil } }
+            if offset > 0 { Button("Previous page") { offset = max(0,offset-20) } }
+            if offset+20 < selection.count { Button("Next page") { offset += 20 } }
+        }.onChange(of:key) { _,_ in offset = 0 }
+        .onChange(of:generation) { _,_ in offset = 0 }
+    }
+    private func load() {
+        do {
+            let ids = selection.pageIDs(offset:offset)
+            records=try workspace.reader.page(context.container,ids:ids)
+            error = nil; loadedKey = loadKey
+        } catch { records = []; self.error = error.localizedDescription; loadedKey = loadKey }
     }
 }
 
@@ -611,14 +893,17 @@ struct InvestmentSessionDetailView: View {
     @State private var editor: InvestmentEditorState?
     @State private var deleting = false
     @State private var error: String?
-    private var session: InvestmentSessionTransfer? { workspace.sessions.first { $0.id == id } }
+    @State private var session: InvestmentSessionTransfer?
+    @State private var readError: String?
+    @State private var retry = 0
     var body: some View {
         List {
             if let session {
                 Section {
                     Text(workspace.name(session.activityID)).font(.title2)
                     Text(session.values.day); Text(InvestmentFormatting.duration(session.values.seconds)).monospacedDigit()
-                    Text(InvestmentFormatting.evidence(session.values.evidence)); Text(session.values.timeZoneID).font(.caption)
+                    Text(InvestmentFormatting.evidence(session.values.evidence))
+                    DisclosureGroup("Time details") { Text(session.values.timeZoneID).font(.caption) }
                     Text(session.values.source == .timer ? "Recorded with timer" : "Manually recorded").font(.caption)
                     if session.values.corrected { Text("Time evidence was explicitly corrected").font(.caption) }
                     if session.values.day > ImportantCivilDay(Date(),timeZone:TimeZone(identifier:session.values.timeZoneID)!).identifier {
@@ -635,16 +920,27 @@ struct InvestmentSessionDetailView: View {
                     }.environment(\.timeZone,TimeZone(identifier:session.values.timeZoneID)!)
                 }
                 Section("Contribution by original local day") {
-                    let contributions = (try? InvestmentReview.contributions(id:id,activityID:session.activityID,values:session.values)) ?? []
-                    ForEach(contributions) { row in LabeledContent(row.day,value:InvestmentFormatting.duration(row.seconds)) }
+                    if let review = workspace.review {
+                        ForEach(review.contributions.filter { $0.sessionID == id }) { row in
+                            LabeledContent(row.day,value:InvestmentFormatting.duration(row.seconds)).accessibilityIdentifier("investment-original-day-\(row.day)")
+                        }
+                    } else {
+                        Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+                        Button("Retry") { workspace.refresh(context,retry:true) }
+                    }
                 }
                 Section {
                     Button("Edit record") { editor = workspace.edit(session); editor?.persist(context) }.accessibilityIdentifier("investment-edit-session")
                     Button("Delete record",role:.destructive) { deleting = true }.accessibilityIdentifier("investment-delete-session")
                 }
-            } else { Text("This item is no longer available.") }
+            } else if let readError {Text(readError).foregroundStyle(.red);Button("Retry") {retry += 1}}
+            else {Text("This item is no longer available.")}
             if let error { Text(error).foregroundStyle(.red) }
         }.navigationTitle("Time investment detail")
+        .task(id:"\(id)-\(workspace.reviewGeneration)-\(retry)") {
+            do {session=try workspace.session(id:id,context:context);readError=nil}
+            catch {session=nil;readError=error.localizedDescription}
+        }
         .sheet(item:$editor) { editor in NavigationStack { InvestmentEditorView(editor:editor) } }
         .confirmationDialog("Delete this time investment record?",isPresented:$deleting,titleVisibility:.visible) {
             Button("Delete record",role:.destructive) {
@@ -660,6 +956,22 @@ struct InvestmentSessionDetailView: View {
 #if DEBUG
 @MainActor private enum InvestmentReviewTestSupport {
     static var closeFailureConsumed=false
+    static var saveFailureConsumed=false
+    static var renameFailureConsumed=false
+    static func renameCommit(_ context:ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        if args.contains("-PGOSUITesting"),args.contains("-PGOSRenameWriteFailure"),!renameFailureConsumed {
+            renameFailureConsumed=true;throw CocoaError(.fileWriteOutOfSpace)
+        }
+        try context.save()
+    }
+    static func saveCommit(_ context: ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentSaveWriteFailure"),!saveFailureConsumed {
+            saveFailureConsumed=true;throw CocoaError(.fileWriteOutOfSpace)
+        }
+        try context.save()
+    }
     static func draftCommit(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
         if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentCloseWriteFailure"),!closeFailureConsumed {throw CocoaError(.fileWriteOutOfSpace)}
@@ -672,6 +984,41 @@ struct InvestmentSessionDetailView: View {
             throw CocoaError(.fileWriteOutOfSpace)
         }
         try context.save()
+    }
+    static func seedUsageHistoryIfRequested(_ context: ModelContext) throws {
+        let args=ProcessInfo.processInfo.arguments
+        guard args.contains("-PGOSUITesting"),(args.contains("-PGOSInvestmentUsageHistory") || args.contains("-PGOSInvestmentReviewFixDates")) else {return}
+        let aid=UUID(uuidString:"30000000-1111-4222-8333-444444444444")!
+        guard !(try context.fetch(FetchDescriptor<InvestmentActivity>()).contains {$0.id == aid}) else {return}
+        let service=InvestmentService(context:context)
+        _=try service.createActivity(name:"Synthetic setup")
+        let p=try context.fetch(FetchDescriptor<InvestmentParticipant>()).first!
+        let a=InvestmentActivity(id:aid,participantID:p.id,name:"Synthetic history archive");a.isArchived=true;context.insert(a)
+        let zone=TimeZone.current,today=ImportantCivilDay(Date())
+        func insertFact(_ id: UUID, _ values: InvestmentValues, _ date: Date) throws {
+            context.insert(try InvestmentSession(id:id,participantID:p.id,activityID:aid,values:values,now:date))
+            context.insert(try InvestmentOperation(id:id,participantID:p.id,activityID:aid,
+                timer:.init(state:.saved,values:values,target:nil,checkpointAt:date),now:date))
+        }
+        if args.contains("-PGOSInvestmentReviewFixDates") {
+            a.isArchived=false
+            let old=ImportantCivilDay(year:2026,month:9,day:1)
+            try insertFact(UUID(uuidString:"30000002-1111-4222-8333-444444444444")!,InvestmentValues(day:old.identifier,timeZoneID:zone.identifier,seconds:2700,evidence:.dateDuration,source:.manual,note:"Synthetic September 1 detail"),Date())
+            try insertFact(UUID(),InvestmentValues(day:today.identifier,timeZoneID:zone.identifier,seconds:900,evidence:.dateDuration,source:.manual),Date())
+            try context.save();try InvestmentIntegrity.validate(context:ModelContext(context.container))
+            InvestmentChanges.publish(.all,container:context.container)
+            return
+        }
+        for index in 0..<50 {
+            let day=today.adding(days:-index)!
+            let values=InvestmentValues(day:day.identifier,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual,note:"Synthetic historical day \(index)")
+            try insertFact(UUID(),values,day.date!)
+        }
+        let yesterday=today.adding(days:-1)!,start=yesterday.instant(minutes:1430,timeZone:zone)!
+        let cross=InvestmentValues(day:yesterday.identifier,timeZoneID:zone.identifier,seconds:1200,evidence:.intervals,source:.timer,
+            spans:[.init(start:start,end:start.addingTimeInterval(300)),.init(start:start.addingTimeInterval(900),end:start.addingTimeInterval(1800))],note:"Synthetic paused cross-day fact")
+        try insertFact(UUID(uuidString:"30000001-1111-4222-8333-444444444444")!,cross,Date())
+        try context.save();try InvestmentIntegrity.validate(context:ModelContext(context.container));InvestmentChanges.publish(.all,container:context.container)
     }
     static func seedSegmentsIfRequested(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
@@ -692,6 +1039,67 @@ struct InvestmentSessionDetailView: View {
         clock.wall.addTimeInterval(600);clock.uptime += 600;try command(.finish)
         let pending=try service.operations().first {$0.id == id}!
         try service.saveTimer(id:id,revision:pending.revision,values:pending.timer.values)
+    }
+}
+#endif
+
+#if DEBUG
+private final class InvestmentRenameImportBarrier: @unchecked Sendable {
+    let semaphore=DispatchSemaphore(value:0)
+    private let lock=NSLock()
+    private var released=false
+    func release() {lock.lock();let first = !released;released=true;lock.unlock();if first {semaphore.signal()}}
+}
+@MainActor @Observable private final class InvestmentRenameImporterTestSupport {
+    static let shared=InvestmentRenameImporterTestSupport()
+    static var enabled:Bool {let args=ProcessInfo.processInfo.arguments;return args.contains("-PGOSUITesting") && args.contains("-PGOSRenameImporterTest")}
+    var held=false
+    var finished=false
+    var error:String?
+    private var started=false
+    private let barrier=InvestmentRenameImportBarrier()
+    func release() {barrier.release()}
+    func start(_ context:ModelContext) {
+        guard !started else {return};started=true
+        do {
+            let root=StorePublication.root(for:context.container),media=MediaStore(rootURL:root),inbox=ShareInbox(root:root.appendingPathComponent("RenameTestInbox"))
+            let file=root.appendingPathComponent("rename-test-image.png")
+            let renderer=UIGraphicsImageRenderer(size:CGSize(width:2,height:2))
+            let data=renderer.pngData {_ in UIColor.blue.setFill();UIRectFill(CGRect(x:0,y:0,width:2,height:2))}
+            try data.write(to:file)
+            let attachmentID=UUID()
+            let attachment=CaptureAttachment(id:attachmentID,filename:attachmentID.uuidString.lowercased(),contentType:"image/png",byteCount:Int64(data.count),checksum:try ShareInbox.checksum(file))
+            try inbox.publish(.init(text:"Synthetic rename concurrency",images:[attachment]),files:[attachment.id:file])
+            let importer=ExternalCaptureImporter(container:context.container,mediaStore:media,inbox:inbox),barrier=self.barrier
+            importer.checkpoint={ phase in
+                if phase == "attachment" {
+                    Task { @MainActor in self.held=true }
+                    guard barrier.semaphore.wait(timeout:.now()+45) == .success else {throw CaptureError.providerTimedOut}
+                }
+            }
+            DispatchQueue.global().asyncAfter(deadline:.now()+40) {barrier.release()}
+            Task {
+                do {_ = try await importer.scanReport();self.finished=true}
+                catch {self.error=error.localizedDescription}
+                self.held=false
+            }
+        } catch {self.error=error.localizedDescription}
+    }
+}
+private struct InvestmentRenameImporterTestControls:View {
+    @Query private var activities:[InvestmentActivity]
+    @Environment(\.modelContext) private var context
+    private var support:InvestmentRenameImporterTestSupport { .shared }
+    var body:some View {
+        Section("Synthetic importer control") {
+            Text(activities.map(\.name).sorted().joined(separator:" | ")).accessibilityIdentifier("rename-test-canonical-name")
+            Text("\(activities.count)").accessibilityIdentifier("rename-test-activity-count")
+            Button("Begin synthetic importer") {support.start(context)}.accessibilityIdentifier("rename-test-import-start")
+            Text(support.held ? "Importer holds publication":"Importer idle").accessibilityIdentifier("rename-test-import-state")
+            Button("Release synthetic importer") {support.release()}.accessibilityIdentifier("rename-test-import-release")
+            if support.finished {Text("Importer finished").accessibilityIdentifier("rename-test-import-finished")}
+            if let error=support.error {Text(error)}
+        }
     }
 }
 #endif

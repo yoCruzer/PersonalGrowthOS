@@ -1,3 +1,317 @@
+# 2026-10-20 计数器、真实Actions与只读清点 — READY_FOR_OWNER_DEVICE_GATE
+
+本授权批次已完成。产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`；最终产品/测试候选 **`3ee3cb6a846a296baca7f91b705a67c10dcbe51f`**。Owner直接批准后均普通推送原Draft PR #13，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`不变；本交付随后只有Docs，交付完整SHA由PR head、最终回复与本机final-delivery-proof.json核对。
+
+真实[run39387986862](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39387986862)必选检查全部PASS：App/Share/Widget unsigned Release；完整托管iOS Unit **583=582PASS/0FAIL/1SKIP**；关键UI smoke **5/5PASS**。唯一方法SKIP仍是需隔离32MB HFS+卷的原低空间方法；optional extended job在PR事件按设计SKIPPED。实际checkout为PR merge **`0e5169a79cc530f063fa730666fd849538340281`**，与head tree相同，不能称为直接checkout head。标准GitHub-hosted ARM64 xcode-27 / image 20261012.0260.1，macOS27.0.1(26A434)、Xcode27.0(27A266a)、iOS SDK/runtime27.0(24A434)、动态新建iPhone13mini。
+
+首轮[run39385273807](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/39385273807)仍为FAIL：Release PASS、smoke5/5PASS、Unit579PASS/2FAIL/1SKIP。两测试夹具写死Shanghai，已改为真实current前置并新增未回原区继续隔离反例，未改生产逻辑/删断言/增加skip；本机相关37/37PASS。未成功改变Swift current的NSTimeZone.default探针不是业务红例，记录保留。独立reviewer核对固定候选、原图/测量、真实CI与30分支分类，无必须补项，见[证据与原文](Evidence/CI20261020/README.md)。
+
+P2实际生产PNG20样本最低 **7.273152:1**（旧2.305181:1），浅/深/按下、普通/最大辅助字号与Today/Growth/详情0→1→0/周期累计/导航已验证；44×45pt与禁用状态保持。只读清点29远端/8本地/30并集、13开放Draft：11叠加基底、3必须保留、13合并后候选、3疑似重复，其余主分类0；Todo脏改动与失效worktree UNKNOWN另列保留。没有删除、改base、merge、force、tag或发布。
+
+停在Owner设备门。真机D1–D4、真实VoiceOver/相机权限、AlarmKit正向、Share/Safari环境失败、物理低空间SKIP/NOT_RUN与O-01非阻断UNCONFIRMED保持；不以CI替代设备结论。[完整执行](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md) / [分支清单](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)。以下均为历史阶段。
+
+---
+
+# 2026-10-20 计数器、Actions与只读清点 — WAITING_DIRECT_PUSH_AUTHORIZATION
+
+最后产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`，最后产品/测试 `d84bd5f1529214b57e503cd89904c011302a0154`。计数器本地共享消费者矩阵浅/深各2/2、窄按下各1/1、相邻Habit+Composition Unit99/99与Debug/unsigned Release PASS；20个实际PNG样本最低7.273:1，原2.305缺陷已补修；设置加号为宿主取图差异。初轮2PASS/2FAIL及两轮sourceUnchanged=false、1秒采集抓帧不足的边界原样保留，详见 [本轮执行](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md)。
+
+未参与实现的独立reviewer已终审固定候选51f491c，本地P2/清点可关闭，无新增必须补修项；[原文](Evidence/CounterContrast20261020/independent-review-local.txt) SHA256 `06cb6a203a7d4b2b797623857d7ba7d14fe077287640ac007d5074e7fff2e986`。51f干净增量Release PASS，实包App provenance完整51f SHA/Dirty=false、三包均原身份/1.0(7)/min17/unsigned。14轮实际记录保留。
+
+Actions三基础lane及独立按需复杂UI已本地实现，尚无真实run。普通推送原PR #13被自动审批审查两次以缺少直接目的地/内容授权拒绝，已向Owner发精确确认问题，收到前不旁路推送。PR仍Draft，远端50f7263、base codex/time-investment-v1不变。本轮整体未完成，不能称READY；确认后继续普通push→跟踪真实run→修复→独立终审。
+
+只读清点29远端/8本地/30并集、13开放Draft；11基底/3必须保留/13合并后候选/3疑似重复；其余主分类0。附加Todo脏状态与失效worktree UNKNOWN保留。独立reviewer三个准确性问题已闭环并独立重算一致，清点报告完成，不等待删除批准。无分支/worktree清理、base/default修改或发布。主目录三项未知改动保持。
+
+本轮不执行旧G2；D1–D4、真实VoiceOver/相机权限、AlarmKit正向、Share/Safari、低空间与O-01旧状态继续保留。完成真实CI与终审后才停READY_FOR_OWNER_DEVICE_GATE，不代Owner设备验收。
+
+---
+
+# 2026-10-20 计数器对比度、Actions 与只读分支清点 — IN_PROGRESS
+
+本轮按 Owner 最新连续授权执行：复核并关闭计数器启用图标 P2、落地并实际运行标准 hosted macOS Actions、完整只读清点分支。原 PR #13 / base `codex/time-investment-v1` 不变，原工作树从 c7f5a38 安全快进至 50f7263，后续有效 UI 提交全部保留。主目录未知改动不动。
+
+新增浅/深色胶囊与启用/按下图标成对颜色；保留零次禁用、44×45pt、动态字号及业务语义。正在运行真实生产 App 四角外观/字号、Today/Growth/详情往返与截图测量。此前 UI 报告关于蓝色图标的关闭结论不足，本轮 P2 复核替代该项，历史原图/失败保留。Actions 和清点尚未验收，不能声明 READY。本轮不执行旧 G2 或任何分支清理，不 tag/发布/merge/改base。
+
+---
+
+# 2026-10-20 UI 可读性与本地化专项 — READY_FOR_OWNER_DEVICE_GATE
+
+本轮固定产品/测试候选 `537a6f9103f6ccbf08b8634edf6dfc976247b4c8`；习惯最终矩阵在产品相同的 `fe4b0f77d4ea31cc2d3510952355dbf5a02a8301` 验证，之后仅Investment新方法改点击原生子Switch并新增value断言。短名默认1+1行、长名/大字号适配、图标与禁用/按下/真实深色、本地化8键/默认回退/星期/5今天/相机用途及额外Sleep点击区域均已闭环；业务统计与持久化未改。
+
+最终中文定向Unit111/111、英文3/3；习惯浅色3/3、真Dark AX1/1、计时中文浅/深各1/1均PASS。旧timer在1PASS/1FAIL轮中单独PASS，其他未改消费者按未改消费者定义/测试方法范围复用，不拼称全轮全绿。Debug和unsigned generic iOS Release PASS；实包6bundle身份/版本/中英资源、App provenance/弱链接、Release未签名核对通过。实际失败及28轮命令/截图见 [执行与验收](UI_READABILITY_LOCALIZATION_20261020_ZH.md)、[台账](UI_READABILITY_LOCALIZATION_20261020_RUNS.json)、[截图](Evidence/UI20261020/README.md)。独立终审无未关闭finding，见 [REVIEW](UI_READABILITY_LOCALIZATION_20261020_REVIEW_ZH.md)。
+
+Draft PR #13/base `codex/time-investment-v1` 保持，已保留远端CI规划 `cd8786b`；独立worktree普通提交/推送，主目录与并行未知改动不动。此后仅Docs交付，不重建未改产品。下一边界是Owner既有设备门：本轮真机/真实VoiceOver/相机权限弹窗/CI NOT_RUN；D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN及O-01非阻断UNCONFIRMED保持。不merge/force/tag/Archive/TestFlight。
+
+---
+
+以下为历史交接，不能替代本轮结论。
+
+# PR #13 终态复核限定补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-20）
+
+固定 RECHECK_GOAL_SHA `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`；最终干净产品/测试 SHA `1b150068e76f4d7e7a6defcd51f10622951f4b4b`，产品实现 `2b0d4917342d03b0f9e5323a1ef2cf58447953fb`（之后仅旧往返测试一行依赖隔离）。S-A→S-C 连续完成，TC-01/P2、TC-02/P2、TC-03/P3 均经生产链红例确认并关闭；无本轮范围内未关闭 confirmed P0/P1/P2 或明确 P3。旧 READY 未被当作本轮通过依据，原 FAIL/SKIP 与分轮保留。
+
+- TC-01：真V11→冻结旧f1真实complete/skip与deleteList→两渠道B accepted→等偏移不同identifier的生产refresh/quarantine→实际终止祖先编辑器同值/同渠道应用未来；仅开放后继新代次/native唯一，来源状态/代次、历史/计划/截止/Entry/来源关系保留。未确认取消不并行、失败回滚、冷开/幂等与SystemStop/seriesStop/健康metadata反证完成，原open入口保持。
+- TC-02/03：真实AppShell/设置修改失败→未确认移除→off持久→整个旧根和两Scope弱引用释放→新根启动对账。native仍在/已无/首次冷清失败，daily/weekly均覆盖；真实根query挂起→实际设置新B同值/异值/off受票据+共享gate保护，不删其他类别、不申请权限/开启提醒。未确认清理真实设置重试成功后native0、pending=false、未确认文案与重试按钮同步消失；同Scope成功终态亦覆盖。
+
+同一clean `1b15006`：完整 Unit **579=578PASS/0FAIL/1SKIP**；关键 UI **3/3PASS**；Debug 与 unsigned generic iOS Release **PASS**。唯一SKIP仍为需隔离32MB HFS+图的物理低空间方法。实包App/Share/Widget原IDs、1.0(7)/min17、完整provenance/Dirty=false、AlarmKit弱链接/中英用途均核对；Release三包未签名。四轮142文件manifest同字节且匹配Git。独立reviewer未写实现，先提反例再审固定候选、未改消费者及本机原始证据，终审原文SHA256 `6b75465420b1cfd5043d275ea4c8ba56373f0dddc4cee95cdcf39677e9dbe3f9` 见REVIEW。
+
+[EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md)、[ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)、[REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md) 与 [本轮21次运行台账](USAGE_REMEDIATION_20261020_TERMINAL_RECHECK_RUNS.json) 保存实际命令/环境/计数/hash和复用依据；原证据根 `/tmp/pgos-pr13-recheck-evidence`。此前完整Unit在2b为579=577PASS/1FAIL/1SKIP（旧往返方法依赖宿主睡眠偏好）；仅测试隔离后重新完整运行最终门，未拼称历史全绿。旧19/38轮、黑图局限及补验保持。
+
+沿原worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、原分支 `codex/usage-remediation-20261017`、唯一OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13) 普通commit/push，base `codex/time-investment-v1` / `5a70f01` 不变。此后纯文档交付SHA以本交付提交/PR head与本机final-delivery-proof.json核对，PR描述及最终回复列出完整值；纯Docs不重建产品。主目录三项未知改动保留。
+
+本地READY只表示本授权批次完成并停在Owner后续设备门。D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、CI NOT_RUN保持；O-01非阻断UNCONFIRMED。不操作私人设备/库、签名安装、merge、force push、tag、Archive或TestFlight。
+
+---
+
+以下为历史状态与原始结果，不能替代本轮结论。
+
+# PR #13 终态复核限定补修 — LOCAL_REVIEW_FIX_REQUIRED / FIXES_IN_PROGRESS（2026-10-20）
+
+固定 RECHECK_GOAL_SHA `ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627`；[Goal](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_FIX_GOAL_ZH.md) 与 [独立复核](USAGE_REMEDIATION_20261019_TERMINAL_RECHECK_REVIEW_ZH.md) 已全文读取。原干净 worktree 从 `d04fbf7` 安全快进至固定规格；远端无额外后续提交，唯一 OPEN Draft PR #13 / base `codex/time-investment-v1` (`5a70f01`) 已核对。本轮连续执行 S-A→S-C，旧 READY 只保留为历史，不代表本轮完成；规格接收未跑全量基线。
+
+本轮边界：TC-01/P2 终止祖先明确应用未来时恢复合法开放后继但不复活来源；TC-02/P2 每日/每周 off 清理责任跨整个根 owner 销毁及冷启动；TC-03/P3 清理确认成功后的文案与按钮一致。先登记来源/受影响对象、sheet/进程寿命、失败/成功终态的反例与反证，再最小修复；由未参与实现的独立 reviewer 先提反例，再审固定候选、未改调用者及本机原始证据。
+
+收敛后同一干净产品/测试 SHA 集中完整 Unit、必要关键 UI、Debug/unsigned Release 与实包核对；TC 关闭或严格生产反证、必要本地门及独立终审完成后才恢复 READY_FOR_OWNER_DEVICE_GATE。既有 RR-02、IR 主修复及取消/容量/Stop、计时/迁移/raw 原值/F5 保护保留，不重做 A–D 或扩展未知观察。主目录三项未知改动不动。D1–D4、AlarmKit 正向、Share/Safari、物理低空间和 CI 的旧状态保持；不操作私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+---
+
+# PR #13 终态一致性补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
+
+固定 TERMINAL_FIX_GOAL_SHA `6430a8570ce2d3528c37d491c1252f97066e8da9`；最终干净产品/测试 SHA `744e7729f103549184574e99e311ce5c380a4a16`（最后产品实现 `fcd1c9b0c310d757918133c2abd8868da6030b13`，之后仅测试窗口/截图修正）。TF-A→TF-D连续完成：RR-01 / IC-02均经完整生产链红例确认并修复，RR-02经真实raw writer原生实验证实主线程等待并修复；O-01保持非阻断UNCONFIRMED，不重复开项。
+
+- RR-01：真V11→旧f1普通编辑false，两渠道accepted→隔离/确认→实际TodoEditorView同时间/同渠道明确应用未来→新代次和唯一请求→幂等/冷开；旧deleteList、失败回滚、未确认取消、Stop/元数据等相反操作及旧override=true改值保护完成。
+- IC-02：daily/weekly真实08:00请求→改09:00挂起→实际sheet完全移除无B→当前错→确认移除/偏好off→重开可见错误；稳定Scope持反馈，当前ticket在共享gate内清理，清理query内晚到B不误删，未确认诚实pending并可重试。
+- RR-02：真实SleepService次日目标→raw BEGIN IMMEDIATE→refresh/observe/SwiftData.save，红例主probe等到ROLLBACK后；同锁try忙后主probe先于释放，保存未伪称成功；二次publisher真实busy仍自动恢复，fresh状态+观察瞬间fence保护回拨，正常生效/raw原值/原图/Todo V01/checkpoint相邻保护完成。
+
+同一clean `744e772`：Debug PASS；完整Unit **574=573PASS/0FAIL/1SKIP**；关键UI **3/3PASS**；unsigned generic iOS Release PASS。唯一SKIP是需隔离32MB HFS+图的物理低空间用例。实包App/Share/Widget原IDs、1.0(7)/min17、完整SHA/Dirty=false、AlarmKit弱链接/中英用途均核对，Release三包未签名；四轮142文件manifest一致且匹配Git。独立reviewer未写实现，先提反例，再核固定候选/未改消费者/原始xcresult、图、实包并复算；终审原文SHA256 `991c9453c63e715c8f9e546d9fb97b0ee43abbbddae5d2293aaba0adbac6364d` 见REVIEW。
+
+实际分轮及原FAIL/黑截图证据缺口与补验全部保留，见 [EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md)、[ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)、[REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md) 与 [本轮机器台账](USAGE_REMEDIATION_20261019_TERMINAL_FIX_RUNS.json)。原黑图不当可见PASS；修正后最终Unit的两张实际中文设置错误图及UI睡眠图已查看。无影响的旧UI仅按原有效证据保留，不冒称本轮全量UI。
+
+原worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、分支 `codex/usage-remediation-20261017`、唯一OPEN Draft [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base `codex/time-investment-v1` 保持。随后纯文档交付普通commit/push，文档交付SHA以所在交付提交/PR head和本机final-delivery-proof.json核对；纯Docs不重建产品。主目录三项未知改动保留。
+
+本地READY只表示本授权补修/验证/独立审查批次完成，停在Owner后续设备门。D1–D4 NOT_PASSED、AlarmKit原生正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN全部保持。不操作私人设备/库，不签名安装、merge、force push、tag、Archive或TestFlight。
+
+---
+
+以下为保留的历史阶段、原始失败及交接，旧状态不替代上述本轮结论。
+
+# PR #13 终态一致性补修 — FIXES_IN_PROGRESS（2026-10-19）
+
+固定 TERMINAL_FIX_GOAL_SHA `6430a8570ce2d3528c37d491c1252f97066e8da9`；已 fetch 并在干净原 worktree 从 `8cc085e` 安全快进接收规格，保留全部有效产品提交。沿原分支 `codex/usage-remediation-20261017`、唯一 Draft PR #13 / base `codex/time-investment-v1` 连续执行 TF-A→TF-D；旧 READY 仅为历史，不代表本轮完成。
+
+本轮唯一台账：RR-01（原 IC-01，隔离规则同值明确恢复）、RR-02（原 IC-V1，睡眠 observe 的真实 raw writer 竞争验证）、IC-02（设置页关闭后的当前失败收尾）；O-01 保持非阻断 UNCONFIRMED。先建立合法起点与生产链反例、登记相反操作及终态，独立 reviewer 先提反例且不参与实现。接收规格未运行全量基线，本轮原生结果尚未产生。
+
+完成必要修复/严格反证、同一干净候选集中验证和独立终审后才恢复 READY_FOR_OWNER_DEVICE_GATE。主目录 project.pbxproj、Localizable.xcstrings 和 xcodecloud 未知改动保留；设备、Share/Safari、低空间和 CI 旧状态不变，不操作私人设备/库或签名发行。
+
+---
+
+# PR #13 集成边界修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
+
+固定 INTEGRATION_FIX_GOAL_SHA `b495bead6c9910ec1e15631227c1146176819583`；最终产品/测试 SHA `53eeb1d3410630f836bbc3e713c79f9f157a4081`。IR-01～05 已关闭，V-01 为 **CONFIRMED_AND_FIXED**；O-01 保持非阻断 UNCONFIRMED，未预改导航。完整不变量/消费者矩阵、逐项 selector、原红例及补验见 [EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md)、[ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md) 和 [分轮机器摘要](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_RUNS.json)。
+
+同一 clean 产品 SHA 的最终集中门：Debug Simulator build-for-testing PASS；完整 Unit 568=567 PASS/0 FAIL/1 SKIP；关键 UI 7/7 PASS；unsigned generic iOS Release PASS。唯一 SKIP 是需隔离 32MB HFS+ 图的物理低空间方法。实际 App/Share/Widget 原身份、1.0(7)、minOS17、App 完整 SHA/Dirty=false、AlarmKit 弱链接与中英用途说明已核对，Release 三包均未签名。四份 142 文件 source manifest 相同，UI 18 PNG 与 manifest 的 19 项哈希保留；历史真实 FAIL/host 清理崩溃/驱动错误未改写。
+
+独立 reviewer `/root/integration_independent_reviewer` 未写实现，先登记跨边界反例，再核对固定候选、未改调用者及本机原始 log/xcresult/代表图/实包，独立复算证据。其新增 retired Alarm 查询故障已红绿修复；正式终审支持恢复本地 READY，无范围内未关闭 confirmed P0/P1/P2 及明确 P3。原文见 [REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)，SHA256 `a0c3e3f5cfabd7baa857439dd5e51449a8736ee87a1e11c4d078a130a0cd4c3f`。
+
+沿原 worktree `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`、原分支 `codex/usage-remediation-20261017` 完成纯文档交付并普通 push 唯一 [Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，base 保持 `codex/time-investment-v1`。交付 SHA 以实际文档 commit/PR head 及本机 final-delivery-proof.json 核对；产品仍固定上述 SHA，纯文档不重建。主目录原三项未知改动保留。
+
+本批本地修复、验证和审查已完成，停止在 Owner 后续设备门；READY 仅指本地停点。D1–D4 NOT_PASSED、AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持。不操作私人设备/库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+---
+
+# PR #13 集成边界独立复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-19）
+
+固定已审产品/测试 c55dc10fde79f1fe4dec18b03195119c2049830f；已审交付 c1fe56477f2573930a65a95c46d4b7ab7296d6af。新 [独立审查](USAGE_REMEDIATION_20261019_INTEGRATION_REVIEW_ZH.md) 确认 IR-01～04 四项P2和IR-05一项P3测试收尾；V-01为必须完成一次的raw SQLite写竞争原生有界验证，尚未确认卡顿；O-01为Weekly已打开页的非阻断UNCONFIRMED观察。未发现P0/P1。
+
+本地停点更新为 **LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY**，不再沿用下方c55交接的仅等设备状态。Owner已批准按 [集成边界修复Goal](USAGE_REMEDIATION_20261019_INTEGRATION_FIX_GOAL_ZH.md) 继续；INTEGRATION_FIX_GOAL_SHA由短引导prompt固定。IF-A～IF-D为同一连续本地授权，沿原分支codex/usage-remediation-20261017、唯一OPEN Draft PR #13、base codex/time-investment-v1续接；轻量核对工作树/祖先关系，保留未知改动和有效后续提交。
+
+本次仅记录独立审查并准备执行规格，没有实施产品修复、运行新原生测试、读取Mac原始xcresult/录屏/实包，不能产生新的产品PASS。旧完整Unit 557=556PASS/0FAIL/1SKIP、UI18PASS/3FAIL后补4/4及双构建是既有c55/00b记录，其原始证据边界和真实失败保持。SR02/03主体、SR06/07、BV01过滤及BV02原值保留等已认可部分作为保护，不重开整套整改。
+
+D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN为既有状态，不能由源码/桩/unsigned验证改写。当前不进行私人设备/库、签名安装、merge、force push、tag、Archive或TestFlight。规格接收/文档交付不触发产品构建。
+
+本次远端再次核对head仍c1fe564，Draft/base保持；实际38文件差异及130个审查文件blob一致。此前“范围内无未关闭P2”是前轮审查结论，原文保留，其本地放行判断由本次具体集成反例和新Goal更新。当前Mac工作树状态需由执行Codex实际核对，本文不把旧clean报告当新事实。
+
+---
+
+以下是原样保留的历史交接与运行记录。最新任务、授权和本地停点以上文及新Goal为准；旧运行数字与审查原文不被改写。
+
+# PR #13 真机前系统整改 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
+
+固定SYSTEM_FIX_GOAL_SHA `3dad3b04e3ff703c2e799899035285f64a5976a4`；最终干净产品/测试 `c55dc10fde79f1fe4dec18b03195119c2049830f`。SR01～07逐项关闭，BV01/02均CONFIRMED_AND_FIXED；完整不变量/消费者/合法后续状态矩阵、原错/selector/哈希在既有EXECUTION、ACCEPTANCE与SYSTEM_FIX_RUNS.json最新节。原SYSTEM_REVIEW与各轮失败保持。
+
+集中门：一次完整Unit在00b65b70执行557=556PASS/0FAIL/1SKIP；最终c55只改三个UI驱动，全部生产/Unit blob相同。首轮关键UI21=18PASS/3FAIL，原录屏/AX核对后仅修驱动，三个完整方法+相邻反馈4/4PASS；18个不变方法按原文哈希复用，未拼称一次全绿。c55 clean Debug/unsigned Release通过，实包App/Share/Widget身份、1.0(7)/min17、完整SHA/Dirty=false、AlarmKit弱链接与中英文用途说明均核对。物理低空间为唯一Unit合法SKIP。
+
+独立reviewer /root/pr13_system_independent_reviewer未写实现，先独立登记反例，再核对全diff与未改消费者；直接复算108个运行文件和179附件hash、读取xcresult、19代表图与实际二进制。终审支持关闭，无本轮范围内未关闭confirmed P0/P1/P2，明确P3收尾完成。预登记及终审原文原样追加REVIEW；不把本机证据外推为远端CI/真机通过。
+
+交付沿原worktree /private/tmp/PersonalGrowthOS-usage-remediation-20261017、分支codex/usage-remediation-20261017普通commit/push，唯一PR13保持OPEN Draft/base codex/time-investment-v1。此后仅文档和机器摘要交付，交付SHA以实际commit/PR head与本机final-delivery-proof.json核对，不为Markdown重建产品。主工作区原三项未知改动保留。
+
+本批停在Owner另行授权的设备门：D1–D4 NOT_PASSED、AlarmKit原生正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持。不操作私人设备/库或签名安装，不merge/force push/tag/Archive/TestFlight；本地READY不代表这些门通过。
+
+---
+以下为历史记录，最新执行状态以上文与固定Goal为准。
+
+# PR #13 系统复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-19）
+
+本轮固定审查产品 c296a3691d53ce7f5b5bff36fbf7de525d86510f、交付 62210d9910bae50acf0d58e6cb928e52a67c4a6f。用户要求原因复盘与系统 review，并把真机前问题和 Codex 执行目标记录到 GitHub；本次只修改文档，未实施产品修复或运行新原生测试。
+
+完整结论见 [系统审查与复盘](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)；执行规格见 [真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md)。确认 7 组修复工作：SR-01～05 为 P2，SR-06/07 为本次明确 P3 收尾；BV-01/02 是必须完成一次有界验证的观察，不能预先算 confirmed 缺陷。
+
+本地停点已从 READY_FOR_OWNER_DEVICE_GATE 改为 LOCAL_REVIEW_FIX_REQUIRED / FIX_GOAL_READY。旧 CR-01～06 关闭证据、OBS-01/02 的有效处置保留；新发现按 SR/BV 独立记录，不以旧关闭结论代替本轮全链审查。测试数量不是覆盖证明。
+
+沿原分支 codex/usage-remediation-20261017 和唯一 Draft PR #13，base 保持 codex/time-investment-v1。SYSTEM_FIX_GOAL_SHA 由 Owner 短 prompt 固定为新规格提交；Codex 接到执行指令后，按 Goal 连续完成本地修复、验证、独立审查和普通 push，不在内部阶段重复申请继续。
+
+D1–D4、AlarmKit 正向、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 的原状态不变。本次未 merge、强推、签名安装、Archive、tag 或 TestFlight。
+
+---
+
+以下全部为较早交接与运行历史，最新状态以上文及本轮 Goal 为准，原始结果原样保留。
+
+# PR #13 第二轮限定补修 — READY_FOR_OWNER_DEVICE_GATE（2026-10-19）
+
+固定 FIX2_GOAL_SHA `41ef47c384464823f9456e9816d574ba7edff563` 的 CR-01～CR-06 已逐项闭环；OBS-01 完成既有故障契约恢复验证，OBS-02 完成有界入口加固，原生 UI 可达性保持 UNCONFIRMED。产品/测试 SHA `c296a3691d53ce7f5b5bff36fbf7de525d86510f`，之后纯文档交付的 SHA 以 commit/PR head 与外部 final-delivery-proof.json 核对。
+
+最终 clean 产品九类 Unit 252=251PASS/0FAIL/1SKIP；Debug Simulator 和 unsigned generic iOS Release PASS，实际 App/Share/Widget 身份、1.0(7)、minOS17、provenance Dirty=false 和 AlarmKit 弱链接核对。关键 UI 分轮：原轮 Weight 两项 PASS、duplicate PASS、CR04 PASS；最终 c296 CR05 1/1 PASS、八项保护 8/8 PASS。不拼称一次13/13；复用的 SHA/blob/方法关系及真实失败、取消、补验均见 [EXECUTION](USAGE_REMEDIATION_20261017_EXECUTION.md) / [ACCEPTANCE](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)。F5 10k Service→事件→同一Workspace实际读取/解码计数保持，细节与局限已入仓库摘要。
+
+独立 reviewer `/root/pr13_fix2_reviewer` 未编写本轮修复，实际读取固定候选、调用链、原始日志、截图和实包，发现的旧nil续接缺口已修复并补验；原文终审见 [REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)。范围内无尚未关闭 confirmed P0/P1/P2。
+
+原worktree安全续接，主工作区三项未知改动保持；原分支普通push到唯一 [PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)，保持 Draft 与 base `codex/time-investment-v1`。不从旧BASE重建、不重置、不强推、不另开PR。
+
+当前批次已完成，下一步仅Owner另行授权设备门。READY只表示本地修复门通过，D1–D4尚未通过；AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、远端CI NOT_RUN保持。私人设备/库、签名安装、merge、force push、tag、Archive、TestFlight不在本轮内。
+
+---
+以下为执行中及较早交接历史，当前结论以上文为准，原始结果保留。
+
+# PR #13 第二轮限定补修 — FIXES_IN_PROGRESS（2026-10-19）
+
+已在原worktree从干净e75ac561安全fast-forward至固定规格41ef47c384464823f9456e9816d574ba7edff563；远端Draft/base及祖先关系已核对，主工作区未知改动保留。长期Foundation/Contract相对前轮未变化并复用已读上下文，最新CURRENT和完整固定Goal已读取。
+
+CR-01～06和OBS局部实现已进入候选；red-a 2FAIL、red-b 4FAIL、CR05原Timer UI红例1FAIL保留，定向green-scope 10/10PASS。CR02中间绿测误断言旧coordinator的测试错误已按冷实例修正，不改业务断言。CR03为真V11→旧f1等价事务已覆盖nil→V15/v11恢复，历史事件字节不改；无足够规则语义的歧义历史安全拒绝，显式规则纠正可恢复。OBS01仅代表save后抛错故障契约；OBS02为最小入口加固，不声称已复现真实SwiftUI竞态。
+
+下一步同批完成最终受影响Unit/关键UI、干净SHA双构建/实包、独立终审、文档和普通push；尚不恢复READY。原设备/签名/Share/Safari/低空间/CI状态与禁止边界保持。新本机原始证据根：/tmp/pgos-pr13-fix2-evidence。
+
+---
+以下为较早交接与规格准备历史，当前状态以上文为准。
+
+# PR #13 第二轮外部复核 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-18）
+
+**当前有效目标：[第二轮限定修复 Goal](USAGE_REMEDIATION_20261018_REVIEW_FIX2_GOAL_ZH.md)。规格已准备；CR-01～CR-06 尚未实施，本轮原生验证 NOT_RUN。此前 READY_FOR_OWNER_DEVICE_GATE 暂不成立，本地修复已获 Owner 授权，不等待设备门才能开工。**
+
+远端核对基线：交付 e75ac56110cb9c4f58158eaf494087b2ed946324、产品/测试 597552a020eab22673feed108d8676359efd8822；PR #13 OPEN Draft，head 分支 codex/usage-remediation-20261017，base 仍 codex/time-investment-v1 / 5a70f0110b151f8a45ac7c33d3f443823b1cff24。本规格提交只改 Markdown，FIX2_GOAL_SHA 由 Owner 引导 prompt 固定。
+
+第二轮外部源码复核确认 3 项 P2：CR-01 容量取消跨过 fireAt 后不收敛；CR-02 容量原因两次真实未落盘会误退役；CR-03 旧候选已经保存过覆盖的 nil 系列兼容遗漏。另有 CR-04 候选记录变更后的失效、CR-05 保存计时后外层空页、CR-06 日期测试稳定性三项 P3。OBS-01 按既有保存后报错契约补验；OBS-02 仅作有界入口检查，不预先记为普通生产 confirmed P2。详见 Goal 与 REVIEW 最新补充。
+
+原 F1、F4、UX1/UX2 主要逻辑及 F5 核心性能修复在代码层面得到认可，作为本轮保护基线，不重新开工 A–D。上一轮 241/0/1 与 UI 8/2 后补 4/4、双构建、实包核对是既有报告结果，原始证据仍在开发机；本次外部 review 未运行 Xcode，也未取得这些原始产物进行独立复算。
+
+下一步：沿原 worktree / 分支核实并修复 CR-01～06、完成 OBS 的限定处置、必要组合回归和独立复核，再普通 push 原 PR。Mac 工作树与未知改动应在实际续接时轻量核对；本规格准备没有重新验证开发机状态。没有本轮产品 PASS 或新实包结论。
+
+D1–D4、AlarmKit 原生正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 保持；不操作私人库或设备、不签名安装、不 merge/force push/tag/Archive/TestFlight。
+
+---
+以下为前轮交接原文。其运行结果保留；其中“最新”“READY”“下一步仅设备门”等本地停点已由上文和第二轮 Goal 替代。
+
+# PR #13 独立复核修复 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
+
+固定 FIX_GOAL_SHA `2add10b0c67d064b7e77478fb18a11479d3c94dc` 的 F1–F5 与 UX1–UX2 已完成本轮本地实现、必要回归和独立复核。产品/测试与双构建固定 `597552a020eab22673feed108d8676359efd8822`；生产/Unit与f946相同，最后提交仅补强UI驱动。交付提交在此后只更新五份Markdown，交付SHA以本次commit/PR head及外部final-delivery-proof.json核对。
+
+最终clean597552a：九类Unit 242=241PASS/0FAIL/1SKIP，Debug与unsigned Release PASS并核对实包。关键UI原轮f946为8PASS/2FAIL；597552a定向补验4/4PASS，八项不变方法和生产blob的证据复用有单独证明，不拼称一次整套通过。真实失败、逐项闭环、10k Service→事件→Workspace读取/解码和命令/环境/局限见[执行记录](USAGE_REMEDIATION_20261017_EXECUTION.md)、[验收](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)；独立reviewer `/root/pr13_fix_independent_reviewer` 原始终审见[REVIEW](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)，范围内无尚未关闭confirmed P0/P1/P2。
+
+原worktree安全续接，主工作区三项未知改动保持；原分支 `codex/usage-remediation-20261017` 普通push，唯一[PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)保持Draft，base=`codex/time-investment-v1`。未重建/重置/强推或另开PR。
+
+当前停点只表示本轮本地修复批次完成；下一步仅Owner另行授权D1–D4。设备门未通过。AlarmKit原生正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN、私人设备/私人库/签名安装与远端CI NOT_RUN继续保留。不merge、force push、tag、Archive、TestFlight，不进入下一批次。
+
+---
+以下为较早执行与交接历史；其中旧OPEN/待执行/READY状态均以本段当前结论为准，编号与原始运行结果保留。
+
+# PR #13 独立复核修复 — FIXES_IN_PROGRESS（2026-10-18）
+
+已安全续接原 `/private/tmp/PersonalGrowthOS-usage-remediation-20261017`，从干净 f1b52b5 fast-forward 到固定规格 2add10b0c67d064b7e77478fb18a11479d3c94dc；远端 PR #13 OPEN Draft/base codex/time-investment-v1 已核对。主工作区三项未知改动保留。
+
+F1–F3/ F4与UX2/ F5与UX1 已实现本地候选，仍在必要集中回归及独立终审之前，不沿用历史 READY。新证据根 `/tmp/pgos-pr13-review-fix-evidence`；红测、夹具错误、UI驱动失败与补验分别保留。真实 V11.0 单一 open/nil + v7 ZIP恢复及回滚、10k真实Service→事件→Workspace读取计数首轮4/4PASS；初轮30受影响回归PASS，非最终候选门。独立 reviewer `/root/pr13_fix_independent_reviewer` 已只读预审并提出两项预算停止/空位风险，正在补保护和验证。
+
+下一步在同一授权批次继续：收敛原生UI，集中受影响Unit/UI，固定干净产品SHA双构建/实包，独立终审闭环，文档交付和普通push原分支。不逐阶段请求批准。D1–D4、原 AlarmKit正向NOT_RUN/Public Share FAIL/environment/unsigned Safari FAIL/低空间SKIP/远端CI NOT_RUN保持；不操作私人设备/库或签名发行。
+
+---
+# 使用反馈统一整改 — LOCAL_REVIEW_FIX_REQUIRED（2026-10-18）
+
+**当前有效状态：FIX_GOAL_READY，等待 Codex 连续执行本地修复。产品尚未因本规格准备而改变。**
+
+Owner 在独立复核后批准继续处理新发现 F1–F5 及日期交互 UX1 / UX2。执行规格：[PR #13 独立复核后的本地修复目标](USAGE_REMEDIATION_20261018_REVIEW_FIX_GOAL_ZH.md)；从引导 prompt 指定的完整 FIX_GOAL_SHA 读取。沿用 OPEN Draft PR #13、分支 `codex/usage-remediation-20261017` 和 base `codex/time-investment-v1`。
+
+- 已独立复核交付：`f1b52b58fd11c41f508ec665d583827879ffa202`；对应产品 / 测试 / 原实包：`9601ff211fbdafc954e32f9e25206a38479e972b`。本次文档提交不代表新产品构建。
+- 新发现 F1–F4 为需修复的行为问题，F5 为原 T7 仍未完成的历史读取与详情分页要求，均 OPEN / 本轮执行 NOT_RUN。UX1 自动切换全部累计以查看期间外日期；UX2 体重主页面最近记录遵守截止快照，均已确定交互、待实现验收。
+- 下方历史 READY_FOR_OWNER_DEVICE_GATE 及“无当前已确认 P0/P1/P2”的结论已被本次新发现更新；旧 R1–R8 闭环与原始运行结果继续保留，不能用于关闭新 F1–F5。
+- 本地修复、必要测试、独立复核、普通 push 与交接属于一个已授权批次；完成目标要求后才恢复 READY_FOR_OWNER_DEVICE_GATE。仅准备文档时不得标记修复或测试通过。
+- D1–D4 仍未授权执行；原 AlarmKit 正向 NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间 SKIP/NOT_RUN、远端 CI NOT_RUN 继续保留。不包含私人设备 / 私人库、签名安装、merge、force push、tag、Archive 或 TestFlight。
+
+详细新发现与验收基线同时记录在现有 REVIEW / ACCEPTANCE 的 2026-10-18 追加章节。下面保留前次交接原文作为历史。
+
+---
+# 使用反馈统一整改 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
+
+固定BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24`、GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73`；最终产品/测试与实包 `9601ff211fbdafc954e32f9e25206a38479e972b`。A/B/C实现及本地可执行D门、普通push和唯一新[OPEN Draft PR #13](https://github.com/yoCruzer/PersonalGrowthOS/pull/13)已完成，base=codex/time-investment-v1。完整原生/签名/真机/CI验收没有全部通过；READY仅表示本次授权的本地实现/审查/交付批次完成并停在Owner设备门，不把这些限制改成PASS。
+
+最终clean Debug Simulator和unsigned generic iOS Release通过，实际App/Share/Widget保持原IDs/1.0(7)/min17，两个App provenance完整同9601/Dirty=false/localGit/Tag空，AlarmKit弱链接已核对。独立只读reviewer `/root/usage_remediation_independent_review` R1–R8关闭，无范围内仍未关闭的已确认P0/P1/P2；完整原文在USAGE_REMEDIATION_20261017_REVIEW_ZH.md。
+
+全Unit首轮517=512PASS4FAIL1SKIP，旧fixture修正后受影响完整两类60PASS；后续完整Weight/AppComposition35及InvestmentFoundation31PASS。最终混合默认英文/中文真Dark最大AX ui-d8 1PASS、warnings=[]；其他影响路径逐轮补验，未冒称新一次全量全绿。逐项U/N/Q/W/B/T、实际命令/分轮计数、迁移/备份/性能边界见ACCEPTANCE与EXECUTION末段；原失败及warning保留。
+
+AlarmKit真实授权到系统后denied，正向schedule/cancel/递送/原生Stop/Open NOT_RUN；Public mixed provider FAIL/environment（真实AppGroup报告）、unsigned Safari FAIL；签名Share正向、物理低空间、独立远端CI（workflows=0）及D1–D4真实设备均未通过。下一边界：Owner另行授权后先独立备份，再签名不卸载覆盖升级，实际锁屏/静音/专注闹钟、硬件睡眠计时、VoiceOver/Photos/分享/Widget/离线组合；具体操作清单在ACCEPTANCE末段。
+
+独立执行分支codex/usage-remediation-20261017，PR base codex/time-investment-v1；原工作区三项未知dirty、旧PR #1–#12保持。不merge/force/tag/Archive/TestFlight，不进入新模块或操作真实手机/私人库。证据根/tmp/pgos-usage-remediation-evidence；最终文档相对产品仅Markdown，无需重建同一产品。
+
+以下为前序过程历史；当前结论以上段及最终验收矩阵为准。
+
+---
+
+# 使用反馈统一整改 D 收口 — IN_PROGRESS（2026-10-18）
+
+产品/测试检查点50e9cfa，独立审查三项提醒/星期P2已修复，新增时区日选择和Today最大字体P2及Growth后台订阅已限定修复，受影响35 Unit通过；十项真实UI补验进行中。完整Unit首轮517=512PASS4FAIL1SKIP；仅测试夹具修正后受影响完整两类60PASS，生产blob相同证明保留。实际外观最终UI首轮27=21PASS5FAIL1SKIP；原失败、3条warning和原生权限拒绝保留，不能沿用旧READY。最终Release、独立review闭环、普通push及唯一新Draft PR待完成。详见USAGE_REMEDIATION_20261017_EXECUTION.md最新D段。
+
+固定BASE/GOAL_SHA、独立worktree/执行分支及PR base保持；原工作区三项未知dirty、旧PR #1–#12保持。D1–D4真实设备/私人库/签名NOT_RUN，未merge/force/tag/Archive/TestFlight。继续本次已授权完整Goal，不逐阶段等待Owner批准。
+
+以下为前序执行历史，最新结论以上段及执行记录为准。
+
+---
+
+# 使用反馈统一整改 — IN_PROGRESS（2026-10-18）
+
+已按固定 BASE `5a70f0110b151f8a45ac7c33d3f443823b1cff24` / GOAL_SHA `68373d4edf10cff8ca3e212b9ff10a28e6da9c73` 核验祖先与七 Markdown 增量，从 GOAL_SHA 建立独立 `/private/tmp/PersonalGrowthOS-usage-remediation-20261017` / `codex/usage-remediation-20261017`。原工作区三项未知 dirty 与旧 PR #1–#12 保持；#12 head 仍 BASE。新 PR base 固定 codex/time-investment-v1，尚未创建。
+
+A 阶段在实现：Today/Growth 共用文字列与图标、准确带单位的只读统计、清单选择中新建/管理、保存事实与提醒状态反馈、时间投入投影状态与收起/保留草稿/稍后确认文案。没有改变时钟/计时保存事务或历史模型。11 项受影响 Unit PASS。首轮四项原生 UI 为 3 PASS / 1 FAIL：权限拒绝保存反馈、R2 失败重试冷启动和中文 Dark 最大 AX 的 R3 保留/抓手取消/明确替换通过；清单 UI 首两次在标题存在检查失败；增加导航检查和现场截图后确认已经返回但标题在滚动区域外，正常滚动保留全部断言后 ui-a3 **1/1 PASS**，新建/取消/改名/删除/未分类/保存重开成立。关闭两层页采用 onDismiss 顺序实现。原失败与 3 条 Invalid frame warning 保留，尚未归因清理。
+
+B1 内部检查点：体重冻结公历/时区快照、五范围/四日等权均值、动态轴/缺口、全历史覆盖/连续性、最近5条/按日50条分页和单条前次参考已实现。最终 compile-b9 通过；affected-b3 为 **14 Unit + 2 原生 UI = 16/16 PASS，0FAIL/SKIP、runtimeWarnings=[]**。包含午夜DST自然日边界、五年一万条真实磁盘读取（单次聚合0.054404458秒，未测Instruments/RSS）、快速新建冷启动、范围/日期/编辑/确认删除/无记录日/返回72.5kg。此前日明细任务自取消、不可见父页确认和测试滚动方向失败完整保留；Weight键盘frame接缝已有修复与配对零warning，其他页面警告未抹去。
+
+B2 成长回顾日聚合/具体事实下钻已实现：12项纯Unit通过；真实4+2身份/精确原始结果及撤销删除刷新UI 2/2通过，runtimeWarnings=[]。DisclosureGroup标识覆盖和plain按钮中间空白命中失败已凭原生树/图复现修复，失败原样保留。q8仅补fetchError/来源失效区分并编译通过；Reader另5项、最终多源/双语/大字/导入组合在D，不冒称全量。时间投入B3也已收敛，见下一段。
+
+B3 时间投入统计快照复用、明确自然日/月份预览和20条真实查询分页已实现。核心30+磁盘1+编辑删除UI1在affected-t1为32/32通过（1条键盘frame warning保留）；导航键盘按钮修复后ui-t2的R2/编辑删除2项通过、runtimeWarnings=[]，同轮新月份UI失败。开关命中/滚动顺序及分日合并标签定位失败均保留；最终compile-t6后完整配对正式事实/操作并通过生产完整性校验的1万条磁盘＋月份/分页/7日27分钟8场/选日16分钟2场/清选择/5+15分钟精确原始下钻，affected-t2 **2/2 PASS、runtimeWarnings=[]**。首次完整刷新0.224274039秒，未测Instruments/RSS。没有修改F1/R1–R3事实、时钟或保存事务，B3没新增Schema。下一步完成可选BMI及C联合追加持久化/备份，再做D集中门禁。
+
+B4/C联合持久化正在实现（尚未提交）：追加V15系列设置、本次提醒意图、设备本地账本和BMI设置；备份v11仅保全用户设置，不复制设备排程结论。compile-c3后真实V14启动/最新保护副本/无默认写入、v11 ZIP往返/回滚/空库保护、v10消费态与V1–V6兼容及BMI未舍入边界5/5 Unit PASS，runtimeWarnings=[]。BMI两Unit及相邻体重UI通过，入口呈现失败后改原生导航，ui-c3完整BMI 1/1通过且无运行warning。星期服务核心9/9通过，ui-c5空集合禁用/选择/保存/跳过1/1通过；实际新旧ZIP字段/新星期恢复生成及清单草稿已通过。AlarmKit原生适配器/Intent/观察和设备账本已接入；c6协调14项为9PASS/5FAIL，修复授权撤销清理及按新身份/显式重试规范更新旧断言后c7为14/14PASS。独立提醒写入又暴露旧对象状态缓存，c8为11PASS/4FAIL（6断言），最新事实状态/统一动作/渠道/过期时间选择已编译，正在继续验证。真实原生系统排程、更多失败/并发、最终组合门禁未完成，整体仍IN_PROGRESS。
+
+**整体 Goal 未完成，不是 READY 或阶段停点。** A1/B1 已有编译和受影响通过证据。继续 A 的过期提醒动作与 C 的独立本次覆盖，B 余项（可选 BMI及集中组合回归），C 星期重复和真实 AlarmKit，以及 D 集中验证/独立只读审查/普通 push/唯一新 Draft PR。长期过期提醒不能删除 ±366 校验或改写系列锚点；必要字段联合评估 V14/v10 后追加模型/备份，真实升级、快照/空库恢复/回滚一起完成。
+
+实际命令与影响矩阵见 [本轮执行记录](USAGE_REMEDIATION_20261017_EXECUTION.md)，[独立审查](USAGE_REMEDIATION_20261017_REVIEW_ZH.md)仍 NOT_RUN。证据根 `/tmp/pgos-usage-remediation-evidence`；本轮专用 iPhone 18 Pro 模拟器 `42609456-859D-41F8-8977-4B2D85A74082` / iOS27.0，Xcode27.1。设备 D1–D4 全 NOT_RUN，不操作真实手机/私人库，不 merge/force/tag/Archive/TestFlight。历史 FAIL/SKIP/NOT_RUN 不改标。
+
+以下为原规划与历史交接，保留原文；当前执行以上方为准。
+
+C内部验证继续收敛：新增本次提醒独立写入/修订守卫、ready/prepared/accepted/取消待确认的磁盘所有权和真实系统查队、旧回调/写失败/停止/权限/同系列阻挡。共享额度先确认取消再分配，affected-c11整类Todo20＋Sleep4＋ImportantDays7 **31/31PASS、零runtime warning**。c28的actual ZIP本次Alarm覆盖/设备账本排除、DST/修订守卫、生产Open Intent保留Record和modal编辑草稿，affected-c13 **4PASS0FAIL1SKIP、零runtime warning**。原生授权API两次到达mobiletimerd但无弹窗立即Denial；首两次正向UI失败保留，正向native schedule/cancel/系统Stop/Open及真机递送仍NOT_RUN，不把fake绿标为集成PASS。c29双语混合与最大字号UI正在运行，D全量/Release/独立review/普通push/唯一DraftPR尚未完成。
+
+D独立review已开始（`/root/usage_remediation_independent_review`，无历史fork、只读固定266c9ca）：确认3项P2，标题旧文案/周一顺序/旧库取消后继阻挡；真实红测已保留，限定修复后review-d4-green35PASS。缓存损坏假设被真实磁盘对照否定。截图发现启动Dark参数未生效，旧Light不冒称Dark，正在用实际simctl appearance验证。集中全量/Release/实包与审查闭环仍待完成。
+
+集中Unit在clean c909821实际517=512PASS/4FAIL/1SKIP、零runtime warning。四处为旧计数/请求身份假设及旧v7构造夹带新空数组，正在仅修测试并整类复验ImportExport与QuietWinsReader；生产代码不改，保存其余blob复用证据。全量首轮失败不改标。后续实际Dark/组合UI/Release/实包/审查闭环/PR仍未完成。
+
+---
+
+# 使用反馈统一整改 — READY_FOR_CODEX_EXECUTION（2026-10-18）
+
+Owner 要求将使用反馈 20261017 的九项问题与新完成的时间投入 V1 同类展示问题纳入一个分阶段连续整改 Goal。最新固定产品基线为 **5a70f0110b151f8a45ac7c33d3f443823b1cff24**（codex/time-investment-v1 / [Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12)）；原反馈 ad0720ad743f495ac6f2ee3e97b16577266351db 是其祖先。实际最后产品/测试提交为 4d59a5909ec4314d82c9f9af12c203503ffde98b，5a70f01 为时间投入最终交接。
+
+本次只准备规格、范围增量及新任务交接，未修改产品/工程/测试，也未运行新的 App 验证。三份固定版本 1.0：[执行 Goal](USAGE_REMEDIATION_20261017_GOAL_ZH.md)、[设计](USAGE_REMEDIATION_20261017_DESIGN_ZH.md)、[验收](USAGE_REMEDIATION_20261017_ACCEPTANCE_ZH.md)。实施以 Owner 引导的完整 GOAL_SHA 为准；本轮验收全部 NOT_RUN，规划核查不等于实现独立 review。
+
+规划分支 plan/usage-remediation-20261017-goal；后续产品分支 codex/usage-remediation-20261017，新 Draft PR base 为 codex/time-investment-v1。A 统一展示/操作反馈，B 可信回顾/体重/BMI/时间历史，C 星期重复/闹钟，D 集中验证与独立 review。新授权在新分支替代旧“只等设备、不再开发”的停点，保留全部历史失败/设备门禁及 F1、R1–R3 数据与计时保护线。旧 PR、原 dirty 工作区、私人库及发行边界保持。
+
+下方为原时间投入及更早交接历史；旧状态不表示本次整改已经完成，也不阻挡本次明确授权下的安全实施。
+
+---
+
 # 时间投入 V1 F1/P1 — READY_FOR_OWNER_DEVICE_GATE（2026-10-18）
 
 沿原 `codex/time-investment-v1` / [OPEN Draft PR #12](https://github.com/yoCruzer/PersonalGrowthOS/pull/12) 续接；固定审查输入 `b55da139642a174e71d3ce79c34fd2c55eaa4d39` 的[外部 F1/P1](https://github.com/yoCruzer/PersonalGrowthOS/pull/12#pullrequestreview-5558558045)已完成反例、限定修复和真正独立只读复核。原外部 R1–R3 已关闭，本轮仅回归。BASE `ad0720ad743f495ac6f2ee3e97b16577266351db`、Goal1.1 `72ee8bdf954a5628806db867682a6b021e63545b` 不变。

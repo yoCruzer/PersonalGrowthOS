@@ -25,13 +25,61 @@ struct PersonalGrowthOSApp: App {
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch {
                 for key in ["sleep.showToday", "sleep.introductionDismissed", "sleep.morningReminder.plannedFires", SleepReminderPreferences.enabledKey, SleepReminderPreferences.minuteKey] { UserDefaults.standard.removeObject(forKey: key) }
             }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSSettingsPreferenceTest") {
+                for (key,value) in [("dailyRecordingReminderEnabled",true),("weeklyReviewReminderEnabled",true)] {UserDefaults.standard.set(value,forKey:key)}
+                UserDefaults.standard.set(480,forKey:"dailyRecordingReminderMinutes")
+                UserDefaults.standard.set(690,forKey:"weeklyReviewReminderMinutes")
+                UserDefaults.standard.set(6,forKey:"weeklyReviewReminderWeekday")
+            }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSUsageElapsedTodoTest") {
+                let zone=TimeZone.current,then=TodoDay("2020-01-01")!.date(timeZone:TimeZone.current)!.addingTimeInterval(12*3600)
+                let service=TodoTaskService(context:container.modelContainer.mainContext,now:{then},timeZone:{zone})
+                _ = try service.create(.init(title:"Synthetic long elapsed reminder",plannedDay:"2020-01-01",deadlineDay:"2020-01-02",remindAt:then.addingTimeInterval(3600),frequency:.daily),id:UUID(uuidString:"40000000-1111-4222-8333-444444444444")!)
+            }
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSUsageWeightTest") {
+                let now = Date(), calendar = Calendar(identifier: .gregorian)
+                let today = calendar.startOfDay(for: now)
+                let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+                let values: [(Double, Date)] = [(70, yesterday.addingTimeInterval(8 * 3600)), (72, yesterday.addingTimeInterval(18 * 3600)),
+                    (75, today), (65, calendar.date(byAdding: .day, value: -60, to: today)!)]
+                for (kilograms, at) in values {
+                    container.modelContainer.mainContext.insert(WeightRecord(weightKilograms: kilograms, recordedAt: at, createdAt: at))
+                }
+                try container.modelContainer.mainContext.save()
+            }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSWeightLosslessTest") {
+                let service=WeightRecordService(context:container.modelContainer.mainContext)
+                for (value,day) in [(72.345,"2026-10-10"),(1000.0,"2026-10-09")] {
+                    _ = try service.create(weightKilograms:value,recordedAt:ImportantCivilDay(identifier:day)!.instant(minutes:720,timeZone:.current)!)
+                }
+            }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSWeeklyCutoffTest") {
+                try WeeklyReviewClock.seed(context:container.modelContainer.mainContext,mediaStore:container.mediaStore)
+            }
+            if configuration.launchMode == .uiTesting,configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSWeightReviewFixDates") {
+                let today=ImportantCivilDay(WeightReviewClock.current()),zone=TimeZone.current
+                let day=ImportantCivilDay(year:today.year,month:today.month,day:1).instant(minutes:0,timeZone:zone)!
+                for index in 0..<60 {
+                    let at=day.addingTimeInterval(Double(index)*60)
+                    container.modelContainer.mainContext.insert(WeightRecord(weightKilograms:70+Double(index)/100,recordedAt:at,createdAt:at))
+                }
+                let later=ImportantCivilDay(year:today.year,month:today.month,day:17).instant(minutes:600,timeZone:zone)!
+                container.modelContainer.mainContext.insert(WeightRecord(weightKilograms:77,recordedAt:later,createdAt:later))
+                try container.modelContainer.mainContext.save()
+            }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSImportantDaysTest") {
                 try ImportantDayUITestFixture.seed(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSQuietWinsTest") {
-                try QuietWinsUITestFixture.seed(context: container.modelContainer.mainContext)
+                try QuietWinsUITestFixture.seed(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             }
             if configuration.launchMode == .uiTesting,
                ProcessInfo.processInfo.arguments.contains("-PGOSStartupFailureTest") {

@@ -1,5 +1,6 @@
 import Foundation
 import UserNotifications
+import Observation
 
 enum ReminderScheduleCalculator {
     static func dailyComponents(minutesAfterMidnight: Int) -> DateComponents {
@@ -105,6 +106,20 @@ final class LocalReminderScheduler {
         )
     }
 
+    /// The caller's ticket is checked inside the shared mutation gate, including
+    /// after the native query yields. An old failure cannot delete a later intent.
+    func removeAfterFailure(weekly:Bool,isCurrent: @escaping @MainActor () -> Bool) async -> Bool {
+        await NotificationMutationGate.shared.acquire()
+        defer {NotificationMutationGate.shared.release()}
+        guard isCurrent() else {return false}
+        let identifier=weekly ? Self.weeklyIdentifier:Self.dailyIdentifier
+        _ = await client.pendingIdentifiers()
+        guard isCurrent() else {return false}
+        client.remove([identifier])
+        let absent = await !client.pendingIdentifiers().contains(identifier)
+        return isCurrent() && absent
+    }
+
     private func update(
         identifier: String,
         enabled: Bool,
@@ -117,6 +132,7 @@ final class LocalReminderScheduler {
         defer { NotificationMutationGate.shared.release() }
         guard enabled else {
             client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .removed
         }
 
@@ -138,13 +154,106 @@ final class LocalReminderScheduler {
             return .scheduled
         case .denied:
             client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .permissionDenied
         case .notDetermined:
+            client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .permissionRequired
         @unknown default:
+            client.remove([identifier])
+            guard await !client.pendingIdentifiers().contains(identifier) else {throw NotificationQueueError.notConfirmed}
             return .permissionDenied
         }
     }
 }
 
 enum NotificationQueueError: Error { case full, notConfirmed }
+
+/// Owns the settings result boundary, separately from the system mutation gate.
+/// A canceled transport may still return an ordinary error or success.
+@MainActor
+final class ReminderSettingsIntents {
+    let daily=ReminderSettingsUpdate.Scope()
+    let weekly=ReminderSettingsUpdate.Scope()
+
+    /// Off is a persistent device preference. Rebuild cleanup responsibility at
+    /// launch/foreground instead of relying on the lifetime of an old sheet.
+    func reconcileOff(scheduler:LocalReminderScheduler,
+                      dailyEnabled:@escaping @MainActor () -> Bool,
+                      weeklyEnabled:@escaping @MainActor () -> Bool) {
+        reconcileOff(scope:daily,weekly:false,scheduler:scheduler,enabled:dailyEnabled)
+        reconcileOff(scope:weekly,weekly:true,scheduler:scheduler,enabled:weeklyEnabled)
+    }
+    private func reconcileOff(scope:ReminderSettingsUpdate.Scope,weekly:Bool,
+                              scheduler:LocalReminderScheduler,enabled:@escaping @MainActor () -> Bool) {
+        guard !enabled(),!scope.updating else {return}
+        scope.cleanupPending=true
+        ReminderSettingsUpdate(scope:scope).submit(operation:{
+            let ticket=scope.generation
+            let confirmed=await scheduler.removeAfterFailure(weekly:weekly,isCurrent:{
+                !Task.isCancelled && scope.generation == ticket && !enabled()
+            })
+            guard confirmed else {throw NotificationQueueError.notConfirmed}
+            return .removed
+        },isCurrent:{!enabled()},recover:{current in
+            await scheduler.removeAfterFailure(weekly:weekly,isCurrent:current)
+        },apply:{_ in})
+    }
+}
+
+@MainActor
+final class ReminderSettingsUpdate {
+    /// Root-owned tickets survive sheet removal; a new same-value request is a new intent.
+    @Observable final class Scope {
+        var failureMessage:String?
+        var cleanupPending=false
+        var updating=false
+        var generation=UUID()
+        var task: Task<Void,Never>?
+    }
+    private let scope: Scope
+    init(scope: Scope = Scope()) {self.scope=scope}
+    @discardableResult func submit(
+        operation: @escaping @MainActor () async throws -> ReminderUpdateResult,
+        isCurrent: @escaping @MainActor () -> Bool = {true},
+        recover: (@MainActor (@escaping @MainActor () -> Bool) async -> Bool)? = nil,
+        apply: @escaping @MainActor (Result<ReminderUpdateResult,Error>) -> Void
+    ) -> Task<Void,Never> {
+        scope.task?.cancel()
+        let token=UUID();scope.generation=token;scope.updating=true
+        let next=Task { @MainActor in
+            defer {if self.scope.generation == token {self.scope.updating=false}}
+            let result: Result<ReminderUpdateResult,Error>
+            do {result = .success(try await operation())}
+            catch {result = .failure(error)}
+            guard !Task.isCancelled,self.scope.generation == token,isCurrent() else {return}
+            if case .failure(let error)=result,error is CancellationError,recover == nil {return}
+            if case .failure=result,let recover {
+                let confirmed=await recover {!Task.isCancelled && self.scope.generation == token && isCurrent()}
+                guard !Task.isCancelled,self.scope.generation == token,isCurrent() else {return}
+                self.scope.cleanupPending = !confirmed
+                self.scope.failureMessage = confirmed
+                    ? String(localized:"The reminder could not be updated. Please try again.")
+                    : String(localized:"Reminder removal is not confirmed. Please try again.")
+            } else if case .success(let value)=result {
+                if value != .removed || self.scope.cleanupPending {self.scope.failureMessage=nil}
+                self.scope.cleanupPending=false
+            }
+            apply(result)
+        }
+        scope.task=next
+        #if DEBUG
+        ReminderSettingsUpdateProbe.didSubmit?(scope)
+        #endif
+        return next
+    }
+}
+
+#if DEBUG
+@MainActor enum ReminderSettingsUpdateProbe {
+    static var didMountRoot: ((ReminderSettingsIntents, () -> Void) -> Void)?
+    static var didMountSettings: ((@escaping @MainActor () -> Void, @escaping @MainActor () -> Void) -> Void)?
+    static var didSubmit: ((ReminderSettingsUpdate.Scope) -> Void)?
+}
+#endif

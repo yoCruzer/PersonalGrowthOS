@@ -387,6 +387,48 @@ import XCTest
         XCTAssertThrowsError(try data(forged,changedOps).validateInvestment(packageVersion:10))
     }
 
+    func testReviewDAdjacentEvaluationDaysExpireWindowMembersWithoutChangingFacts() throws {
+        let participant=UUID(),activity=UUID(),before=ImportantCivilDay(identifier:"2026-10-17")!,after=ImportantCivilDay(identifier:"2026-10-18")!
+        for (days,start) in [(7,"2026-10-11"),(30,"2026-09-18")] {
+            let id=UUID(),date=ImportantCivilDay(identifier:start)!.instant(minutes:720,timeZone:zone)!
+            let values=InvestmentValues(day:start,timeZoneID:zone.identifier,seconds:60,evidence:.dateDuration,source:.manual,spans:[])
+            let fact=try InvestmentSessionTransfer(InvestmentSession(id:id,participantID:participant,activityID:activity,values:values,now:date))
+            let snapshot=try InvestmentReviewSnapshot(sessions:[fact],participantID:participant)
+            let previous=snapshot.selection(days:days,today:before,activityID:nil,day:nil)
+            let next=snapshot.selection(days:days,today:after,activityID:nil,day:nil)
+            XCTAssertEqual(previous.count,1);XCTAssertEqual(previous.seconds,60);XCTAssertEqual(previous.pageIDs(offset:0),[id])
+            XCTAssertEqual(next.count,0);XCTAssertEqual(next.seconds,0);XCTAssertEqual(next.pageIDs(offset:0),[])
+            XCTAssertEqual(snapshot.selection(days:nil,today:after,activityID:nil,day:nil).pageIDs(offset:0),[id])
+            XCTAssertEqual(snapshot.selection(days:days,today:before,activityID:nil,day:nil).pageIDs(offset:0),[id],"The immutable fact snapshot itself did not change")
+        }
+    }
+
+    func testUsageReviewSnapshotKeepsCrossDayIdentityAndRejectsInvalidFacts() throws {
+        let p=UUID(),a=UUID(),foreign=UUID()
+        let start=ImportantCivilDay(identifier:"2026-12-31")!.instant(minutes:1430,timeZone:zone)!
+        let values=InvestmentValues(day:"2026-12-31",timeZoneID:zone.identifier,seconds:1200,evidence:.intervals,source:.timer,
+            spans:[.init(start:start,end:start.addingTimeInterval(300)),.init(start:start.addingTimeInterval(900),end:start.addingTimeInterval(1800))])
+        let fact=try InvestmentSessionTransfer(InvestmentSession(id:UUID(),participantID:p,activityID:a,values:values,now:start))
+        var other=fact;other.id=UUID();other.participantID=foreign
+        let snapshot=try InvestmentReviewSnapshot(sessions:[fact,other],participantID:p)
+        XCTAssertEqual(snapshot.activitySeconds[a],1200)
+        let today=ImportantCivilDay(identifier:"2027-01-01")!
+        let all=snapshot.selection(days:nil,today:today,activityID:nil,day:nil)
+        XCTAssertEqual(all.seconds,1200);XCTAssertEqual(all.count,1)
+        XCTAssertEqual(all.daySeconds,["2026-12-31":300,"2027-01-01":900])
+        XCTAssertEqual(snapshot.selection(days:7,today:today,activityID:a,day:nil).count,1)
+        for (day,seconds) in [("2026-12-31",300.0),("2027-01-01",900.0)] {
+            let chosen=snapshot.selection(days:nil,today:today,activityID:a,day:day)
+            XCTAssertEqual(chosen.seconds,seconds);XCTAssertEqual(chosen.pageIDs(offset:0),[fact.id])
+        }
+        XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:a,day:"2020-01-01").count,0)
+        var invalid=fact;invalid.values.seconds = .nan
+        XCTAssertThrowsError(try InvestmentReviewSnapshot(sessions:[invalid],participantID:p))
+        // A foreign participant's unreadable facts do not change this participant's review.
+        invalid.participantID=foreign
+        XCTAssertNoThrow(try InvestmentReviewSnapshot(sessions:[fact,invalid],participantID:p))
+    }
+
 }
 
 // Synthetic clock observations are independent. This is not a hardware sleep test.
@@ -400,5 +442,23 @@ struct InvestmentClockTestReadings {
     }
     mutating func advance(wall:Double,continuous:Double,awake:Double) {
         self.wall.addTimeInterval(wall);continuousElapsed += continuous;awakeUptime += awake
+    }
+}
+
+
+extension InvestmentFoundationTests {
+    func testReviewFixUX1OutsideDateUsesAllTimeAndKeepsActivityAndExactDayContribution() throws {
+        let today=ImportantCivilDay(identifier:"2026-10-18")!,chosen=ImportantCivilDay(identifier:"2026-09-01")!,activity=UUID(),other=UUID()
+        let rows=[InvestmentContribution(sessionID:UUID(),activityID:activity,day:chosen.identifier,seconds:2700),InvestmentContribution(sessionID:UUID(),activityID:activity,day:today.identifier,seconds:900),InvestmentContribution(sessionID:UUID(),activityID:other,day:chosen.identifier,seconds:600)]
+        let snapshot=InvestmentReviewSnapshot(contributions:rows,orderedSessionIDs:rows.map(\.sessionID))
+        for period in [7,30] {
+            let days=InvestmentReview.periodForInspection(days:period,day:chosen,today:today)
+            XCTAssertEqual(days,0)
+            let selection=snapshot.selection(days:days == 0 ? nil:days,today:today,activityID:activity,day:chosen.identifier)
+            XCTAssertEqual(selection.seconds,2700);XCTAssertEqual(selection.count,1)
+            XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:activity,day:"2026-09-02").count,0)
+            XCTAssertEqual(InvestmentReview.periodForInspection(days:period,day:today,today:today),period)
+            XCTAssertEqual(snapshot.selection(days:nil,today:today,activityID:activity,day:nil).seconds,3600)
+        }
     }
 }

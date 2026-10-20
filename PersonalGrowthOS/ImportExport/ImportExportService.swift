@@ -44,6 +44,11 @@ struct ImportResult: Equatable {
     let restoredMediaCount: Int
 }
 
+struct NonfiniteHabitQuantityError: LocalizedError {
+    let logIDs:[UUID]
+    var errorDescription:String? {String(localized:"A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup.")}
+}
+
 @MainActor
 final class ImportExportService {
     typealias Log = (String) -> Void
@@ -61,6 +66,7 @@ final class ImportExportService {
     private let publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)?
     private let investmentClock: () -> InvestmentClock
     private let exportCheckpoint: (() throws -> Void)?
+    private let rawCaptureCheckpoint: ((String) -> Void)?
 
     init(
         context: ModelContext,
@@ -77,7 +83,8 @@ final class ImportExportService {
         log: @escaping Log = { _ in },
         publicationCheckpoint: ((ImportPublicationCheckpoint) throws -> Void)? = nil,
         investmentClock: @escaping () -> InvestmentClock = InvestmentClock.current,
-        exportCheckpoint: (() throws -> Void)? = nil
+        exportCheckpoint: (() throws -> Void)? = nil,
+        rawCaptureCheckpoint: ((String) -> Void)? = nil
     ) {
         self.context = context
         self.container = context.container
@@ -91,6 +98,7 @@ final class ImportExportService {
         self.log = log
         self.publicationCheckpoint = publicationCheckpoint
         self.exportCheckpoint = exportCheckpoint
+        self.rawCaptureCheckpoint=rawCaptureCheckpoint
         self.investmentClock = investmentClock
         self.availableCapacity = availableCapacity ?? {
             let values = try mediaStore.rootURL.resourceValues(forKeys: [
@@ -138,6 +146,8 @@ final class ImportExportService {
                     try LinkIntegrityService.validate(context: snapshotContext)
                     try ImportantDayIntegrity.validate(context: snapshotContext)
                     let transfer = try TransferSnapshot.make(context: snapshotContext, investmentClock: timerClock())
+                    let invalidQuantities=transfer.habitLogs.filter {$0.quantity?.isFinite == false}.map(\.id)
+                    guard invalidQuantities.isEmpty else {throw NonfiniteHabitQuantityError(logIDs:invalidQuantities)}
                     try snapshotCheckpoint?()
                     let inputs = try transfer.mediaAssets.map { record in
                         ExportMediaInput(
@@ -180,6 +190,23 @@ final class ImportExportService {
             log("export.failed")
             throw error
         }
+    }
+
+    func exportRetainedQuantityData() async throws -> URL {
+        let root=mediaStore.rootURL
+        let configuredStore=container.configurations.first!.url.standardizedFileURL.resolvingSymlinksInPath()
+        let source=root.appendingPathComponent("Store/PersonalGrowthOS.sqlite").standardizedFileURL.resolvingSymlinksInPath()
+        guard configuredStore == source else {throw CocoaError(.fileReadUnsupportedScheme)}
+        let checkpoint=rawCaptureCheckpoint
+        let worker=Task.detached {
+            try StorePublication.perform(at:root) {
+                let retained=try StartupRetainedData.capture(rootURL:root,checkpoint:checkpoint)
+                return try retained.archive(diagnostic:"Nonfinite Habit quantity: source data retained without correction. This is raw support recovery, not an importable normal backup.")
+            }
+        }
+        let result=try await withTaskCancellationHandler {try await worker.value} onCancel: {worker.cancel()}
+        try Task.checkCancellation()
+        return result
     }
 
     private struct ExportMediaInput {
@@ -387,7 +414,7 @@ final class ImportExportService {
             NotificationCenter.default.post(name: .todoTasksChanged, object: container)
             NotificationCenter.default.post(name: .importantDaysChanged, object: container)
             NotificationCenter.default.post(name: .sleepRecordsChanged, object: container)
-            NotificationCenter.default.post(name: .investmentChanged, object: container)
+            InvestmentChanges.publish(.all,container:container)
             log("import.completed objects=\(package.data.totalObjectCount) media=\(package.data.mediaAssets.count)")
             return ImportResult(
                 objectCounts: package.data.objectCounts,
@@ -528,6 +555,10 @@ final class ImportExportService {
                 if manifest.packageSchemaVersion >= 10 {
                     guard payload?[key] is [Any] else { throw TransferPackageError.corruptData }
                 } else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
+            }
+            for key in ["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {
+                if manifest.packageSchemaVersion >= 11 {guard payload?[key] is [Any] else {throw TransferPackageError.corruptData}}
+                else {guard payload?[key] == nil else {throw TransferPackageError.corruptData}}
             }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
@@ -685,6 +716,7 @@ final class ImportExportService {
             try publicationCheckpoint?(.beforeSave)
             try LinkIntegrityService.validate(context: publicationContext)
             try InvestmentIntegrity.validate(context: publicationContext)
+            try UsagePreferencesIntegrity.validate(context:publicationContext)
             try Task.checkCancellation()
             try publicationContext.save()
             didSave = true
@@ -980,6 +1012,7 @@ final class ImportExportService {
             try package.data.insertInvestment(into: context)
             try package.data.insertImportantDays(into: context)
             try package.data.insertTodos(into: context)
+            try package.data.insertUsagePreferences(into: context)
             return restoredPaths
         } catch {
             for path in restoredPaths { try? mediaStore.removeOriginal(at: path) }
@@ -1034,6 +1067,9 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<ImportantDayCover>())
             + context.fetchCount(FetchDescriptor<SleepRecord>())
             + context.fetchCount(FetchDescriptor<SleepGoalRule>())
+            + context.fetchCount(FetchDescriptor<TodoSeriesPreferences>())
+            + context.fetchCount(FetchDescriptor<TodoReminderIntent>())
+            + context.fetchCount(FetchDescriptor<BodyReferenceSettings>())
             + context.fetchCount(FetchDescriptor<CaptureImportReceipt>())
             + context.fetchCount(FetchDescriptor<InvestmentParticipant>())
             + context.fetchCount(FetchDescriptor<InvestmentActivity>())
@@ -1293,7 +1329,10 @@ enum TransferSnapshot {
             investmentParticipants: try cancellableMap(context.fetch(FetchDescriptor<InvestmentParticipant>())) { InvestmentParticipantTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentActivities: try cancellableMap(context.fetch(FetchDescriptor<InvestmentActivity>())) { InvestmentActivityTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
             investmentSessions: try cancellableMap(context.fetch(FetchDescriptor<InvestmentSession>())) { try InvestmentSessionTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) }
+            investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) },
+            todoSeriesPreferences:try cancellableMap(context.fetch(FetchDescriptor<TodoSeriesPreferences>())) {TodoSeriesPreferencesTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            todoReminderIntents:try cancellableMap(context.fetch(FetchDescriptor<TodoReminderIntent>())) {TodoReminderIntentTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            bodyReferenceSettings:try cancellableMap(context.fetch(FetchDescriptor<BodyReferenceSettings>())) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)}
         ).redactingConsumedInvestmentContent()
     }
 

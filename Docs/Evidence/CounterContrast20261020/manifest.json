@@ -1,0 +1,465 @@
+[
+  {
+    "file": "light-default-Today-daily-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/499A3C49-2B3A-449E-8BC1-99476B243710.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "499A3C49-2B3A-449E-8BC1-99476B243710.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-default-Today-daily-zero_0_BEAC430E-602A-4B13-BA9A-0EE3F4CDC6EE.png",
+      "timestamp": 1792476971.463
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "62aaed7fa62f6811933790c644820d07e368e7e7fe326879c93014f4803e021f",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-default-Today-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/AFAC127C-B94C-4C6A-A28A-3420F7619851.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "AFAC127C-B94C-4C6A-A28A-3420F7619851.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-default-Today-每周锻炼几次-one_0_0BBA38C0-6CF1-42F1-A6C5-98CB916D091C.png",
+      "timestamp": 1792476976.567
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "679f4fc88ae24a8759868735e80bfd8f1bc3bfa7a3d9fd24042dab41d13f6f51",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-default-Growth-weekly-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/8C52C840-06E8-4ECF-AF86-78E1172B27E0.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "8C52C840-06E8-4ECF-AF86-78E1172B27E0.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-default-Growth-每周锻炼几次-zero_0_4AB64025-6923-4C08-8D39-C1A80A895EDE.png",
+      "timestamp": 1792476984.492
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "38b2556074aa6fd0cd08e9cab0590ad895afc13c59f3ea1b6a3f189c989cc752",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-default-Growth-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/B7EE46C0-95C0-40A2-A9EF-D472F4AA050B.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "B7EE46C0-95C0-40A2-A9EF-D472F4AA050B.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-default-Growth-每周锻炼几次-one_0_155DFD15-6D6E-4549-92BB-214369856F7D.png",
+      "timestamp": 1792476985.198
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "200a4d591b054ae19e4039f9de1001d60052e400d10578c14e9d2a93cf6e3e00",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-default-Detail-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/AEE10911-F3FF-4958-BE08-85C1C51ACAF6.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "AEE10911-F3FF-4958-BE08-85C1C51ACAF6.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-default-Detail-每周锻炼几次-one_0_8F13CD18-A259-4027-A40C-8E7D7EC85FB6.png",
+      "timestamp": 1792476989.798
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "1d252d4c76c37d2ce47b4306a403cd647a81b95cdba203ff20f514514cc202f1",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-maxAX-Today-daily-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/6AF2661E-E63C-4CDA-8362-D7F6FDCD6E32.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "6AF2661E-E63C-4CDA-8362-D7F6FDCD6E32.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-AX-light-Today-daily-zero_0_CB79D0B6-C9B6-4B2E-9538-9CB75ED65900.png",
+      "timestamp": 1792476907.955
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "d17eba620e766afcb0bec85ac4f36a4b4ccbaffe4ebff9bb757f0b4c67cc430f",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-maxAX-Today-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/ABF30D94-C882-4387-B2F9-B180D1F8FD2B.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "ABF30D94-C882-4387-B2F9-B180D1F8FD2B.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-AX-light-Today-每周锻炼几次-one_0_81B511EB-2EB9-407A-9492-5348F387BE51.png",
+      "timestamp": 1792476919.07
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "3af60784159842f4d9c8ac0105599c8a6c76dee63f7df97b34e6102216424515",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-maxAX-Growth-weekly-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/51F02CCA-75F4-43F3-B845-4D1A4F5A6D03.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "51F02CCA-75F4-43F3-B845-4D1A4F5A6D03.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-AX-light-Growth-每周锻炼几次-zero_0_59A4592B-84E8-4A13-A9B2-CCD433E89102.png",
+      "timestamp": 1792476933.639
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "c7057ced1a4e297687d922691dca6606edc3d830b21715c544ea1a437e31347e",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-maxAX-Growth-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/DE91C8D0-D053-4FF0-A600-8B692F32DE94.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "DE91C8D0-D053-4FF0-A600-8B692F32DE94.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-AX-light-Growth-每周锻炼几次-one_0_7A30DE06-686C-4C4B-8ACE-CA62AAB91C36.png",
+      "timestamp": 1792476934.268
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "d41e076d432c6313621bf625a726616184d3867bbabcd9fc99ca002e24a8cccb",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-maxAX-Detail-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/E560CE3D-EE72-4346-AE1B-58CB23ADFFD7.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "E560CE3D-EE72-4346-AE1B-58CB23ADFFD7.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-AX-light-Detail-每周锻炼几次-one_0_7932E0CF-1DF8-46A3-AE52-5903A5D9B514.png",
+      "timestamp": 1792476939.546
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "09a726a3b087d3b0a60c586acbb7b548298d9e00a111e675a492624abc3b96fe",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "light-maxAX-long-name.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light2-attachments/3A217984-4316-4546-B345-ED3EC46356E0.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "3A217984-4316-4546-B345-ED3EC46356E0.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-AX-light-Growth-这是一个真正很长需要合理换行的每周习惯名称-full-title_0_2324872B-4CA7-40FE-9C87-9AFB8C07D682.png",
+      "timestamp": 1792476957.481
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light2.xcresult",
+    "sha256": "aa279c3ab46b0c249c8ea03aae7b52bc4bf63290f6d5a3247aacd70bc074eea9",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-default-Today-daily-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/5120EE2E-E9FC-4ABD-B0F4-1FB956FCB262.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "5120EE2E-E9FC-4ABD-B0F4-1FB956FCB262.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-default-dark-Today-daily-zero_0_B0B33022-D3FC-4D45-99CA-0607555629D0.png",
+      "timestamp": 1792477069.896
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "de6e5169608560ff0b889a8722ce8f42c9137090c6384a9fa15b5ca8a0ce9e38",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-default-Today-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/C0AB1C86-C779-4851-9D6A-ECBEF8D369F3.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "C0AB1C86-C779-4851-9D6A-ECBEF8D369F3.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-default-dark-Today-每周锻炼几次-one_0_3BEAAEE3-D2D1-41A5-8C2A-4E1B47394401.png",
+      "timestamp": 1792477075.067
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "afa4e76b21651a1eb20fcfa457b0fb4bd0ef2dc358c58159f8a3a67749d5368e",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-default-Growth-weekly-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/800C75B6-2BC0-4F7F-82B0-8E580E2A512C.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "800C75B6-2BC0-4F7F-82B0-8E580E2A512C.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-default-dark-Growth-每周锻炼几次-zero_0_6085875D-7E23-4372-A7FF-2191BA834C8B.png",
+      "timestamp": 1792477082.942
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "e3519c5bbf221419d98fb9cb2ae83090e6e18ad303e1826dc0b4ec175e975439",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-default-Growth-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/C7039DE0-9D86-45CB-A1F8-302ED5A1C906.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "C7039DE0-9D86-45CB-A1F8-302ED5A1C906.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-default-dark-Growth-每周锻炼几次-one_0_1E02DA43-11A8-4599-A0E5-9048EDF9FA2B.png",
+      "timestamp": 1792477083.68
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "f16caa9efa0e897c2e575ea7133d393bbaf2fd922e3ee70fb84bbcbf62c8b7d9",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-default-Detail-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/1BADE96F-A292-4638-BEEC-39DB4F6E5F49.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "1BADE96F-A292-4638-BEEC-39DB4F6E5F49.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "contrast-zh-default-dark-Detail-每周锻炼几次-one_0_358F3192-7F53-4D67-B86A-4CAD54EF1042.png",
+      "timestamp": 1792477088.172
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "1b3a515b14a4cc9b9a91c0d5a28e7f896df64cf214c8ded0142060dce5fdfc72",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-maxAX-Today-daily-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/4172DB65-F646-48BD-A888-BC761064620B.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "4172DB65-F646-48BD-A888-BC761064620B.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-AX-dark-Today-daily-zero_0_23F14B25-8954-4FE9-8C86-C6EF8E4A98F5.png",
+      "timestamp": 1792477108.734
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "d4160e52e4222d7067b0448613aa9204ee578dc0e63a0a635d3fe346d94b8c2f",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-maxAX-Today-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/61CDCF82-67FB-40B9-94AC-37DFDE6B8F82.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "61CDCF82-67FB-40B9-94AC-37DFDE6B8F82.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-AX-dark-Today-每周锻炼几次-one_0_05C71428-60EA-4FFE-9279-480EE6C62473.png",
+      "timestamp": 1792477119.756
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "1a2c7a135897b9569d3c141eb08ad7409534e104ce1a73d703ca45baa6e19675",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-maxAX-Growth-weekly-zero.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/DC1694FA-5D6C-4F2C-9BAD-BED35F8E7447.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "DC1694FA-5D6C-4F2C-9BAD-BED35F8E7447.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-AX-dark-Growth-每周锻炼几次-zero_0_37357255-0CA3-487C-95B6-7090A064455A.png",
+      "timestamp": 1792477134.282
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "7cdbdcb34d428fef6b10e8be291c61b14e318510ecdb2d7c029ef2031997b980",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-maxAX-Growth-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/D82DC61C-7299-4269-925D-F117F196FD42.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "D82DC61C-7299-4269-925D-F117F196FD42.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-AX-dark-Growth-每周锻炼几次-one_0_4D0DE8B6-A416-4FAB-A8C9-AFAB62FF0F43.png",
+      "timestamp": 1792477134.894
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "ef0487eae95085d35057795d28940a877eb8274c7c3678321082ed0e13e2f639",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-maxAX-Detail-weekly-one.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/5DC6846C-C23B-4F8C-84ED-5D5FD224264D.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "5DC6846C-C23B-4F8C-84ED-5D5FD224264D.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-AX-dark-Detail-每周锻炼几次-one_0_59BE7CB0-F86B-46A6-AC51-1B49EC71BC30.png",
+      "timestamp": 1792477140.078
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "05ef788c1b7ee6369ed666a7e1fb315f59690821dfcba545e4708a029efc9f19",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "dark-maxAX-long-name.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/dark-attachments/4F578C07-0F16-49FB-84F6-7A18147D8DEE.png",
+    "attachment": {
+      "configurationName": "Test Scheme Action",
+      "deviceId": "834F841F-D0EA-4240-8EF1-3008ADEEEC2A",
+      "deviceName": "PGOS-UI-20261020-Narrow",
+      "exportedFileName": "4F578C07-0F16-49FB-84F6-7A18147D8DEE.png",
+      "isAssociatedWithFailure": false,
+      "suggestedHumanReadableName": "zh-AX-dark-Growth-这是一个真正很长需要合理换行的每周习惯名称-full-title_0_8AFFC5CC-466D-4E1D-B052-D851C8C579E9.png",
+      "timestamp": 1792477157.894
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/dark.xcresult",
+    "sha256": "969ebceaf642c5e804eba8dabe617946035d93fffbc298639b47ce972ea140ae",
+    "kind": "original XCUIApplication screenshot; direct byte copy"
+  },
+  {
+    "file": "real-App-settings-material.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/light-first-attachments/71F75453-EB78-4D9E-9182-A51CAD88FC78.png",
+    "sha256": "ceaea038bb1f62082b5a51bc4d70505d3a58890c5b7c4d57c48d042318798bb4",
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/light.xcresult",
+    "kind": "original production App screenshot; no product settings fix"
+  },
+  {
+    "file": "light-default-pressed-increase.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-01-0.png",
+    "sha256": "b78ba8a1d8dede2e2512acbcba046012bad4587b2198d6cb0050c2fc5724dc30",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =     4.04s Press \"today-habit-每天喝水几次-increase\" Button for 2.0 seconds",
+      "epoch": 1792477359.322348,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-01-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light.xcresult"
+  },
+  {
+    "file": "light-default-pressed-decrease.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-02-0.png",
+    "sha256": "6679ac97adf4bce3dfdff054bd3732982f10d2a4b29d51fea1bedfb7bf835f36",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =     6.60s Press \"today-habit-每天喝水几次-decrease\" Button for 2.0 seconds",
+      "epoch": 1792477361.880756,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-02-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light.xcresult"
+  },
+  {
+    "file": "light-maxAX-pressed-increase.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-03-0.png",
+    "sha256": "6cf8a53550af11a27b1a223d81046fa824ac615a69fc083e7bda159f1708cda4",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =    13.51s Press \"today-habit-每天喝水几次-increase\" Button for 2.0 seconds",
+      "epoch": 1792477368.7889438,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-03-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light.xcresult"
+  },
+  {
+    "file": "light-maxAX-pressed-decrease.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-04-0.png",
+    "sha256": "f5df922d33236b7f3321888f39ef43dbf87a630f5540b9a61f6327bba201db28",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =    16.03s Press \"today-habit-每天喝水几次-decrease\" Button for 2.0 seconds",
+      "epoch": 1792477371.309948,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light-press-png/press-04-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-light.xcresult"
+  },
+  {
+    "file": "dark-default-pressed-increase.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-01-0.png",
+    "sha256": "3ad45cd8356e3b51ef6dc0a752d44e763f80eff0b74899d876ea8f9c522b4bf4",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =     4.57s Press \"today-habit-每天喝水几次-increase\" Button for 2.0 seconds",
+      "epoch": 1792477335.769351,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-01-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark.xcresult"
+  },
+  {
+    "file": "dark-default-pressed-decrease.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-02-0.png",
+    "sha256": "9befffe089c3d5633a664cab90ce3844824bef619c8cf2d49261ff53453f6aac",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =     7.33s Press \"today-habit-每天喝水几次-decrease\" Button for 2.0 seconds",
+      "epoch": 1792477338.542371,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-02-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark.xcresult"
+  },
+  {
+    "file": "dark-maxAX-pressed-increase.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-03-0.png",
+    "sha256": "85b27f3aa200b612936b4e19644cb7379ed4d49e89ca132d03c5a4328bcc14b5",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =    14.27s Press \"today-habit-每天喝水几次-increase\" Button for 2.0 seconds",
+      "epoch": 1792477345.498563,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-03-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark.xcresult"
+  },
+  {
+    "file": "dark-maxAX-pressed-decrease.png",
+    "source": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-04-0.png",
+    "sha256": "9b3e4f1d843614f3ed7af99457c11b60cdcd9bd42dc5cdadc5fcf2d74ebca542",
+    "kind": "original simctl framebuffer PNG captured during real production button hold; no video frame conversion",
+    "capture": {
+      "event": "t =    16.80s Press \"today-habit-每天喝水几次-decrease\" Button for 2.0 seconds",
+      "epoch": 1792477348.010907,
+      "path": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark-press-png/press-04-0.png",
+      "exit": 0
+    },
+    "xcresult": "/private/tmp/pgos-ci-contrast-20261020/contrast-press2-dark.xcresult"
+  }
+]

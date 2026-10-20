@@ -1,0 +1,165 @@
+PersonalGrowthOS/Domain/Habit/HabitDomain.swift:590:            id: "\(plan?.period.rawValue ?? "none")-\(start.description)", start: start, end: end,
+PersonalGrowthOS/AppShell.swift:382:                    if payload.source?.url == "http://127.0.0.1:18763/capture.html" {
+PersonalGrowthOS/AppShell.swift:474:            ? "checkmark.circle.fill" : "checkmark.circle")
+PersonalGrowthOS/AppShell.swift:533:                        Button(showsAllHabits ? "Show Less" : "Show All Habits") { showsAllHabits.toggle() }
+PersonalGrowthOS/AppShell.swift:560:                            ModuleEntryRow(title: goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
+PersonalGrowthOS/AppShell.swift:566:                        Button(showsAllGoals ? "Show Less" : "Show All Goals") { showsAllGoals.toggle() }
+PersonalGrowthOS/AppShell.swift:643:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/AppShell.swift:681:            ModuleEntryRow(title: snapshot.today.map { WeightFormatting.kilograms($0.weightKilograms) } ?? String(localized: "No Weight Recorded Today"),
+PersonalGrowthOS/AppShell.swift:682:                subtitle: snapshot.today != nil ? String(localized: "Recorded Today") : snapshot.previous.map {
+PersonalGrowthOS/AppShell.swift:928:                        ? String(localized: "No Archived Entries")
+PersonalGrowthOS/AppShell.swift:930:                    systemImage: showsArchived ? "archivebox" : "clock",
+PersonalGrowthOS/AppShell.swift:933:                            ? String(localized: "Archived entries will appear here.")
+PersonalGrowthOS/AppShell.swift:990:                                    Text(goalsByID[event.goalID]?.title ?? "Goal")
+PersonalGrowthOS/AppShell.swift:1010:                    showsArchived ? "Show Active" : "Show Archived",
+PersonalGrowthOS/AppShell.swift:1011:                    systemImage: showsArchived ? "clock" : "archivebox"
+PersonalGrowthOS/AppShell.swift:1203:                            Text(versionCopied ? "Copied" : "Tap to copy version information")
+PersonalGrowthOS/AppShell.swift:1223:                        .accessibilityValue(BuildProvenance().commit ?? String(localized: "Unknown"))
+PersonalGrowthOS/AppShell.swift:1727:            Text(entry.title ?? entry.body ?? String(localized: "Entry")).lineLimit(2)
+PersonalGrowthOS/AppShell.swift:1793:                    Button(item.isCommitted ? "Remove Pending Copy" : "Discard Share", role: .destructive) {
+PersonalGrowthOS/AppShell.swift:1807:            Button(item.isCommitted ? "Remove Pending Copy" : "Discard Share", role: .destructive) {
+PersonalGrowthOS/AppShell.swift:1813:                ? "The saved entry will remain. Only this Inbox copy will be removed."
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:272:        guard let review else { throw InvestmentEditorPersistenceFailure(message:reviewError ?? String(localized:"Unable to read investment statistics")) }
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:275:    func name(_ id: UUID) -> String { activities.first { $0.id == id }?.name ?? String(localized:"Investment activity") }
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:414:                            Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:464:        Button { let id = UUID(); run { try InvestmentService(context:context).start(activityID:activity.id,participantID:activity.participantID,operationID:id,target:target == 0 ? nil : Double(target*60)); operationID = id } } label: { Label("Start timing",systemImage:"play.fill").frame(minHeight:44) }
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:468:        Button { run { editor = try workspace.newEditor(activityID:activity.id); editor?.persist(context) } } label: { Label("Record activity",systemImage:"square.and.pencil").frame(minHeight:44) }
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:492:            Button(activity.isArchived ? "Restore activity":"Archive activity") {
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:568:        guard let state = op?.timer.projected(at: InvestmentClock.current()).state else { return String(localized: "Close") }
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:664:                Button(editor.timerConfirmation ? "Confirm later" : "Keep draft") { if persist(isClosing:true) {dismiss()} }.accessibilityIdentifier("investment-keep-draft")
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:667:        }.navigationTitle(editor.timerConfirmation ? "Confirm time investment" : "Record activity")
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:783:                Section(selectedDay ?? String(localized:"Current period")) {
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:827:                InvestmentSessionPage(selection:selection,generation:workspace.reviewGeneration,key:"\(today.identifier)-\(days)-\(activity?.uuidString ?? "all")-\(selectedDay ?? "period")")
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:830:                    Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:907:                    Text(session.values.source == .timer ? "Recorded with timer" : "Manually recorded").font(.caption)
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:928:                        Text(workspace.reviewError ?? String(localized:"Unable to read investment statistics")).foregroundStyle(.red)
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:933:                    Button("Edit record") { editor = workspace.edit(session); editor?.persist(context) }.accessibilityIdentifier("investment-edit-session")
+PersonalGrowthOS/TimeInvestment/InvestmentViews.swift:1098:            Text(support.held ? "Importer holds publication":"Importer idle").accessibilityIdentifier("rename-test-import-state")
+PersonalGrowthOS/Library/LibraryView.swift:159:                                entry.title ?? entry.body ?? "Entry",
+PersonalGrowthOS/Library/LibraryView.swift:383:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Library/LibraryView.swift:501:                Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/App/ReminderFoundation.swift:237:                    ? String(localized:"The reminder could not be updated. Please try again.")
+PersonalGrowthOS/App/AppContainer.swift:81:                ? "PersonalGrowthOS-UITesting"
+PersonalGrowthOS/App/AppContainer.swift:317:            return try StartupStoreProtection.withFrozenStore(at: store.appendingPathComponent("PersonalGrowthOS.sqlite"), onStep: { protectionStep = $0 }, onWriterReleased:{checkpoint?("released")}) {
+PersonalGrowthOS/App/AppContainer.swift:318:                checkpoint?("frozen")
+PersonalGrowthOS/Review/WeeklyReviewViews.swift:186:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Review/WeeklyReviewViews.swift:240:                        Text(entry.title ?? entry.body ?? "Entry")
+PersonalGrowthOS/Review/WeeklyReviewViews.swift:450:                            ? String(localized: "Completed")
+PersonalGrowthOS/Review/WeeklyReviewViews.swift:454:                    Image(systemName: review.isCompleted ? "checkmark.circle.fill" : "circle")
+PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:48:    var errorDescription:String? {String(localized:"Storage is busy. Your input is kept. Please try again.")}
+PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:144:    var processingVersion = "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown")/\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "unknown")/capture1"
+PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:165:            try worker.checkpoint?("scheduled")
+PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:244:        try checkpoint?("beforeStateWrite")
+PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:369:                try checkpoint?("attachment")
+PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:388:            try checkpoint?("beforeSave")
+PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift:402:        try checkpoint?("afterSave")
+PersonalGrowthOS/PersonalGrowthOSApp.swift:142:                        Button(copied ? "Copied" : "Copy Diagnostic Report") {
+PersonalGrowthOS/App/AppConfiguration.swift:45:        name = value("CFBundleDisplayName") ?? value("CFBundleName") ?? String(localized: "Unknown")
+PersonalGrowthOS/App/AppConfiguration.swift:46:        version = value("CFBundleShortVersionString") ?? String(localized: "Unknown")
+PersonalGrowthOS/App/AppConfiguration.swift:47:        build = value("CFBundleVersion") ?? String(localized: "Unknown")
+PersonalGrowthOS/App/AppConfiguration.swift:64:        let origin = values["Source"] as? String ?? "unknown"
+PersonalGrowthOS/App/AppConfiguration.swift:65:        source = valid && ["localGit", "xcodeCloud"].contains(origin) ? origin : "unknown"
+PersonalGrowthOS/App/AppConfiguration.swift:77:    var shortCommit: String { commit.map { String($0.prefix(9)) } ?? String(localized: "Unknown") }
+PersonalGrowthOS/App/AppConfiguration.swift:81:        case "localGit": return isDirty ? String(localized: "Local build · uncommitted changes") : String(localized: "Local Git build")
+PersonalGrowthOS/App/AppConfiguration.swift:86:        var lines = [version.displayText, "Commit: \(commit ?? String(localized: "Unknown"))", sourceLabel]
+PersonalGrowthOS/QuietWins/QuietWinsViews.swift:157:                                ModuleEntryRow(title: day.day.description, systemImage: expanded ? "chevron.down" : "chevron.right",
+PersonalGrowthOS/QuietWins/QuietWinsViews.swift:162:                                .accessibilityValue(expanded ? String(localized: "Expanded") : String(localized: "Collapsed"))
+PersonalGrowthOS/QuietWins/QuietWinsViews.swift:170:                ContentUnavailableView(failed ? "Unable to Load Evidence" : "Evidence No Longer Available",
+PersonalGrowthOS/QuietWins/QuietWinsViews.swift:193:                Text(verbatim: source.day.description + (source.kind == .habitLog ? " · " + String(localized: "Recorded that day") : ""))
+PersonalGrowthOS/QuietWins/QuietWinsViews.swift:196:        }.accessibilityIdentifier(source.kind == .habitLog ? "quiet-wins-source-habitLog-\(source.sourceID)" : "quiet-wins-source-\(source.kind.rawValue)")
+PersonalGrowthOS/QuietWins/QuietWinsViews.swift:341:                            Text(entry.title ?? entry.body ?? String(localized: "Entry"))
+PersonalGrowthOS/ImportantDays/ImportantDayInteraction.swift:27:        selection == "all" || selection == "general" || periods.contains(selection) ? selection : "all"
+PersonalGrowthOS/ImportantDays/ImportantDayUITestFixture.swift:38:        for (title, period) in [("General A", nil as ImportantCivilDay?), ("General B", nil), ("Period 2026", ImportantCivilDay(year: 2026, month: 10, day: 15))] {
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:48:                    Text(query.isEmpty ? String(localized: "A trip to look forward to, a beginning to remember, or an anniversary. Your examples stay yours to create.") : String(localized: "No matching days"))
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:63:            Section(showArchived ? "Archived days" : "Next dates") {
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:95:            systemImage: "calendar", value: day.isArchived ? String(localized: "Archived") : nil)
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:141:                            ImportantDayCoverImage(url: url, cropX: (try? day.preferences().cropX) ?? 0.5, cropY: (try? day.preferences().cropY) ?? 0.5).frame(height: 180).clipped().accessibilityLabel("Independent cover")
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:200:                            Text(p.reminderOffsets.isEmpty ? String(localized: "No reminder") : String(localized: "Reminder preferences saved; device schedule is checked separately."))
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:201:                            Text(p.desktopVisible ? String(localized: "Authorized for desktop display") : String(localized: "Private in this app"))
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:206:                        Button(day.isArchived ? "Restore" : "Archive") { perform { var draft = try ImportantDayDraft(day); draft.archived.toggle(); _ = try service.save(draft, id: dayID) } }
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:325:                        Toggle("I know the starting year", isOn: Binding(get: { draft.rule.year != nil }, set: { draft.rule.year = $0 ? today.year : nil; if !$0 { draft.rule.perspective = .next } })).accessibilityIdentifier("important-day-known-year")
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:363:                            Toggle(offset == 0 ? String(localized: "On the day") : String(localized: "\(offset) days before"), isOn: Binding(get: { draft.preferences.reminderOffsets.contains(offset) }, set: { enabled in
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:404:            .navigationTitle(day == nil ? String(localized: "Add Important Day") : String(localized: "Edit Important Day"))
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:531:                let source = MediaSource(url: target, originalFilename: "Cover.\(ext)", contentType: type.preferredMIMEType ?? "image/\(ext)")
+PersonalGrowthOS/ImportantDays/ImportantDayViews.swift:610:            Picker(rule.calendar == .chinese ? "Lunar year" : "Anniversary year", selection: Binding(get: { selection.selectedYear(rule: rule, today: today) }, set: { selection.year = $0 })) {
+PersonalGrowthOS/Sleep/SleepViews.swift:77:        let day = hour < 0 ? String(localized: "Previous day") : hour < 24 ? String(localized: "Wake day") : String(localized: "Next day")
+PersonalGrowthOS/Sleep/SleepViews.swift:219:                            Text(saved.values.feeling.map(SleepFormatting.feeling) ?? String(localized: "Unknown"))
+PersonalGrowthOS/Sleep/SleepViews.swift:268:        LabeledContent(label) { Text(exists ? SleepRules.timing(stamp, day: day, zone: zone).label : String(localized: "Unknown")) }
+PersonalGrowthOS/Sleep/SleepViews.swift:319:                    if let range, (try? range.bounds(zone: zone)) == nil { Text("Civil range retained; absolute time is uncertain due to daylight saving.").font(.caption) }
+PersonalGrowthOS/Sleep/SleepViews.swift:507:                    do { try SleepService(context: context).setGoal(cutoffMinute: goalEnabled ? goalMinute : nil); workspace.refresh(context); workspace.message = String(localized: "Bedtime goal saved.") }
+PersonalGrowthOS/Sleep/SleepViews.swift:511:                    Text(rule.effectiveDay + " · " + (rule.cutoffMinute.map(SleepFormatting.minute) ?? String(localized: "Goal disabled"))).font(.caption)
+PersonalGrowthOS/QuietWins/QuietWinsReader.swift:27:                completedAt: goal.completedAt, latestLifecycleKind: kinds.count == 1 ? kinds.first : (latest.isEmpty ? nil : "ambiguous"),
+PersonalGrowthOS/QuietWins/QuietWinsReader.swift:66:            .init(id: $0.id, title: $0.title?.isEmpty == false ? $0.title! : String(localized: "Life record"),
+PersonalGrowthOS/ImportantDays/ImportantDayReminders.swift:49:                let body = preferences.genericNotification ? String(localized: "An important day is approaching. Open the app to view it.") : title
+PersonalGrowthOS/Search/SearchView.swift:39:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Search/SearchView.swift:183:                                systemImage: goal.kind == .flag ? "flag" : "target"
+PersonalGrowthOS/Todo/TodoViews.swift:79:                    LabeledContent("List", value: unclassifiedOnly ? String(localized: "Unclassified") : lists.first { $0.id == listID }?.name ?? String(localized: "All Lists"))
+PersonalGrowthOS/Todo/TodoViews.swift:85:                        Text(query.isEmpty ? String(localized: "No tasks in this view") : String(localized: "No matching tasks"))
+PersonalGrowthOS/Todo/TodoViews.swift:100:                            Image(systemName: task.state == .completed ? "checkmark.circle.fill" : task.state == .canceled ? "arrow.uturn.backward.circle" : "circle")
+PersonalGrowthOS/Todo/TodoViews.swift:104:                        .accessibilityLabel(task.state == .open ? String(localized: "Complete Todo") : String(localized: "Reopen Todo"))
+PersonalGrowthOS/Todo/TodoViews.swift:208:                        LabeledContent("List", value: lists.first { $0.id == draft.listID }?.name ?? String(localized: "Unclassified")).frame(maxWidth:.infinity,minHeight:44).contentShape(.rect)
+PersonalGrowthOS/Todo/TodoViews.swift:279:            .navigationTitle(task == nil ? String(localized: "Add Todo") : String(localized: "Edit Todo"))
+PersonalGrowthOS/Todo/TodoViews.swift:397:                        Button(task.state == .open ? String(localized: "Complete Todo") : String(localized: "Reopen Todo")) {
+PersonalGrowthOS/Todo/TodoViews.swift:409:                                Text(rule.isStopped ? String(localized: "Series stopped") : String(localized: "Fixed calendar series"))
+PersonalGrowthOS/Todo/TodoViews.swift:433:                                Label(entry.title ?? entry.body ?? String(localized: "Entry"), systemImage: "doc.text")
+PersonalGrowthOS/Todo/TodoViews.swift:440:                                Text(TodoEventKind(rawValue: event.kindRawValue)?.label ?? String(localized: "Unknown"))
+PersonalGrowthOS/Todo/TodoViews.swift:695:        guard let mask,let days=try? TodoWeekdayRule.weekdays(mask) else {return String(localized:"Choose at least one weekday.")}
+PersonalGrowthOS/Todo/TodoViews.swift:712:                        Image(systemName:selection.contains(day) ? "checkmark.circle.fill" : "circle")
+PersonalGrowthOS/Todo/TodoViews.swift:715:                    .accessibilityValue(selection.contains(day) ? String(localized:"Selected") : String(localized:"Not selected"))
+PersonalGrowthOS/Todo/TodoViews.swift:798:    var label: String {self == .alarm ? String(localized:"Alarm reminder") : String(localized:"Notification reminder")}
+PersonalGrowthOS/Sleep/SleepTransfer.swift:47:                guard exists || stamp == nil, stamp.map({ $0.timeIntervalSinceReferenceDate.isFinite && $0 >= transfer.createdAt && $0 <= transfer.updatedAt }) ?? true else { throw TransferPackageError.invalidObject("sleep field evidence") }
+PersonalGrowthOS/Weight/WeightViews.swift:37:                    Section(historical ? "Latest through selected date" : "Latest Weight") {
+PersonalGrowthOS/Weight/WeightViews.swift:48:                        ContentUnavailableView(historical ? "No records through selected date" : "No Weight Records", systemImage: "scalemass")
+PersonalGrowthOS/Weight/WeightViews.swift:82:                                Text(value.mean.map(WeightFormatting.kilograms) ?? String(localized: "No data"))
+PersonalGrowthOS/Weight/WeightViews.swift:107:                Section(selectedDay == nil ? (historical ? String(localized:"Recent measurements through \(snapshot.asOfDay.formatted(date:.abbreviated,time:.omitted))") : String(localized:"Recent measurements")) : String(localized:"Selected day")) {
+PersonalGrowthOS/Weight/WeightViews.swift:364:            .navigationTitle(record == nil ? "Record Weight" : "Edit Weight")
+PersonalGrowthOS/Weight/WeightViews.swift:425:    var label: String {self == .china ? String(localized:"China adult reference") : String(localized:"WHO adult reference")}
+PersonalGrowthOS/Weight/WeightViews.swift:461:                    Text(preference.heightCentimeters == nil ? "Set height (optional)" : "Edit or clear height")
+PersonalGrowthOS/ImportExport/ImportExportService.swift:49:    var errorDescription:String? {String(localized:"A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup.")}
+PersonalGrowthOS/ImportExport/ImportExportService.swift:94:            ?? mediaStore.rootURL.appendingPathComponent("Transfer", isDirectory: true)
+PersonalGrowthOS/ImportExport/ImportExportService.swift:526:                guard payload?["entryPins"] is [Any], payload?["entryFollowUps"] is [Any] else {
+PersonalGrowthOS/ImportExport/ImportExportService.swift:532:                guard payload?["entrySources"] is [Any] else { throw TransferPackageError.corruptData }
+PersonalGrowthOS/Todo/TodoTransfer.swift:264:            if let mask=value.weekdaysMask {try require((1...127).contains(mask) && series[value.id]?.first?.frequencyRawValue == "customWeekdays")}
+PersonalGrowthOS/Todo/TodoTransfer.swift:265:            else {try require(series[value.id]?.first?.frequencyRawValue != "customWeekdays")}
+PersonalGrowthOS/Growth/GoalViews.swift:33:                            ? String(localized: "Add Flag")
+PersonalGrowthOS/Growth/GoalViews.swift:60:                                    systemImage: goal.kind == .flag ? "flag" : "target"
+PersonalGrowthOS/Growth/GoalViews.swift:76:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Growth/GoalViews.swift:158:                        Label(entry.title ?? entry.body ?? "Entry", systemImage: "doc.text")
+PersonalGrowthOS/Growth/GoalViews.swift:215:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Growth/GoalViews.swift:293:                    ? String(localized: "Edit Flag")
+PersonalGrowthOS/Growth/GoalViews.swift:361:                            relationButton(reviewed.title ?? reviewed.body ?? "Entry", linked: isReviewed(reviewed)) {
+PersonalGrowthOS/Growth/GoalViews.swift:409:                    ? String(localized: "Reviewed Objects")
+PersonalGrowthOS/Growth/GoalViews.swift:417:                Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Growth/GoalViews.swift:507:                Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Growth/GoalViews.swift:535:                        Text(entry.title ?? entry.body ?? "Entry")
+PersonalGrowthOS/Growth/GoalViews.swift:548:                Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Growth/HabitViews.swift:432:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Growth/HabitViews.swift:466:                Image(systemName: checkedInToday ? "checkmark.circle.fill" : "checkmark.circle")
+PersonalGrowthOS/Growth/HabitViews.swift:774:                                checkedInToday ? "Completed Today" : "Check In",
+PersonalGrowthOS/Growth/HabitViews.swift:776:                                    ? "checkmark.circle.fill"
+PersonalGrowthOS/Growth/HabitViews.swift:932:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Growth/HabitViews.swift:964:        case "days": count == 1 ? String(localized: "day") : String(localized: "days")
+PersonalGrowthOS/Growth/HabitViews.swift:965:        case "weeks": count == 1 ? String(localized: "week") : String(localized: "weeks")
+PersonalGrowthOS/Growth/HabitViews.swift:966:        case "months": count == 1 ? String(localized: "month") : String(localized: "months")
+PersonalGrowthOS/Growth/HabitViews.swift:1238:                        ? String(localized: "Tracking Only records activity without a target or missed days.")
+PersonalGrowthOS/Growth/HabitViews.swift:1240:                        ? String(localized: "Choose this when completing the Habit once is enough for the day.")
+PersonalGrowthOS/Growth/HabitViews.swift:1269:                    ? String(localized: "New Habit")
+PersonalGrowthOS/Growth/HabitViews.swift:1465:                    ? String(localized: "Success rate on scheduled days")
+PersonalGrowthOS/Growth/HabitViews.swift:1496:                                entry.title ?? entry.body ?? String(localized: "Insight"),
+PersonalGrowthOS/Growth/HabitViews.swift:1524:                ? String(localized: "Selected Days")
+PersonalGrowthOS/Growth/HabitViews.swift:1679:            ? String(localized: "Weekday scheduled success rate")
+PersonalGrowthOS/Growth/HabitViews.swift:1858:                        ? String(localized: "Completed")
+PersonalGrowthOS/Growth/HabitViews.swift:1860:                    systemImage: log.isCompleted ? "checkmark.circle.fill" : "circle"
+PersonalGrowthOS/Todo/TodoReminders.swift:70:        content.title = request.importantDayID == nil ? String(localized: "Todo Reminder") : String(localized: "Important Day")
+PersonalGrowthOS/Capture/QuickCaptureView.swift:194:            ? String(localized: "Choose Photos")
+PersonalGrowthOS/Capture/QuickCaptureView.swift:337:                        contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
+PersonalGrowthOS/Capture/EntryDetailView.swift:208:                            Label(reviewed.title ?? reviewed.body ?? "Entry", systemImage: "doc.text")
+PersonalGrowthOS/Capture/EntryDetailView.swift:230:                            Label(goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
+PersonalGrowthOS/Capture/EntryDetailView.swift:259:                            Label(goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
+PersonalGrowthOS/Capture/EntryDetailView.swift:275:                        ? String(localized: "Manage Reviewed Objects")
+PersonalGrowthOS/Capture/EntryDetailView.swift:286:                ? String(localized: "Review")
+PersonalGrowthOS/Capture/EntryDetailView.swift:295:                            NavigationLink(availableTodos.first { $0.id == source.taskID }?.title ?? String(localized: "Todo")) { TodoDetailView(taskID: source.taskID, mediaStore: mediaStore, thumbnailStore: thumbnailStore) }
+PersonalGrowthOS/Capture/EntryDetailView.swift:310:                        Button(isPinned ? "Unpin Entry" : "Pin Entry", systemImage: isPinned ? "pin.slash" : "pin") {
+PersonalGrowthOS/Capture/EntryDetailView.swift:381:            Text(errorMessage ?? String(localized: "Please try again."))
+PersonalGrowthOS/Capture/EntryDetailView.swift:608:                        contentType: type.preferredMIMEType ?? "image/\(fileExtension)"
+PersonalGrowthOS/Capture/EntryDetailView.swift:752:            .navigationTitle(followUp == nil ? "Add a Thought" : "Edit Follow-up")

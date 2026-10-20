@@ -1,0 +1,823 @@
+{
+  "terminalRecheckGoalSHA": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+  "rawEvidenceRoot": "/tmp/pgos-pr13-recheck-evidence",
+  "runs": [
+    {
+      "name": "red-a-build",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 65,
+      "elapsedSeconds": 4.492,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/red-a-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "7217a332a96525934ede269ddcc52fba5ee2fdbaf9964dda374bbc9072ef8845",
+      "logSHA256": "0f0e9a9a3cc0cd389abf1f5f06d1f665f9bea270c21fadb1f197bfea98667054"
+    },
+    {
+      "name": "red-a-build2",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 6.424,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/red-a-build2.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "a3c749edf976b0d43fbae390437cd31f851c3fb67ecdf46a4102661717d3b1ae",
+      "logSHA256": "6b4d2b03f16fa6616aec40d9eb9968101b351f46cbd619251c5e8cb6dcbe673c"
+    },
+    {
+      "name": "red-chains-build",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 7.367,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/red-chains-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "0469bd859bcd76f7d453c8af50027b8d476c083c6488ac95cfa415be9de149a6",
+      "logSHA256": "d781e870f54cbf4bf7b54610cc4175dd97a19c4cb11f4ef8918706a11da9f0ed"
+    },
+    {
+      "name": "red-chains",
+      "kind": "test",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 65,
+      "elapsedSeconds": 15.974,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/red-chains.xcresult",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests",
+        "-only-testing:PersonalGrowthOSTests/ImportantDayReminderTests/testTerminalIC02StableFailureCleanupLatestIntentAndRetryMatrix"
+      ],
+      "recordSHA256": "dc94d914314b147ee389f1f193f205abecde1811f84d18b11969c020f121f7c5",
+      "logSHA256": "f6c00c9db48a3066c18b89a9156399dbd774d491c87fb3ce6cfdbe9f58e2ae2a",
+      "summary": {
+        "totalTestCount": 4,
+        "passedTests": 0,
+        "failedTests": 4,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertNotEqual failed: (\"Optional(C5235F93-5B14-4459-8466-F1CABBD9737F)\") is equal to (\"Optional(C5235F93-5B14-4459-8466-F1CABBD9737F)\")",
+            "testIdentifierString": "ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation()",
+            "testName": "testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation()"
+          },
+          {
+            "failureText": "XCTAssertTrue failed",
+            "testIdentifierString": "ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()",
+            "testName": "testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()"
+          },
+          {
+            "failureText": "XCTAssertNil failed: \"hour: 8 minute: 0 \" - TC-02: persistent off must recover cleanup after all original owners have died",
+            "testIdentifierString": "AppCompositionTests/testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests()",
+            "testName": "testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests()"
+          },
+          {
+            "failureText": "XCTAssertNil failed: \"尚未确认提醒已移除，请重试。\" - TC-03: confirmed removal cannot continue claiming it is unconfirmed",
+            "testIdentifierString": "ImportantDayReminderTests/testTerminalIC02StableFailureCleanupLatestIntentAndRetryMatrix()",
+            "testName": "testTerminalIC02StableFailureCleanupLatestIntentAndRetryMatrix()"
+          }
+        ]
+      },
+      "rawSummarySHA256": "32caf420621d767ee14271a87dacb0f4ccb9724e937ffd0bdc08485d85481e04"
+    },
+    {
+      "name": "red-a-proper-build",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 4.551,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/red-a-proper-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "274f6242f95cdc53aadee931d6f1c6c136077f24be8aedef377baa3815174ce4",
+      "logSHA256": "37f3c6970dce099ba5a74e5de58697609a140373c8e0b50495bbb18f5bff4c01"
+    },
+    {
+      "name": "red-a-proper",
+      "kind": "test",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 65,
+      "elapsedSeconds": 19.799,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/red-a-proper.xcresult",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation"
+      ],
+      "recordSHA256": "aa2d596fc6d00939c53129c29cb6f571acc66eba8c22836875ecae601bde69ba",
+      "logSHA256": "9205b7136afa98cfe0127c62ff5fbb04d8dfa3ac0e2b1ec56d32ad92263ce5e4",
+      "summary": {
+        "totalTestCount": 2,
+        "passedTests": 0,
+        "failedTests": 2,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertNotEqual failed: (\"Optional(1D4A9BFD-DC37-400F-9856-5C2A36801DA7)\") is equal to (\"Optional(1D4A9BFD-DC37-400F-9856-5C2A36801DA7)\")",
+            "testIdentifierString": "ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation()",
+            "testName": "testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation()"
+          },
+          {
+            "failureText": "XCTAssertEqual failed: (\"stopped\") is not equal to (\"scheduled\") - Same UTC instant must not accidentally supply renewal",
+            "testIdentifierString": "ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()",
+            "testName": "testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor()"
+          }
+        ]
+      },
+      "rawSummarySHA256": "bcd434a3b8c4bbda6f6c120605e978209923f635a2d92529b70568f0a9f9706d"
+    },
+    {
+      "name": "green-chains-build",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 7.12,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/green-chains-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "4f2879d5ad194d359f94eaef80a275762a969563e2b6d097508a856a7feb42f0",
+      "logSHA256": "a6eb6f6c111649d6848bae00b6c51c0ac678f1c22ea289de504d9a18e5c93a43"
+    },
+    {
+      "name": "green-chains",
+      "kind": "test",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 7.984,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/green-chains.xcresult",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests",
+        "-only-testing:PersonalGrowthOSTests/ImportantDayReminderTests/testTerminalIC02StableFailureCleanupLatestIntentAndRetryMatrix"
+      ],
+      "recordSHA256": "f23bcb50ff82d9d4367d02f9134a40ab1c5f464868648048020d8628fd3e0836",
+      "logSHA256": "2dc48ef943dc53d8049298ddd179e82a5f809205c3af6047af219f8f2152a65c",
+      "summary": {
+        "totalTestCount": 4,
+        "passedTests": 4,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "5545cb677cb37265c9a07d74e70ca84520b2cd68c31ebe31084c75e6cc081906"
+    },
+    {
+      "name": "expanded-build",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 7.516,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/expanded-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "ada71a65e604166c193dc702c938861f0fd70c5cd3d92a9f6b3caf79b62d0e48",
+      "logSHA256": "aa9fa287b85d68c3bd7e73ad79c6bf9a7eac5aebfcbefe094941c0d778335b0f"
+    },
+    {
+      "name": "expanded-matrix",
+      "kind": "test",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 65,
+      "elapsedSeconds": 20.823,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/expanded-matrix.xcresult",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests",
+        "-only-testing:PersonalGrowthOSTests/ImportantDayReminderTests",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testTerminalRR01OldOrdinaryEditSameValueCorrectionCreatesRealRequest",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testTerminalRR01CorrectionRollbackCancellationOwnershipAndMetadataDoNotRevive",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testTerminalIC02ActualClosedSettingsCurrentFailureRemovesOldRequest",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testIntegrationIR03ActualSettingsSheetCloseReopenSameValueIntent"
+      ],
+      "recordSHA256": "c09fe2c2dd13b1b946aa596bf2c2ba62d28ebe80de8352be0914b9e5939ecf09",
+      "logSHA256": "dda323b8055c170e78b0d4ccd5efdb7ca76e3138bee0ddf0410165efc7a7ba1f",
+      "summary": {
+        "totalTestCount": 21,
+        "passedTests": 18,
+        "failedTests": 3,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertTrue failed",
+            "testIdentifierString": "ImportantDayReminderTests/testDayDeniedFailureOffAndArchiveNeverRemoveOtherBusinessRequests()",
+            "testName": "testDayDeniedFailureOffAndArchiveNeverRemoveOtherBusinessRequests()"
+          },
+          {
+            "failureText": "XCTAssertTrue failed",
+            "testIdentifierString": "ImportantDayReminderTests/testInterleavedDayEditAndTodoMutationCannotPublishOldGeneration()",
+            "testName": "testInterleavedDayEditAndTodoMutationCannotPublishOldGeneration()"
+          },
+          {
+            "failureText": "XCTAssertEqual failed: (\"0\") is not equal to (\"1\")",
+            "testIdentifierString": "ImportantDayReminderTests/testTodoAndDayCompeteInOneDeterministicCapacityAndBothStatusesRefresh()",
+            "testName": "testTodoAndDayCompeteInOneDeterministicCapacityAndBothStatusesRefresh()"
+          }
+        ]
+      },
+      "rawSummarySHA256": "d6ddfa7863f3a9a589172d86e0ec389f4a4344c2f310bcb5acaabca3454d5bc9"
+    },
+    {
+      "name": "focused-build",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 4.862,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/focused-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "caeee49069156b52a07aab9f71ba51cbe65ad93bcaa5870dbaec194a84ed6c69",
+      "logSHA256": "c28d693496e7585435cda58a931004e1f234b00d57b9b9c7e178290ce5733e3e"
+    },
+    {
+      "name": "focused-matrix",
+      "kind": "test",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 20.597,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/focused-matrix.xcresult",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testRecheckTC02ActualColdRootQueryProtectsSettingsNewIntent",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testRecheckTC02EntireAppRootDestroyedColdStartReconcilesOffRequests",
+        "-only-testing:PersonalGrowthOSTests/ImportantDayReminderTests",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testTerminalRR01OldOrdinaryEditSameValueCorrectionCreatesRealRequest",
+        "-only-testing:PersonalGrowthOSTests/ImportExportRecoveryTests/testTerminalRR01CorrectionRollbackCancellationOwnershipAndMetadataDoNotRevive",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testTerminalIC02ActualClosedSettingsCurrentFailureRemovesOldRequest",
+        "-only-testing:PersonalGrowthOSTests/AppCompositionTests/testIntegrationIR03ActualSettingsSheetCloseReopenSameValueIntent"
+      ],
+      "recordSHA256": "119a157fe8591a9fc95a8123205741f6f4fe2073159334ee8cc038ce866713df",
+      "logSHA256": "cef6c7a2b07ecd7a0df81416badd6e5e05b0e7f2f607d0bd20a23125a6fa88ed",
+      "summary": {
+        "totalTestCount": 22,
+        "passedTests": 22,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "c6e29a814a71c5d4e1b9435744e7125efca2f25688d1e9e85ec7effff08df0bb"
+    },
+    {
+      "name": "todo-isolation-probe",
+      "kind": "test",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 65,
+      "elapsedSeconds": 3.521,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/todo-isolation-probe.xcresult",
+        "-only-testing:PersonalGrowthOSTests/TodoReminderTests/testCreateReplaceCompleteReopenCancelDeleteAndNoOtherCategoryRemoval"
+      ],
+      "recordSHA256": "e32a8cc250186e9612b4467792d7533ad2edea3fdfaf6aebc14f700df2cab5d7",
+      "logSHA256": "af6ad67924998a56034eebfbabc80626182d5b6f1a32da4f4958a0ca146bc7cd",
+      "summary": {
+        "totalTestCount": 1,
+        "passedTests": 0,
+        "failedTests": 1,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertEqual failed: (\"8\") is not equal to (\"1\")",
+            "testIdentifierString": "TodoReminderTests/testCreateReplaceCompleteReopenCancelDeleteAndNoOtherCategoryRemoval()",
+            "testName": "testCreateReplaceCompleteReopenCancelDeleteAndNoOtherCategoryRemoval()"
+          }
+        ]
+      },
+      "rawSummarySHA256": "675bf437a5f1f67c560ef33cd80c50a8229dc4cc03e8a931b83687acfc863611"
+    },
+    {
+      "name": "adjacent-build",
+      "kind": "build",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 2.569,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/adjacent-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "d57663096e5d4ce1ead38dbc3df0faa066db04ffcd0a0b18b9b355dc5e705408",
+      "logSHA256": "482f40f13c46164d53b7c1c80c3cc7cb7aa1dd71e942cab6f72c3f417052b6ab"
+    },
+    {
+      "name": "adjacent-todo",
+      "kind": "test",
+      "sourceHead": "ae92c71e7f4b787456dcaa5ba6f7ea07e91d2627",
+      "dirty": true,
+      "exit": 0,
+      "elapsedSeconds": 3.984,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/adjacent-todo.xcresult",
+        "-only-testing:PersonalGrowthOSTests/TodoReminderTests"
+      ],
+      "recordSHA256": "8804c21db5addc39544c2d7fb893aa7a24817aab1480a750372bd21647c640bd",
+      "logSHA256": "fc30dc296a6b51aac75ae1212e8e989983f8a7d58ecf6eacbd1aa02f51e002c4",
+      "summary": {
+        "totalTestCount": 31,
+        "passedTests": 31,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "65107f0c93221ebe066bed4b58a65fdc4fa92618c47390094f643b87c0a75302"
+    },
+    {
+      "name": "final-debug-build",
+      "kind": "build",
+      "sourceHead": "2b0d4917342d03b0f9e5323a1ef2cf58447953fb",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 6.732,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/final-debug-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "eb9ab27f273d049602a53f4c0270e4d5fbd9e169dcd11b0bd73055823a58e144",
+      "logSHA256": "f35ddaa0d1b8fc0222c3556ad53ce90fcc04964c664e48f42281a05171d0e01e"
+    },
+    {
+      "name": "final-unit",
+      "kind": "test",
+      "sourceHead": "2b0d4917342d03b0f9e5323a1ef2cf58447953fb",
+      "dirty": false,
+      "exit": 65,
+      "elapsedSeconds": 68.012,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/final-unit.xcresult",
+        "-only-testing:PersonalGrowthOSTests"
+      ],
+      "recordSHA256": "f1f4fd2f8dac82e9a58ae0e0c4cc617296b98b91ff2e7b5c6564135f646fa44a",
+      "logSHA256": "1e504c30e55a7483b2e5aa94028c5630e3cbde754f0fd7fe90c8ecd7378274cb",
+      "summary": {
+        "totalTestCount": 579,
+        "passedTests": 577,
+        "failedTests": 1,
+        "skippedTests": 1,
+        "expectedFailures": 0,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertEqual failed: (\"8\") is not equal to (\"1\")",
+            "testIdentifierString": "ImportExportRecoveryTests/testTodoV7RoundTripPreservesOccurrencesEventsListsSourcesAndOriginalMedia()",
+            "testName": "testTodoV7RoundTripPreservesOccurrencesEventsListsSourcesAndOriginalMedia()"
+          }
+        ]
+      },
+      "rawSummarySHA256": "9a10f2df781786050c99284355adcb5b538cea30cbdbdc613d63b363b65b80ef"
+    },
+    {
+      "name": "candidate2-debug-build",
+      "kind": "build",
+      "sourceHead": "1b150068e76f4d7e7a6defcd51f10622951f4b4b",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 4.655,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-arch",
+        "arm64",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-derived",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/candidate2-debug-build.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build-for-testing"
+      ],
+      "recordSHA256": "9f3b57bd79782bb0d83b358e796edd83c897280bccf7247a1bbc750c42690c7a",
+      "logSHA256": "dbe88f54b7c252805b8e40e85653a1e6c44b21f0a0e463da46c7111e480c9af7"
+    },
+    {
+      "name": "candidate2-unit",
+      "kind": "test",
+      "sourceHead": "1b150068e76f4d7e7a6defcd51f10622951f4b4b",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 66.846,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/candidate2-unit.xcresult",
+        "-only-testing:PersonalGrowthOSTests"
+      ],
+      "recordSHA256": "f0192c3f15e79b825bf5c285af5837c3b46661736cbf012b367424f4fba09b47",
+      "logSHA256": "0346ddeca0bbc41de5572f9f7d8d542ae60d636a4a6d4ec7d9e7268f4ff15b8e",
+      "summary": {
+        "totalTestCount": 579,
+        "passedTests": 578,
+        "failedTests": 0,
+        "skippedTests": 1,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "fe1642fb526497f9fb27632f45df77180539b4e5dbaa7aabbf3fea1fa42ed661"
+    },
+    {
+      "name": "candidate2-ui",
+      "kind": "test",
+      "sourceHead": "1b150068e76f4d7e7a6defcd51f10622951f4b4b",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 98.947,
+      "command": [
+        "xcodebuild",
+        "test-without-building",
+        "-xctestrun",
+        "/tmp/pgos-pr13-fix-derived/Build/Products/PersonalGrowthOS_PersonalGrowthOS_iphonesimulator27.1-arm64.xctestrun",
+        "-destination",
+        "platform=iOS Simulator,id=42609456-859D-41F8-8977-4B2D85A74082",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/candidate2-ui.xcresult",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testTodoDailyRepeatCompletionSkipStopAndRestartKeepsOneOpenOccurrence",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemDailyWeeklySettingsKeepExplicitOffAcrossRelaunch",
+        "-only-testing:PersonalGrowthOSUITests/SleepUITests/testGoalVisibilityAndDeniedReminderRemainIndependentOfSavedFacts"
+      ],
+      "recordSHA256": "3e00c268440667d9dfefcfdd896999d7661fcb561777afc862df486e1ca86681",
+      "logSHA256": "1e0be8e1c830e4bd50c53053326ce938b8f4a742744beaec07f9d3f9dff4a51a",
+      "summary": {
+        "totalTestCount": 3,
+        "passedTests": 3,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "testFailures": []
+      },
+      "rawSummarySHA256": "af573b347454cd9579d3a05fa7fd0f5730a704ceb161fc26cbf65a07647c50a3"
+    },
+    {
+      "name": "candidate2-release",
+      "kind": "build",
+      "sourceHead": "1b150068e76f4d7e7a6defcd51f10622951f4b4b",
+      "dirty": false,
+      "exit": 0,
+      "elapsedSeconds": 42.573,
+      "command": [
+        "xcodebuild",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS",
+        "-derivedDataPath",
+        "/tmp/pgos-pr13-fix-release",
+        "-resultBundlePath",
+        "/tmp/pgos-pr13-recheck-evidence/candidate2-release.xcresult",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "recordSHA256": "7bd4b5ee28f7f84e0bf8e9ff90e08a610925d69ac0904e21517118a999a3f458",
+      "logSHA256": "4b611c1369f88fee29a61d7dd961c36a824b22c8348dc933cc63b1a1d9bba2e0"
+    }
+  ],
+  "productTestSHA": "1b150068e76f4d7e7a6defcd51f10622951f4b4b",
+  "implementationSHA": "2b0d4917342d03b0f9e5323a1ef2cf58447953fb",
+  "reviewer": {
+    "name": "/root/terminal_recheck_reviewer",
+    "preflightSHA256": "36b5bcae182232fc524304fd5690bca57a847403874e12c2bd0e2f6b6afd307c",
+    "finalSHA256": "6b75465420b1cfd5043d275ea4c8ba56373f0dddc4cee95cdcf39677e9dbe3f9"
+  },
+  "proofs": {
+    "final-bundle-and-gates.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/final-bundle-and-gates.json",
+      "sha256": "9ace6ac314a6367231608d1bfbf242d1282eca35d76a3be3d39a36d5706eb96f"
+    },
+    "reused-evidence-dependencies.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/reused-evidence-dependencies.json",
+      "sha256": "7bd35db54740f7669e9462cbd27682eeae67d8208b9814b8e4f25f7622236022"
+    },
+    "old-f1-source-proof.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/old-f1-source-proof.json",
+      "sha256": "6290fd4b4f97f27fc78205dfd1a88b93a7e313b6645942051d0f2cf2c73eef50"
+    },
+    "test-host-pref-diagnosis.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/test-host-pref-diagnosis.json",
+      "sha256": "222e0ffb183b58e48113806d41f04f052510ac25af07559c2e6f96a70686830f"
+    },
+    "environment-and-worktrees.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/environment-and-worktrees.json",
+      "sha256": "85f9f897c5efca9b4733fafa0bc87726bb80a98034edb6c2c5df71513d69574d"
+    },
+    "dedicated-simulator.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/dedicated-simulator.json",
+      "sha256": "5db1f85c7e93320af99df405677e447435871f26d5f5ed87958e293e9e3adb28"
+    },
+    "reviewer-final-verification.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/reviewer-final-verification.json",
+      "sha256": "11497620957cb9bc03ccffe68d33c6065178df6d230aa88af46bf874db9b2399"
+    },
+    "evidence-file-hashes.json": {
+      "path": "/tmp/pgos-pr13-recheck-evidence/evidence-file-hashes.json",
+      "sha256": "94186610e461ad61b7c807f50cd8d23e2b8dc17a04f9394e22c596511c6f83ac"
+    }
+  },
+  "finalLabels": [
+    "candidate2-debug-build",
+    "candidate2-unit",
+    "candidate2-ui",
+    "candidate2-release"
+  ],
+  "limitations": [
+    "D1-D4 NOT_PASSED",
+    "AlarmKit positive NOT_RUN",
+    "Public Share FAIL/environment",
+    "unsigned Safari FAIL",
+    "physical low-space SKIP/NOT_RUN",
+    "remote CI NOT_RUN"
+  ],
+  "status": "READY_FOR_OWNER_DEVICE_GATE"
+}

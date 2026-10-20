@@ -3,6 +3,32 @@ import SwiftUI
 import UniformTypeIdentifiers
 import UIKit
 
+/// List insets supply the remaining row height; content grows naturally for large text.
+struct ModuleEntryRow: View {
+    let title: String
+    var subtitle: String? = nil
+    let systemImage: String
+    var value: String? = nil
+    var titleID = ""
+    @Environment(\.dynamicTypeSize) private var typeSize
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: systemImage).font(.system(size: 20)).foregroundStyle(.secondary).frame(width: 24)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true).accessibilityIdentifier(titleID)
+                if let subtitle { Text(subtitle).font(.subheadline).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+                if typeSize.isAccessibilitySize, let value { Text(value).font(.subheadline).foregroundStyle(.secondary) }
+            }.frame(maxWidth: .infinity, alignment: .leading)
+            if !typeSize.isAccessibilitySize, let value {
+                Text(value).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }.frame(minHeight: subtitle == nil ? 36 : 48)
+            .contentShape(.rect)
+    }
+}
+
 enum AppTab: Hashable {
     case today
     case timeline
@@ -13,9 +39,12 @@ enum AppTab: Hashable {
 
 struct AppShell: View {
     let container: AppContainer
+    var settingsReminderScheduler = LocalReminderScheduler()
 
     @State private var investmentWorkspace = InvestmentWorkspace()
     @State private var sleepWorkspace = SleepWorkspace()
+    @State private var todoRouter=TodoExternalRouter.shared
+    @State private var presentedTodo: TodoExternalRoute?
     @State private var sleepRouter = SleepExternalRouter.shared
     @State private var presentedSleep: SleepExternalRoute?
     @State private var todoReminders = TodoReminderCoordinator()
@@ -24,6 +53,9 @@ struct AppShell: View {
     @State private var presentedImportantDay: ImportantDayExternalRoute?
     @State private var selectedTab: AppTab = .today
     @State private var isShowingStorage = false
+    @State private var reminderSettingsIntents=ReminderSettingsIntents()
+    @AppStorage("dailyRecordingReminderEnabled") private var dailySettingsReminderEnabled=false
+    @AppStorage("weeklyReviewReminderEnabled") private var weeklySettingsReminderEnabled=false
     @Environment(\.scenePhase) private var captureScenePhase
     @State private var captureFailure = false
     @State private var failedCaptureIDs: [String] = []
@@ -94,6 +126,16 @@ struct AppShell: View {
         #if DEBUG
         .overlay(alignment: .top) {
             VStack {
+            if ProcessInfo.processInfo.arguments.contains("-PGOSUsageTodoRouteTest") {
+                Button("Perform synthetic Todo open intent") {
+                    Task {
+                        if #available(iOS 26.0, *) {
+                            do {_ = try await OpenTodoAlarmIntent(taskID:"40000000-1111-4222-8333-444444444444").perform()}
+                            catch {captureTestStatus="Synthetic Todo route failed"}
+                        }
+                    }
+                }.accessibilityIdentifier("todo-test-open-intent")
+            }
             if ProcessInfo.processInfo.arguments.contains("-PGOSSleepRouteControlsTest") {
                 Button("Queue synthetic sleep route") { sleepRouter.receive(day: "2026-01-01") }.accessibilityIdentifier("sleep-test-route")
             }
@@ -104,16 +146,28 @@ struct AppShell: View {
         }
         #endif
         .task {
+            #if DEBUG
+            ReminderSettingsUpdateProbe.didMountRoot?(reminderSettingsIntents,{isShowingStorage=true})
+            #endif
+            reconcileOffSettingsReminders()
+            todoReminders.observeSystemChanges(container:container.modelContainer)
             investmentWorkspace.checkpoint(container.modelContainer.mainContext)
             sleepWorkspace.refresh(container.modelContainer.mainContext)
-            deliverSleepRoute()
+            deliverSleepRoute();deliverTodoRoute()
             await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             deliverImportantDayRoute()
             await todoReminders.reconcile(context: container.modelContainer.mainContext)
         }
         .onReceive(NotificationCenter.default.publisher(for: .investmentChanged).receive(on: RunLoop.main)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
-            investmentWorkspace.refresh(container.modelContainer.mainContext)
+            investmentWorkspace.receive(notification,context:container.modelContainer.mainContext)
+        }
+        .onChange(of:todoRouter.pending) {_,_ in deliverTodoRoute()}
+        .sheet(item:$presentedTodo) {route in
+            NavigationStack {
+                TodoDetailView(taskID:route.id,mediaStore:container.mediaStore,thumbnailStore:container.thumbnailStore)
+                    .toolbar {ToolbarItem(placement:.confirmationAction) {Button("Done") {presentedTodo=nil}}}
+            }
         }
         .onChange(of: sleepRouter.pending) { _, _ in deliverSleepRoute() }
         .sheet(item: $presentedSleep) { route in SleepEditorLoader(day: route.id) }
@@ -125,6 +179,12 @@ struct AppShell: View {
         .onChange(of: externalRouter.pending) { _, _ in deliverImportantDayRoute() }
         .safeAreaInset(edge: .top) {
             VStack(spacing: 0) {
+            if todoRouter.pending != nil {
+                HStack {
+                    Button("Open requested Todo") {deliverTodoRoute()}.accessibilityIdentifier("todo-pending-route")
+                    Spacer();Button("Dismiss") {todoRouter.pending=nil}
+                }.padding(8).background(.bar)
+            }
             if let pending = sleepRouter.pending {
                 HStack {
                     Button("Open sleep for \(pending.id)") { deliverSleepRoute() }.accessibilityIdentifier("sleep-pending-route")
@@ -151,27 +211,23 @@ struct AppShell: View {
             #if DEBUG
             if phase == .background, ProcessInfo.processInfo.arguments.contains("-PGOSSleepQueueOnBackgroundTest") { sleepRouter.receive(day: "2026-01-01") }
             #endif
-            if phase == .active { Task {
-                sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute()
-                await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
-                await todoReminders.reconcile(context: container.modelContainer.mainContext)
-            } }
+            if phase == .active {
+                reconcileOffSettingsReminders()
+                Task {
+                    sleepWorkspace.refresh(container.modelContainer.mainContext); deliverSleepRoute();deliverTodoRoute()
+                    await importShares(); widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
+                    await todoReminders.reconcile(context: container.modelContainer.mainContext)
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .importantDaysChanged)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
             widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
             Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .todoTasksChanged)) { notification in
-            guard notification.object as? ModelContainer === container.modelContainer else { return }
-            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
-            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
-        }
+        .modifier(TodoReminderEvents(container:container.modelContainer,coordinator:todoReminders))
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
-            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
         }
         .alert("Some shared content could not be imported", isPresented: $captureFailure) {
             Button("Review Pending Shares") { isShowingPendingShares = true }
@@ -205,18 +261,34 @@ struct AppShell: View {
             MediaStorageView(
                 mediaStore: container.mediaStore,
                 importExportService: container.importExportService,
-                integrityReport: container.mediaIntegrityReport
+                integrityReport: container.mediaIntegrityReport,
+                reminderSettingsIntents:reminderSettingsIntents,
+                reminderScheduler:settingsReminderScheduler
             )
         }
         .environment(investmentWorkspace)
         .environment(sleepWorkspace)
         .environment(todoReminders)
+        .environment(\.todoFeedbackMedia, TodoFeedbackMedia(mediaStore: container.mediaStore, thumbnailStore: container.thumbnailStore))
         .environment(widgetPublisher)
+    }
+
+    private func reconcileOffSettingsReminders() {
+        reminderSettingsIntents.reconcileOff(scheduler:settingsReminderScheduler,
+            dailyEnabled:{dailySettingsReminderEnabled},weeklyEnabled:{weeklySettingsReminderEnabled})
+    }
+
+    private func deliverTodoRoute() {
+        guard let route=todoRouter.pending,!isShowingStorage,!isShowingPendingShares,
+              presentedSleep == nil,presentedImportantDay == nil,presentedTodo == nil,
+              !ImportantDayExternalRouter.hasPresentedController() else {return}
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),to:nil,from:nil,for:nil)
+        todoRouter.pending=nil;presentedTodo=route
     }
 
     private func deliverSleepRoute() {
         guard let route = sleepRouter.pending, !isShowingStorage, !isShowingPendingShares,
-              presentedSleep == nil, presentedImportantDay == nil,
+              presentedSleep == nil, presentedImportantDay == nil,presentedTodo == nil,
               !ImportantDayExternalRouter.hasPresentedController() else { return }
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         sleepRouter.pending = nil; presentedSleep = route
@@ -224,7 +296,7 @@ struct AppShell: View {
 
     private func deliverImportantDayRoute() {
         guard let route = externalRouter.pending, !isShowingStorage, !isShowingPendingShares,
-              presentedSleep == nil, presentedImportantDay == nil, !ImportantDayExternalRouter.hasPresentedController() else { return }
+              presentedSleep == nil, presentedImportantDay == nil,presentedTodo == nil, !ImportantDayExternalRouter.hasPresentedController() else { return }
         // Present over the existing hierarchy; Record's StateObject and every tab remain mounted.
         // Explicitly end keyboard focus so dismissing the route cannot restore a keyboard over the tabs.
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -345,6 +417,7 @@ private struct TodayView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var referenceDate = Date()
     @State private var showsAllHabits = false
     @State private var showsAllGoals = false
@@ -396,6 +469,13 @@ private struct TodayView: View {
         return focus
     }
 
+    private func habitActionLabel(_ progress: HabitTodayProgress) -> some View {
+        Label(progress.actionTitle, systemImage: progress.isCompletedForOncePerDay
+            ? "checkmark.circle.fill" : "checkmark.circle")
+            .labelStyle(.titleAndIcon)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     var body: some View {
         List {
             if !todayHabits.isEmpty {
@@ -425,16 +505,18 @@ private struct TodayView: View {
                             Button {
                                 checkIn(habit)
                             } label: {
-                                HStack {
-                                    Text(habit.name)
-                                    Spacer()
-                                    Label(
-                                        progress.actionTitle,
-                                        systemImage: progress.isCompletedForOncePerDay
-                                            ? "checkmark.circle.fill"
-                                            : "checkmark.circle"
-                                    )
-                                    .labelStyle(.titleAndIcon)
+                                if typeSize.isAccessibilitySize {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        ModuleEntryRow(title: habit.name, systemImage: "repeat")
+                                        habitActionLabel(progress).padding(.leading, 36)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    HStack {
+                                        ModuleEntryRow(title: habit.name, systemImage: "repeat")
+                                        Spacer(minLength: 4)
+                                        habitActionLabel(progress)
+                                    }
                                 }
                             }
                             .disabled(
@@ -442,8 +524,9 @@ private struct TodayView: View {
                                     || progress.isCompletedForOncePerDay
                             )
                             .accessibilityLabel("Check in \(habit.name)")
+                            .accessibilityValue(progress.actionTitle)
                             .accessibilityIdentifier("today-habit-\(habit.normalizedName)")
-                            .frame(minHeight: 52)
+                            .frame(minHeight: 44)
                         }
                     }
                     if todayHabits.count > 4 {
@@ -474,10 +557,7 @@ private struct TodayView: View {
                                 thumbnailStore: thumbnailStore
                             )
                         } label: {
-                            Label(
-                                goal.title,
-                                systemImage: goal.kind == .flag ? "flag" : "target"
-                            )
+                            ModuleEntryRow(title: goal.title, systemImage: goal.kind == .flag ? "flag" : "target")
                         }
                         .accessibilityLabel("\(goal.kind.localizedName): \(goal.title)")
                         .accessibilityIdentifier("today-goal-\(goal.normalizedTitle)")
@@ -494,7 +574,7 @@ private struct TodayView: View {
             periodSection(.month, title: "This Month")
             if let thisWeeksFocus {
                 Section("This Week’s Focus") {
-                    Label(thisWeeksFocus, systemImage: "scope")
+                    ModuleEntryRow(title: thisWeeksFocus, systemImage: "scope")
                         .accessibilityIdentifier("today-weekly-focus")
                 }
             }
@@ -588,31 +668,25 @@ private struct TodayView: View {
 
     private var weightSection: some View {
         Section("Weight") {
-            HStack {
-                NavigationLink {
-                    WeightHistoryView()
-                } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        if let today = TodayWeightSnapshot(records: weightRecords).today {
-                            Text("Recorded Today").font(.caption).foregroundStyle(.secondary)
-                            Text(verbatim: WeightFormatting.kilograms(today.weightKilograms))
-                                .accessibilityIdentifier("today-latest-weight")
-                        } else {
-                            Text("No Weight Recorded Today")
-                            if let previous = TodayWeightSnapshot(records: weightRecords).previous {
-                                Text("\(previous.recordedAt.formatted(date: .abbreviated, time: .omitted)) · \(WeightFormatting.kilograms(previous.weightKilograms))")
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                }
-                .accessibilityIdentifier("today-weight")
-                Button("Record Weight") { isAddingWeight = true }
-                    .buttonStyle(.borderless)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityIdentifier("today-add-weight")
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) { weightLink; weightRecordButton }
+                VStack(alignment: .leading, spacing: 4) { weightLink; weightRecordButton }
             }
         }
+    }
+
+    private var weightLink: some View {
+        let snapshot = TodayWeightSnapshot(records: weightRecords)
+        return NavigationLink { WeightHistoryView() } label: {
+            ModuleEntryRow(title: snapshot.today.map { WeightFormatting.kilograms($0.weightKilograms) } ?? String(localized: "No Weight Recorded Today"),
+                subtitle: snapshot.today != nil ? String(localized: "Recorded Today") : snapshot.previous.map {
+                    $0.recordedAt.formatted(date: .abbreviated, time: .omitted) + " · " + WeightFormatting.kilograms($0.weightKilograms)
+                }, systemImage: "scalemass", titleID: "today-latest-weight")
+        }.accessibilityIdentifier("today-weight")
+    }
+    private var weightRecordButton: some View {
+        Button("Record Weight") { isAddingWeight = true }.buttonStyle(.borderless)
+            .frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("today-add-weight")
     }
 
     private var reviewSection: some View {
@@ -620,7 +694,7 @@ private struct TodayView: View {
             NavigationLink {
                 WeeklyReviewView()
             } label: {
-                Label("Weekly Review", systemImage: "text.book.closed")
+                ModuleEntryRow(title: String(localized: "Weekly Review"), systemImage: "text.book.closed")
             }
             .accessibilityIdentifier("today-weekly-review")
         } header: {
@@ -913,7 +987,7 @@ private struct TimelineView: View {
                                     Label("Goal Change", systemImage: "target")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
-                                    Text(goalsByID[event.goalID]?.title ?? "Goal")
+                                    Text(goalsByID[event.goalID]?.title ?? String(localized: "Goal"))
                                     LabeledContent(
                                         event.kind.localizedName,
                                         value: event.occurredAt.formatted(date: .abbreviated, time: .shortened)
@@ -942,10 +1016,12 @@ private struct TimelineView: View {
     }
 }
 
-private struct MediaStorageView: View {
+struct MediaStorageView: View {
     let mediaStore: MediaStore
     let importExportService: ImportExportService
     let integrityReport: MediaIntegrityReport
+    let reminderSettingsIntents: ReminderSettingsIntents
+    var reminderScheduler=LocalReminderScheduler()
 
     @Environment(\.dismiss) private var dismiss
     @State private var pendingImportURL: URL?
@@ -959,6 +1035,8 @@ private struct MediaStorageView: View {
     @State private var isSharing = false
     @State private var exportLease: ExportPackageLease?
     @State private var transferMessage: String?
+    @State private var offersQuantityRecovery=false
+    @State private var quantityRecoveryURL:URL?
     @State private var transferTask: Task<Void, Never>?
     @State private var isTransferring = false
     @AppStorage("dailyRecordingReminderEnabled") private var dailyReminderEnabled = false
@@ -969,8 +1047,8 @@ private struct MediaStorageView: View {
     @State private var notificationPermissionDenied = false
     @State private var reminderMessage: String?
     @State private var reminderAlertOffersSettings = false
-    @State private var dailyReminderTask: Task<Void, Never>?
-    @State private var weeklyReminderTask: Task<Void, Never>?
+    private var dailyReminderUpdate:ReminderSettingsUpdate {ReminderSettingsUpdate(scope:reminderSettingsIntents.daily)}
+    private var weeklyReminderUpdate:ReminderSettingsUpdate {ReminderSettingsUpdate(scope:reminderSettingsIntents.weekly)}
 
     var body: some View {
         NavigationStack {
@@ -1020,6 +1098,12 @@ private struct MediaStorageView: View {
                         .accessibilityIdentifier("daily-reminder-time")
                     }
 
+                    if let message=reminderSettingsIntents.daily.failureMessage {
+                        Text(message).foregroundStyle(.red).accessibilityIdentifier("daily-reminder-failure")
+                        if reminderSettingsIntents.daily.cleanupPending {
+                            Button(String(localized: "Try Again")) {updateDailyReminder(requestPermission:false)}
+                        }
+                    }
                     Toggle("Weekly Review Reminder", isOn: $weeklyReminderEnabled)
                         .accessibilityIdentifier("weekly-reminder-toggle")
                     if weeklyReminderEnabled {
@@ -1038,6 +1122,12 @@ private struct MediaStorageView: View {
                         .accessibilityIdentifier("weekly-reminder-time")
                     }
 
+                    if let message=reminderSettingsIntents.weekly.failureMessage {
+                        Text(message).foregroundStyle(.red).accessibilityIdentifier("weekly-reminder-failure")
+                        if reminderSettingsIntents.weekly.cleanupPending {
+                            Button(String(localized: "Try Again")) {updateWeeklyReminder(requestPermission:false)}
+                        }
+                    }
                     if notificationPermissionDenied {
                         Label(
                             "Notifications are disabled in iOS Settings.",
@@ -1071,6 +1161,15 @@ private struct MediaStorageView: View {
                     .accessibilityIdentifier("settings-import-button")
                     .disabled(isTransferring)
 
+                    if offersQuantityRecovery {
+                        Text("A habit check-in has an invalid quantity. No data was changed. You can save retained data for support recovery; it is not a normal backup.").font(.caption)
+                        if let quantityRecoveryURL {
+                            ShareLink("Save Retained Data",item:quantityRecoveryURL).accessibilityIdentifier("settings-share-quantity-recovery")
+                        } else {
+                            Button("Prepare Retained Data Export") {prepareQuantityRecovery()}
+                                .disabled(isTransferring).accessibilityIdentifier("settings-quantity-recovery")
+                        }
+                    }
                     if isTransferring {
                         HStack {
                             ProgressView()
@@ -1150,8 +1249,12 @@ private struct MediaStorageView: View {
             .interactiveDismissDisabled(isTransferring)
             .task {
                 byteCount = try? mediaStore.originalsByteCount()
-                notificationPermissionDenied = await LocalReminderScheduler()
-                    .authorizationIsDenied()
+                notificationPermissionDenied = await reminderScheduler.authorizationIsDenied()
+                #if DEBUG
+                ReminderSettingsUpdateProbe.didMountSettings?(
+                    {updateDailyReminder(requestPermission:false)},
+                    {updateWeeklyReminder(requestPermission:false)})
+                #endif
             }
             .onChange(of: dailyReminderEnabled) { _, enabled in
                 updateDailyReminder(requestPermission: enabled)
@@ -1281,42 +1384,31 @@ private struct MediaStorageView: View {
     }
 
     private func updateDailyReminder(requestPermission: Bool) {
-        dailyReminderTask?.cancel()
-        dailyReminderTask = Task {
-            do {
-                let result = try await LocalReminderScheduler().updateDaily(
-                    enabled: dailyReminderEnabled,
-                    minutesAfterMidnight: dailyReminderMinutes,
-                    requestPermission: requestPermission
-                )
-                handleReminderResult(result) { dailyReminderEnabled = false }
-            } catch is CancellationError {
-                return
-            } catch {
-                dailyReminderEnabled = false
-                showReminderError()
+        let enabled=dailyReminderEnabled,minutes=dailyReminderMinutes
+        dailyReminderUpdate.submit(operation: {
+            try await reminderScheduler.updateDaily(enabled:enabled,minutesAfterMidnight:minutes,requestPermission:requestPermission)
+        },isCurrent:{dailyReminderEnabled == enabled && dailyReminderMinutes == minutes},recover:{current in
+            await reminderScheduler.removeAfterFailure(weekly:false,isCurrent:current)
+        },apply: {result in
+            switch result {
+            case .success(let value): handleReminderResult(value) {dailyReminderEnabled=false}
+            case .failure: dailyReminderEnabled=false;showReminderError()
             }
-        }
+        })
     }
 
     private func updateWeeklyReminder(requestPermission: Bool) {
-        weeklyReminderTask?.cancel()
-        weeklyReminderTask = Task {
-            do {
-                let result = try await LocalReminderScheduler().updateWeekly(
-                    enabled: weeklyReminderEnabled,
-                    weekday: weeklyReminderWeekday,
-                    minutesAfterMidnight: weeklyReminderMinutes,
-                    requestPermission: requestPermission
-                )
-                handleReminderResult(result) { weeklyReminderEnabled = false }
-            } catch is CancellationError {
-                return
-            } catch {
-                weeklyReminderEnabled = false
-                showReminderError()
+        let enabled=weeklyReminderEnabled,minutes=weeklyReminderMinutes,weekday=weeklyReminderWeekday
+        weeklyReminderUpdate.submit(operation: {
+            try await reminderScheduler.updateWeekly(enabled:enabled,weekday:weekday,minutesAfterMidnight:minutes,requestPermission:requestPermission)
+        },isCurrent:{weeklyReminderEnabled == enabled && weeklyReminderMinutes == minutes && weeklyReminderWeekday == weekday},recover:{current in
+            await reminderScheduler.removeAfterFailure(weekly:true,isCurrent:current)
+        },apply: {result in
+            switch result {
+            case .success(let value): handleReminderResult(value) {weeklyReminderEnabled=false}
+            case .failure: weeklyReminderEnabled=false;showReminderError()
             }
-        }
+        })
     }
 
     private func handleReminderResult(
@@ -1352,6 +1444,15 @@ private struct MediaStorageView: View {
         UIApplication.shared.open(url)
     }
 
+    private func prepareQuantityRecovery() {
+        isTransferring=true
+        transferTask=Task {
+            defer {isTransferring=false;transferTask=nil}
+            do {quantityRecoveryURL=try await importExportService.exportRetainedQuantityData()}
+            catch {transferMessage=transferErrorMessage(error)}
+        }
+    }
+
     private func startExport() {
         transferTask?.cancel()
         isTransferring = true
@@ -1370,6 +1471,7 @@ private struct MediaStorageView: View {
                 cleanupExport()
                 transferMessage = String(localized: "Export cancelled. Temporary files were removed.")
             } catch {
+                if error is NonfiniteHabitQuantityError {offersQuantityRecovery=true}
                 transferMessage = transferErrorMessage(error)
             }
         }
@@ -1427,6 +1529,7 @@ private struct MediaStorageView: View {
 
     private func transferErrorMessage(_ error: Error) -> String {
         switch error {
+        case let invalid as NonfiniteHabitQuantityError: invalid.localizedDescription
         case TransferPackageError.targetNotEmpty:
             String(localized: "Import requires an empty database. Existing data was left unchanged.")
         case TransferPackageError.unsupportedSchema:

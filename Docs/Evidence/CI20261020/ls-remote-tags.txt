@@ -1,0 +1,14 @@
+60b8f2241bb71b56f3a80f265ca628d5e74b608a	refs/tags/testflight-1.0-b7
+95076bf5c2a86122fbd327903d80bccdfb8c768d	refs/tags/testflight-1.0-b7^{}
+dc529d83a2027df68cd5931c83f4b992735851ef	refs/tags/testflight-1.0-b7-r2
+95076bf5c2a86122fbd327903d80bccdfb8c768d	refs/tags/testflight-1.0-b7-r2^{}
+290a5b74fdbfbcb0f8d02272c5294db850e07992	refs/tags/testflight-1.0.0-build9
+ae14f107f7eebb89a1549e00de3d941e6a996281	refs/tags/testflight-1.0.0-build9^{}
+4668b167fa888fc8574f6a62b56a4b363ee0a9ee	refs/tags/testflight-build8-owner-validation-1
+ae8f7cb6577f2d1bc479471bcd98d6f437670210	refs/tags/testflight-build8-owner-validation-1^{}
+02ddcdeef4e42f0374d6bfc0ba5afd60dafd63bc	refs/tags/testflight-external-capture-c5a3c0a
+c5a3c0ac859efc3ffa4e5d9f77909ec43565c871	refs/tags/testflight-external-capture-c5a3c0a^{}
+0fb0812b7dae24db9498cb9394c243a7f477c3b3	refs/tags/testflight-todo-v1-dc4bacc
+dc4bacc930f9490128896c4e6b66d67540a074ac	refs/tags/testflight-todo-v1-dc4bacc^{}
+9910df59eb061c17f79301bda76a12412221649d	refs/tags/testflight-xcode27-retry-20261020
+c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c	refs/tags/testflight-xcode27-retry-20261020^{}

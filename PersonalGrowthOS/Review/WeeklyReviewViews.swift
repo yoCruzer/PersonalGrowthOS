@@ -13,9 +13,12 @@ struct WeeklyReviewView: View {
     }
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.timeZone) private var environmentTimeZone
+    private var timeZone:TimeZone {WeeklyReviewClock.zone(live:environmentTimeZone)}
     @Query private var entries: [Entry]
     @Query private var habits: [Habit]
     @Query private var habitLogs: [HabitLog]
+    @Query private var dayMetadata: [HabitLogDayMetadata]
     @Query private var weightRecords: [WeightRecord]
     @Query private var tags: [Tag]
     @Query private var links: [ObjectLink]
@@ -33,21 +36,27 @@ struct WeeklyReviewView: View {
     @State private var errorMessage: String?
     @FocusState private var focusedField: Field?
 
-    init(referenceDate: Date = Date()) {
+    init(referenceDate: Date = WeeklyReviewClock.current()) {
         self.referenceDate = referenceDate
-        weekIdentifier = nil
+#if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-PGOSUITesting"),ProcessInfo.processInfo.arguments.contains("-PGOSWeeklyPreviousWeekTest") {
+            weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate,timeZone:WeeklyReviewClock.zone()).previous(timeZone:WeeklyReviewClock.zone()).identifier
+        } else {weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate,timeZone:WeeklyReviewClock.zone()).identifier}
+#else
+        weekIdentifier=try? WeeklyReviewPeriod(containing:referenceDate,timeZone:WeeklyReviewClock.zone()).identifier
+#endif
     }
 
     init(weekIdentifier: String) {
-        referenceDate = Date()
+        referenceDate = WeeklyReviewClock.current()
         self.weekIdentifier = weekIdentifier
     }
 
     private var period: WeeklyReviewPeriod? {
         if let weekIdentifier {
-            return try? WeeklyReviewPeriod(identifier: weekIdentifier)
+            return try? WeeklyReviewPeriod(identifier: weekIdentifier,timeZone:timeZone)
         }
-        return try? WeeklyReviewPeriod(containing: referenceDate)
+        return try? WeeklyReviewPeriod(containing: referenceDate,timeZone:timeZone)
     }
 
     private var currentReview: WeeklyReview? {
@@ -64,13 +73,16 @@ struct WeeklyReviewView: View {
             habitLogs: habitLogs,
             weightRecords: weightRecords,
             tags: tags,
-            links: links
+            links: links,
+            dayMetadata: dayMetadata,
+            asOf: WeeklyReviewClock.current(),
+            timeZone: timeZone
         )
     }
 
     private var previousWeekFocus: String? {
         guard let period,
-              let previousPeriod = try? period.previous(),
+              let previousPeriod = try? period.previous(timeZone:timeZone),
               let focus = reviews.first(where: {
                 $0.weekIdentifier == previousPeriod.identifier
               })?.focusText?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -95,6 +107,12 @@ struct WeeklyReviewView: View {
     }
 
     var body: some View {
+        // A live cutoff is independent of the selected week. Query edits use the
+        // actual current instant immediately; the timeline also advances an idle view.
+        TimelineView(.periodic(from:.now,by:30)) {_ in content}
+    }
+
+    private var content:some View {
         List {
             if let period {
                 Section("This Week") {
@@ -141,17 +159,22 @@ struct WeeklyReviewView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Weekly Review")
         .accessibilityIdentifier("weekly-review-view")
-        .onAppear { loadDraft() }
+        .onAppear {loadDraft()}
         .onChange(of: currentReview?.id) { _, _ in loadDraft() }
         .onChange(of: draft) { _, _ in draftChanged() }
         .onDisappear {
             saveConfirmationTask?.cancel()
         }
         .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") { focusedField = nil }
+            ToolbarItem(placement: .confirmationAction) {
+                if focusedField != nil {
+                    Button { focusedField = nil } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                    .accessibilityLabel("Done")
                     .accessibilityIdentifier("weekly-review-keyboard-done")
+                }
             }
         }
         .alert("Could Not Save Review", isPresented: Binding(
@@ -178,16 +201,16 @@ struct WeeklyReviewView: View {
                     spacing: 12
                 ) {
                     if let entryCount = summary.entryCount {
-                        WeeklySummaryFact(label: "Entries", value: "\(entryCount)")
+                        WeeklySummaryFact(label: "Entries", value: "\(entryCount)", id:"weekly-summary-entries")
                     }
                     if let dayCount = summary.entryDayCount {
-                        WeeklySummaryFact(label: "Days with Entries", value: "\(dayCount)")
+                        WeeklySummaryFact(label: "Days with Entries", value: "\(dayCount)", id:"weekly-summary-days")
                     }
                     if let imageEntryCount = summary.imageEntryCount {
-                        WeeklySummaryFact(label: "Photo Entries", value: "\(imageEntryCount)")
+                        WeeklySummaryFact(label: "Photo Entries", value: "\(imageEntryCount)", id:"weekly-summary-photos")
                     }
                     if let habitCheckInCount = summary.habitCheckInCount {
-                        WeeklySummaryFact(label: "Habit Check-ins", value: "\(habitCheckInCount)")
+                        WeeklySummaryFact(label: "Habit Check-ins", value: "\(habitCheckInCount)", id:"weekly-summary-habits")
                     }
                     if let habit = summary.habitHighlight {
                         WeeklySummaryFact(label: "Most Active Habit", value: habit.habitName)
@@ -196,7 +219,7 @@ struct WeeklyReviewView: View {
                     if let weight = summary.weight {
                         WeeklySummaryFact(
                             label: "Latest Weight",
-                            value: WeightFormatting.kilograms(weight.latestKilograms)
+                            value: WeightFormatting.kilograms(weight.latestKilograms), id:"weekly-summary-weight"
                         )
                         if let change = weight.changeKilograms {
                             WeeklySummaryFact(
@@ -214,7 +237,7 @@ struct WeeklyReviewView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Recent Entries")
                     ForEach(summary.recentEntries) { entry in
-                        Text(entry.title ?? entry.body ?? "Entry")
+                        Text(entry.title ?? entry.body ?? String(localized: "Entry"))
                             .lineLimit(1)
                             .foregroundStyle(.secondary)
                     }
@@ -450,6 +473,7 @@ struct WeeklyReviewRow: View {
 private struct WeeklySummaryFact: View {
     let label: LocalizedStringKey
     let value: String
+    var id=""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -461,5 +485,6 @@ private struct WeeklySummaryFact: View {
                 .foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(id)
     }
 }

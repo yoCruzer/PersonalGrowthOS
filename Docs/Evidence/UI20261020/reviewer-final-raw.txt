@@ -1,0 +1,29 @@
+正式独立终审原文（产品/测试候选；最终纯文档交付另复核）
+
+审查者：/root/ui_independent_review，未编写本轮实现、未修改工作树或Git。已按AGENTS读取Foundation、Development Contract与CURRENT，先独立登记共享组件/周期计数/本地化反例，再审实现与原始证据。
+
+固定候选：537a6f9103f6ccbf08b8634edf6dfc976247b4c8。审查基线：cd8786b06bb984041ad9968a6736b624ba60d3f3。完整审查两者间20文件diff，包含所有产品、资源、DEBUG合成夹具、Unit、UI及当前交接文档；未将用户实测旧提交c7f5a383作为回退起点。PR #13应保持OPEN Draft与base codex/time-investment-v1，未要求合并或发行。
+
+实现与消费者结论：
+1. RepeatableHabitCounter无名模式只移除伸展Spacer；Today每日、Today/Growth周月、Habit详情所有消费者均已检查。概览只移除冗余remaining，周期actual/target与胶囊当日HabitTodayProgress保持独立。未修改打卡、计时、持久化或业务日期算法。ModuleEntryRow的其他时间投入、睡眠、重要日子、QuietWins消费者未受全局截断/固定行高影响。
+2. 原List结构在iOS27.0复现播放图标空白；显式titleAndIcon和统一white两方案在同一原生List可见。采用局部titleAndIcon有实验证据，保留系统状态前景。已审Goal/Flag与共享Growth空态习惯、体重、周回顾消费者。减号的primary强制前景仅移至计数文字，0→1→0视觉与行为一致。
+3. 8个新增键及5条“今天”文案中英文完整。默认Entry/Goal回退只对应用默认值查表，用户标题/正文/活动名保持原样；我独立补出的Library Entry与Timeline Goal同类项已包含。星期展示只替换从业务policy复制的calendar.locale，Gregorian、时区、周序和周期计算保留。dayLabel(.day)目前不由日详情路由到达，已用同一生产PeriodActivityGrid宿主直接验证“今天/Today”，没有强造产品入口。
+
+审查发现与闭环：
+- P2：最大AX下固定30pt胶囊呈横灰条穿字。已先看原candidate1-ax-live确认，再核@ScaledMetric(relativeTo:.subheadline)仅缩放两层装饰背景；最终真实Dark zero/one/长名图显示胶囊完整包住文字与±，默认字号保持紧凑，关闭。
+- 相邻44pt审计缺陷：Sleep介绍xmark完整处于屏中，原native audit指向仅图标大小的AX节点；已排除屏边裁切。局部contentShape+borderless后AX为44×44且标签正确，44框边缘点击能关闭介绍，Today睡眠入口仍可打开，原未过滤semantic audit复跑通过，关闭。
+- Counter长名在AX出现43.7pt实际高度，严格44pt门真实失败；两按钮名义高度45后实际AX为44×45，保留>=44硬断言，完整Dark方法通过，关闭。
+- 测试前提/驱动问题均未伪装产品修复：Goal聚合标签查询改稳定ID；不可达Today分支改同生产View宿主；外层Toggle行点击未改变native子Switch改精确点击并断value1；误标Dark的Light图不算深色PASS；所有原FAIL保留。
+
+实际证据：
+我亲看修改前Growth/Today 2+2行、0次黑减号及Investment空白播放图；原生浅深List三方案、共享空态/禁用态；最终中文浅色默认/XXXL、英文、真实Dark最大AX的Today/Growth/详情代表图。默认短名1行+1进度行、长名合理换行，箭头与胶囊无原伸展空白。周/月昨日2事实与当日0的反例经2/目标→3/目标→2/目标、胶囊0→1→0断言保护，名称导航不加次数。
+我亲看纯图片“记录”与用户标题“Entry”并列、中文月历一～日、当前周网格、VO树“星期一，没有符合条件的计划日”、实际Weight“暂无数据”与QuietWins“数量”、添加习惯/体重/周回顾、Goal启用/禁用、归档/恢复和翻月截图、真实设置失败后的中文“重试”。中英文真实Todo staleTask生产异常分支断言通过。
+我亲看浅色/真实Dark生产Investment录屏提取的按前/按下/进入计时三帧：图标和文字同步淡化且仍可见；press日志与录像起点独立复算偏移11.364秒一致。
+
+原生门核对：直接读取xcresult summary确认最终中文Unit111/111、英文3/3、Light UI3/3、Dark完整1/1、中文Investment1/1及真实Dark Investment1/1均PASS；旧计时方法按原轮单独PASS复用，不将原Investment的1PASS1FAIL说成整轮全绿。candidate4三项通过仅在blob/方法不变范围内复用。Debug build-for-testing与unsigned generic iOS Release日志均BUILD SUCCEEDED。
+独立将final-build/final2-ui-dark/final-ui-light及537的final2-build/final2-investment/final-unit-zh/final-unit-en/final-dark-investment/final-release各113个sourceBefore SHA256逐一对固定Git blob复算，均零不符；对应记录clean、sourceUnchanged=true。
+已阅读并只读重跑verify_bundles.py，六包核对PASS：Debug/Release的App、Share、Widget原IDs/1.0(7)/min17，中英各1210实际编译字符串、8新增键与5条今天实际值、App相机InfoPlist双语、App provenance=537a6f9且Dirty=false、AlarmKit弱链接；Release三包均未签名。不是以源码catalog条数替代产物资源核验。
+
+终审判断：本轮范围内无未关闭confirmed P0/P1/P2或明确P3；产品、测试与本机必要视觉证据支持本地READY_FOR_OWNER_DEVICE_GATE。最终CURRENT/执行验收/机器台账及PR交付文档尚待纯Docs复核，不将本报告提前等同提交/推送完成。
+
+限制：验证环境是专用iPhone13mini模拟器/iOS27.0、macOS27.0.1/Xcode27.1；未完成Owner真机门、VoiceOver真实朗读、相机系统权限弹窗、私人库操作、签名安装或本轮远端CI，不把AX文字树/用途资源/unsigned构建外推为这些门PASS。既有D1–D4、AlarmKit正向、Public Share/Safari、物理低空间等历史未通过/未执行限制保持。未经授权不merge、force push、tag或发布。

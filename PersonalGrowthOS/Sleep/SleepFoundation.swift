@@ -287,6 +287,7 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
     }
     func setGoal(cutoffMinute: Int?, timeZone: TimeZone = .current) throws {
         guard cutoffMinute.map({ (0..<1440).contains($0) }) ?? true else { throw SleepFailure.invalidTime }
+        try SleepGoalSemantics.observe(context:owner,now:now(),zone:timeZone)
         let context = ModelContext(owner.container); context.autosaveEnabled = false
         let rules = try context.fetch(FetchDescriptor<SleepGoalRule>())
         guard cutoffMinute != nil || !rules.isEmpty else { return }
@@ -346,13 +347,52 @@ enum SleepGoalSemantics {
         let lastActive = rules.filter { isEffective($0, now: now, zone: zone) }.compactMap { ImportantCivilDay(identifier: $0.effectiveDay) }.max()
         return max(today.adding(days: 1)!, lastActive?.adding(days: 1) ?? today)
     }
+    // Keep only observed rule identities and instants while publication owns the
+    // writer. No live context or proposed mutation crosses the deferred boundary.
+    @MainActor private final class ObservationFence {
+        weak var container:ModelContainer?
+        var rules:[UUID:Date]=[:]
+        init(_ container:ModelContainer) {self.container=container}
+    }
+    @MainActor private static var fences:[ObjectIdentifier:ObservationFence]=[:]
     @MainActor static func observe(context owner: ModelContext, now: Date = Date(), zone: TimeZone = .current) throws {
-        let context = ModelContext(owner.container); context.autosaveEnabled = false
-        let rules = try context.fetch(FetchDescriptor<SleepGoalRule>())
-        var changed = false
-        for rule in rules where !rule.hasTakenEffect && isEffective(rule, now: now, zone: zone) {
-            rule.hasTakenEffect = true; rule.observedAt = max(rule.observedAt, now); changed = true
+        #if DEBUG
+        SleepGoalObservationProbe.willObserve?(owner.container)
+        #endif
+        fences=fences.filter {$0.value.container != nil}
+        let key=ObjectIdentifier(owner.container)
+        let fence=fences[key] ?? ObservationFence(owner.container)
+        let read=ModelContext(owner.container)
+        for rule in try read.fetch(FetchDescriptor<SleepGoalRule>()) where !rule.hasTakenEffect && isEffective(rule,now:now,zone:zone) {
+            fence.rules[rule.id]=max(fence.rules[rule.id] ?? now,now)
         }
-        if changed { try context.save() }
+        guard !fence.rules.isEmpty else {return}
+        fences[key]=fence
+        try StorePublication.perform(at:StorePublication.root(for:owner.container)) {
+            let context=ModelContext(owner.container);context.autosaveEnabled=false
+            let rules=try context.fetch(FetchDescriptor<SleepGoalRule>())
+            var changed=false
+            for rule in rules {
+                if let instant=fence.rules[rule.id],!rule.hasTakenEffect || rule.observedAt < instant {
+                    rule.hasTakenEffect=true;rule.observedAt=max(rule.observedAt,instant);changed=true
+                }
+            }
+            if changed {
+                #if DEBUG
+                SleepGoalObservationProbe.willSave?(owner.container)
+                #endif
+                do {try context.save()} catch {context.rollback();throw error}
+            }
+            fences.removeValue(forKey:key)
+        }
     }
 }
+
+#if DEBUG
+@MainActor enum SleepGoalObservationProbe {
+    static var willObserve: ((ModelContainer) -> Void)?
+    static var willSave: ((ModelContainer) -> Void)?
+    static var beforeRetry: ((ModelContainer) async -> Void)?
+    static var didDefer: ((ModelContainer) -> Void)?
+}
+#endif

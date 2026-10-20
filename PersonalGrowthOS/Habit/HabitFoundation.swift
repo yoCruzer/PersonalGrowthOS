@@ -975,6 +975,7 @@ final class HabitCheckInService {
         draft: HabitLogDraft,
         preventsImmediateRepeat: Bool
     ) throws -> HabitLog {
+        try HabitQuantityRules.validate(draft.quantity)
         guard let persistedHabit = try fetchHabit(habit.id) else {
             throw HabitCheckInError.missingHabit
         }
@@ -1009,6 +1010,7 @@ final class HabitCheckInService {
         logDraft: HabitLogDraft = HabitLogDraft(),
         entryDraft: EntryCreationDraft
     ) throws -> (log: HabitLog, entry: Entry) {
+        try HabitQuantityRules.validate(logDraft.quantity)
         guard let persistedHabit = try fetchHabit(habit.id) else {
             throw HabitCheckInError.missingHabit
         }
