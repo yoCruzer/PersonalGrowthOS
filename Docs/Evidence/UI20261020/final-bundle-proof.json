@@ -1,0 +1,148 @@
+{
+  "head": "537a6f9103f6ccbf08b8634edf6dfc976247b4c8",
+  "result": "PASS",
+  "bundles": [
+    {
+      "configuration": "Debug",
+      "bundle": "PersonalGrowthOS.app",
+      "identifier": "com.yocruzer.PersonalGrowthOS",
+      "version": "1.0(7)",
+      "minimumOS": "17.0",
+      "resources": {
+        "en": {
+          "count": 1210,
+          "sha256": "5ae79724efb94e465664cd59e7f237cc75ea5f03fac8148fb9f67ebbcf46cbf7",
+          "new8AndToday5": "PASS"
+        },
+        "zh-Hans": {
+          "count": 1210,
+          "sha256": "fc10570f1eb8e33b44477185ca3c3b24e1bbc743e4dc1d7a924f3ee294352147",
+          "new8AndToday5": "PASS"
+        }
+      },
+      "codesignExit": 0,
+      "codesignMessage": "Executable=/private/tmp/pgos-ui-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/PersonalGrowthOS",
+      "provenance": {
+        "Commit": "537a6f9103f6ccbf08b8634edf6dfc976247b4c8",
+        "Dirty": false,
+        "Source": "localGit",
+        "Tag": ""
+      },
+      "cameraResources": "PASS en + zh-Hans",
+      "AlarmKitWeakLink": "PASS"
+    },
+    {
+      "configuration": "Debug",
+      "bundle": "ImportantDaysWidget.appex",
+      "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "version": "1.0(7)",
+      "minimumOS": "17.0",
+      "resources": {
+        "en": {
+          "count": 1210,
+          "sha256": "5ae79724efb94e465664cd59e7f237cc75ea5f03fac8148fb9f67ebbcf46cbf7",
+          "new8AndToday5": "PASS"
+        },
+        "zh-Hans": {
+          "count": 1210,
+          "sha256": "fc10570f1eb8e33b44477185ca3c3b24e1bbc743e4dc1d7a924f3ee294352147",
+          "new8AndToday5": "PASS"
+        }
+      },
+      "codesignExit": 0,
+      "codesignMessage": "Executable=/private/tmp/pgos-ui-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex/ImportantDaysWidget"
+    },
+    {
+      "configuration": "Debug",
+      "bundle": "ShareExtension.appex",
+      "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "version": "1.0(7)",
+      "minimumOS": "17.0",
+      "resources": {
+        "en": {
+          "count": 1210,
+          "sha256": "5ae79724efb94e465664cd59e7f237cc75ea5f03fac8148fb9f67ebbcf46cbf7",
+          "new8AndToday5": "PASS"
+        },
+        "zh-Hans": {
+          "count": 1210,
+          "sha256": "fc10570f1eb8e33b44477185ca3c3b24e1bbc743e4dc1d7a924f3ee294352147",
+          "new8AndToday5": "PASS"
+        }
+      },
+      "codesignExit": 0,
+      "codesignMessage": "Executable=/private/tmp/pgos-ui-derived/Build/Products/Debug-iphonesimulator/PersonalGrowthOS.app/PlugIns/ShareExtension.appex/ShareExtension"
+    },
+    {
+      "configuration": "Release",
+      "bundle": "PersonalGrowthOS.app",
+      "identifier": "com.yocruzer.PersonalGrowthOS",
+      "version": "1.0(7)",
+      "minimumOS": "17.0",
+      "resources": {
+        "en": {
+          "count": 1210,
+          "sha256": "5ae79724efb94e465664cd59e7f237cc75ea5f03fac8148fb9f67ebbcf46cbf7",
+          "new8AndToday5": "PASS"
+        },
+        "zh-Hans": {
+          "count": 1210,
+          "sha256": "fc10570f1eb8e33b44477185ca3c3b24e1bbc743e4dc1d7a924f3ee294352147",
+          "new8AndToday5": "PASS"
+        }
+      },
+      "codesignExit": 1,
+      "codesignMessage": "/private/tmp/pgos-ui-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app: code object is not signed at all",
+      "provenance": {
+        "Commit": "537a6f9103f6ccbf08b8634edf6dfc976247b4c8",
+        "Dirty": false,
+        "Source": "localGit",
+        "Tag": ""
+      },
+      "cameraResources": "PASS en + zh-Hans",
+      "AlarmKitWeakLink": "PASS"
+    },
+    {
+      "configuration": "Release",
+      "bundle": "ImportantDaysWidget.appex",
+      "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "version": "1.0(7)",
+      "minimumOS": "17.0",
+      "resources": {
+        "en": {
+          "count": 1210,
+          "sha256": "5ae79724efb94e465664cd59e7f237cc75ea5f03fac8148fb9f67ebbcf46cbf7",
+          "new8AndToday5": "PASS"
+        },
+        "zh-Hans": {
+          "count": 1210,
+          "sha256": "fc10570f1eb8e33b44477185ca3c3b24e1bbc743e4dc1d7a924f3ee294352147",
+          "new8AndToday5": "PASS"
+        }
+      },
+      "codesignExit": 1,
+      "codesignMessage": "/private/tmp/pgos-ui-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex: code object is not signed at all"
+    },
+    {
+      "configuration": "Release",
+      "bundle": "ShareExtension.appex",
+      "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "version": "1.0(7)",
+      "minimumOS": "17.0",
+      "resources": {
+        "en": {
+          "count": 1210,
+          "sha256": "5ae79724efb94e465664cd59e7f237cc75ea5f03fac8148fb9f67ebbcf46cbf7",
+          "new8AndToday5": "PASS"
+        },
+        "zh-Hans": {
+          "count": 1210,
+          "sha256": "fc10570f1eb8e33b44477185ca3c3b24e1bbc743e4dc1d7a924f3ee294352147",
+          "new8AndToday5": "PASS"
+        }
+      },
+      "codesignExit": 1,
+      "codesignMessage": "/private/tmp/pgos-ui-release/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ShareExtension.appex: code object is not signed at all"
+    }
+  ]
+}

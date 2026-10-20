@@ -1,10 +1,10 @@
-# 2026-10-20 UI 可读性与本地化专项 — FIXES_IN_PROGRESS
+# 2026-10-20 UI 可读性与本地化专项 — READY_FOR_OWNER_DEVICE_GATE
 
-用户实测基线 `c7f5a3836140a27801fa0a9f1bacbfb73c0d7e5c`；远端核对 PR #13 OPEN Draft/base `codex/time-investment-v1`，新增规划文档 `cd8786b06bb984041ad9968a6736b624ba60d3f3` 已保留。主目录未知工程/翻译/Cloud 改动不动；独立工作树 `/private/tmp/PersonalGrowthOS-ui-20261020`、分支 `codex/ui-readability-localization-20261020` 执行本轮用户新授权批次，最终普通推送原 PR 分支。并行 CI 工作保持。
+本轮固定产品/测试候选 `537a6f9103f6ccbf08b8634edf6dfc976247b4c8`；习惯最终矩阵在产品相同的 `fe4b0f77d4ea31cc2d3510952355dbf5a02a8301` 验证，之后仅Investment新方法改点击原生子Switch并新增value断言。短名默认1+1行、长名/大字号适配、图标与禁用/按下/真实深色、本地化8键/默认回退/星期/5今天/相机用途及额外Sleep点击区域均已闭环；业务统计与持久化未改。
 
-本轮只改习惯呈现、按钮 Label 样式、默认文案/星期展示与用途资源及必要验证；不改计时/打卡/持久化/业务周期语义。A/B 修改前在专用 iPhone 13 mini/iOS 27.0 真实复现；最小修复与独立 reviewer 预审完成，最终矩阵/固定候选审查仍在进行。首轮受影响 Unit109/109 PASS不能替代最终 UI 门。实际分轮、失败与证据见 [执行与验收](UI_READABILITY_LOCALIZATION_20261020_ZH.md)。
+最终中文定向Unit111/111、英文3/3；习惯浅色3/3、真Dark AX1/1、计时中文浅/深各1/1均PASS。旧timer在1PASS/1FAIL轮中单独PASS，其他未改消费者按未改消费者定义/测试方法范围复用，不拼称全轮全绿。Debug和unsigned generic iOS Release PASS；实包6bundle身份/版本/中英资源、App provenance/弱链接、Release未签名核对通过。实际失败及28轮命令/截图见 [执行与验收](UI_READABILITY_LOCALIZATION_20261020_ZH.md)、[台账](UI_READABILITY_LOCALIZATION_20261020_RUNS.json)、[截图](Evidence/UI20261020/README.md)。独立终审无未关闭finding，见 [REVIEW](UI_READABILITY_LOCALIZATION_20261020_REVIEW_ZH.md)。
 
-当前不得沿用历史 READY 宣称本批通过。最终补齐中文浅色窄屏、较大普通字号、中文深色最大无障碍、英文对照、真实图标/禁用/按下态与本地化标签；固定候选独立审查后才到 READY_FOR_OWNER_DEVICE_GATE。不操作私人设备/库，不合并/force push/tag/Archive/TestFlight。
+Draft PR #13/base `codex/time-investment-v1` 保持，已保留远端CI规划 `cd8786b`；独立worktree普通提交/推送，主目录与并行未知改动不动。此后仅Docs交付，不重建未改产品。下一边界是Owner既有设备门：本轮真机/真实VoiceOver/相机权限弹窗/CI NOT_RUN；D1–D4 NOT_PASSED、AlarmKit正向NOT_RUN、Public Share FAIL/environment、unsigned Safari FAIL、物理低空间SKIP/NOT_RUN及O-01非阻断UNCONFIRMED保持。不merge/force/tag/Archive/TestFlight。
 
 ---
 

@@ -1,3 +1,9 @@
+# 2026-10-20 UI专项追加批次 — READY_FOR_OWNER_DEVICE_GATE
+
+本轮UI/本地化修复及额外无障碍问题闭环，固定产品/测试 `537a6f9103f6ccbf08b8634edf6dfc976247b4c8`。最终定向Unit111/111、英文3/3、浅深色原生UI/图标按下/状态/布局及Debug/unsigned Release实包检查完成；独立终审无未关闭finding，见 [本轮REVIEW](UI_READABILITY_LOCALIZATION_20261020_REVIEW_ZH.md)；交付以 [本轮执行与验收](UI_READABILITY_LOCALIZATION_20261020_ZH.md)、[运行台账](UI_READABILITY_LOCALIZATION_20261020_RUNS.json)、[截图证据](Evidence/UI20261020/README.md) 为准。历史失败/缺口与Owner设备门保留，不能以历史READY替代本轮。PR #13 Draft/base不变，不发布、不合并。
+
+---
+
 > **2026-10-19 系统复核：LOCAL_REVIEW_FIX_REQUIRED。** 固定产品 c296a369 / 交付 62210d9。7 组 SR 修复工作开放（5 组 P2、2 组 P3），BV-01/02 待有界验证。原因复盘、合法反例、完整消费者/生命周期覆盖和证据层级见 [系统审查原文](USAGE_REMEDIATION_20261019_SYSTEM_REVIEW_ZH.md)；执行 [真机前修复 Goal](USAGE_REMEDIATION_20261019_PREDEVICE_FIX_GOAL_ZH.md)。本次只审源码/测试/提交并写文档，未运行新原生测试。下方既有 R/F/CR 关闭原文和失败轮次完整保留，旧 READY 不作为当前结论。
 
 ---
