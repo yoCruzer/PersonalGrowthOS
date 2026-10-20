@@ -557,12 +557,15 @@ extension InvestmentUITests {
         let archive = app.buttons["investment-rename-archive"]
         XCTAssertEqual(archive.label, "归档活动"); screenshot(app, "UIReadability-zh-archive-activity"); archive.tap()
         XCTAssertTrue(archive.waitForNonExistence(timeout: 5))
-        let showArchived = app.switches["包含已归档活动"]; reveal(showArchived, app); showArchived.tap()
+        let showArchived = app.switches["包含已归档活动"]; reveal(showArchived, app)
+        // The labelled AX row wraps a native Switch; tap the actual trailing control.
+        showArchived.switches.firstMatch.tap(); XCTAssertEqual(showArchived.value as? String, "1")
         reveal(edit, app); edit.tap()
         XCTAssertEqual(archive.label, "恢复活动"); screenshot(app, "UIReadability-zh-restore-activity"); archive.tap()
         XCTAssertTrue(archive.waitForNonExistence(timeout: 5))
         let history = app.buttons["investment-history"]; for _ in 0..<8 where !history.isHittable { app.swipeDown() }; reveal(history, app); history.tap()
-        let preview = app.switches["预览所选月份"]; reveal(preview, app, avoidingWheel: true); preview.tap()
+        let preview = app.switches["预览所选月份"]; reveal(preview, app, avoidingWheel: true)
+        preview.switches.firstMatch.tap(); XCTAssertEqual(preview.value as? String, "1")
         let previous = app.buttons["investment-previous-month"], next = app.buttons["investment-next-month"]
         reveal(previous, app, avoidingWheel: true); XCTAssertEqual(previous.label, "上个月"); XCTAssertEqual(next.label, "下个月")
         let range = app.staticTexts["investment-preview-range"]; reveal(range, app, avoidingWheel: true); let original = range.label
