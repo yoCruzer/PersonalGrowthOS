@@ -3957,9 +3957,18 @@ private final class TerminalRecheckOldF1Service {
 
 
 @MainActor extension ImportExportRecoveryTests {
-    private func recheckTerminatedAncestor(_ f:TransferTestFixture, channel:TodoReminderChannel, skipped:Bool) throws -> (ModelContainer,UUID,UUID,Date,TimeZone) {
+    private func recheckPeerZone(for home: TimeZone, at instant: Date) throws -> TimeZone {
+        let preferred = ["Asia/Hong_Kong", "Asia/Shanghai", "Africa/Abidjan"]
+        let candidates = (preferred + TimeZone.knownTimeZoneIdentifiers).compactMap(TimeZone.init(identifier:))
+            + [TimeZone(secondsFromGMT: home.secondsFromGMT(for: instant))!]
+        return try XCTUnwrap(candidates.first {
+            $0.identifier != home.identifier && $0.secondsFromGMT(for: instant) == home.secondsFromGMT(for: instant)
+        })
+    }
+
+    private func recheckTerminatedAncestor(_ f:TransferTestFixture, channel:TodoReminderChannel, skipped:Bool, zone:TimeZone = .current) throws -> (ModelContainer,UUID,UUID,Date,TimeZone) {
         let url=f.root.appendingPathComponent("ancestor.sqlite"),id=UUID(),sid=UUID(),list=UUID()
-        let zone=TimeZone(identifier:"Asia/Shanghai")!,now=TodoDay("2026-10-19")!.date(timeZone:TimeZone(identifier:"Asia/Shanghai")!)!
+        let now=TodoDay("2026-10-19")!.date(timeZone:zone)!
         let fire=TodoRecurrence.reminder(day:TodoDay("2026-10-20")!,minutes:480,timeZone:zone)!
         try autoreleasepool {
             let schema=Schema(versionedSchema:PersonalGrowthSchemaV11Original.self)
@@ -3992,19 +4001,24 @@ private final class TerminalRecheckOldF1Service {
     }
 
     func testRecheckTC01TerminatedAncestorSameValueActualEditorRestoresOnlySuccessor() async throws {
-        let changedZone=TimeZone(identifier:"Asia/Hong_Kong")!
+        let home = TimeZone.current
+        let reference = TodoDay("2026-10-19")!.date(timeZone: home)!
+        let changedZone = try recheckPeerZone(for: home, at: reference)
         for channel:TodoReminderChannel in [.notification,.alarm] {
             for skipped in [false,true] {
                 let f=try TransferTestFixture();defer {f.remove()}
                 let (c,a,b,now,zone)=try recheckTerminatedAncestor(f,channel:channel,skipped:skipped)
+                XCTAssertEqual(zone.identifier, TimeZone.current.identifier, "Return-to-home precondition must hold on every host")
                 XCTAssertNotEqual(zone.identifier,changedZone.identifier);XCTAssertEqual(zone.secondsFromGMT(for:now),changedZone.secondsFromGMT(for:now))
+                let originalFire = try XCTUnwrap(TodoTaskService(context: ModelContext(c)).task(id: b).remindAt)
+                XCTAssertEqual(zone.secondsFromGMT(for: originalFire), changedZone.secondsFromGMT(for: originalFire))
                 let notifications=TodoNotificationStub(),alarms=TodoAlarmStub()
                 let scheduling=TodoIntentScheduling(notifications:notifications,alarms:alarms,now:{now})
                 _ = try await scheduling.reconcile(container:c,requestNotifications:false,requestAlarms:false,selectedNotificationTaskIDs:[b],isCurrent:{true})
                 let old=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == b})
                 XCTAssertEqual(old.phaseRawValue,TodoReminderDevicePhase.accepted.rawValue)
                 let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
-                let unresolved=try TodoTaskService(context:ModelContext(c),now:{now},timeZone:{TimeZone(identifier:"Asia/Hong_Kong")!}).refreshRepeatingReminderTimes()
+                let unresolved=try TodoTaskService(context:ModelContext(c),now:{now},timeZone:{changedZone}).refreshRepeatingReminderTimes()
                 XCTAssertEqual(unresolved,[b])
                 _ = try await scheduling.quarantineFutureRequests(container:c,taskIDs:unresolved,isCurrent:{true})
                 await coordinator.reconcile(context:ModelContext(c))
@@ -4072,7 +4086,51 @@ private final class TerminalRecheckOldF1Service {
         }
     }
 
+    func testCIFixtureDifferentDeviceZoneKeepsTerminatedAncestorSuccessorQuarantined() async throws {
+        let home = TimeZone.current
+        let reference = TodoDay("2026-10-19")!.date(timeZone: home)!
+        let originalZone = try recheckPeerZone(for: home, at: reference)
+        for channel: TodoReminderChannel in [.notification, .alarm] {
+            for skipped in [false, true] {
+                let fixture = try TransferTestFixture(); defer { fixture.remove() }
+                let (container, ancestor, successor, now, zone) = try recheckTerminatedAncestor(fixture, channel: channel, skipped: skipped, zone: originalZone)
+                XCTAssertNotEqual(zone.identifier, TimeZone.current.identifier)
+                XCTAssertEqual(home.identifier, TimeZone.current.identifier)
+                XCTAssertEqual(zone.secondsFromGMT(for: now), home.secondsFromGMT(for: now))
+                let originalTask = try TodoEventValue(TodoTaskService(context: ModelContext(container)).task(id: successor))
+                let fire = try XCTUnwrap(originalTask.remindAt)
+                XCTAssertEqual(zone.secondsFromGMT(for: fire), home.secondsFromGMT(for: fire))
+                let notifications = TodoNotificationStub(), alarms = TodoAlarmStub()
+                let scheduling = TodoIntentScheduling(notifications: notifications, alarms: alarms, now: { now })
+                _ = try await scheduling.reconcile(container: container, requestNotifications: false, requestAlarms: false, selectedNotificationTaskIDs: [successor], isCurrent: { true })
+                let record = try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first { $0.taskID == successor })
+                XCTAssertEqual(record.phaseRawValue, TodoReminderDevicePhase.accepted.rawValue)
+                XCTAssertEqual(channel == .alarm ? alarms.pending.count : notifications.pending.count, 1)
+                let snapshot = try TransferSnapshot.make(context: ModelContext(container))
+                let before = try XCTUnwrap(TodoTaskService(context: ModelContext(container)).reminderIntent(for: successor)?.generation)
+                let unresolved = try TodoTaskService(context: ModelContext(container), now: { now }, timeZone: { home }).refreshRepeatingReminderTimes()
+                XCTAssertEqual(unresolved, [successor])
+                _ = try await scheduling.quarantineFutureRequests(container: container, taskIDs: unresolved, isCurrent: { true })
+                let coordinator = TodoReminderCoordinator(client: notifications, now: { now }, sleepPreferences: { .init() }, alarmClient: alarms)
+                await coordinator.reconcile(context: ModelContext(container))
+                let service = TodoTaskService(context: ModelContext(container))
+                XCTAssertEqual(coordinator.status(for: try service.task(id: successor)), .legacyRuleNeedsCorrection)
+                XCTAssertTrue(notifications.pending.isEmpty); XCTAssertTrue(alarms.pending.isEmpty)
+                XCTAssertEqual(try service.reminderIntent(for: successor)?.generation, before)
+                XCTAssertEqual(try service.task(id: ancestor).state, skipped ? .canceled : .completed)
+                XCTAssertEqual(try service.task(id: successor).remindAt, originalTask.remindAt)
+                XCTAssertEqual(try service.task(id: successor).plannedDay, originalTask.plannedDay)
+                XCTAssertEqual(try service.task(id: successor).deadlineDay, originalTask.deadlineDay)
+                let after = try TransferSnapshot.make(context: ModelContext(container))
+                XCTAssertEqual(snapshot.entries, after.entries); XCTAssertEqual(snapshot.todoSources, after.todoSources)
+                XCTAssertEqual(snapshot.todoEvents, after.todoEvents)
+            }
+        }
+    }
+
     func testRecheckTC01TerminatedAncestorRollbackAndUnconfirmedCancellation() async throws {
+        let home = TimeZone.current
+        let changedZone = try recheckPeerZone(for: home, at: TodoDay("2026-10-19")!.date(timeZone: home)!)
         for channel:TodoReminderChannel in [.notification,.alarm] {
             for skipped in [false,true] {
                 let f=try TransferTestFixture();defer {f.remove()}
@@ -4083,7 +4141,7 @@ private final class TerminalRecheckOldF1Service {
                 let old=try XCTUnwrap(ModelContext(c).fetch(FetchDescriptor<TodoReminderDeviceRecord>()).first {$0.taskID == b})
                 notifications.failedRemovalIdentifiers=[TodoIntentScheduling.identifier(old.id)];alarms.failCancel=true
                 let coordinator=TodoReminderCoordinator(client:notifications,now:{now},sleepPreferences:{.init()},alarmClient:alarms)
-                let unresolved=try TodoTaskService(context:ModelContext(c),now:{now},timeZone:{TimeZone(identifier:"Asia/Hong_Kong")!}).refreshRepeatingReminderTimes()
+                let unresolved=try TodoTaskService(context:ModelContext(c),now:{now},timeZone:{changedZone}).refreshRepeatingReminderTimes()
                 XCTAssertEqual(unresolved,[b])
                 _ = try await scheduling.quarantineFutureRequests(container:c,taskIDs:unresolved,isCurrent:{true})
                 await coordinator.reconcile(context:ModelContext(c))

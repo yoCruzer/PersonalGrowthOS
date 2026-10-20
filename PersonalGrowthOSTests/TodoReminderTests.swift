@@ -193,7 +193,8 @@ extension TodoReminderTests {
 @MainActor
 extension TodoReminderTests {
     func testFutureTemplateReplacesMaterializedSuccessorRequestAfterSavedMutation() async throws {
-        let zone = TimeZone(identifier: "Asia/Shanghai")!
+        // The real coordinator refreshes against the actual device zone.
+        let zone = TimeZone.current
         let clock = TodoDay("2026-01-10")!.date(timeZone: zone)!.addingTimeInterval(12 * 3600)
         let container = try PersistenceContainerFactory.makeInMemory(), context = container.mainContext
         let service = TodoTaskService(context: context, now: { clock }, timeZone: { zone })
