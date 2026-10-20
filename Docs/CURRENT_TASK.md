@@ -1,3 +1,15 @@
+# 2026-10-20 计数器、Actions与只读清点 — WAITING_DIRECT_PUSH_AUTHORIZATION
+
+最后产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`，最后产品/测试 `d84bd5f1529214b57e503cd89904c011302a0154`。计数器本地共享消费者矩阵浅/深各2/2、窄按下各1/1、相邻Habit+Composition Unit99/99与Debug/unsigned Release PASS；20个实际PNG样本最低7.273:1，原2.305缺陷已补修；设置加号为宿主取图差异。初轮2PASS/2FAIL及两轮sourceUnchanged=false、1秒采集抓帧不足的边界原样保留，详见 [本轮执行](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md)。
+
+Actions三基础lane及独立按需复杂UI已本地实现，尚无真实run。普通推送原PR #13被自动审批审查两次以缺少直接目的地/内容授权拒绝，已向Owner发精确确认问题，收到前不旁路推送。PR仍Draft，远端50f7263、base codex/time-investment-v1不变。本轮整体未完成，不能称READY；确认后继续普通push→跟踪真实run→修复→独立终审。
+
+只读清点29远端/8本地/30并集、13开放Draft；11基底/3必须保留/13合并后候选/3疑似重复；其余主分类0。附加Todo脏状态与失效worktree UNKNOWN保留。独立reviewer三个准确性问题已闭环并独立重算一致，清点报告完成，不等待删除批准。无分支/worktree清理、base/default修改或发布。主目录三项未知改动保持。
+
+本轮不执行旧G2；D1–D4、真实VoiceOver/相机权限、AlarmKit正向、Share/Safari、低空间与O-01旧状态继续保留。完成真实CI与终审后才停READY_FOR_OWNER_DEVICE_GATE，不代Owner设备验收。
+
+---
+
 # 2026-10-20 计数器对比度、Actions 与只读分支清点 — IN_PROGRESS
 
 本轮按 Owner 最新连续授权执行：复核并关闭计数器启用图标 P2、落地并实际运行标准 hosted macOS Actions、完整只读清点分支。原 PR #13 / base `codex/time-investment-v1` 不变，原工作树从 c7f5a38 安全快进至 50f7263，后续有效 UI 提交全部保留。主目录未知改动不动。

@@ -1,0 +1,34 @@
+{
+  "bundles": [
+    {
+      "bundle": "PersonalGrowthOS.app",
+      "id": "com.yocruzer.PersonalGrowthOS",
+      "version": "1.0",
+      "build": "7",
+      "minOS": "17.0",
+      "signed": false
+    },
+    {
+      "bundle": "PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+      "id": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "version": "1.0",
+      "build": "7",
+      "minOS": "17.0",
+      "signed": false
+    },
+    {
+      "bundle": "PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex",
+      "id": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "version": "1.0",
+      "build": "7",
+      "minOS": "17.0",
+      "signed": false
+    }
+  ],
+  "provenance": {
+    "Commit": "d84bd5f1529214b57e503cd89904c011302a0154",
+    "Dirty": true,
+    "Source": "localGit",
+    "Tag": ""
+  }
+}

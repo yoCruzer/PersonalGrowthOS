@@ -1,0 +1,762 @@
+[
+  {
+    "file": "light-default-Growth-weekly-zero.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "light-default",
+    "roi": [
+      896,
+      1281,
+      1028,
+      1416
+    ],
+    "foreground": [
+      23,
+      79,
+      120
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      962,
+      1348
+    ],
+    "backgroundPixel": [
+      896,
+      1304
+    ],
+    "solidForegroundPixels": 319,
+    "solidBackgroundPixels": 10229,
+    "actualAXFrame": [
+      299.0,
+      427.0,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-default-Growth-weekly-one.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "light-default",
+    "roi": [
+      896,
+      1281,
+      1028,
+      1416
+    ],
+    "foreground": [
+      22,
+      76,
+      116
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      962,
+      1348
+    ],
+    "backgroundPixel": [
+      896,
+      1304
+    ],
+    "solidForegroundPixels": 319,
+    "solidBackgroundPixels": 10229,
+    "actualAXFrame": [
+      299.0,
+      427.0,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-default-Growth-weekly-one.png",
+    "icon": "decrease",
+    "state": "enabled",
+    "appearance": "light-default",
+    "roi": [
+      711,
+      1281,
+      843,
+      1416
+    ],
+    "foreground": [
+      23,
+      79,
+      120
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      777,
+      1348
+    ],
+    "backgroundPixel": [
+      766,
+      1304
+    ],
+    "solidForegroundPixels": 172,
+    "solidBackgroundPixels": 10296,
+    "actualAXFrame": [
+      237.3,
+      427.0,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-maxAX-Growth-weekly-zero.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "light-maxAX",
+    "roi": [
+      896,
+      1476,
+      1028,
+      1611
+    ],
+    "foreground": [
+      23,
+      79,
+      120
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      962,
+      1544
+    ],
+    "backgroundPixel": [
+      896,
+      1476
+    ],
+    "solidForegroundPixels": 3763,
+    "solidBackgroundPixels": 12712,
+    "actualAXFrame": [
+      299.0,
+      492.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-maxAX-Growth-weekly-one.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "light-maxAX",
+    "roi": [
+      896,
+      1476,
+      1028,
+      1611
+    ],
+    "foreground": [
+      22,
+      76,
+      115
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      962,
+      1544
+    ],
+    "backgroundPixel": [
+      896,
+      1476
+    ],
+    "solidForegroundPixels": 3762,
+    "solidBackgroundPixels": 12712,
+    "actualAXFrame": [
+      299.0,
+      492.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-maxAX-Growth-weekly-one.png",
+    "icon": "decrease",
+    "state": "enabled",
+    "appearance": "light-maxAX",
+    "roi": [
+      646,
+      1476,
+      778,
+      1611
+    ],
+    "foreground": [
+      23,
+      79,
+      120
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      712,
+      1544
+    ],
+    "backgroundPixel": [
+      668,
+      1476
+    ],
+    "solidForegroundPixels": 2081,
+    "solidBackgroundPixels": 14426,
+    "actualAXFrame": [
+      215.7,
+      492.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-default-Growth-weekly-zero.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "dark-default",
+    "roi": [
+      896,
+      1281,
+      1028,
+      1416
+    ],
+    "foreground": [
+      213,
+      234,
+      254
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      962,
+      1348
+    ],
+    "backgroundPixel": [
+      896,
+      1304
+    ],
+    "solidForegroundPixels": 319,
+    "solidBackgroundPixels": 10237,
+    "actualAXFrame": [
+      299.0,
+      427.0,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-default-Growth-weekly-one.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "dark-default",
+    "roi": [
+      896,
+      1281,
+      1028,
+      1416
+    ],
+    "foreground": [
+      219,
+      237,
+      254
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      962,
+      1348
+    ],
+    "backgroundPixel": [
+      896,
+      1304
+    ],
+    "solidForegroundPixels": 319,
+    "solidBackgroundPixels": 10237,
+    "actualAXFrame": [
+      299.0,
+      427.0,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-default-Growth-weekly-one.png",
+    "icon": "decrease",
+    "state": "enabled",
+    "appearance": "dark-default",
+    "roi": [
+      711,
+      1281,
+      843,
+      1416
+    ],
+    "foreground": [
+      213,
+      234,
+      254
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      777,
+      1348
+    ],
+    "backgroundPixel": [
+      765,
+      1304
+    ],
+    "solidForegroundPixels": 172,
+    "solidBackgroundPixels": 10306,
+    "actualAXFrame": [
+      237.3,
+      427.0,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-maxAX-Growth-weekly-zero.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "dark-maxAX",
+    "roi": [
+      896,
+      1524,
+      1028,
+      1659
+    ],
+    "foreground": [
+      213,
+      234,
+      254
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      962,
+      1592
+    ],
+    "backgroundPixel": [
+      896,
+      1524
+    ],
+    "solidForegroundPixels": 3763,
+    "solidBackgroundPixels": 12714,
+    "actualAXFrame": [
+      299.0,
+      508.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-maxAX-Growth-weekly-one.png",
+    "icon": "increase",
+    "state": "enabled",
+    "appearance": "dark-maxAX",
+    "roi": [
+      896,
+      1524,
+      1028,
+      1659
+    ],
+    "foreground": [
+      220,
+      238,
+      254
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      962,
+      1592
+    ],
+    "backgroundPixel": [
+      896,
+      1524
+    ],
+    "solidForegroundPixels": 3761,
+    "solidBackgroundPixels": 12714,
+    "actualAXFrame": [
+      299.0,
+      508.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-maxAX-Growth-weekly-one.png",
+    "icon": "decrease",
+    "state": "enabled",
+    "appearance": "dark-maxAX",
+    "roi": [
+      646,
+      1524,
+      778,
+      1659
+    ],
+    "foreground": [
+      213,
+      234,
+      254
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      712,
+      1592
+    ],
+    "backgroundPixel": [
+      668,
+      1524
+    ],
+    "solidForegroundPixels": 2081,
+    "solidBackgroundPixels": 14428,
+    "actualAXFrame": [
+      215.7,
+      508.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-default-pressed-increase.png",
+    "icon": "increase",
+    "state": "pressed enabled",
+    "appearance": "light-default",
+    "roi": [
+      861,
+      459,
+      987,
+      588
+    ],
+    "foreground": [
+      16,
+      59,
+      93
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      924,
+      523
+    ],
+    "backgroundPixel": [
+      861,
+      483
+    ],
+    "solidForegroundPixels": 234,
+    "solidBackgroundPixels": 9104,
+    "actualAXFrame": [
+      299.0,
+      159.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-default-pressed-decrease.png",
+    "icon": "decrease",
+    "state": "pressed enabled",
+    "appearance": "light-default",
+    "roi": [
+      642,
+      459,
+      768,
+      588
+    ],
+    "foreground": [
+      16,
+      59,
+      93
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      705,
+      523
+    ],
+    "backgroundPixel": [
+      690,
+      483
+    ],
+    "solidForegroundPixels": 126,
+    "solidBackgroundPixels": 9269,
+    "actualAXFrame": [
+      223.0,
+      159.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-maxAX-pressed-increase.png",
+    "icon": "increase",
+    "state": "pressed enabled",
+    "appearance": "light-maxAX",
+    "roi": [
+      861,
+      1016,
+      987,
+      1146
+    ],
+    "foreground": [
+      16,
+      59,
+      93
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      924,
+      1081
+    ],
+    "backgroundPixel": [
+      861,
+      1016
+    ],
+    "solidForegroundPixels": 3388,
+    "solidBackgroundPixels": 11314,
+    "actualAXFrame": [
+      299.0,
+      352.7,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "light-maxAX-pressed-decrease.png",
+    "icon": "decrease",
+    "state": "pressed enabled",
+    "appearance": "light-maxAX",
+    "roi": [
+      488,
+      1016,
+      615,
+      1146
+    ],
+    "foreground": [
+      16,
+      59,
+      93
+    ],
+    "background": [
+      230,
+      236,
+      242
+    ],
+    "foregroundPixel": [
+      552,
+      1081
+    ],
+    "backgroundPixel": [
+      509,
+      1016
+    ],
+    "solidForegroundPixels": 1862,
+    "solidBackgroundPixels": 13253,
+    "actualAXFrame": [
+      169.7,
+      352.7,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-default-pressed-increase.png",
+    "icon": "increase",
+    "state": "pressed enabled",
+    "appearance": "dark-default",
+    "roi": [
+      861,
+      459,
+      987,
+      588
+    ],
+    "foreground": [
+      255,
+      255,
+      255
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      924,
+      523
+    ],
+    "backgroundPixel": [
+      861,
+      483
+    ],
+    "solidForegroundPixels": 234,
+    "solidBackgroundPixels": 9131,
+    "actualAXFrame": [
+      299.0,
+      159.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-default-pressed-decrease.png",
+    "icon": "decrease",
+    "state": "pressed enabled",
+    "appearance": "dark-default",
+    "roi": [
+      642,
+      459,
+      768,
+      588
+    ],
+    "foreground": [
+      255,
+      255,
+      255
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      705,
+      523
+    ],
+    "backgroundPixel": [
+      687,
+      483
+    ],
+    "solidForegroundPixels": 126,
+    "solidBackgroundPixels": 9292,
+    "actualAXFrame": [
+      223.0,
+      159.3,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-maxAX-pressed-increase.png",
+    "icon": "increase",
+    "state": "pressed enabled",
+    "appearance": "dark-maxAX",
+    "roi": [
+      861,
+      1016,
+      987,
+      1146
+    ],
+    "foreground": [
+      255,
+      255,
+      255
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      924,
+      1081
+    ],
+    "backgroundPixel": [
+      861,
+      1016
+    ],
+    "solidForegroundPixels": 3388,
+    "solidBackgroundPixels": 11329,
+    "actualAXFrame": [
+      299.0,
+      352.7,
+      44.0,
+      45.0
+    ]
+  },
+  {
+    "file": "dark-maxAX-pressed-decrease.png",
+    "icon": "decrease",
+    "state": "pressed enabled",
+    "appearance": "dark-maxAX",
+    "roi": [
+      488,
+      1016,
+      615,
+      1146
+    ],
+    "foreground": [
+      255,
+      255,
+      255
+    ],
+    "background": [
+      40,
+      55,
+      68
+    ],
+    "foregroundPixel": [
+      552,
+      1081
+    ],
+    "backgroundPixel": [
+      509,
+      1016
+    ],
+    "solidForegroundPixels": 1862,
+    "solidBackgroundPixels": 13263,
+    "actualAXFrame": [
+      169.7,
+      352.7,
+      44.0,
+      45.0
+    ]
+  }
+]

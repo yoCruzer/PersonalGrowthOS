@@ -1,3 +1,9 @@
+# 本轮执行范围更新（2026-10-20）
+
+以Owner最新指令为准：连续完成计数器P2、真实Actions、完整只读分支清点。本轮不执行下文旧G2真机验收或G3删除阶段；清点完成即交付，不以等待删除批准视为未完成。实际进展、精确候选和尚未运行门见 [EXECUTION](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md)。当前推送被自动审批审查拒绝，等待Owner直接确认；CI真实NOT_RUN，整体目标active。
+
+---
+
 # 随心log — GitHub Actions、系统真机验收与分支安全收口 Goal（2026-10-20）
 
 ## 0. 已核实身份和执行原则

@@ -1,0 +1,959 @@
+{
+  "formula": "WCAG sRGB linearization; (lighter relative luminance + .05)/(darker + .05)",
+  "scope": "Enabled non-text icons; solid pixels only; disabled zero-count decrement excluded",
+  "originals": [
+    {
+      "file": "UI20261020/final-light-default.png",
+      "sha256": "4bd1f1164c2d1afacd878b046540a00513734f904f8c08198c396b92ec7a204c",
+      "points": {
+        "(0, 136, 255)": [
+          962,
+          688
+        ],
+        "(209, 209, 209)": [
+          722,
+          662
+        ]
+      },
+      "foreground": [
+        0,
+        136,
+        255
+      ],
+      "background": [
+        209,
+        209,
+        209
+      ],
+      "contrast": 2.3051814506161445
+    },
+    {
+      "file": "UI20261020/final-light-XXXL.png",
+      "sha256": "1fb4d3b0242f427dc1e1b4b48dbb6387358f36986359c1f1ef3fef1f0bc0963c",
+      "points": {
+        "(0, 136, 255)": [
+          961,
+          784
+        ],
+        "(209, 209, 209)": [
+          165,
+          94
+        ]
+      },
+      "foreground": [
+        0,
+        136,
+        255
+      ],
+      "background": [
+        209,
+        209,
+        209
+      ],
+      "contrast": 2.3051814506161445
+    }
+  ],
+  "samples": [
+    {
+      "file": "light-default-Growth-weekly-zero.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "light-default",
+      "roi": [
+        896,
+        1281,
+        1028,
+        1416
+      ],
+      "foreground": [
+        23,
+        79,
+        120
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        962,
+        1348
+      ],
+      "backgroundPixel": [
+        896,
+        1304
+      ],
+      "solidForegroundPixels": 319,
+      "solidBackgroundPixels": 10229,
+      "actualAXFrame": [
+        299.0,
+        427.0,
+        44.0,
+        45.0
+      ],
+      "contrast": 7.273151834302554,
+      "sha256": "38b2556074aa6fd0cd08e9cab0590ad895afc13c59f3ea1b6a3f189c989cc752",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-default-Growth-weekly-one.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "light-default",
+      "roi": [
+        896,
+        1281,
+        1028,
+        1416
+      ],
+      "foreground": [
+        22,
+        76,
+        116
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        962,
+        1348
+      ],
+      "backgroundPixel": [
+        896,
+        1304
+      ],
+      "solidForegroundPixels": 319,
+      "solidBackgroundPixels": 10229,
+      "actualAXFrame": [
+        299.0,
+        427.0,
+        44.0,
+        45.0
+      ],
+      "contrast": 7.605309096530705,
+      "sha256": "200a4d591b054ae19e4039f9de1001d60052e400d10578c14e9d2a93cf6e3e00",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-default-Growth-weekly-one.png",
+      "icon": "decrease",
+      "state": "enabled",
+      "appearance": "light-default",
+      "roi": [
+        711,
+        1281,
+        843,
+        1416
+      ],
+      "foreground": [
+        23,
+        79,
+        120
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        777,
+        1348
+      ],
+      "backgroundPixel": [
+        766,
+        1304
+      ],
+      "solidForegroundPixels": 172,
+      "solidBackgroundPixels": 10296,
+      "actualAXFrame": [
+        237.3,
+        427.0,
+        44.0,
+        45.0
+      ],
+      "contrast": 7.273151834302554,
+      "sha256": "200a4d591b054ae19e4039f9de1001d60052e400d10578c14e9d2a93cf6e3e00",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-maxAX-Growth-weekly-zero.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "light-maxAX",
+      "roi": [
+        896,
+        1476,
+        1028,
+        1611
+      ],
+      "foreground": [
+        23,
+        79,
+        120
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        962,
+        1544
+      ],
+      "backgroundPixel": [
+        896,
+        1476
+      ],
+      "solidForegroundPixels": 3763,
+      "solidBackgroundPixels": 12712,
+      "actualAXFrame": [
+        299.0,
+        492.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 7.273151834302554,
+      "sha256": "c7057ced1a4e297687d922691dca6606edc3d830b21715c544ea1a437e31347e",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-maxAX-Growth-weekly-one.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "light-maxAX",
+      "roi": [
+        896,
+        1476,
+        1028,
+        1611
+      ],
+      "foreground": [
+        22,
+        76,
+        115
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        962,
+        1544
+      ],
+      "backgroundPixel": [
+        896,
+        1476
+      ],
+      "solidForegroundPixels": 3762,
+      "solidBackgroundPixels": 12712,
+      "actualAXFrame": [
+        299.0,
+        492.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 7.62051642088541,
+      "sha256": "d41e076d432c6313621bf625a726616184d3867bbabcd9fc99ca002e24a8cccb",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-maxAX-Growth-weekly-one.png",
+      "icon": "decrease",
+      "state": "enabled",
+      "appearance": "light-maxAX",
+      "roi": [
+        646,
+        1476,
+        778,
+        1611
+      ],
+      "foreground": [
+        23,
+        79,
+        120
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        712,
+        1544
+      ],
+      "backgroundPixel": [
+        668,
+        1476
+      ],
+      "solidForegroundPixels": 2081,
+      "solidBackgroundPixels": 14426,
+      "actualAXFrame": [
+        215.7,
+        492.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 7.273151834302554,
+      "sha256": "d41e076d432c6313621bf625a726616184d3867bbabcd9fc99ca002e24a8cccb",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-default-Growth-weekly-zero.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "dark-default",
+      "roi": [
+        896,
+        1281,
+        1028,
+        1416
+      ],
+      "foreground": [
+        213,
+        234,
+        254
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        962,
+        1348
+      ],
+      "backgroundPixel": [
+        896,
+        1304
+      ],
+      "solidForegroundPixels": 319,
+      "solidBackgroundPixels": 10237,
+      "actualAXFrame": [
+        299.0,
+        427.0,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.899899176063744,
+      "sha256": "e3519c5bbf221419d98fb9cb2ae83090e6e18ad303e1826dc0b4ec175e975439",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-default-Growth-weekly-one.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "dark-default",
+      "roi": [
+        896,
+        1281,
+        1028,
+        1416
+      ],
+      "foreground": [
+        219,
+        237,
+        254
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        962,
+        1348
+      ],
+      "backgroundPixel": [
+        896,
+        1304
+      ],
+      "solidForegroundPixels": 319,
+      "solidBackgroundPixels": 10237,
+      "actualAXFrame": [
+        299.0,
+        427.0,
+        44.0,
+        45.0
+      ],
+      "contrast": 10.206458654280997,
+      "sha256": "f16caa9efa0e897c2e575ea7133d393bbaf2fd922e3ee70fb84bbcbf62c8b7d9",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-default-Growth-weekly-one.png",
+      "icon": "decrease",
+      "state": "enabled",
+      "appearance": "dark-default",
+      "roi": [
+        711,
+        1281,
+        843,
+        1416
+      ],
+      "foreground": [
+        213,
+        234,
+        254
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        777,
+        1348
+      ],
+      "backgroundPixel": [
+        765,
+        1304
+      ],
+      "solidForegroundPixels": 172,
+      "solidBackgroundPixels": 10306,
+      "actualAXFrame": [
+        237.3,
+        427.0,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.899899176063744,
+      "sha256": "f16caa9efa0e897c2e575ea7133d393bbaf2fd922e3ee70fb84bbcbf62c8b7d9",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-maxAX-Growth-weekly-zero.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "dark-maxAX",
+      "roi": [
+        896,
+        1524,
+        1028,
+        1659
+      ],
+      "foreground": [
+        213,
+        234,
+        254
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        962,
+        1592
+      ],
+      "backgroundPixel": [
+        896,
+        1524
+      ],
+      "solidForegroundPixels": 3763,
+      "solidBackgroundPixels": 12714,
+      "actualAXFrame": [
+        299.0,
+        508.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.899899176063744,
+      "sha256": "7cdbdcb34d428fef6b10e8be291c61b14e318510ecdb2d7c029ef2031997b980",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-maxAX-Growth-weekly-one.png",
+      "icon": "increase",
+      "state": "enabled",
+      "appearance": "dark-maxAX",
+      "roi": [
+        896,
+        1524,
+        1028,
+        1659
+      ],
+      "foreground": [
+        220,
+        238,
+        254
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        962,
+        1592
+      ],
+      "backgroundPixel": [
+        896,
+        1524
+      ],
+      "solidForegroundPixels": 3761,
+      "solidBackgroundPixels": 12714,
+      "actualAXFrame": [
+        299.0,
+        508.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 10.292063300910675,
+      "sha256": "ef0487eae95085d35057795d28940a877eb8274c7c3678321082ed0e13e2f639",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-maxAX-Growth-weekly-one.png",
+      "icon": "decrease",
+      "state": "enabled",
+      "appearance": "dark-maxAX",
+      "roi": [
+        646,
+        1524,
+        778,
+        1659
+      ],
+      "foreground": [
+        213,
+        234,
+        254
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        712,
+        1592
+      ],
+      "backgroundPixel": [
+        668,
+        1524
+      ],
+      "solidForegroundPixels": 2081,
+      "solidBackgroundPixels": 14428,
+      "actualAXFrame": [
+        215.7,
+        508.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.899899176063744,
+      "sha256": "ef0487eae95085d35057795d28940a877eb8274c7c3678321082ed0e13e2f639",
+      "dimensions": [
+        1124,
+        2436
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-default-pressed-increase.png",
+      "icon": "increase",
+      "state": "pressed enabled",
+      "appearance": "light-default",
+      "roi": [
+        861,
+        459,
+        987,
+        588
+      ],
+      "foreground": [
+        16,
+        59,
+        93
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        924,
+        523
+      ],
+      "backgroundPixel": [
+        861,
+        483
+      ],
+      "solidForegroundPixels": 234,
+      "solidBackgroundPixels": 9104,
+      "actualAXFrame": [
+        299.0,
+        159.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.77190709090551,
+      "sha256": "b78ba8a1d8dede2e2512acbcba046012bad4587b2198d6cb0050c2fc5724dc30",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-default-pressed-decrease.png",
+      "icon": "decrease",
+      "state": "pressed enabled",
+      "appearance": "light-default",
+      "roi": [
+        642,
+        459,
+        768,
+        588
+      ],
+      "foreground": [
+        16,
+        59,
+        93
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        705,
+        523
+      ],
+      "backgroundPixel": [
+        690,
+        483
+      ],
+      "solidForegroundPixels": 126,
+      "solidBackgroundPixels": 9269,
+      "actualAXFrame": [
+        223.0,
+        159.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.77190709090551,
+      "sha256": "6679ac97adf4bce3dfdff054bd3732982f10d2a4b29d51fea1bedfb7bf835f36",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-maxAX-pressed-increase.png",
+      "icon": "increase",
+      "state": "pressed enabled",
+      "appearance": "light-maxAX",
+      "roi": [
+        861,
+        1016,
+        987,
+        1146
+      ],
+      "foreground": [
+        16,
+        59,
+        93
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        924,
+        1081
+      ],
+      "backgroundPixel": [
+        861,
+        1016
+      ],
+      "solidForegroundPixels": 3388,
+      "solidBackgroundPixels": 11314,
+      "actualAXFrame": [
+        299.0,
+        352.7,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.77190709090551,
+      "sha256": "6cf8a53550af11a27b1a223d81046fa824ac615a69fc083e7bda159f1708cda4",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "light-maxAX-pressed-decrease.png",
+      "icon": "decrease",
+      "state": "pressed enabled",
+      "appearance": "light-maxAX",
+      "roi": [
+        488,
+        1016,
+        615,
+        1146
+      ],
+      "foreground": [
+        16,
+        59,
+        93
+      ],
+      "background": [
+        230,
+        236,
+        242
+      ],
+      "foregroundPixel": [
+        552,
+        1081
+      ],
+      "backgroundPixel": [
+        509,
+        1016
+      ],
+      "solidForegroundPixels": 1862,
+      "solidBackgroundPixels": 13253,
+      "actualAXFrame": [
+        169.7,
+        352.7,
+        44.0,
+        45.0
+      ],
+      "contrast": 9.77190709090551,
+      "sha256": "f5df922d33236b7f3321888f39ef43dbf87a630f5540b9a61f6327bba201db28",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-default-pressed-increase.png",
+      "icon": "increase",
+      "state": "pressed enabled",
+      "appearance": "dark-default",
+      "roi": [
+        861,
+        459,
+        987,
+        588
+      ],
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        924,
+        523
+      ],
+      "backgroundPixel": [
+        861,
+        483
+      ],
+      "solidForegroundPixels": 234,
+      "solidBackgroundPixels": 9131,
+      "actualAXFrame": [
+        299.0,
+        159.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 12.208098517533198,
+      "sha256": "3ad45cd8356e3b51ef6dc0a752d44e763f80eff0b74899d876ea8f9c522b4bf4",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-default-pressed-decrease.png",
+      "icon": "decrease",
+      "state": "pressed enabled",
+      "appearance": "dark-default",
+      "roi": [
+        642,
+        459,
+        768,
+        588
+      ],
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        705,
+        523
+      ],
+      "backgroundPixel": [
+        687,
+        483
+      ],
+      "solidForegroundPixels": 126,
+      "solidBackgroundPixels": 9292,
+      "actualAXFrame": [
+        223.0,
+        159.3,
+        44.0,
+        45.0
+      ],
+      "contrast": 12.208098517533198,
+      "sha256": "9befffe089c3d5633a664cab90ce3844824bef619c8cf2d49261ff53453f6aac",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-maxAX-pressed-increase.png",
+      "icon": "increase",
+      "state": "pressed enabled",
+      "appearance": "dark-maxAX",
+      "roi": [
+        861,
+        1016,
+        987,
+        1146
+      ],
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        924,
+        1081
+      ],
+      "backgroundPixel": [
+        861,
+        1016
+      ],
+      "solidForegroundPixels": 3388,
+      "solidBackgroundPixels": 11329,
+      "actualAXFrame": [
+        299.0,
+        352.7,
+        44.0,
+        45.0
+      ],
+      "contrast": 12.208098517533198,
+      "sha256": "85b27f3aa200b612936b4e19644cb7379ed4d49e89ca132d03c5a4328bcc14b5",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    },
+    {
+      "file": "dark-maxAX-pressed-decrease.png",
+      "icon": "decrease",
+      "state": "pressed enabled",
+      "appearance": "dark-maxAX",
+      "roi": [
+        488,
+        1016,
+        615,
+        1146
+      ],
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        40,
+        55,
+        68
+      ],
+      "foregroundPixel": [
+        552,
+        1081
+      ],
+      "backgroundPixel": [
+        509,
+        1016
+      ],
+      "solidForegroundPixels": 1862,
+      "solidBackgroundPixels": 13263,
+      "actualAXFrame": [
+        169.7,
+        352.7,
+        44.0,
+        45.0
+      ],
+      "contrast": 12.208098517533198,
+      "sha256": "9b3e4f1d843614f3ed7af99457c11b60cdcd9bd42dc5cdadc5fcf2d74ebca542",
+      "dimensions": [
+        1080,
+        2340
+      ],
+      "colorSpace": "sRGB"
+    }
+  ],
+  "minimumEnabledContrast": 7.273151834302554
+}

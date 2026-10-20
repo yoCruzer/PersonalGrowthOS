@@ -193,3 +193,9 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## 2026-10-20 GitHub Actions、系统真机验收与分支安全收口
 
 [持续集成/设备门/分支安全收口 Goal](CI_DEVICE_BRANCH_CLEANUP_20261020_GOAL_ZH.md) 为本次 Owner 批准的新阶段（G1 CI→G2 设备→G3 分支候选清点与获批删除），[设备验收矩阵](CI_DEVICE_BRANCH_CLEANUP_20261020_DEVICE_GATE_ZH.md) 与 [初始分支台账](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md) 为执行模板。当前仅规划文档，尚未新增GitHub Actions或完成真机验收，也未清理任何分支。Xcode Cloud此前成功由Owner反馈，源SHA与本次候选对齐仍待核对。私人设备/数据库操作和实际远端分支删除保留Owner单独授权门。
+
+## 2026-10-20 计数器补修 / CI真实验收 / 只读清点
+
+- [实际执行与验证边界](CI_DEVICE_BRANCH_CLEANUP_20261020_EXECUTION_ZH.md)
+- [计数器原图与像素复算](Evidence/CounterContrast20261020/contrast-results.json)
+- [完整只读分支报告](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)
