@@ -3265,10 +3265,10 @@ extension AppLaunchSmokeTests {
             let name = category == .large ? "contrast-press-default" : "contrast-press-maxAX"
             readabilityShot(app, name + "-zero")
             XCTAssertFalse(minus.isEnabled)
-            plus.press(forDuration: 1.0)
+            plus.press(forDuration: 2.0)
             XCTAssertTrue(minus.isEnabled)
             readabilityShot(app, name + "-one")
-            minus.press(forDuration: 1.0)
+            minus.press(forDuration: 2.0)
             XCTAssertFalse(minus.isEnabled)
             XCTAssertEqual(app.staticTexts["today-habit-每天喝水几次-count"].value as? String, "0")
             app.terminate()
