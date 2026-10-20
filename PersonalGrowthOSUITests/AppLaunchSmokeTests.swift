@@ -3271,14 +3271,14 @@ extension AppLaunchSmokeTests {
             for habit in ["每周锻炼几次", "深度阅读几篇文章"] {
                 let row = app.buttons["habit-" + habit]; readabilityReveal(row, app)
                 readabilityShot(app, name + "-Today-" + habit)
-                let minus = app.buttons["today-habit-" + habit + "-decrease"]
-                let plus = app.buttons["today-habit-" + habit + "-increase"]
+                let minus = app.buttons["habit-overview-" + habit + "-counter-decrease"]
+                let plus = app.buttons["habit-overview-" + habit + "-counter-increase"]
                 readabilityReveal(plus, app)
                 let before = row.label
                 XCTAssertFalse(minus.isEnabled)
                 plus.press(forDuration: 1.0)
                 XCTAssertTrue(minus.isEnabled)
-                XCTAssertEqual(app.staticTexts["today-habit-" + habit + "-count"].value as? String, "1")
+                XCTAssertEqual(app.staticTexts["habit-overview-" + habit + "-counter-count"].value as? String, "1")
                 readabilityShot(app, name + "-Today-" + habit + "-one")
                 minus.tap(); XCTAssertFalse(minus.isEnabled)
                 XCTAssertEqual(row.label, before)
