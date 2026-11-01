@@ -1,0 +1,223 @@
+{
+  "environment": {
+    "xcode": "27.2 (27B52)",
+    "device": "iPhone 13 mini",
+    "runtime": "iOS 27.0 (24A434)",
+    "simulator": "83B81BAE-2074-4763-8D51-4F9E2C130389",
+    "data": "isolated synthetic",
+    "queue": "single xcodebuild"
+  },
+  "runs": [
+    {
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793553407.037,
+      "finishTime": 1793553431.738,
+      "run": "baseline2",
+      "logSHA256": "dbefe1efa4e71a93f1005d8ae30a3361dcbc2ef0454e9f21077601107d32142b"
+    },
+    {
+      "totalTestCount": 12,
+      "passedTests": 12,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793553606.02,
+      "finishTime": 1793553642.433,
+      "run": "focused4",
+      "logSHA256": "94f42d21a296f467fa76e470730a8c73447820193aacb124572a450e8cc756be"
+    },
+    {
+      "totalTestCount": 2,
+      "passedTests": 1,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "result": "Failed",
+      "startTime": 1793553657.525,
+      "finishTime": 1793553749.246,
+      "run": "ui-a1",
+      "logSHA256": "8f5a33205c01a2a58ea01e807ea3c5d250bc5409c7a1c073febb28567ff0cd1e"
+    },
+    {
+      "totalTestCount": 13,
+      "passedTests": 12,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "result": "Failed",
+      "startTime": 1793553817.528,
+      "finishTime": 1793553901.441,
+      "run": "ui-a2",
+      "logSHA256": "3d09579aad47a7eb997e514a0ab5db6c39231f6cc1ea1f65d25558ca799c0863"
+    },
+    {
+      "totalTestCount": 2,
+      "passedTests": 1,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "result": "Failed",
+      "startTime": 1793554068.729,
+      "finishTime": 1793554153.035,
+      "run": "ui-a3",
+      "logSHA256": "bfec8e0b86e6af43c4c26fe4558afca0b66b71e153274f0f4b24ae76248aa102"
+    },
+    {
+      "totalTestCount": 199,
+      "passedTests": 197,
+      "failedTests": 2,
+      "skippedTests": 0,
+      "result": "Failed",
+      "startTime": 1793554257.88,
+      "finishTime": 1793554349.514,
+      "run": "b1",
+      "logSHA256": "ef1536453bc868f3964306ad37e341704340ccffa9b4fd0ae498f98b8b8b43f9"
+    },
+    {
+      "totalTestCount": 21,
+      "passedTests": 20,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "result": "Failed",
+      "startTime": 1793554410.01,
+      "finishTime": 1793554527.563,
+      "run": "b2",
+      "logSHA256": "f5d559f755f84d35413f7e9e5e3a735a2cf7e7ff3481bac86f8984df5643e3cd"
+    },
+    {
+      "totalTestCount": 20,
+      "passedTests": 19,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "result": "Failed",
+      "startTime": 1793554637.584,
+      "finishTime": 1793554810.859,
+      "run": "b3",
+      "logSHA256": "221ebd03a93307ecc9bfd5fa8bd5ebdecfd414933387f4183fb42b8a1f1298c8"
+    },
+    {
+      "totalTestCount": 17,
+      "passedTests": 17,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793554827.15,
+      "finishTime": 1793554887.086,
+      "run": "b4",
+      "logSHA256": "fa40eb9d782a31919c67b3662a3324bff4950fd559cc64db32b3f25e49eb28e5"
+    },
+    {
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793554951.96,
+      "finishTime": 1793554984.238,
+      "run": "c-dark",
+      "logSHA256": "ddbc85d480c9454d4d9d17cb9c4800bcc34c4ccc2d0d26a9b7aaf8f7e14a0713"
+    },
+    {
+      "totalTestCount": 606,
+      "passedTests": 602,
+      "failedTests": 3,
+      "skippedTests": 1,
+      "result": "Failed",
+      "startTime": 1793555153.787,
+      "finishTime": 1793555426.678,
+      "run": "c-final",
+      "logSHA256": "a8f86ca3dd16f2a45dd9a667b04c3ba48a9d5fcb6a48db7be48436cd11cbfbad"
+    },
+    {
+      "totalTestCount": 7,
+      "passedTests": 6,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "result": "Failed",
+      "startTime": 1793555573.131,
+      "finishTime": 1793555635.858,
+      "run": "c-retry",
+      "logSHA256": "44e9d0ee51136fabde2b0a31ad24681983775835d6a8e10547d3f8957fc464e2"
+    },
+    {
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793555697.005,
+      "finishTime": 1793555742.761,
+      "run": "c-chart",
+      "logSHA256": "5f875f70db66649fa351ef9de7587bb8c725d2e96e060338ffce6253015ac5d0"
+    },
+    {
+      "totalTestCount": 2,
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793555792.582,
+      "finishTime": 1793555857.721,
+      "run": "c-visual-light",
+      "logSHA256": "11d02ff0e983269d738a002f175280cbd29c05e338d1db3996cd4e61309f9cf6"
+    },
+    {
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793555906.659,
+      "finishTime": 1793555926.838,
+      "run": "c-visual-dark",
+      "logSHA256": "5ed28806352ea0c1b6db4f3ab969ca3ba534f60dcc742be783f56ac62a76b85f"
+    },
+    {
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793556019.558,
+      "finishTime": 1793556056.608,
+      "run": "c-contrast-light",
+      "logSHA256": "231ef92c2c01b4e78879043290d7066298405380cf23e98f300f820558a6d151"
+    },
+    {
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "result": "Passed",
+      "startTime": 1793556109.996,
+      "finishTime": 1793556129.841,
+      "run": "c-contrast-dark",
+      "logSHA256": "909b4cdbaddc441cdd433cd142e1ff38da93c2a678f6600f09af1948846d7202"
+    }
+  ],
+  "release": {
+    "result": "BUILD SUCCEEDED",
+    "sourceSHA": "01ffedc45a4c99c3576ae65ab249b77a8496336f",
+    "command": "xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination generic/platform=iOS -derivedDataPath /tmp/pgos-net-worth-release -resultBundlePath /tmp/pgos-net-worth-evidence/c-release.xcresult build CODE_SIGNING_ALLOWED=NO",
+    "logSHA256": "5d56ebcac8d639adc99cbed06ff61bcfd431a2c2f6cd9a64482d21f9e19f686d",
+    "bundles": [
+      {
+        "bundle": "PersonalGrowthOS.app",
+        "bundleID": "com.yocruzer.PersonalGrowthOS",
+        "unsigned": true
+      },
+      {
+        "bundle": "PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+        "bundleID": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+        "unsigned": true
+      },
+      {
+        "bundle": "PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex",
+        "bundleID": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+        "unsigned": true
+      }
+    ],
+    "scopeNote": "Product files equal sourceSHA; documentation/evidence updates in progress during build."
+  }
+}

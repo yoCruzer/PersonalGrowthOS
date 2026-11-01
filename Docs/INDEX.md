@@ -218,6 +218,9 @@ Owner 已明确选择 Percento 式家庭财务净资产追踪，而非家庭物�
 - [完整产品、数据、UI 规格](HOUSEHOLD_NET_WORTH_V1_SPEC_ZH.md)
 - [Codex 执行 Goal](HOUSEHOLD_NET_WORTH_V1_GOAL_ZH.md)
 - [验收与 Owner 试用](HOUSEHOLD_NET_WORTH_V1_ACCEPTANCE_ZH.md)
+- [实现与验证证据](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md)
+- [独立代码与视觉审查](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md)
+- [十个主要场景及补充原始截图](Evidence/HouseholdNetWorthV11/README.md)
 
 V1 仅记录家庭资产与负债余额、保存历史快照、展示净资产趋势/资产构成/负债变化。采用统一余额项目 + 正式快照的轻量模型；用户可按总额或单账户记录。明确不做家庭物品管理、日常记账、投资收益分析、银行连接、多币种、多人共享、Entry 关联、Face ID 保险箱、通知/Widget。旧 `HOUSEHOLD_ASSETS_V1_*` 1.0 文件已替换为废止指引，不得再作为执行规格。
 

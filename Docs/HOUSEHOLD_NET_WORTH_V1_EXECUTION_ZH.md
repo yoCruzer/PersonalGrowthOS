@@ -1,3 +1,50 @@
+# 家庭净资产 V1.1 — 本地验收与独立 Review 完成，CI_PENDING
+
+最终产品代码：`01ffedc45a4c99c3576ae65ab249b77a8496336f`。主库追加V16、备份v12；两个统一实体，五Tab、Bundle ID、App Group及旧模块保留。未接入旧1.0物品管理、Entry关联、Face ID、银行/云同步等范围。
+
+- 独立只读Reviewer已确认 AR-01/02/03、BR-01/02、CR-01全部关闭；代码、数据安全、备份及五项视觉问题通过本地模拟器证据范围。见[审查记录](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md)。
+- 本地NetWorth领域/磁盘/实际ZIP 16项已通过；8条本功能UI场景最终分别通过，包含真实图表更正/删除回总览。深色及最终对比度复验各1PASS；早期失败未删除。
+- 集中完整Unit原轮599：597PASS/1FAIL/1既有SKIP；QuietWins旧v7夹具失败修复后全类5/5通过。集中本功能浅色UI原轮7：5PASS/2FAIL，两个定位失败随后分别复验通过。不能把原轮改称全绿。
+- 未签名Release `generic/platform=iOS` BUILD SUCCEEDED，主App、ShareExtension、ImportantDaysWidget三包均存在且无_CodeSignature；产品文件与上述SHA一致，构建时文档/截图收口中。
+- [十个主要场景与补充原始截图](Evidence/HouseholdNetWorthV11/README.md)、[截图源SHA/环境/哈希](Evidence/HouseholdNetWorthV11/screenshots.json)、[原始测试计数与日志哈希](Evidence/HouseholdNetWorthV11/local-runs.json)。CR-01旧失败图单独保留，最终图片未改绘。
+- 原始xcresult与完整日志：`/tmp/pgos-net-worth-evidence`。每轮selector与环境在下方；最后仅按失败/影响范围补验，没有重复整套本地Unit/UI。
+
+## N1–N13本地可执行验收
+
+| 验收 | 生产路径证据 | 本地结果 |
+|---|---|---|
+| N1/N2 | 整数分、独立240万/101万/139万真值、转账/还贷反例、未知/零/负值/溢出/中英文 | PASS |
+| N3/N4 | 首次/重复/批量沿用原日期、非法草稿磁盘重开、保存故障/重试、并发忙碌/取消 | PASS |
+| N5/N6 | 日期/补录/同日唯一/更正ID/冻结备注、归档最终零不变量、账户新增与明确范围标记 | PASS |
+| N7 | 真实图表点与分类下钻、负债切换、历史更正删除后总览同步；CSV读取同一ledger | PASS |
+| N8 | 精确BASE原代码生成V15磁盘与v11 ZIP；保护原库字节、升级V16重开和旧模块/媒体比对 | PASS |
+| N9/N10 | 实际v12 ZIP历史+非法中间草稿往返；仅项目/仅草稿非空保护；九类非法wire、恢复故障重开重试、晚写入冲突 | PASS |
+| N11 | UTF-8 BOM、精确金额、未知/零、注入防护、零明细记录、恢复后CSV一致 | PASS |
+| N12 | root/历史AX树无隐藏金额、图形移除、真实系统切换卡片遮挡、回前台继续隐藏；无新增全局搜索/通知/Widget财务路径 | PASS（实际VoiceOver听读待Owner） |
+| N13 | 原生五Tab、Growth/Weight/Habit邻页，浅/深、375pt窄屏、最大辅助字号、键盘、长名、单点、负值、部分、失败重试 | PASS（真机待Owner） |
+
+## 保留的限制与Owner真机门禁
+
+- `TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`既有SKIP：未挂载独立32MB HFS+测试卷；没有填满主卷。新财务恢复的故障注入/取消回滚已通过，但不等同真实低空间设备测试。
+- iOS27.1不支持所选旧mini型号的本机403及历史设备FAIL/SKIP/NOT_RUN保留；本次运行已安装iOS27.0专用模拟器。
+- 原始日志中的Widget projection、debugger noURL、SwiftUI `Invalid frame dimension`等运行警告保留；实际截图/断言未见对应本范围阻断。不把警告改称新功能失败，也不抹去。
+- 未操作真实私人库、账户或设备；真实VoiceOver听读、真机后台动画/键盘触控和长期使用时长仍为NOT_RUN。
+- Owner清单：首次添加几项资产负债并识别估算/未知；10项目重复盘点只改2–3项其余沿用并检查原日期；核对负值/范围调整及历史下钻；更正/删除后确认总览；隐藏与后台/VoiceOver；自行在安全环境检查CSV及完整备份恢复。记录耗时与困惑，不声称完成私人数据/真机验收。
+
+## 提交与交付边界
+
+- BASE `5827c657095945aff30b2250b20bae104c7b0357`
+- GOAL_SHA `fb9cb83dc29b02897183d90c84c84055a037f957`
+- A `f58746fd6f7f40b564e46a65091be1396f0134e3`
+- B `9a8d77dd73e427c248844cefcad137d43327491b`
+- C数据交互修复 `a45a910c7cb8b0070114db97850dc9d9cf1bc1f0`
+- C夹具/定位 `9a3966e964bf4edd02aa043b1485619e771ef30a`、`839941aaf33eb8cff186d12f8e88c1592369aca8`
+- C视觉 `22d9d82f3aa078977532071da79ee2739b4f4047`、`01ffedc45a4c99c3576ae65ab249b77a8496336f`
+
+当前尚未标记READY：下一步普通push并创建唯一Draft PR，base为`codex/usage-remediation-20261017`，运行现有release/unit/smoke。禁止merge、force push、tag、Archive、TestFlight或发布。原主目录仍在`d72c016dd34c8114cf44744d0e061b95bd312091`，其project/catalog/xcodecloud三项未知改动原样保留。
+
+---
+
 # 家庭净资产 V1.1 执行记录
 
 ## 固定输入与工作区

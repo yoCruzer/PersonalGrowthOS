@@ -2,7 +2,7 @@
 
 全部为主 App 的真实合成数据路径，没有 Preview、HTML、拼图或图像改绘。PNG 从 xcresult 附件逐字复制，SHA256、实际源提交、测试方法、环境与采集时间见 [manifest](screenshots.json)。
 
-深色在固定 B 提交采集；后续产品修复为详情关闭刷新与明确补录路由，未改变深色总览。浅色在 C 提交采集；测试修复不改产品代码。
+各图记录各自固定源提交；后续修复影响的项目列表已更新为最终候选原图，未变更场景保留此前真实证据。原始失败与复验分别记录，不把不同提交称为同一轮测试。
 
 ## 十个主要场景
 
@@ -54,6 +54,7 @@
 - [V2-composition](V2-composition.png)
 - [V2-liability-trend](V2-liability-trend.png)
 - [V2-trend-scope-break](V2-trend-scope-break.png)
+- [V3-dark-items](V3-dark-items.png)
 - [V3-dark-trend-composition](V3-dark-trend-composition.png)
 - [V6-background-return-hidden](V6-background-return-hidden.png)
 - [V6-hidden](V6-hidden.png)
@@ -63,3 +64,5 @@
 - [V8-negative](V8-negative.png)
 - [V9-frozen-history](V9-frozen-history.png)
 - [V9-latest-category](V9-latest-category.png)
+
+[CR-01 旧失败原图与最终修复对照](ReviewHistory/README.md)

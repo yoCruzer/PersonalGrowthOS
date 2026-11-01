@@ -1,10 +1,10 @@
-# 2026-11-02 家庭净资产 V1.1 — B_CHECKPOINT / VALIDATING_C
+# 2026-11-02 家庭净资产 V1.1 — LOCAL_ACCEPTED / CI_PENDING
 
-固定 BASE/GOAL 已核对，A→B 连续实现于隔离 `codex/household-net-worth-v1`；原主目录未知改动、旧 PR 和历史门禁保留。统一两实体 V16/v12，原生五 Tab/Growth、首次/重复/草稿/正式盘点、图表/历史/CSV、真实 V15/v11 迁移恢复与隐私接入。
+产品候选 `01ffedc45a4c99c3576ae65ab249b77a8496336f` 已完成A→B→C实现及本地验收；独立只读代码/数据/备份/视觉Review全部问题关闭。16项净资产Unit、8条功能UI最终分别通过，未签名Release三包通过。完整Unit原轮597PASS/1FAIL/1既有SKIP，旧v7夹具修复后QuietWins5/5通过；UI原轮5PASS/2FAIL，失败分别复验关闭。保留原始计数，不伪装原轮全绿。
 
-定向受影响回归 b1 199项中197通过，两个新增模型计数预期已修正并于 b2 复验通过。最新 b4：16净资产领域/磁盘/实际ZIP测试 +1实际图表分类下钻UI，17 PASS/0 FAIL。早期失败完整保留；独立 A 审查三项发现已有修复和正反测试，待固定候选复核。b3实际系统切换卡片证实遮挡，回前台隐藏、保存失败保留输入/重试、大字/负值/长名通过。
+下一步普通push并创建唯一Draft PR，base `codex/usage-remediation-20261017`；完成现有release/unit/smoke CI后才能进入READY_FOR_OWNER_DEVICE_GATE。真机、实际VoiceOver、私人数据未验证；32MB低空间卷既有SKIP与原设备限制保留。主目录三项未知改动、旧PR/分支不动，不merge/force/tag/Archive/TestFlight。
 
-详见 [执行记录](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md) 与 [独立审查](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md)。C 尚须集中最终截图、Release/Unit、独立复核、普通push、唯一Draft PR及CI；当前不是READY。只用合成隔离环境，不操作私人库/设备，不merge/force/tag/Archive/TestFlight。以下历史原文保留。
+[交付与执行证据](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md) · [独立审查](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md) · [真实截图](Evidence/HouseholdNetWorthV11/README.md)。以下历史原文保留。
 
 ---
 
