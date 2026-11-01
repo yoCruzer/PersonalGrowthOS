@@ -687,3 +687,8 @@ Owner 已确认轻量家庭资产盘点定义，并批准按规划继续，要�
 这些有限图表、家庭统计标签和本机隐私能力不受早期 V1 对所有统计/Family 的一般后置描述阻挡；家庭共享、多账号、自动银行/券商/汇率/行情、投资建议/收益率、AI/OCR、资产票据库、通知调度、资产 Widget、云同步和全局设计重构仍后置。设备认证不宣称数据库或未加密导出文件已加密。
 
 保持五 Tab、Record、Local First、主库与包身份、历史数据和所有权。三阶段属于同一连续 Goal，完成实现、必要验证、真实独立审查与普通推送/新 Draft PR，停 Owner 真机门；旧设备未验结论不改写。详见同一固定 GOAL_SHA 的 [DESIGN](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[UI](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[GOAL](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[ACCEPTANCE](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md)。不授权发布、合并、改写旧分支或操作私人库。
+
+
+## 家庭净资产 V1.1 批准增量 — 2026-11-01（取代 1.0 家庭资产快照范围）
+
+批准轻量家庭财务净资产追踪：手工资产/负债余额、人民币、历史快照、净资产趋势、资产构成、负债变化、草稿恢复、CSV/完整备份、金额隐藏及后台遮挡。保持五 Tab，Growth 二级入口。排除家庭物品管理、日常记账、投资收益率、自动连接、多币种、多人协作、Entry 关联、Face ID 保险箱、通知/Widget。详细规格见 `HOUSEHOLD_NET_WORTH_V1_SPEC_ZH.md`；执行授权见 `HOUSEHOLD_NET_WORTH_V1_GOAL_ZH.md`。
