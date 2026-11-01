@@ -210,3 +210,15 @@ Owner 已认可“定期用几分钟确认家庭资产与负债，留下一张�
 固定产品基线 `5827c657095945aff30b2250b20bae104c7b0357`；完整执行输入由引导 prompt 固定 GOAL_SHA。按同一提交依次阅读：[产品与数据契约](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[界面与交互](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[执行 Goal](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[验收与试用](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md)，均为 1.0。
 
 本次连续阶段 A→B→C 在新分支实现、验证、独立审查、普通 push 和新 Draft PR 后停 Owner 设备门。新的开发授权替代旧批次仅等设备的停点，旧测试/失败/设备状态原样保留；精确边界见 CURRENT 顶部和 Goal。
+
+
+## 家庭净资产 V1.1 批准增量 — 2026-11-01（取代家庭资产快照 V1.0）
+
+Owner 已明确选择 Percento 式家庭财务净资产追踪，而非家庭物品/库存管理。最新唯一规格：
+- [完整产品、数据、UI 规格](HOUSEHOLD_NET_WORTH_V1_SPEC_ZH.md)
+- [Codex 执行 Goal](HOUSEHOLD_NET_WORTH_V1_GOAL_ZH.md)
+- [验收与 Owner 试用](HOUSEHOLD_NET_WORTH_V1_ACCEPTANCE_ZH.md)
+
+V1 仅记录家庭资产与负债余额、保存历史快照、展示净资产趋势/资产构成/负债变化。采用统一余额项目 + 正式快照的轻量模型；用户可按总额或单账户记录。明确不做家庭物品管理、日常记账、投资收益分析、银行连接、多币种、多人共享、Entry 关联、Face ID 保险箱、通知/Widget。旧 `HOUSEHOLD_ASSETS_V1_*` 1.0 文件已替换为废止指引，不得再作为执行规格。
+
+保持五 Tab，Growth 增加“家庭净资产”二级入口；本地优先；预期 V15/v11 → V16/v12（执行前重新核对真实基线）。本次仅规格准备，产品实现和测试均 NOT_RUN。
