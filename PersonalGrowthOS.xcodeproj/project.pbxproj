@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+B16100000000000000000006 = {isa = PBXBuildFile; fileRef = B16000000000000000000006; };
+B16100000000000000000005 = {isa = PBXBuildFile; fileRef = B16000000000000000000005; };
+B16100000000000000000004 = {isa = PBXBuildFile; fileRef = B16000000000000000000004; };
+B16100000000000000000003 = {isa = PBXBuildFile; fileRef = B16000000000000000000003; };
+B16100000000000000000002 = {isa = PBXBuildFile; fileRef = B16000000000000000000002; };
+B16100000000000000000001 = {isa = PBXBuildFile; fileRef = B16000000000000000000001; };
 A15100000000000000000001 = {isa = PBXBuildFile; fileRef = A15000000000000000000001; };
 A15100000000000000000002 = {isa = PBXBuildFile; fileRef = A15000000000000000000002; };
 711000000000000000000006 = {isa = PBXBuildFile; fileRef = 710000000000000000000006; };
@@ -140,6 +146,12 @@ CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H0000
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+B16000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/NetWorthBaselineV15Fixture"; sourceTree = SOURCE_ROOT; };
+B16000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/NetWorthUITests.swift"; sourceTree = SOURCE_ROOT; };
+B16000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/NetWorthTests.swift"; sourceTree = SOURCE_ROOT; };
+B16000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/NetWorth/NetWorthViews.swift"; sourceTree = SOURCE_ROOT; };
+B16000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/NetWorth/NetWorthTransfer.swift"; sourceTree = SOURCE_ROOT; };
+B16000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/NetWorth/NetWorthFoundation.swift"; sourceTree = SOURCE_ROOT; };
 A15000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Todo/TodoAlarmReminders.swift"; sourceTree = SOURCE_ROOT; };
 A15000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = "PersonalGrowthOS/InfoPlist.xcstrings"; sourceTree = SOURCE_ROOT; };
 710000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/InvestmentUITests.swift"; sourceTree = SOURCE_ROOT; };
@@ -280,6 +292,12 @@ CA0000000000000000000013 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147
 		C00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+B16000000000000000000006,
+B16000000000000000000005,
+B16000000000000000000004,
+B16000000000000000000003,
+B16000000000000000000002,
+B16000000000000000000001,
 51000000000000000000000A,
 510000000000000000000009,
 510000000000000000000008,
@@ -649,6 +667,7 @@ A15100000000000000000002,
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+B16100000000000000000006,
 DE32EF607A5322445E8422C8,
 TD4000000000000000000001,
 RV1000000000000000000001,
@@ -688,6 +707,9 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+B16100000000000000000003,
+B16100000000000000000002,
+B16100000000000000000001,
 711000000000000000000004,
 711000000000000000000002,
 711000000000000000000001,
@@ -756,6 +778,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+B16100000000000000000004,
 711000000000000000000005,
 711000000000000000000003,
 51100000000000000000000A,
@@ -787,6 +810,7 @@ TD1000000000000000000002,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+B16100000000000000000005,
 711000000000000000000006,
 511000000000000000000009,
 A6A3889D8A176ACEAF630B3A,

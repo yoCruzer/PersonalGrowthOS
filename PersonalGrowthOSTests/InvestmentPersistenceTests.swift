@@ -221,7 +221,7 @@ import Darwin
         }.sorted {$0.id.uuidString < $1.id.uuidString}
         let encoder=JSONEncoder();encoder.dateEncodingStrategy = .secondsSince1970
         var payload=try XCTUnwrap(JSONSerialization.jsonObject(with:encoder.encode(legacy)) as? [String:Any])
-        for key in ["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {payload.removeValue(forKey:key)}
+        for key in ["netWorthItems","netWorthSnapshots","todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {payload.removeValue(forKey:key)}
         let bytes=try JSONSerialization.data(withJSONObject:payload,options:.sortedKeys);try bytes.write(to:extracted.appendingPathComponent("data.json"))
         let manifestURL=extracted.appendingPathComponent("manifest.json")
         var manifest=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:manifestURL)) as? [String:Any])
@@ -1005,7 +1005,7 @@ import Darwin
         let before=try TransferSnapshot.make(context:ModelContext(source))
         let lease=try await transfer(source,folder).exportPackage();defer {lease.cleanup()}
         let (exported,extracted)=try zipData(lease.url)
-        XCTAssertEqual(exported,before);XCTAssertEqual(ExportManifest.currentPackageSchemaVersion,11)
+        XCTAssertEqual(exported,before);XCTAssertEqual(ExportManifest.currentPackageSchemaVersion,12)
         let bytes=try Data(contentsOf:extracted.appendingPathComponent("data.json"))
         XCTAssertFalse(String(decoding:bytes,as:UTF8.self).contains("intentGeneration"))
         let destination=try root(),targetURL=destination.appendingPathComponent("target.sqlite"),target=try PersistenceContainerFactory.makeOnDisk(at:targetURL)
@@ -1037,6 +1037,8 @@ import Darwin
         let keys=["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"]
         for scenario in 0..<5 {
             var payload=originalPayload,manifest=originalManifest
+            XCTAssertTrue(data.netWorthItems.isEmpty && data.netWorthSnapshots.isEmpty)
+            payload.removeValue(forKey:"netWorthItems");payload.removeValue(forKey:"netWorthSnapshots")
             let version=scenario < 3 ? 11 : 10
             if scenario < 3 {payload.removeValue(forKey:keys[scenario])}
             if scenario == 4 {for key in keys {payload.removeValue(forKey:key)}}

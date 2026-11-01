@@ -1,3 +1,11 @@
+# 2026-11-02 家庭净资产 V1.1 — A_CHECKPOINT / IMPLEMENTING_B
+
+按固定 GOAL_SHA `fb9cb83dc29b02897183d90c84c84055a037f957` 连续 A→B→C，在隔离产品分支 `codex/household-net-worth-v1` 实施。原工作区未知改动和旧 PR 保留。实际 V15/v11 → V16/v12；两个新持久实体，主库/五 Tab/身份不变。金额/草稿/快照、原生 Growth/总览/录入及迁移备份已接入，首轮领域/磁盘/ZIP 定向12/12通过；首次盘点与中文重复草稿/冷重开 UI 已通过。早期范围/列表定位失败保留；大字页面等候已依据 AX 修正，复验待 B。
+
+详见 [执行记录](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md)。当前不是 READY；继续完成原生视觉、受影响回归、独立只读审查、普通 push/唯一 Draft PR及CI。只用合成隔离数据，不操作私人库或设备，不 merge/force/tag/Archive/TestFlight。以下历史原文保留。
+
+---
+
 # 2026-11-01 当前任务：家庭净资产 V1.1 连续实现
 
 状态：**GOAL_READY / IMPLEMENTATION_NOT_STARTED**。本次仅更新规划文档，未修改 App 代码、未构建、未运行测试。

@@ -2,7 +2,7 @@ import Foundation
 
 struct ExportManifest: Codable, Equatable {
     static let formatIdentifier = "com.yocruzer.PersonalGrowthOS.export"
-    static let currentPackageSchemaVersion = 11
+    static let currentPackageSchemaVersion = 12
     static let supportedPackageSchemaVersions = 1...currentPackageSchemaVersion
 
     let formatIdentifier: String
@@ -30,6 +30,8 @@ struct ExportMediaFileRecord: Codable, Equatable {
 }
 
 struct TransferData: Codable, Equatable {
+    let netWorthItems: [NetWorthItemValue]
+    let netWorthSnapshots: [NetWorthSnapshotValue]
     let entries: [EntryTransfer]
     let images: [ImageTransfer]
     let tags: [TagTransfer]
@@ -103,8 +105,11 @@ struct TransferData: Codable, Equatable {
         investmentOperations: [InvestmentOperationTransfer] = [],
         todoSeriesPreferences: [TodoSeriesPreferencesTransfer] = [],
         todoReminderIntents: [TodoReminderIntentTransfer] = [],
-        bodyReferenceSettings: [BodyReferenceSettingsTransfer] = []
+        bodyReferenceSettings: [BodyReferenceSettingsTransfer] = [],
+        netWorthItems: [NetWorthItemValue] = [],
+        netWorthSnapshots: [NetWorthSnapshotValue] = []
     ) {
+        self.netWorthItems = netWorthItems; self.netWorthSnapshots = netWorthSnapshots
         self.entries = entries
         self.images = images
         self.tags = tags
@@ -142,6 +147,7 @@ struct TransferData: Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
+        case netWorthItems, netWorthSnapshots
         case entries
         case images
         case tags
@@ -175,6 +181,8 @@ struct TransferData: Codable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        netWorthItems = try container.decodeIfPresent([NetWorthItemValue].self, forKey: .netWorthItems) ?? []
+        netWorthSnapshots = try container.decodeIfPresent([NetWorthSnapshotValue].self, forKey: .netWorthSnapshots) ?? []
         entries = try container.decode([EntryTransfer].self, forKey: .entries)
         images = try container.decode([ImageTransfer].self, forKey: .images)
         tags = try container.decode([TagTransfer].self, forKey: .tags)
@@ -225,6 +233,7 @@ struct TransferData: Codable, Equatable {
 
     var objectCounts: [String: Int] {
         [
+            "netWorthItems": netWorthItems.count, "netWorthSnapshots": netWorthSnapshots.count,
             "entries": entries.count,
             "images": images.count,
             "tags": tags.count,
@@ -263,6 +272,7 @@ struct TransferData: Codable, Equatable {
     func objectCounts(forPackageSchemaVersion version: Int) -> [String: Int] {
         objectCounts.filter { key, _ in
             (version != 1 || key != "weightRecords")
+                && (version >= 12 || !key.hasPrefix("netWorth"))
                 && (version >= 3 || key != "weeklyReviews")
                 && (version >= 4 || (key != "habitPlanRevisions" && key != "habitLifecycleEvents"))
                 && (version >= 7 || !key.hasPrefix("todo"))
@@ -511,6 +521,7 @@ enum TransferValidator {
                 (data.todoTasks.isEmpty && data.todoEvents.isEmpty && data.todoLists.isEmpty && data.todoSeries.isEmpty && data.todoSources.isEmpty) else {
             throw TransferPackageError.invalidObject("todo schema")
         }
+        try data.validateNetWorth(packageVersion: manifest.packageSchemaVersion)
         try data.validateInvestment(packageVersion: manifest.packageSchemaVersion)
         try data.validateSleep(packageVersion: manifest.packageSchemaVersion)
         try data.validateImportantDays(packageVersion: manifest.packageSchemaVersion, manifest: manifest)

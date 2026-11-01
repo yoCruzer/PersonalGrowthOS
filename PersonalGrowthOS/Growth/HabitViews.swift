@@ -11,6 +11,7 @@ struct GrowthView: View {
     @Environment(\.scenePhase) private var phase
     @State private var counts: GrowthEntryCounts?
     @State private var loadFailed = false
+    @State private var netWorthCount: Int?
 
     var body: some View {
         List {
@@ -42,6 +43,10 @@ struct GrowthView: View {
                 ModuleEntryRow(title: String(localized: "Sleep and Routine"), subtitle: String(localized: "Recall last night, understand your routine"),
                     systemImage: "moon.zzz", value: counts.map { String(localized: "\($0.sleepNights) recorded nights") })
             }.accessibilityIdentifier("growth-sleep")
+            NavigationLink { NetWorthHubView() } label: {
+                ModuleEntryRow(title: String(localized: "Household net worth"), subtitle: String(localized: "Regular snapshots of your family's finances"),
+                    systemImage: "chart.line.uptrend.xyaxis", value: netWorthCount.map { $0 == 0 ? String(localized: "No snapshots yet") : String(localized: "\($0) snapshots") })
+            }.accessibilityIdentifier("growth-net-worth")
             NavigationLink { InvestmentHubView() } label: {
                 ModuleEntryRow(title: String(localized: "Time investment"), subtitle: String(localized: "Record effort, see it add up"),
                     systemImage: "timer", value: counts.map { String(localized: "\($0.activities) activities") })
@@ -68,7 +73,7 @@ struct GrowthView: View {
     }
 
     private func refreshCounts() {
-        do { let (now,zone)=countClock(); counts = try GrowthEntryCounts(context: context,now:now,zone:zone); loadFailed = false }
+        do { let (now,zone)=countClock(); counts = try GrowthEntryCounts(context: context,now:now,zone:zone); netWorthCount = try NetWorthService(context: context).read().history.count; loadFailed = false }
         catch { counts = nil; loadFailed = true }
     }
 }
