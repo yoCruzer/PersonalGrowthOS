@@ -12,7 +12,7 @@
 
 旧 `HOUSEHOLD_ASSETS_V1_*` 文件现为废止跳转说明。Codex 必须按新文件执行，不得将旧 1.0 要求混入本轮。
 
-执行分支：`codex/household-net-worth-v1`；规划分支：`plan/household-assets-v1-goal`；新 Draft PR base 预期 `codex/usage-remediation-20261017`，执行前重新核对实际远端 PR 状态。连续 A→B→C 授权见固定 Goal。仅用合成数据和隔离环境；保留未知改动；定向验证、阶段本地提交、最终集中 push/CI、真正独立审查。完成后停 `READY_FOR_OWNER_DEVICE_GATE`；不 merge/force/tag/Archive/TestFlight，不操作私人设备或数据库。
+执行分支：`codex/household-net-worth-v1`；规划分支：`plan/household-net-worth-v1-goal`；新 Draft PR base 预期 `codex/usage-remediation-20261017`，执行前重新核对实际远端 PR 状态。连续 A→B→C 授权见固定 Goal。仅用合成数据和隔离环境；保留未知改动；定向验证、阶段本地提交、最终集中 push/CI、真正独立审查。完成后停 `READY_FOR_OWNER_DEVICE_GATE`；不 merge/force/tag/Archive/TestFlight，不操作私人设备或数据库。
 
 ---
 
@@ -20,7 +20,7 @@
 
 状态：**GOAL_READY / IMPLEMENTATION_NOT_STARTED**。本次规划提交只改 Docs；执行端按固定 GOAL_SHA 开始，不能把文档准备当成产品完成。
 
-先读取同一提交的 [产品契约](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[UI 规格](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[执行 Goal](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[验收表](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md) 全文。BASE 为 `5827c657095945aff30b2250b20bae104c7b0357`；规划 `plan/household-assets-v1-goal`；实施 `codex/household-assets-v1`；新 Draft PR base `codex/usage-remediation-20261017`。
+先读取同一提交的 [产品契约](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[UI 规格](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[执行 Goal](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[验收表](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md) 全文。BASE 为 `5827c657095945aff30b2250b20bae104c7b0357`；规划 `plan/household-net-worth-v1-goal`；实施 `codex/household-assets-v1`；新 Draft PR base `codex/usage-remediation-20261017`。
 
 连续推进：A 原生纵向路径/视觉定调/迁移备份接缝 → B 历史图表/隐私/完整集成 → C 集中验收/独立审查修复/普通 push/新 Draft PR。阶段内普通可逆决策自主完成，不逐阶段等批准。界面与既有模块统一、真实截图达到 UI 规格，是完成条件之一。
 
