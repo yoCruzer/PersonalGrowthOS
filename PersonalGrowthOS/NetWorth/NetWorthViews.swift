@@ -390,8 +390,8 @@ struct NetWorthItemsView: View {
                                 if let row = ledger.history.reversed().compactMap({ $0.items.first { $0.id == item.id } }).first {
                                     Text(hidden ? "••••" : ((row.cents.map(NetWorthMoney.display) ?? String(localized: "Unknown")) + " · " + (row.amountDay ?? "—"))).monospacedDigit().font(.subheadline).foregroundStyle(.secondary)
                                 }
-                            }.padding(.vertical, 4)
-                        }.swipeActions {
+                            }.padding(.vertical, 4).frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
+                        }.buttonStyle(.plain).swipeActions {
                             Button(item.archived ? "Restore" : "Archive") {
                                 var changed = item; changed.archived.toggle()
                                 do { _ = try NetWorthService(context: context).saveItem(changed); refresh() } catch { self.error = error.localizedDescription }

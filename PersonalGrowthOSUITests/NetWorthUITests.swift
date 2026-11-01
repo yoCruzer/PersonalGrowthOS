@@ -92,6 +92,9 @@ final class NetWorthUITests: XCTestCase {
         let app=launch(["-PGOSNetWorthFixture"],chinese:true);open(app,chinese:true);shot(app,"V3-dark-overview")
         app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.8)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.4)))
         shot(app,"V3-dark-trend-composition")
+        let items=app.buttons["余额项目"];reveal(items,app);items.tap();shot(app,"V3-dark-items")
+        let bank=app.buttons.matching(NSPredicate(format:"label BEGINSWITH %@","测试银行存款")).firstMatch
+        XCTAssertTrue(bank.waitForExistence(timeout:5));bank.tap();XCTAssertEqual(app.textFields["net-worth-item-name"].value as? String,"测试银行存款")
     }
     func testTrendAndCategoryDrillDownKeepLatestCompositionAndAdjacentModules() {
         let app=launch(["-PGOSNetWorthFixture"],chinese:true)
