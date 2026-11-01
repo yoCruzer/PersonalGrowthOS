@@ -40,7 +40,8 @@ struct NetWorthHubView: View {
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Net worth · CNY").font(.subheadline).foregroundStyle(.secondary)
-                        Text(amount((try? latest.totals())?.net)).font(typeSize.isAccessibilitySize ? .title : .largeTitle).fontWeight(.semibold)
+                        Text(readableAmount(amount((try? latest.totals())?.net))).font(typeSize.isAccessibilitySize ? .title : .largeTitle).fontWeight(.semibold)
+                            .accessibilityLabel(amount((try? latest.totals())?.net))
                             .monospacedDigit().fixedSize(horizontal: false, vertical: true).accessibilityIdentifier("net-worth-main")
                         Text(latest.day).font(.subheadline).foregroundStyle(.secondary)
                         if latest.scopeAdjusted { Label("Statistical scope adjusted", systemImage: "info.circle").font(.footnote) }
@@ -112,13 +113,20 @@ struct NetWorthHubView: View {
         .fileExporter(isPresented: $exporting, document: csv, contentType: .commaSeparatedText, defaultFilename: "NetWorth") { result in if case .failure(let error) = result { self.error = error.localizedDescription } }
         .netWorthPrivacy()
     }
-    private func amount(_ cents: Int64?) -> String { hidden ? "••••" : cents.map(NetWorthMoney.display) ?? String(localized: "Incomplete") }
+    private func amount(_ cents: Int64?) -> String { hidden ? "••••" : cents.map(NetWorthMoney.display) ?? String(localized: "Net worth incomplete") }
+    private func readableAmount(_ value: String) -> String {
+        guard typeSize.isAccessibilitySize, value.count > 8,
+              let decimal = value.range(of: Locale.current.decimalSeparator ?? ".", options: .backwards) else { return value }
+        // Keep the fractional part together at large accessibility sizes, without shrinking type.
+        return String(value[..<decimal.lowerBound]) + "\n" + String(value[decimal.lowerBound...])
+    }
     private func subtotal(_ snapshot: NetWorthSnapshotValue, _ side: NetWorthSide) -> some View {
         let totals = try? snapshot.totals()
         let complete = side == .asset ? totals?.assetsComplete : totals?.liabilitiesComplete
         return VStack(alignment: .leading, spacing: 4) {
             Text(side.title + (complete == true ? "" : " · " + String(localized: "Known subtotal"))).font(.caption).foregroundStyle(.secondary)
-            Text(amount(side == .asset ? totals?.assets : totals?.liabilities)).font(.body.weight(.medium)).monospacedDigit().fixedSize(horizontal: false, vertical: true)
+            Text(readableAmount(amount(side == .asset ? totals?.assets : totals?.liabilities))).font(.body.weight(.medium)).monospacedDigit().fixedSize(horizontal: false, vertical: true)
+                .accessibilityLabel(amount(side == .asset ? totals?.assets : totals?.liabilities))
         }
     }
     @ViewBuilder private func comparison(_ latest: NetWorthSnapshotValue) -> some View {
@@ -126,7 +134,7 @@ struct NetWorthHubView: View {
             let previous = ledger.history[ledger.history.count - 2]
             if let a = try? latest.totals().net, let b = try? previous.totals().net {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(String(localized: "Change") + " " + NetWorthMoney.display(a - b)).monospacedDigit()
+                    Text((a == b ? String(localized: "No change since last snapshot") : a > b ? String(localized: "Increase since last snapshot") : String(localized: "Decrease since last snapshot")) + (a == b ? "" : " " + NetWorthMoney.display(abs(a - b)))).monospacedDigit()
                     Text(previous.day + " → " + latest.day).foregroundStyle(.secondary)
                     if latest.scopeAdjusted || previous.scopeAdjusted { Text("Scope changed; this difference is not a return.").foregroundStyle(.secondary) }
                 }.font(.footnote)
@@ -138,10 +146,12 @@ struct NetWorthHubView: View {
         return Chart(points) { point in
             if let value = point.cents {
                 PointMark(x: .value("Date", point.date), y: .value("CNY", Double(value) / 100)).foregroundStyle(Color.accentColor)
+                    .symbol(point.adjusted ? .diamond : .circle)
+                    .annotation(position: .top) { if point.adjusted { Text("Scope adjusted").font(.caption2).foregroundStyle(.secondary) } }
                 LineMark(x: .value("Date", point.date), y: .value("CNY", Double(value) / 100), series: .value("Segment", point.segment)).foregroundStyle(Color.accentColor)
             }
         }.frame(height: 180).chartYAxis { AxisMarks(position: .leading) }
-            .accessibilityLabel(debtTrend ? "Liability trend" : "Net worth trend")
+            .accessibilityLabel(debtTrend ? "Liability trend" : "Net worth trend").accessibilityIdentifier("net-worth-trend")
             .chartOverlay { proxy in GeometryReader { geometry in
                 Rectangle().fill(.clear).contentShape(Rectangle()).onTapGesture { location in
                     guard let frame = proxy.plotFrame,
@@ -150,7 +160,9 @@ struct NetWorthHubView: View {
                           let snapshot = ledger.history.first(where: { $0.id == nearest.id }) else { return }
                     selectedSnapshot = snapshot
                 }
-            } }.sheet(item: $selectedSnapshot) { snapshot in NavigationStack { NetWorthDetailView(snapshot: snapshot) } }
+            } }.sheet(item: $selectedSnapshot) { snapshot in NavigationStack {
+                NetWorthDetailView(snapshot: snapshot).toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { selectedSnapshot = nil } } }
+            } }
     }
     @State private var selectedSnapshot: NetWorthSnapshotValue?
     @ViewBuilder private func composition(_ snapshot: NetWorthSnapshotValue) -> some View {
@@ -162,13 +174,13 @@ struct NetWorthHubView: View {
                 NavigationLink { NetWorthDetailView(snapshot: snapshot, category: category) } label: {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(category.title).foregroundStyle(.primary)
-                        Text(NetWorthMoney.display(sum)).monospacedDigit().font(.subheadline)
+                        Text(rows.allSatisfy({ $0.cents == nil }) ? String(localized: "Unknown") : NetWorthMoney.display(sum)).monospacedDigit().font(.subheadline)
                         if total?.assetsComplete == true, let assets = total?.assets, assets > 0 {
                             ProgressView(value: Double(sum) / Double(assets)).accessibilityLabel(category.title)
                             Text((Double(sum) / Double(assets)).formatted(.percent.precision(.fractionLength(1)))).font(.caption).foregroundStyle(.secondary)
                         } else { Text("Known subtotal").font(.caption).foregroundStyle(.secondary) }
                     }.padding(.vertical, 4)
-                }
+                }.accessibilityIdentifier("net-worth-category-\(category.rawValue)")
             }
         }
     }
@@ -194,7 +206,7 @@ struct NetWorthHubView: View {
 }
 
 struct NetWorthTrend {
-    struct Point: Identifiable { var id: UUID; var date: Date; var cents: Int64?; var segment: Int }
+    struct Point: Identifiable { var id: UUID; var date: Date; var cents: Int64?; var segment: Int; var adjusted: Bool }
     static func points(_ snapshots: [NetWorthSnapshotValue], liabilities: Bool = false) -> [Point] {
         var segment = 0; var previousAdjusted = false
         return snapshots.filter(\.confirmed).sorted { $0.day < $1.day }.compactMap { snapshot in
@@ -203,7 +215,7 @@ struct NetWorthTrend {
             let value = liabilities ? (totals?.liabilitiesComplete == true ? totals?.liabilities : nil) : totals?.net
             if value == nil || snapshot.scopeAdjusted || previousAdjusted { segment += 1 }
             previousAdjusted = snapshot.scopeAdjusted
-            let point = Point(id: snapshot.id, date: date, cents: value, segment: segment)
+            let point = Point(id: snapshot.id, date: date, cents: value, segment: segment, adjusted: snapshot.scopeAdjusted)
             if value == nil { segment += 1 }
             return point
         }
@@ -410,7 +422,9 @@ struct NetWorthDetailView: View {
         List {
             Section {
                 Text(snapshot.day).font(.title2.bold())
-                Text(hidden ? "••••" : ((try? snapshot.totals())?.net.map(NetWorthMoney.display) ?? String(localized: "Incomplete"))).font(.title).monospacedDigit().fixedSize(horizontal: false, vertical: true)
+                Text(hidden ? "••••" : ((try? snapshot.totals())?.net.map(NetWorthMoney.display) ?? String(localized: "Net worth incomplete"))).font(.title).monospacedDigit().fixedSize(horizontal: false, vertical: true)
+                Text(snapshot.assetsConfirmed ? String(localized: "Asset scope confirmed") : String(localized: "Asset scope not confirmed")).font(.footnote).foregroundStyle(.secondary)
+                Text(snapshot.liabilitiesConfirmed ? String(localized: "Liability scope confirmed") : String(localized: "Liability scope not confirmed")).font(.footnote).foregroundStyle(.secondary)
                 if snapshot.scopeAdjusted { Text("Statistical scope adjusted") }
                 if !snapshot.note.isEmpty { Text(snapshot.note) }
             } header: { Text("Net worth · CNY") }
@@ -450,9 +464,11 @@ struct NetWorthDetailView: View {
         let service = NetWorthService(context: context)
         guard try service.read().snapshots.isEmpty else { return }
         UserDefaults.standard.set(false, forKey: "netWorthAmountsHidden")
-        let categories: [NetWorthCategory] = [.cash, .investments, .property, .valuables, .mortgage, .credit]
+        let negative = ProcessInfo.processInfo.arguments.contains("-PGOSNetWorthNegative")
+        let oneItem = ProcessInfo.processInfo.arguments.contains("-PGOSNetWorthOneItem")
+        let categories: [NetWorthCategory] = negative ? [.credit] : oneItem ? [.cash] : [.cash, .investments, .property, .valuables, .mortgage, .credit]
         let names = ["测试银行存款", "测试投资账户市值", "测试住房估值", "测试车辆估值", "测试房贷余额", "测试信用卡未还"]
-        for i in categories.indices { _ = try service.saveItem(.init(name: names[i], side: categories[i].side, category: categories[i])) }
+        for i in categories.indices { _ = try service.saveItem(.init(name: negative ? "测试家庭共同承担的长期信用卡未还余额（长名称）" : names[i], side: categories[i].side, category: categories[i])) }
         let dates = ["2025-11-30","2025-12-31","2026-01-31","2026-02-28","2026-03-31","2026-04-30","2026-05-31","2026-06-30","2026-07-31","2026-08-31","2026-09-30","2026-10-31"]
         let single = ProcessInfo.processInfo.arguments.contains("-PGOSNetWorthSingle")
         for (index, day) in (single ? [dates.last!] : dates).enumerated() {

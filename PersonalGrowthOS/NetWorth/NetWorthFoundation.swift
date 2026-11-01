@@ -2,13 +2,14 @@ import Foundation
 import SwiftData
 
 enum NetWorthFailure: Error, LocalizedError {
-    case invalid, conflict, duplicateDay, archiveBalance
+    case invalid, conflict, duplicateDay, archiveBalance, archivedHistory
     var errorDescription: String? {
         switch self {
         case .invalid: String(localized: "Check the amount, date and confirmation status. Your input is kept.")
         case .conflict: String(localized: "This inventory changed elsewhere. Your draft is kept; reopen to compare.")
         case .duplicateDay: String(localized: "A snapshot already exists on this date. Open it to make a correction.")
         case .archiveBalance: String(localized: "Record a confirmed zero balance before archiving this item.")
+        case .archivedHistory: String(localized: "Restore the archived item before changing its final zero balance. Your draft is kept.")
         }
     }
 }
@@ -122,7 +123,7 @@ struct NetWorthSnapshotItem: Codable, Equatable, Identifiable {
     var inputText: String? = nil
     var pending = false
     init(_ item: NetWorthItemValue) {
-        id = item.id; name = item.name; side = item.side; category = item.category; ownership = item.ownership
+        id = item.id; name = item.name; side = item.side; category = item.category; ownership = item.ownership; note = item.note
     }
     mutating func enter(_ text: String, day: String, estimated: Bool = false, locale: Locale = .current) throws {
         inputText = text
@@ -229,6 +230,10 @@ struct NetWorthLedger {
         let ids = Set(items.map(\.id))
         for item in items { try item.validate() }
         for snapshot in snapshots { try snapshot.validate(); guard snapshot.items.allSatisfy({ ids.contains($0.id) }) else { throw NetWorthFailure.invalid } }
+        for item in items where item.archived {
+            let last = history.reversed().compactMap { $0.items.first { $0.id == item.id && $0.included } }.first
+            guard last?.cents == 0 else { throw NetWorthFailure.archivedHistory }
+        }
     }
 }
 
@@ -274,7 +279,10 @@ struct NetWorthLedger {
     @discardableResult func begin(day: String, editingID: UUID? = nil) throws -> NetWorthSnapshotValue {
         try write { context in
             let ledger = try Self.read(context)
-            if let draft = ledger.draft { return draft }
+            if let draft = ledger.draft {
+                if let editingID, draft.editingID != editingID { throw NetWorthFailure.conflict }
+                return draft
+            }
             guard ImportantCivilDay(identifier: day) != nil else { throw NetWorthFailure.invalid }
             var value: NetWorthSnapshotValue
             if let editingID {
@@ -285,9 +293,13 @@ struct NetWorthLedger {
                 guard !ledger.history.contains(where: { $0.day == day }) else { throw NetWorthFailure.duplicateDay }
                 let previous = ledger.history.last { $0.day < day }
                 value = .init(day: day)
-                value.items = ledger.items.filter { !$0.archived }.sorted { $0.createdAt < $1.createdAt }.map { item in
+                value.items = ledger.items.filter { item in
+                    if !item.archived { return true }
+                    let prior = ledger.history.filter { $0.day < day }.reversed().compactMap { $0.items.first { $0.id == item.id && $0.included } }.first
+                    return prior?.cents != 0
+                }.sorted { $0.createdAt < $1.createdAt }.map { item in
                     var row = NetWorthSnapshotItem(item)
-                    if let old = previous?.items.first(where: { $0.id == item.id }) { row = old; row.name = item.name; row.category = item.category; row.side = item.side; row.ownership = item.ownership }
+                    if let old = previous?.items.first(where: { $0.id == item.id }) { row = old; row.name = item.name; row.category = item.category; row.side = item.side; row.ownership = item.ownership; row.note = item.note }
                     row.pending = true; return row
                 }
             }
@@ -299,7 +311,7 @@ struct NetWorthLedger {
         try write { context in
             guard let model = try context.fetch(FetchDescriptor<NetWorthSnapshot>()).first(where: { $0.id == input.id }) else { throw NetWorthFailure.conflict }
             let old = try model.value()
-            guard !old.confirmed, !input.confirmed, old.revision == input.revision, old.day == input.day,
+            guard !old.confirmed, !input.confirmed, old.revision == input.revision, old.day == input.day, old.timeZoneID == input.timeZoneID,
                   old.editingID == input.editingID, old.editingRevision == input.editingRevision else { throw NetWorthFailure.conflict }
             var value = input; value.createdAt = old.createdAt; value.updatedAt = max(now(), old.updatedAt); value.revision += 1
             if value.editingID == nil {
@@ -315,7 +327,7 @@ struct NetWorthLedger {
             let models = try context.fetch(FetchDescriptor<NetWorthSnapshot>())
             guard let draft = models.first(where: { $0.id == input.id }) else { throw NetWorthFailure.conflict }
             let old = try draft.value()
-            guard !old.confirmed, old.revision == input.revision, old.day == input.day,
+            guard !old.confirmed, !input.confirmed, old.revision == input.revision, old.day == input.day, old.timeZoneID == input.timeZoneID,
                   old.editingID == input.editingID, old.editingRevision == input.editingRevision,
                   input.day <= ImportantCivilDay(now(), timeZone: TimeZone(identifier: old.timeZoneID)!).identifier else { throw NetWorthFailure.conflict }
             var value = input; try value.finalize(locale: locale)

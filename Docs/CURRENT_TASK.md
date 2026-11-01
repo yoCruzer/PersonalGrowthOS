@@ -1,8 +1,10 @@
-# 2026-11-02 家庭净资产 V1.1 — A_CHECKPOINT / IMPLEMENTING_B
+# 2026-11-02 家庭净资产 V1.1 — B_CHECKPOINT / VALIDATING_C
 
-按固定 GOAL_SHA `fb9cb83dc29b02897183d90c84c84055a037f957` 连续 A→B→C，在隔离产品分支 `codex/household-net-worth-v1` 实施。原工作区未知改动和旧 PR 保留。实际 V15/v11 → V16/v12；两个新持久实体，主库/五 Tab/身份不变。金额/草稿/快照、原生 Growth/总览/录入及迁移备份已接入，首轮领域/磁盘/ZIP 定向12/12通过；首次盘点与中文重复草稿/冷重开 UI 已通过。早期范围/列表定位失败保留；大字页面等候已依据 AX 修正，复验待 B。
+固定 BASE/GOAL 已核对，A→B 连续实现于隔离 `codex/household-net-worth-v1`；原主目录未知改动、旧 PR 和历史门禁保留。统一两实体 V16/v12，原生五 Tab/Growth、首次/重复/草稿/正式盘点、图表/历史/CSV、真实 V15/v11 迁移恢复与隐私接入。
 
-详见 [执行记录](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md)。当前不是 READY；继续完成原生视觉、受影响回归、独立只读审查、普通 push/唯一 Draft PR及CI。只用合成隔离数据，不操作私人库或设备，不 merge/force/tag/Archive/TestFlight。以下历史原文保留。
+定向受影响回归 b1 199项中197通过，两个新增模型计数预期已修正并于 b2 复验通过。最新 b4：16净资产领域/磁盘/实际ZIP测试 +1实际图表分类下钻UI，17 PASS/0 FAIL。早期失败完整保留；独立 A 审查三项发现已有修复和正反测试，待固定候选复核。b3实际系统切换卡片证实遮挡，回前台隐藏、保存失败保留输入/重试、大字/负值/长名通过。
+
+详见 [执行记录](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md) 与 [独立审查](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md)。C 尚须集中最终截图、Release/Unit、独立复核、普通push、唯一Draft PR及CI；当前不是READY。只用合成隔离环境，不操作私人库/设备，不merge/force/tag/Archive/TestFlight。以下历史原文保留。
 
 ---
 

@@ -49,6 +49,10 @@ final class NetWorthUITests: XCTestCase {
         for _ in 0..<6 {app.swipeDown()}
         app.buttons["net-worth-privacy"].tap();XCTAssertEqual(app.staticTexts["net-worth-main"].label,"••••");shot(app,"V6-hidden")
         XCTAssertFalse(app.staticTexts.matching(NSPredicate(format:"label CONTAINS %@","1,434,000")).firstMatch.exists)
+        reveal(all,app);all.tap();XCTAssertFalse(app.debugDescription.contains("1,434,000"))
+        date.tap();XCTAssertFalse(app.debugDescription.contains("111,000.00"));XCTAssertFalse(app.debugDescription.contains("1,434,000"));shot(app,"V6-hidden-history")
+        app.navigationBars.buttons.element(boundBy:0).tap();app.navigationBars.buttons.element(boundBy:0).tap()
+        for _ in 0..<6 {app.swipeDown()}
         app.buttons["net-worth-privacy"].tap();app.buttons["net-worth-record"].tap()
         let field=app.textFields["net-worth-amount-0"];reveal(field,app);field.tap();field.typeText("110000.25");shot(app,"V4-repeat-keyboard")
         app.buttons["完成"].tap();app.navigationBars["盘点 · 人民币"].buttons["稍后继续"].tap()
@@ -60,7 +64,56 @@ final class NetWorthUITests: XCTestCase {
         let app=launch(["-PGOSNetWorthFixture","-PGOSNetWorthSingle","-PGOSNetWorthPartial"],chinese:true,large:true)
         open(app,chinese:true);XCTAssertEqual(app.staticTexts["net-worth-main"].label,"待补全");shot(app,"V5-V8-large-partial")
     }
+    func testLargeCompleteAmountAndNegativeLongName() {
+        let app=launch(["-PGOSNetWorthFixture","-PGOSNetWorthSingle"],chinese:true,large:true)
+        open(app,chinese:true);XCTAssertEqual(app.staticTexts["net-worth-main"].label,"1,390,000.00");shot(app,"V5-large-complete")
+        app.terminate()
+        let negative=launch(["-PGOSNetWorthFixture","-PGOSNetWorthSingle","-PGOSNetWorthNegative"],chinese:true)
+        open(negative,chinese:true);XCTAssertEqual(negative.staticTexts["net-worth-main"].label,"-10,000.00");shot(negative,"V8-negative")
+        let items=negative.buttons["余额项目"];reveal(items,negative);items.tap();shot(negative,"V8-long-name")
+    }
+    func testConfirmationFailurePreservesInputAndRetry() {
+        let app=launch(["-PGOSNetWorthFixture","-PGOSNetWorthSingle","-PGOSNetWorthOneItem","-PGOSNetWorthConfirmFailure"],chinese:true)
+        open(app,chinese:true);app.buttons["net-worth-record"].tap()
+        let field=app.textFields["net-worth-amount-0"];reveal(field,app);field.tap();field.typeText("123456.78");app.buttons["完成"].tap()
+        for label in ["已确认本次资产范围","已确认本次负债范围"] {let toggle=app.switches[label];reveal(toggle,app);toggle.switches.firstMatch.tap()}
+        app.navigationBars["盘点 · 人民币"].buttons["保存"].tap()
+        for _ in 0..<4 {app.swipeDown()}
+        XCTAssertTrue(app.staticTexts["net-worth-error"].exists);XCTAssertEqual(field.value as? String,"123456.78");shot(app,"V10-save-failure")
+        app.navigationBars["盘点 · 人民币"].buttons["保存"].tap()
+        XCTAssertTrue(app.staticTexts["net-worth-main"].waitForExistence(timeout:5));XCTAssertEqual(app.staticTexts["net-worth-main"].label,"123,456.78");shot(app,"V10-retry-success")
+        app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.995)).press(forDuration:0.05,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.5)),withVelocity:.slow,thenHoldForDuration:1)
+        let background=XCTAttachment(screenshot:XCUIScreen.main.screenshot());background.name="V6-background-system";background.lifetime = .keepAlways;add(background)
+        app.activate();XCTAssertEqual(app.staticTexts["net-worth-main"].label,"••••");shot(app,"V6-background-return-hidden")
+        XCTAssertFalse(app.debugDescription.contains("123,456.78"))
+    }
     func testChineseDarkOverview() {
         let app=launch(["-PGOSNetWorthFixture"],chinese:true);open(app,chinese:true);shot(app,"V3-dark-overview")
+        app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.8)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.4)))
+        shot(app,"V3-dark-trend-composition")
+    }
+    func testTrendAndCategoryDrillDownKeepLatestCompositionAndAdjacentModules() {
+        let app=launch(["-PGOSNetWorthFixture"],chinese:true)
+        app.tabBars.buttons["成长"].tap()
+        app.buttons["growth-habits"].tap();shot(app,"V1-habit-neighbor")
+        app.navigationBars.buttons.element(boundBy:0).tap()
+        app.buttons["growth-weight"].tap();shot(app,"V1-weight-neighbor")
+        app.navigationBars.buttons.element(boundBy:0).tap()
+        open(app,chinese:true)
+        let chart=app.descendants(matching:.any)["net-worth-trend"].firstMatch
+        reveal(chart,app)
+        app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.8)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.4)))
+        shot(app,"V2-trend-scope-break")
+        chart.coordinate(withNormalizedOffset:CGVector(dx:0.25,dy:0.45)).tap()
+        XCTAssertTrue(app.navigationBars["快照明细"].waitForExistence(timeout:5))
+        XCTAssertFalse(app.staticTexts["2026-10-31"].exists);shot(app,"V9-chart-past-point")
+        app.navigationBars["快照明细"].buttons["完成"].tap()
+        XCTAssertTrue(app.navigationBars["家庭净资产"].waitForExistence(timeout:5))
+        app.segmentedControls.buttons["负债"].tap();XCTAssertTrue(app.segmentedControls.buttons["负债"].isSelected);shot(app,"V2-liability-trend")
+        let category=app.buttons["net-worth-category-cash"]
+        reveal(category,app);category.tap()
+        XCTAssertTrue(app.staticTexts["2026-10-31"].waitForExistence(timeout:5));XCTAssertTrue(app.staticTexts["测试银行存款"].exists)
+        XCTAssertTrue(app.staticTexts["111,000.00"].exists)
+        XCTAssertFalse(app.staticTexts["测试住房估值"].exists);shot(app,"V9-latest-category")
     }
 }

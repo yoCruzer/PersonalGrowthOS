@@ -1340,10 +1340,9 @@ enum TransferSnapshot {
             investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) },
             todoSeriesPreferences:try cancellableMap(context.fetch(FetchDescriptor<TodoSeriesPreferences>())) {TodoSeriesPreferencesTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
             todoReminderIntents:try cancellableMap(context.fetch(FetchDescriptor<TodoReminderIntent>())) {TodoReminderIntentTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
-            bodyReferenceSettings:try cancellableMap(context.fetch(FetchDescriptor<BodyReferenceSettings>())) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)}
-,
-            netWorthItems: try context.fetch(FetchDescriptor<NetWorthItem>()).map { try $0.value() }.sorted { sortUUID($0.id, $1.id) },
-            netWorthSnapshots: try context.fetch(FetchDescriptor<NetWorthSnapshot>()).map { try $0.value() }.sorted { sortUUID($0.id, $1.id) }
+            bodyReferenceSettings:try cancellableMap(context.fetch(FetchDescriptor<BodyReferenceSettings>())) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            netWorthItems: try cancellableMap(context.fetch(FetchDescriptor<NetWorthItem>())) { try $0.value() }.sorted { sortUUID($0.id, $1.id) },
+            netWorthSnapshots: try cancellableMap(context.fetch(FetchDescriptor<NetWorthSnapshot>())) { try $0.value() }.sorted { sortUUID($0.id, $1.id) }
         ).redactingConsumedInvestmentContent()
     }
 

@@ -42,3 +42,15 @@ baseline2 夹具由精确 BASE 源码生成；仅生成测试追加，产品源�
 ## 待完成
 
 B 完整体验及相邻回归、C 真实截图与固定候选独立只读审查、普通 push/唯一 Draft PR/现有 CI。当前不得标记 READY_FOR_OWNER_DEVICE_GATE。独立 reviewer `/root/net_worth_independent_reviewer` 已只读预审接缝并登记反例，未参与实现；正式结论尚未产生。历史设备 FAIL/SKIP/NOT_RUN 原样保留。
+
+## B：补充验证与审查修复（进行中）
+
+- A 本地提交 `f58746fd6f7f40b564e46a65091be1396f0134e3`。独立 A 审查与三项发现见 REVIEW_ZH；不得将阶段审查等同最终通过。
+- b1：指定 NetWorthTests/ImportExportRecoveryTests/PersistenceMediaFoundationTests/ImportantDayPersistenceTests/SleepPersistenceTests/InvestmentPersistenceTests/AppCompositionTests，199 项，197 PASS / 2 FAIL / 0 SKIP。失败仅两项独立预期计数未加新空模型；不改旧业务断言。
+- b2：NetWorthTests 16/16 +上述两个失败方法 2/2 PASS；UI 最大部分盘点/完整大字负值长名/错误重试三方法 2 PASS / 1 FAIL。失败为专用新文案未写入 catalog；锚点错误已修正。真实金额/数据库保存重试与回前台隐藏 PASS。系统截图只是桌面，不用它宣称切换卡片遮挡通过。
+- b3：16 Unit +四项 UI 定向复验（大字部分、完整大字负值长名、失败重试+切换卡片、图表分类下钻+相邻模块），16 Unit PASS，UI 3 PASS/1 FAIL（中文AX分类标签用顿号，旧测试按逗号定位失败；实际历史点已通过）。新增稳定分类标识和明确完成按钮。
+- b4：NetWorthTests 16/16 +图表/分类实际下钻 1/1 PASS；合计17 PASS/0 FAIL/0 SKIP。
+- B 加强同一主库发布锁、取消、晚到独立写入、实际 ZIP 负金额/日期/枚举/重复 ID/重复日期/非法归档反例；故障前正式数据与草稿精确比较，恢复故障后重开为空且可重试。
+- 修复归档零余额不变量、历史更正冲突、时区篡改、项目备注冻结；趋势范围变化有形状/文字标记，比较只表述增加/减少，未知分类不显示假零。
+
+B 已完成代码与针对性验证。`V1–V15` 原始 schema 声明逐字相同；所有原本地化条目逐键相同，新增100个。b3 系统切换卡片原图实际看到遮挡标签，大字小数完整分行；未据桌面截图推断隐私通过。下一步 C 固定候选集中截图、Release、完整 Unit 单次集中门禁、独立复核和最终远端 CI。

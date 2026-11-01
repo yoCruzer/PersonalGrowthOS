@@ -1754,7 +1754,8 @@ private final class TransferTestFixture {
                 "entryPins": 0, "entryFollowUps": 0, "entrySources": 0,
                 "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0,
                 "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0, "sleepRecords": 0, "sleepGoals": 0, "captureReceipts": 0, "investmentParticipants": 0, "investmentActivities": 0, "investmentSessions": 0, "investmentOperations": 0,
-                "todoSeriesPreferences": 0, "todoReminderIntents": 0, "bodyReferenceSettings": 0
+                "todoSeriesPreferences": 0, "todoReminderIntents": 0, "bodyReferenceSettings": 0,
+                "netWorthItems": 0, "netWorthSnapshots": 0
             ],
             expectedIDs: try ids(in: context)
         )

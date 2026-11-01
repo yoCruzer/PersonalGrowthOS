@@ -1,6 +1,142 @@
 {
   "sourceLanguage": "en",
   "strings": {
+"Liability scope not confirmed" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Liability scope not confirmed"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "本次负债范围尚未确认"
+      }
+    }
+  }
+},
+"Asset scope not confirmed" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Asset scope not confirmed"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "本次资产范围尚未确认"
+      }
+    }
+  }
+},
+"Scope adjusted" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Scope adjusted"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "范围调整"
+      }
+    }
+  }
+},
+"Decrease since last snapshot" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Decrease since last snapshot"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "较上次减少"
+      }
+    }
+  }
+},
+"Increase since last snapshot" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Increase since last snapshot"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "较上次增加"
+      }
+    }
+  }
+},
+"No change since last snapshot" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "No change since last snapshot"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "较上次持平"
+      }
+    }
+  }
+},
+"Restore the archived item before changing its final zero balance. Your draft is kept." : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Restore the archived item before changing its final zero balance. Your draft is kept."
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "请先恢复已归档项目，再更改其最后一次零余额。草稿已保留。"
+      }
+    }
+  }
+},
+"Net worth incomplete" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Incomplete"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "待补全"
+      }
+    }
+  }
+},
   "The ZIP contains private records, photos, and financial items, snapshots and drafts. It is not encrypted. Choose a safe destination.": {
     "localizations": {
       "en": {
