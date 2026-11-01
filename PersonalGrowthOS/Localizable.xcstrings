@@ -1,6 +1,1705 @@
 {
   "sourceLanguage": "en",
   "strings": {
+"Liability scope not confirmed" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Liability scope not confirmed"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "本次负债范围尚未确认"
+      }
+    }
+  }
+},
+"Asset scope not confirmed" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Asset scope not confirmed"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "本次资产范围尚未确认"
+      }
+    }
+  }
+},
+"Scope adjusted" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Scope adjusted"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "范围调整"
+      }
+    }
+  }
+},
+"Decrease since last snapshot" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Decrease since last snapshot"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "较上次减少"
+      }
+    }
+  }
+},
+"Increase since last snapshot" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Increase since last snapshot"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "较上次增加"
+      }
+    }
+  }
+},
+"No change since last snapshot" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "No change since last snapshot"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "较上次持平"
+      }
+    }
+  }
+},
+"Restore the archived item before changing its final zero balance. Your draft is kept." : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Restore the archived item before changing its final zero balance. Your draft is kept."
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "请先恢复已归档项目，再更改其最后一次零余额。草稿已保留。"
+      }
+    }
+  }
+},
+"Net worth incomplete" : {
+  "extractionState": "manual",
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Incomplete"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "待补全"
+      }
+    }
+  }
+},
+  "The ZIP contains private records, photos, and financial items, snapshots and drafts. It is not encrypted. Choose a safe destination.": {
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "The ZIP contains private records, photos, and financial items, snapshots and drafts. It is not encrypted. Choose a safe destination."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "ZIP 包含私人记录、照片以及财务项目、正式快照和草稿。文件未加密，请选择安全的保存位置。"
+        }
+      }
+    }
+  },
+  "%lld snapshots": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld snapshots"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld 次盘点"
+        }
+      }
+    }
+  },
+  "A clear view of what you have": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "A clear view of what you have"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "看清拥有，安心前行"
+        }
+      }
+    }
+  },
+  "A snapshot already exists on this date. Open it to make a correction.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "A snapshot already exists on this date. Open it to make a correction."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "该日期已有正式快照，请打开历史明细进行更正。"
+        }
+      }
+    }
+  },
+  "Add a few balances, confirm the scope, and keep your first snapshot. You can fill in the rest later.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Add a few balances, confirm the scope, and keep your first snapshot. You can fill in the rest later."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "添加资产与负债，确认本次范围，留下第一份快照。暂不清楚的金额可以稍后补全。"
+        }
+      }
+    }
+  },
+  "Add balance item": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Add balance item"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "添加余额项目"
+        }
+      }
+    }
+  },
+  "All snapshots and values": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "All snapshots and values"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查看全部盘点与金额"
+        }
+      }
+    }
+  },
+  "Amount · blank means unknown": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Amount · blank means unknown"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "金额 · 留空为未知"
+        }
+      }
+    }
+  },
+  "Amounts hidden": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Amounts hidden"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "金额已隐藏"
+        }
+      }
+    }
+  },
+  "Asset composition": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Asset composition"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "资产构成"
+        }
+      }
+    }
+  },
+  "Asset scope confirmed": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Asset scope confirmed"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已确认本次资产范围"
+        }
+      }
+    }
+  },
+  "Assets": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Assets"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "资产"
+        }
+      }
+    }
+  },
+  "Awaiting confirmation": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Awaiting confirmation"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "待确认"
+        }
+      }
+    }
+  },
+  "Balance item": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Balance item"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "余额项目"
+        }
+      }
+    }
+  },
+  "Balance items": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Balance items"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "余额项目"
+        }
+      }
+    }
+  },
+  "Balance · CNY": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Balance · CNY"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "余额 · 人民币"
+        }
+      }
+    }
+  },
+  "Carried forward": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Carried forward"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "沿用"
+        }
+      }
+    }
+  },
+  "Carry forward remaining balances": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Carry forward remaining balances"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "其余沿用上次"
+        }
+      }
+    }
+  },
+  "Cash and deposits": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Cash and deposits"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "现金及存款"
+        }
+      }
+    }
+  },
+  "Category": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Category"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "类别"
+        }
+      }
+    }
+  },
+  "Change": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Change"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "较上次变化"
+        }
+      }
+    }
+  },
+  "Check the amount, date and confirmation status. Your input is kept.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Check the amount, date and confirmation status. Your input is kept."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请检查金额、日期与确认状态。已保留输入。"
+        }
+      }
+    }
+  },
+  "Complete both snapshots to compare.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Complete both snapshots to compare."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "补全两次盘点后可比较变化。"
+        }
+      }
+    }
+  },
+  "Continue inventory": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Continue inventory"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "继续盘点"
+        }
+      }
+    }
+  },
+  "Continue later": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Continue later"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "稍后继续"
+        }
+      }
+    }
+  },
+  "Correct snapshot": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Correct snapshot"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "更正本次快照"
+        }
+      }
+    }
+  },
+  "Credit cards and consumer loans": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Credit cards and consumer loans"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "信用卡及消费贷款"
+        }
+      }
+    }
+  },
+  "Delete snapshot": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Delete snapshot"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "删除快照"
+        }
+      }
+    }
+  },
+  "Delete this historical snapshot?": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Delete this historical snapshot?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "删除这份历史快照？"
+        }
+      }
+    }
+  },
+  "Discard this draft?": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Discard this draft?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "放弃这份盘点草稿？"
+        }
+      }
+    }
+  },
+  "Do not enter account numbers, addresses or identity documents.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Do not enter account numbers, addresses or identity documents."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "无需填写账号、地址或证件信息。"
+        }
+      }
+    }
+  },
+  "Estimated": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Estimated"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "估算"
+        }
+      }
+    }
+  },
+  "Export CSV": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Export CSV"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "导出 CSV"
+        }
+      }
+    }
+  },
+  "Export snapshots as CSV": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Export snapshots as CSV"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "导出正式快照 CSV"
+        }
+      }
+    }
+  },
+  "Export unencrypted financial information?": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Export unencrypted financial information?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "导出未加密的财务信息？"
+        }
+      }
+    }
+  },
+  "Financial information hidden": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Financial information hidden"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "财务信息已遮挡"
+        }
+      }
+    }
+  },
+  "Hidden amounts are a screen privacy feature. CSV and full backups are not encrypted.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Hidden amounts are a screen privacy feature. CSV and full backups are not encrypted."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "金额隐藏仅保护屏幕显示；CSV 和完整备份文件均未加密。"
+        }
+      }
+    }
+  },
+  "Hide amounts": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Hide amounts"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "隐藏金额"
+        }
+      }
+    }
+  },
+  "Household net worth": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Household net worth"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "家庭净资产"
+        }
+      }
+    }
+  },
+  "Include in this snapshot": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Include in this snapshot"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "计入本次盘点"
+        }
+      }
+    }
+  },
+  "Inventory · CNY": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Inventory · CNY"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "盘点 · 人民币"
+        }
+      }
+    }
+  },
+  "Investment assets": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Investment assets"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "投资资产"
+        }
+      }
+    }
+  },
+  "Known subtotal": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Known subtotal"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已知小计"
+        }
+      }
+    }
+  },
+  "Latest confirmed snapshot": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Latest confirmed snapshot"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "最近正式快照"
+        }
+      }
+    }
+  },
+  "Liabilities": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Liabilities"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "负债"
+        }
+      }
+    }
+  },
+  "Liability scope confirmed": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Liability scope confirmed"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已确认本次负债范围"
+        }
+      }
+    }
+  },
+  "Liability trend": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Liability trend"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "负债趋势"
+        }
+      }
+    }
+  },
+  "Mark this when adding previously omitted assets or changing the family's scope, not for transfers between accounts.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Mark this when adding previously omitted assets or changing the family's scope, not for transfers between accounts."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "补录此前遗漏的资产或调整家庭统计范围时勾选；普通账户间转账不需要勾选。"
+        }
+      }
+    }
+  },
+  "Mortgage balance": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Mortgage balance"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "房贷余额"
+        }
+      }
+    }
+  },
+  "Net worth": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Net worth"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "净资产"
+        }
+      }
+    }
+  },
+  "Net worth trend": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Net worth trend"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "净资产趋势"
+        }
+      }
+    }
+  },
+  "Net worth · CNY": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Net worth · CNY"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "净资产 · 人民币"
+        }
+      }
+    }
+  },
+  "New amount · blank means unknown": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "New amount · blank means unknown"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "本次金额 · 留空为未知"
+        }
+      }
+    }
+  },
+  "No confirmed snapshots yet": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No confirmed snapshots yet"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "还没有正式快照"
+        }
+      }
+    }
+  },
+  "No snapshots yet": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "No snapshots yet"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "尚未盘点"
+        }
+      }
+    }
+  },
+  "Not included": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Not included"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "本次未纳入"
+        }
+      }
+    }
+  },
+  "Only recorded dates are shown. Missing values and changes in scope break the line.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Only recorded dates are shown. Missing values and changes in scope break the line."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "仅展示真实盘点日期；缺失金额和统计范围调整处断线。"
+        }
+      }
+    }
+  },
+  "Other liabilities": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Other liabilities"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "其他负债"
+        }
+      }
+    }
+  },
+  "Over time": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Over time"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "长期变化"
+        }
+      }
+    }
+  },
+  "Ownership label (optional)": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Ownership label (optional)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "归属标签（选填）"
+        }
+      }
+    }
+  },
+  "Previous amount": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Previous amount"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "上次金额"
+        }
+      }
+    }
+  },
+  "Property": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Property"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "房产"
+        }
+      }
+    }
+  },
+  "Receivables and other assets": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Receivables and other assets"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "应收款及其他资产"
+        }
+      }
+    }
+  },
+  "Record a confirmed zero balance before archiving this item.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record a confirmed zero balance before archiving this item."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "请先在正式快照中记录零余额，再归档此项目。"
+        }
+      }
+    }
+  },
+  "Record a past date": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record a past date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "补录历史盘点"
+        }
+      }
+    }
+  },
+  "Record a snapshot": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record a snapshot"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "开始盘点"
+        }
+      }
+    }
+  },
+  "Record the family's share once. Account totals or separate accounts are both welcome.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record the family's share once. Account totals or separate accounts are both welcome."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "家庭共有资产只计一次；家庭外共有时仅计家庭份额。可按总额或分别按账户记录。"
+        }
+      }
+    }
+  },
+  "Record the unpaid balance, not the credit limit or minimum payment.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Record the unpaid balance, not the credit limit or minimum payment."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "填写当前未偿还金额，不填写信用额度或最低还款额。"
+        }
+      }
+    }
+  },
+  "Regular snapshots of your family's finances": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Regular snapshots of your family's finances"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "定期盘点，看见家庭财富变化"
+        }
+      }
+    }
+  },
+  "Renminbi · Manual balances · Stored on this device": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Renminbi · Manual balances · Stored on this device"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "人民币 · 手动盘点 · 本机保存"
+        }
+      }
+    }
+  },
+  "Retry saving draft": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Retry saving draft"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "重试保存草稿"
+        }
+      }
+    }
+  },
+  "Save confirmed snapshot": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Save confirmed snapshot"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "保存正式快照"
+        }
+      }
+    }
+  },
+  "Scope changed; this difference is not a return.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Scope changed; this difference is not a return."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "统计范围有变化，差额不代表收益。"
+        }
+      }
+    }
+  },
+  "Short note (optional)": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Short note (optional)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "简短备注（选填）"
+        }
+      }
+    }
+  },
+  "Show amounts": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Show amounts"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "显示金额"
+        }
+      }
+    }
+  },
+  "Side": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Side"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "性质"
+        }
+      }
+    }
+  },
+  "Snapshot date": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Snapshot date"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "盘点日期"
+        }
+      }
+    }
+  },
+  "Snapshot details": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Snapshot details"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "快照明细"
+        }
+      }
+    }
+  },
+  "Snapshot history": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Snapshot history"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "盘点历史"
+        }
+      }
+    }
+  },
+  "Snapshot note": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Snapshot note"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "盘点说明"
+        }
+      }
+    }
+  },
+  "Statistical scope adjusted": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Statistical scope adjusted"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "统计范围调整"
+        }
+      }
+    }
+  },
+  "The file contains names, notes and amounts even when amounts are hidden. Choose a safe destination.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "The file contains names, notes and amounts even when amounts are hidden. Choose a safe destination."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "即使已隐藏金额，文件仍包含名称、备注和金额。请选择安全的保存位置。"
+        }
+      }
+    }
+  },
+  "This inventory changed elsewhere. Your draft is kept; reopen to compare.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "This inventory changed elsewhere. Your draft is kept; reopen to compare."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "盘点已在其他位置更改。草稿已保留，请重新打开核对。"
+        }
+      }
+    }
+  },
+  "Unknown balances and unconfirmed scope keep net worth incomplete. A confirmed empty side means zero.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unknown balances and unconfirmed scope keep net worth incomplete. A confirmed empty side means zero."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "有未知金额或未确认范围时，净资产保持待补全。明确确认没有资产或负债，该侧才计为零。"
+        }
+      }
+    }
+  },
+  "Update what changed, then carry forward the remaining balances. Original amount dates are kept.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Update what changed, then carry forward the remaining balances. Original amount dates are kept."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "更新有变化的项目，再将其余余额一键沿用。沿用会保留原金额日期。"
+        }
+      }
+    }
+  },
+  "Updated": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Updated"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已更新"
+        }
+      }
+    }
+  },
+  "Use previous": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use previous"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "沿用上次"
+        }
+      }
+    }
+  },
+  "Use the account's current value. If borrowing is already deducted, do not record it twice.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use the account's current value. If borrowing is already deducted, do not record it twice."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "填写账户当前市值。若已扣除融资负债，请勿重复计入该负债。"
+        }
+      }
+    }
+  },
+  "Use the estimated current value, not the purchase price.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use the estimated current value, not the purchase price."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "填写当前估计价值，不使用购买价。"
+        }
+      }
+    }
+  },
+  "Use today's estimated value. Record the remaining mortgage principal separately.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use today's estimated value. Record the remaining mortgage principal separately."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "填写当前房产估值，剩余房贷本金单独记录。"
+        }
+      }
+    }
+  },
+  "Vehicle loan": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Vehicle loan"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "车贷"
+        }
+      }
+    }
+  },
+  "Vehicles and valuables": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Vehicles and valuables"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "车辆及贵重资产"
+        }
+      }
+    }
+  },
     "Archive activity": {
       "localizations": {
         "en": {

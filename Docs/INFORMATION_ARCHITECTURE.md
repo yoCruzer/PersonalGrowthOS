@@ -791,3 +791,17 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 ## 时间投入 V1 批准增量 — 2026-10-16
 
 保持五Tab和Record图文记录。Growth增加时间投入同级入口，含直接计时/手工记录、活动查找/归档、全部累计及7/30自然日回顾；Today只在有未完成事项时显示紧凑入口。界面和计时草稿独立，默认「我」和推荐活动展示不预先落库。
+
+
+## 家庭资产快照 V1 批准增量 — 2026-11-01
+
+保持 Today / Timeline / Record / Growth / Library 五 Tab。Growth 通过现有 ModuleEntryRow 增加“家庭资产”二级入口，仅显示盘点次数；模块内包含最近盘点总览、盘点录入、历史/详情、项目管理及隐私/导出，不加独立底部导航。
+
+总览突出最近正式净资产与时点，提供趋势和资产结构；点选和分类可下钻到明确日期的冻结明细。Record 仍是图文记录；Timeline 不自动插入金融明细，仅在用户主动关联 Entry 时显示中性引用。Today、Widget、搜索摘要不自动露出资产金额。
+
+风格和交互沿用现有系统分组、语义字体、导航/表单和空态组件；具体页面、日期归属及视觉验收见 [HOUSEHOLD_ASSETS_V1_UI_ZH.md](HOUSEHOLD_ASSETS_V1_UI_ZH.md)。
+
+
+## 家庭净资产 V1.1 批准增量 — 2026-11-01
+
+Growth 增加“家庭净资产”二级入口；模块内部提供总览、余额项目、盘点、历史与导出。保持五 Tab；不在 Today、Timeline、Record、Search、Widget 自动展示财务金额，不关联 Entry。详细信息架构与页面职责见 `HOUSEHOLD_NET_WORTH_V1_SPEC_ZH.md`。

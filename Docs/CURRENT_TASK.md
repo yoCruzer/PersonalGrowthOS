@@ -1,3 +1,61 @@
+# 2026-11-02 家庭净资产 V1.1 — READY_FOR_OWNER_DEVICE_GATE
+
+A→B→C实现、可执行验收、独立只读代码/数据安全/备份/实际UI审查均已完成，范围内问题全部修复并复核关闭。唯一[Draft PR #14](https://github.com/yoCruzer/PersonalGrowthOS/pull/14)，base `codex/usage-remediation-20261017` / `5827c657095945aff30b2250b20bae104c7b0357`。产品代码最终SHA `01ffedc45a4c99c3576ae65ab249b77a8496336f`；含经审查CI兼容性修复的验收SHA `ba84296a89e96dcca31d7dce184ae762cc2da18b`。此后仅Docs交付，最终完整head以PR和交付回复核对。
+
+[现有CI run41335536587](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/41335536587)必选全部PASS：App/Share/Widget unsigned Release；完整Unit **599=598PASS/0FAIL/1既有SKIP**；关键UI smoke **5/5PASS**。PR事件的optional extended job按设计SKIPPED。实际checkout为PR merge `ac0fe4a104f276cab9e49ab6f781629efd43dfb6`，已取回并核验tree与上述head一致，未冒称直接checkout head。GitHub-hosted ARM64 image20261026.0314.1，macOS27.0.1、Xcode27.0(27A266a)、iOS27.0(24A434)/iPhone13mini；原始产物摘要/环境及ZIP摘要见[CI证据](Evidence/HouseholdNetWorthV11/ci-accepted.json)。
+
+本地16项净资产Unit与8条功能UI最终分别通过，26张原始截图及来源/哈希已独立复算。首轮本地完整Unit597PASS/1FAIL/1SKIP、UI5PASS/2FAIL和分别复验完整保留；首轮远端[run41335219908](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/41335219908)仍为FAIL（Release PASS，unit/smoke测试前设备配对403），不改写历史。CI修复仅选兼容runtime/机型，未缩减测试或改变skip。
+
+停在Owner设备门；不merge/force/tag/Archive/TestFlight/发布。未操作私人库或设备，主目录三项未知改动、旧PR/分支原样保留。独立32MB HFS+低空间测试SKIP、实际VoiceOver/真机/私人数据NOT_RUN及历史警告继续保留。最终Docs普通推送后只核对现有最新head CI与PR元数据，不再扩展实现。
+
+[中文交付与Owner清单](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md) · [独立审查](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md) · [真实截图](Evidence/HouseholdNetWorthV11/README.md)。以下为历史阶段记录。
+
+---
+
+# 2026-11-02 家庭净资产 V1.1 — LOCAL_ACCEPTED / CI_PENDING
+
+产品候选 `01ffedc45a4c99c3576ae65ab249b77a8496336f` 已完成A→B→C实现及本地验收；独立只读代码/数据/备份/视觉Review全部问题关闭。16项净资产Unit、8条功能UI最终分别通过，未签名Release三包通过。完整Unit原轮597PASS/1FAIL/1既有SKIP，旧v7夹具修复后QuietWins5/5通过；UI原轮5PASS/2FAIL，失败分别复验关闭。保留原始计数，不伪装原轮全绿。
+
+下一步普通push并创建唯一Draft PR，base `codex/usage-remediation-20261017`；完成现有release/unit/smoke CI后才能进入READY_FOR_OWNER_DEVICE_GATE。真机、实际VoiceOver、私人数据未验证；32MB低空间卷既有SKIP与原设备限制保留。主目录三项未知改动、旧PR/分支不动，不merge/force/tag/Archive/TestFlight。
+
+[交付与执行证据](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md) · [独立审查](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md) · [真实截图](Evidence/HouseholdNetWorthV11/README.md)。以下历史原文保留。
+
+---
+
+# 2026-11-01 当前任务：家庭净资产 V1.1 连续实现
+
+状态：**GOAL_READY / IMPLEMENTATION_NOT_STARTED**。本次仅更新规划文档，未修改 App 代码、未构建、未运行测试。
+
+**本轮最新决策取代旧“家庭资产快照 V1.0”**：产品是 Percento 式家庭财务净资产追踪器（资产余额减负债余额），不是家庭物品/库存管理，也不沿用旧 1.0 的复杂 Entry 关联、Face ID 和过度细化快照契约。
+
+固定产品基线：`5827c657095945aff30b2250b20bae104c7b0357`。
+规格文件：
+- `Docs/HOUSEHOLD_NET_WORTH_V1_SPEC_ZH.md`
+- `Docs/HOUSEHOLD_NET_WORTH_V1_GOAL_ZH.md`
+- `Docs/HOUSEHOLD_NET_WORTH_V1_ACCEPTANCE_ZH.md`
+
+旧 `HOUSEHOLD_ASSETS_V1_*` 文件现为废止跳转说明。Codex 必须按新文件执行，不得将旧 1.0 要求混入本轮。
+
+执行分支：`codex/household-net-worth-v1`；规划分支：`plan/household-net-worth-v1-goal`；新 Draft PR base 预期 `codex/usage-remediation-20261017`，执行前重新核对实际远端 PR 状态。连续 A→B→C 授权见固定 Goal。仅用合成数据和隔离环境；保留未知改动；定向验证、阶段本地提交、最终集中 push/CI、真正独立审查。完成后停 `READY_FOR_OWNER_DEVICE_GATE`；不 merge/force/tag/Archive/TestFlight，不操作私人设备或数据库。
+
+---
+
+# 2026-11-01 当前任务：家庭资产快照 V1 连续实现
+
+状态：**GOAL_READY / IMPLEMENTATION_NOT_STARTED**。本次规划提交只改 Docs；执行端按固定 GOAL_SHA 开始，不能把文档准备当成产品完成。
+
+先读取同一提交的 [产品契约](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[UI 规格](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[执行 Goal](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[验收表](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md) 全文。BASE 为 `5827c657095945aff30b2250b20bae104c7b0357`；规划 `plan/household-net-worth-v1-goal`；实施 `codex/household-assets-v1`；新 Draft PR base `codex/usage-remediation-20261017`。
+
+连续推进：A 原生纵向路径/视觉定调/迁移备份接缝 → B 历史图表/隐私/完整集成 → C 集中验收/独立审查修复/普通 push/新 Draft PR。阶段内普通可逆决策自主完成，不逐阶段等批准。界面与既有模块统一、真实截图达到 UI 规格，是完成条件之一。
+
+只做批准的手工人民币家庭资产快照；不扩展银行同步、收益分析、多人共享、云同步、资产通知/Widget 或全 App 重构。使用合成数据与隔离环境，保留未知工作区改动。按改动做定向验证，阶段本地提交、最终集中推送让现有 CI 运行；不在起点或每阶段重跑全套。
+
+完成本期必选实现、可执行验证、CI 与独立审查后停 **READY_FOR_OWNER_DEVICE_GATE**，提交中文交付和少量 Owner 试用任务。旧设备/签名/低空间等历史状态保留；不 merge/force/tag/发行，不操作私人设备或数据库，不清理旧 PR/分支。
+
+以下为历史任务与证据，保留原文；其中旧阶段停点不再阻止本次已批准开发。
+
+---
+
 # 2026-10-20 计数器、真实Actions与只读清点 — READY_FOR_OWNER_DEVICE_GATE
 
 本授权批次已完成。产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`；最终产品/测试候选 **`3ee3cb6a846a296baca7f91b705a67c10dcbe51f`**。Owner直接批准后均普通推送原Draft PR #13，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`不变；本交付随后只有Docs，交付完整SHA由PR head、最终回复与本机final-delivery-proof.json核对。

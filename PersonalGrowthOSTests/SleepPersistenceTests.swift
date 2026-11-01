@@ -108,7 +108,7 @@ import XCTest
         let reopened = try PersistenceContainerFactory.makeOnDisk(at: url)
         XCTAssertEqual(try TransferSnapshot.make(context: reopened.mainContext), expected)
         try SleepIntegrity.validate(context: reopened.mainContext)
-        XCTAssertEqual(ExportManifest.currentPackageSchemaVersion, 11)
+        XCTAssertEqual(ExportManifest.currentPackageSchemaVersion, 12)
     }
     func testIllegalSleepIdentityRangeEvidenceAndOldVersionPayloadAreRejected() throws {
         let c = try PersistenceContainerFactory.makeInMemory(), clock = Date()

@@ -1290,7 +1290,7 @@ struct MediaStorageView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("The ZIP may contain private personal records, entry text, and original photos. Handle it as sensitive data.")
+                Text("The ZIP contains private records, photos, and financial items, snapshots and drafts. It is not encrypted. Choose a safe destination.")
             }
             .alert("Pending shares are not in this backup", isPresented: $isConfirmingPendingExclusion) {
                 Button("Share Backup") { isSharing = true }

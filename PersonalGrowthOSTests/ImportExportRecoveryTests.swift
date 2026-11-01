@@ -1754,7 +1754,8 @@ private final class TransferTestFixture {
                 "entryPins": 0, "entryFollowUps": 0, "entrySources": 0,
                 "todoTasks": 0, "todoEvents": 0, "todoLists": 0, "todoSeries": 0, "todoSources": 0,
                 "importantDays": 0, "importantDayEntryLinks": 0, "importantDayTodoLinks": 0, "importantDayCovers": 0, "sleepRecords": 0, "sleepGoals": 0, "captureReceipts": 0, "investmentParticipants": 0, "investmentActivities": 0, "investmentSessions": 0, "investmentOperations": 0,
-                "todoSeriesPreferences": 0, "todoReminderIntents": 0, "bodyReferenceSettings": 0
+                "todoSeriesPreferences": 0, "todoReminderIntents": 0, "bodyReferenceSettings": 0,
+                "netWorthItems": 0, "netWorthSnapshots": 0
             ],
             expectedIDs: try ids(in: context)
         )
@@ -1902,6 +1903,9 @@ private func mutatePackage(
         var encodedData = try encoder.encode(data)
         // Preserve each actual legacy wire format. Never strip a nonempty newer payload.
         var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: encodedData) as? [String: Any])
+        if manifest.packageSchemaVersion < 12 && data.netWorthItems.isEmpty && data.netWorthSnapshots.isEmpty {
+            for key in ["netWorthItems","netWorthSnapshots"] {payload.removeValue(forKey:key)}
+        }
         if manifest.packageSchemaVersion < 11 && data.todoSeriesPreferences.isEmpty && data.todoReminderIntents.isEmpty && data.bodyReferenceSettings.isEmpty {
             for key in ["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {payload.removeValue(forKey:key)}
         }
@@ -2084,7 +2088,7 @@ extension ImportExportRecoveryTests {
                 payload.removeValue(forKey: "entryPins")
                 payload.removeValue(forKey: "entryFollowUps")
                 // V4/V5 fixtures must preserve their historical wire format after newer exporters add arrays.
-                for key in ["todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals", "todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources", "importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
+                for key in ["netWorthItems", "netWorthSnapshots", "todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals", "todoTasks", "todoEvents", "todoLists", "todoSeries", "todoSources", "importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 let bytes = try JSONSerialization.data(withJSONObject: payload, options: .sortedKeys)
                 try bytes.write(to: dataURL)
                 let changedManifest = ExportManifest(formatIdentifier: manifest.formatIdentifier, packageSchemaVersion: version,
@@ -2411,7 +2415,7 @@ extension ImportExportRecoveryTests {
                 let version = scenario < 8 ? 8 : 7
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
-                for key in ["todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
+                for key in ["netWorthItems", "netWorthSnapshots", "todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
                 if scenario < 4 { payload.removeValue(forKey: keys[scenario]) }
                 else if scenario < 8 { payload[keys[scenario - 4]] = NSNull() }
                 else if scenario == 9 { for key in keys { payload.removeValue(forKey: key) } }
@@ -2445,7 +2449,7 @@ extension ImportExportRecoveryTests {
                 let version = scenario == 2 ? 6 : 7
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
-                for key in ["todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
+                for key in ["netWorthItems", "netWorthSnapshots", "todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations", "sleepRecords", "sleepGoals"] { payload.removeValue(forKey: key) }
                 for key in ["importantDays", "importantDayEntryLinks", "importantDayTodoLinks", "importantDayCovers"] { payload.removeValue(forKey: key) }
                 if scenario == 0 { payload.removeValue(forKey: "todoEvents") }
                 if scenario == 1 { payload["todoTasks"] = NSNull() }
@@ -2540,7 +2544,7 @@ private extension TransferData {
             let package = try mutatePackage(lease.url, under: fixture.root.appendingPathComponent("SleepWire\(scenario)"), mutation: { root, manifest, data in
                 let url = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
-                for key in ["todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations"] { payload.removeValue(forKey:key) }
+                for key in ["netWorthItems", "netWorthSnapshots", "todoSeriesPreferences", "todoReminderIntents", "bodyReferenceSettings", "captureReceipts", "investmentParticipants", "investmentActivities", "investmentSessions", "investmentOperations"] { payload.removeValue(forKey:key) }
                 var records = try XCTUnwrap(payload["sleepRecords"] as? [[String: Any]])
                 var first = try XCTUnwrap(records.first)
                 var values = try XCTUnwrap(first["values"] as? [String: Any])
@@ -2602,7 +2606,7 @@ private extension TransferData {
             let archive = try mutatePackage(lease.url,under:fixture.root.appendingPathComponent("InvestmentWire\(scenario)"),mutation:{ root, manifest, _ in
                 let dataURL = root.appendingPathComponent("data.json")
                 var payload = try XCTUnwrap(JSONSerialization.jsonObject(with:Data(contentsOf:dataURL)) as? [String:Any])
-                for key in ["todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {payload.removeValue(forKey:key)}
+                for key in ["netWorthItems", "netWorthSnapshots", "todoSeriesPreferences","todoReminderIntents","bodyReferenceSettings"] {payload.removeValue(forKey:key)}
                 var sessions = try XCTUnwrap(payload["investmentSessions"] as? [[String:Any]])
                 var ops = try XCTUnwrap(payload["investmentOperations"] as? [[String:Any]])
                 var first = try XCTUnwrap(sessions.first), values = try XCTUnwrap(first["values"] as? [String:Any])

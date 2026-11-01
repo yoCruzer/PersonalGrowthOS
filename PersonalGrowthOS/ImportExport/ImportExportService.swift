@@ -560,6 +560,10 @@ final class ImportExportService {
                 if manifest.packageSchemaVersion >= 11 {guard payload?[key] is [Any] else {throw TransferPackageError.corruptData}}
                 else {guard payload?[key] == nil else {throw TransferPackageError.corruptData}}
             }
+            for key in ["netWorthItems", "netWorthSnapshots"] {
+                if manifest.packageSchemaVersion >= 12 { guard payload?[key] is [Any] else { throw TransferPackageError.corruptData } }
+                else { guard payload?[key] == nil else { throw TransferPackageError.corruptData } }
+            }
             data = try TransferCoding.decoder.decode(TransferData.self, from: bytes)
         } catch {
             throw TransferPackageError.corruptData
@@ -715,6 +719,7 @@ final class ImportExportService {
             try Task.checkCancellation()
             try publicationCheckpoint?(.beforeSave)
             try LinkIntegrityService.validate(context: publicationContext)
+            _ = try NetWorthService.read(publicationContext)
             try InvestmentIntegrity.validate(context: publicationContext)
             try UsagePreferencesIntegrity.validate(context:publicationContext)
             try Task.checkCancellation()
@@ -1009,6 +1014,7 @@ final class ImportExportService {
                 restoredPaths.append(try copyMedia(cover, packageRoot: package.extractedRoot, mediaRoot: mediaStore.rootURL))
             }
             try package.data.insertSleep(into: context)
+            try package.data.insertNetWorth(into: context)
             try package.data.insertInvestment(into: context)
             try package.data.insertImportantDays(into: context)
             try package.data.insertTodos(into: context)
@@ -1071,6 +1077,8 @@ final class ImportExportService {
             + context.fetchCount(FetchDescriptor<TodoReminderIntent>())
             + context.fetchCount(FetchDescriptor<BodyReferenceSettings>())
             + context.fetchCount(FetchDescriptor<CaptureImportReceipt>())
+            + context.fetchCount(FetchDescriptor<NetWorthItem>())
+            + context.fetchCount(FetchDescriptor<NetWorthSnapshot>())
             + context.fetchCount(FetchDescriptor<InvestmentParticipant>())
             + context.fetchCount(FetchDescriptor<InvestmentActivity>())
             + context.fetchCount(FetchDescriptor<InvestmentSession>())
@@ -1332,7 +1340,9 @@ enum TransferSnapshot {
             investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) },
             todoSeriesPreferences:try cancellableMap(context.fetch(FetchDescriptor<TodoSeriesPreferences>())) {TodoSeriesPreferencesTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
             todoReminderIntents:try cancellableMap(context.fetch(FetchDescriptor<TodoReminderIntent>())) {TodoReminderIntentTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
-            bodyReferenceSettings:try cancellableMap(context.fetch(FetchDescriptor<BodyReferenceSettings>())) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)}
+            bodyReferenceSettings:try cancellableMap(context.fetch(FetchDescriptor<BodyReferenceSettings>())) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            netWorthItems: try cancellableMap(context.fetch(FetchDescriptor<NetWorthItem>())) { try $0.value() }.sorted { sortUUID($0.id, $1.id) },
+            netWorthSnapshots: try cancellableMap(context.fetch(FetchDescriptor<NetWorthSnapshot>())) { try $0.value() }.sorted { sortUUID($0.id, $1.id) }
         ).redactingConsumedInvestmentContent()
     }
 

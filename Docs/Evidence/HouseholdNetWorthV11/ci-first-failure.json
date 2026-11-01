@@ -1,0 +1,21 @@
+{
+  "run": 41335219908,
+  "head": "5dcbc7a7b1202caca6e4355b415af744e2ece8b5",
+  "checkout": "856c309332707f78084126e8d587c4dbd60fd4dd",
+  "jobs": [
+    {
+      "job": 124933495363,
+      "sha256": "e448608816cd79fd7248b6dccb24888e20f7824c17dcab939d55b0c58a57807b",
+      "conclusion": "failure",
+      "testsStarted": false,
+      "reason": "iOS 27.1 + iPhone 13 mini incompatibility (403)"
+    },
+    {
+      "job": 124933495631,
+      "sha256": "3cc7e5e46065d75677b8b77292011864ec6dc11dad1440a654bb658529f2e670",
+      "conclusion": "failure",
+      "testsStarted": false,
+      "reason": "iOS 27.1 + iPhone 13 mini incompatibility (403)"
+    }
+  ]
+}
