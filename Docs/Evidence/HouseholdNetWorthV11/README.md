@@ -58,6 +58,7 @@
 - [V6-background-return-hidden](V6-background-return-hidden.png)
 - [V6-hidden](V6-hidden.png)
 - [V6-hidden-history](V6-hidden-history.png)
+- [V7-single-native](V7-single-native.png)
 - [V8-long-name](V8-long-name.png)
 - [V8-negative](V8-negative.png)
 - [V9-frozen-history](V9-frozen-history.png)

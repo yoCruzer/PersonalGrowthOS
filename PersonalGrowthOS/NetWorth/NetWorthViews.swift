@@ -386,9 +386,9 @@ struct NetWorthItemsView: View {
                         Button { editing = item } label: {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(item.name).foregroundStyle(.primary)
-                                Text(item.category.title + (item.archived ? " · " + String(localized: "Archived") : "")).font(.caption).foregroundStyle(.secondary)
+                                Text(item.category.title + (item.archived ? " · " + String(localized: "Archived") : "")).font(.caption).foregroundStyle(.primary)
                                 if let row = ledger.history.reversed().compactMap({ $0.items.first { $0.id == item.id } }).first {
-                                    Text(hidden ? "••••" : ((row.cents.map(NetWorthMoney.display) ?? String(localized: "Unknown")) + " · " + (row.amountDay ?? "—"))).monospacedDigit().font(.subheadline).foregroundStyle(.secondary)
+                                    Text(hidden ? "••••" : ((row.cents.map(NetWorthMoney.display) ?? String(localized: "Unknown")) + " · " + (row.amountDay ?? "—"))).monospacedDigit().font(.subheadline).foregroundStyle(.primary)
                                 }
                             }.padding(.vertical, 4).frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
                         }.buttonStyle(.plain).swipeActions {
