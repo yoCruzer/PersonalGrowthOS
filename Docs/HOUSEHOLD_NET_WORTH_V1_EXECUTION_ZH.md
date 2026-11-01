@@ -1,3 +1,30 @@
+# 2026-11-02 家庭净资产 V1.1 — READY_FOR_OWNER_DEVICE_GATE
+
+A→B→C实现、可执行验收、独立只读代码/数据安全/备份/实际UI审查均已完成，范围内问题全部修复并复核关闭。唯一[Draft PR #14](https://github.com/yoCruzer/PersonalGrowthOS/pull/14)，base `codex/usage-remediation-20261017` / `5827c657095945aff30b2250b20bae104c7b0357`。产品代码最终SHA `01ffedc45a4c99c3576ae65ab249b77a8496336f`；含经审查CI兼容性修复的验收SHA `ba84296a89e96dcca31d7dce184ae762cc2da18b`。此后仅Docs交付，最终完整head以PR和交付回复核对。
+
+[现有CI run41335536587](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/41335536587)必选全部PASS：App/Share/Widget unsigned Release；完整Unit **599=598PASS/0FAIL/1既有SKIP**；关键UI smoke **5/5PASS**。PR事件的optional extended job按设计SKIPPED。实际checkout为PR merge `ac0fe4a104f276cab9e49ab6f781629efd43dfb6`，已取回并核验tree与上述head一致，未冒称直接checkout head。GitHub-hosted ARM64 image20261026.0314.1，macOS27.0.1、Xcode27.0(27A266a)、iOS27.0(24A434)/iPhone13mini；原始产物摘要/环境及ZIP摘要见[CI证据](Evidence/HouseholdNetWorthV11/ci-accepted.json)。
+
+本地16项净资产Unit与8条功能UI最终分别通过，26张原始截图及来源/哈希已独立复算。首轮本地完整Unit597PASS/1FAIL/1SKIP、UI5PASS/2FAIL和分别复验完整保留；首轮远端[run41335219908](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/41335219908)仍为FAIL（Release PASS，unit/smoke测试前设备配对403），不改写历史。CI修复仅选兼容runtime/机型，未缩减测试或改变skip。
+
+停在Owner设备门；不merge/force/tag/Archive/TestFlight/发布。未操作私人库或设备，主目录三项未知改动、旧PR/分支原样保留。独立32MB HFS+低空间测试SKIP、实际VoiceOver/真机/私人数据NOT_RUN及历史警告继续保留。最终Docs普通推送后只核对现有最新head CI与PR元数据，不再扩展实现。
+
+[中文交付与Owner清单](HOUSEHOLD_NET_WORTH_V1_EXECUTION_ZH.md) · [独立审查](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md) · [真实截图](Evidence/HouseholdNetWorthV11/README.md)。以下为历史阶段记录。
+
+---
+
+## Owner真机验收清单（全部待Owner自行执行）
+
+1. 首次进入：添加少量资产和负债，确认净资产主值、估算标记、未知与零的区别清楚；检查中文/英文、浅深色及大字号。
+2. 重复盘点：约10个项目，仅改2–3项，其余沿用；确认原余额日期不变，保存草稿后退出重开，再正式保存；记录是否能在几分钟完成及误触/困惑。
+3. 历史与范围：查看负值、部分盘点、范围变化、净资产/负债趋势和资产构成；从历史或图表点进入，更正/删除后返回核对总览与日期。
+4. 隐私：隐藏金额后检查图表、历史和实际VoiceOver听读；切入后台查看任务卡片，回前台应继续隐藏；体验键盘与窄屏触控。
+5. 导出恢复：Owner自行在安全测试环境核对CSV精确金额、空值和零；完整备份含项目/正式快照/草稿，恢复后历史与旧模块一致；保留自己的安全备份。
+6. 既有模块：五Tab、成长相邻习惯/体重、分享扩展和Widget保持原体验；旧D1–D4/权限/AlarmKit等历史设备边界仍按原清单验收。不要把模拟器故障注入等同真实低空间验证。
+
+交付新增提交：文档证据 `5dcbc7a7b1202caca6e4355b415af744e2ece8b5`；CI兼容性 `ba84296a89e96dcca31d7dce184ae762cc2da18b`。此前完整产品提交见下方“提交与交付边界”。CI实际命令仍是 `python3 Scripts/ci/run_ios.py release|unit|smoke`；完整展开命令位于各lane原始日志，未修改现有workflow或测试选择。
+
+---
+
 # 家庭净资产 V1.1 — 本地验收与独立 Review 完成，CI_PENDING
 
 ## 首轮远端CI与兼容性修复
