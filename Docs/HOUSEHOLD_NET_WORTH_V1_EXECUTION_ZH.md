@@ -71,3 +71,5 @@ B提交 `9a8d77dd73e427c248844cefcad137d43327491b`：c-dark 深色UI 1 PASS/0 FA
 - 既有SKIP：TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure，缺独立32MB HFS+卷；不填满主卷、不删skip、不冒称本轮验证。
 
 下一轮 c-retry 仅QuietWinsReaderTests全类与上述两项UI；其余通过项目不重复整套本地Unit/UI。
+
+c-retry（9a3966e964bf4edd02aa043b1485619e771ef30a）：QuietWins 5/5与首次盘点UI PASS；图表已准确进入10/31并输入112000，但键盘“完成”与背后图表详情“完成”同名匹配失败。测试改为直接点生产顶部保存（其本身收起键盘），保留更正/删除金额与日期严格断言。下一轮c-chart仅复验这1条。

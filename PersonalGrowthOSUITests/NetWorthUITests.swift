@@ -128,7 +128,7 @@ final class NetWorthUITests: XCTestCase {
         }
         latestPoint()
         let correct=app.buttons["更正本次快照"];reveal(correct,app);correct.tap()
-        let field=app.textFields["net-worth-amount-0"];reveal(field,app);field.tap();field.typeText("112000");app.buttons["完成"].tap()
+        let field=app.textFields["net-worth-amount-0"];reveal(field,app);field.tap();field.typeText("112000")
         app.navigationBars["盘点 · 人民币"].buttons["保存"].tap()
         app.navigationBars["快照明细"].buttons["完成"].tap()
         for _ in 0..<4 {app.swipeDown()}
