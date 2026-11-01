@@ -12,7 +12,7 @@
 
 旧 `HOUSEHOLD_ASSETS_V1_*` 文件现为废止跳转说明。Codex 必须按新文件执行，不得将旧 1.0 要求混入本轮。
 
-执行分支：`codex/household-net-worth-v1`；规划分支：`plan/household-assets-v1-goal`；新 Draft PR base 预期 `codex/usage-remediation-20261017`，执行前重新核对实际远端 PR 状态。连续 A→B→C 授权见固定 Goal。仅用合成数据和隔离环境；保留未知改动；定向验证、阶段本地提交、最终集中 push/CI、真正独立审查。完成后停 `READY_FOR_OWNER_DEVICE_GATE`；不 merge/force/tag/Archive/TestFlight，不操作私人设备或数据库。
+执行分支：`codex/household-net-worth-v1`；规划分支：`plan/household-net-worth-v1-goal`；新 Draft PR base 预期 `codex/usage-remediation-20261017`，执行前重新核对实际远端 PR 状态。连续 A→B→C 授权见固定 Goal。仅用合成数据和隔离环境；保留未知改动；定向验证、阶段本地提交、最终集中 push/CI、真正独立审查。完成后停 `READY_FOR_OWNER_DEVICE_GATE`；不 merge/force/tag/Archive/TestFlight，不操作私人设备或数据库。
 
 ---
 
@@ -21,7 +21,7 @@
 Owner 已认可“定期用几分钟确认家庭资产与负债，留下一张可追溯的快照，并看清长期变化”，并明确界面风格和操作习惯要与现有 App 统一、有设计感。本次已核对固定 GitHub 基线、实际组件和旧模块浅/深色截图，形成四份 1.0 规划；未修改产品代码，未执行新模块构建、迁移、测试或真机验收。
 
 - 固定产品基线：`5827c657095945aff30b2250b20bae104c7b0357`，`codex/usage-remediation-20261017` / 旧 Draft PR #13。当前 SwiftData V15、备份包 v11；无现成设备认证或 iCloud 同步。
-- 规划分支：`plan/household-assets-v1-goal`。实际 GOAL_SHA 以最终引导 prompt 固定，避免文件自引用提交号。
+- 规划分支：`plan/household-net-worth-v1-goal`。实际 GOAL_SHA 以最终引导 prompt 固定，避免文件自引用提交号。
 - 下一执行分支：`codex/household-assets-v1`；新 Draft PR base 为 `codex/usage-remediation-20261017`。不向旧 PR #13 写产品增量。
 - 完整契约：[DESIGN](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md) / [UI](HOUSEHOLD_ASSETS_V1_UI_ZH.md) / [GOAL](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md) / [ACCEPTANCE](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md)。规划就绪不代表独立实现 Review 或产品验收通过。
 
