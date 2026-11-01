@@ -57,10 +57,16 @@ else:
     runtimes = json.loads(output(['xcrun', 'simctl', 'list', 'runtimes', '-j']))['runtimes']
     available = [x for x in runtimes if x.get('isAvailable') and x['identifier'].split('.')[-1].startswith('iOS-27')]
     assert available, 'No available iOS 27 simulator runtime'
-    runtime = sorted(available, key=lambda x: tuple(map(int, x['version'].split('.'))))[-1]
     types = json.loads(output(['xcrun', 'simctl', 'list', 'devicetypes', '-j']))['devicetypes']
     phones = [x for x in types if x['name'].startswith('iPhone')]
-    device_type = next((x for x in phones if x['name'] == 'iPhone 13 mini'), phones[0])
+    # Runtimes can support only a subset of installed device types (e.g. 27.1).
+    # Keep the narrow-screen gate on the newest compatible runtime when possible.
+    pairs = [(runtime, phone)
+             for runtime in sorted(available, key=lambda x: tuple(map(int, x['version'].split('.'))), reverse=True)
+             for phone in phones
+             if phone['identifier'] in {x['identifier'] for x in runtime.get('supportedDeviceTypes', [])}]
+    assert pairs, 'No compatible iPhone / iOS 27 simulator pair'
+    runtime, device_type = next((pair for pair in pairs if pair[1]['name'] == 'iPhone 13 mini'), pairs[0])
     udid = output(['xcrun', 'simctl', 'create', 'PGOS-CI-' + lane, device_type['identifier'], runtime['identifier']]).strip()
     manifest.update(runtime=runtime, deviceType=device_type, simulatorUDID=udid)
     (root / 'environment.json').write_text(json.dumps(manifest, indent=2) + '\n')

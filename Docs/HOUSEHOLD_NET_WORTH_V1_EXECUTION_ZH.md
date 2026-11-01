@@ -1,5 +1,13 @@
 # 家庭净资产 V1.1 — 本地验收与独立 Review 完成，CI_PENDING
 
+## 首轮远端CI与兼容性修复
+
+唯一[Draft PR #14](https://github.com/yoCruzer/PersonalGrowthOS/pull/14)，base仍是固定BASE。首轮[run41335219908](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/41335219908) head `5dcbc7a7b1202caca6e4355b415af744e2ece8b5`、实际PR merge checkout `856c309332707f78084126e8d587c4dbd60fd4dd`。unit/smoke在测试开始前FAIL：runner image20261026.0314.1新增iOS27.1，原脚本选最高runtime再盲配mini，CoreSimulator 403；不能算测试通过或业务测试失败。Release仍在运行时记录，最终结论另列。
+
+最小修复只改现有 `Scripts/ci/run_ios.py` 的配对选择：使用runtime.supportedDeviceTypes与已安装机型交集，优先mini的最新兼容runtime，否则最新兼容iPhone，空配对明确失败。release、全部测试selector/断言/skip保持。本地以AST提取实际选择代码验证4个合成正反例（新runtime仅其他机型、两版mini、无mini、无兼容）及真实runtime元数据，共5PASS；真实本机27.0/mini。未创建或启动额外模拟器，未重复本地整套。独立只读Reviewer已审核该CI修复通过，等待真实CI复跑。
+
+首轮原日志保存在 `/tmp/pgos-net-worth-evidence/ci-first-<job>.log`，[失败元数据/哈希](Evidence/HouseholdNetWorthV11/ci-first-failure.json)。文档证据提交5dcbc7a的独立审计已通过：26原图及其原始导出、17轮日志和Release日志哈希独立复算吻合。
+
 最终产品代码：`01ffedc45a4c99c3576ae65ab249b77a8496336f`。主库追加V16、备份v12；两个统一实体，五Tab、Bundle ID、App Group及旧模块保留。未接入旧1.0物品管理、Entry关联、Face ID、银行/云同步等范围。
 
 - 独立只读Reviewer已确认 AR-01/02/03、BR-01/02、CR-01全部关闭；代码、数据安全、备份及五项视觉问题通过本地模拟器证据范围。见[审查记录](HOUSEHOLD_NET_WORTH_V1_REVIEW_ZH.md)。
