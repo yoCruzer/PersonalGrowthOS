@@ -104,7 +104,7 @@ struct NetWorthHubView: View {
             NavigationStack { Form { DatePicker("Snapshot date", selection: $date, in: ...Date(), displayedComponents: .date).datePickerStyle(.graphical) }
                 .navigationTitle("Record a past date").toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("Cancel") { backdate = false } }
-                    ToolbarItem(placement: .confirmationAction) { Button("Continue") { backdate = false; start(day: ImportantCivilDay(date).identifier) } }
+                    ToolbarItem(placement: .confirmationAction) { Button("Continue") { backdate = false; start(day: ImportantCivilDay(date).identifier, resumeExistingDraft: false) } }
                 } }.presentationDetents([.large]).netWorthPrivacy()
         }
         .confirmationDialog("Export unencrypted financial information?", isPresented: $exportWarning, titleVisibility: .visible) {
@@ -160,7 +160,7 @@ struct NetWorthHubView: View {
                           let snapshot = ledger.history.first(where: { $0.id == nearest.id }) else { return }
                     selectedSnapshot = snapshot
                 }
-            } }.sheet(item: $selectedSnapshot) { snapshot in NavigationStack {
+            } }.sheet(item: $selectedSnapshot, onDismiss: refresh) { snapshot in NavigationStack {
                 NetWorthDetailView(snapshot: snapshot).toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { selectedSnapshot = nil } } }
             } }
     }
@@ -199,8 +199,8 @@ struct NetWorthHubView: View {
         }.navigationTitle("Snapshot history").onAppear(perform: refresh).netWorthPrivacy()
     }
     private func refresh() { do { ledger = try NetWorthService(context: context).read(); error = nil } catch { self.error = error.localizedDescription } }
-    private func start(day: String) {
-        do { editing = try NetWorthService(context: context).begin(day: day); error = nil }
+    private func start(day: String, resumeExistingDraft: Bool = true) {
+        do { editing = try NetWorthService(context: context).begin(day: day, resumeExistingDraft: resumeExistingDraft); error = nil }
         catch { self.error = error.localizedDescription }
     }
 }

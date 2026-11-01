@@ -276,11 +276,12 @@ struct NetWorthLedger {
             return value
         }
     }
-    @discardableResult func begin(day: String, editingID: UUID? = nil) throws -> NetWorthSnapshotValue {
+    @discardableResult func begin(day: String, editingID: UUID? = nil, resumeExistingDraft: Bool = true) throws -> NetWorthSnapshotValue {
         try write { context in
             let ledger = try Self.read(context)
             if let draft = ledger.draft {
                 if let editingID, draft.editingID != editingID { throw NetWorthFailure.conflict }
+                if !resumeExistingDraft && (draft.day != day || draft.editingID != editingID) { throw NetWorthFailure.conflict }
                 return draft
             }
             guard ImportantCivilDay(identifier: day) != nil else { throw NetWorthFailure.invalid }

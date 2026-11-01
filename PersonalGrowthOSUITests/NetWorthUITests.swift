@@ -116,4 +116,26 @@ final class NetWorthUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["111,000.00"].exists)
         XCTAssertFalse(app.staticTexts["测试住房估值"].exists);shot(app,"V9-latest-category")
     }
+    func testChartCorrectionAndDeletionRefreshOverview() {
+        let app=launch(["-PGOSNetWorthFixture","-PGOSNetWorthOneItem"],chinese:true);open(app,chinese:true)
+        XCTAssertEqual(app.staticTexts["net-worth-main"].label,"111,000.00")
+        func latestPoint() {
+            let chart=app.descendants(matching:.any)["net-worth-trend"].firstMatch;reveal(chart,app)
+            app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.8)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.4)))
+            chart.coordinate(withNormalizedOffset:CGVector(dx:0.96,dy:0.45)).tap()
+            XCTAssertTrue(app.navigationBars["快照明细"].waitForExistence(timeout:5));XCTAssertTrue(app.staticTexts["2026-10-31"].exists)
+        }
+        latestPoint()
+        let correct=app.buttons["更正本次快照"];reveal(correct,app);correct.tap()
+        let field=app.textFields["net-worth-amount-0"];reveal(field,app);field.tap();field.typeText("112000");app.buttons["完成"].tap()
+        app.navigationBars["盘点 · 人民币"].buttons["保存"].tap()
+        app.navigationBars["快照明细"].buttons["完成"].tap()
+        for _ in 0..<4 {app.swipeDown()}
+        XCTAssertEqual(app.staticTexts["net-worth-main"].label,"112,000.00")
+        latestPoint()
+        let remove=app.buttons["删除快照"];reveal(remove,app);remove.tap();app.sheets.buttons["删除快照"].tap()
+        XCTAssertTrue(app.navigationBars["家庭净资产"].waitForExistence(timeout:5))
+        for _ in 0..<4 {app.swipeDown()}
+        XCTAssertEqual(app.staticTexts["net-worth-main"].label,"110,000.00");XCTAssertTrue(app.staticTexts["2026-09-30"].exists)
+    }
 }

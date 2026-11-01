@@ -234,6 +234,8 @@ import CryptoKit
         let (c,_) = try store(); let s = service(c); let first = try seeded(s)
         var draft = try s.begin(day:"2026-10-31")
         XCTAssertThrowsError(try s.begin(day:first.day,editingID:first.id))
+        XCTAssertThrowsError(try s.begin(day:"2026-08-31",resumeExistingDraft:false))
+        XCTAssertEqual(try s.begin(day:draft.day,resumeExistingDraft:false),draft)
         var forged = draft; forged.timeZoneID = "Pacific/Kiritimati"
         if forged.timeZoneID == draft.timeZoneID { forged.timeZoneID = "America/Los_Angeles" }
         XCTAssertThrowsError(try s.saveDraft(forged)); XCTAssertThrowsError(try s.confirm(forged))

@@ -54,3 +54,9 @@ B 完整体验及相邻回归、C 真实截图与固定候选独立只读审查�
 - 修复归档零余额不变量、历史更正冲突、时区篡改、项目备注冻结；趋势范围变化有形状/文字标记，比较只表述增加/减少，未知分类不显示假零。
 
 B 已完成代码与针对性验证。`V1–V15` 原始 schema 声明逐字相同；所有原本地化条目逐键相同，新增100个。b3 系统切换卡片原图实际看到遮挡标签，大字小数完整分行；未据桌面截图推断隐私通过。下一步 C 固定候选集中截图、Release、完整 Unit 单次集中门禁、独立复核和最终远端 CI。
+
+## C 固定候选集中验收（进行中）
+
+B提交 `9a8d77dd73e427c248844cefcad137d43327491b`：c-dark 深色UI 1 PASS/0 FAIL，实际系统appearance dark；首次simctl因Shutdown返回405，Xcode启动后应用成功，截图须以原图核实。独立B复核三项A问题关闭，新增BR-01/02已修；新UI和领域反例待集中执行。
+
+集中命令采用共同xcodebuild模板：`-only-testing:PersonalGrowthOSTests -only-testing:PersonalGrowthOSUITests/NetWorthUITests -skip-testing:PersonalGrowthOSUITests/NetWorthUITests/testChineseDarkOverview`，c-final轮次，预期完整Unit只此集中一次。最终结果、Release、Review和CI仍待填实。
