@@ -22,7 +22,8 @@ final class NetWorthUITests: XCTestCase {
     func testFirstInventoryAndRepeatedDraftColdLaunch() {
         let app=launch();open(app);shot(app,"V7-empty-native")
         app.buttons["net-worth-record"].tap()
-        if app.buttons["Show amounts"].exists { app.buttons["Show amounts"].tap() }
+        let show=app.buttons.matching(NSPredicate(format:"label == %@ AND identifier != %@","Show amounts","net-worth-privacy")).firstMatch
+        if show.exists { show.tap() }
         let add=app.buttons["net-worth-add-item"];reveal(add,app);add.tap()
         let name=app.textFields["net-worth-item-name"];XCTAssertTrue(name.waitForExistence(timeout:4));name.tap();name.typeText("Synthetic household bank")
         let amount=app.textFields["net-worth-initial-amount"];reveal(amount,app);amount.tap();amount.typeText("100000.01")
@@ -57,7 +58,7 @@ final class NetWorthUITests: XCTestCase {
         let field=app.textFields["net-worth-amount-0"];reveal(field,app);field.tap();field.typeText("110000.25");shot(app,"V4-repeat-keyboard")
         app.buttons["完成"].tap();app.navigationBars["盘点 · 人民币"].buttons["稍后继续"].tap()
         app.terminate();app.launchArguments.removeAll {$0 == "-PGOSResetData"};app.launch();open(app,chinese:true)
-        app.buttons["net-worth-record"].tap();if app.buttons["显示金额"].exists {app.buttons["显示金额"].tap()}
+        app.buttons["net-worth-record"].tap();let show=app.buttons.matching(NSPredicate(format:"label == %@ AND identifier != %@","显示金额","net-worth-privacy")).firstMatch;if show.exists {show.tap()}
         let restored=app.textFields["net-worth-amount-0"];reveal(restored,app);XCTAssertEqual(restored.value as? String,"110000.25")
     }
     func testChineseLargePartialAndSingleScreens() {
@@ -122,8 +123,8 @@ final class NetWorthUITests: XCTestCase {
         func latestPoint() {
             let chart=app.descendants(matching:.any)["net-worth-trend"].firstMatch;reveal(chart,app)
             app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.8)).press(forDuration:0.1,thenDragTo:app.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:0.4)))
-            chart.coordinate(withNormalizedOffset:CGVector(dx:0.96,dy:0.45)).tap()
-            XCTAssertTrue(app.navigationBars["快照明细"].waitForExistence(timeout:5));XCTAssertTrue(app.staticTexts["2026-10-31"].exists)
+            chart.coordinate(withNormalizedOffset:CGVector(dx:0.995,dy:0.45)).tap()
+            XCTAssertTrue(app.navigationBars["快照明细"].waitForExistence(timeout:5));XCTAssertTrue(app.staticTexts["2026-10-31"].exists,app.debugDescription)
         }
         latestPoint()
         let correct=app.buttons["更正本次快照"];reveal(correct,app);correct.tap()

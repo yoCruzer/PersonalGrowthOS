@@ -60,3 +60,14 @@ B 已完成代码与针对性验证。`V1–V15` 原始 schema 声明逐字相�
 B提交 `9a8d77dd73e427c248844cefcad137d43327491b`：c-dark 深色UI 1 PASS/0 FAIL，实际系统appearance dark；首次simctl因Shutdown返回405，Xcode启动后应用成功，截图须以原图核实。独立B复核三项A问题关闭，新增BR-01/02已修；新UI和领域反例待集中执行。
 
 集中命令采用共同xcodebuild模板：`-only-testing:PersonalGrowthOSTests -only-testing:PersonalGrowthOSUITests/NetWorthUITests -skip-testing:PersonalGrowthOSUITests/NetWorthUITests/testChineseDarkOverview`，c-final轮次，预期完整Unit只此集中一次。最终结果、Release、Review和CI仍待填实。
+
+### c-final 原始结果与定位
+
+固定产品/测试候选 `a45a910c7cb8b0070114db97850dc9d9cf1bc1f0`。完整Unit实际599：597 PASS / 1 FAIL / 1既有SKIP；本功能浅色UI实际7：5 PASS / 2 FAIL。不是整轮通过。
+
+- QuietWinsReaderTests 的旧v7 wire构造漏删新版两个空数组，正式恢复正确拒绝corruptData。补入新数组的“应为空”独立断言后去除，保持全部旧来源/媒体/重开断言。
+- 首次UI失败为隐藏模式下root眼睛和编辑器“显示金额”同名；查询限定排除root标识，不改变产品隐私。
+- 图表更正UI点x=330.56位于9/30与10/31间近中点，实际选择9/30；原始视频末帧和触控事件已核对。改点真实末点x≈341，日期断言仍严格为10/31，未放宽数据断言。
+- 既有SKIP：TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure，缺独立32MB HFS+卷；不填满主卷、不删skip、不冒称本轮验证。
+
+下一轮 c-retry 仅QuietWinsReaderTests全类与上述两项UI；其余通过项目不重复整套本地Unit/UI。
