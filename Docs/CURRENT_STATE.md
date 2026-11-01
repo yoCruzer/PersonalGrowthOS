@@ -12,7 +12,7 @@
 
 旧 `HOUSEHOLD_ASSETS_V1_*` 文件现为废止跳转说明。Codex 必须按新文件执行，不得将旧 1.0 要求混入本轮。
 
-执行分支：`codex/household-net-worth-v1`；规划分支：`plan/household-assets-v1-goal`；新 Draft PR base 预期 `codex/usage-remediation-20261017)，执行前重新核对实际远端 PR 状态。连续 A→B→C 授权见固定 Goal。仅用合成数据和隔离环境；保留未知改动；定向验证、阶段本地提交、最终集中 push/CI、真正独立审查。完成后停 `READY_FOR_OWNER_DEVICE_GATE`；不 merge/force/tag/Archive/TestFlight，不操作私人设备或数据库。
+执行分支：`codex/household-net-worth-v1`；规划分支：`plan/household-assets-v1-goal`；新 Draft PR base 预期 `codex/usage-remediation-20261017`，执行前重新核对实际远端 PR 状态。连续 A→B→C 授权见固定 Goal。仅用合成数据和隔离环境；保留未知改动；定向验证、阶段本地提交、最终集中 push/CI、真正独立审查。完成后停 `READY_FOR_OWNER_DEVICE_GATE`；不 merge/force/tag/Archive/TestFlight，不操作私人设备或数据库。
 
 ---
 
