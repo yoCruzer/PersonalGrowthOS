@@ -201,3 +201,12 @@ Owner 已批准独立 ImportantDay、Entry/Todo 有类型引用、独立封面�
 - [完整只读分支报告](CI_DEVICE_BRANCH_CLEANUP_20261020_BRANCH_INVENTORY_ZH.md)
 
 - [2026-10-20 GitHub Actions真实run、测试夹具补修与独立证据](Evidence/CI20261020/README.md)
+
+
+## 家庭资产快照 V1 批准增量 — 2026-11-01
+
+Owner 已认可“定期用几分钟确认家庭资产与负债，留下一张可追溯的快照，并看清长期变化”，并要求界面风格/操作习惯统一、有设计感。当前为 GOAL_READY / IMPLEMENTATION_NOT_STARTED；本次仅规划，不宣称功能、迁移、原生 UI 或设备验收通过。
+
+固定产品基线 `5827c657095945aff30b2250b20bae104c7b0357`；完整执行输入由引导 prompt 固定 GOAL_SHA。按同一提交依次阅读：[产品与数据契约](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[界面与交互](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[执行 Goal](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[验收与试用](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md)，均为 1.0。
+
+本次连续阶段 A→B→C 在新分支实现、验证、独立审查、普通 push 和新 Draft PR 后停 Owner 设备门。新的开发授权替代旧批次仅等设备的停点，旧测试/失败/设备状态原样保留；精确边界见 CURRENT 顶部和 Goal。

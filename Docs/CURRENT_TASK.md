@@ -1,3 +1,19 @@
+# 2026-11-01 当前任务：家庭资产快照 V1 连续实现
+
+状态：**GOAL_READY / IMPLEMENTATION_NOT_STARTED**。本次规划提交只改 Docs；执行端按固定 GOAL_SHA 开始，不能把文档准备当成产品完成。
+
+先读取同一提交的 [产品契约](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[UI 规格](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[执行 Goal](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[验收表](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md) 全文。BASE 为 `5827c657095945aff30b2250b20bae104c7b0357`；规划 `plan/household-assets-v1-goal`；实施 `codex/household-assets-v1`；新 Draft PR base `codex/usage-remediation-20261017`。
+
+连续推进：A 原生纵向路径/视觉定调/迁移备份接缝 → B 历史图表/隐私/完整集成 → C 集中验收/独立审查修复/普通 push/新 Draft PR。阶段内普通可逆决策自主完成，不逐阶段等批准。界面与既有模块统一、真实截图达到 UI 规格，是完成条件之一。
+
+只做批准的手工人民币家庭资产快照；不扩展银行同步、收益分析、多人共享、云同步、资产通知/Widget 或全 App 重构。使用合成数据与隔离环境，保留未知工作区改动。按改动做定向验证，阶段本地提交、最终集中推送让现有 CI 运行；不在起点或每阶段重跑全套。
+
+完成本期必选实现、可执行验证、CI 与独立审查后停 **READY_FOR_OWNER_DEVICE_GATE**，提交中文交付和少量 Owner 试用任务。旧设备/签名/低空间等历史状态保留；不 merge/force/tag/发行，不操作私人设备或数据库，不清理旧 PR/分支。
+
+以下为历史任务与证据，保留原文；其中旧阶段停点不再阻止本次已批准开发。
+
+---
+
 # 2026-10-20 计数器、真实Actions与只读清点 — READY_FOR_OWNER_DEVICE_GATE
 
 本授权批次已完成。产品实现 `e5b486a8c3f5746a09fc5afb5650944e55be0743`；最终产品/测试候选 **`3ee3cb6a846a296baca7f91b705a67c10dcbe51f`**。Owner直接批准后均普通推送原Draft PR #13，base `codex/time-investment-v1` / `5a70f0110b151f8a45ac7c33d3f443823b1cff24`不变；本交付随后只有Docs，交付完整SHA由PR head、最终回复与本机final-delivery-proof.json核对。

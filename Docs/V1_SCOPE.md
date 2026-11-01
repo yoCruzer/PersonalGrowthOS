@@ -678,3 +678,12 @@ Owner 基于已完成开发/review 的时间投入 V1，要求将使用反馈 20
 
 保持五 Tab、Record 图文记录、Local First、原主库/身份、数据所有权、时间投入独立事实及其 F1/R1–R3 保护；不扩展 AI、健康诊断/减重处方、家庭/孩子 UI、云同步、节假日调休、复杂任务管理或时间投入响铃/Live Activity。历史模型与备份可读性保持，必要字段追加不回写旧 schema。详细契约与阶段见同一 GOAL_SHA 的 USAGE_REMEDIATION_20261017_GOAL_ZH.md / DESIGN_ZH.md / ACCEPTANCE_ZH.md。新授权替代旧批次只等设备的开发停点，既有设备未验结论继续有效；不授权发布、合并、改写旧分支或操作私人库。
 
+
+
+## 家庭资产快照 V1 批准增量 — 2026-11-01
+
+Owner 已确认轻量家庭资产盘点定义，并批准按规划继续，要求与随心 log 现有界面/习惯统一、有设计感。本增量允许：本人维护的人民币资产与负债项目；可恢复草稿、正式盘点、历史补录/更正；净资产/负债基础趋势与资产结构下钻；未知/估算/沿用和范围的诚实表达；可选归属标签与备注；主动 Entry 引用；金额隐藏、可选本机设备认证/后台遮挡；CSV 及统一完整备份恢复。允许必要的追加 Schema/备份版本（固定基线 V15/v11 → 预计 V16/v12）、小金额值层、LocalAuthentication 接线和用途本地化。
+
+这些有限图表、家庭统计标签和本机隐私能力不受早期 V1 对所有统计/Family 的一般后置描述阻挡；家庭共享、多账号、自动银行/券商/汇率/行情、投资建议/收益率、AI/OCR、资产票据库、通知调度、资产 Widget、云同步和全局设计重构仍后置。设备认证不宣称数据库或未加密导出文件已加密。
+
+保持五 Tab、Record、Local First、主库与包身份、历史数据和所有权。三阶段属于同一连续 Goal，完成实现、必要验证、真实独立审查与普通推送/新 Draft PR，停 Owner 真机门；旧设备未验结论不改写。详见同一固定 GOAL_SHA 的 [DESIGN](HOUSEHOLD_ASSETS_V1_DESIGN_ZH.md)、[UI](HOUSEHOLD_ASSETS_V1_UI_ZH.md)、[GOAL](HOUSEHOLD_ASSETS_V1_GOAL_ZH.md)、[ACCEPTANCE](HOUSEHOLD_ASSETS_V1_ACCEPTANCE_ZH.md)。不授权发布、合并、改写旧分支或操作私人库。
