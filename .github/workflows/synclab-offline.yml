@@ -1,0 +1,26 @@
+name: SyncLab offline gate
+on:
+  push:
+    branches: [codex/icloud-sync-g1]
+    paths: ['Experiments/iCloudSyncG1/**', '.github/workflows/synclab-offline.yml']
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: xcode-27
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Focused native tests and isolated iOS build
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/synclab-evidence"
+          xcodebuild -version | tee "$RUNNER_TEMP/synclab-evidence/environment.log"
+          swift test --package-path Experiments/iCloudSyncG1 --scratch-path "$RUNNER_TEMP/synclab-swift" 2>&1 | tee "$RUNNER_TEMP/synclab-evidence/tests.log"
+          xcodebuild -project Experiments/iCloudSyncG1/SyncLab.xcodeproj -scheme SyncLab -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/synclab-ios" CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$RUNNER_TEMP/synclab-evidence/ios-build.log"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: synclab-offline
+          path: ${{ runner.temp }}/synclab-evidence
+          retention-days: 7

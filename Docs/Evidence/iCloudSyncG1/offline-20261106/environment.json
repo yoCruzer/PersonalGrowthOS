@@ -1,0 +1,51 @@
+{
+  "observedUTC": "2026-11-05T16:25:45.031846+00:00",
+  "xcode": "Xcode 27.2\nBuild version 27B52",
+  "macOS": "27.0.1",
+  "codesigningIdentityCount": 1,
+  "profileDecodeFailures": 0,
+  "relevantCachedProfiles": [
+    {
+      "applicationIdentifier": "83SKX2PM7B.com.yocruzer.PersonalGrowthOS",
+      "team": [
+        "83SKX2PM7B"
+      ],
+      "expires": "2027-10-10 10:54:23",
+      "deviceCount": 1,
+      "services": [],
+      "containers": [],
+      "environment": null,
+      "aps": null
+    },
+    {
+      "applicationIdentifier": "83SKX2PM7B.com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "team": [
+        "83SKX2PM7B"
+      ],
+      "expires": "2027-10-15 15:32:26",
+      "deviceCount": 1,
+      "services": [],
+      "containers": [],
+      "environment": null,
+      "aps": null
+    },
+    {
+      "applicationIdentifier": "83SKX2PM7B.com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "team": [
+        "83SKX2PM7B"
+      ],
+      "expires": "2027-10-10 10:54:25",
+      "deviceCount": 1,
+      "services": [],
+      "containers": [],
+      "environment": null,
+      "aps": null
+    }
+  ],
+  "scope": "read-only local cache; not Apple portal or actual signed binary",
+  "ownerResourceRegistration": "confirmed by Owner; association unverified",
+  "cloudKitManagementToken": "not found by cktool get-teams",
+  "physicalDevice": "one known iPhone unavailable; device identifiers omitted",
+  "UI": "Mac locked; browser control disabled",
+  "ownerChoice": "offline engineering and gates only"
+}

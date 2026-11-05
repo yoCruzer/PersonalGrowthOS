@@ -1,0 +1,22 @@
+{
+  "container" : "iCloud.com.yocruzer.PersonalGrowthOS.SyncLab",
+  "coverage" : "actual local codec; no server schema inspected",
+  "customIndexes" : [
+
+  ],
+  "status" : "CANDIDATE_NOT_FROZEN",
+  "types" : {
+    "G1ImageV1" : {
+      "byteCount" : "INT64",
+      "original" : "ASSET",
+      "sha256" : "STRING",
+      "wireVersion" : "INT64"
+    },
+    "G1ObjectV1" : {
+      "objectID" : "STRING",
+      "payload" : "BYTES",
+      "sha256" : "STRING",
+      "wireVersion" : "INT64"
+    }
+  }
+}

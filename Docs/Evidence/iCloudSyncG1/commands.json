@@ -1,0 +1,291 @@
+{
+  "cwd": "/private/tmp/PersonalGrowthOS-icloud-g1",
+  "parentHead": "304a91984f17efc2c61b179f0a9e85a14ba87d95",
+  "dirtyDuringImplementation": true,
+  "commands": [
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 1,
+      "testCount": null,
+      "log": "offline-20261106/native-first.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 1,
+      "testCount": null,
+      "log": "offline-20261106/native-build-02.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 0,
+      "testCount": 23,
+      "log": "offline-20261106/native-tests-03.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 0,
+      "testCount": 23,
+      "log": "offline-20261106/native-tests-04.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build",
+        "--filter",
+        "SyncLabTests.testTruncatedImageCanBeRepairedWithoutErasingBadEvidence|SyncLabTests.testActualCloudCodecFailureRetainsOriginalRecord"
+      ],
+      "exitCode": 1,
+      "testCount": 2,
+      "log": "offline-20261106/review-red-05.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build",
+        "--filter",
+        "SyncLabTests.testMissingParentImageBlocksLinkThenRepairs|SyncLabTests.testRestoredPartitionCannotSendAfterReopen|SyncLabTests.testNetworkFencePreservesOfflineEditing"
+      ],
+      "exitCode": 1,
+      "testCount": 3,
+      "log": "offline-20261106/review-red-06.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 0,
+      "testCount": 28,
+      "log": "offline-20261106/review-green-07.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 0,
+      "testCount": 29,
+      "log": "offline-20261106/native-final-08.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 0,
+      "testCount": 31,
+      "log": "offline-20261106/fault-codec-final-09.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 0,
+      "testCount": 32,
+      "log": "offline-20261106/native-final-10.log"
+    },
+    {
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "Experiments/iCloudSyncG1",
+        "--scratch-path",
+        "/private/tmp/pgos-g1-swift-build"
+      ],
+      "exitCode": 0,
+      "testCount": 33,
+      "log": "offline-20261106/native-final-11.log"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "-project",
+        "Experiments/iCloudSyncG1/SyncLab.xcodeproj",
+        "-scheme",
+        "SyncLab",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "-derivedDataPath",
+        "/private/tmp/pgos-g1-ios-build",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "exitCode": 0,
+      "log": "offline-20261106/ios-build-01.log"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "-project",
+        "Experiments/iCloudSyncG1/SyncLab.xcodeproj",
+        "-scheme",
+        "SyncLab",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "-derivedDataPath",
+        "/private/tmp/pgos-g1-ios-build",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "exitCode": 0,
+      "log": "offline-20261106/ios-final-02.log"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "-project",
+        "Experiments/iCloudSyncG1/SyncLab.xcodeproj",
+        "-scheme",
+        "SyncLab",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "macosx",
+        "-destination",
+        "platform=macOS",
+        "-derivedDataPath",
+        "/private/tmp/pgos-g1-mac-build",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "exitCode": 0,
+      "log": "offline-20261106/mac-build-01.log"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "-project",
+        "Experiments/iCloudSyncG1/SyncLab.xcodeproj",
+        "-scheme",
+        "SyncLab",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "macosx",
+        "-destination",
+        "platform=macOS",
+        "-derivedDataPath",
+        "/private/tmp/pgos-g1-mac-build",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "exitCode": 0,
+      "log": "offline-20261106/mac-final-02.log"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "-project",
+        "Experiments/iCloudSyncG1/SyncLab.xcodeproj",
+        "-scheme",
+        "SyncLab",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "macosx",
+        "-destination",
+        "platform=macOS",
+        "-derivedDataPath",
+        "/private/tmp/pgos-g1-mac-build",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "exitCode": 0,
+      "log": "offline-20261106/mac-final-03.log"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "-project",
+        "Experiments/iCloudSyncG1/SyncLab.xcodeproj",
+        "-scheme",
+        "SyncLab",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphoneos",
+        "-destination",
+        "generic/platform=iOS",
+        "-derivedDataPath",
+        "/private/tmp/pgos-g1-signing-check",
+        "CODE_SIGN_STYLE=Manual",
+        "CODE_SIGN_IDENTITY=Apple Development",
+        "build"
+      ],
+      "exitCode": 65,
+      "log": "offline-20261106/device-signing-check.log"
+    },
+    {
+      "command": [
+        "python3",
+        "Experiments/iCloudSyncG1/Tools/verify_signing.py",
+        "/private/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app"
+      ],
+      "exitCode": 1,
+      "expected": "unsigned must fail",
+      "log": "offline-20261106/unsigned-signing-negative.json"
+    }
+  ]
+}

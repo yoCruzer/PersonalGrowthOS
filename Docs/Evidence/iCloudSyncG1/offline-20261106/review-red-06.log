@@ -1,0 +1,26 @@
+Building for debugging...
+[2 / 8] SyncLabTests-product
+[4 / 10] SyncLabTests-product
+[8 / 12] SyncLabTests-product
+[10 / 12] SyncLabTests-product
+Build complete! (0.85秒)
+Test Suite 'Selected tests' started at 2026-11-06 00:25:15.422.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-06 00:25:15.423.
+Test Suite 'SyncLabTests' started at 2026-11-06 00:25:15.423.
+Test Case '-[SyncLabTests.SyncLabTests testMissingParentImageBlocksLinkThenRepairs]' started.
+/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tests/SyncLabTests/SyncLabTests.swift:178: error: -[SyncLabTests.SyncLabTests testMissingParentImageBlocksLinkThenRepairs] : XCTAssertFalse failed
+Test Case '-[SyncLabTests.SyncLabTests testMissingParentImageBlocksLinkThenRepairs]' failed (0.050 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testNetworkFencePreservesOfflineEditing]' started.
+/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Store.swift:46: error: -[SyncLabTests.SyncLabTests testNetworkFencePreservesOfflineEditing] : failed: caught error: "staleEpoch"
+Test Case '-[SyncLabTests.SyncLabTests testNetworkFencePreservesOfflineEditing]' failed (0.005 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testRestoredPartitionCannotSendAfterReopen]' started.
+/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tests/SyncLabTests/SyncLabTests.swift:188: error: -[SyncLabTests.SyncLabTests testRestoredPartitionCannotSendAfterReopen] : XCTAssertThrowsError failed: did not throw an error
+Test Case '-[SyncLabTests.SyncLabTests testRestoredPartitionCannotSendAfterReopen]' failed (0.009 seconds).
+Test Suite 'SyncLabTests' failed at 2026-11-06 00:25:15.487.
+	 Executed 3 tests, with 3 failures (1 unexpected) in 0.064 (0.064) seconds
+Test Suite 'SyncLabTests.xctest' failed at 2026-11-06 00:25:15.487.
+	 Executed 3 tests, with 3 failures (1 unexpected) in 0.064 (0.064) seconds
+Test Suite 'Selected tests' failed at 2026-11-06 00:25:15.487.
+	 Executed 3 tests, with 3 failures (1 unexpected) in 0.064 (0.064) seconds
+Note: Some test targets reported failures:
+  - SyncLabTests (XCTest)

@@ -1,0 +1,47 @@
+[
+  {
+    "command": [
+      "/private/tmp/pgos-g1-swift-build/debug/LabReplay",
+      "seed-crash",
+      "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/SyncLab-ProcessReplay-zw4m5itx"
+    ],
+    "exitCode": 73,
+    "expectedExit": 73
+  },
+  {
+    "command": [
+      "/private/tmp/pgos-g1-swift-build/debug/LabReplay",
+      "verify-crash",
+      "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/SyncLab-ProcessReplay-zw4m5itx"
+    ],
+    "exitCode": 0,
+    "expectedExit": 0
+  },
+  {
+    "command": [
+      "/private/tmp/pgos-g1-swift-build/debug/LabReplay",
+      "receive-exit",
+      "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/SyncLab-ProcessReplay-zw4m5itx"
+    ],
+    "exitCode": 74,
+    "expectedExit": 74
+  },
+  {
+    "command": [
+      "/private/tmp/pgos-g1-swift-build/debug/LabReplay",
+      "verify-receive",
+      "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/SyncLab-ProcessReplay-zw4m5itx"
+    ],
+    "exitCode": 0,
+    "expectedExit": 0
+  },
+  {
+    "command": [
+      "/private/tmp/pgos-g1-swift-build/debug/LabReplay",
+      "schema",
+      "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/SyncLab-Codec-gegxlq4r"
+    ],
+    "exitCode": 0,
+    "expectedExit": 0
+  }
+]

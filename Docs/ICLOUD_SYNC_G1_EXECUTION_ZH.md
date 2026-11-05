@@ -1,0 +1,49 @@
+# G1 中文执行报告 — BLOCKED_ENV
+
+2026-11-06。本轮从PR #15指定HEAD `304a91984f17efc2c61b179f0a9e85a14ba87d95`创建`codex/icloud-sync-g1`，祖先含原审计`e036b01`及产品基线`96f7233`。原工作区三项未知修改保留。Owner确认四个Apple资源已注册，随后选择“暂时只能完成离线工程与门禁交付”。因此本轮交付隔离工程和可执行门禁，**不声称G1真实服务目标完成**。
+
+## 已实现的边界
+
+独立`Experiments/iCloudSyncG1/`包含可签名配置的iOS/Mac SwiftUI App、无依赖Swift Package、原生SwiftData `.none`事实/outbox/inbox、CKSyncEngine/private zone实际接口、CKRecord/CAS合并处理、CKAsset原图、合成快照与退出重放工具。默认禁止云访问；正式产品源码、工程、App Group、现有数据库、历史schema和发布工作流未修改。新增的`SyncLab offline gate`仅运行实验测试和unsigned构建，不发布或获取Apple凭据。
+
+所有数据样本均合成。支持Entry-like文字、单张原图、依赖图与显式冲突选择；微型协议不是39实体领域合并器。恢复使用持久发布门，当前没有映射解锁接口。当前应用完整保留历史与图片，不做GC；容量、后台和生产领域接入仍在后续边界。
+
+## 本地实际验证
+
+命令、退出码、日志路径和最终源码hash见[证据目录](Evidence/iCloudSyncG1/README.md)。本机macOS27.0.1 / Xcode27.2 (27B52)，SDK目标iOS17/macOS14；没有伪称在最低系统实际运行。
+
+| 验证 | 实际结果与边界 |
+|---|---|
+| 既有协议检查 | 16+4+14 = **34 PASS**；不改原审计四项FAIL证据 |
+| 原生定向测试 | 最终 **33 PASS / 0 FAIL**，包含真实SwiftData事务/重开、R1四反例、排列重放、旧ACK、图片、恢复、跨账户分区、实际CKRecord codec入口，以及显式模拟的CAS/配额/部分成功 |
+| 独立进程退出 | 未提交save中`_exit(73)`→重开旧事实与outbox完整；接收内容提交后、检查点之前`_exit(74)`→独立重开保留内容并可幂等重放。使用占位checkpoint字节，**不是SDK token测试** |
+| iOS/Mac工程 | 独立unsigned Debug构建通过；不是签名/设备/服务通过。最终代码的iOS检查由定向CI再独立核验 |
+| 签名负例 | unsigned包核验脚本退出1；一次离线iphoneos手动签名构建退出65，明确缺带iCloud与Push能力的SyncLab profile；不自动注册/刷新 |
+| 图片 | 内置1×1 PNG真实ImageIO解码；原图字节/hash、截断保全与正确副本修复、缺图依赖不发布、缺图导出失败 |
+| 快照边界 | 4096条可导出并恢复，4097条拒绝完整导出；129对象拒绝，保留所有原事实；不把不可恢复包称完整备份 |
+| 独立Review | 独立reviewer初审R1–R6及后续边界问题，五个原生红例明确失败，修复后回归通过；独立反例重放与源码终审记录另列 |
+
+历史轮次保留：首次沙箱SwiftPM因缓存权限失败；初次库构建成功但未添加测试时`no tests found`退出1；首轮23项通过；Review红测05有2 FAIL、06有3 FAIL；修复后28→29→31→32→33项分别随新增覆盖运行。没有把初轮FAIL改标全绿。原始日志为实际输出，不以最后一轮覆盖旧文件。
+
+## G1八项矩阵：本地证据与真实服务严格分开
+
+| 要求 | 当前证据 | 仍未完成 |
+|---|---|---|
+| 1 双客户端文字/原图/编辑/删除/重开/断网恢复 | 本地保存/删除投影/原图/独立进程重开 | 全部真实双端往返、真实断网及逐ID/字节oracle NOT_RUN |
+| 2 服务器CAS/changeTag及冲突 | codec system fields实现；CKError.serverRecordChanged明确注入；确定性候选/基线/显式解决测试 | 真实服务器并发CAS与双端收敛 NOT_RUN |
+| 3 R1四反例与乱序依赖 | Python34、Swift因果/传递依赖/环/缺图父对象正负验证 | 真实CloudKit分批乱序 NOT_RUN |
+| 4 旧ACK后重新调度 | 精确payload ACK原生正负；sent/didSend后重排代码 | SDK成功移除队列后另一端收到新修改 NOT_RUN |
+| 5 fetched/state与退出 | SwiftData独立进程退出、内容先落盘、opaque原始入站保留；SDK串行契约核对 | 真正State.Serialization事件/退出点与服务器重放 NOT_RUN |
+| 6 A→B→A及冷启动 | 不同accountHash本地分区重开；epoch晚回调拒绝；同账户signIn重建zone+record | 真实系统账户切换/CK账户事件 NOT_RUN |
+| 7 图片staging/hash/lease | 原子安装、坏件保留与修复、无GC保留上传引用、缺图不能完整备份 | 两端CKAsset下载、进程退出/在途lease真实云验证 NOT_RUN |
+| 8 恢复与云到达竞争 | 快照恢复gate持久跨重开、晚回调拒绝、无token/ACK恢复 | 真实云到达并发 NOT_RUN；产品v12 ZIP仍属后续G2 |
+
+quota/rateLimit/部分成功只属于**显式故障注入**；token过期、zone删除恢复、系统后台调度、最低/当前iOS运行、真机UI/VoiceOver与真实网络均NOT_RUN。新增CI也是离线验证，不能提高上述服务证据等级。
+
+## 环境、Production与下一步
+
+[环境台账及一次性最小Owner清单](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md)已区分证书存在、旧profile、门户未知与设备不可用；不重复要求资源注册。[wire候选与Production清单](ICLOUD_SYNC_G1_WIRE_SCHEMA_ZH.md)由实际codec产生字段，P0未冻结，P1/P2未授权且未执行。正式Production必须在大规模接入前验证，实验容器通过也不能代替正式容器。
+
+恢复真实验证时按[README](../Experiments/iCloudSyncG1/README.md)核验Development签名并设置新的合成dataset，执行八项矩阵。只有这些真实Dev证据通过，才可改为`DEV_PROBE_PASSED_PRODUCTION_GATE_PENDING`。当前不进入G2/G3，不merge、tag、Archive、TestFlight、Production部署/写入或云重置。
+
+远端定向CI与Draft PR链接在最终交接补录；本文件当前不把待运行CI标成通过。完整目标仍未完成，离线交付不替代真实服务验收。

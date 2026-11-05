@@ -1,3 +1,15 @@
+# 2026-11-06 iCloud Sync G1 — BLOCKED_ENV（离线工程交付）
+
+Owner已注册正式/SyncLab App与容器，并选择本轮仅离线工程与门禁交付。已从指定PR #15 HEAD `304a91984f17efc2c61b179f0a9e85a14ba87d95`创建`codex/icloud-sync-g1`，隔离worktree `/private/tmp/PersonalGrowthOS-icloud-g1`；原工作区未知修改保持。
+
+独立SyncLab iOS/Mac工程、SwiftData事实/outbox/inbox、CKSyncEngine/CKAsset接口、冲突/恢复门禁与合成快照已实现；正式产品源码、数据库、App Group及发布流程未改。协议34项及最终原生33项通过；独立进程退出/重放与独立Review修复完成，原失败证据保留。签名预检明确缺SyncLab iCloud/Push profile；门户关联与同测试账户双客户端尚未核验。证书存在，不能重复要求注册资源。
+
+[中文执行报告](ICLOUD_SYNC_G1_EXECUTION_ZH.md) · [环境与最小清单](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md) · [wire/Production前置门禁](ICLOUD_SYNC_G1_WIRE_SCHEMA_ZH.md) · [独立Review](ICLOUD_SYNC_G1_REVIEW_ZH.md)。真实Dev八项/账户切换/Production全部NOT_RUN，G1整体未完成。当前只交付新Draft PR，保留`BLOCKED_ENV`；不进入G2/G3、merge/tag/Archive/TestFlight/Production。恢复条件为合格Development签名与隔离双客户端；之后继续真实矩阵，不能用本地或CI代替。
+
+---
+
+以下历史交接保留，不替代当前G1边界。
+
 # 2026-11-05 iCloud Sync V1 — AUDIT_COMPLETE / IMPLEMENTATION_NOT_STARTED
 
 本轮 Owner 授权仅架构审计与隔离可行性验证，基线为远端 Draft PR #14 最新 HEAD `96f72339a1a3082c43018e06d6115dd93df1df97`，独立分支 `codex/icloud-sync-v1-audit`。没有使用 main，没有修改产品源码/工程/历史 schema/CI，没有操作真实用户库。
