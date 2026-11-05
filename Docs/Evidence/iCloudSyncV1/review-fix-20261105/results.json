@@ -1,0 +1,69 @@
+{
+  "reviewed_sha": "e036b01e971de9a9f0538d9a5dedfefc099bfc65",
+  "product_base": "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "original_protocol_blob": "c1ef57fc8c41aae1756fc68ee020aa1ee95e172b",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "results": [
+    {
+      "label": "baseline-original",
+      "command": [
+        "python3",
+        "protocol_probe.py"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0
+    },
+    {
+      "label": "baseline-r1",
+      "command": [
+        "python3",
+        "reviewer_regressions.py"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1
+    },
+    {
+      "label": "fixed-original",
+      "command": [
+        "python3",
+        "protocol_probe.py"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0
+    },
+    {
+      "label": "fixed-r1",
+      "command": [
+        "python3",
+        "reviewer_regressions.py"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0
+    },
+    {
+      "label": "fixed-projection",
+      "command": [
+        "python3",
+        "review_projection_tests.py"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0
+    }
+  ],
+  "native_rerun": false,
+  "real_cloud": false,
+  "production_portal_verified": false,
+  "scope": "Only Docs and isolated Python protocol probes; corrected 16 + 4 + 14 = 34 tests.",
+  "sha256": {
+    "Docs/PoC/iCloudSyncV1/protocol_probe.py": "3adb1161bc0a0ca037e4604277d8cab7c184c8acca026ef2ad5e8cff16c4484b",
+    "Docs/PoC/iCloudSyncV1/review_projection_tests.py": "3901a1fc83f3088a57f69f29f6f6db0d61a4c42474db5e80c1202683a42063ab",
+    "Docs/PoC/iCloudSyncV1/protocol_rules.py": "b9ac7f5bfbbd2df0c64f9b07f75f718ab4d6f354d32f0f09791ebe9f8f97a62d",
+    "Docs/PoC/iCloudSyncV1/reviewer_regressions.py": "36e2e2e5a4a6bdedffab9226a1bbec0eaf211ae948c4d9ee0eb88dd704bf7e3e",
+    "Docs/Evidence/iCloudSyncV1/review-fix-20261105/fixed-projection.log": "28c4be1f88a567fdb60de147033418502b93715b519c7b27019b5165f2e67929",
+    "Docs/Evidence/iCloudSyncV1/review-fix-20261105/baseline-r1.log": "700ec0e1d10d8fd42ed87e8ba8231760d949dafd1bb758a55c2146c6c23edd05",
+    "Docs/Evidence/iCloudSyncV1/review-fix-20261105/fixed-r1.log": "9f83219145be73875be9d2bd36a9b657aa52d1e783933b616f7e913f08db29c3",
+    "Docs/Evidence/iCloudSyncV1/review-fix-20261105/fixed-original.log": "bded49965c34d59caabb11f6a368ec8d1401555c39bd048ad5ca296c90ae4c7b",
+    "Docs/Evidence/iCloudSyncV1/review-fix-20261105/baseline-original.log": "0ed2b5af8112ba3903cc104d999d09019c1a4d0dc2fc018e8e93589ebf91a4d7"
+  }
+}

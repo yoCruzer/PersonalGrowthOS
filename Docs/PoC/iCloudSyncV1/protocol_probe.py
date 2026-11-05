@@ -6,6 +6,7 @@ prove only local protocol properties; they make no claim about server delivery.
 """
 import hashlib, itertools, json, pathlib, sqlite3, tempfile, unittest
 from dataclasses import dataclass, asdict
+from protocol_rules import publishable_heads, project
 
 @dataclass(frozen=True)
 class Mutation:
@@ -54,15 +55,9 @@ class Replica:
         if (account,epoch) != (self.account,self.epoch):raise ValueError('stale account acknowledgement')
         with self.db:self.db.execute('DELETE FROM outbox WHERE op=?',(op,))
     def heads(self, entity):
-        rows=self.rows();by_id={m.op:m for m in rows}
-        # Unknown versions, missing ancestry or required entities stay durable but
-        # invisible to business consumers. They must not cause destructive repair.
-        def ready(m, seen=frozenset()):
-            if m.op in seen:return False
-            return m.version == 1 and all(p in by_id and ready(by_id[p],seen|{m.op}) for p in m.parents) and all(any(r.entity==e and not r.deleted and r.version==1 for r in rows) for e in m.requires)
-        valid=[m for m in rows if m.entity==entity and ready(m)]
-        ancestors={p for m in valid for p in m.parents}
-        return sorted((m for m in valid if m.op not in ancestors),key=lambda m:m.op)
+        return publishable_heads(self.rows(), entity)
+    def projection(self, entity):
+        return project(self.rows(), entity)
     def candidates(self, key):
         return sorted(m.op for e in {m.entity for m in self.rows()} for m in self.heads(e) if m.business_key==key and not m.deleted)
     def put_blob(self, expected, data):
@@ -110,10 +105,10 @@ class ProtocolTests(unittest.TestCase):
         self.r.write(Mutation('resolve','entry',('a','b'),'A + B'))
         self.assertEqual([(m.op,m.body) for m in self.r.heads('entry')],[('resolve','A + B')])
         self.assertEqual({m.body for m in self.r.rows()},{'A','B','A + B'})
-    def test_07_same_day_distinct_ids_are_conflicts_not_double_facts(self):
+    def test_07_same_business_key_retains_candidates_only(self):
         self.r.receive([Mutation('a','sleepA',body='unknown',business_key='sleep:2026-01-01'),Mutation('b','sleepB',body='8h',business_key='sleep:2026-01-01')],1)
         self.assertEqual(self.r.candidates('sleep:2026-01-01'),['a','b'])
-    def test_08_stable_occurrence_identity_replay_deduplicates(self):
+    def test_08_exact_mutation_replay_deduplicates_and_collision_rejects(self):
         m=Mutation('complete-A','todo:series1:42',body='completed')
         self.r.receive([m,m],1);self.r.receive([m],2)
         self.assertEqual(len(self.r.rows()),1)
@@ -127,7 +122,7 @@ class ProtocolTests(unittest.TestCase):
     def test_10_unknown_wire_version_is_retained_not_applied(self):
         self.r.receive([Mutation('future','entry',body='unknown bytes',version=99)],1)
         self.assertEqual(self.r.heads('entry'),[]);self.assertEqual(self.r.rows()[0].body,'unknown bytes')
-    def test_11_account_epoch_rejects_late_callbacks(self):
+    def test_11_fixed_account_epoch_rejects_callbacks_not_rebinding(self):
         self.r.write(Mutation('offline','entry',body='private A'))
         self.r.epoch=2
         with self.assertRaises(ValueError):self.r.receive([Mutation('late','entry')],99,epoch=1)
@@ -145,7 +140,7 @@ class ProtocolTests(unittest.TestCase):
     def test_14_wall_clock_cannot_choose_winner(self):
         self.r.receive([Mutation('a','entry',body='timestamp 2099'),Mutation('b','entry',body='timestamp 1970')],1)
         self.assertEqual({m.op for m in self.r.heads('entry')},{'a','b'})
-    def test_15_restore_identity_does_not_override_newer_tombstone(self):
+    def test_15_exact_old_mutation_replay_does_not_override_tombstone(self):
         original=Mutation('old','entry',body='backup')
         self.r.receive([original,Mutation('del','entry',('old',),deleted=True)],1)
         self.r.receive([original],2)
