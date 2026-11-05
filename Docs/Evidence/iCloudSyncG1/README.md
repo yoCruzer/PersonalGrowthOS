@@ -13,3 +13,5 @@
 - `commands.json`：本机命令与退出码索引；`manifest.json`：证据与最终源文件SHA256。原生日志来自实现过程，工作树dirty=true、parent HEAD为304a919；最终源码hash可与后续实现commit/CI核对，不能冒称所有早期日志对应最终源码。
 
 实际Development/Production/TestFlight证据均不存在，不能从本目录推导云端通过。完整状态见[中文报告](../../ICLOUD_SYNC_G1_EXECUTION_ZH.md)。
+
+定向远端CI：`ci-42067859222/`，实际push HEAD099ff17的33/33及iOS unsigned构建通过，详见accepted.json；之后交接仅文档/证据。原始日志尾空白保持，源码/报告范围diff检查通过。

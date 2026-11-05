@@ -1,0 +1,29 @@
+﻿2026-11-05T16:46:21.2227250Z Current runner version: '2.338.2'
+2026-11-05T16:46:21.2250430Z ##[group]Runner Image Provisioner
+2026-11-05T16:46:21.2251290Z Hosted Compute Agent
+2026-11-05T16:46:21.2251760Z Version: 20261103.629
+2026-11-05T16:46:21.2252250Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-05T16:46:21.2252790Z Build Date: 2026-11-03T17:26:59Z
+2026-11-05T16:46:21.2253770Z Region: westus
+2026-11-05T16:46:21.2254150Z Cloud: MacCloud
+2026-11-05T16:46:21.2254650Z ##[endgroup]
+2026-11-05T16:46:21.2255840Z ##[group]Operating System
+2026-11-05T16:46:21.2256310Z macOS
+2026-11-05T16:46:21.2256660Z 27.0.1
+2026-11-05T16:46:21.2257070Z 26A434
+2026-11-05T16:46:21.2257580Z ##[endgroup]
+2026-11-05T16:46:21.2258120Z ##[group]Runner Image
+2026-11-05T16:46:21.2258920Z Image: xcode-27-arm64
+2026-11-05T16:46:21.2259520Z Version: 20261104.0337.1
+2026-11-05T16:46:21.2260860Z Included Software: https://github.com/actions/runner-images/blob/xcode-27-arm64/20261104.0337/images/macos/xcode-27-arm64-Readme.md
+2026-11-05T16:46:21.2262760Z Image Release: https://github.com/actions/runner-images/releases/tag/xcode-27-arm64%2F20261104.0337
+2026-11-05T16:46:21.2263620Z ##[endgroup]
+2026-11-05T16:46:21.2264680Z ##[group]GITHUB_TOKEN Permissions
+2026-11-05T16:46:21.2266420Z Contents: read
+2026-11-05T16:46:21.2266800Z Metadata: read
+2026-11-05T16:46:21.2267130Z ##[endgroup]
+2026-11-05T16:46:21.2268740Z Secret source: Actions
+2026-11-05T16:46:24.5644160Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +099ff1766854f8731fc82aeabe670a9f22dc26df:refs/remotes/origin/codex/icloud-sync-g1
+2026-11-05T16:46:27.4320060Z  * [new ref]         099ff1766854f8731fc82aeabe670a9f22dc26df -> origin/codex/icloud-sync-g1
+2026-11-05T16:46:27.4678010Z 099ff1766854f8731fc82aeabe670a9f22dc26df
+2026-11-05T16:46:27.8862340Z 099ff1766854f8731fc82aeabe670a9f22dc26df

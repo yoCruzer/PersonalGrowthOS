@@ -286,6 +286,27 @@
       "exitCode": 1,
       "expected": "unsigned must fail",
       "log": "offline-20261106/unsigned-signing-negative.json"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "-project",
+        "Experiments/iCloudSyncG1/SyncLab.xcodeproj",
+        "-scheme",
+        "SyncLab",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "macosx",
+        "-destination",
+        "platform=macOS",
+        "-derivedDataPath",
+        "/private/tmp/pgos-g1-mac-build",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "exitCode": 0,
+      "log": "offline-20261106/mac-final-04.log"
     }
   ]
 }

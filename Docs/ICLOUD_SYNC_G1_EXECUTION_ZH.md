@@ -46,4 +46,6 @@ quota/rateLimit/部分成功只属于**显式故障注入**；token过期、zone
 
 恢复真实验证时按[README](../Experiments/iCloudSyncG1/README.md)核验Development签名并设置新的合成dataset，执行八项矩阵。只有这些真实Dev证据通过，才可改为`DEV_PROBE_PASSED_PRODUCTION_GATE_PENDING`。当前不进入G2/G3，不merge、tag、Archive、TestFlight、Production部署/写入或云重置。
 
-远端定向CI与Draft PR链接在最终交接补录；本文件当前不把待运行CI标成通过。完整目标仍未完成，离线交付不替代真实服务验收。
+实现提交`099ff1766854f8731fc82aeabe670a9f22dc26df`已普通推送。定向[CI run42067859222](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42067859222) **PASS**：33/33原生测试、unsigned iOS Simulator Debug构建；实际checkout为同一push HEAD。环境为macOS27.0.1、Xcode27.1(27A9275)、xcode-27-arm64 image20261104.0337.1。原始产物/checkout摘录及摘要见[CI证据](Evidence/iCloudSyncG1/ci-42067859222/accepted.json)。最终Mac本地构建也在该源码上通过。
+
+后续交接提交只含文档/证据，使用`[skip ci]`避免触发与隔离改动无关的产品全量回归；已通过的实验源码及workflow不变，明确不是发布候选。源码/报告的`git diff --check`通过；全范围检查在保留的原始Xcode输出上报告尾空白/末尾空行，按原字节保留，不伪称无提示。完整目标仍未完成，离线交付不替代真实服务验收。

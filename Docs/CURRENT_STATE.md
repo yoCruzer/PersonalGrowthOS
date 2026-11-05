@@ -2,7 +2,7 @@
 
 Owner已注册正式/SyncLab App与容器，并选择本轮仅离线工程与门禁交付。已从指定PR #15 HEAD `304a91984f17efc2c61b179f0a9e85a14ba87d95`创建`codex/icloud-sync-g1`，隔离worktree `/private/tmp/PersonalGrowthOS-icloud-g1`；原工作区未知修改保持。
 
-独立SyncLab iOS/Mac工程、SwiftData事实/outbox/inbox、CKSyncEngine/CKAsset接口、冲突/恢复门禁与合成快照已实现；正式产品源码、数据库、App Group及发布流程未改。协议34项及最终原生33项通过；独立进程退出/重放与独立Review修复完成，原失败证据保留。签名预检明确缺SyncLab iCloud/Push profile；门户关联与同测试账户双客户端尚未核验。证书存在，不能重复要求注册资源。
+独立SyncLab iOS/Mac工程、SwiftData事实/outbox/inbox、CKSyncEngine/CKAsset接口、冲突/恢复门禁与合成快照已实现；正式产品源码、数据库、App Group及发布流程未改。协议34项及最终原生33项通过；实现提交`099ff1766854f8731fc82aeabe670a9f22dc26df`的[定向CI](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42067859222)33/33及unsigned iOS构建通过；独立进程退出/重放与独立Review修复完成，原失败证据保留。签名预检明确缺SyncLab iCloud/Push profile；门户关联与同测试账户双客户端尚未核验。证书存在，不能重复要求注册资源。
 
 [中文执行报告](ICLOUD_SYNC_G1_EXECUTION_ZH.md) · [环境与最小清单](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md) · [wire/Production前置门禁](ICLOUD_SYNC_G1_WIRE_SCHEMA_ZH.md) · [独立Review](ICLOUD_SYNC_G1_REVIEW_ZH.md)。真实Dev八项/账户切换/Production全部NOT_RUN，G1整体未完成。当前只交付新Draft PR，保留`BLOCKED_ENV`；不进入G2/G3、merge/tag/Archive/TestFlight/Production。恢复条件为合格Development签名与隔离双客户端；之后继续真实矩阵，不能用本地或CI代替。
 
