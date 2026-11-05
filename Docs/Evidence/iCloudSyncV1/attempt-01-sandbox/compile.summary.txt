@@ -1,0 +1,4 @@
+Original compile exit: 1
+Cause: nested sandbox denied Swift macro plugin. No native tests ran.
+Uncompressed log SHA256: 17b06dbb26ab7ef10788d6826e9c0e618cea9e256b4d7f7e5cae3620e2f16061
+sandbox-exec: sandbox_apply: Operation not permitted

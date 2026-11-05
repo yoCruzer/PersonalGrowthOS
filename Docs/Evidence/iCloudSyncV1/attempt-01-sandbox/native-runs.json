@@ -1,0 +1,25 @@
+{
+  "dateUTC": "2026-11-05T03:19:18.584476+00:00",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "work": "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-5rg49ywv",
+  "baseline": "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "commands": [
+    {
+      "label": "compile",
+      "command": [
+        "xcrun",
+        "swiftc",
+        "-parse-as-library",
+        "-module-cache-path",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-5rg49ywv/cache",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-5rg49ywv/Models.swift",
+        "/private/tmp/PersonalGrowthOS-icloud-audit/Docs/PoC/iCloudSyncV1/native.swift",
+        "-o",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-5rg49ywv/audit"
+      ],
+      "exitCode": 1,
+      "expectedExit": 0
+    }
+  ],
+  "network": "No account lookup or CK operation invoked; incompatible shape stops at native model preflight."
+}

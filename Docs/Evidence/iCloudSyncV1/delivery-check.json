@@ -1,0 +1,17 @@
+{
+  "dateUTC": "2026-11-05T03:34:19.983563+00:00",
+  "baseline": "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "basePR": 14,
+  "baseBranch": "codex/household-net-worth-v1",
+  "auditBranch": "codex/icloud-sync-v1-audit",
+  "stage": "precommit",
+  "nonDocsTreeIdentical": true,
+  "localMarkdownLinksValid": true,
+  "productTests": "NOT_RUN; docs-only audit",
+  "cloudIntegration": "NOT_RUN",
+  "publish": "ordinary audit branch push and Draft PR only; no tags or release",
+  "commitMarkers": [
+    "skip ci",
+    "ci skip"
+  ]
+}

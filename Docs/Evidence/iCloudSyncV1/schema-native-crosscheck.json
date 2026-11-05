@@ -1,0 +1,7 @@
+{
+  "exactRequiredAttributeSetMatch": true,
+  "requiredAttributes": 221,
+  "uniqueConstraints": 52,
+  "nonOptionalRelationship": "Entry.images",
+  "scope": "Generated V16 storage declarations; native macOS SwiftData/CoreData validation, not full iOS app or historical migration"
+}

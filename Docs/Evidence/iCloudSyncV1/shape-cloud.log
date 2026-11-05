@@ -1,0 +1,324 @@
+CoreData: error: Store failed to load.  <NSPersistentStoreDescription: 0x7956cbe250> (type: SQLite, url: file:///var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/shape-cloud/shape.sqlite) with error = Error Domain=NSCocoaErrorDomain Code=134060 "A Core Data error occurred." UserInfo={NSLocalizedFailureReason=CloudKit integration requires that all attributes be optional, or have a default value set. The following attributes are marked non-optional but do not have a default value:
+BodyReferenceSettings: id
+BodyReferenceSettings: referenceRawValue
+CaptureImportReceipt: id
+CaptureImportReceipt: importedAt
+Entry: createdAt
+Entry: id
+Entry: kindRawValue
+Entry: occurredAt
+Entry: statusRawValue
+Entry: updatedAt
+EntryExternalSource: encodedSource
+EntryExternalSource: entryID
+EntryFollowUp: body
+EntryFollowUp: createdAt
+EntryFollowUp: entryID
+EntryFollowUp: id
+EntryFollowUp: updatedAt
+EntryPin: entryID
+EntryPin: id
+EntryPin: pinnedAt
+Goal: createdAt
+Goal: id
+Goal: kindRawValue
+Goal: normalizedTitle
+Goal: statusRawValue
+Goal: title
+Goal: updatedAt
+GoalLifecycleEvent: createdAt
+GoalLifecycleEvent: goalID
+GoalLifecycleEvent: id
+GoalLifecycleEvent: kindRawValue
+GoalLifecycleEvent: occurredAt
+Habit: createdAt
+Habit: id
+Habit: name
+Habit: normalizedName
+Habit: statusRawValue
+Habit: updatedAt
+HabitConfiguration: habitID
+HabitConfiguration: id
+HabitConfiguration: recordingModeRawValue
+HabitConfiguration: updatedAt
+HabitLifecycleEvent: createdAt
+HabitLifecycleEvent: habitID
+HabitLifecycleEvent: id
+HabitLifecycleEvent: kindRawValue
+HabitLifecycleEvent: occurredAt
+HabitLifecycleEvent: occurredLocalDay
+HabitLog: createdAt
+HabitLog: habitID
+HabitLog: id
+HabitLog: isCompleted
+HabitLog: occurredAt
+HabitLogDayMetadata: habitLogID
+HabitLogDayMetadata: id
+HabitLogDayMetadata: localDayIdentifier
+HabitLogDayMetadata: localTimeZoneIdentifier
+HabitLogDayMetadata: provenanceRawValue
+HabitPlanRevision: createdAt
+HabitPlanRevision: effectiveLocalDay
+HabitPlanRevision: goalRawValue
+HabitPlanRevision: habitID
+HabitPlanRevision: id
+HabitPlanRevision: originRawValue
+HabitPlanRevision: periodRawValue
+HabitPlanRevision: recordingModeRawValue
+HabitPlanRevision: trustCoverageStartLocalDay
+HabitPlanRevision: weekdaysRawValue
+ImageMetadata: byteCount
+ImageMetadata: checksum
+ImageMetadata: contentType
+ImageMetadata: createdAt
+ImageMetadata: id
+ImageMetadata: originalFilename
+ImageMetadata: pixelHeight
+ImageMetadata: pixelWidth
+ImageMetadata: relativePath
+ImageMetadata: sortOrder
+ImageMetadata: updatedAt
+ImportantDay: createdAt
+ImportantDay: id
+ImportantDay: isArchived
+ImportantDay: notes
+ImportantDay: preferencesData
+ImportantDay: revision
+ImportantDay: ruleData
+ImportantDay: title
+ImportantDay: updatedAt
+ImportantDayCover: byteCount
+ImportantDayCover: checksum
+ImportantDayCover: contentType
+ImportantDayCover: createdAt
+ImportantDayCover: dayID
+ImportantDayCover: id
+ImportantDayCover: originalFilename
+ImportantDayCover: pixelHeight
+ImportantDayCover: pixelWidth
+ImportantDayCover: relativePath
+ImportantDayEntryLink: createdAt
+ImportantDayEntryLink: dayID
+ImportantDayEntryLink: entryID
+ImportantDayEntryLink: id
+ImportantDayEntryLink: pairKey
+ImportantDayTodoLink: createdAt
+ImportantDayTodoLink: dayID
+ImportantDayTodoLink: dayRevisionAtLink
+ImportantDayTodoLink: id
+ImportantDayTodoLink: pairKey
+ImportantDayTodoLink: taskID
+InvestmentActivity: id
+InvestmentActivity: isArchived
+InvestmentActivity: name
+InvestmentActivity: participantID
+InvestmentOperation: activityID
+InvestmentOperation: createdAt
+InvestmentOperation: id
+InvestmentOperation: participantID
+InvestmentOperation: payload
+InvestmentOperation: recorderID
+InvestmentOperation: revision
+InvestmentOperation: updatedAt
+InvestmentParticipant: id
+InvestmentParticipant: isArchived
+InvestmentParticipant: isDefault
+InvestmentParticipant: name
+InvestmentParticipant: sortOrder
+InvestmentSession: activityID
+InvestmentSession: createdAt
+InvestmentSession: id
+InvestmentSession: participantID
+InvestmentSession: recorderID
+InvestmentSession: revision
+InvestmentSession: updatedAt
+InvestmentSession: valueData
+NetWorthItem: id
+NetWorthItem: payload
+NetWorthSnapshot: id
+NetWorthSnapshot: payload
+ObjectLink: createdAt
+ObjectLink: deduplicationKey
+ObjectLink: id
+ObjectLink: kindRawValue
+ObjectLink: sourceID
+ObjectLink: sourceTypeRawValue
+ObjectLink: targetID
+ObjectLink: targetTypeRawValue
+SleepGoalRule: createdAt
+SleepGoalRule: effectiveDay
+SleepGoalRule: hasTakenEffect
+SleepGoalRule: id
+SleepGoalRule: observationTimeZoneID
+SleepGoalRule: observedAt
+SleepRecord: createdAt
+SleepRecord: id
+SleepRecord: observedAt
+SleepRecord: revision
+SleepRecord: timeZoneID
+SleepRecord: updatedAt
+SleepRecord: valueData
+SleepRecord: wakeDay
+Tag: createdAt
+Tag: displayName
+Tag: id
+Tag: normalizedName
+Tag: updatedAt
+TodoList: createdAt
+TodoList: id
+TodoList: name
+TodoList: updatedAt
+TodoReminderDeviceRecord: channelRawValue
+TodoReminderDeviceRecord: fireAt
+TodoReminderDeviceRecord: id
+TodoReminderDeviceRecord: intentGeneration
+TodoReminderDeviceRecord: phaseRawValue
+TodoReminderDeviceRecord: taskID
+TodoReminderIntent: channelRawValue
+TodoReminderIntent: generation
+TodoReminderIntent: id
+TodoReminderIntent: isInstanceOverride
+TodoReminderIntent: revision
+TodoSeries: anchorDay
+TodoSeries: createdAt
+TodoSeries: frequencyRawValue
+TodoSeries: id
+TodoSeries: isImportant
+TodoSeries: isStopped
+TodoSeries: notes
+TodoSeries: title
+TodoSeries: updatedAt
+TodoSeriesPreferences: id
+TodoSeriesPreferences: reminderChannelRawValue
+TodoTask: createdAt
+TodoTask: id
+TodoTask: isImportant
+TodoTask: notes
+TodoTask: revision
+TodoTask: stateRawValue
+TodoTask: title
+TodoTask: updatedAt
+TodoTaskEvent: afterValue
+TodoTaskEvent: createdAt
+TodoTaskEvent: id
+TodoTaskEvent: kindRawValue
+TodoTaskEvent: occurredAt
+TodoTaskEvent: sequence
+TodoTaskEvent: taskID
+TodoTaskSource: entryID
+TodoTaskSource: id
+TodoTaskSource: taskID
+WeeklyReview: createdAt
+WeeklyReview: id
+WeeklyReview: isCompleted
+WeeklyReview: periodEnd
+WeeklyReview: periodStart
+WeeklyReview: updatedAt
+WeeklyReview: weekIdentifier
+WeightRecord: createdAt
+WeightRecord: id
+WeightRecord: recordedAt
+WeightRecord: updatedAt
+WeightRecord: weightKilograms
+CloudKit integration requires that all relationships be optional, the following are not:
+Entry: images
+CloudKit integration does not support unique constraints. The following entities are constrained:
+BodyReferenceSettings: id
+CaptureImportReceipt: id
+Entry: id
+EntryExternalSource: entryID
+EntryFollowUp: id
+EntryPin: entryID
+EntryPin: id
+Goal: id
+GoalLifecycleEvent: id
+Habit: id
+HabitConfiguration: habitID
+HabitConfiguration: id
+HabitLifecycleEvent: id
+HabitLog: id
+HabitLogDayMetadata: habitLogID
+HabitLogDayMetadata: id
+HabitPlanRevision: id
+ImageMetadata: id
+ImportantDay: id
+ImportantDayCover: dayID
+ImportantDayCover: id
+ImportantDayEntryLink: id
+ImportantDayEntryLink: pairKey
+ImportantDayTodoLink: id
+ImportantDayTodoLink: pairKey
+InvestmentActivity: id
+InvestmentOperation: id
+InvestmentParticipant: id
+InvestmentSession: id
+NetWorthItem: id
+NetWorthSnapshot: id
+ObjectLink: deduplicationKey
+ObjectLink: id
+SleepGoalRule: effectiveDay
+SleepGoalRule: id
+SleepRecord: id
+SleepRecord: wakeDay
+Tag: id
+Tag: normalizedName
+TodoList: id
+TodoReminderDeviceRecord: id
+TodoReminderIntent: id
+TodoSeries: id
+TodoSeriesPreferences: id
+TodoTask: id
+TodoTask: occurrenceKey
+TodoTaskEvent: id
+TodoTaskSource: id
+TodoTaskSource: taskID
+WeeklyReview: id
+WeeklyReview: weekIdentifier
+WeightRecord: id} with userInfo {
+    NSLocalizedFailureReason = "CloudKit integration requires that all attributes be optional, or have a default value set. The following attributes are marked non-optional but do not have a default value:\nBodyReferenceSettings: id\nBodyReferenceSettings: referenceRawValue\nCaptureImportReceipt: id\nCaptureImportReceipt: importedAt\nEntry: createdAt\nEntry: id\nEntry: kindRawValue\nEntry: occurredAt\nEntry: statusRawValue\nEntry: updatedAt\nEntryExternalSource: encodedSource\nEntryExternalSource: entryID\nEntryFollowUp: body\nEntryFollowUp: createdAt\nEntryFollowUp: entryID\nEntryFollowUp: id\nEntryFollowUp: updatedAt\nEntryPin: entryID\nEntryPin: id\nEntryPin: pinnedAt\nGoal: createdAt\nGoal: id\nGoal: kindRawValue\nGoal: normalizedTitle\nGoal: statusRawValue\nGoal: title\nGoal: updatedAt\nGoalLifecycleEvent: createdAt\nGoalLifecycleEvent: goalID\nGoalLifecycleEvent: id\nGoalLifecycleEvent: kindRawValue\nGoalLifecycleEvent: occurredAt\nHabit: createdAt\nHabit: id\nHabit: name\nHabit: normalizedName\nHabit: statusRawValue\nHabit: updatedAt\nHabitConfiguration: habitID\nHabitConfiguration: id\nHabitConfiguration: recordingModeRawValue\nHabitConfiguration: updatedAt\nHabitLifecycleEvent: createdAt\nHabitLifecycleEvent: habitID\nHabitLifecycleEvent: id\nHabitLifecycleEvent: kindRawValue\nHabitLifecycleEvent: occurredAt\nHabitLifecycleEvent: occurredLocalDay\nHabitLog: createdAt\nHabitLog: habitID\nHabitLog: id\nHabitLog: isCompleted\nHabitLog: occurredAt\nHabitLogDayMetadata: habitLogID\nHabitLogDayMetadata: id\nHabitLogDayMetadata: localDayIdentifier\nHabitLogDayMetadata: localTimeZoneIdentifier\nHabitLogDayMetadata: provenanceRawValue\nHabitPlanRevision: createdAt\nHabitPlanRevision: effectiveLocalDay\nHabitPlanRevision: goalRawValue\nHabitPlanRevision: habitID\nHabitPlanRevision: id\nHabitPlanRevision: originRawValue\nHabitPlanRevision: periodRawValue\nHabitPlanRevision: recordingModeRawValue\nHabitPlanRevision: trustCoverageStartLocalDay\nHabitPlanRevision: weekdaysRawValue\nImageMetadata: byteCount\nImageMetadata: checksum\nImageMetadata: contentType\nImageMetadata: createdAt\nImageMetadata: id\nImageMetadata: originalFilename\nImageMetadata: pixelHeight\nImageMetadata: pixelWidth\nImageMetadata: relativePath\nImageMetadata: sortOrder\nImageMetadata: updatedAt\nImportantDay: createdAt\nImportantDay: id\nImportantDay: isArchived\nImportantDay: notes\nImportantDay: preferencesData\nImportantDay: revision\nImportantDay: ruleData\nImportantDay: title\nImportantDay: updatedAt\nImportantDayCover: byteCount\nImportantDayCover: checksum\nImportantDayCover: contentType\nImportantDayCover: createdAt\nImportantDayCover: dayID\nImportantDayCover: id\nImportantDayCover: originalFilename\nImportantDayCover: pixelHeight\nImportantDayCover: pixelWidth\nImportantDayCover: relativePath\nImportantDayEntryLink: createdAt\nImportantDayEntryLink: dayID\nImportantDayEntryLink: entryID\nImportantDayEntryLink: id\nImportantDayEntryLink: pairKey\nImportantDayTodoLink: createdAt\nImportantDayTodoLink: dayID\nImportantDayTodoLink: dayRevisionAtLink\nImportantDayTodoLink: id\nImportantDayTodoLink: pairKey\nImportantDayTodoLink: taskID\nInvestmentActivity: id\nInvestmentActivity: isArchived\nInvestmentActivity: name\nInvestmentActivity: participantID\nInvestmentOperation: activityID\nInvestmentOperation: createdAt\nInvestmentOperation: id\nInvestmentOperation: participantID\nInvestmentOperation: payload\nInvestmentOperation: recorderID\nInvestmentOperation: revision\nInvestmentOperation: updatedAt\nInvestmentParticipant: id\nInvestmentParticipant: isArchived\nInvestmentParticipant: isDefault\nInvestmentParticipant: name\nInvestmentParticipant: sortOrder\nInvestmentSession: activityID\nInvestmentSession: createdAt\nInvestmentSession: id\nInvestmentSession: participantID\nInvestmentSession: recorderID\nInvestmentSession: revision\nInvestmentSession: updatedAt\nInvestmentSession: valueData\nNetWorthItem: id\nNetWorthItem: payload\nNetWorthSnapshot: id\nNetWorthSnapshot: payload\nObjectLink: createdAt\nObjectLink: deduplicationKey\nObjectLink: id\nObjectLink: kindRawValue\nObjectLink: sourceID\nObjectLink: sourceTypeRawValue\nObjectLink: targetID\nObjectLink: targetTypeRawValue\nSleepGoalRule: createdAt\nSleepGoalRule: effectiveDay\nSleepGoalRule: hasTakenEffect\nSleepGoalRule: id\nSleepGoalRule: observationTimeZoneID\nSleepGoalRule: observedAt\nSleepRecord: createdAt\nSleepRecord: id\nSleepRecord: observedAt\nSleepRecord: revision\nSleepRecord: timeZoneID\nSleepRecord: updatedAt\nSleepRecord: valueData\nSleepRecord: wakeDay\nTag: createdAt\nTag: displayName\nTag: id\nTag: normalizedName\nTag: updatedAt\nTodoList: createdAt\nTodoList: id\nTodoList: name\nTodoList: updatedAt\nTodoReminderDeviceRecord: channelRawValue\nTodoReminderDeviceRecord: fireAt\nTodoReminderDeviceRecord: id\nTodoReminderDeviceRecord: intentGeneration\nTodoReminderDeviceRecord: phaseRawValue\nTodoReminderDeviceRecord: taskID\nTodoReminderIntent: channelRawValue\nTodoReminderIntent: generation\nTodoReminderIntent: id\nTodoReminderIntent: isInstanceOverride\nTodoReminderIntent: revision\nTodoSeries: anchorDay\nTodoSeries: createdAt\nTodoSeries: frequencyRawValue\nTodoSeries: id\nTodoSeries: isImportant\nTodoSeries: isStopped\nTodoSeries: notes\nTodoSeries: title\nTodoSeries: updatedAt\nTodoSeriesPreferences: id\nTodoSeriesPreferences: reminderChannelRawValue\nTodoTask: createdAt\nTodoTask: id\nTodoTask: isImportant\nTodoTask: notes\nTodoTask: revision\nTodoTask: stateRawValue\nTodoTask: title\nTodoTask: updatedAt\nTodoTaskEvent: afterValue\nTodoTaskEvent: createdAt\nTodoTaskEvent: id\nTodoTaskEvent: kindRawValue\nTodoTaskEvent: occurredAt\nTodoTaskEvent: sequence\nTodoTaskEvent: taskID\nTodoTaskSource: entryID\nTodoTaskSource: id\nTodoTaskSource: taskID\nWeeklyReview: createdAt\nWeeklyReview: id\nWeeklyReview: isCompleted\nWeeklyReview: periodEnd\nWeeklyReview: periodStart\nWeeklyReview: updatedAt\nWeeklyReview: weekIdentifier\nWeightRecord: createdAt\nWeightRecord: id\nWeightRecord: recordedAt\nWeightRecord: updatedAt\nWeightRecord: weightKilograms\nCloudKit integration requires that all relationships be optional, the following are not:\nEntry: images\nCloudKit integration does not support unique constraints. The following entities are constrained:\nBodyReferenceSettings: id\nCaptureImportReceipt: id\nEntry: id\nEntryExternalSource: entryID\nEntryFollowUp: id\nEntryPin: entryID\nEntryPin: id\nGoal: id\nGoalLifecycleEvent: id\nHabit: id\nHabitConfiguration: habitID\nHabitConfiguration: id\nHabitLifecycleEvent: id\nHabitLog: id\nHabitLogDayMetadata: habitLogID\nHabitLogDayMetadata: id\nHabitPlanRevision: id\nImageMetadata: id\nImportantDay: id\nImportantDayCover: dayID\nImportantDayCover: id\nImportantDayEntryLink: id\nImportantDayEntryLink: pairKey\nImportantDayTodoLink: id\nImportantDayTodoLink: pairKey\nInvestmentActivity: id\nInvestmentOperation: id\nInvestmentParticipant: id\nInvestmentSession: id\nNetWorthItem: id\nNetWorthSnapshot: id\nObjectLink: deduplicationKey\nObjectLink: id\nSleepGoalRule: effectiveDay\nSleepGoalRule: id\nSleepRecord: id\nSleepRecord: wakeDay\nTag: id\nTag: normalizedName\nTodoList: id\nTodoReminderDeviceRecord: id\nTodoReminderIntent: id\nTodoSeries: id\nTodoSeriesPreferences: id\nTodoTask: id\nTodoTask: occurrenceKey\nTodoTaskEvent: id\nTodoTaskSource: id\nTodoTaskSource: taskID\nWeeklyReview: id\nWeeklyReview: weekIdentifier\nWeightRecord: id";
+}
+*** Terminating app due to uncaught exception 'NSInternalInconsistencyException', reason: 'Invalid parameter not satisfying: bundleIdentifier != nil'
+*** First throw call stack:
+(
+	0   CoreFoundation                      0x000000018f539d0c __exceptionPreprocess + 176
+	1   libobjc.A.dylib                     0x000000018efaabbc objc_exception_throw + 88
+	2   Foundation                          0x0000000190c4aa8c -[NSCalendarDate initWithCoder:] + 0
+	3   PushKit                             0x00000001ae2fb7e4 -[PKUserNotificationsRemoteNotificationServiceConnection initWithBundleIdentifier:].cold.1 + 60
+	4   PushKit                             0x00000001ae2f7a1c -[PKUserNotificationsRemoteNotificationServiceConnection initWithBundleIdentifier:] + 404
+	5   PushKit                             0x00000001ae2f7854 __72+[PKUserNotificationsRemoteNotificationServiceConnection sharedInstance]_block_invoke + 80
+	6   libdispatch.dylib                   0x000000018f2686c0 _dispatch_client_callout + 16
+	7   libdispatch.dylib                   0x000000018f2523a0 _dispatch_once_callout + 32
+	8   PushKit                             0x00000001ae2f77f8 +[PKUserNotificationsRemoteNotificationServiceConnection sharedInstance] + 44
+	9   PushKit                             0x00000001ae2f7710 -[PKPushRegistry _registerForPushType:] + 392
+	10  PushKit                             0x00000001ae2f7448 __38-[PKPushRegistry setDesiredPushTypes:]_block_invoke + 176
+	11  libdispatch.dylib                   0x000000018f2686c0 _dispatch_client_callout + 16
+	12  libdispatch.dylib                   0x000000018f25e9f8 _dispatch_lane_barrier_sync_invoke_and_complete + 56
+	13  PushKit                             0x00000001ae2f7378 -[PKPushRegistry setDesiredPushTypes:] + 128
+	14  CloudKit                            0x000000019a574cb4 CKBackgroundTaskPriorityDescription + 22496
+	15  CloudKit                            0x000000019a57519c CKBackgroundTaskPriorityDescription + 23752
+	16  libdispatch.dylib                   0x000000018f2686c0 _dispatch_client_callout + 16
+	17  libdispatch.dylib                   0x000000018f2523a0 _dispatch_once_callout + 32
+	18  CloudKit                            0x000000019a575174 CKBackgroundTaskPriorityDescription + 23712
+	19  CloudKit                            0x000000019a571430 CKBackgroundTaskPriorityDescription + 8028
+	20  CoreData                            0x000000019750a098 -[NSCloudKitMirroringDelegate dealloc] + 136
+	21  CoreFoundation                      0x000000018f475d84 cow_cleanup + 168
+	22  CoreFoundation                      0x000000018f4846ac -[__NSFrozenDictionaryM dealloc] + 124
+	23  CoreFoundation                      0x000000018f475d84 cow_cleanup + 168
+	24  CoreFoundation                      0x000000018f475c74 -[__NSDictionaryM dealloc] + 124
+	25  CoreData                            0x00000001973535b0 -[NSPersistentStoreDescription dealloc] + 72
+	26  CoreFoundation                      0x000000018f46c408 __RELEASE_OBJECTS_IN_THE_ARRAY__ + 120
+	27  CoreFoundation                      0x000000018f46c340 -[__NSArrayM dealloc] + 148
+	28  libobjc.A.dylib                     0x000000018efa1960 _ZN19AutoreleasePoolPage12releaseUntilEPP11objc_object + 204
+	29  libobjc.A.dylib                     0x000000018ef9e238 objc_autoreleasePoolPop + 244
+	30  SwiftData                           0x00000002314d8de4 __swift_allocate_value_buffer + 192796
+	31  SwiftData                           0x00000002314d90ec __swift_allocate_value_buffer + 193572
+	32  SwiftData                           0x00000002314f0428 __swift_mutable_project_boxed_opaque_existential_1 + 636
+	33  SwiftData                           0x00000002314e2a08 block_destroy_helper + 21996
+	34  SwiftData                           0x00000002314e1fe4 block_destroy_helper + 19400
+	35  SwiftData                           0x00000002314e1d48 block_destroy_helper + 18732
+	36  audit                               0x0000000104f521b4 $s5audit9AuditMainV4mainyyKFZ + 2528
+	37  audit                               0x0000000104f56658 $s5audit9AuditMainV5$mainyyKFZ + 20
+	38  audit                               0x0000000104f56d7c main + 28
+	39  dyld                                0x000000018f041158 start + 6688
+)
+libc++abi: terminating due to uncaught exception of type NSException

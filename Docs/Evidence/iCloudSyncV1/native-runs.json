@@ -1,0 +1,95 @@
+{
+  "dateUTC": "2026-11-05T03:21:20.930468+00:00",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "work": "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j",
+  "baseline": "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "commands": [
+    {
+      "label": "compile",
+      "command": [
+        "xcrun",
+        "swiftc",
+        "-parse-as-library",
+        "-module-cache-path",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/cache",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/Models.swift",
+        "/private/tmp/PersonalGrowthOS-icloud-audit/Docs/PoC/iCloudSyncV1/native.swift",
+        "-o",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    },
+    {
+      "label": "shape-local",
+      "command": [
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit",
+        "shape-local",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/shape-local"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    },
+    {
+      "label": "shape-cloud",
+      "command": [
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit",
+        "shape-cloud",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/shape-cloud"
+      ],
+      "exitCode": -6,
+      "expectedExit": 0
+    },
+    {
+      "label": "compatible-local",
+      "command": [
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit",
+        "compatible-local",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/compatible-local"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    },
+    {
+      "label": "write",
+      "command": [
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit",
+        "write",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/outbox"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    },
+    {
+      "label": "rollback",
+      "command": [
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit",
+        "rollback",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/outbox"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    },
+    {
+      "label": "crash-before-save",
+      "command": [
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit",
+        "crash-before-save",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/outbox"
+      ],
+      "exitCode": 73,
+      "expectedExit": 73
+    },
+    {
+      "label": "verify",
+      "command": [
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/audit",
+        "verify",
+        "/var/folders/wb/8g8wm41d3gzf58dc2mvhxkrm0000gn/T/PGOS-iCloud-Native-s_2hm99j/outbox"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    }
+  ],
+  "network": "No explicit account lookup or CK operation invoked. Cloud configuration uses a fabricated container ID; native model preflight rejects it. No signed cloud test or successful cloud store."
+}

@@ -1,0 +1,125 @@
+test_R1a_parent_deleted (__main__.DependencySafetyRegressions.test_R1a_parent_deleted) ... FAIL
+test_R1b_parent_has_missing_ancestor (__main__.DependencySafetyRegressions.test_R1b_parent_has_missing_ancestor) ... FAIL
+test_R1c_parent_has_missing_required_entity (__main__.DependencySafetyRegressions.test_R1c_parent_has_missing_required_entity) ... FAIL
+test_R1d_parent_has_invalid_causal_cycle (__main__.DependencySafetyRegressions.test_R1d_parent_has_invalid_causal_cycle) ... FAIL
+
+======================================================================
+FAIL: test_R1a_parent_deleted (__main__.DependencySafetyRegressions.test_R1a_parent_deleted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 13, in test_R1a_parent_deleted
+    self.check_hidden([Mutation('entry-create', 'entry'),
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       Mutation('entry-delete', 'entry', ('entry-create',), deleted=True)])
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 10, in check_hidden
+    self.assertEqual(self.r.heads('link'), [],
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     'Unpublishable dependency must not make a child visible')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [Mutation(op='link', entity='link', parent[74 chars]n=1)] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+Mutation(op='link', entity='link', parents=(), body='', deleted=False, business_key='', requires=('entry',), version=1)
+
++ []
+- [Mutation(op='link',
+-           entity='link',
+-           parents=(),
+-           body='',
+-           deleted=False,
+-           business_key='',
+-           requires=('entry',),
+-           version=1)] : Unpublishable dependency must not make a child visible
+
+======================================================================
+FAIL: test_R1b_parent_has_missing_ancestor (__main__.DependencySafetyRegressions.test_R1b_parent_has_missing_ancestor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 16, in test_R1b_parent_has_missing_ancestor
+    self.check_hidden([Mutation('entry-update', 'entry', ('missing-entry-base',))])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 10, in check_hidden
+    self.assertEqual(self.r.heads('link'), [],
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     'Unpublishable dependency must not make a child visible')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [Mutation(op='link', entity='link', parent[74 chars]n=1)] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+Mutation(op='link', entity='link', parents=(), body='', deleted=False, business_key='', requires=('entry',), version=1)
+
++ []
+- [Mutation(op='link',
+-           entity='link',
+-           parents=(),
+-           body='',
+-           deleted=False,
+-           business_key='',
+-           requires=('entry',),
+-           version=1)] : Unpublishable dependency must not make a child visible
+
+======================================================================
+FAIL: test_R1c_parent_has_missing_required_entity (__main__.DependencySafetyRegressions.test_R1c_parent_has_missing_required_entity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 18, in test_R1c_parent_has_missing_required_entity
+    self.check_hidden([Mutation('entry-create', 'entry', requires=('missing-owner',))])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 10, in check_hidden
+    self.assertEqual(self.r.heads('link'), [],
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     'Unpublishable dependency must not make a child visible')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [Mutation(op='link', entity='link', parent[74 chars]n=1)] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+Mutation(op='link', entity='link', parents=(), body='', deleted=False, business_key='', requires=('entry',), version=1)
+
++ []
+- [Mutation(op='link',
+-           entity='link',
+-           parents=(),
+-           body='',
+-           deleted=False,
+-           business_key='',
+-           requires=('entry',),
+-           version=1)] : Unpublishable dependency must not make a child visible
+
+======================================================================
+FAIL: test_R1d_parent_has_invalid_causal_cycle (__main__.DependencySafetyRegressions.test_R1d_parent_has_invalid_causal_cycle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 20, in test_R1d_parent_has_invalid_causal_cycle
+    self.check_hidden([Mutation('entry-a', 'entry', ('entry-b',)),
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       Mutation('entry-b', 'entry', ('entry-a',))])
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/data/pgos_sync_revision/original_review/reviewer_regressions.py", line 10, in check_hidden
+    self.assertEqual(self.r.heads('link'), [],
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     'Unpublishable dependency must not make a child visible')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [Mutation(op='link', entity='link', parent[74 chars]n=1)] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+Mutation(op='link', entity='link', parents=(), body='', deleted=False, business_key='', requires=('entry',), version=1)
+
++ []
+- [Mutation(op='link',
+-           entity='link',
+-           parents=(),
+-           body='',
+-           deleted=False,
+-           business_key='',
+-           requires=('entry',),
+-           version=1)] : Unpublishable dependency must not make a child visible
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.005s
+
+FAILED (failures=4)
