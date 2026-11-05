@@ -1,3 +1,15 @@
+# 2026-11-05 iCloud Sync V1 — AUDIT_COMPLETE / IMPLEMENTATION_NOT_STARTED
+
+本轮 Owner 授权仅架构审计与隔离可行性验证，基线为远端 Draft PR #14 最新 HEAD `96f72339a1a3082c43018e06d6115dd93df1df97`，独立分支 `codex/icloud-sync-v1-audit`。没有使用 main，没有修改产品源码/工程/历史 schema/CI，没有操作真实用户库。
+
+[中文架构报告](ICLOUD_SYNC_V1_AUDIT_ZH.md) · [验证台账](Evidence/iCloudSyncV1/README.md) · [隔离 PoC](PoC/iCloudSyncV1/README.md)。V16 39 实体/52 unique/221 无默认必填标量；真实 native schema 负例 134060 证实自动 CloudKit 不可直接启用，随后未打包 CLI teardown 的 -6 原样保留。原生本地 fact/outbox、退出重开与旧 ACK 保护完成，协议模拟 16/16。上述不是云端、完整 App 或迁移测试通过。
+
+推荐本地 SwiftData `.none` + 应用控制的业务合并/冲突保留 + CKSyncEngine/CloudKit private database；下一边界是获批的签名隔离双设备 G1 验证（含图片、冲突、账户切换和恢复隔离）。真实云服务、iOS/真机、后台/签名、现有数据升级及完整业务集成均 NOT_RUN；不得据此发布同步。
+
+本批次仅交付 Docs/证据并创建以 `codex/household-net-worth-v1` 为 base 的新 Draft PR；远端交付以该分支 HEAD/PR 为准。不 merge、tag、Archive 或 TestFlight。原主工作区三项未知改动、#14 与此前真机/低空间等限制保持。旧 CURRENT 历史如下，旧实现/发布停点不替代本次审计结论。
+
+---
+
 # 2026-11-02 家庭净资产 V1.1 — READY_FOR_OWNER_DEVICE_GATE
 
 A→B→C实现、可执行验收、独立只读代码/数据安全/备份/实际UI审查均已完成，范围内问题全部修复并复核关闭。唯一[Draft PR #14](https://github.com/yoCruzer/PersonalGrowthOS/pull/14)，base `codex/usage-remediation-20261017` / `5827c657095945aff30b2250b20bae104c7b0357`。产品代码最终SHA `01ffedc45a4c99c3576ae65ab249b77a8496336f`；含经审查CI兼容性修复的验收SHA `ba84296a89e96dcca31d7dce184ae762cc2da18b`。此后仅Docs交付，最终完整head以PR和交付回复核对。

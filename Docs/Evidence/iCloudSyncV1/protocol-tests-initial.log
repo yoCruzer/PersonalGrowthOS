@@ -1,0 +1,21 @@
+test_01_atomic_fact_and_outbox_failure_then_retry (__main__.ProtocolTests) ... ok
+test_02_stale_ack_and_duplicate_ack (__main__.ProtocolTests) ... ok
+test_03_inbound_and_cursor_failure_are_atomic (__main__.ProtocolTests) ... ok
+test_04_concurrent_edit_permutations_preserve_both (__main__.ProtocolTests) ... ok
+test_05_delete_edit_keeps_tombstone_and_recoverable_edit (__main__.ProtocolTests) ... ok
+test_06_explicit_resolution_has_both_parents (__main__.ProtocolTests) ... ok
+test_07_same_day_distinct_ids_are_conflicts_not_double_facts (__main__.ProtocolTests) ... ok
+test_08_stable_occurrence_identity_replay_deduplicates (__main__.ProtocolTests) ... ok
+test_09_missing_parent_is_staged_then_visible (__main__.ProtocolTests) ... ok
+test_10_unknown_wire_version_is_retained_not_applied (__main__.ProtocolTests) ... ok
+test_11_account_epoch_rejects_late_callbacks (__main__.ProtocolTests) ... ok
+test_12_partial_ack_keeps_failed_record (__main__.ProtocolTests) ... ok
+test_13_checksum_and_missing_asset_block_full_backup (__main__.ProtocolTests) ... ok
+test_14_wall_clock_cannot_choose_winner (__main__.ProtocolTests) ... ok
+test_15_restore_identity_does_not_override_newer_tombstone (__main__.ProtocolTests) ... ok
+test_16_same_payload_different_ids_not_content_deduplicated (__main__.ProtocolTests) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.032s
+
+OK

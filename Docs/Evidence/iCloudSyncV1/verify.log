@@ -1,0 +1,7 @@
+PASS: fresh process retains original fact
+PASS: fresh process retains exact outbox
+PASS: stale acknowledgement cannot erase newer mutation
+PASS: native CKRecord stable identity and system-fields archive round-trip
+PASS: CKAsset references exact staged bytes locally
+PASS: no server tag fabricated by local PoC
+NOT_RUN: CKSyncEngine networking, actual server conflict, account changes, two-device delivery

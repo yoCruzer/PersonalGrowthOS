@@ -1,0 +1,2127 @@
+{
+  "baseline": "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "entities": [
+    "Entry",
+    "ImageMetadata",
+    "Tag",
+    "ObjectLink",
+    "Habit",
+    "HabitLog",
+    "HabitConfiguration",
+    "HabitLogDayMetadata",
+    "HabitPlanRevision",
+    "HabitLifecycleEvent",
+    "Goal",
+    "GoalLifecycleEvent",
+    "WeightRecord",
+    "WeeklyReview",
+    "EntryPin",
+    "EntryFollowUp",
+    "EntryExternalSource",
+    "CaptureImportReceipt",
+    "TodoTask",
+    "TodoTaskEvent",
+    "TodoList",
+    "TodoSeries",
+    "TodoTaskSource",
+    "ImportantDay",
+    "ImportantDayEntryLink",
+    "ImportantDayTodoLink",
+    "ImportantDayCover",
+    "SleepRecord",
+    "SleepGoalRule",
+    "InvestmentParticipant",
+    "InvestmentActivity",
+    "InvestmentSession",
+    "InvestmentOperation",
+    "TodoSeriesPreferences",
+    "TodoReminderIntent",
+    "TodoReminderDeviceRecord",
+    "BodyReferenceSettings",
+    "NetWorthItem",
+    "NetWorthSnapshot"
+  ],
+  "models": {
+    "EntryExternalSource": {
+      "path": "PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift",
+      "line": 51,
+      "fields": [
+        {
+          "name": "entryID",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "encodedSource",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "CaptureImportReceipt": {
+      "path": "PersonalGrowthOS/ExternalCapture/ExternalCaptureImport.swift",
+      "line": 65,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "importedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "Goal": {
+      "path": "PersonalGrowthOS/Goal/GoalFoundation.swift",
+      "line": 4,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "kindRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "normalizedTitle",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "statusRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "completedAt",
+          "type": "Date?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "GoalLifecycleEvent": {
+      "path": "PersonalGrowthOS/Goal/GoalFoundation.swift",
+      "line": 46,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "goalID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "kindRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurredAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "Habit": {
+      "path": "PersonalGrowthOS/Habit/HabitFoundation.swift",
+      "line": 4,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "normalizedName",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "statusRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "HabitLog": {
+      "path": "PersonalGrowthOS/Habit/HabitFoundation.swift",
+      "line": 35,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "habitID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurredAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isCompleted",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "quantity",
+          "type": "Double?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "unit",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "result",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "linkedEntryID",
+          "type": "UUID?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "HabitLogDayMetadata": {
+      "path": "PersonalGrowthOS/Habit/HabitFoundation.swift",
+      "line": 70,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "habitLogID",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "localDayIdentifier",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "localTimeZoneIdentifier",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "provenanceRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "HabitPlanRevision": {
+      "path": "PersonalGrowthOS/Habit/HabitFoundation.swift",
+      "line": 97,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "habitID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "effectiveLocalDay",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "recordingModeRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "periodRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "goalRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "targetCount",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "weekdaysRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "trustCoverageStartLocalDay",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "originRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "HabitLifecycleEvent": {
+      "path": "PersonalGrowthOS/Habit/HabitFoundation.swift",
+      "line": 146,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "habitID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "kindRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurredLocalDay",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurredAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "knownStatusRawValue",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "HabitConfiguration": {
+      "path": "PersonalGrowthOS/Habit/HabitFoundation.swift",
+      "line": 298,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "habitID",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "recordingModeRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "dailyTargetCount",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "ImportantDay": {
+      "path": "PersonalGrowthOS/ImportantDays/ImportantDayFoundation.swift",
+      "line": 26,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "notes",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "ruleData",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "preferencesData",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isArchived",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "revision",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "ImportantDayEntryLink": {
+      "path": "PersonalGrowthOS/ImportantDays/ImportantDayFoundation.swift",
+      "line": 47,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "pairKey",
+          "type": "String",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "dayID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "entryID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurrenceIdentifier",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "ImportantDayTodoLink": {
+      "path": "PersonalGrowthOS/ImportantDays/ImportantDayFoundation.swift",
+      "line": 62,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "pairKey",
+          "type": "String",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "dayID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "taskID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurrenceIdentifier",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "dayRevisionAtLink",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "ImportantDayCover": {
+      "path": "PersonalGrowthOS/ImportantDays/ImportantDayFoundation.swift",
+      "line": 78,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "dayID",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "relativePath",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "originalFilename",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "contentType",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "byteCount",
+          "type": "Int64",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "pixelWidth",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "pixelHeight",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "checksum",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "NetWorthItem": {
+      "path": "PersonalGrowthOS/NetWorth/NetWorthFoundation.swift",
+      "line": 207,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "payload",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "NetWorthSnapshot": {
+      "path": "PersonalGrowthOS/NetWorth/NetWorthFoundation.swift",
+      "line": 213,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "payload",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "Tag": {
+      "path": "PersonalGrowthOS/Organization/OrganizationFoundation.swift",
+      "line": 22,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "displayName",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "normalizedName",
+          "type": "String",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "ObjectLink": {
+      "path": "PersonalGrowthOS/Organization/OrganizationFoundation.swift",
+      "line": 62,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "sourceTypeRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "sourceID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "targetTypeRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "targetID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "kindRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "deduplicationKey",
+          "type": "String",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "Entry": {
+      "path": "PersonalGrowthOS/Persistence/PersistenceFoundation.swift",
+      "line": 12,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "kindRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "statusRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "title",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "body",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurredAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "periodStart",
+          "type": "Date?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "periodEnd",
+          "type": "Date?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "images",
+          "type": "[ImageMetadata]",
+          "unique": false,
+          "default": null,
+          "relationship": "@Relationship(deleteRule: .cascade, inverse: \\ImageMetadata.entry)"
+        }
+      ]
+    },
+    "ImageMetadata": {
+      "path": "PersonalGrowthOS/Persistence/PersistenceFoundation.swift",
+      "line": 65,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "relativePath",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "originalFilename",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "contentType",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "byteCount",
+          "type": "Int64",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "pixelWidth",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "pixelHeight",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "checksum",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "sortOrder",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "entry",
+          "type": "Entry?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "EntryPin": {
+      "path": "PersonalGrowthOS/Persistence/PersistenceFoundation.swift",
+      "line": 184,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "entryID",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "pinnedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "EntryFollowUp": {
+      "path": "PersonalGrowthOS/Persistence/PersistenceFoundation.swift",
+      "line": 197,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "entryID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "body",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "WeeklyReview": {
+      "path": "PersonalGrowthOS/Review/WeeklyReviewFoundation.swift",
+      "line": 85,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "weekIdentifier",
+          "type": "String",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "periodStart",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "periodEnd",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "rememberedText",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "improvementText",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "nextStepText",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "focusText",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isCompleted",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "SleepRecord": {
+      "path": "PersonalGrowthOS/Sleep/SleepFoundation.swift",
+      "line": 74,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "wakeDay",
+          "type": "String",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "timeZoneID",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "valueData",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "revision",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "observedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "SleepGoalRule": {
+      "path": "PersonalGrowthOS/Sleep/SleepFoundation.swift",
+      "line": 90,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "effectiveDay",
+          "type": "String",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "observedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "observationTimeZoneID",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "hasTakenEffect",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "cutoffMinute",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "InvestmentParticipant": {
+      "path": "PersonalGrowthOS/TimeInvestment/InvestmentFoundation.swift",
+      "line": 5,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isDefault",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isArchived",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "sortOrder",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "InvestmentActivity": {
+      "path": "PersonalGrowthOS/TimeInvestment/InvestmentFoundation.swift",
+      "line": 15,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "participantID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isArchived",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "InvestmentSession": {
+      "path": "PersonalGrowthOS/TimeInvestment/InvestmentFoundation.swift",
+      "line": 24,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "participantID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "activityID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "recorderID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "valueData",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "revision",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "InvestmentOperation": {
+      "path": "PersonalGrowthOS/TimeInvestment/InvestmentFoundation.swift",
+      "line": 39,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "participantID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "activityID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "recorderID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "payload",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "revision",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoTask": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 31,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "notes",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "stateRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isImportant",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "plannedDay",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "deadlineDay",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "remindAt",
+          "type": "Date?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "reminderTimeZoneID",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "reminderLocalDay",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "reminderMinutes",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "completedAt",
+          "type": "Date?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "canceledAt",
+          "type": "Date?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "listID",
+          "type": "UUID?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "seriesID",
+          "type": "UUID?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurrenceIndex",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurrenceKey",
+          "type": "String?",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "revision",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoTaskEvent": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 69,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "taskID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "sequence",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "kindRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "occurredAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "beforeValue",
+          "type": "Data?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "afterValue",
+          "type": "Data",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoList": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 87,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoSeries": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 98,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "frequencyRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "anchorDay",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "plannedAnchorDay",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "deadlineAnchorDay",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "notes",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isImportant",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "listID",
+          "type": "UUID?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "reminderMinutes",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "reminderDayOffset",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isStopped",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoTaskSource": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 126,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "taskID",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "entryID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoSeriesPreferences": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 918,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "weekdaysMask",
+          "type": "Int?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "reminderChannelRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoReminderIntent": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 927,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "generation",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "revision",
+          "type": "Int",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "channelRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "isInstanceOverride",
+          "type": "Bool",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "TodoReminderDeviceRecord": {
+      "path": "PersonalGrowthOS/Todo/TodoFoundation.swift",
+      "line": 940,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "taskID",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "intentGeneration",
+          "type": "UUID",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "channelRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "fireAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "phaseRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "requestedTitle",
+          "type": "String?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "WeightRecord": {
+      "path": "PersonalGrowthOS/Weight/WeightFoundation.swift",
+      "line": 16,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "weightKilograms",
+          "type": "Double",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "recordedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "updatedAt",
+          "type": "Date",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    "BodyReferenceSettings": {
+      "path": "PersonalGrowthOS/Weight/WeightFoundation.swift",
+      "line": 371,
+      "fields": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "unique": true,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "heightCentimeters",
+          "type": "Double?",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        },
+        {
+          "name": "referenceRawValue",
+          "type": "String",
+          "unique": false,
+          "default": null,
+          "relationship": null
+        }
+      ]
+    }
+  },
+  "counts": {
+    "entities": 39,
+    "fields": 263,
+    "unique": 52,
+    "requiredWithoutDeclarationDefault": 221
+  }
+}
