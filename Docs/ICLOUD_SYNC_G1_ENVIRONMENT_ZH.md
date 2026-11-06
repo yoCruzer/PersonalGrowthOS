@@ -41,3 +41,19 @@
 3. 提供同一测试Apple Account的两客户端：两台iOS，或iOS+签名Mac；设备可连接且允许运行SyncLab。需要账户切换测试时另提供隔离系统账户/设备，Owner执行切换。无需退出日常主账号。
 
 不要求把management token、Apple密码或账户ID粘贴到聊天/仓库。门户可由Owner操作并提供脱敏确认。Production部署授权不在这份准备清单中预先索取：必须先Dev真实通过、稳定wire与可审查差异齐备，再单独批准精确部署。
+
+## Owner现有设备下的推进路线（2026-11-06追加）
+
+Owner确认可用设备为当前日用iPhone、家中Mac mini和Intel Mac；短期没有第二台iPhone，明确要求不因此停滞开发/上线。**第二台iPhone不作为固定前置条件**。此前BLOCKED_ENV指未完成签名/账户/访问核验，不应解读为必须购买或借用另一台iPhone。以下是执行安排，尚不是设备实测通过。
+
+- G1默认采用**当前iPhone + Mac mini**，分别运行独立SyncLab iOS/原生Mac客户端，使用同一iCloud账户、相同合成dataset。Mac伴随工程已经存在。核验OS、Mac平台签名/profile及CloudKit权限后，直接做双向文字/原图、并发、删除、重开和断网恢复；如实标明iOS+macOS覆盖。
+- 不要求日用iPhone退出当前iCloud。若两端已有同一iCloud账户，可在Owner确认使用该账户进行仅SyncLab合成测试后复用；“测试账户”表示本轮测试身份，不必额外注册一个全新账户。App ID、容器、本地store独立，正式App与私人库不参与。若两端不同账户，可在Mac的独立本地测试用户中安排匹配账户；实际账户登录/切换由Owner完成。
+- A→B→A账户切换放到Mac的专用本地测试用户环境，按串行登录/退出及冷启动验证；不是在日用手机退出主账号，也不能把两个常驻macOS用户冒称同一个客户端发生账户切换。第二测试账户只为这个负向场景准备，不阻挡先完成同账户双端主路径。
+- Intel Mac为可选第三端或账户隔离设备；需能运行macOS14及以上、匹配工具链并签名，才可用于当前SwiftData/CKSyncEngine实验。具体型号/OS尚未知。不将Intel工具链适配或升级设为G1关键路径。
+- 若Mac mini为Apple silicon，后续在另获TestFlight发布授权后，优先采用**同一份实际iOS TestFlight候选在iPhone + Apple silicon Mac上运行**的两设备路径；先核验构建兼容性，并在测试组启用该能力。该设置是测试组能力，不要求把产品正式上架为Mac应用。原生SyncLab伴随端只能证明它实际覆盖的云协议，不能替代这份正式候选的TestFlight证据。
+- 如果上述同候选Mac运行遇到兼容问题，先做有界诊断/最小兼容修复，再明确残余平台覆盖与可用替代测试端；不自动把“再买一台iPhone”列为解决办法，也不提前宣称P4通过。
+- 单台真实iPhone承担实际iOS前后台/挂起、锁屏、网络切换、重启、安装/升级等验证，Mac作为远端写入者；这些当前仍NOT_RUN。模拟器可补充iOS版本及故障覆盖，不代替手机上的硬件/后台行为证据。
+
+顺序：Mac解锁及已有Apple门户登录 → 核对并完成SyncLab签名 → iPhone+Mac mini真实Dev主路径 → Mac隔离账户负例 → 稳定wire/P1/P2正式Production前置门禁 → 后续领域接入与获授权后的真实TestFlight候选验收。保留G1完整八项及P0–P4要求；不把跨平台覆盖改称“两台iPhone已验收”。本次只明确设备策略，不授权登录/切换系统账号、安装到日用设备、Production部署或TestFlight发布。
+
+官方依据：[在Apple silicon Mac上测试iOS TestFlight应用](https://developer.apple.com/help/app-store-connect/test-a-beta-version/test-iphone-and-ipad-apps-on-macs-with-apple-silicon)、[CloudKit设备与模拟器账户配置](https://developer.apple.com/documentation/cloudkit/enabling-cloudkit-in-your-app)、[macOS14支持机型](https://support.apple.com/en-ie/105113)。Mac mini具体芯片/系统及两端是否同一iCloud账户，待设备可访问时核验；无需提供账户名或密码。

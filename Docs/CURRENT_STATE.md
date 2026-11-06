@@ -1,3 +1,11 @@
+# 2026-11-06 G1设备路线澄清 — 不依赖第二台iPhone
+
+Owner现有设备为日用iPhone、Mac mini、Intel Mac，短期无法提供第二台iPhone。默认采用**iPhone + Mac mini**完成G1真实双客户端；Intel Mac为可选补充，不设为关键路径。若Mac mini为Apple silicon，后续另获发布授权后优先验证同一iOS TestFlight候选在iPhone与Mac运行。单台真实iPhone承担iOS后台/锁屏/网络/升级验证，Mac生成远端事件；不冒称双iPhone覆盖。
+
+[具体设备、账户隔离及后续发布验证路线](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md#owner现有设备下的推进路线2026-11-06追加)。签名/权限/系统与账户条件仍需核验，真实G1/P1–P4仍NOT_RUN；当前不安装日用设备、不切换系统账户、不发布。已有离线工程/CI/独立Review及Draft PR #16保持。后续阻断应按具体缺项报告，不能泛化为缺少第二台iPhone。
+
+---
+
 # 2026-11-06 iCloud Sync G1 — BLOCKED_ENV（离线工程交付）
 
 Owner已注册正式/SyncLab App与容器，并选择本轮仅离线工程与门禁交付。已从指定PR #15 HEAD `304a91984f17efc2c61b179f0a9e85a14ba87d95`创建`codex/icloud-sync-g1`，隔离worktree `/private/tmp/PersonalGrowthOS-icloud-g1`；原工作区未知修改保持。

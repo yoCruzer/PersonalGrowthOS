@@ -51,3 +51,5 @@ quota/rateLimit/部分成功只属于**显式故障注入**；token过期、zone
 后续交接提交只含文档/证据，使用`[skip ci]`避免触发与隔离改动无关的产品全量回归；已通过的实验源码及workflow不变，明确不是发布候选。源码/报告的`git diff --check`通过；全范围检查在保留的原始Xcode输出上报告尾空白/末尾空行，按原字节保留，不伪称无提示。完整目标仍未完成，离线交付不替代真实服务验收。
 
 最终交付：[Draft PR #16](https://github.com/yoCruzer/PersonalGrowthOS/pull/16)，base `codex/icloud-sync-v1-audit` / `304a91984f17efc2c61b179f0a9e85a14ba87d95`。PR保持OPEN Draft，完整交付HEAD以PR元数据为准；实现源码固定099ff17，后续只文档/证据。按Owner本轮离线选择停止在此批次边界，完整G1真实服务目标仍待恢复条件满足后继续。
+
+2026-11-06设备策略补充：Owner确认可用iPhone/Mac mini/Intel Mac，默认走iPhone+Mac mini双端，第二台iPhone不是固定门禁。具体账户隔离及同候选TestFlight的Apple silicon条件见[环境台账新增路线](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md)。本次仅文档澄清，未新增设备/云运行证据，未改变已归档测试结果。
