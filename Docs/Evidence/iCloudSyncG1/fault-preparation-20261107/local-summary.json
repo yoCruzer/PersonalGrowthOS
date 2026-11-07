@@ -36,5 +36,9 @@
     "mac": "/private/tmp/SyncLab-Fault-Window-20261107-r7",
     "phone": "/private/tmp/g1-fault-device-final"
   },
-  "remoteCI": "PENDING_CURRENT_SOURCE_PUSH"
+  "remoteCI": {
+    "run": 42370130223,
+    "status": "SUCCESS",
+    "source": "67aacb83c1865a942cc499cf98370b90feb7a6c3"
+  }
 }

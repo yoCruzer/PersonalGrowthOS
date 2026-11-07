@@ -4,7 +4,7 @@ Owner明确授权连续补齐并验证剩余入口，不在小阶段停等确认
 
 原生62项、工具19项、独立真实进程73/74退出及新进程恢复通过；双平台签名Debug与sim Release构建及实际签名检查通过。独立复核揭示身份混标、部分缺图恢复链、工具符号链接/旧报告重用和oracle中途漏证据等问题，已修并保留红例；独立完整27阶段合成正例通过、24项篡改负控全部拒绝、mock启动器8/8通过，无剩余must-fix。已将独立回归脚本接入SyncLab定向CI。工程准备不代表新真实云场景通过。[执行安排](ICLOUD_SYNC_G1_FAULT_WINDOW_ZH.md)，[本机证据](Evidence/iCloudSyncG1/fault-preparation-20261107/)。
 
-当前不需要手机连接，未安装/启动新包或访问真实云。真实新场景全部NOT_RUN；完整G1状态仍BLOCKED_ENV（缺最终真实运行证据），没有Production/merge/TestFlight授权。既有产品CI42365486504最终Release/Unit成功、smoke失败，不能用SyncLab定向成功覆盖。Mac窗口包已准备于/private/tmp/SyncLab-Fault-Window-20261107-r7；手机IPA及8份批次在/private/tmp/g1-fault-device-final，均验签通过且尚未安装/运行。当前等待稳定候选普通推送与定向CI，随后一次交付Owner设备步骤与时间。
+当前不需要手机连接，未安装/启动新包或访问真实云。真实新场景全部NOT_RUN；完整G1状态仍BLOCKED_ENV（缺最终真实运行证据），没有Production/merge/TestFlight授权。既有产品CI42365486504最终Release/Unit成功、smoke失败，不能用SyncLab定向成功覆盖。Mac窗口包已准备于/private/tmp/SyncLab-Fault-Window-20261107-r7；手机IPA及8份批次在/private/tmp/g1-fault-device-final，均验签通过且尚未安装/运行。候选67aacb83c1865a942cc499cf98370b90feb7a6c3已普通推送，定向CI42370130223 SUCCESS；原始产物核对62原生/19工具、27阶段合成正例、24负控、mock窗口8例及unsigned iOS构建均通过。新产品CI42370134054仍运行，未将其写为通过。当前准备交付一次Owner窗口：haha启动一次Mac脚本；手机首次安装/导入后可拔线，8次选择执行，必要时手动断网/恢复；只在haha切换A→B→A，末次短连线导出原报告。估计30–45分钟，账户登录可能另需10–20分钟，数据线约开始3–5分钟及结束2–5分钟。
 
 ---
 
