@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "oracle": "independent Python PNG framing and CRC",
+  "byte_count": 70,
+  "sha256": "cf1b9bb2d2fb01ab3c6dec56322138bf863063df45291ce340ea4e9e259e3977",
+  "chunks": [
+    {
+      "type": "IHDR",
+      "bytes": 13,
+      "crc_valid": true
+    },
+    {
+      "type": "IDAT",
+      "bytes": 13,
+      "crc_valid": true
+    },
+    {
+      "type": "IEND",
+      "bytes": 0,
+      "crc_valid": true
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "scope": "initial uncommitted FormalProbe fixture only; unrelated to V16 fixture",
+  "oracle": "independent Python struct/zlib PNG chunk CRC and length validation",
+  "status": "FAIL",
+  "initial_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==",
+  "sha256": "2142f54f2bd88700b1fdf7eb233fb97568eaba7a4e1d5faa03a8993eaa320b5a",
+  "chunks": [
+    {
+      "offset": 8,
+      "type_hex": "49484452",
+      "declared_length": 13,
+      "actual_length": 13,
+      "crc_valid": true
+    },
+    {
+      "offset": 33,
+      "type_hex": "49444154",
+      "declared_length": 11,
+      "actual_length": 11,
+      "crc_valid": false
+    },
+    {
+      "offset": 56,
+      "type_hex": "454e44ae",
+      "declared_length": 73,
+      "actual_length": 3,
+      "crc_valid": false
+    }
+  ]
+}

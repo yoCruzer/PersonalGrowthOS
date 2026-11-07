@@ -1,0 +1,18 @@
+Building for debugging...
+[1 / 5]
+[2 / 8] SyncFoundationTests-product
+[4 / 10] SyncFoundationTests-product
+[7 / 11] SyncFoundationTests-product
+[9 / 11] SyncFoundationTests-product
+Build complete! (1.37秒)
+Test Suite 'Selected tests' started at 2026-11-07 23:16:11.580.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:16:11.581.
+Test Suite 'IndependentChunkTests' started at 2026-11-07 23:16:11.581.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' passed (0.233 seconds).
+Test Suite 'IndependentChunkTests' passed at 2026-11-07 23:16:11.814.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.233 (0.233) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 23:16:11.814.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.233 (0.233) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 23:16:11.814.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.233 (0.234) seconds

@@ -1,0 +1,11 @@
+{
+  "actualDomainValidation" : true,
+  "bytes" : 49190297,
+  "initialCandidateFits" : false,
+  "initialCandidateLimit" : 16777216,
+  "netMinorUnits" : 10000,
+  "rowCount" : 10000,
+  "sha256" : "9e97f46caef1fb89babb217a5cb7e25ee223beec74d6ce71408f211672fb9b13",
+  "sourceCommit" : "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "synthetic" : true
+}

@@ -1,3 +1,21 @@
+# 2026-11-08 后续分块协议、V16基线与正式Development批次准备：验证完成，待正式结构输入
+
+工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`，分支 `codex/icloud-sync-foundation`，[Draft PR #17](https://github.com/yoCruzer/PersonalGrowthOS/pull/17)，base保持G1。Owner已授权连续后续开发；旧G1仅实验/停批次限制不再阻挡本轮，外部部署和发布边界保留。原项目仍在d72c016，原三项未提交改动未动。
+
+已实现隔离SyncFoundation v2：不可变逐mutation manifest、4MiB有序payload分块、25MiB原图、typed身份/内存epoch栅栏、严格字节/hash校验与实际SDK codec。真实V16合法万行快照49,190,297字节经12块往返完全一致；初版16MiB不足、源变化拒绝及内存问题已修复，原始失败保留。128MiB流式prepare/verify测试进程峰值RSS40,058,880字节，完整49MB SDK/CLI另测116,523,008字节，不泛化为设备内存保证。
+
+固定96f产品V16/v12合成SQLite+WAL/原图/ZIP/全字段预期已独立复核，两份分享receipt（含已删来源）、金额、草稿及输入hash保留。新增正式Development批次准备器：固定合成计划、六条实际SDK离线回放、实际签名只读preflight；独立候选Bundle ID未注册/签名/关联，无网络发送通路，不替换产品或SyncLab。
+
+本机完整包34/34（24协议+10准备器）、分块独立12/12、准备器独立22条CLI及1个并发签名产物替换负例通过；iOS17协议与准备器核心target编译通过（iOS17运行NOT_RUN）。最终源码`72f5d3d5950a552068f8cb5d2da88b819a2b3318`远端[定向CI42388380286](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42388380286)为34原生+11独立分块+22独立CLI通过；[产品CI42388380258](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42388380258)Release成功、Unit599=598PASS/1SKIP/0FAIL、iOS27.2 Smoke5/5通过，runtimeWarnings为空。实际PR合并checkout为`0af3599c12ec71ba2106c0f287707ed3c59684f0`。低空间unit需隔离32MB HFS+镜像而跳过；extended UI按workflow条件未执行。原0e1f747/e57fe35 smoke失败保留，未放宽断言。
+
+G1保持OWNER_ACCEPTED_PHONE_SCOPE：6原件27命令；Mac CK_2为接受的非阻塞例外，原失败/未覆盖矩阵保留，本轮未再占手机。正式容器只读观察Development仅Users，未查业务记录；Owner明确选择稍后按[5–10分钟只读清单](ICLOUD_SYNC_NEXT_READINESS_ZH.md)导出，两端schema及正式App关联仍待补，手机/数据线0分钟。
+
+P0仍CANDIDATE_NOT_FROZEN，P1/P2未完成；正式schema迁移、持久身份/outbox/inbox、真实传输及39实体接入尚未实现，不把离线准备写成产品同步完成。后续先用导出比对固定候选，再准备必要Development差异、隔离客户端签名与真实适配器。Production部署/写入、merge、Archive、TestFlight仍未授权/未执行；不提前请求笼统批准。
+
+[执行与边界](ICLOUD_SYNC_FOUNDATION_EXECUTION_ZH.md) · [证据](Evidence/iCloudSyncFoundation/20261107/README.md) · [批次准备器](ICLOUD_SYNC_FORMAL_PROBE_PREPARATION_ZH.md) · [G2接缝](ICLOUD_SYNC_G2_WRITE_SEAMS_ZH.md)。最后仅文档/证据收口，使用`[skip ci]`避免无源码变化的重复全量测试；不是发布候选。以下旧历史原样保留，不再指挥当前开发。
+
+---
+
 # 2026-11-07 G1本轮已按Owner手机侧范围收口
 
 状态 `OWNER_ACCEPTED_PHONE_SCOPE`。Owner明确接受Mac CK_2为非阻塞例外；原始失败保留、VPN归因未独立证实。手机6份原件27条命令全部PASS，核对依赖修复/新原图、联网写入、断网本地重开与pending保留、恢复联网ACK清空以及独立restore种子上传。后者不代表restore race；原完整真实故障矩阵未全覆盖，Mac依赖剩余场景列后续补证，不继续卡本轮。

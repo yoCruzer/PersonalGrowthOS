@@ -1,0 +1,87 @@
+{
+  "baseline": "e57fe3503995771a89754fbc4077ea16627c15be",
+  "dirty": true,
+  "environment": {
+    "macOS": "27.0.1 (26A434)",
+    "architecture": "arm64",
+    "Xcode": "27.2 (27B52)",
+    "simulator": "iPhone 13 mini",
+    "runtime": "iOS 27.0 (24A434)"
+  },
+  "runs": [
+    {
+      "phase": "before",
+      "command": [
+        "xcodebuild",
+        "test",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-jobs",
+        "2",
+        "-derivedDataPath",
+        "/private/tmp/pgos-icloud-smoke-derived",
+        "-destination",
+        "platform=iOS Simulator,id=48EC06F9-5776-47BA-8436-C719A8F12238",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/private/tmp/pgos-icloud-smoke-before.xcresult",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUIReadabilityEnglishDefault",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "exitCode": 0,
+      "passed": 1,
+      "failed": 0,
+      "log": "/private/tmp/pgos-icloud-smoke-before.log",
+      "resultBundle": "/private/tmp/pgos-icloud-smoke-before.xcresult"
+    },
+    {
+      "phase": "after",
+      "command": [
+        "xcodebuild",
+        "test",
+        "-project",
+        "PersonalGrowthOS.xcodeproj",
+        "-scheme",
+        "PersonalGrowthOS",
+        "-jobs",
+        "2",
+        "-derivedDataPath",
+        "/private/tmp/pgos-icloud-smoke-derived",
+        "-destination",
+        "platform=iOS Simulator,id=48EC06F9-5776-47BA-8436-C719A8F12238",
+        "-parallel-testing-enabled",
+        "NO",
+        "-collect-test-diagnostics",
+        "never",
+        "-resultBundlePath",
+        "/private/tmp/pgos-icloud-smoke-after.xcresult",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUITestingLaunchShowsAppShell",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testCoreShellRemainsOperableAtLargestAccessibilityTextSize",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUIReadabilityChineseDefaultAndLargerText",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUIReadabilityEnglishDefault",
+        "-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testRepeatableHabitCounterIncrementsDecrementsAndPersists",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "exitCode": 0,
+      "passed": 5,
+      "failed": 0,
+      "log": "/private/tmp/pgos-icloud-smoke-after.log",
+      "resultBundle": "/private/tmp/pgos-icloud-smoke-after.xcresult"
+    }
+  ],
+  "sourceSHA256": {
+    "PersonalGrowthOS/AppShell.swift": "64081206821c559631b79edbcf490b2c1d47ea879d8200a1764d0c65e563d00c",
+    "PersonalGrowthOS/Growth/HabitViews.swift": "f4d053901d6cdff40aa1f3b3e1a71c84af25014216f7c0a64042cc27654109d3",
+    "PersonalGrowthOSUITests/AppLaunchSmokeTests.swift": "0474db5481149ef20d32d708bad460455749c8086f2576aa1a478d2638842521"
+  },
+  "limitations": [
+    "iOS 27.2 runtime not installed locally; fixed candidate needs remote CI verification",
+    "No physical device or cloud access",
+    "Initial sandbox simctl and xcresulttool access failed; same read/test tooling succeeded under required sandbox escalation; no assertions weakened"
+  ]
+}

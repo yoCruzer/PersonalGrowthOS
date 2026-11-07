@@ -1,0 +1,66 @@
+Building for debugging...
+[Computing dependencies]
+[Using on-disk description]
+[1 / 21]
+[2 / 22] SyncFoundation
+[6 / 26] SyncFoundation
+[11 / 27] SyncFoundation
+[13 / 27] SyncFoundation
+[15 / 26] SyncFoundationTests-product
+[17 / 28] SyncFoundationTests-product
+[19 / 25] SyncFoundationTests-product
+[21 / 25] SyncFoundationTests-product
+Build complete! (4.65秒)
+Test Suite 'All tests' started at 2026-11-07 22:57:44.283.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 22:57:44.285.
+Test Suite 'SyncFoundationTests' started at 2026-11-07 22:57:44.285.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' passed (0.005 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' started.
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:129: error: -[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected] : XCTAssertThrowsError failed: throwing NSInvalidArgumentException: You cannot set the same asset on multiple records. Asset <CKAsset: 0x10371f1c0; path=/var/folders/*/FFC19017-0BD0-486F-971A-510F282C4BB1, UUID=E165D881-DCA8-4372-9D4F-7FB27EC53FFA> is already associated with record <CKRecordID: 0x76928a0d20; recordName=mutation-33333333-3333-3333-3333-333333333333, zoneID=PGSyncV1-11111111-1111-1111-1111-111111111111:__defaultOwner__>
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:131: error: -[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected] : XCTAssertThrowsError failed: throwing NSInvalidArgumentException: You cannot set the same asset on multiple records. Asset <CKAsset: 0x10371f1c0; path=/var/folders/*/FFC19017-0BD0-486F-971A-510F282C4BB1, UUID=E165D881-DCA8-4372-9D4F-7FB27EC53FFA> is already associated with record <CKRecordID: 0x76928a0d20; recordName=mutation-33333333-3333-3333-3333-333333333333, zoneID=PGSyncV1-11111111-1111-1111-1111-111111111111:__defaultOwner__>
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' failed (0.209 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' passed (0.028 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' passed (0.020 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' passed (0.059 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' passed (0.001 seconds).
+Test Suite 'SyncFoundationTests' failed at 2026-11-07 22:57:44.622.
+	 Executed 18 tests, with 2 failures (0 unexpected) in 0.335 (0.337) seconds
+Test Suite 'SyncFoundationTests.xctest' failed at 2026-11-07 22:57:44.622.
+	 Executed 18 tests, with 2 failures (0 unexpected) in 0.335 (0.337) seconds
+Test Suite 'All tests' failed at 2026-11-07 22:57:44.622.
+	 Executed 18 tests, with 2 failures (0 unexpected) in 0.335 (0.339) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+Note: Some test targets reported failures:
+  - SyncFoundationTests (XCTest)

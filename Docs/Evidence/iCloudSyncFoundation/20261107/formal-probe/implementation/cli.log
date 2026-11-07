@@ -1,0 +1,3 @@
+OFFLINE_ONLY plan SHA256 4337e38da985f82762c4d0d8a4017512b551eaf0480f7aa08d05b4a88d549f82
+OFFLINE_ONLY 6 SDK checks passed; no cloud operation or P0 claim.
+NOT_READY; no signing, installation, account change or network operation.

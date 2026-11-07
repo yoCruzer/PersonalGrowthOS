@@ -1,0 +1,7 @@
+{
+  "Sources/SyncFoundation/CloudRecordCodec.swift": "4ec8a682aba62878debce9df689684b3ec79d983447568f9af5e5641705c8950",
+  "Sources/SyncFoundation/Identity.swift": "6d43a762eb4d4a63aa4fb2169868071dae4e7b6c5035c63b074cb65c876f7992",
+  "Sources/SyncFoundation/Manifest.swift": "38a97d958f1138917c2b968b519685f01dfadf37ec941acb507d2fbb1fab1425",
+  "Sources/SyncSchema/main.swift": "da8cdcbd4b73a80ac02814a925576accf6b6ab35ef6f3f538798a3fb2b2b619e",
+  "Package.swift": "1a67333167c6ffcd5bc54ae99b16612fba15d82621e947b52a37b1263b181a56"
+}

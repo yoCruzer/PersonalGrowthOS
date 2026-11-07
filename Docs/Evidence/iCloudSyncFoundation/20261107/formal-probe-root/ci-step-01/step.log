@@ -1,0 +1,28 @@
+Building for debugging...
+[Planning deferred tasks]
+[29 / 52]
+[30 / 53] SyncFoundation
+[42 / 100]
+[49 / 100]
+[50 / 100]
+[55 / 100]
+[59 / 100]
+[63 / 100]
+[65 / 100]
+[66 / 100]
+[72 / 100]
+[77 / 100] SyncFoundation
+[84 / 101] FormalProbeCore
+[89 / 106] FormalProbeCore
+[98 / 107] FormalDevelopmentProbe-product
+[100 / 109] FormalDevelopmentProbe-product
+[101 / 109] FormalProbeCore
+[106 / 109] FormalProbeCore
+[107 / 109] FormalDevelopmentProbe-product
+Build complete! (4.44秒)
+OFFLINE_ONLY plan SHA256 eb74788fdddab26be0d7ff9513ed79b6af7434993abb8c83d41fdd6ef0255f1a
+Building for debugging...
+Build complete! (0.14秒)
+OFFLINE_ONLY 6 SDK checks passed; no cloud operation or P0 claim.
+NOT_READY; no signing, installation, account change or network operation.
+Six offline SDK checks passed; actual unprovisioned signing preflight correctly rejected.

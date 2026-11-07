@@ -1,0 +1,12 @@
+{
+  "Packages/SyncFoundation/Package.swift": "a53c96693b8c072626a795ae8e05e0b989bc386a0bd9d18003ad46d9cc5c0715",
+  "Packages/SyncFoundation/README.md": "f2cdf82891ae0e08769885458919803eeadf3f8c05e0c1237dfecb5403529b1e",
+  "Packages/SyncFoundation/Sources/SyncFoundation/CloudRecordCodec.swift": "d8905d3571dfb10908b0fdf898ef391c2d86e1364fb2cd5f5bd7f97670b3044a",
+  "Packages/SyncFoundation/Sources/SyncFoundation/Identity.swift": "8f969000acc8f97a2a1fb536d3c6449e0302b3fa6845b5e40c690593998c18d3",
+  "Packages/SyncFoundation/Sources/SyncFoundation/Manifest.swift": "734af8e893e0c133577d9e847a3dda84309324460aabf9204b7b628aa8b79fa5",
+  "Packages/SyncFoundation/Sources/SyncFoundation/PayloadManifest.swift": "f1efc2d34ea540a68135cbbd3d83f4ad07e37a252725fbf5693befb1c24f3a95",
+  "Packages/SyncFoundation/Sources/SyncPayloadProbe/main.swift": "06a8608aa6a6d1374143eacad576929bcf6bab5ff56729a5180be38cdba83b97",
+  "Packages/SyncFoundation/Sources/SyncSchema/main.swift": "9e2442200708703031d6f5cbe95a1c1a2dba2c4b2095f53b4e57fe3cf8422173",
+  "Packages/SyncFoundation/Tests/SyncFoundationTests/PayloadChunkTests.swift": "2e4ff7b1eea2c74258a8a243ee4b740923327221f0efae57178b762323c79139",
+  "Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift": "2a8ee15e27c889c4f4a727dfe7c7701de9a51bc5e8d64732006eff2c4d9f3c48"
+}

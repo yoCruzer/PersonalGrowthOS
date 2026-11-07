@@ -1,0 +1,66 @@
+Building for debugging...
+[Pre-planning 1 / 124]
+[Planning deferred tasks]
+[33 / 64]
+[34 / 65] SyncFoundation
+[43 / 112]
+[46 / 112]
+[49 / 112]
+[52 / 112]
+[54 / 112]
+[58 / 112]
+[60 / 112]
+[61 / 112]
+[64 / 112]
+[67 / 112]
+[68 / 112]
+[69 / 112]
+[70 / 112]
+[75 / 112]
+[76 / 112]
+[81 / 112] SyncFoundation
+[92 / 113] SyncSchema-product
+[94 / 115] SyncSchema-product
+[95 / 115] SyncFoundation
+[103 / 116] SyncSchema-product
+[105 / 116] SyncFoundationTests-product
+[117 / 149]
+[122 / 149]
+[125 / 149]
+[127 / 149]
+[130 / 149]
+[133 / 149]
+[134 / 149]
+[138 / 149] SyncFoundationTests-product
+[143 / 149] SyncFoundationTests-product
+[145 / 149] SyncFoundationTests-product
+Build complete! (12.70秒)
+Test Suite 'Selected tests' started at 2026-11-07 23:11:20.647.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:11:20.648.
+Test Suite 'IndependentChunkTests' started at 2026-11-07 23:11:20.648.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testChunkRecordRoutingTypesIntegrityAndVersionAreStrict]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testChunkRecordRoutingTypesIntegrityAndVersionAreStrict]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testManifestTotalsAndIndexShapeAreStrict]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testManifestTotalsAndIndexShapeAreStrict]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testOrderedChunksMissingDuplicateAndExtraAreRejected]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testOrderedChunksMissingDuplicateAndExtraAreRejected]' passed (0.014 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceGrowthDuringEmit]' started.
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:32: error: -[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceGrowthDuringEmit] : XCTAssertThrowsError failed: did not throw an error
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceGrowthDuringEmit]' failed (0.084 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceTruncatedDuringEmit]' started.
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:24: error: -[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceTruncatedDuringEmit] : XCTAssertThrowsError failed: did not throw an error
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceTruncatedDuringEmit]' failed (0.007 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testRepeatedEqualChunksAtDifferentPositionsAreLegal]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testRepeatedEqualChunksAtDifferentPositionsAreLegal]' passed (0.017 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' passed (0.228 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testValidChunkHashesCannotHideWrongWholeHash]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testValidChunkHashesCannotHideWrongWholeHash]' passed (0.007 seconds).
+Test Suite 'IndependentChunkTests' failed at 2026-11-07 23:11:21.008.
+	 Executed 8 tests, with 2 failures (0 unexpected) in 0.360 (0.360) seconds
+Test Suite 'SyncFoundationTests.xctest' failed at 2026-11-07 23:11:21.008.
+	 Executed 8 tests, with 2 failures (0 unexpected) in 0.360 (0.360) seconds
+Test Suite 'Selected tests' failed at 2026-11-07 23:11:21.008.
+	 Executed 8 tests, with 2 failures (0 unexpected) in 0.360 (0.361) seconds
+Note: Some test targets reported failures:
+  - SyncFoundationTests (XCTest)

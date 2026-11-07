@@ -1,0 +1,51 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 124]
+[Planning deferred tasks]
+[7 / 34] SyncFoundation
+[11 / 38] SyncFoundation
+[13 / 38] SyncFoundation
+[14 / 37]
+[16 / 37] SyncSchema-product
+[16 / 37]
+[17 / 38] SyncFoundation
+[18 / 38] SyncFoundation
+[20 / 36] SyncFoundationTests-product
+[23 / 39] SyncFoundationTests-product
+[27 / 39] SyncSchema-product
+[28 / 39] SyncSchema-product
+[29 / 39] SyncFoundationTests-product
+[32 / 39] SyncSchema-product
+[33 / 39] SyncSchema-product
+[34 / 39] SyncSchema-product
+[35 / 39] SyncFoundationTests-product
+[36 / 39]
+Build complete! (17.95秒)
+Test Suite 'Selected tests' started at 2026-11-07 23:00:36.893.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:00:36.896.
+Test Suite 'IndependentBoundaryTests' started at 2026-11-07 23:00:36.896.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testEveryRoutingDimensionAndInstanceHasFenceBoundary]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testEveryRoutingDimensionAndInstanceHasFenceBoundary]' passed (0.006 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testForeignOwnerZoneIsRejectedWithSameDatasetAndName]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testForeignOwnerZoneIsRejectedWithSameDatasetAndName]' passed (0.007 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testHardLimitsUseActualFileSizeNotAdvertisedMetadata]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testHardLimitsUseActualFileSizeNotAdvertisedMetadata]' passed (0.017 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIndependentFixedDigestBytesAndTypedCollision]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIndependentFixedDigestBytesAndTypedCollision]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIntegerOverflowNegativeAndIntegralFloatRejected]' started.
+/private/tmp/PGOS-SyncReview.gHBAkm/Candidate/Tests/SyncFoundationTests/IndependentBoundaryTests.swift:72: error: -[SyncFoundationTests.IndependentBoundaryTests testIntegerOverflowNegativeAndIntegralFloatRejected] : CloudKit does not support unsigned long long values with the high order bit set. (NSInvalidArgumentException)
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIntegerOverflowNegativeAndIntegralFloatRejected]' failed (1.224 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testReorderCanonicalizesCollectionsButDoesNotRewritePayload]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testReorderCanonicalizesCollectionsButDoesNotRewritePayload]' passed (0.007 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testSpecialFileDoesNotHangAndFileSchemeRequired]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testSpecialFileDoesNotHangAndFileSchemeRequired]' passed (0.003 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testUnknownNestedFieldAndNullOptionAreRejected]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testUnknownNestedFieldAndNullOptionAreRejected]' passed (0.002 seconds).
+Test Suite 'IndependentBoundaryTests' failed at 2026-11-07 23:00:38.166.
+	 Executed 8 tests, with 1 failure (1 unexpected) in 1.268 (1.270) seconds
+Test Suite 'SyncFoundationTests.xctest' failed at 2026-11-07 23:00:38.167.
+	 Executed 8 tests, with 1 failure (1 unexpected) in 1.268 (1.270) seconds
+Test Suite 'Selected tests' failed at 2026-11-07 23:00:38.167.
+	 Executed 8 tests, with 1 failure (1 unexpected) in 1.268 (1.274) seconds
+Note: Some test targets reported failures:
+  - SyncFoundationTests (XCTest)

@@ -1,0 +1,16 @@
+{
+  "planExit": 0,
+  "replayExit": 0,
+  "preflightExit": 2,
+  "planSHA256": "4337e38da985f82762c4d0d8a4017512b551eaf0480f7aa08d05b4a88d549f82",
+  "commands": 6,
+  "pngBytes": 70,
+  "pngSHA256": "cf1b9bb2d2fb01ab3c6dec56322138bf863063df45291ce340ea4e9e259e3977",
+  "pngChunksCRCVerified": [
+    "IHDR",
+    "IDAT",
+    "IEND"
+  ],
+  "actualSignedPositive": "NOT_RUN",
+  "networkOperations": 0
+}
