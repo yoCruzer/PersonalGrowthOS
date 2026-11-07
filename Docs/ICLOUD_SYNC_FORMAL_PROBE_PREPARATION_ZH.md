@@ -39,3 +39,6 @@ preflight 只调用实际 `codesign` 和本地 profile 解码，公开报告仅�
 Owner 已选择稍后按[集中只读清单](ICLOUD_SYNC_NEXT_READINESS_ZH.md)补齐正式 App 关联及两环境 schema，预计 5–10 分钟，手机前台及数据线均 0 分钟。本工具不增加当下的人工动作。
 
 取得导出后先比对固定候选，再准备必要的正式 Development 变化、独立客户端签名和真实发送/读回适配器。真实 Development 覆盖完成前不冻结 P0；Production schema 部署、Production 写入和发布仍须分别基于具体可评审内容授权。不把离线六条 SDK 检查称为真实双向、账户隔离、崩溃恢复或完整 G1 故障矩阵通过。
+
+
+验证收口（2026-11-08）：源码72f5d3d本机完整包34/34、分块独立12/12、准备器独立22条CLI及并发产物替换负例通过，iOS17共享核心编译通过；远端定向CI34原生+11独立分块+22独立CLI成功，三命令实际步骤成功。参见[最终CI原件](Evidence/iCloudSyncFoundation/20261107/ci-foundation-72f5d3d/README.md)及[独立审查](Evidence/iCloudSyncFoundation/20261107/formal-probe/review/README.md)。当前范围无剩余must-fix，真实云与签名资格限制保持。

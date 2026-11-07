@@ -1,0 +1,54 @@
+{
+  "refs": [
+    "99ef002d68685ea0e64988257b18a20c6c374f8c",
+    "72f5d3d5950a552068f8cb5d2da88b819a2b3318"
+  ],
+  "comparisons": [
+    {
+      "path": "PersonalGrowthOS",
+      "objectSHA": "cb1cd52530e2e998ade792ce2fd271f36ad984a3",
+      "same": true
+    },
+    {
+      "path": "PersonalGrowthOSTests",
+      "objectSHA": "74f89b2365b23ea96da3cac2a393f4828cc07236",
+      "same": true
+    },
+    {
+      "path": "PersonalGrowthOSUITests",
+      "objectSHA": "5ba1f0bdfbc88e4c5ed0db57b67cfc2898f2904e",
+      "same": true
+    },
+    {
+      "path": "PersonalGrowthOS.xcodeproj",
+      "objectSHA": "5fdb37be86fc6cf90205954077d0c8743a1c2a49",
+      "same": true
+    },
+    {
+      "path": "SharedCapture",
+      "objectSHA": "e423db843045f089efed30e4a4d83e8870266e41",
+      "same": true
+    },
+    {
+      "path": "ShareExtension",
+      "objectSHA": "6c78bb25693035fe7395ffdc62a05b62aef1cdca",
+      "same": true
+    },
+    {
+      "path": "ImportantDaysWidget",
+      "objectSHA": "040e2a768fdfd99bc9968f0d7164e95aabf113b7",
+      "same": true
+    },
+    {
+      "path": "Scripts/ci/run_ios.py",
+      "objectSHA": "167c118d28ff1cb510e47b530f8d28cd0a64d756",
+      "same": true
+    },
+    {
+      "path": ".github/workflows/ios-regression.yml",
+      "objectSHA": "2d6ee93832f9307ef4d41e3065c982f99b057efd",
+      "same": true
+    }
+  ],
+  "meaning": "Product, tests, project, shared/extension/widget sources and product CI script/workflow unchanged; new candidate CI collected separately."
+}

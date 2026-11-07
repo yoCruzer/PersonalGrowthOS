@@ -52,4 +52,13 @@ Owner新授权允许后续完整开发、独立子代理、普通推送与Draft 
 
 完整包34/34（原24+新增10）、iOS17共享核心编译、独立22条CLI正负例及本机并发签名产物替换负例通过，无剩余must-fix。注入签名元数据正例不算真实签名通过；实际SwiftPM产物虽可能有ad-hoc签名，仍因正式身份/能力/profile缺失得到NOT_READY、exit2。初稿损坏PNG、路径误拒绝及构建权限失败原样留证；修复后ImageIO/独立CRC/像素解压均通过。稳定22条黑盒和实际三命令已加入定向CI，时序相关并发用例只保留本机。
 
-源码99ef002的远端定向24+11、产品Release/Unit/Smoke全部成功；原始产物保存在ci-foundation-99ef002、ci-product-99ef002，前一源码2e68也独立保留。新增准备器最终候选的CI结果将单列，不能用99ef002替代。
+源码99ef002的远端定向24+11、产品Release/Unit/Smoke全部成功；原始产物保存在ci-foundation-99ef002、ci-product-99ef002，前一源码2e68也独立保留。新增准备器最终候选的CI结果单列在下一节，没有用99ef002替代。
+
+## 固定候选72f5d3d的远端收口
+
+最终代码 `72f5d3d5950a552068f8cb5d2da88b819a2b3318`，实际PR合并checkout `0af3599c12ec71ba2106c0f287707ed3c59684f0`。定向CI [42388380286](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42388380286) SUCCESS：原生34/34、独立分块11/11、准备器独立22条CLI，实际六条SDK回放与未配置profile产物的拒绝预检均符合预期。原始完整artifact ZIP已保存并与GitHub digest核对，见[最终定向证据](Evidence/iCloudSyncFoundation/20261107/ci-foundation-72f5d3d/README.md)。原生两target分别24+10，独立filter在不匹配target显示0不能抹掉实际11项。
+
+产品CI [42388380258](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42388380258) 已SUCCESS：Release三个unsigned bundle检查通过，Unit599=598PASS/0FAIL/1SKIP，Smoke在iPhone13mini/iOS27.2为5/5PASS，两个测试lane的runtimeWarnings均为空。唯一Unit跳过需隔离32MB HFS+低空间镜像，未向主卷填满数据；Optional extended UI按workflow条件SKIPPED，未冒称通过。完整证据见[最终产品验证](Evidence/iCloudSyncFoundation/20261107/ci-product-72f5d3d/README.md)。此次由仓库PR工作流自动触发，无手动重跑旧失败；产品/测试/工程/产品CI与99ef002逐Git对象相同，但仍按本次实际结果留证。最后只更新文档及证据，不改变已验证源码，不作为TestFlight或发布候选。
+
+
+2026-11-08（Asia/Shanghai）最终交付：本轮合成证据继续归入开始于20261107的批次目录。独立审查确认没有剩余must-fix，公开证据隐私复核未发现凭据或私人业务数据；原项目三项未提交改动未动。最后提交只含Docs/证据，标记`[skip ci]`，经验证的代码与工作流仍为72f5d3d，未merge或发布。下一实际外部输入为Owner已选择稍后导出的两环境schema与正式App关联；清单不新增手机/数据线操作，也不提前申请不具体的Production权限。

@@ -40,4 +40,6 @@ v2核心为PGMutationV2、PGPayloadChunkV2、PGOriginalV2，实际codec schema h
 
 [准备器实现及独立证据](formal-probe/README.md)：新增三命令工具不依赖真实schema导出，已继续完成。完整包34/34、准备器核心iOS17编译、独立22条CLI及并发产物替换负例通过；原包分块12项独立结果仍另记，不合并计数。实际三命令CI步骤本机实跑及初稿PNG失败/修复在formal-probe-root。
 
-源码99ef002的[定向CI](ci-foundation-99ef002/README.md)24+11通过、[产品CI](ci-product-99ef002/README.md)Release/Unit/Smoke成功，前一源码2e68另见ci-product-2e68ab2。均绑定head与实际PR合并checkout两个SHA。新增准备器的最终远端记录将追加，不沿用旧版本测试结果。
+源码99ef002的[定向CI](ci-foundation-99ef002/README.md)24+11通过、[产品CI](ci-product-99ef002/README.md)Release/Unit/Smoke成功，前一源码2e68另见ci-product-2e68ab2。均绑定head与实际PR合并checkout两个SHA。新增准备器最终远端记录在下段，不沿用旧版本测试结果。
+
+最终代码`72f5d3d`的[定向CI](ci-foundation-72f5d3d/README.md)已SUCCESS：34原生+11独立分块+22独立CLI，原始artifact ZIP及逐文件hash保存；不是旧99ef002计数。[最终产品CI42388380258](ci-product-72f5d3d/README.md)已SUCCESS：Release成功、Unit598PASS/1SKIP/0FAIL、Smoke5/5PASS，runtimeWarnings为空；optional extended UI条件跳过。交付收口日期为2026-11-08，代码仍为72f5d3d，之后只补Docs与原始证据。
