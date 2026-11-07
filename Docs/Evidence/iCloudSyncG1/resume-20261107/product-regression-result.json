@@ -1,0 +1,22 @@
+{
+  "run": 42327441520,
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327441520",
+  "head": "8245f74c2362bb96fc8bfedfdbd112bca0d5f699",
+  "overall": "failure",
+  "release": "success",
+  "unit": "success",
+  "smoke": {
+    "executed": 5,
+    "passed": 3,
+    "failed": 2,
+    "failure": "Short Chinese name stays on one line: observed height 42.33333333333337 > 25.0 at AppLaunchSmokeTests.swift:3317",
+    "tests": [
+      "testUIReadabilityChineseDefaultAndLargerText",
+      "testUIReadabilityEnglishDefault"
+    ]
+  },
+  "optionalExtended": "skipped",
+  "productAndTestDiffForSigningFix": [],
+  "rawFailedJobLogSHA256": "057a48e4bb2463f9b2a972a521520d8003b964f35e383de4cfb95a6b39772f16",
+  "scope": "No product/UI modification in signing fix; failure retained unresolved, not dismissed as flaky; no claim product release gate passed"
+}

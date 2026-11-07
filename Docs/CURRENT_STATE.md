@@ -1,3 +1,27 @@
+# 2026-11-07 G1测试入口就绪：待Owner在haha启动及iPhone开发连接
+
+Owner已确认haha普通用户登录测试iPhone同一iCloud，并切回原控制会话；该身份尚待两端实际CloudKit指纹核验。原用户无法无密码切换执行身份，因此没有跨用户sudo或复制凭据。已在独立SyncLab中加入默认关闭、仅Debug的受限合成测试入口：固定实验容器/synthetic-g1数据集、命令白名单、固定PNG，Mac只连接127.0.0.1临时认证通道，iPhone仅通过本App启动参数与本App Documents取回结果。
+
+请求/结果绑定run、dataset和原始指令摘要；不可覆盖journal明确保留中断状态；按dataset的OS进程锁防重复启动共享store。临时通道无Shell/任意文件路径/API透传；token仅原用户和haha可读，不放入命令行或仓库。单条命令PASS仅表示执行与快照完成，绝不等同云用例通过。
+
+定向原生39/39、Python13/13、Mac/iPhone签名构建及实包校验、unsigned Mac Release构建均PASS。已请Owner在haha中打开`/private/tmp/SyncLab-Probe-20261107/Start-SyncLab.command`后保留会话并切回；iPhone需连线解锁，最近App查询被CoreDevice4016拒绝。尚未安装手机；独立复核后仅排队一条Mac账户访问探测，尚未收到结果，没有save/sync指令，云数据读写未执行。独立审查新增证据问题已修正并复验，最终记录随本批提交。
+
+自动产品回归42327441520保留FAIL（Release/Unit成功、UI smoke3PASS/2FAIL短名称布局断言），不扩大G1范围或宣称发布门禁通过。下一步是真实账户指纹匹配与逐ID/原图字节往返，而非继续增加离线替代测试。
+
+---
+
+# 2026-11-07 G1隔离用户准备：普通用户已创建，待Owner登录iCloud
+
+Owner选定在Mac mini使用专用本地用户；已亲自完成管理员验证和密码设置。系统设置实际显示新建`haha`普通用户，日常管理员保留。已请Owner切换到该用户，登录测试iPhone相同的系统iCloud，再切回当前用户并保持测试用户会话登录。尚未核实iCloud登录/Development访问资格，不跨用户读取私人内容。
+
+已准备签名启动包`/private/tmp/PersonalGrowthOS-SyncLab-TestUser-20261107`（仅实验App、只读签名门禁和启动脚本，无私钥）。复制后签名PASS，启动器语法检查PASS，在原日常用户运行的负例按预期拒绝exit1。它只为新用户打开合成dataset的离线初始页面，连接/保存/同步仍需后续执行。是否能在测试用户中运行及控制须实际核验，不假定当前控制会话跨用户可用。
+
+定向CI42327436273已PASS。自动触发的正式产品回归42327441520已结束FAIL：Release/Unit成功，UI smoke 3PASS/2FAIL，两个可读性测试在同一短中文名称单行高度断言失败（42.333>25）。签名修复未改产品或产品测试；此失败已保存，尚未解决，不重写成PASS，不扩展本轮G1到产品UI修复。
+
+[测试用户准备](Evidence/iCloudSyncG1/resume-20261107/test-user-preparation.json) · [自动产品回归结果](Evidence/iCloudSyncG1/resume-20261107/product-regression-result.json)。实际云读写/E2仍NOT_RUN，当前下一步为Owner完成隔离账户登录，随后核验运行与云访问。
+
+---
+
 # 2026-11-07 G1续接：双平台签名已通过，Owner更正两端iCloud不同
 
 Owner明确授权登记当前Mac mini并生成开发描述文件，已执行：Mac Debug签名构建exit0、严格实包签名校验PASS。此前iOS实包签名PASS保持，实体iPhone开发连接探测也已exit0。不需要重建App ID、容器或证书。

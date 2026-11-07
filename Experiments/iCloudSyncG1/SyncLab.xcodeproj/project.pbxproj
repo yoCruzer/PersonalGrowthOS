@@ -40,6 +40,7 @@
 			<key>children</key>
 			<array>
 				<string>B400DE42A51D894E851C87AC</string>
+				<string>7EEDE6560A4A8BE335A1F6B1</string>
 				<string>7654C4F9B5D96C831728C5C9</string>
 				<string>470EC1EE64E015A096582405</string>
 				<string>A5D9D34EF441F57C9146C407</string>
@@ -142,6 +143,13 @@
 			<key>productType</key>
 			<string>com.apple.product-type.application</string>
 		</dict>
+		<key>3C0726C5C0A4333BE9B3558D</key>
+		<dict>
+			<key>fileRef</key>
+			<string>7EEDE6560A4A8BE335A1F6B1</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
 		<key>42C4C7607E10E61F8F959728</key>
 		<dict>
 			<key>fileRef</key>
@@ -235,6 +243,17 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>7EEDE6560A4A8BE335A1F6B1</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/DevelopmentProbe.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>878A52FC5FF6A57D50B7B870</key>
 		<dict>
 			<key>buildActionMask</key>
@@ -242,6 +261,7 @@
 			<key>files</key>
 			<array>
 				<string>131949B0F1C625C25A1CBE59</string>
+				<string>3C0726C5C0A4333BE9B3558D</string>
 				<string>0EA8A916FB87934EDFF383F6</string>
 				<string>D8E368627DE564D016B604FE</string>
 				<string>42C4C7607E10E61F8F959728</string>

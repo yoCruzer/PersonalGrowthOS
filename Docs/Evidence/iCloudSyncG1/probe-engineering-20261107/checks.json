@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-07",
+  "sourceHashes": {
+    "Sources/SyncLab/DevelopmentProbe.swift": "0104300c7f91ce0271a9a0afbd003a86674603ff636ce904bf6fcd53dcbbb88a",
+    "App/SyncLabApp.swift": "694289f4d91d53bae88bb75490c87fb65898239e4987f286f7014ead2a0b978d",
+    "Tools/probe_bridge.py": "999570dddac0e353e7d719529ee705a1e097f469a564c430503dc0a91caa76cb",
+    "Tools/test_probe_bridge.py": "5b1920583b02b90e755f6597ec684ba2b707c1aa61bd1b98c798a4b97a778632",
+    "Tools/prepare_probe_package.py": "8752912f885185c8182615b2406651c6908f99ca47178430b57ad0cc79e668fd",
+    "Tests/SyncLabTests/DevelopmentProbeTests.swift": "b35d68e389fa6e988e7938b8ad9d1e555e93a9d5fc269dd8a7827c8ed493a32c"
+  },
+  "nativeTests": {
+    "total": 39,
+    "failed": 0
+  },
+  "pythonTests": {
+    "total": 13,
+    "failed": 0
+  },
+  "independentNativeTests": {
+    "total": 3,
+    "failed": 0
+  },
+  "independentBridgeTests": {
+    "total": 5,
+    "failed": 0
+  },
+  "signedBuilds": {
+    "macOS": 0,
+    "iOS": 0
+  },
+  "strictSignedPackageVerification": {
+    "macOS": "PASS",
+    "iOS": "PASS"
+  },
+  "unsignedReleaseMacBuild": 0,
+  "defaultDailyUserLauncherNegativeExit": 1,
+  "cloudTests": "NOT_RUN",
+  "notes": [
+    "Earlier sandbox cache compilation failed; loopback binding in sandbox returned 4 permission errors; non-sandbox tests above passed.",
+    "Independent review original red cases retained unchanged.",
+    "App running in dedicated user and physical iPhone installation still pending.",
+    "No account fingerprint, token, private signature log or device identifier committed."
+  ],
+  "privateBuildLogs": {
+    "mac-probe-build-journal-private.log": "8c22dfe9cb0edeb560597b6fc6e80956001c179d118e398bf4375e910dabb6ca",
+    "ios-probe-build-journal-private.log": "77ff45a9476c9597cea1e0b9160603423bbc26b13f783c9b65663f5b375687cc",
+    "probe-release-build.log": "d7465f7798786f147f7f2cbbaccc0baf871a21614135a8c1b3d52c5b62bc5768"
+  }
+}

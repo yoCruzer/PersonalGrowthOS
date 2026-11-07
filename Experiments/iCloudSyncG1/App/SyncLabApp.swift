@@ -12,6 +12,7 @@ import CloudKit
     @Published var snapshotURL: URL?
     var store: LabStore?
     var driver: CloudDriver?
+    var probeStarted = false
     let base = URL.applicationSupportDirectory.appendingPathComponent("PersonalGrowthOS-SyncLab", isDirectory: true)
     // Synthetic 1x1 PNG. No photo library or product files are accessed.
     let png = Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=")!
@@ -70,6 +71,29 @@ import CloudKit
         do { guard let driver else { throw LabError.blocked }; try await driver.sync(); try refresh(); status = driver.events.suffix(8).joined(separator: "\n") }
         catch { status = "同步未完成；保留队列，禁止据此声称双端一致" }
     }
+    func runProbeIfRequested() async {
+        #if DEBUG
+        let env = ProcessInfo.processInfo.environment
+        guard !probeStarted, env["SYNCLAB_PROBE_RUN"] != nil else { return }
+        probeStarted = true
+        do {
+            guard let run = env["SYNCLAB_PROBE_RUN"] else { throw LabError.blocked }
+            let probe = try DevelopmentProbe(base: base, dataset: dataset, runID: run)
+            do {
+            if let command = env["SYNCLAB_PROBE_COMMAND"] {
+                let result = try await probe.runOnce(command)
+                status = result.id + ": " + result.status + " " + (result.errorCode ?? "")
+            } else if let address = env["SYNCLAB_PROBE_BRIDGE"], let token = env["SYNCLAB_PROBE_TOKEN"] {
+                status = "受限合成测试入口已启动；仅接受本机测试指令"
+                try await probe.runBridge(address, token: token) { self.status = $0 }
+            } else { throw LabError.blocked }
+            } catch {
+                await probe.shutdown(); throw error
+            }
+            await probe.shutdown()
+        } catch { status = "合成测试入口停止；原数据保留" }
+        #endif
+    }
 }
 struct LabScreen: View {
     @StateObject private var model = LabViewModel()
@@ -91,7 +115,10 @@ struct LabScreen: View {
                     Button("手动发送与获取") { Task { await model.sync() } }
                     Text("默认禁止云访问。只在核对 Development 签名后，按 README 显式启用运行参数；不切换系统账户。")
                 }
-            }.navigationTitle("PersonalGrowthOS SyncLab").task { model.openOffline() }
+            }.navigationTitle("PersonalGrowthOS SyncLab").task {
+                if ProcessInfo.processInfo.environment["SYNCLAB_PROBE_RUN"] == nil { model.openOffline() }
+                else { await model.runProbeIfRequested() }
+            }
         }
     }
 }

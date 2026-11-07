@@ -22,3 +22,9 @@ Review仅可放行**离线实验工程交付**。SDK头文件保证delegate事�
 独立reviewer复核本轮Apple profile allowlist修复，发现并关闭旧container字符串子串误匹配。最终完整脚本合成集成30/30、仓库helper8/8，无剩余必须修复项；真实服务仍NOT_RUN。独立测试使用mock codesign/security，不冒称密码学签名/设备验证。实际iOS实包的本机严格签名PASS另见环境台账。
 
 [独立报告](Evidence/iCloudSyncG1/resume-20261107/independent-review/review-final.md) · [命令、源码及证据SHA](Evidence/iCloudSyncG1/resume-20261107/independent-review/manifest-final.json)。初版24/24、7/7和容器负例原始结果原样保留。
+
+## 2026-11-07 专用测试用户的受限Debug探针
+
+独立reviewer检查运行隔离、结果身份/重放、进程互斥、文件模式与token传递，发现的问题均补修。最终独立原生3/3、真实loopback5/5及启动器mock正反例通过，无剩余必须修复项；实际跨用户启动/真实签名/CloudKit未由reviewer执行。
+
+[独立报告及原始红绿证据](Evidence/iCloudSyncG1/probe-engineering-20261107/independent-review/review-final.md) · [源码哈希](Evidence/iCloudSyncG1/probe-engineering-20261107/independent-review/final-source-sha256.json)。本机39项原生、13项工具、两端签名及Release隔离检查另见[工程证据](Evidence/iCloudSyncG1/probe-engineering-20261107/README.md)。不能将命令PASS替代双端云验收。

@@ -52,3 +52,15 @@ CLI 的 PRE-FETCH-CHECKPOINT 是本地退出顺序占位字节，不是真实 CK
 - 只消费当前dataset zone；不物理删除云记录，删除是tombstone。云物理删除/缺失区不静默转逻辑删除，停止网络并保全本地。自动重建/全量修复策略须在真实服务阶段补验。
 
 [执行证据与未测矩阵](../../Docs/ICLOUD_SYNC_G1_EXECUTION_ZH.md) · [wire候选与Production门禁](../../Docs/ICLOUD_SYNC_G1_WIRE_SCHEMA_ZH.md)。
+
+## 专用Mac用户的受限Debug探针（2026-11-07）
+
+Owner已创建haha普通用户并报告登录手机同一iCloud。原控制会话无法直接操作新用户，使用`Tools/probe_bridge.py`在127.0.0.1建立一次性本机通道；`Tools/prepare_probe_package.py`把已通过严格签名检查的App复制到临时启动包。Owner在haha启动一次并保持登录即可，工具不会登录或退出系统账户，不包含私钥。
+
+桥固定dataset/runID，使用随机token；token文件mode600且仅指定测试用户有读取ACL，启动时只通过环境传递。App拒绝非loopback URL和重定向；只接受connect/save/sync/snapshot/reopen/stop，不接受容器、账户、路径或Shell参数。save只准probe-标识、SYNTHETIC文字及内置PNG。App数据库仍在各自沙箱中，正式库和App Group不参与。
+
+`SYNCLAB_PROBE_RUN` + `SYNCLAB_ENABLE_DEVELOPMENT=YES`必须显式设置，Release不编入探针。Mac另需`SYNCLAB_PROBE_BRIDGE`/`SYNCLAB_PROBE_TOKEN`；iPhone用`SYNCLAB_PROBE_COMMAND`传递base64 JSON单次指令。每个客户端对dataset持有flock，重复实例拒绝；journal按run/dataset隔离、先保存原始指令再执行，结果硬链接发布不可覆盖。已记录请求但无结果视为中断，不能同ID静默重放。
+
+结果位于本App Documents/SyncLab-Probe/<runID>/<dataset>/<commandID>.json。其中账户指纹仅用于私下比较，同步快照只有实验数据；公开证据必须去除账户指纹，保留run/dataset/指令摘要及逐mutation/图片字节判定。**status=PASS只代表命令完成，仍须检查pending/events并独立比对双端内容，不是G1/云验收PASS。**启动桥不会自行发送命令。
+
+当前真实CloudKit八项仍待执行；工具没有把本地故障注入冒充真实SDK/server行为。实际账户切换、真实离线/锁屏等场景仍单列，需相应Owner操作和证据。

@@ -77,3 +77,9 @@ Owner明确批准将当前Mac mini登记至既有开发团队并生成描述文�
 Owner随后明确更正：当前Mac与其测试iPhone使用不同系统iCloud账户。撤回此前同账户前提。签名Mac SyncLab只启动至离线初始页面，未点击账户连接/保存/同步，随后退出；未在手机安装、未发送测试数据或切换系统账户。建议Mac专用本地测试用户登录手机同一iCloud，或使用已有同一iCloud的另一台Mac；已询问Owner选择，实际登录由Owner完成。CloudKit真实主路径及账户切换仍NOT_RUN，不能用两个不同private database的客户端证明收敛。
 
 [授权登记与账户更正证据](Evidence/iCloudSyncG1/resume-20261107/authorized-mac-and-account-correction.json) · [Mac签名结果](Evidence/iCloudSyncG1/resume-20261107/mac-signing-after-registration.json)。这两个新证据替代此前“Mac登记待授权/缺profile”作为当前缺项；旧失败保留。
+
+## 2026-11-07 专用普通用户已创建
+
+Owner选择专用本地用户方案并亲自完成密码步骤；系统设置已观察新建haha普通用户，原管理员保持。现待Owner在新用户中登录手机同一iCloud后切回原会话，测试用户保持登录。已准备临时签名包及启动入口，复制签名PASS，启动器语法PASS、原日常用户负例exit1；不包含私钥，不重复登录开发者账户。新用户云资格/运行方式尚未验证。
+
+[准备记录](Evidence/iCloudSyncG1/resume-20261107/test-user-preparation.json)。自动产品回归42327441520结束FAIL：Release/Unit成功，UI smoke 3/5通过，2项短中文名称单行高度断言失败；[原样记录与日志摘录](Evidence/iCloudSyncG1/resume-20261107/product-regression-result.json)。本次签名工具改动未改产品/产品测试，根因仍未定，不宣布产品门禁通过或私自改G1范围。SyncLab定向CI保持PASS。

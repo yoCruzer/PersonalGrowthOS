@@ -20,6 +20,9 @@
     "signing-gate-tests.log": "05a20e133c196f6cc84266aff1ca79d47dc5b3c124d4eb03b54941fb4ff44612",
     "ci-accepted.json": "9d5aa92fd954759cf524e29f18e25e5ad6e4cc9822fa3b4aa4b7b3ec3ce9083e",
     "mac-signing-after-registration.json": "a699d3820309023fbfba82050a6b538c2f8cfa2d21f302813cf2907f40644a0d",
-    "authorized-mac-and-account-correction.json": "33d11e6b65092642c03532a2d65065739107640ee8c8abac8b2be1e64c55fa9c"
+    "authorized-mac-and-account-correction.json": "33d11e6b65092642c03532a2d65065739107640ee8c8abac8b2be1e64c55fa9c",
+    "test-user-preparation.json": "d6de2f443eca20746baafbd52d4b519670d23c39342bedf6f2f5b11f595e342b",
+    "product-regression-failure-excerpt.log": "48dcfffb7f770bb87f0d37fa1db606cc558a3461fa05b0dca7b7f6fe87ca6c86",
+    "product-regression-result.json": "a494cf6db1f5cb2bb73ef0ca560a96641c1a153e8b22bd51dd900dc143a2bdda"
   }
 }

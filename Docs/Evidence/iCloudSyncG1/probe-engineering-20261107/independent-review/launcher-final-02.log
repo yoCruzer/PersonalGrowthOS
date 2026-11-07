@@ -1,0 +1,4 @@
+PASS: synthetic packaging signature check ordering and designated ACL arguments
+PASS: wrong UID rejects before any subprocess
+PASS: correct UID verifies copy then open; token absent argv, fixed opt-in/run/dataset/token in environment
+LIMIT: signature, ACL command, and application launch mocked; no private inputs used

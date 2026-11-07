@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-07",
+  "ownerSelected": "dedicated local standard macOS user with same iCloud as test iPhone",
+  "uiObserved": "Users & Groups shows newly created haha standard user; daily administrator retained",
+  "passwordHandling": "Owner completed OS authentication and new password; no password collected by agent",
+  "iCloudLogin": "PENDING_OWNER",
+  "signedLaunchPackage": "/private/tmp/PersonalGrowthOS-SyncLab-TestUser-20261107",
+  "packageSignatureGate": "PASS",
+  "launcherSyntaxExit": 0,
+  "launcherDailyUserNegativeExit": 1,
+  "cloudReadWrite": "NOT_RUN"
+}
