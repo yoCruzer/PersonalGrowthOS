@@ -1,3 +1,15 @@
+# 2026-11-07 iCloud 后续连续开发授权生效
+
+Owner 本次明确授权按依赖顺序连续完成后续实现、验证、修复和可评审交付，不在小阶段重复请求确认。工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`，分支 `codex/icloud-sync-foundation`，从已核对远端 G1 `e57fe3503995771a89754fbc4077ea16627c15be` 创建。原项目未提交工程、本地化和 xcodecloud 改动不动。
+
+G1 保持 `OWNER_ACCEPTED_PHONE_SCOPE`：6 原件/27 命令、Mac CK_2 非阻塞例外及原始失败均保留；不重跑完整 G1。旧文档“仅实验/停批次”的开发范围由此次授权限定替代，真实服务覆盖和发布门禁不改写。
+
+当前推进：正式 wire 候选与身份/容量/asset 清单的隔离实现及独立复核；V16/v12 合成基线和写入接缝准备；正式产品 smoke 根因修复；正式容器只读核验与准确操作清单。正式容器 P0 尚未冻结、P1/P2 尚未验证，因此先完成准备，不接入全部39实体、不把候选标为可发布。对不依赖门禁的工作持续推进。
+
+允许本机定向检查、独立子代理、普通 push 和新 Draft PR。禁止 merge、force push、历史重写、删除数据、Production部署/写入、Archive、TestFlight及发布；密码/验证码/系统用户切换由Owner操作，不读日常私人库。实际完成证据将追加至本轮交付文档。
+
+---
+
 # 2026-11-07 G1本轮已按Owner手机侧范围收口
 
 状态 `OWNER_ACCEPTED_PHONE_SCOPE`。Owner明确接受Mac CK_2为非阻塞例外；原始失败保留、VPN归因未独立证实。手机6份原件27条命令全部PASS，核对依赖修复/新原图、联网写入、断网本地重开与pending保留、恢复联网ACK清空以及独立restore种子上传。后者不代表restore race；原完整真实故障矩阵未全覆盖，Mac依赖剩余场景列后续补证，不继续卡本轮。

@@ -7,14 +7,16 @@ import UIKit
 struct ModuleEntryRow: View {
     let title: String
     var subtitle: String? = nil
-    let systemImage: String
+    let systemImage: String?
     var value: String? = nil
     var titleID = ""
     @Environment(\.dynamicTypeSize) private var typeSize
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            Image(systemName: systemImage).font(.system(size: 20)).foregroundStyle(.secondary).frame(width: 24)
-                .accessibilityHidden(true)
+            if let systemImage {
+                Image(systemName: systemImage).font(.system(size: 20)).foregroundStyle(.secondary).frame(width: 24)
+                    .accessibilityHidden(true)
+            }
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true).accessibilityIdentifier(titleID)
                 if let subtitle { Text(subtitle).font(.subheadline).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }

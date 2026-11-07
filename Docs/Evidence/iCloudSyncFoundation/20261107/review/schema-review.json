@@ -1,0 +1,42 @@
+[
+  {
+    "case": "new-a",
+    "exit": 0,
+    "expected": 0,
+    "stdout": "Generated local candidate schema; P0/server/Production remain unverified.\n",
+    "stderr": ""
+  },
+  {
+    "case": "new-b",
+    "exit": 0,
+    "expected": 0,
+    "stdout": "Generated local candidate schema; P0/server/Production remain unverified.\n",
+    "stderr": ""
+  },
+  {
+    "case": "existing",
+    "exit": 1,
+    "expected": 1,
+    "stdout": "",
+    "stderr": "SyncSchema failed: Error Domain=NSPOSIXErrorDomain Code=17 \"File exists\"\n"
+  },
+  {
+    "case": "no-arg",
+    "exit": 1,
+    "expected": 1,
+    "stdout": "",
+    "stderr": "SyncSchema failed: Error Domain=SyncSchema Code=1 \"Usage: SyncSchema <new-output-directory>\" UserInfo={NSLocalizedDescription=Usage: SyncSchema <new-output-directory>}\n"
+  },
+  {
+    "case": "extra-arg",
+    "exit": 1,
+    "expected": 1,
+    "stdout": "",
+    "stderr": "SyncSchema failed: Error Domain=SyncSchema Code=1 \"Usage: SyncSchema <new-output-directory>\" UserInfo={NSLocalizedDescription=Usage: SyncSchema <new-output-directory>}\n"
+  },
+  {
+    "case": "independent-schema-oracle",
+    "pass": true,
+    "sha256": "a22407cceb196508c4b199a3f0cc4759d542dc02ee9945e25020a14e4c2f0083"
+  }
+]

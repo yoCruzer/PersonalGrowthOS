@@ -1,0 +1,37 @@
+{
+  "customIndexes" : [
+
+  ],
+  "database" : "private",
+  "limits" : {
+    "dependencies" : 1024,
+    "manifestBytes" : 65536,
+    "media" : 1024,
+    "originalBytes" : 26214400,
+    "parents" : 256,
+    "payloadBytes" : 16777216
+  },
+  "networkOperations" : 0,
+  "recordNamePatterns" : [
+    "mutation-<mutation UUID lowercase>",
+    "original-<sha256 lowercase>"
+  ],
+  "recordTypes" : {
+    "PGMutationV1" : {
+      "manifest" : "BYTES",
+      "payload" : "ASSET",
+      "sha256" : "STRING",
+      "wireVersion" : "INT64"
+    },
+    "PGOriginalV1" : {
+      "byteCount" : "INT64",
+      "original" : "ASSET",
+      "sha256" : "STRING",
+      "wireVersion" : "INT64"
+    }
+  },
+  "serverSchemaChecked" : false,
+  "status" : "CANDIDATE_NOT_FROZEN",
+  "wireVersion" : 1,
+  "zonePattern" : "PGSyncV1-<dataset UUID lowercase>"
+}

@@ -1,0 +1,98 @@
+Building for debugging...
+[Pre-planning 1 / 95]
+[Planning deferred tasks]
+[28 / 52]
+[29 / 53] SyncFoundation
+[38 / 99]
+[41 / 99]
+[44 / 99]
+[47 / 99]
+[49 / 99]
+[53 / 99]
+[55 / 99]
+[58 / 99]
+[62 / 99]
+[63 / 99]
+[64 / 99]
+[65 / 99]
+[70 / 99]
+[71 / 99]
+[75 / 99] SyncFoundation
+[83 / 99] SyncFoundation
+[85 / 99] SyncFoundation
+[85 / 99]
+[89 / 100] SyncFoundationTests-product
+[101 / 132]
+[103 / 132]
+[106 / 132]
+[108 / 132]
+[109 / 132]
+[111 / 132]
+[112 / 132]
+[114 / 132]
+[115 / 132]
+[117 / 132]
+[118 / 132]
+[121 / 132] SyncFoundationTests-product
+[126 / 132] SyncFoundationTests-product
+error: SwiftCompile normal arm64 /private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift failed with a nonzero exit code. Command line:     cd /private/tmp/PersonalGrowthOS-icloud-foundation/Packages
+    builtin-SwiftPerFileCompile SyncFoundationTests.swift
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:62:36: error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 60 |         let originals = (0..<9).map { _ in OriginalReference(id: UUID(), asset: AssetDescriptor(bytes: small)) }
+ 61 |         let value = try manifest(originals: originals)
+ 62 |         XCTAssertNoThrow(try value.verifyAssetsComplete(payload: payload) { _ in small })
+    |                                    `- error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 63 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in Data([3, 2, 1]) })
+ 64 |     }
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:63:40: error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 61 |         let value = try manifest(originals: originals)
+ 62 |         XCTAssertNoThrow(try value.verifyAssetsComplete(payload: payload) { _ in small })
+ 63 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in Data([3, 2, 1]) })
+    |                                        `- error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 64 |     }
+ 65 |     func testMediaMissingTruncatedAndWrongHashAreNotComplete() throws {
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:68:40: error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 66 |         let original = OriginalReference(id: UUID(), asset: AssetDescriptor(bytes: Data([1, 2, 3])))
+ 67 |         let value = try manifest(originals: [original])
+ 68 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: nil) { _ in Data([1, 2, 3]) })
+    |                                        `- error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 69 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in throw SyncValidationError.missingAsset })
+ 70 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in Data([1, 2]) })
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:69:40: error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 67 |         let value = try manifest(originals: [original])
+ 68 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: nil) { _ in Data([1, 2, 3]) })
+ 69 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in throw SyncValidationError.missingAsset })
+    |                                        `- error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 70 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in Data([1, 2]) })
+ 71 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: Data([0])) { _ in Data([1, 2, 3]) })
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:70:40: error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 68 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: nil) { _ in Data([1, 2, 3]) })
+ 69 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in throw SyncValidationError.missingAsset })
+ 70 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in Data([1, 2]) })
+    |                                        `- error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 71 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: Data([0])) { _ in Data([1, 2, 3]) })
+ 72 |     }
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:71:40: error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 69 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in throw SyncValidationError.missingAsset })
+ 70 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: payload) { _ in Data([1, 2]) })
+ 71 |         XCTAssertThrowsError(try value.verifyAssetsComplete(payload: Data([0])) { _ in Data([1, 2, 3]) })
+    |                                        `- error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 72 |     }
+ 73 |     func testIdentityReplayAcceptsExactAndRejectsChangedBytes() throws {
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift:95:36: error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 93 |         let result = try CloudRecordCodec.decode(CloudRecordCodec.encode(value, payloadURL: nil), dataset: dataset)
+ 94 |         XCTAssertEqual(result.0, value); XCTAssertNil(result.1)
+ 95 |         XCTAssertNoThrow(try value.verifyAssetsComplete(payload: nil) { _ in XCTFail("no original required"); return Data() })
+    |                                    `- error: value of type 'MutationManifest' has no member 'verifyAssetsComplete'
+ 96 |         XCTAssertThrowsError(try CloudRecordCodec.encode(value, payloadURL: write(payload)))
+ 97 |         XCTAssertThrowsError(try MutationManifest(dataset: dataset, mutation: mutationID, object: value.object, deleted: true, payload: AssetDescriptor(bytes: payload)))
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources/test_entry_point.swift -primary-file /private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Tests/SyncFoundationTests/SyncFoundationTests.swift -emit-dependencies-path /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.d -emit-const-values-path /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.swiftconstvalues -emit-reference-dependencies-path /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.swiftdeps -serialize-diagnostics-path /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.dia -target arm64-apple-macos14.0 -module-can-import-version Testing 2403 0 -module-can-import-version XCTest 25435 0 -disable-cross-import-overlay-search -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/AppKit.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreGraphics.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreImage.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreTransferable.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/Foundation.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing/libTestingMacros.dylib\#\#TestingMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.2.sdk -I /private/tmp/pgos-sync-foundation-build/out/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /private/tmp/pgos-sync-foundation-build/out/Products/Debug/PackageFrameworks -F /private/tmp/pgos-sync-foundation-build/out/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -module-cache-path /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SwiftExplicitPrecompiledModules -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -swift-version 5 -Onone -D SWIFT_PACKAGE -D DEBUG -D Xcode -serialize-debugging-options -enable-experimental-feature DebugDescriptionMacro -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /private/tmp/pgos-sync-foundation-build/out/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /private/tmp/PersonalGrowthOS-icloud-foundation/Packages -enable-anonymous-context-mangled-names -file-compilation-dir /private/tmp/PersonalGrowthOS-icloud-foundation/Packages -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /private/tmp/pgos-sync-foundation-build/out/SDKStatCaches.noindex/macosx27.2-26B118-a0facfad118c1a7a18f0aad9463f6549a7ff82d74745d5ef33555b35c4238456.sdkstatcache -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -Xcc -I/private/tmp/pgos-sync-foundation-build/out/Products/Debug/include -Xcc -I/private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources-normal/arm64 -Xcc -I/private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources/arm64 -Xcc -I/private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name SyncFoundationTests -package-name syncfoundation -const-gather-protocols-file /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests_const_extract_protocols.json -disable-clang-spi -clang-target arm64-apple-macos27.2 -target-sdk-version 27.2 -target-sdk-name macosx27.2 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -parse-as-library -o /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.o -debug-module-path /private/tmp/pgos-sync-foundation-build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.swiftmodule -index-unit-output-path /SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.o -index-store-path /private/tmp/pgos-sync-foundation-build/out -index-system-modules
+error: Build failed
+error: fatalError

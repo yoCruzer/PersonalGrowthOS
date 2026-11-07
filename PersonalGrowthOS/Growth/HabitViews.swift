@@ -480,7 +480,9 @@ struct HabitOverviewRow: View {
                 thumbnailStore: thumbnailStore
             )
         } label: {
-            ModuleEntryRow(title:habit.name,subtitle:periodProgressText,systemImage:"repeat", titleID: "habit-title-\(habit.normalizedName)")
+            // The section already identifies these as habits. Keep the remaining
+            // width for the name beside the independently tappable counter.
+            ModuleEntryRow(title:habit.name,subtitle:periodProgressText,systemImage:nil, titleID: "habit-title-\(habit.normalizedName)")
         }
         .accessibilityIdentifier("habit-\(habit.normalizedName)")
     }

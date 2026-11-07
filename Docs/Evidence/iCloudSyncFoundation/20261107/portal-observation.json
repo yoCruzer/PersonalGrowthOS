@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-07",
+  "method": "existing Safari session via CUA accessibility",
+  "team": "83SKX2PM7B",
+  "container": "iCloud.com.yocruzer.PersonalGrowthOS",
+  "environment": "Development",
+  "recordTypesObserved": [
+    {
+      "name": "Users",
+      "fieldCount": 7
+    }
+  ],
+  "schemaExported": false,
+  "productionInspected": false,
+  "recordQueries": 0,
+  "mutations": 0,
+  "limitation": "Concurrent browser navigation made Export element stale; stopped to avoid interfering. Not P0/P1 evidence."
+}

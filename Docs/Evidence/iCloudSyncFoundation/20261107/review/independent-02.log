@@ -1,0 +1,60 @@
+Building for debugging...
+[Pre-planning 1 / 95]
+[Planning deferred tasks]
+[28 / 52]
+[29 / 53] SyncFoundation
+[38 / 99]
+[41 / 99]
+[44 / 99]
+[47 / 99]
+[49 / 99]
+[53 / 99]
+[55 / 99]
+[58 / 99]
+[62 / 99]
+[63 / 99]
+[64 / 99]
+[65 / 99]
+[69 / 99]
+[70 / 99]
+[71 / 99]
+[75 / 99] SyncFoundation
+[83 / 99] SyncFoundation
+[85 / 99] SyncFoundation
+[89 / 100] SyncFoundationTests-product
+[101 / 133]
+[103 / 133]
+[107 / 133]
+[109 / 133]
+[111 / 133]
+[114 / 133]
+[117 / 133]
+[118 / 133]
+[122 / 133] SyncFoundationTests-product
+error: SwiftCompile normal arm64 /private/tmp/PGOS-SyncReview.gHBAkm/Candidate/Tests/SyncFoundationTests/IndependentBoundaryTests.swift failed with a nonzero exit code. Command line:     cd /private/tmp/PGOS-SyncReview.gHBAkm
+    builtin-SwiftPerFileCompile IndependentBoundaryTests.swift
+/private/tmp/PGOS-SyncReview.gHBAkm/Candidate/Tests/SyncFoundationTests/IndependentBoundaryTests.swift:26:39: error: call can throw but is not marked with 'try'
+24 |     }
+25 |     func testIndependentFixedDigestBytesAndTypedCollision() throws {
+26 |         let a = try make(), encoded = a.encoded()
+   |                                       |- error: call can throw but is not marked with 'try'
+   |                                       |- note: did you mean to use 'try'?
+   |                                       |- note: did you mean to handle error as optional value?
+   |                                       `- note: did you mean to disable error propagation?
+27 |         XCTAssertEqual(a.payload?.byteCount, 37)
+28 |         XCTAssertEqual(a.payload?.sha256, syncDigest(content))
+
+/private/tmp/PGOS-SyncReview.gHBAkm/Candidate/Tests/SyncFoundationTests/IndependentBoundaryTests.swift:39:41: error: call can throw but is not marked with 'try'
+37 |         let a = try MutationManifest(dataset: dataset, mutation: mutation, object: object, parents: [p1,p2], payload: AssetDescriptor(bytes: content))
+38 |         let b = try MutationManifest(dataset: dataset, mutation: mutation, object: object, parents: [p2,p1], payload: AssetDescriptor(bytes: content))
+39 |         XCTAssertEqual(try a.encoded(), b.encoded())
+   |                                         |- error: call can throw but is not marked with 'try'
+   |                                         |- note: did you mean to use 'try'?
+   |                                         |- note: did you mean to handle error as optional value?
+   |                                         `- note: did you mean to disable error propagation?
+40 |         let record = try CloudRecordCodec.encode(a, payloadURL: file(content))
+41 |         XCTAssertEqual(try CloudRecordCodec.decode(record, dataset: dataset).1, content)
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources/test_entry_point.swift -primary-file /private/tmp/PGOS-SyncReview.gHBAkm/Candidate/Tests/SyncFoundationTests/IndependentBoundaryTests.swift /private/tmp/PGOS-SyncReview.gHBAkm/Candidate/Tests/SyncFoundationTests/SyncFoundationTests.swift -emit-dependencies-path /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentBoundaryTests.d -emit-const-values-path /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentBoundaryTests.swiftconstvalues -emit-reference-dependencies-path /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentBoundaryTests.swiftdeps -serialize-diagnostics-path /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentBoundaryTests.dia -target arm64-apple-macos14.0 -module-can-import-version Testing 2403 0 -module-can-import-version XCTest 25435 0 -disable-cross-import-overlay-search -swift-module-cross-import Darwin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/Darwin.swiftcrossimport/xlocale.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/AppKit.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreGraphics.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreImage.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreTransferable.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/Foundation.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing/libTestingMacros.dylib\#\#TestingMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.2.sdk -I /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Products/Debug/PackageFrameworks -F /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -module-cache-path /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SwiftExplicitPrecompiledModules -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -swift-version 5 -Onone -D SWIFT_PACKAGE -D DEBUG -D Xcode -serialize-debugging-options -enable-experimental-feature DebugDescriptionMacro -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /private/tmp/PGOS-SyncReview.gHBAkm/build/out/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /private/tmp/PGOS-SyncReview.gHBAkm -enable-anonymous-context-mangled-names -file-compilation-dir /private/tmp/PGOS-SyncReview.gHBAkm -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /private/tmp/PGOS-SyncReview.gHBAkm/build/out/SDKStatCaches.noindex/macosx27.2-26B118-a0facfad118c1a7a18f0aad9463f6549a7ff82d74745d5ef33555b35c4238456.sdkstatcache -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -Xcc -I/private/tmp/PGOS-SyncReview.gHBAkm/build/out/Products/Debug/include -Xcc -I/private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources-normal/arm64 -Xcc -I/private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources/arm64 -Xcc -I/private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name SyncFoundationTests -package-name candidate -const-gather-protocols-file /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests_const_extract_protocols.json -disable-clang-spi -clang-target arm64-apple-macos27.2 -target-sdk-version 27.2 -target-sdk-name macosx27.2 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -parse-as-library -o /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentBoundaryTests.o -debug-module-path /private/tmp/PGOS-SyncReview.gHBAkm/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.swiftmodule -index-unit-output-path /SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentBoundaryTests.o -index-store-path /private/tmp/PGOS-SyncReview.gHBAkm/build/out -index-system-modules
+error: Build failed
+error: fatalError
