@@ -69,3 +69,11 @@ Owner确认可用设备为当前日用iPhone、家中Mac mini和Intel Mac；短�
 - 只读沙箱硬件/签名检查曾失败，非沙箱复核后才给出上述结论；原始签名日志含设备/证书个人字段，只保留在本机`/private/tmp/g1-resume-20261107/`，仓库保存摘要哈希与脱敏JSON。源码二进制基线为`56a1d39`，其后改动仅签名辅助脚本/对应定向CI及文档；未改App或同步实现。
 
 证据：[本轮环境](Evidence/iCloudSyncG1/resume-20261107/environment.json)、[原签名门禁失败](Evidence/iCloudSyncG1/resume-20261107/ios-signing-before.json)、[修复后签名通过](Evidence/iCloudSyncG1/resume-20261107/ios-signing-after.json)、[8项正反例](Evidence/iCloudSyncG1/resume-20261107/signing-gate-tests.log)。E0门户部分已核实，账户/连机仍待确认；E1仅iOS签名子项通过；E2/P0实际Dev/P1–P4仍NOT_RUN。
+
+## 2026-11-07 后续授权登记与账户更正
+
+Owner明确批准将当前Mac mini登记至既有开发团队并生成描述文件；使用限定SyncLab工程的`xcodebuild -allowProvisioningUpdates -allowProvisioningDeviceRegistration`成功，Mac Debug BUILD SUCCEEDED，实包签名严格校验PASS。实体iPhone的`devicectl device info details`连接探测exit0；之前tunnel disconnected只是先前采样，不能继续笼统称设备不可连接。
+
+Owner随后明确更正：当前Mac与其测试iPhone使用不同系统iCloud账户。撤回此前同账户前提。签名Mac SyncLab只启动至离线初始页面，未点击账户连接/保存/同步，随后退出；未在手机安装、未发送测试数据或切换系统账户。建议Mac专用本地测试用户登录手机同一iCloud，或使用已有同一iCloud的另一台Mac；已询问Owner选择，实际登录由Owner完成。CloudKit真实主路径及账户切换仍NOT_RUN，不能用两个不同private database的客户端证明收敛。
+
+[授权登记与账户更正证据](Evidence/iCloudSyncG1/resume-20261107/authorized-mac-and-account-correction.json) · [Mac签名结果](Evidence/iCloudSyncG1/resume-20261107/mac-signing-after-registration.json)。这两个新证据替代此前“Mac登记待授权/缺profile”作为当前缺项；旧失败保留。

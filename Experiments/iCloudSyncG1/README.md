@@ -1,6 +1,6 @@
 # SyncLab G1（独立实验）
 
-状态：**BLOCKED_ENV**。2026-11-07 Owner解锁后已恢复门户核验，iOS签名实包校验通过；Mac设备登记与两端账户/连接条件待确认，真实Development双客户端尚未执行。工程不引用正式产品源码、App Group、数据库或用户图片。SwiftData `.none`，仅 `G1ObjectV1` / `G1ImageV1` 两个实验 wire types。它不是39实体同步实现。
+状态：**BLOCKED_ENV**。2026-11-07 Owner解锁后已恢复门户核验，iOS/Mac签名实包校验均通过、Mac登记及手机连接探测成功；Owner最新更正两端iCloud不同，同账户隔离环境待准备，真实Development双客户端尚未执行。工程不引用正式产品源码、App Group、数据库或用户图片。SwiftData `.none`，仅 `G1ObjectV1` / `G1ImageV1` 两个实验 wire types。它不是39实体同步实现。
 
 ## 离线复现
 

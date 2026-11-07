@@ -69,3 +69,11 @@ quota/rateLimit/部分成功只属于**显式故障注入**；token过期、zone
 本轮签名修复提交`8245f74c2362bb96fc8bfedfdbd112bca0d5f699`已普通推送至Draft PR #16。[定向CI 42327436273](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327436273)和自动触发的[既有iOS regression 42327441520](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327441520)交接时RUNNING，尚不声明通过。独立限定复核30/30、仓库8/8已通过，原失败证据保留。待Owner登记/账户答复时不进行依赖的云步骤。
 
 后续同轮取回：[定向CI42327436273](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327436273)完成SUCCESS，实际产物核对签名门禁8/8、原生33/33、unsigned iOS Simulator BUILD SUCCEEDED；见[ci-accepted.json](Evidence/iCloudSyncG1/resume-20261107/ci-accepted.json)。上段RUNNING为先前采样；自动iOS regression仍在运行，未声明通过。
+
+## 2026-11-07 后续授权登记与账户更正
+
+Owner明确批准将当前Mac mini登记至既有开发团队并生成描述文件；使用限定SyncLab工程的`xcodebuild -allowProvisioningUpdates -allowProvisioningDeviceRegistration`成功，Mac Debug BUILD SUCCEEDED，实包签名严格校验PASS。实体iPhone的`devicectl device info details`连接探测exit0；之前tunnel disconnected只是先前采样，不能继续笼统称设备不可连接。
+
+Owner随后明确更正：当前Mac与其测试iPhone使用不同系统iCloud账户。撤回此前同账户前提。签名Mac SyncLab只启动至离线初始页面，未点击账户连接/保存/同步，随后退出；未在手机安装、未发送测试数据或切换系统账户。建议Mac专用本地测试用户登录手机同一iCloud，或使用已有同一iCloud的另一台Mac；已询问Owner选择，实际登录由Owner完成。CloudKit真实主路径及账户切换仍NOT_RUN，不能用两个不同private database的客户端证明收敛。
+
+[授权登记与账户更正证据](Evidence/iCloudSyncG1/resume-20261107/authorized-mac-and-account-correction.json) · [Mac签名结果](Evidence/iCloudSyncG1/resume-20261107/mac-signing-after-registration.json)。这两个新证据替代此前“Mac登记待授权/缺profile”作为当前缺项；旧失败保留。

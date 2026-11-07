@@ -1,3 +1,15 @@
+# 2026-11-07 G1续接：双平台签名已通过，Owner更正两端iCloud不同
+
+Owner明确授权登记当前Mac mini并生成开发描述文件，已执行：Mac Debug签名构建exit0、严格实包签名校验PASS。此前iOS实包签名PASS保持，实体iPhone开发连接探测也已exit0。不需要重建App ID、容器或证书。
+
+**以Owner最新更正为准：当前Mac与测试iPhone登录不同iCloud账户。** 先前“同账户”回复已被撤回，不得作为真实双端身份前提。Mac SyncLab只打开离线初始页，未调用connect/save/sync，随后已退出；手机未安装，真实CloudKit读写仍NOT_RUN。未切换任何系统账户。
+
+已向Owner询问隔离环境路线：优先Mac专用本地测试用户登录iPhone同一iCloud，或另一台已有同一账户的Mac；登录由Owner完成，不退出日常主账号。原生签名成果可复用，具体新用户/设备可访问性、运行资格仍需实际核验。等待该选择与准备期间不做依赖的云测试，不把账户不同视为需要第二台iPhone。
+
+[授权登记与账户更正证据](Evidence/iCloudSyncG1/resume-20261107/authorized-mac-and-account-correction.json) · [Mac签名核验](Evidence/iCloudSyncG1/resume-20261107/mac-signing-after-registration.json)。E1双平台签名子项通过，真实读写/E2仍NOT_RUN；整体BLOCKED_ENV，P1–P4边界保持。定向CI已通过，自动触发的既有iOS regression42327441520最近采样仍RUNNING。
+
+---
+
 # 2026-11-07 G1恢复：门户核实、iOS实包签名通过，Mac登记待Owner确认
 
 Owner已解锁Mac并登录Apple门户，授权继续推进G1。Safari原生控制可用；实际核实Team、SyncLab App的iCloud/CloudKit/Push、唯一实验容器关联及Development编辑权限。Development仅看到Users类型，尚未执行合成云往返；正式容器配置/Production未操作。
