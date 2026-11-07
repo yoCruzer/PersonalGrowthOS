@@ -53,3 +53,15 @@ quota/rateLimit/部分成功只属于**显式故障注入**；token过期、zone
 最终交付：[Draft PR #16](https://github.com/yoCruzer/PersonalGrowthOS/pull/16)，base `codex/icloud-sync-v1-audit` / `304a91984f17efc2c61b179f0a9e85a14ba87d95`。PR保持OPEN Draft，完整交付HEAD以PR元数据为准；实现源码固定099ff17，后续只文档/证据。按Owner本轮离线选择停止在此批次边界，完整G1真实服务目标仍待恢复条件满足后继续。
 
 2026-11-06设备策略补充：Owner确认可用iPhone/Mac mini/Intel Mac，默认走iPhone+Mac mini双端，第二台iPhone不是固定门禁。具体账户隔离及同候选TestFlight的Apple silicon条件见[环境台账新增路线](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md)。本次仅文档澄清，未新增设备/云运行证据，未改变已归档测试结果。
+
+## 2026-11-07：Owner解锁后的实际门户与签名核验
+
+- Safari原生控制恢复，已登录Apple Developer / CloudKit Console。Team与工程一致；SyncLab App ID支持iOS/macOS等平台，iCloud、Include CloudKit support、Push均已启用，App Groups未启用，唯一勾选容器为`iCloud.com.yocruzer.PersonalGrowthOS.SyncLab`。没有改变门户能力。
+- CloudKit容器归属该Team，当前登录用户有Manage Permissions/Edit Development/Edit Production；仅只读查看Development schema（Users），未查记录、未进入Production、未部署。权限存在不代表Production获授权。
+- 本机arm64 / Mac18,5 / macOS27.0.1 / Xcode27.2(27B52)。实体iPhone17,3 / iOS27.2已配对、Developer Mode enabled，初查localNetwork tunnel disconnected；sameMachine条目为模拟环境，未冒称实体客户端。
+- iOS Debug `xcodebuild ... -sdk iphoneos -destination generic/platform=iOS -allowProvisioningUpdates build` exit0，原有实验身份获得有效开发profile，实体手机包含其中。实际签名严格限定CloudKit、Development、实验容器、development Push且无App Group。
+- 首次脚本exit1：Apple profile使用`icloud-services="*"`和`[Production, Development]`。依据[Apple TN3125](https://developer.apple.com/documentation/technotes/tn3125-inside-code-signing-provisioning-profiles)，profile是允许列表，区别于App实际声明；修正仅profile服务通配符及环境顺序，signed claims严格要求不变。8项正反例通过，同一实包复验exit0；旧失败保留。该修正不证明OS实际运行或真实CloudKit访问。
+- Mac Debug签名exit65：当前Mac未登记到开发团队、无匹配Mac App Development profile。尚未使用`-allowProvisioningDeviceRegistration`。已询问Owner登记这台Mac（向Apple提交设备标识、占用设备名额）；另询问两端iCloud是否一致。未收到确认前不执行依赖步骤。
+- 只读沙箱硬件/签名检查曾失败，非沙箱复核后才给出上述结论；原始签名日志含设备/证书个人字段，只保留在本机`/private/tmp/g1-resume-20261107/`，仓库保存摘要哈希与脱敏JSON。源码二进制基线为`56a1d39`，其后改动仅签名辅助脚本/对应定向CI及文档；未改App或同步实现。
+
+证据：[本轮环境](Evidence/iCloudSyncG1/resume-20261107/environment.json)、[原签名门禁失败](Evidence/iCloudSyncG1/resume-20261107/ios-signing-before.json)、[修复后签名通过](Evidence/iCloudSyncG1/resume-20261107/ios-signing-after.json)、[8项正反例](Evidence/iCloudSyncG1/resume-20261107/signing-gate-tests.log)。E0门户部分已核实，账户/连机仍待确认；E1仅iOS签名子项通过；E2/P0实际Dev/P1–P4仍NOT_RUN。

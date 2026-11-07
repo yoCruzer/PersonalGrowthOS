@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read-only, fail-closed entitlement/profile gate. No private fields printed."""
 import argparse, datetime, json, pathlib, plistlib, subprocess, sys
+from profile_entitlements import allows_cloudkit, allows_development, allows_container
 p=argparse.ArgumentParser();p.add_argument('app',type=pathlib.Path);args=p.parse_args()
 expected_bundle='com.yocruzer.PersonalGrowthOS.SyncLab'
 expected_container='iCloud.com.yocruzer.PersonalGrowthOS.SyncLab'
@@ -25,9 +26,9 @@ try:
  'bundle': info.get('CFBundleIdentifier')==expected_bundle,
  'team': ent.get('com.apple.developer.team-identifier')==team and profile.get('TeamIdentifier')==[team],
  'appIdentifier': ent.get(key)==team+'.'+expected_bundle and pe.get(key)==ent.get(key),
- 'cloudKit': ent.get('com.apple.developer.icloud-services')==['CloudKit'] and 'CloudKit' in pe.get('com.apple.developer.icloud-services',[]),
- 'container': ent.get('com.apple.developer.icloud-container-identifiers')==[expected_container] and expected_container in pe.get('com.apple.developer.icloud-container-identifiers',[]),
- 'development': ent.get('com.apple.developer.icloud-container-environment')=='Development' and pe.get('com.apple.developer.icloud-container-environment') in ('Development',['Development'],['Development','Production']),
+ 'cloudKit': allows_cloudkit(ent, pe),
+ 'container': allows_container(ent, pe, expected_container),
+ 'development': allows_development(ent, pe),
  'push': ent.get('aps-environment',ent.get('com.apple.developer.aps-environment'))=='development' and pe.get('aps-environment',pe.get('com.apple.developer.aps-environment'))=='development',
  'noProductGroup': not ent.get('com.apple.security.application-groups')
  }

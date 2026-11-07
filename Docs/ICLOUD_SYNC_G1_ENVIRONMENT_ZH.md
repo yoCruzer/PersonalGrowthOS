@@ -57,3 +57,15 @@ Owner确认可用设备为当前日用iPhone、家中Mac mini和Intel Mac；短�
 顺序：Mac解锁及已有Apple门户登录 → 核对并完成SyncLab签名 → iPhone+Mac mini真实Dev主路径 → Mac隔离账户负例 → 稳定wire/P1/P2正式Production前置门禁 → 后续领域接入与获授权后的真实TestFlight候选验收。保留G1完整八项及P0–P4要求；不把跨平台覆盖改称“两台iPhone已验收”。本次只明确设备策略，不授权登录/切换系统账号、安装到日用设备、Production部署或TestFlight发布。
 
 官方依据：[在Apple silicon Mac上测试iOS TestFlight应用](https://developer.apple.com/help/app-store-connect/test-a-beta-version/test-iphone-and-ipad-apps-on-macs-with-apple-silicon)、[CloudKit设备与模拟器账户配置](https://developer.apple.com/documentation/cloudkit/enabling-cloudkit-in-your-app)、[macOS14支持机型](https://support.apple.com/en-ie/105113)。Mac mini具体芯片/系统及两端是否同一iCloud账户，待设备可访问时核验；无需提供账户名或密码。
+
+## 2026-11-07：Owner解锁后的实际门户与签名核验
+
+- Safari原生控制恢复，已登录Apple Developer / CloudKit Console。Team与工程一致；SyncLab App ID支持iOS/macOS等平台，iCloud、Include CloudKit support、Push均已启用，App Groups未启用，唯一勾选容器为`iCloud.com.yocruzer.PersonalGrowthOS.SyncLab`。没有改变门户能力。
+- CloudKit容器归属该Team，当前登录用户有Manage Permissions/Edit Development/Edit Production；仅只读查看Development schema（Users），未查记录、未进入Production、未部署。权限存在不代表Production获授权。
+- 本机arm64 / Mac18,5 / macOS27.0.1 / Xcode27.2(27B52)。实体iPhone17,3 / iOS27.2已配对、Developer Mode enabled，初查localNetwork tunnel disconnected；sameMachine条目为模拟环境，未冒称实体客户端。
+- iOS Debug `xcodebuild ... -sdk iphoneos -destination generic/platform=iOS -allowProvisioningUpdates build` exit0，原有实验身份获得有效开发profile，实体手机包含其中。实际签名严格限定CloudKit、Development、实验容器、development Push且无App Group。
+- 首次脚本exit1：Apple profile使用`icloud-services="*"`和`[Production, Development]`。依据[Apple TN3125](https://developer.apple.com/documentation/technotes/tn3125-inside-code-signing-provisioning-profiles)，profile是允许列表，区别于App实际声明；修正仅profile服务通配符及环境顺序，signed claims严格要求不变。8项正反例通过，同一实包复验exit0；旧失败保留。该修正不证明OS实际运行或真实CloudKit访问。
+- Mac Debug签名exit65：当前Mac未登记到开发团队、无匹配Mac App Development profile。尚未使用`-allowProvisioningDeviceRegistration`。已询问Owner登记这台Mac（向Apple提交设备标识、占用设备名额）；另询问两端iCloud是否一致。未收到确认前不执行依赖步骤。
+- 只读沙箱硬件/签名检查曾失败，非沙箱复核后才给出上述结论；原始签名日志含设备/证书个人字段，只保留在本机`/private/tmp/g1-resume-20261107/`，仓库保存摘要哈希与脱敏JSON。源码二进制基线为`56a1d39`，其后改动仅签名辅助脚本/对应定向CI及文档；未改App或同步实现。
+
+证据：[本轮环境](Evidence/iCloudSyncG1/resume-20261107/environment.json)、[原签名门禁失败](Evidence/iCloudSyncG1/resume-20261107/ios-signing-before.json)、[修复后签名通过](Evidence/iCloudSyncG1/resume-20261107/ios-signing-after.json)、[8项正反例](Evidence/iCloudSyncG1/resume-20261107/signing-gate-tests.log)。E0门户部分已核实，账户/连机仍待确认；E1仅iOS签名子项通过；E2/P0实际Dev/P1–P4仍NOT_RUN。

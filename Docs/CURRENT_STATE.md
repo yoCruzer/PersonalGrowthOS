@@ -1,3 +1,15 @@
+# 2026-11-07 G1恢复：门户核实、iOS实包签名通过，Mac登记待Owner确认
+
+Owner已解锁Mac并登录Apple门户，授权继续推进G1。Safari原生控制可用；实际核实Team、SyncLab App的iCloud/CloudKit/Push、唯一实验容器关联及Development编辑权限。Development仅看到Users类型，尚未执行合成云往返；正式容器配置/Production未操作。
+
+iOS Debug自动签名构建成功；实包严格签名校验通过，已配对实体iPhone包含在profile内。首次门禁误拒绝Apple profile的服务通配符和无序环境列表，已限定修正、保留失败输出并新增8项正反例。签名通过不等于CloudKit可用，E1仍待真实读写。
+
+Mac mini签名构建exit65：本机未登记到开发团队，缺Mac App Development profile。已向Owner集中请求登记这台Mac并生成描述文件；等待答复前不登记。另待确认Mac/iPhone系统iCloud是否相同；初查实体iPhone已配对、Developer Mode enabled，但无线tunnel disconnected。未安装、未运行云测试、未切换账户。继续按iPhone+Mac路线，不要求第二台iPhone。
+
+[本轮脱敏证据](Evidence/iCloudSyncG1/resume-20261107/environment.json) · [执行报告](ICLOUD_SYNC_G1_EXECUTION_ZH.md)。整体仍为BLOCKED_ENV（具体未完成项如上），不进入G2/G3或发布。以下历史结果原样保留。
+
+---
+
 # 2026-11-06 G1设备路线澄清 — 不依赖第二台iPhone
 
 Owner现有设备为日用iPhone、Mac mini、Intel Mac，短期无法提供第二台iPhone。默认采用**iPhone + Mac mini**完成G1真实双客户端；Intel Mac为可选补充，不设为关键路径。若Mac mini为Apple silicon，后续另获发布授权后优先验证同一iOS TestFlight候选在iPhone与Mac运行。单台真实iPhone承担iOS后台/锁屏/网络/升级验证，Mac生成远端事件；不冒称双iPhone覆盖。

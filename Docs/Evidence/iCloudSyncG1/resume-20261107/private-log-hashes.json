@@ -1,0 +1,12 @@
+[
+  {
+    "name": "mac-signing-private.log",
+    "sha256": "7387d309814f8d792487aad30da81f652d110d0db00ecc91198c71d9cde949b4",
+    "publication": "NOT_COMMITTED: raw Xcode signing logs contain personal device/certificate fields"
+  },
+  {
+    "name": "ios-signing-private.log",
+    "sha256": "269104ebb7c918f9c940d7aa9c5e2155472b5efb0a9b4afc2f4a0e476a7d0a39",
+    "publication": "NOT_COMMITTED: raw Xcode signing logs contain personal device/certificate fields"
+  }
+]

@@ -1,6 +1,6 @@
 # SyncLab G1（独立实验）
 
-状态：**BLOCKED_ENV**。Owner 本轮选择仅离线工程与门禁交付；真实 Development 双客户端尚未执行。工程不引用正式产品源码、App Group、数据库或用户图片。SwiftData `.none`，仅 `G1ObjectV1` / `G1ImageV1` 两个实验 wire types。它不是39实体同步实现。
+状态：**BLOCKED_ENV**。2026-11-07 Owner解锁后已恢复门户核验，iOS签名实包校验通过；Mac设备登记与两端账户/连接条件待确认，真实Development双客户端尚未执行。工程不引用正式产品源码、App Group、数据库或用户图片。SwiftData `.none`，仅 `G1ObjectV1` / `G1ImageV1` 两个实验 wire types。它不是39实体同步实现。
 
 ## 离线复现
 
@@ -31,7 +31,7 @@ CLI 的 PRE-FETCH-CHECKPOINT 是本地退出顺序占位字节，不是真实 CK
 
 ## 真实 Development 恢复执行入口
 
-**现在不执行以下云步骤。** 先完成[环境台账](../../Docs/ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md)的一次性最小准备，使用已注册 SyncLab 身份与同一测试账户的两客户端。不得退出日常主账号。真实 iOS+Mac 组合须注明平台，不能写成两台 iOS。
+**仅在下列签名与账户门禁满足后执行云步骤。** 先完成[环境台账](../../Docs/ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md)的一次性最小准备，使用已注册 SyncLab 身份与同一测试账户的两客户端。不得退出日常主账号。真实 iOS+Mac 组合须注明平台，不能写成两台 iOS。
 
 1. 在 Xcode 打开独立 `SyncLab.xcodeproj`，核验 Team `83SKX2PM7B`、独立 App ID 与容器；由 Owner 提供/刷新对应 Development profile。工程的 entitlement 不是门户关联证据。
 2. Debug 签名构建后执行 `python3 Experiments/iCloudSyncG1/Tools/verify_signing.py /实际/SyncLab.app`。记录最终源码SHA、dirty、OS、profile到期及脱敏结果。脚本检查签名/profile字段匹配；PASS仍不代表设备包含在profile、账户资格或服务可用。没有匹配profile则停止，不使用ad-hoc签名冒充。

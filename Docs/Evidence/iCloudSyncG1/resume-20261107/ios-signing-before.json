@@ -1,0 +1,18 @@
+{
+  "exit": 1,
+  "result": {
+    "status": "FAIL",
+    "checks": {
+      "profileNotExpired": true,
+      "bundle": true,
+      "team": true,
+      "appIdentifier": true,
+      "cloudKit": false,
+      "container": true,
+      "development": false,
+      "push": true,
+      "noProductGroup": true
+    },
+    "scope": "signature only; not cloud access"
+  }
+}
