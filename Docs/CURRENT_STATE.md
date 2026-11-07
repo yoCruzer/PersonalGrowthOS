@@ -1,3 +1,13 @@
+# 2026-11-07 新版已安装并导入账户连接计划，待两端显式启动
+
+固定实现 `df3c081f72d5d86681f37c57ae236543ab45d3e8` 的签名Debug IPA已通过官方Configurator `install-app` 更新到选定iPhone，`install-doc` 已导入仅connect计划；两条命令exit0、单设备匹配，IPA摘要复算一致。[安装证据](Evidence/iCloudSyncG1/manual-engineering-20261107/device-install.json)。安装成功不代表手机执行成功。
+
+已准备 `/private/tmp/SyncLab-Probe-20261107-r5/Start-SyncLab.command`，haha专用权限及签名门禁保持；r5本机认证桥HTTP200，只有Mac connect排队，尚无结果。已请Owner在haha退出旧App并启动新脚本，保持会话后返回日常用户；手机打开新版SyncLab并点“启动导入的合成 Development 测试”。待导出手机结果，与新Mac结果核对同run账户指纹，匹配后才能导入同步计划。仍使用既有synthetic-g1-20261107-r4，不重置云事实。新手机运行/账户匹配/双端同步仍NOT_RUN。
+
+普通push被自动审批拒绝，理由为未识别可信用户消息中的明确远端源码上传授权；已请求Owner明确授权向现有yoCruzer/PersonalGrowthOS的codex/icloud-sync-g1分支（Draft PR #16）普通推送。未绕过，远端仍784c80c，新增源码CI未启动。此项不阻止本机/手机验证。旧真实Mac结果、工程验证及正式产品两项UI失败保持；不进入G2/G3或发布。
+
+---
+
 # 2026-11-07 G1手机安装已恢复，手动Debug测试入口就绪
 
 Owner完成Apple Configurator安装后，已通过官方“添加App→从我的Mac选取”成功安装既有签名SyncLab，并在设备App列表核验。devicectl仍为DDI12040，不能据安装成功宣称启动/云测试通过。
