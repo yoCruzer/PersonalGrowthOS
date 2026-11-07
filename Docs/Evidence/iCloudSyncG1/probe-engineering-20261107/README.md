@@ -7,3 +7,5 @@
 真实测试必须独立比对账户、run、dataset、指令摘要、逐mutation和PNG原字节，并检查pending与events。结果字段PASS只是命令执行与快照完成，不能直接当云验收计数。
 
 临时签名包和本机桥配置不入仓库；桥仅127.0.0.1并用临时token，凭据文件仅原用户和指定haha用户可读。真实CloudKit尚未执行。
+
+实现提交`2dfbafb`的远端定向CI已通过：Xcode27.1、工具13/13、原生39/39和unsigned iOS Simulator构建。见[ci-accepted.json](ci-accepted.json)；不替代真实云验证。

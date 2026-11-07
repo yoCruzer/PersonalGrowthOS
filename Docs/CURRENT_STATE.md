@@ -8,6 +8,9 @@ Owner已确认haha普通用户登录测试iPhone同一iCloud，并切回原控�
 
 自动产品回归42327441520保留FAIL（Release/Unit成功、UI smoke3PASS/2FAIL短名称布局断言），不扩大G1范围或宣称发布门禁通过。下一步是真实账户指纹匹配与逐ID/原图字节往返，而非继续增加离线替代测试。
 
+最新实现提交`2dfbafbf0197c22d4c14661edb058d96cf3b0f97`已普通推送；[定向CI42332149355](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42332149355)完成SUCCESS：Xcode27.1、工具13/13、原生39/39、unsigned iOS Simulator构建通过。产物摘要见[CI记录](Evidence/iCloudSyncG1/probe-engineering-20261107/ci-accepted.json)。自动产品回归42332154418当前仍运行，不能覆盖既有失败结论。临时本机桥已复核可达，Mac账户探测尚无结果。
+
+
 ---
 
 # 2026-11-07 G1隔离用户准备：普通用户已创建，待Owner登录iCloud
