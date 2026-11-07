@@ -1,0 +1,15 @@
+{
+  "source": "Owner-pasted exported plan003 report; device file retrieval pending",
+  "planID": "probe-ios-plan-003-fetch",
+  "planDigest": "bb967ff4154bfddfc274d0c9c162143f886bdbda0f7535182aadc1d7566ad49a",
+  "checks": {
+    "planAndFourCommandDigestsMatch": true,
+    "initialSnapshotEmpty": true,
+    "twoObjectsFourMutationsMatchMac013ByFieldInspection": true,
+    "originalPNGBytesHashAnd68ByteLengthMatch": true,
+    "readyAndDeletedProjectionsMatch": true,
+    "pendingEmpty": true,
+    "repeatedSyncPreservesContents": true
+  },
+  "scope": "Mac to fresh iPhone store retrieval; reverse sync, conflicts, crash recovery and full G1 NOT_RUN"
+}

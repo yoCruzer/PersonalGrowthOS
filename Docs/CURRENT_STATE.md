@@ -1,3 +1,19 @@
+# 2026-11-07 基础双向真实往返通过，双端冲突验证进行中
+
+手机计划004的Owner导出内容显示save后仅object待发，sync获ACK并清空pending，store/engine同进程重开前后checkpoint相同、内容保留；原计划和七命令摘要均匹配。Mac随后真实执行r5-003 sync、004 sync、005 snapshot，三份完整快照与旧Mac013加手机计划004指定mutation精确一致，原图字节相同，ready投影完整、pending为空。已保存[Mac原始脱敏命令/结果](Evidence/iCloudSyncG1/dual-client-20261107/)。手机原文件仍待取回，来源明确为Owner导出粘贴，不把同进程重开称为崩溃恢复。此为基础双向往返，完整G1仍未验收。
+
+冲突用例：Mac r5-006已保存probe-conflict-mac-001，父为probe-ios-create-001，pending仅object-probe-ios-roundtrip，尚未sync。手机计划005从相同父新增probe-conflict-ios-001并上传；待Owner显式启动及结果后，才让Mac sync以验证真实serverRecordChanged、双方内容保留及最终收敛。不得提前上传Mac这份修改。所有数据仍为隔离合成数据，旧证据保留。
+
+---
+
+# 2026-11-07 手机从空库取回Mac合成数据，反向验证待执行
+
+Owner提供计划003的四条结果均PASS。原始计划和四命令摘要复算匹配；手机初始空库，sync后两对象/四mutation的字段、父关系及ready/deleted投影逐项与旧Mac013一致，68字节PNG原字节/长度/SHA256匹配；再次sync及snapshot内容不变，pending为空。[核对记录](Evidence/iCloudSyncG1/manual-engineering-20261107/ios-fetch-verification.json)。来源为Owner粘贴导出内容，设备原文件尚待批量取回。可确认此方向的空库云取回证据，不代表完整G1或双向验收。
+
+下一步计划004由手机新增独立合成对象（附固定PNG），sync两次、同进程store/engine reopen、sync及snapshot，再由Mac读取逐字段核验；尚待Owner显式启动。Mac已排队只读snapshot检查通道。定向CI已SUCCESS，产品回归仍运行。首次失败保留，账户指纹不写入公开证据。
+
+---
+
 # 2026-11-07 双端账户匹配，手机云端取回验证待执行
 
 Owner提供手机计划002导出JSON，connect PASS、初始envelopes/images/pending均空；与本地原始计划及命令摘要匹配，与r5 Mac真实结果账户指纹一致。仅保存脱敏[核对记录](Evidence/iCloudSyncG1/manual-engineering-20261107/ios-connect-retry-verification.json)，来源明确为Owner粘贴，计划002设备导出文件尚待取回。首次CK_3仍保留，不推定其具体根因。
