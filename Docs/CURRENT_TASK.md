@@ -1,3 +1,11 @@
+# 2026-11-07 真实云端版本冲突已触发并保留双方修改
+
+Owner手机计划005上传ACK、pending清空后，Mac执行r5-007/008/009。007原结果FAIL CK_2，含真实SERVER_RECORD_CHANGED_MERGED事件；008重试PASS且pending空，009快照相同。精确验证完整快照等于原基础事实加双方同父修改，PNG保留；投影为conflict、两个候选完整保留、共同祖先preview，complete=false。[原始脱敏证据](Evidence/iCloudSyncG1/dual-client-20261107/)。首个partial failure不改写PASS，未据此声称单次sync无错。
+
+下一步手机计划006：connect→sync→snapshot（须见双方冲突）→save（新解决mutation的parents引用双方）→sync→sync→reopen→snapshot，随后Mac读取核验解决后收敛。当前仅准备导入，待Owner点击，解决与手机冲突接收仍NOT_RUN；完整G1未完成。定向CI成功，产品回归仍运行。
+
+---
+
 # 2026-11-07 基础双向真实往返通过，双端冲突验证进行中
 
 手机计划004的Owner导出内容显示save后仅object待发，sync获ACK并清空pending，store/engine同进程重开前后checkpoint相同、内容保留；原计划和七命令摘要均匹配。Mac随后真实执行r5-003 sync、004 sync、005 snapshot，三份完整快照与旧Mac013加手机计划004指定mutation精确一致，原图字节相同，ready投影完整、pending为空。已保存[Mac原始脱敏命令/结果](Evidence/iCloudSyncG1/dual-client-20261107/)。手机原文件仍待取回，来源明确为Owner导出粘贴，不把同进程重开称为崩溃恢复。此为基础双向往返，完整G1仍未验收。

@@ -1,0 +1,28 @@
+{
+  "commandDigest": "7b6f646254c7f655d7008e23f49b30e54beec0ea6e80e99e70611c17b3c25eef",
+  "dataset": "synthetic-g1-20261107-r4",
+  "errorCode": "CK_2",
+  "events": [
+    "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "FETCH_CONTENT_DURABLE",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "STATE_DURABLE",
+    "SERVER_RECORD_CHANGED_MERGED",
+    "ACK_EXACT_AND_RESCHEDULED",
+    "STATE_DURABLE"
+  ],
+  "halted": false,
+  "id": "probe-mac-r5-007-sync",
+  "platform": "macOS",
+  "runID": "probe-run-20261107-r5",
+  "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+  "status": "FAIL"
+}
