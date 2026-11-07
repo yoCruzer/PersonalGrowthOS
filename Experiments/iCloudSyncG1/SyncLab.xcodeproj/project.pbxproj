@@ -46,6 +46,7 @@
 				<string>23C04B28AB1549F9EBA8A91C</string>
 				<string>AF21678AB468D53F667E54E6</string>
 				<string>1B12F1D8B2ABD356B1C8CE0D</string>
+				<string>2C46AE02A74FC81982999696</string>
 				<string>7654C4F9B5D96C831728C5C9</string>
 				<string>9A656E9FF37A739F82CFFA74</string>
 				<string>470EC1EE64E015A096582405</string>
@@ -136,6 +137,13 @@
 				<string>34A04005BCAF206EEC990BD9</string>
 			</array>
 		</dict>
+		<key>26CAE4D0D91F862E6A7F2FA7</key>
+		<dict>
+			<key>fileRef</key>
+			<string>2C46AE02A74FC81982999696</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
 		<key>27119319BF79E67A66B9EEE0</key>
 		<dict>
 			<key>isa</key>
@@ -165,6 +173,17 @@
 			<string>XCBuildConfiguration</string>
 			<key>name</key>
 			<string>Debug</string>
+		</dict>
+		<key>2C46AE02A74FC81982999696</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/ProbeWindowTransport.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>34A04005BCAF206EEC990BD9</key>
 		<dict>
@@ -320,6 +339,7 @@
 				<string>6773E16591D8C7DEB2945D92</string>
 				<string>CC1572AE14A59D0F21700965</string>
 				<string>FC1A88F245D8C8B1B92F4E4D</string>
+				<string>26CAE4D0D91F862E6A7F2FA7</string>
 				<string>0EA8A916FB87934EDFF383F6</string>
 				<string>C479B393666DD11A257CD1DF</string>
 				<string>D8E368627DE564D016B604FE</string>

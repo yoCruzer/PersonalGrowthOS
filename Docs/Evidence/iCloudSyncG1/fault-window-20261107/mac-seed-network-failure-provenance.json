@@ -1,0 +1,11 @@
+{
+  "rawSHA256": "9c8eec4ba5c335a7234d6f315f4dbdc3d9fd62590ed5837b9720756f8bd89b03",
+  "source": "authenticated loopback original report",
+  "completedAllCommands": false,
+  "passedCommands": 13,
+  "failedCommand": "probe-01-mac-seed-sync",
+  "errorCode": "CK_4",
+  "sdkMeaning": "CKErrorNetworkFailure = 4 (installed Apple SDK CKError.h)",
+  "recovery": "new plan connect/sync/sync/snapshot; no save; not yet run",
+  "originalEvidencePreserved": true
+}

@@ -72,12 +72,13 @@ func isUnavailableOriginal(_ error: Error) -> Bool {
     let directory: URL
     var provenance = "localTransactionOrFileFault"
     let source: ProbeFaultSource
+    let transport: ProbeWindowTransport?
     let runID: String
     let dataset: String
-    init(base: URL, dataset: String, runID: String, source: ProbeFaultSource) throws {
+    init(base: URL, dataset: String, runID: String, source: ProbeFaultSource, transport: ProbeWindowTransport? = nil) throws {
         try source.validate()
         guard validID(dataset), dataset.hasPrefix("synthetic-g1-"), validID(runID), runID.hasPrefix("probe-") else { throw LabError.invalidWire }
-        self.source = source; self.runID = runID; self.dataset = dataset
+        self.transport = transport; self.source = source; self.runID = runID; self.dataset = dataset
         directory = base.appendingPathComponent("fault-journals").appendingPathComponent(runID)
             .appendingPathComponent(dataset).appendingPathComponent(source.planID ?? "bridge").appendingPathComponent(source.commandID)
     }
@@ -113,6 +114,7 @@ func isUnavailableOriginal(_ error: Error) -> Bool {
         guard fd >= 0 else { throw LabError.blocked }
         defer { Darwin.close(fd) }
         guard fsync(fd) == 0 else { throw LabError.blocked }
+        try transport?.send("observation", bytes: canonical(observation))
     }
     func read(accountHash: String? = nil) throws -> [ProbeFaultObservation] {
         let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)

@@ -18,7 +18,7 @@ final class ProbeProcessLock {
     deinit { Darwin.close(descriptor) } // OS also releases the lock on process exit.
 }
 
-private final class ProbeLoopbackSession: NSObject, URLSessionTaskDelegate {
+final class ProbeLoopbackSession: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask,
                     willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest,
                     completionHandler: @escaping (URLRequest?) -> Void) {
@@ -154,11 +154,12 @@ final class ProbeJournal {
     private var accountSource: String?
     private var processLock: ProbeProcessLock?
     private let authorization: DevelopmentAuthorization
+    private let windowTransport: ProbeWindowTransport?
     private var manualPlanRunning = false
-    public init(base: URL, dataset: String, runID: String, authorization: DevelopmentAuthorization = .fromEnvironment()) throws {
+    public init(base: URL, dataset: String, runID: String, authorization: DevelopmentAuthorization = .fromEnvironment(), windowTransport: ProbeWindowTransport? = nil) throws {
         guard validID(dataset), dataset.hasPrefix("synthetic-g1-"), validID(runID), runID.hasPrefix("probe-") else { throw LabError.invalidWire }
         self.base = base; self.dataset = dataset; self.runID = runID
-        self.authorization = authorization
+        self.authorization = authorization; self.windowTransport = windowTransport
     }
     private func ensureExclusive() throws {
         guard authorization.isEnabled else { throw LabError.blocked }
@@ -211,7 +212,7 @@ final class ProbeJournal {
                 connectedFingerprint = cached.fingerprint; accountSource = "cachedPartitionNotCurrentAccount"
             } else if store == nil { try await connect(slot: command.accountSlot) }
             let journal = try ProbeFaultJournal(base: base, dataset: dataset, runID: runID,
-                source: ProbeFaultSource(commandID: command.id, planID: planID, commandDigest: result.commandDigest))
+                source: ProbeFaultSource(commandID: command.id, planID: planID, commandDigest: result.commandDigest), transport: windowTransport)
             switch command.action {
             case .connect: try await connect(slot: command.accountSlot)
             case .openCached: break

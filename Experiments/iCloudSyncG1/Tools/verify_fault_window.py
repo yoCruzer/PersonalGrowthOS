@@ -231,27 +231,80 @@ def verify(plans, results):
     require(snapshot(r('22')[2])['envelopes']==[] and r('22')[2]['pendingKeys']==[], 'A facts leaked into B')
     require('object-probe-account-a-pending' in r('23')[1]['pendingKeys'], 'A queue lost during account switch')
     require('probe-account-a-pending' in facts(r('24')[-1]), 'A record not received after return')
-    verify_dependencies(dependency,plans,results,account_a)
-    return {'status':'PASS', 'scope':'Fixed fault-window evidence only; not full G1 or Production acceptance',
-            'physicalNetworkOff':'REQUIRES_OWNER_ACTION_RECORD', 'stages':27}
+    recovery = verify_dependencies(dependency,plans,results,account_a)
+    summary = {'status':'PASS', 'scope':'Fixed fault-window evidence only; not full G1 or Production acceptance',
+               'physicalNetworkOff':'REQUIRES_OWNER_ACTION_RECORD', 'stages':27}
+    if recovery is not None:
+        summary['dependencySeedRecovery'] = recovery
+    return summary
+
+
+def dependency_report(plan, raw, report, account, device, seed_failure=False):
+    """Validate one original report; only the exact seed CK_4 stop has an exception."""
+    require(report['planID']==plan['id'] and report['planDigest']==digest(raw) and report['dataset']==plan['dataset'] and report['runID']==plan['runID'], 'Dependency identity')
+    rows=report['results']
+    if seed_failure:
+        require([c['action'] for c in plan['commands']]==['connect']+['save']*12+['sync','sync','snapshot'], 'Unexpected failed seed plan')
+        require(report['completedAllCommands'] is False and report.get('errorCode')=='CK_4' and len(rows)==14, 'Unexpected seed failure boundary')
+    else:
+        require(report['completedAllCommands'] is True and len(rows)==len(plan['commands']), 'Dependency incomplete')
+    require(len({v.get('processNonce') for v in rows})==1 and all(isinstance(v.get('processNonce'),str) and bool(v['processNonce']) and type(v.get('processID')) is int and v['processID']>0 for v in rows),'Dependency process identity')
+    for index,(command,value) in enumerate(zip(plan['commands'],rows)):
+        require(value.get('planID')==plan['id'] and value.get('dataset')==plan['dataset'] and value.get('runID')==plan['runID'],'Dependency nested context')
+        if command['action']=='connect': require(value.get('accountSource')=='liveCloudKit','Dependency connect unverified')
+        require(value['commandDigest']==digest(canonical(command)) and value['id']==command['id'], 'Dependency command identity')
+        if seed_failure and index==13:
+            require(value['status']=='FAIL' and value['halted'] is False and value.get('errorCode')=='CK_4', 'Seed did not stop on CK_4 sync')
+        else:
+            require(value['status']=='PASS' and value['halted'] is False and value.get('errorCode') is None, 'Dependency command failed')
+        require(value['accountFingerprint']==account and value['platform']==device, 'Dependency account/device mismatch')
+    return rows
+
+
+def dependency_seed_recovery(stage, original, plans, results, account):
+    """Read-only supplement; never replaces the failed seed report or its writes."""
+    name='00-mac-dependency-recover'
+    raw=(plans/name/'SyncLab-Probe-Plan.json').read_bytes()
+    plan=json.loads(raw)
+    expected={'version':1, 'id':'probe-r7-dependency-recover-001',
+              'dataset':stage['plan']['dataset'], 'runID':stage['plan']['runID'],
+              'commands':[{'id':'probe-r7-dependency-recover-'+suffix,'action':action}
+                          for suffix,action in [('connect','connect'),('sync','sync'),('drain','sync'),('snapshot','snapshot')]]}
+    require(plan==expected, 'Recovery is not the fixed read-only seed supplement')
+    require(plan['id']!=stage['plan']['id'] and not ({c['id'] for c in plan['commands']} & {c['id'] for c in stage['plan']['commands']}), 'Recovery reused original identities')
+    report=read(results/name/'report.json')
+    require(report.get('errorCode') is None, 'Recovery report error')
+    recovered=dependency_report(plan,raw,report,account,'macOS')
+    require(recovered[0]['processNonce']!=original[0]['processNonce'], 'Seed recovery reused original process')
+    truth={}
+    for command,value in zip(stage['plan']['commands'][:13],original[:13]):
+        if command['action']=='save':
+            mutation=command['mutation'];require(mutation['id'] not in truth,'Duplicate seed mutation')
+            truth[mutation['id']]=mutation
+        require(facts(value)==truth and snapshot(value)['images']=={}, 'Original seed prefix content changed')
+        complete(value)
+    for value in recovered:
+        require(facts(value)==truth and snapshot(value)['images']=={}, 'Recovery lost or added seed facts')
+        complete(value)
+    require(recovered[-1]['pendingKeys']==[], 'Recovered seed outbox not drained')
+    return recovered, {'originalStatus':'FAIL','originalError':'CK_4','recoveryPlanID':plan['id'],
+                       'originalReportSHA256':digest((results/stage['name']/'report.json').read_bytes()),
+                       'recoveryPlanSHA256':digest(raw),
+                       'recoveryReportSHA256':digest((results/name/'report.json').read_bytes())}
 
 
 def verify_dependencies(stages,plans,results,account):
     require([s['name'] for s in stages]==['00-mac-dependency-seed','00-phone-dependency-repair','00-mac-dependency-fetch'], 'Dependency stage order')
-    reports=[]
+    reports=[]; recovered_seed=None; recovery_summary=None
     for stage in stages:
         plan=stage['plan']; raw=(plans/stage['name']/'SyncLab-Probe-Plan.json').read_bytes()
         require(json.loads(raw)==plan,'Dependency plan changed')
         report=read(results/stage['name']/'report.json')
-        require(report['planID']==plan['id'] and report['planDigest']==digest(raw) and report['dataset']==plan['dataset'] and report['runID']==plan['runID'], 'Dependency identity')
-        require(report['completedAllCommands'] is True and len(report['results'])==len(plan['commands']), 'Dependency incomplete')
-        require(len({v.get('processNonce') for v in report['results']})==1 and all(isinstance(v.get('processNonce'),str) and bool(v['processNonce']) and type(v.get('processID')) is int and v['processID']>0 for v in report['results']),'Dependency process identity')
-        for command,value in zip(plan['commands'],report['results']):
-            require(value.get('planID')==plan['id'] and value.get('dataset')==plan['dataset'] and value.get('runID')==plan['runID'],'Dependency nested context')
-            if command['action']=='connect': require(value.get('accountSource')=='liveCloudKit','Dependency connect unverified')
-            require(value['status']=='PASS' and value['halted'] is False and value.get('errorCode') is None and value['commandDigest']==digest(canonical(command)) and value['id']==command['id'], 'Dependency command failed')
-            require(value['accountFingerprint']==account and value['platform']==stage['device'], 'Dependency account/device mismatch')
-        reports.append(report['results'])
+        recovering=stage['name']=='00-mac-dependency-seed' and report['completedAllCommands'] is False
+        rows=dependency_report(plan,raw,report,account,stage['device'],seed_failure=recovering)
+        if recovering:
+            recovered_seed,recovery_summary=dependency_seed_recovery(stage,rows,plans,results,account)
+        reports.append(rows)
     seed={c['mutation']['id']:c['mutation'] for c in stages[0]['plan']['commands'] if 'mutation' in c}
     final={**seed,**{c['mutation']['id']:c['mutation'] for c in stages[1]['plan']['commands'] if 'mutation' in c}}
     def dependency_projection(value, expected, repaired):
@@ -272,11 +325,16 @@ def verify_dependencies(stages,plans,results,account):
             preview=expected[heads[0]] if state=='ready' else None
             require(projection.get('preview')==preview,'Dependency preview fell back or changed')
     before=reports[1][2]
-    dependency_projection(reports[0][-1],seed,False)
+    seed_final=recovered_seed[-1] if recovered_seed is not None else reports[0][-1]
+    if recovered_seed is not None:
+        dependency_projection(reports[0][12],seed,False)
+        for value in recovered_seed:
+            dependency_projection(value,seed,False)
+    dependency_projection(seed_final,seed,False)
     dependency_projection(before,seed,False)
     require(snapshot(reports[0][0])['envelopes']==[] and snapshot(reports[1][0])['envelopes']==[],'Dependency clients not initially empty')
     require(any('ACK_EXACT_AND_RESCHEDULED' in value['events'] for value in reports[1]),'New image has no SDK ACK trace')
-    require(facts(reports[0][-1])==facts(before)==seed,'Dependency initial truth missing')
+    require(facts(seed_final)==facts(before)==seed,'Dependency initial truth missing')
     for name in ['deleted-child','missing','trans-mid','trans-root','dep-a','dep-b','head','cause']:
         require(before['projections']['probe-batch-'+name]['state']=='staged' and before['projections']['probe-batch-'+name].get('preview') is None,'Invalid dependency published')
     require(before['projections']['probe-batch-deleted']['state']=='deleted','Delete intent lost')
@@ -291,6 +349,7 @@ def verify_dependencies(stages,plans,results,account):
     require(snapshot(reports[1][-1])==snapshot(reports[2][-1]),'New phone original not received by Mac')
     image=next(c['mutation']['imageHash'] for c in stages[1]['plan']['commands'] if c.get('mutation',{}).get('imageHash'))
     require(any('image-'+image in v['pendingKeys'] for v in reports[1]),'No genuinely new image pending')
+    return recovery_summary
 
 
 def redact(value):

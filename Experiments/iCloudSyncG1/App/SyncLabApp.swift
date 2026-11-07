@@ -94,11 +94,25 @@ import Darwin
         let env = ProcessInfo.processInfo.environment
         guard !probeStarted, env["SYNCLAB_PROBE_RUN"] != nil else { return }
         probeStarted = true
+        var window: ProbeWindowTransport?
         do {
             guard let run = env["SYNCLAB_PROBE_RUN"] else { throw LabError.blocked }
-            let probe = try DevelopmentProbe(base: base, dataset: dataset, runID: run)
+            if let address = env["SYNCLAB_PROBE_WINDOW_URL"] {
+                guard let token = env["SYNCLAB_PROBE_WINDOW_TOKEN"], let launch = env["SYNCLAB_PROBE_WINDOW_LAUNCH"] else { throw LabError.blocked }
+                window = try ProbeWindowTransport(address: address, token: token, launchID: launch, authorization: .fromEnvironment())
+            }
+            let probe = try DevelopmentProbe(base: base, dataset: dataset, runID: run, windowTransport: window)
             do {
-            if env["SYNCLAB_PROBE_IMPORTED_PLAN"] == "YES" {
+            if let window {
+                guard let encoded = env["SYNCLAB_PROBE_WINDOW_PLAN"] else { throw LabError.blocked }
+                let bytes = try ProbeWindowTransport.planBytes(encoded)
+                let execution = try await probe.runManualPlan(bytes, documents: .documentsDirectory)
+                guard !execution.reusedOriginal else { throw LabError.blocked }
+                try window.send("report", bytes: canonical(execution.report))
+                #if os(macOS)
+                Darwin.exit(execution.report.completedAllCommands ? 0 : 42)
+                #endif
+            } else if env["SYNCLAB_PROBE_IMPORTED_PLAN"] == "YES" {
                 let bytes = try ManualProbePlan.readImportedPlan(documents: .documentsDirectory)
                 let execution = try await probe.runManualPlan(bytes, documents: .documentsDirectory)
                 status = execution.report.completedAllCommands ? "测试计划完成，原始结果已导出" : "测试计划停止，原始结果保留"
@@ -117,7 +131,15 @@ import Darwin
                 await probe.shutdown(); throw error
             }
             await probe.shutdown()
-        } catch { status = "合成测试入口停止；原数据保留" }
+        } catch {
+            status = "合成测试入口停止；原数据保留"
+            if let window {
+                try? window.send("failure", bytes: Data("{\"code\":\"WINDOW_FAILED\"}".utf8))
+                #if os(macOS)
+                Darwin.exit(42)
+                #endif
+            }
+        }
         #endif
     }
     #if DEBUG

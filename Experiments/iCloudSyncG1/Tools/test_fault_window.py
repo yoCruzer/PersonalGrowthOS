@@ -55,6 +55,20 @@ class FaultWindowTests(unittest.TestCase):
         self.assertEqual(clean['faultObservations'][0]['processNonce'],'nonce')
         self.assertEqual(value['accountFingerprint'],'private')
 
+    def test_failed_stage_is_retained_without_automatic_retry(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);(root/'window.json').write_text(json.dumps({'testUID':os.getuid()}))
+            (root/'results/00-mac-seed').mkdir(parents=True)
+            request=root/'requested-stage.json';request.write_text('{"stage":"00-mac-seed"}')
+            sleeps=[]
+            def advance(_):
+                sleeps.append(1)
+                if len(sleeps)==2:request.write_text('{"stage":"STOP"}')
+            with patch('sys.argv',['window',str(root),'--listen']), patch.object(window,'run',side_effect=ValueError('synthetic')) as run, patch.object(window.time,'sleep',side_effect=advance):
+                window.main()
+            self.assertEqual(run.call_count,1)
+            self.assertEqual(json.loads((root/'results/00-mac-seed/launcher-error.json').read_text())['errorType'],'ValueError')
+
     def test_missing_evidence_never_passes(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);(root/'manifest.json').write_text('[]')

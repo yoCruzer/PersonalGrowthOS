@@ -1,0 +1,23 @@
+{
+  "timestampUTC": "2026-11-07T13:07:47.393478+00:00",
+  "source": "67aacb83c1865a942cc499cf98370b90feb7a6c3",
+  "ownerConfirmed": [
+    "iPhone connected and unlocked",
+    "haha fixed launcher ready; returned to daily user"
+  ],
+  "installation": {
+    "onePhysicalIPhoneSelected": true,
+    "installAppExit": 0,
+    "installBatchExit": 0,
+    "cfgutilOutputType": "CommandOutput",
+    "ipaSHA256": "734c2d9d25bfaff2e3c8280519ba42b3d497a44e41d016f83aa6ec41a4060d7e",
+    "batchSHA256": "968a39fcb6ed8ccf152a6b09ab817591c9741d8bf0637d29b6bfaf617445de4b"
+  },
+  "macFirstStage": {
+    "name": "00-mac-dependency-seed",
+    "state": "CLAIM_DIRECTORY_CREATED_NO_REPORT_HELPER_EXITED",
+    "cloudExecution": "UNKNOWN_PENDING_DIAGNOSTIC",
+    "note": "Do not replay the existing plan or interpret missing report as success."
+  },
+  "scope": "Installation and preflight only; no G1 acceptance"
+}

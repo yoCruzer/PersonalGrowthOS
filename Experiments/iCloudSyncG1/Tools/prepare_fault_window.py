@@ -44,7 +44,9 @@ def main():
         destination=prepared/name; destination.mkdir()
         (destination/'SyncLab-Probe-Plan.json').write_bytes(source)
     shutil.copyfile(tools/'fault_window.py', a.output/'fault_window.py')
-    config = {'testUID': uid, 'manifestSHA256': hashlib.sha256(manifest).hexdigest(),
+    shutil.copyfile(tools/'window_transport.py', a.output/'window_transport.py')
+    (a.output/'window_transport.py').chmod(0o644)
+    config = {'transport':'loopback-v1', 'testUID': uid, 'manifestSHA256': hashlib.sha256(manifest).hexdigest(),
               'executableSHA256': hashlib.sha256((a.output/'SyncLab.app/Contents/MacOS/SyncLab').read_bytes()).hexdigest()}
     (a.output/'window.json').write_text(json.dumps(config, indent=2)+'\n')
     (a.output/'window.json').chmod(0o644)

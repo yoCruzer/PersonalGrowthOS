@@ -76,6 +76,9 @@ def load_stage(root, name):
 
 def run(root, name):
     config, stage, plan_bytes = load_stage(root, name)
+    if config.get("transport") == "loopback-v1":
+        from window_transport import run_network
+        return run_network(root, name, config, stage, plan_bytes)
     if os.getuid() != config['testUID']:
         raise ValueError('请在专用测试用户 haha 中启动；当前用户不符。')
     output = root / 'results' / name
@@ -185,14 +188,17 @@ def main():
             name = json.loads(data)['stage']
             if name == 'STOP':
                 return
+            safe_stage(name)
             if name not in seen:
                 seen.add(name)
                 try:
                     run(root, name)
                 except Exception as error:
                     # Do not print account IDs, paths from CK errors, or credentials.
-                    print('测试停止：' + type(error).__name__ + '；原证据保留。', flush=True)
-                    raise
+                    directory=root/'results'/name
+                    if directory.is_dir():
+                        publish(canonical({'errorType':type(error).__name__,'scope':'launcher failure, not a successful cloud result'}),directory/'launcher-error.json')
+                    print('本阶段停止：' + type(error).__name__ + '；原证据保留，不自动重试。窗口继续等待新的固定阶段。', flush=True)
         time.sleep(0.5)
 
 
