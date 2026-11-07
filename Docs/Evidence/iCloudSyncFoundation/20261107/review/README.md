@@ -9,7 +9,7 @@
 发现并处理：
 
 - API旧名 `verifyComplete` 易误导接入方把资产闭合当业务可发布；实现者改为 `verifyAssetsComplete` 并明确只校验资产，因果/领域/自然键/当前依赖仍需接入层验证。
-- `CreateSyncV16BaselineFixture.swift` 初稿直接打开frozen SQLite，可能改写WAL/SHM/metadata。已向主代理报告，要求独立副本重开并前后核对冻结目录全文件hash；该项由主代理修复/重跑，**此包测试不作为夹具修复通过证据**。
+- `CreateSyncV16BaselineFixture.swift` 初稿直接打开frozen SQLite，可能改写WAL/SHM/metadata。主代理已改为副本重开及前后hash检查，保留首轮和缺CryptoKit导入的编译失败，最终attempt3原生1/1 PASS；独立产物复核见下节，**此包测试不作为夹具修复通过证据**。
 
 ## 独立测试及实际结果
 
@@ -42,3 +42,11 @@ swift test --package-path /private/tmp/PGOS-SyncReview.gHBAkm/Candidate --scratc
 - `readAsset`通过同一regular-file descriptor有界读取、拒绝叶子symlink/FIFO；未声称父路径symlink不可达。CKAsset最终仍引用URL；调用者必须拥有不可变staging lease直至SDK完成。codec不能阻止外部在验证后改写/替换文件；真实上传TOCTOU、lease/GC、进程恢复仍为接入门禁。
 - opaque payload不代表合法领域事实；当前manifest不解决跨对象因果/合法业务环/自然键冲突/统计。16MiB候选payload上限必须再用真实领域最大合法编码验证。
 - 没有SDK云操作、正式Development/Production、真实账户切换、persisted outbox/inbox/ACK、V16迁移、备份恢复或39实体接入验证；P0–P4不得标PASS。
+
+## V16/v12冻结夹具最终独立复核
+
+执行 `python3 Docs/Evidence/iCloudSyncFoundation/20261107/review/verify_baseline.py`，exit0。对6个冻结文件重新计算全量大小/SHA256，与交付清单完全一致；ZIP CRC、manifest v12、data字节数/hash、全部objectCounts、唯一原图字节/长度/hash与媒体元数据逐项一致。对明确的旧Date类型字段按参考日期→Unix日期转换后，ZIP data与expected-transfer完整结构相等；未对普通数字、金额或新Double字段作宽松比较。
+
+独立金钱oracle：资产1234567分、负债23456分、净值1211111分；未完成草稿文本保留。两份capture receipt UUID逐ID匹配，其中一个不存在对应Entry。复制Store及WAL到全新 `/private/tmp/PGOS-V16Independent-*` 才打开SQLite：模型metadata为16.0.0，`PRAGMA integrity_check`=ok，数据库两receipt与ZIP逐ID相等；原冻结目录前后hash完全相同。结果见 `baseline-verification.json`。没有打开原冻结数据库，没有执行新的Sync迁移，也不把代表性夹具算成39实体全部组合覆盖。
+
+复现脚本随后仅删除写入既有report的一行，结果改为stdout，避免重跑覆盖独立原件；未改变验证逻辑，无需重复本体测试。主代理误传`--help`触发的一次实际复验另存`baseline-root-recheck.json`，不替换上述独立结果或计作新增独立测试。

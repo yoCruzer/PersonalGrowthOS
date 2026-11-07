@@ -19,9 +19,9 @@ final class SyncFoundationTests: XCTestCase {
     func manifest(bytes: Data? = nil, originals: [OriginalReference] = []) throws -> MutationManifest {
         try MutationManifest(dataset: dataset, mutation: mutationID,
                              object: SyncObject(kind: "NetWorthSnapshot", id: objectID),
-                             payload: AssetDescriptor(bytes: bytes ?? payload), originals: originals)
+                             payload: PayloadManifest(bytes: bytes ?? payload), originals: originals)
     }
-    func record() throws -> CKRecord { try CloudRecordCodec.encode(manifest(), payloadURL: write(payload)) }
+    func record() throws -> CKRecord { try CloudRecordCodec.encode(manifest()) }
     func json(_ bytes: Data, change: (inout [String: Any]) -> Void) throws -> Data {
         var object = try XCTUnwrap(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
         change(&object)
@@ -39,8 +39,8 @@ final class SyncFoundationTests: XCTestCase {
     func testManifestAndSDKRecordRoundTripPreserveExactBytes() throws {
         let value = try manifest()
         XCTAssertEqual(try MutationManifest.decode(value.encoded()), value)
-        let (decoded, bytes) = try CloudRecordCodec.decode(record(), dataset: dataset)
-        XCTAssertEqual(decoded, value); XCTAssertEqual(bytes, payload)
+        let decoded = try CloudRecordCodec.decode(record(), dataset: dataset)
+        XCTAssertEqual(decoded, value); XCTAssertNoThrow(try decoded.payload!.verify(bytes: payload))
         XCTAssertEqual(Set(try record().allKeys()), Set(CloudRecordCodec.mutationFields.keys))
     }
     func testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes() throws {
@@ -48,10 +48,10 @@ final class SyncFoundationTests: XCTestCase {
         let bytes = try JSONSerialization.data(withJSONObject: ["lines": rows], options: [.sortedKeys])
         XCTAssertGreaterThan(bytes.count, 262_144)
         let value = try manifest(bytes: bytes)
-        let encoded = try CloudRecordCodec.encode(value, payloadURL: write(bytes))
+        let encoded = try CloudRecordCodec.encode(value)
         XCTAssertLessThan(try XCTUnwrap(encoded["manifest"] as? Data).count, 1_024)
-        XCTAssertTrue(encoded["payload"] is CKAsset)
-        XCTAssertEqual(try CloudRecordCodec.decode(encoded, dataset: dataset).1, bytes)
+        XCTAssertNil(encoded["payload"])
+        XCTAssertNoThrow(try CloudRecordCodec.decode(encoded, dataset: dataset).payload!.verify(bytes: bytes))
     }
     func testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest() throws {
         let bytes = Data(repeating: 0xA7, count: SyncLimits.originalBytes)
@@ -85,7 +85,7 @@ final class SyncFoundationTests: XCTestCase {
         var previous: UUID?
         for _ in 0..<600 {
             let value = try MutationManifest(dataset: dataset, mutation: UUID(), object: SyncObject(kind: "Entry", id: objectID),
-                parents: previous.map { [$0] } ?? [], payload: AssetDescriptor(bytes: payload))
+                parents: previous.map { [$0] } ?? [], payload: PayloadManifest(bytes: payload))
             XCTAssertLessThan(try value.encoded().count, 1_024)
             previous = value.mutation
         }
@@ -93,16 +93,15 @@ final class SyncFoundationTests: XCTestCase {
     func testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets() throws {
         let value = try MutationManifest(dataset: dataset, mutation: mutationID, object: SyncObject(kind: "Entry", id: objectID),
                                          parents: [UUID()], deleted: true)
-        let result = try CloudRecordCodec.decode(CloudRecordCodec.encode(value, payloadURL: nil), dataset: dataset)
-        XCTAssertEqual(result.0, value); XCTAssertNil(result.1)
+        let result = try CloudRecordCodec.decode(CloudRecordCodec.encode(value), dataset: dataset)
+        XCTAssertEqual(result, value); XCTAssertNil(result.payload)
         XCTAssertNoThrow(try value.verifyAssetsComplete(payload: nil) { _ in XCTFail("no original required"); return Data() })
-        XCTAssertThrowsError(try CloudRecordCodec.encode(value, payloadURL: write(payload)))
-        XCTAssertThrowsError(try MutationManifest(dataset: dataset, mutation: mutationID, object: value.object, deleted: true, payload: AssetDescriptor(bytes: payload)))
+        XCTAssertThrowsError(try MutationManifest(dataset: dataset, mutation: mutationID, object: value.object, deleted: true, payload: PayloadManifest(bytes: payload)))
         XCTAssertThrowsError(try MutationManifest(dataset: dataset, mutation: mutationID, object: value.object, dependencies: [SyncObject(kind: "Entry", id: UUID())], deleted: true))
     }
     func testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected() throws {
         let bytes = try manifest().encoded()
-        for altered in [try json(bytes) { $0["wireVersion"] = 2 }, try json(bytes) { $0["accountHash"] = "private" }, Data(" ".utf8) + bytes] {
+        for altered in [try json(bytes) { $0["wireVersion"] = 3 }, try json(bytes) { $0["accountHash"] = "private" }, Data(" ".utf8) + bytes] {
             XCTAssertThrowsError(try MutationManifest.decode(altered))
         }
     }
@@ -140,7 +139,7 @@ final class SyncFoundationTests: XCTestCase {
         XCTAssertThrowsError(try CloudRecordCodec.decode(candidate, dataset: dataset))
         candidate = try record(); candidate["payload"] = CKAsset(fileURL: try write(Data(repeating: 0, count: payload.count)))
         XCTAssertThrowsError(try CloudRecordCodec.decode(candidate, dataset: dataset))
-        candidate = try record(); candidate["payload"] = nil
+        candidate = try record(); candidate["manifest"] = nil
         XCTAssertThrowsError(try CloudRecordCodec.decode(candidate, dataset: dataset))
     }
     func testFractionalAndBooleanIntegersRejected() throws {
@@ -167,10 +166,10 @@ final class SyncFoundationTests: XCTestCase {
         let object = try SyncObject(kind: "Entry", id: objectID)
         for count in [0, SyncLimits.payloadBytes + 1] {
             XCTAssertThrowsError(try MutationManifest(dataset: dataset, mutation: mutationID, object: object,
-                payload: AssetDescriptor(sha256: syncDigest(payload), byteCount: count)))
+                payload: PayloadManifest(total: AssetDescriptor(sha256: syncDigest(payload), byteCount: count), chunks: [])))
         }
         XCTAssertThrowsError(try MutationManifest(dataset: dataset, mutation: mutationID, object: object,
-            parents: (0...SyncLimits.parents).map { _ in UUID() }, payload: AssetDescriptor(bytes: payload)))
+            parents: (0...SyncLimits.parents).map { _ in UUID() }, payload: PayloadManifest(bytes: payload)))
         XCTAssertThrowsError(try MutationManifest.decode(Data(repeating: 0, count: SyncLimits.manifestBytes + 1)))
         let oversized = OriginalReference(id: UUID(), asset: AssetDescriptor(sha256: syncDigest(payload), byteCount: SyncLimits.originalBytes + 1))
         XCTAssertThrowsError(try manifest(originals: [oversized]))
@@ -178,12 +177,12 @@ final class SyncFoundationTests: XCTestCase {
     func testAssetPathValidationAndMutationAfterEncodingDetected() throws {
         let url = try write(payload), link = directory.appendingPathComponent("symlink")
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: url)
-        XCTAssertThrowsError(try CloudRecordCodec.encode(manifest(), payloadURL: link))
-        XCTAssertThrowsError(try CloudRecordCodec.encode(manifest(), payloadURL: directory))
-        XCTAssertThrowsError(try CloudRecordCodec.encode(manifest(), payloadURL: directory.appendingPathComponent("absent")))
-        let value = try CloudRecordCodec.encode(manifest(), payloadURL: url)
+        XCTAssertThrowsError(try CloudRecordCodec.encodeChunk(AssetDescriptor(bytes: payload), dataset: dataset, url: link))
+        XCTAssertThrowsError(try CloudRecordCodec.encodeChunk(AssetDescriptor(bytes: payload), dataset: dataset, url: directory))
+        XCTAssertThrowsError(try CloudRecordCodec.encodeChunk(AssetDescriptor(bytes: payload), dataset: dataset, url: directory.appendingPathComponent("absent")))
+        let value = try CloudRecordCodec.encodeChunk(AssetDescriptor(bytes: payload), dataset: dataset, url: url)
         try Data([0]).write(to: url)
-        XCTAssertThrowsError(try CloudRecordCodec.decode(value, dataset: dataset))
+        XCTAssertThrowsError(try CloudRecordCodec.decodeChunk(value, dataset: dataset))
     }
     @MainActor func testEpochFenceRejectsOldCallbacksAndReopenedBinding() throws {
         let binding = try SyncBinding(container: "iCloud.com.example.Test", environment: .development,

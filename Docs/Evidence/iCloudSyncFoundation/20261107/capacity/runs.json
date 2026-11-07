@@ -1,0 +1,52 @@
+{
+  "sourceCommit": "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "workingDirectory": "/private/tmp/pgos-sync-v16-baseline-source",
+  "appSource": "exact archived baseline",
+  "testAddition": "Scripts/Fixtures/MeasureSyncV16Payload.swift appended to NetWorthTests.swift",
+  "attempts": [
+    {
+      "attempt": 1,
+      "exit": 143,
+      "tests": 0,
+      "status": "CANCELLED",
+      "reason": "Agent launched wrong workdir; explicitly terminated only task-owned xcodebuild after exact PID inspection."
+    },
+    {
+      "attempt": 2,
+      "exit": 65,
+      "tests": 0,
+      "status": "BUILD_FAILED",
+      "reason": "Prior task-owned build still held same derived-data lock; no product failure."
+    },
+    {
+      "attempt": 3,
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "status": "PASS",
+      "resultBundle": "/private/tmp/pgos-sync-capacity-final.xcresult"
+    }
+  ],
+  "command": [
+    "xcodebuild",
+    "-project",
+    "PersonalGrowthOS.xcodeproj",
+    "-scheme",
+    "PersonalGrowthOS",
+    "-jobs",
+    "2",
+    "-derivedDataPath",
+    "/private/tmp/pgos-sync-v16-dd",
+    "-destination",
+    "platform=iOS Simulator,id=A90B4889-1A7B-4424-BDAC-EF3390D0E2C4",
+    "-parallel-testing-enabled",
+    "NO",
+    "-resultBundlePath",
+    "/private/tmp/pgos-sync-capacity-final.xcresult",
+    "-only-testing:PersonalGrowthOSTests/SyncV16PayloadCapacityTests",
+    "CODE_SIGNING_ALLOWED=NO",
+    "test"
+  ],
+  "privateSyntheticPayload": "/private/tmp/pgos-sync-v16-capacity-20261107/actual-v16-payload.json",
+  "payloadCommitted": false
+}

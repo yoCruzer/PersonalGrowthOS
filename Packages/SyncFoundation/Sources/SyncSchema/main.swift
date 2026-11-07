@@ -21,8 +21,9 @@ func run() throws {
     let manifest = try MutationManifest(dataset: dataset,
         mutation: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!,
         object: SyncObject(kind: "SyntheticFixture", id: UUID(uuidString: "33333333-3333-3333-3333-333333333333")!),
-        payload: AssetDescriptor(bytes: payload), originals: [OriginalReference(id: UUID(uuidString: "44444444-4444-4444-4444-444444444444")!, asset: descriptor)])
-    let records = [try CloudRecordCodec.encode(manifest, payloadURL: payloadURL),
+        payload: PayloadManifest(bytes: payload), originals: [OriginalReference(id: UUID(uuidString: "44444444-4444-4444-4444-444444444444")!, asset: descriptor)])
+    let records = [try CloudRecordCodec.encode(manifest),
+                   try CloudRecordCodec.encodeChunk(AssetDescriptor(bytes: payload), dataset: dataset, url: payloadURL),
                    try CloudRecordCodec.encodeOriginal(descriptor, dataset: dataset, url: originalURL)]
     var types: [String: [String: String]] = [:]
     for record in records {
@@ -39,15 +40,16 @@ func run() throws {
         types[record.recordType] = fields
     }
     guard types[CloudRecordCodec.mutationType] == CloudRecordCodec.mutationFields,
-          types[CloudRecordCodec.originalType] == CloudRecordCodec.originalFields else { throw SyncValidationError.invalidRecord }
+          types[CloudRecordCodec.originalType] == CloudRecordCodec.originalFields,
+          types[CloudRecordCodec.chunkType] == CloudRecordCodec.chunkFields else { throw SyncValidationError.invalidRecord }
     let result: [String: Any] = [
-        "status": "CANDIDATE_NOT_FROZEN", "wireVersion": 1, "database": "private",
-        "zonePattern": "PGSyncV1-<dataset UUID lowercase>",
-        "recordNamePatterns": ["mutation-<mutation UUID lowercase>", "original-<sha256 lowercase>"],
+        "status": "CANDIDATE_NOT_FROZEN", "wireVersion": 2, "database": "private",
+        "zonePattern": "PGSyncV2-<dataset UUID lowercase>",
+        "recordNamePatterns": ["mutation-<mutation UUID lowercase>", "original-<sha256 lowercase>", "chunk-<sha256 lowercase>"],
         "recordTypes": types, "customIndexes": [],
         "serverSchemaChecked": false, "networkOperations": 0,
         "limits": ["manifestBytes": SyncLimits.manifestBytes, "payloadBytes": SyncLimits.payloadBytes,
-                   "originalBytes": SyncLimits.originalBytes, "parents": SyncLimits.parents,
+                   "originalBytes": SyncLimits.originalBytes, "chunkBytes": SyncLimits.chunkBytes, "payloadChunks": SyncLimits.payloadChunks, "parents": SyncLimits.parents,
                    "dependencies": SyncLimits.dependencies, "media": SyncLimits.media]
     ]
     var bytes = try JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])

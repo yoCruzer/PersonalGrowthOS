@@ -1,7 +1,7 @@
 name: Sync foundation candidate
 on:
   pull_request:
-    paths: ['Packages/SyncFoundation/**', '.github/workflows/sync-foundation.yml']
+    paths: ['Packages/SyncFoundation/**', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', '.github/workflows/sync-foundation.yml']
 permissions:
   contents: read
 concurrency:
@@ -23,6 +23,14 @@ jobs:
           git rev-parse HEAD | tee "$RUNNER_TEMP/sync-foundation-evidence/checkout-sha.txt"
           swift test --package-path Packages/SyncFoundation --scratch-path "$RUNNER_TEMP/sync-foundation-build" 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/tests.log"
           swift run --package-path Packages/SyncFoundation --scratch-path "$RUNNER_TEMP/sync-foundation-build" SyncSchema "$RUNNER_TEMP/sync-foundation-evidence/schema"
+      - name: Retained independent chunk regressions
+        run: |
+          set -o pipefail
+          cp -R Packages/SyncFoundation "$RUNNER_TEMP/sync-review-package"
+          cp Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift "$RUNNER_TEMP/sync-review-package/Tests/SyncFoundationTests/IndependentChunkTests.swift"
+          # The exact 49MB V16 input is generated locally from the frozen product baseline.
+          # Keep that local evidence separate; run the other 11 self-contained regressions here.
+          swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter IndependentChunkTests --skip '.*testActualV16MaximumLegalPayloadHasTwelveChunksAndExactReplay' 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/independent-regressions.log"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

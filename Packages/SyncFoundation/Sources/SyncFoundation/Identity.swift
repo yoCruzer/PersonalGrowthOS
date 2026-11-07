@@ -50,7 +50,9 @@ public struct SyncBinding: Equatable, Sendable {
 
 public enum SyncLimits {
     public static let manifestBytes = 65_536
-    public static let payloadBytes = 16 * 1_024 * 1_024
+    public static let payloadBytes = 128 * 1_024 * 1_024
+    public static let chunkBytes = 4 * 1_024 * 1_024
+    public static let payloadChunks = payloadBytes / chunkBytes
     public static let originalBytes = 25 * 1_024 * 1_024
     public static let parents = 256
     public static let dependencies = 1_024

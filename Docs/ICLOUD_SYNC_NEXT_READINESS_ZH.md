@@ -38,6 +38,16 @@ P1/P2 未通过阻挡正式云写入和大规模领域接入，但不阻挡：�
 
 最小连续代码切片：先实现与现有App和G1安装隔离的正式协议候选及真实CKRecord codec；用纯合成夹具验证绑定、asset/manifest闭合、幂等、同ID异字节拒绝、未知版本、容量正负界限和乱序。与此同时准备真实V16/v12基线夹具与写入接缝。随后按依赖接持久outbox/inbox及小纵向领域，再准备正式Development差异；不能因小包测试通过就宣布39实体完成。
 
+## 本轮代码侧候选已完成的独立复核
+
+`Packages/SyncFoundation` 已实现独立协议/CloudKit本地codec候选v2：每mutation独立记录、typed对象UUID、有序payload chunk与独立原图CKAsset、逐块及完整聚合hash、资产闭合校验、内存epoch fence，以及从实际SDK记录生成字段清单的 `SyncSchema`。它未接入正式App、数据库或云调度，不改变手机SyncLab。
+
+初版16MiB payload不能覆盖真实合法净资产容量；其8项独立测试及schema保留为[v1历史证据](Evidence/iCloudSyncFoundation/20261107/review/README.md)，不算作v2通过。当前v2采用4MiB chunk、最多32块、128MiB总payload候选预算和64KiB manifest。精确V16源码生成的49,190,297字节合法合成聚合已通过12块SDK编解码、流式hash与逐字节重组。
+
+最终v2独立新增12项native测试12/12通过，修复并保留源变化未拒绝及Foundation临时内存累积的原红例/测量；逐块释放后本机128MiB样本RSS40,058,880字节，4MiB对照44,236,800字节，不把该结果泛化为所有设备的内存保证。schema CLI确定性/已有目录拒绝及完整字段/hash、SyncPayloadProbe正负例通过，详见[v2独立终审](Evidence/iCloudSyncFoundation/20261107/review-v2/README.md)。当前expected schema SHA256为 `6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003`，仅本地候选，不是部署批准单。
+
+128MiB是候选资源预算，字符数量上限不等于任意Unicode组合序列的字节上限；超预算输入必须保留源并明确拒绝，后续分段/版本策略及各真实领域容量仍需验证。没有把协议包通过写成持久outbox、V16升级、真实云状态、39实体投影或P0完成。
+
 ## 正式门禁状态
 
 | 门禁 | 当前结论 | 解除条件 |

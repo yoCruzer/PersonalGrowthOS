@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "schema": "16.0.0",
+  "backupVersion": 12,
+  "frozenFiles": 6,
+  "captureReceipts": 2,
+  "originalImages": 1,
+  "netMinor": 1211111,
+  "fullTransferEquality": "PASS after explicit Date epoch normalization",
+  "sqliteIntegrity": "ok",
+  "frozenHashUnchanged": true,
+  "openedOnlyCopy": "/private/tmp/PGOS-V16Independent-ecxyh792",
+  "limits": [
+    "Representative synthetic fixture, not all 39 entities",
+    "No Sync schema migration or cloud operation"
+  ]
+}

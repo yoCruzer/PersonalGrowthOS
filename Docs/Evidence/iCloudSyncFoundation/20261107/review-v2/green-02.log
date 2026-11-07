@@ -1,0 +1,112 @@
+Building for debugging...
+[1 / 10]
+[2 / 11] SyncFoundation
+[7 / 16] SyncFoundation
+[14 / 20] SyncFoundation
+[15 / 19] SyncFoundationTests-product
+[18 / 22] SyncFoundationTests-product
+error: SwiftCompile normal arm64 /private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift failed with a nonzero exit code. Command line:     cd /private/tmp/PGOS-SyncV2Review.slpcjH
+    builtin-SwiftPerFileCompile IndependentChunkTests.swift
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:24:73: error: missing argument for parameter 'expected' in call
+ 22 |         let source = try write(Data(repeating: 0x31, count: width * 2))
+ 23 |         var emitted = 0
+ 24 |         XCTAssertThrowsError(try PayloadManifest.prepare(fileURL: source) { index, _, _ in
+    |                                                                         `- error: missing argument for parameter 'expected' in call
+ 25 |             emitted += 1
+ 26 |             if index == 0 { let h = try FileHandle(forWritingTo: source); try h.truncate(atOffset: UInt64(self.width)); try h.close() }
+
+SyncFoundation.PayloadManifest.prepare:2:20: note: 'prepare(fileURL:expected:emit:)' declared here
+1 | struct PayloadManifest {
+2 | public static func prepare(fileURL: URL, expected: SyncFoundation.AssetDescriptor, emit: (Int, SyncFoundation.AssetDescriptor, Data) throws -> Void) throws -> SyncFoundation.PayloadManifest}
+  |                    `- note: 'prepare(fileURL:expected:emit:)' declared here
+3 | 
+
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:32:73: error: missing argument for parameter 'expected' in call
+ 30 |     func testPrepareRejectsSourceGrowthDuringEmit() throws {
+ 31 |         let source = try write(Data(repeating: 0x31, count: width))
+ 32 |         XCTAssertThrowsError(try PayloadManifest.prepare(fileURL: source) { index, _, _ in
+    |                                                                         `- error: missing argument for parameter 'expected' in call
+ 33 |             if index == 0 { let h = try FileHandle(forWritingTo: source); try h.seekToEnd(); try h.write(contentsOf: Data([0x32])); try h.close() }
+ 34 |         })
+
+SyncFoundation.PayloadManifest.prepare:2:20: note: 'prepare(fileURL:expected:emit:)' declared here
+1 | struct PayloadManifest {
+2 | public static func prepare(fileURL: URL, expected: SyncFoundation.AssetDescriptor, emit: (Int, SyncFoundation.AssetDescriptor, Data) throws -> Void) throws -> SyncFoundation.PayloadManifest}
+  |                    `- note: 'prepare(fileURL:expected:emit:)' declared here
+3 | 
+
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:90:66: error: missing argument for parameter 'expected' in call
+ 88 |         try h.close()
+ 89 |         var seen = 0, peakChunk = 0
+ 90 |         let manifest = try PayloadManifest.prepare(fileURL:source) { i,d,b in
+    |                                                                  `- error: missing argument for parameter 'expected' in call
+ 91 |             XCTAssertEqual(i,seen); XCTAssertEqual(b.count,width); XCTAssertEqual(d.byteCount,width)
+ 92 |             seen += 1; peakChunk = max(peakChunk,b.count)
+
+SyncFoundation.PayloadManifest.prepare:2:20: note: 'prepare(fileURL:expected:emit:)' declared here
+1 | struct PayloadManifest {
+2 | public static func prepare(fileURL: URL, expected: SyncFoundation.AssetDescriptor, emit: (Int, SyncFoundation.AssetDescriptor, Data) throws -> Void) throws -> SyncFoundation.PayloadManifest}
+  |                    `- note: 'prepare(fileURL:expected:emit:)' declared here
+3 | 
+
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:98:36: error: 'nil' requires a contextual type
+ 96 |         var i = 0
+ 97 |         try manifest.verifyChunks {
+ 98 |             guard i<32 else{return nil};defer{i+=1}
+    |                                    `- error: 'nil' requires a contextual type
+ 99 |             return .init(index:i,bytes:chunk)
+100 |         }
+
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:104:73: error: missing argument for parameter 'expected' in call
+102 |     func testPrepareRejectsSameSizeSourceRewriteDuringEmit() throws {
+103 |         let source = try write(Data(repeating: 0x31, count: width * 2))
+104 |         XCTAssertThrowsError(try PayloadManifest.prepare(fileURL: source) { index, _, _ in
+    |                                                                         `- error: missing argument for parameter 'expected' in call
+105 |             if index == 0 { let h = try FileHandle(forWritingTo: source); try h.seek(toOffset: UInt64(self.width)); try h.write(contentsOf: Data([0x32])); try h.close() }
+106 |         })
+
+SyncFoundation.PayloadManifest.prepare:2:20: note: 'prepare(fileURL:expected:emit:)' declared here
+1 | struct PayloadManifest {
+2 | public static func prepare(fileURL: URL, expected: SyncFoundation.AssetDescriptor, emit: (Int, SyncFoundation.AssetDescriptor, Data) throws -> Void) throws -> SyncFoundation.PayloadManifest}
+  |                    `- note: 'prepare(fileURL:expected:emit:)' declared here
+3 | 
+
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:110:66: error: missing argument for parameter 'expected' in call
+108 |     func testStreamingOneChunkMemoryBaseline() throws {
+109 |         let chunk = Data(repeating:0x5a,count:width),source = try write(Data(repeating:0x5a,count:width))
+110 |         let manifest = try PayloadManifest.prepare(fileURL:source) { _,_,b in XCTAssertEqual(b.count,self.width) }
+    |                                                                  `- error: missing argument for parameter 'expected' in call
+111 |         var used = false
+112 |         try manifest.verifyChunks { if used{return nil};used=true;return .init(index:0,bytes:chunk) }
+
+SyncFoundation.PayloadManifest.prepare:2:20: note: 'prepare(fileURL:expected:emit:)' declared here
+1 | struct PayloadManifest {
+2 | public static func prepare(fileURL: URL, expected: SyncFoundation.AssetDescriptor, emit: (Int, SyncFoundation.AssetDescriptor, Data) throws -> Void) throws -> SyncFoundation.PayloadManifest}
+  |                    `- note: 'prepare(fileURL:expected:emit:)' declared here
+3 | 
+
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:112:52: error: 'nil' requires a contextual type
+110 |         let manifest = try PayloadManifest.prepare(fileURL:source) { _,_,b in XCTAssertEqual(b.count,self.width) }
+111 |         var used = false
+112 |         try manifest.verifyChunks { if used{return nil};used=true;return .init(index:0,bytes:chunk) }
+    |                                                    `- error: 'nil' requires a contextual type
+113 |     }
+114 |     func testActualV16MaximumLegalPayloadHasTwelveChunksAndExactReplay() throws {
+
+/private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift:118:66: error: missing argument for parameter 'expected' in call
+116 |         let dataset = UUID()
+117 |         var paths: [String:URL] = [:]
+118 |         let manifest = try PayloadManifest.prepare(fileURL:source) { _,descriptor,bytes in
+    |                                                                  `- error: missing argument for parameter 'expected' in call
+119 |             let url = try self.write(bytes)
+120 |             paths[descriptor.sha256] = url
+
+SyncFoundation.PayloadManifest.prepare:2:20: note: 'prepare(fileURL:expected:emit:)' declared here
+1 | struct PayloadManifest {
+2 | public static func prepare(fileURL: URL, expected: SyncFoundation.AssetDescriptor, emit: (Int, SyncFoundation.AssetDescriptor, Data) throws -> Void) throws -> SyncFoundation.PayloadManifest}
+  |                    `- note: 'prepare(fileURL:expected:emit:)' declared here
+3 | 
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources/test_entry_point.swift -primary-file /private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/IndependentChunkTests.swift /private/tmp/PGOS-SyncV2Review.slpcjH/Candidate/Tests/SyncFoundationTests/SyncFoundationTests.swift -emit-dependencies-path /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentChunkTests.d -emit-const-values-path /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentChunkTests.swiftconstvalues -emit-reference-dependencies-path /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentChunkTests.swiftdeps -serialize-diagnostics-path /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentChunkTests.dia -target arm64-apple-macos14.0 -module-can-import-version Testing 2403 0 -module-can-import-version XCTest 25435 0 -disable-cross-import-overlay-search -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/AppKit.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreGraphics.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreImage.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/CoreTransferable.swiftoverlay -swift-module-cross-import Testing /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework/Modules/Testing.swiftcrossimport/Foundation.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing/libTestingMacros.dylib\#\#TestingMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -stack-check -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.2.sdk -I /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Products/Debug/PackageFrameworks -F /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -module-cache-path /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SwiftExplicitPrecompiledModules -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -swift-version 5 -Onone -D SWIFT_PACKAGE -D DEBUG -D Xcode -serialize-debugging-options -enable-experimental-feature DebugDescriptionMacro -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /private/tmp/PGOS-SyncV2Review.slpcjH -enable-anonymous-context-mangled-names -file-compilation-dir /private/tmp/PGOS-SyncV2Review.slpcjH -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/SDKStatCaches.noindex/macosx27.2-26B118-a0facfad118c1a7a18f0aad9463f6549a7ff82d74745d5ef33555b35c4238456.sdkstatcache -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -Xcc -I/private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Products/Debug/include -Xcc -I/private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources-normal/arm64 -Xcc -I/private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources/arm64 -Xcc -I/private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name SyncFoundationTests -package-name candidate -const-gather-protocols-file /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests_const_extract_protocols.json -disable-clang-spi -clang-target arm64-apple-macos27.2 -target-sdk-version 27.2 -target-sdk-name macosx27.2 -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -parse-as-library -o /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentChunkTests.o -debug-module-path /private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Intermediates.noindex/SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/SyncFoundationTests.swiftmodule -index-unit-output-path /SyncFoundation.build/Debug/SyncFoundationTests-p.build/Objects-normal/arm64/IndependentChunkTests.o -index-store-path /private/tmp/PGOS-SyncV2Review.slpcjH/build/out -index-system-modules
+error: Build failed
+error: fatalError

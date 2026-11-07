@@ -1,12 +1,16 @@
-# 2026-11-07 iCloud 后续连续开发授权生效
+# 2026-11-07 后续分块协议与基线准备：本机完成，远端收口中
 
-Owner 本次明确授权按依赖顺序连续完成后续实现、验证、修复和可评审交付，不在小阶段重复请求确认。工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`，分支 `codex/icloud-sync-foundation`，从已核对远端 G1 `e57fe3503995771a89754fbc4077ea16627c15be` 创建。原项目未提交工程、本地化和 xcodecloud 改动不动。
+工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`，分支 `codex/icloud-sync-foundation`，[Draft PR #17](https://github.com/yoCruzer/PersonalGrowthOS/pull/17)，base保持G1。Owner已授权连续后续开发；旧G1仅实验/停批次限制不再阻挡本轮，外部部署和发布边界保留。原项目仍在d72c016且原三项未提交改动保持。
 
-G1 保持 `OWNER_ACCEPTED_PHONE_SCOPE`：6 原件/27 命令、Mac CK_2 非阻塞例外及原始失败均保留；不重跑完整 G1。旧文档“仅实验/停批次”的开发范围由此次授权限定替代，真实服务覆盖和发布门禁不改写。
+已实现隔离SyncFoundation分块候选：immutable逐mutation manifest、4MiB ordered payload chunks、25MiB原图、typed身份/epoch栅栏、严格字节/hash校验与实际SDK codec。真实V16合法万行快照49,190,297字节经12块往返完全一致。原16MiB候选不足、源截短/增长负例和内存随输入增长均发现后修复；最终原生24/24、独立12/12及iOS17 target编译通过，真实128MiB纯prepare峰值RSS40,058,880字节。P0仍CANDIDATE_NOT_FROZEN。
 
-当前推进：正式 wire 候选与身份/容量/asset 清单的隔离实现及独立复核；V16/v12 合成基线和写入接缝准备；正式产品 smoke 根因修复；正式容器只读核验与准确操作清单。正式容器 P0 尚未冻结、P1/P2 尚未验证，因此先完成准备，不接入全部39实体、不把候选标为可发布。对不依赖门禁的工作持续推进。
+固定96f产品V16/v12合成库/WAL/原图/ZIP与全字段预期已保存并独立复核；2份分享receipt（含已删来源）、整数金额、草稿均保留，冻结输入hash不变。生成和实际容量probe各最终1/1通过，所有此前失败保留。尚未新增正式schema/迁移/outbox，不把准备称为39实体完成。
 
-允许本机定向检查、独立子代理、普通 push 和新 Draft PR。禁止 merge、force push、历史重写、删除数据、Production部署/写入、Archive、TestFlight及发布；密码/验证码/系统用户切换由Owner操作，不读日常私人库。实际完成证据将追加至本轮交付文档。
+正式产品短标题smoke已局部修复，测试阈值不变，本机iPhone13mini/iOS27.0完整5/5通过；源码2e68ab2远端Release成功、Unit599=598PASS/1SKIP/0FAIL，smoke仍在收口。原0e1f747/e57fe35的smoke失败不改写。最后远端结果将在交付时追加。
+
+G1保持OWNER_ACCEPTED_PHONE_SCOPE：6原件27命令；Mac CK_2接受为非阻塞例外，原失败/未覆盖矩阵保留，本轮未再占手机。正式容器只读观察Development仅Users，未查业务记录；Owner选择稍后按[5–10分钟只读清单](ICLOUD_SYNC_NEXT_READINESS_ZH.md)导出，两端schema及正式关联仍待补，手机/数据线0分钟。未授权/未执行Production部署或写入、merge、Archive、TestFlight。P1/P2未完成前不进入大规模领域接入；不依赖门禁的工程准备已连续推进至本节点。
+
+[执行与完整边界](ICLOUD_SYNC_FOUNDATION_EXECUTION_ZH.md) · [证据](Evidence/iCloudSyncFoundation/20261107/README.md) · [G2接缝](ICLOUD_SYNC_G2_WRITE_SEAMS_ZH.md)。以下旧历史保留，不再指挥当前开发。
 
 ---
 

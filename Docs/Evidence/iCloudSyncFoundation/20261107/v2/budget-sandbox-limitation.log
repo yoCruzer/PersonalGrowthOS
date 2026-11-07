@@ -1,0 +1,3 @@
+Verified synthetic payload: 49190297 bytes, 12 ordered chunks; source unchanged.
+        0.17 real         0.11 user         0.04 sys
+time: sysctl kern.clockrate: Operation not permitted

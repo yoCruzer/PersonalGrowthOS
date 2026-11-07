@@ -1,0 +1,48 @@
+[
+  {
+    "case": "4mib",
+    "exit": 0,
+    "rssBytes": 44236800,
+    "command": [
+      "/usr/bin/time",
+      "-l",
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/xctest",
+      "-XCTest",
+      "SyncFoundationTests.IndependentChunkTests/testStreamingOneChunkMemoryBaseline",
+      "/private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Products/Debug/SyncFoundationTests.xctest"
+    ]
+  },
+  {
+    "case": "128mib",
+    "exit": 0,
+    "rssBytes": 40058880,
+    "command": [
+      "/usr/bin/time",
+      "-l",
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/xctest",
+      "-XCTest",
+      "SyncFoundationTests.IndependentChunkTests/testStreamPreparesMaximumPayloadWithoutAssemblingIt",
+      "/private/tmp/PGOS-SyncV2Review.slpcjH/build/out/Products/Debug/SyncFoundationTests.xctest"
+    ]
+  },
+  {
+    "case": "actual-v16",
+    "exit": 0,
+    "expectedExit": 0
+  },
+  {
+    "case": "wrong-expected",
+    "exit": 1,
+    "expectedExit": 1
+  },
+  {
+    "case": "existing",
+    "exit": 1,
+    "expectedExit": 1
+  },
+  {
+    "case": "source-hash-after-all-probes",
+    "pass": true,
+    "sha256": "9e97f46caef1fb89babb217a5cb7e25ee223beec74d6ce71408f211672fb9b13"
+  }
+]

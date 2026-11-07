@@ -44,13 +44,13 @@ public struct MutationManifest: Codable, Equatable, Sendable {
     public let parents: [UUID]
     public let dependencies: [SyncObject]
     public let deleted: Bool
-    public let payload: AssetDescriptor?
+    public let payload: PayloadManifest?
     public let originals: [OriginalReference]
 
     public init(dataset: UUID, mutation: UUID, object: SyncObject, parents: [UUID] = [],
                 dependencies: [SyncObject] = [], deleted: Bool = false, payloadVersion: Int = 1,
-                payload: AssetDescriptor? = nil, originals: [OriginalReference] = []) throws {
-        wireVersion = 1; self.payloadVersion = payloadVersion; self.dataset = dataset
+                payload: PayloadManifest? = nil, originals: [OriginalReference] = []) throws {
+        wireVersion = 2; self.payloadVersion = payloadVersion; self.dataset = dataset
         self.mutation = mutation; self.object = object
         self.parents = parents.sorted { $0.wire < $1.wire }
         self.dependencies = dependencies.sorted { $0.sortKey < $1.sortKey }
@@ -60,7 +60,7 @@ public struct MutationManifest: Codable, Equatable, Sendable {
     }
 
     private func validate() throws {
-        guard wireVersion == 1 else { throw SyncValidationError.unsupportedVersion }
+        guard wireVersion == 2 else { throw SyncValidationError.unsupportedVersion }
         guard payloadVersion > 0 else { throw SyncValidationError.invalidManifest }
         try object.validate()
         guard parents.count <= SyncLimits.parents, dependencies.count <= SyncLimits.dependencies,
@@ -79,7 +79,7 @@ public struct MutationManifest: Codable, Equatable, Sendable {
             guard payload == nil, originals.isEmpty, dependencies.isEmpty else { throw SyncValidationError.invalidManifest }
         } else {
             guard let payload else { throw SyncValidationError.missingAsset }
-            try payload.validate(maximum: SyncLimits.payloadBytes)
+            try payload.validate()
         }
         var byHash: [String: Int] = [:]
         for original in originals {
@@ -114,19 +114,34 @@ public struct MutationManifest: Codable, Equatable, Sendable {
 
     /// Checks only asset closure. Causal/domain validity and publication remain separate gates.
     /// Full export needs every original, independently of manifest receipt.
+    public func verifyAssetsComplete(nextPayloadChunk: () throws -> IndexedPayloadChunk?,
+                                     originalBytes: (OriginalReference) throws -> Data) throws {
+        try validate()
+        if let payload { try payload.verifyChunks(next: nextPayloadChunk) }
+        else if try nextPayloadChunk() != nil { throw SyncValidationError.invalidManifest }
+        for original in originals {
+            try autoreleasepool {
+                try verifyAssetBytes(originalBytes(original), descriptor: original.asset, maximum: SyncLimits.originalBytes)
+            }
+        }
+    }
+
+    /// In-memory convenience for callers already holding bounded payload bytes.
     public func verifyAssetsComplete(payload bytes: Data?, originalBytes: (OriginalReference) throws -> Data) throws {
         try validate()
         if let descriptor = payload {
             guard let bytes else { throw SyncValidationError.missingAsset }
-            try verify(bytes, descriptor: descriptor, maximum: SyncLimits.payloadBytes)
+            try descriptor.verify(bytes: bytes)
         } else if bytes != nil { throw SyncValidationError.invalidManifest }
         for original in originals {
-            try verify(originalBytes(original), descriptor: original.asset, maximum: SyncLimits.originalBytes)
+            try autoreleasepool {
+                try verifyAssetBytes(originalBytes(original), descriptor: original.asset, maximum: SyncLimits.originalBytes)
+            }
         }
     }
 }
 
-func verify(_ bytes: Data, descriptor: AssetDescriptor, maximum: Int) throws {
+func verifyAssetBytes(_ bytes: Data, descriptor: AssetDescriptor, maximum: Int) throws {
     try descriptor.validate(maximum: maximum)
     guard bytes.count == descriptor.byteCount, syncDigest(bytes) == descriptor.sha256 else {
         throw SyncValidationError.corruptAsset

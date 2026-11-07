@@ -1,0 +1,554 @@
+{
+  "bodyReferenceSettings" : [
+
+  ],
+  "captureReceipts" : [
+    {
+      "id" : "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
+      "importedAt" : 815292800
+    },
+    {
+      "id" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "importedAt" : 815292800
+    }
+  ],
+  "entries" : [
+    {
+      "body" : "原文 📌",
+      "createdAt" : 815292800,
+      "id" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "kind" : "quickNote",
+      "occurredAt" : 815292800,
+      "status" : "inbox",
+      "title" : "合成 V11 来源",
+      "updatedAt" : 815292800
+    }
+  ],
+  "entryFollowUps" : [
+    {
+      "body" : "后续补充",
+      "createdAt" : 815292800,
+      "entryID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "id" : "1736559E-9889-49E2-9340-AD9D6368EF9B",
+      "updatedAt" : 815292800
+    }
+  ],
+  "entryPins" : [
+    {
+      "entryID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "id" : "17170FEE-8575-4844-916C-C14072745E97",
+      "pinnedAt" : 815292800
+    }
+  ],
+  "entrySources" : [
+    {
+      "entryID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "source" : {
+        "captureMode" : "selectedContent",
+        "capturedAt" : 815292800,
+        "title" : "原始分享",
+        "url" : "https:\/\/example.com\/v11"
+      }
+    }
+  ],
+  "goalEvents" : [
+    {
+      "createdAt" : 815292800,
+      "goalID" : "A05E7978-0214-4BD0-A95C-DF48867A15DC",
+      "id" : "4709FDAA-E740-4DF4-A464-D0890CBB2822",
+      "kind" : "created",
+      "occurredAt" : 815292800
+    }
+  ],
+  "goals" : [
+    {
+      "createdAt" : 815292800,
+      "id" : "A05E7978-0214-4BD0-A95C-DF48867A15DC",
+      "kind" : "flag",
+      "normalizedTitle" : "旧目标",
+      "status" : "active",
+      "title" : "旧目标",
+      "updatedAt" : 815292800
+    }
+  ],
+  "habitLifecycleEvents" : [
+    {
+      "createdAt" : 815292800,
+      "habitID" : "00D048BB-88E5-45DD-BA10-49D03341ED3B",
+      "id" : "2C49F9F4-27C2-4D8D-A9D3-84B2F1F74B3E",
+      "kind" : "migrationBaseline",
+      "knownStatus" : "active",
+      "occurredAt" : 815292800,
+      "occurredLocalDay" : "2026-11-02"
+    }
+  ],
+  "habitLogs" : [
+    {
+      "createdAt" : 815292800,
+      "habitID" : "00D048BB-88E5-45DD-BA10-49D03341ED3B",
+      "id" : "2695FA67-AAAE-40E5-AC08-E9F4D994C5CC",
+      "isCompleted" : true,
+      "linkedEntryID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "localDayIdentifier" : "2026-09-22",
+      "localDayProvenance" : "capturedAtWrite",
+      "localTimeZoneIdentifier" : "Asia\/Shanghai",
+      "occurredAt" : 815292800,
+      "quantity" : 3,
+      "unit" : "次"
+    }
+  ],
+  "habitPlanRevisions" : [
+    {
+      "createdAt" : 815292800,
+      "effectiveLocalDay" : "2026-11-02",
+      "goal" : "none",
+      "habitID" : "00D048BB-88E5-45DD-BA10-49D03341ED3B",
+      "id" : "489741C1-3852-4409-A04C-7AA1DAB8D485",
+      "origin" : "migrationBootstrap",
+      "period" : "trackingOnly",
+      "recordingMode" : "multiplePerDay",
+      "trustCoverageStartLocalDay" : "2026-11-02",
+      "weekdays" : ""
+    }
+  ],
+  "habits" : [
+    {
+      "createdAt" : 815292800,
+      "id" : "00D048BB-88E5-45DD-BA10-49D03341ED3B",
+      "name" : "保持习惯",
+      "normalizedName" : "保持习惯",
+      "recordingMode" : "multiplePerDay",
+      "status" : "active",
+      "updatedAt" : 815292800
+    }
+  ],
+  "images" : [
+    {
+      "byteCount" : 321,
+      "checksum" : "605daf16c59e34f6290f25c64fa286fc0e109c43ec5893bc14f87313898d1e4b",
+      "contentType" : "image\/png",
+      "createdAt" : 815292800,
+      "entryID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "id" : "2CA60710-71DF-4356-B0CB-93717E5F877D",
+      "mediaPath" : "media\/image-2ca60710-71df-4356-b0cb-93717e5f877d.png",
+      "originalFilename" : "fixture.png",
+      "pixelHeight" : 12,
+      "pixelWidth" : 12,
+      "relativePath" : "Media\/Originals\/2c\/2ca60710-71df-4356-b0cb-93717e5f877d.png",
+      "sortOrder" : 0,
+      "updatedAt" : 815292800
+    }
+  ],
+  "importantDayCovers" : [
+
+  ],
+  "importantDayEntryLinks" : [
+
+  ],
+  "importantDayTodoLinks" : [
+
+  ],
+  "importantDays" : [
+    {
+      "createdAt" : 815756658.146227,
+      "id" : "60268193-12D7-4936-8C57-F89A7F420488",
+      "isArchived" : false,
+      "notes" : "",
+      "preferences" : {
+        "cropX" : 0.5,
+        "cropY" : 0.5,
+        "desktopVisible" : false,
+        "genericNotification" : true,
+        "photoStyle" : false,
+        "reminderMinutes" : 540,
+        "reminderOffsets" : [
+
+        ],
+        "today" : "automatic"
+      },
+      "revision" : 0,
+      "rule" : {
+        "calendar" : "gregorian",
+        "day" : 29,
+        "isLeapMonth" : false,
+        "leapDayRule" : "february28",
+        "month" : 2,
+        "perspective" : "next",
+        "preset" : "anniversary",
+        "year" : 2000
+      },
+      "title" : "合成纪念日",
+      "updatedAt" : 815756658.149693
+    }
+  ],
+  "investmentActivities" : [
+    {
+      "id" : "49C1A3F0-6B49-4570-8964-172EE96D2294",
+      "isArchived" : false,
+      "name" : "合成阅读",
+      "participantID" : "513104A4-3146-4615-A8EF-D2E2C4402238"
+    }
+  ],
+  "investmentOperations" : [
+    {
+      "activityID" : "49C1A3F0-6B49-4570-8964-172EE96D2294",
+      "createdAt" : 815756658.163693,
+      "id" : "B7470E57-4696-431C-866D-C5AF564E64ED",
+      "participantID" : "513104A4-3146-4615-A8EF-D2E2C4402238",
+      "recorderID" : "513104A4-3146-4615-A8EF-D2E2C4402238",
+      "revision" : 0,
+      "timer" : {
+        "anchor" : null,
+        "checkpointAt" : 815756658.163693,
+        "state" : "saved",
+        "values" : {
+          "corrected" : false,
+          "day" : "2026-09-22",
+          "evidence" : "dateDuration",
+          "feedbackSource" : "selfReport",
+          "note" : "",
+          "seconds" : 600,
+          "source" : "manual",
+          "spans" : [
+
+          ],
+          "timeZoneID" : "Asia\/Shanghai"
+        }
+      },
+      "updatedAt" : 815756658.163693
+    }
+  ],
+  "investmentParticipants" : [
+    {
+      "id" : "513104A4-3146-4615-A8EF-D2E2C4402238",
+      "isArchived" : false,
+      "isDefault" : true,
+      "name" : "Me",
+      "sortOrder" : 0
+    }
+  ],
+  "investmentSessions" : [
+    {
+      "activityID" : "49C1A3F0-6B49-4570-8964-172EE96D2294",
+      "createdAt" : 815756658.163693,
+      "id" : "B7470E57-4696-431C-866D-C5AF564E64ED",
+      "participantID" : "513104A4-3146-4615-A8EF-D2E2C4402238",
+      "recorderID" : "513104A4-3146-4615-A8EF-D2E2C4402238",
+      "revision" : 0,
+      "updatedAt" : 815756658.163693,
+      "values" : {
+        "corrected" : false,
+        "day" : "2026-09-22",
+        "evidence" : "dateDuration",
+        "feedbackSource" : "selfReport",
+        "note" : "",
+        "seconds" : 600,
+        "source" : "manual",
+        "spans" : [
+
+        ],
+        "timeZoneID" : "Asia\/Shanghai"
+      }
+    }
+  ],
+  "links" : [
+    {
+      "createdAt" : 815292800,
+      "deduplicationKey" : "entryUsesTag|entry|d0343269-7943-41bc-8305-58a16efc5ee3|tag|47bccbb8-f955-4633-b86f-81f3a4998746",
+      "id" : "3BF9E5B1-DA16-42E4-9E60-77C1DE79F80B",
+      "kind" : "entryUsesTag",
+      "sourceID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "sourceType" : "entry",
+      "targetID" : "47BCCBB8-F955-4633-B86F-81F3A4998746",
+      "targetType" : "tag"
+    }
+  ],
+  "netWorthItems" : [
+    {
+      "archived" : false,
+      "category" : "cash",
+      "createdAt" : 815292800,
+      "id" : "84870FA9-C331-4F40-8FB9-4514EBC9BF3C",
+      "name" : "Synthetic asset",
+      "note" : "",
+      "ownership" : "",
+      "revision" : 0,
+      "side" : "asset",
+      "updatedAt" : 815292800
+    },
+    {
+      "archived" : false,
+      "category" : "mortgage",
+      "createdAt" : 815292800,
+      "id" : "8F6177E5-9FC2-4FF1-8962-7EB0825DEA1E",
+      "name" : "Synthetic liability",
+      "note" : "",
+      "ownership" : "",
+      "revision" : 0,
+      "side" : "liability",
+      "updatedAt" : 815292800
+    }
+  ],
+  "netWorthSnapshots" : [
+    {
+      "assetsConfirmed" : true,
+      "completedAt" : 815292800,
+      "confirmed" : true,
+      "createdAt" : 815292800,
+      "day" : "2026-09-22",
+      "id" : "47FCAE9A-0974-44B3-8F18-7199D396FED4",
+      "items" : [
+        {
+          "amountDay" : "2026-09-22",
+          "category" : "cash",
+          "cents" : 1234567,
+          "id" : "84870FA9-C331-4F40-8FB9-4514EBC9BF3C",
+          "included" : true,
+          "name" : "Synthetic asset",
+          "note" : "",
+          "ownership" : "",
+          "pending" : false,
+          "side" : "asset",
+          "state" : "entered"
+        },
+        {
+          "amountDay" : "2026-09-22",
+          "category" : "mortgage",
+          "cents" : 23456,
+          "id" : "8F6177E5-9FC2-4FF1-8962-7EB0825DEA1E",
+          "included" : true,
+          "name" : "Synthetic liability",
+          "note" : "",
+          "ownership" : "",
+          "pending" : false,
+          "side" : "liability",
+          "state" : "entered"
+        }
+      ],
+      "liabilitiesConfirmed" : true,
+      "note" : "",
+      "revision" : 2,
+      "scopeAdjusted" : false,
+      "timeZoneID" : "Asia\/Shanghai",
+      "updatedAt" : 815292800,
+      "version" : 1
+    },
+    {
+      "assetsConfirmed" : false,
+      "completedAt" : null,
+      "confirmed" : false,
+      "createdAt" : 815292800,
+      "day" : "2026-09-23",
+      "id" : "7901352D-7E3F-4287-BDEE-2AB350F7EA2C",
+      "items" : [
+        {
+          "amountDay" : "2026-09-22",
+          "category" : "cash",
+          "cents" : 1234567,
+          "id" : "84870FA9-C331-4F40-8FB9-4514EBC9BF3C",
+          "included" : true,
+          "inputText" : "unfinished..input",
+          "name" : "Synthetic asset",
+          "note" : "",
+          "ownership" : "",
+          "pending" : true,
+          "side" : "asset",
+          "state" : "entered"
+        },
+        {
+          "amountDay" : "2026-09-22",
+          "category" : "mortgage",
+          "cents" : 23456,
+          "id" : "8F6177E5-9FC2-4FF1-8962-7EB0825DEA1E",
+          "included" : true,
+          "name" : "Synthetic liability",
+          "note" : "",
+          "ownership" : "",
+          "pending" : true,
+          "side" : "liability",
+          "state" : "entered"
+        }
+      ],
+      "liabilitiesConfirmed" : false,
+      "note" : "",
+      "revision" : 1,
+      "scopeAdjusted" : false,
+      "timeZoneID" : "Asia\/Shanghai",
+      "updatedAt" : 815292800,
+      "version" : 1
+    }
+  ],
+  "sleepGoals" : [
+
+  ],
+  "sleepRecords" : [
+    {
+      "createdAt" : 815292800,
+      "id" : "36FD94CF-EA2A-4038-8B13-BC1394176E2F",
+      "observedAt" : 815292800,
+      "revision" : 0,
+      "timeZoneID" : "Asia\/Shanghai",
+      "updatedAt" : 815292800,
+      "values" : {
+        "bedtimeFilledAt" : null,
+        "feelingFilledAt" : null,
+        "note" : "合成睡眠记录",
+        "wakeFilledAt" : null
+      },
+      "wakeDay" : "2026-09-22"
+    }
+  ],
+  "tags" : [
+    {
+      "createdAt" : 815292800,
+      "displayName" : "旧标签",
+      "id" : "47BCCBB8-F955-4633-B86F-81F3A4998746",
+      "normalizedName" : "旧标签",
+      "updatedAt" : 815292800
+    }
+  ],
+  "todoEvents" : [
+    {
+      "afterValue" : "eyJyZW1pbmRBdCI6ODE1Mjk2NDAwLCJyZW1pbmRlckxvY2FsRGF5IjoiMjAyNi0xMS0wMiIsInJlbWluZGVyTWludXRlcyI6OTEzLCJwbGFubmVkRGF5IjoiMjAyNi0wOS0yMiIsInN0YXRlIjoib3BlbiJ9",
+      "createdAt" : 815292800,
+      "id" : "C7A843E0-6222-4685-9D79-120F8F8693EF",
+      "kindRawValue" : "created",
+      "occurredAt" : 815292800,
+      "sequence" : 0,
+      "taskID" : "7C5430EF-9D4D-476D-8AA1-1D56A820086F"
+    },
+    {
+      "afterValue" : "eyJjb21wbGV0ZWRBdCI6ODE1MjkyODAwLCJzdGF0ZSI6ImNvbXBsZXRlZCIsInJlbWluZGVyTWludXRlcyI6OTEzLCJwbGFubmVkRGF5IjoiMjAyNi0wOS0yMiIsInJlbWluZGVyTG9jYWxEYXkiOiIyMDI2LTExLTAyIiwicmVtaW5kQXQiOjgxNTI5NjQwMH0=",
+      "beforeValue" : "eyJyZW1pbmRBdCI6ODE1Mjk2NDAwLCJyZW1pbmRlckxvY2FsRGF5IjoiMjAyNi0xMS0wMiIsInJlbWluZGVyTWludXRlcyI6OTEzLCJwbGFubmVkRGF5IjoiMjAyNi0wOS0yMiIsInN0YXRlIjoib3BlbiJ9",
+      "createdAt" : 815292800,
+      "id" : "F010452D-2D43-46E5-A968-977BF9FEB051",
+      "kindRawValue" : "completed",
+      "occurredAt" : 815292800,
+      "sequence" : 1,
+      "taskID" : "7C5430EF-9D4D-476D-8AA1-1D56A820086F"
+    },
+    {
+      "afterValue" : "eyJyZW1pbmRBdCI6ODIwNTY2NzgwLCJyZW1pbmRlckxvY2FsRGF5IjoiMjAyNy0wMS0wMiIsInJlbWluZGVyTWludXRlcyI6OTEzLCJwbGFubmVkRGF5IjoiMjAyNi0xMS0yMiIsInN0YXRlIjoib3BlbiJ9",
+      "createdAt" : 815292800,
+      "id" : "F0898888-2126-4C6C-9BFF-3EC512C5A525",
+      "kindRawValue" : "created",
+      "occurredAt" : 815292800,
+      "sequence" : 0,
+      "taskID" : "C747E4C9-6853-49CF-9579-8061944904DE"
+    }
+  ],
+  "todoLists" : [
+
+  ],
+  "todoReminderIntents" : [
+    {
+      "channelRawValue" : "notification",
+      "generation" : "229C694E-2FB3-4DDA-A9E3-CE1F21CEB5C6",
+      "id" : "7C5430EF-9D4D-476D-8AA1-1D56A820086F",
+      "isInstanceOverride" : false,
+      "revision" : 0
+    },
+    {
+      "channelRawValue" : "notification",
+      "generation" : "9FECB26D-84B4-4FCE-A47E-5301FF75F8FA",
+      "id" : "C747E4C9-6853-49CF-9579-8061944904DE",
+      "isInstanceOverride" : false,
+      "revision" : 0
+    }
+  ],
+  "todoSeries" : [
+    {
+      "anchorDay" : "2026-09-22",
+      "createdAt" : 815292800,
+      "frequencyRawValue" : "monthly",
+      "id" : "583D9B7B-D6E1-4AB0-A9E3-90127E167BDA",
+      "isImportant" : false,
+      "isStopped" : false,
+      "notes" : "",
+      "plannedAnchorDay" : "2026-09-22",
+      "reminderDayOffset" : 41,
+      "reminderMinutes" : 913,
+      "title" : "合成月度待办",
+      "updatedAt" : 815292800
+    }
+  ],
+  "todoSeriesPreferences" : [
+
+  ],
+  "todoSources" : [
+    {
+      "entryID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "id" : "41A40698-0A9E-498C-BC24-1C5225282BD6",
+      "taskID" : "7C5430EF-9D4D-476D-8AA1-1D56A820086F"
+    },
+    {
+      "entryID" : "D0343269-7943-41BC-8305-58A16EFC5EE3",
+      "id" : "D3306DFC-C301-4C54-AD6A-7E4698080547",
+      "taskID" : "C747E4C9-6853-49CF-9579-8061944904DE"
+    }
+  ],
+  "todoTasks" : [
+    {
+      "canceledAt" : null,
+      "completedAt" : 815292800,
+      "createdAt" : 815292800,
+      "id" : "7C5430EF-9D4D-476D-8AA1-1D56A820086F",
+      "isImportant" : false,
+      "notes" : "",
+      "occurrenceIndex" : 0,
+      "occurrenceKey" : "583D9B7B-D6E1-4AB0-A9E3-90127E167BDA\/0",
+      "plannedDay" : "2026-09-22",
+      "remindAt" : 815296400,
+      "reminderLocalDay" : "2026-11-02",
+      "reminderMinutes" : 913,
+      "reminderTimeZoneID" : "Asia\/Shanghai",
+      "revision" : 1,
+      "seriesID" : "583D9B7B-D6E1-4AB0-A9E3-90127E167BDA",
+      "stateRawValue" : "completed",
+      "title" : "合成月度待办",
+      "updatedAt" : 815292800
+    },
+    {
+      "canceledAt" : null,
+      "completedAt" : null,
+      "createdAt" : 815292800,
+      "id" : "C747E4C9-6853-49CF-9579-8061944904DE",
+      "isImportant" : false,
+      "notes" : "",
+      "occurrenceIndex" : 2,
+      "occurrenceKey" : "583D9B7B-D6E1-4AB0-A9E3-90127E167BDA\/2",
+      "plannedDay" : "2026-11-22",
+      "remindAt" : 820566780,
+      "reminderLocalDay" : "2027-01-02",
+      "reminderMinutes" : 913,
+      "reminderTimeZoneID" : "Asia\/Shanghai",
+      "revision" : 0,
+      "seriesID" : "583D9B7B-D6E1-4AB0-A9E3-90127E167BDA",
+      "stateRawValue" : "open",
+      "title" : "合成月度待办",
+      "updatedAt" : 815292800
+    }
+  ],
+  "weeklyReviews" : [
+    {
+      "createdAt" : 815292800,
+      "focusText" : "保留重点",
+      "id" : "8116D6BD-16BE-4738-B09D-31C1F8AB1F79",
+      "isCompleted" : false,
+      "periodEnd" : 815760000,
+      "periodStart" : 815241600,
+      "rememberedText" : "保留回顾",
+      "updatedAt" : 815292800,
+      "weekIdentifier" : "2026-W45"
+    }
+  ],
+  "weightRecords" : [
+    {
+      "createdAt" : 815292800,
+      "id" : "D3A1B6BF-0BF0-4FE3-965E-7E8CBCDF68C3",
+      "recordedAt" : 815292800,
+      "updatedAt" : 815292800,
+      "weightKilograms" : 65.5
+    }
+  ]
+}
