@@ -8,7 +8,7 @@ Mac mini签名构建exit65：本机未登记到开发团队，缺Mac App Develop
 
 [本轮脱敏证据](Evidence/iCloudSyncG1/resume-20261107/environment.json) · [执行报告](ICLOUD_SYNC_G1_EXECUTION_ZH.md)。整体仍为BLOCKED_ENV（具体未完成项如上），不进入G2/G3或发布。以下历史结果原样保留。
 
-签名修复已推送`8245f74`至Draft PR #16；独立限定复核30/30、仓库8/8通过。定向CI42327436273及自动iOS regression42327441520仍RUNNING，结果待取回。
+签名修复已推送`8245f74`至Draft PR #16；独立限定复核30/30、仓库8/8通过。定向CI42327436273已PASS（签名门禁8/8、原生33/33、unsigned iOS build）；自动iOS regression42327441520仍RUNNING，未声明通过。
 
 ---
 

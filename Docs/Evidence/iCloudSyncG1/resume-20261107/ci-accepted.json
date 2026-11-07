@@ -1,0 +1,30 @@
+{
+  "run": 42327436273,
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327436273",
+  "head": "8245f74c2362bb96fc8bfedfdbd112bca0d5f699",
+  "conclusion": "success",
+  "artifact": "synclab-offline",
+  "downloadedFileSHA256": {
+    "environment.log": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+    "signing-gate-tests.log": "541cb88310c2c5fd44dd7cbf780225fbf2b47af8fde4f6567c1d739f85fd1d30",
+    "tests.log": "37270d8f10986659a82abf09481bff36d27f61977e8c51aa2c23b724c662a942",
+    "ios-build.log": "606e7b710db09beb23103e5cd831973507fd536e79d4c895c9b4ea8f3c559ceb"
+  },
+  "verifiedResults": {
+    "signingGateTests": {
+      "run": 8,
+      "failures": 0
+    },
+    "nativeTests": {
+      "run": 33,
+      "failures": 0
+    },
+    "unsignedIOSSimulatorBuild": "BUILD SUCCEEDED"
+  },
+  "rawArtifactLocation": "/private/tmp/g1-ci-42327436273",
+  "broaderAutomaticRegression": {
+    "run": 42327441520,
+    "statusAtHandoff": "in_progress"
+  },
+  "notCovered": "Real device installation, cloud service, account switching or Production"
+}

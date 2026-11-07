@@ -67,3 +67,5 @@ quota/rateLimit/部分成功只属于**显式故障注入**；token过期、zone
 证据：[本轮环境](Evidence/iCloudSyncG1/resume-20261107/environment.json)、[原签名门禁失败](Evidence/iCloudSyncG1/resume-20261107/ios-signing-before.json)、[修复后签名通过](Evidence/iCloudSyncG1/resume-20261107/ios-signing-after.json)、[8项正反例](Evidence/iCloudSyncG1/resume-20261107/signing-gate-tests.log)。E0门户部分已核实，账户/连机仍待确认；E1仅iOS签名子项通过；E2/P0实际Dev/P1–P4仍NOT_RUN。
 
 本轮签名修复提交`8245f74c2362bb96fc8bfedfdbd112bca0d5f699`已普通推送至Draft PR #16。[定向CI 42327436273](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327436273)和自动触发的[既有iOS regression 42327441520](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327441520)交接时RUNNING，尚不声明通过。独立限定复核30/30、仓库8/8已通过，原失败证据保留。待Owner登记/账户答复时不进行依赖的云步骤。
+
+后续同轮取回：[定向CI42327436273](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42327436273)完成SUCCESS，实际产物核对签名门禁8/8、原生33/33、unsigned iOS Simulator BUILD SUCCEEDED；见[ci-accepted.json](Evidence/iCloudSyncG1/resume-20261107/ci-accepted.json)。上段RUNNING为先前采样；自动iOS regression仍在运行，未声明通过。
