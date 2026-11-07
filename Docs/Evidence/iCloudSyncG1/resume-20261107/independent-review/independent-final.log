@@ -1,0 +1,35 @@
+test_environment_order_reversed (__main__.GateIntegrationTests) ... ok
+test_explicit_service_list (__main__.GateIntegrationTests) ... ok
+test_invalid_signature_denied (__main__.GateIntegrationTests) ... ok
+test_missing_embedded_profile_denied (__main__.GateIntegrationTests) ... ok
+test_observed_profile (__main__.GateIntegrationTests) ... ok
+test_product_app_group (__main__.GateIntegrationTests) ... ok
+test_profile_container_exact_among_others (__main__.GateIntegrationTests) ... ok
+test_profile_container_malformed_list (__main__.GateIntegrationTests) ... ok
+test_profile_container_string (__main__.GateIntegrationTests) ... ok
+test_profile_container_substring (__main__.GateIntegrationTests) ... ok
+test_profile_container_wildcard (__main__.GateIntegrationTests) ... ok
+test_profile_environment_wildcard (__main__.GateIntegrationTests) ... ok
+test_profile_expired (__main__.GateIntegrationTests) ... ok
+test_profile_malformed_environment (__main__.GateIntegrationTests) ... ok
+test_profile_malformed_service (__main__.GateIntegrationTests) ... ok
+test_profile_no_cloudkit (__main__.GateIntegrationTests) ... ok
+test_profile_partial_wildcard (__main__.GateIntegrationTests) ... ok
+test_profile_production_only (__main__.GateIntegrationTests) ... ok
+test_profile_wrong_container (__main__.GateIntegrationTests) ... ok
+test_signed_environment_list (__main__.GateIntegrationTests) ... ok
+test_signed_extra_container (__main__.GateIntegrationTests) ... ok
+test_signed_extra_service (__main__.GateIntegrationTests) ... ok
+test_signed_production (__main__.GateIntegrationTests) ... ok
+test_signed_service_string (__main__.GateIntegrationTests) ... ok
+test_signed_service_wildcard (__main__.GateIntegrationTests) ... ok
+test_wildcard_service_list (__main__.GateIntegrationTests) ... ok
+test_wrong_bundle (__main__.GateIntegrationTests) ... ok
+test_wrong_container (__main__.GateIntegrationTests) ... ok
+test_wrong_push (__main__.GateIntegrationTests) ... ok
+test_wrong_team (__main__.GateIntegrationTests) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.034s
+
+OK

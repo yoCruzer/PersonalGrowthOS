@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/g1_independent_review",
+  "utc": "2026-11-07T02:04:09.434301+00:00",
+  "scope": "Read-only implementation review and synthetic mocked command-output integration tests. No private profiles/logs/devices/accounts read. No CloudKit operations.",
+  "commands": [
+    {
+      "command": "python3 /private/tmp/g1-resume-review/test_independent_gate.py",
+      "exitCode": 0,
+      "testMethods": 24
+    },
+    {
+      "command": "python3 -m unittest discover -s Experiments/iCloudSyncG1/Tools -p 'test_*.py' -v",
+      "exitCode": 0,
+      "testMethods": 7
+    }
+  ],
+  "sourceSHA256": {
+    "Experiments/iCloudSyncG1/Tools/verify_signing.py": "35735c0a1fbf0a060aaa86a9b6add1876af2907089e1c8473b2b09ce8fd54d98",
+    "Experiments/iCloudSyncG1/Tools/profile_entitlements.py": "5c33ffb55a21c703d764e2d2044ee2ff245236cb63352f12ffd7d6a8150bb27a",
+    "Experiments/iCloudSyncG1/Tools/test_profile_entitlements.py": "b6928f632572c0bf71f93029d1f101e85d2e8b9f20c6544d36d4887a5a679449",
+    ".github/workflows/synclab-offline.yml": "8218c9287d3ce218f2040637eb0b9eb21bd813a0ffa99c426dd9b9b4a1c9465d"
+  },
+  "evidenceSHA256": {
+    "test_independent_gate.py": "4c755af8d3c3de180551bb8e4736ae861163c1ea7a2e80f193ec1f021155a0cd",
+    "independent-gate.log": "5b0c77679eb86fa15d91761dbdf76a257f63ac1e7708bc8c86feaa45d37ecfd8",
+    "repository-tests.log": "fa4e5a567c173d273019a7f5774bc45c9b53028764469309c0eeca0e409e20e7",
+    "preexisting-container-observation.json": "2073a41f3054a95a6f3dd5a09fa1ba1da7f7abb4f00ec2196a385ab788864ef5"
+  }
+}
