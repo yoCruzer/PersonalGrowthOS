@@ -1,0 +1,30 @@
+{
+  "sourceCommit": "67aacb83c1865a942cc499cf98370b90feb7a6c3",
+  "runID": 42370130223,
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42370130223",
+  "status": "SUCCESS",
+  "nativeTests": 62,
+  "pythonTests": 19,
+  "syntheticOracle": {
+    "positiveStages": 27,
+    "rejectedNegativeControls": 24,
+    "mockWindowTests": 8
+  },
+  "iOSSimulatorBuild": "PASS_UNSIGNED",
+  "scope": "Offline gate only; new real device scenarios NOT_RUN",
+  "originalArtifactSHA256": {
+    "environment.log": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+    "tests.log": "6053cd3b00681b4ed81ef6d034fcef18924524bd1a662f03b43f6290852305fa",
+    "signing-gate-tests.log": "135048678c07364486cf4e5415a12735cf55e371675d940ac824b6a6c7f89a10",
+    "oracle-review.log": "c5c5e2c011e9b8b23878d97218677be26add3b3b858507fec65269dfa91b9cdf",
+    "ios-build.log": "aea743e9f0246bb9d6ce723b1e1eef1e33def7598199ccd8e7d5fdb201f6816c"
+  },
+  "runnerEnvironment": "Xcode 27.1\nBuild version 27A9275",
+  "productRegression": {
+    "runID": 42370134054,
+    "status": "IN_PROGRESS",
+    "atUTC": "2026-11-07T11:59:04.158925+00:00",
+    "knownPreviousRun": 42365486504,
+    "knownPreviousResult": "FAIL: Release/Unit PASS, smoke FAIL"
+  }
+}

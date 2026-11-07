@@ -1,0 +1,20 @@
+{
+  "status": "OWNER_ACCEPTED_PHONE_SCOPE",
+  "phonePlans": 6,
+  "phoneCommandsPassed": 27,
+  "originalReportSHA256": {
+    "00-phone-dependency-repair": "59c0a23dab01b0ef3a494db21ca89f32f12edd5b475a50e7a49da9d7fa2e1828",
+    "01-phone-seed": "94f417cf8f9871d6309f964706ac26ce48d1c35df168f4670f3eb10c2217bb2b",
+    "05-phone-next-content": "0cfbd41b1fa921a664db6ef14d8399588c281714b8a0d69bb0ebc857ce2d9ca7",
+    "16-phone-offline": "c77c45c34df2432b77d26a480933b1915376192833b0111272f5aaf00995a9eb",
+    "17-phone-reconnect": "80bd8adc455174443b9c2bbc92b0d7b6f234196c28719f65df8d9cd10233456a",
+    "19-phone-restore-seed": "9c31817f1d6654e380b5ec02c6e10a8dfa3a0712b56ca928d9ee6a8c2c050f75"
+  },
+  "offlineReopenAndPendingPreserved": true,
+  "reconnectACKAndEmptyPending": true,
+  "physicalNetworkOffOn": "Owner reported executing requested Settings actions; restored network",
+  "restoreSeedScope": "seed upload only; NOT restore-race validation",
+  "macCK2": "Owner accepted non-blocking exception; raw FAIL preserved",
+  "fullOriginalG1Matrix": "NOT fully verified; remaining Mac-dependent scenarios deferred",
+  "production": "NOT_RUN; not authorized"
+}

@@ -1,0 +1,12 @@
+test_environment_order_does_not_matter (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_explicit_cloudkit_allowlist (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_missing_wrong_or_malformed_service_denied (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_observed_apple_profile (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_production_or_missing_environment_denied (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_profile_never_relaxes_signed_environment (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_wildcard_never_relaxes_signed_claim (test_profile_entitlements.ProfileAllowlistTests) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.000s
+
+OK

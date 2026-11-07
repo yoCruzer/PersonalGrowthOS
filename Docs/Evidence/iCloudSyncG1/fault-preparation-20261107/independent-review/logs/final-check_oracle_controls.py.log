@@ -1,0 +1,16 @@
+SYNTHETIC ONLY positive accepted: True
+REJECTED missing image fault phases
+REJECTED missing account change phases
+REJECTED empty restored target accepted
+REJECTED ready projection marked incomplete
+REJECTED new edit absent before old ACK
+REJECTED fetched fact lost across crash and silently fetched later
+REJECTED post-state fetched fact lost
+REJECTED duplicate fault point
+REJECTED invalid process ID type
+REJECTED account B changes within same plan
+REJECTED invalid completion boolean
+REJECTED wrong command digest MUST reject
+REJECTED wrong snapshot text MUST reject
+REJECTED empty account MUST reject
+SUMMARY {"badInputsAccepted": [], "tested": 14, "scope": "24-scenario oracle; dependency verifier explicitly stubbed, no cloud/device/runtime"}

@@ -1,0 +1,44 @@
+Building for debugging...
+[Planning deferred tasks]
+[27 / 50]
+[28 / 51] SyncLab
+[40 / 98]
+[47 / 98]
+[48 / 98]
+[53 / 98]
+[57 / 98]
+[61 / 98]
+[63 / 98]
+[64 / 98]
+[70 / 98]
+[75 / 98] SyncLab
+[83 / 98] SyncLab
+[85 / 98] SyncLab
+[88 / 99] ProbeReviewTests-product
+[105 / 131]
+[108 / 131]
+[113 / 131]
+[116 / 131]
+[120 / 131] ProbeReviewTests-product
+[125 / 131] ProbeReviewTests-product
+[127 / 131] ProbeReviewTests-product
+Build complete! (5.31秒)
+Test Suite 'All tests' started at 2026-11-07 10:57:30.256.
+Test Suite 'ProbeReviewTests.xctest' started at 2026-11-07 10:57:30.256.
+Test Suite 'ProbeReviewTests' started at 2026-11-07 10:57:30.256.
+Test Case '-[ProbeReviewTests.ProbeReviewTests testIndependentCrossProcessLockAndNoFollow]' started.
+Test Case '-[ProbeReviewTests.ProbeReviewTests testIndependentCrossProcessLockAndNoFollow]' passed (0.674 seconds).
+Test Case '-[ProbeReviewTests.ProbeReviewTests testIndependentJournalIdentityAndCrashBoundary]' started.
+Test Case '-[ProbeReviewTests.ProbeReviewTests testIndependentJournalIdentityAndCrashBoundary]' passed (0.005 seconds).
+Test Case '-[ProbeReviewTests.ProbeReviewTests testIndependentOptInAndLoopbackRejections]' started.
+Test Case '-[ProbeReviewTests.ProbeReviewTests testIndependentOptInAndLoopbackRejections]' passed (0.001 seconds).
+Test Suite 'ProbeReviewTests' passed at 2026-11-07 10:57:30.935.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.679 (0.679) seconds
+Test Suite 'ProbeReviewTests.xctest' passed at 2026-11-07 10:57:30.936.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.679 (0.679) seconds
+Test Suite 'All tests' passed at 2026-11-07 10:57:30.936.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.679 (0.680) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

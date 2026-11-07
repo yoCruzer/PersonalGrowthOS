@@ -1,0 +1,22 @@
+{
+  "run": 42365482372,
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42365482372",
+  "sourceCommit": "e8b1c3f2cee1c8ebce19b4ad8c50931197a21f2c",
+  "conclusion": "success",
+  "native": {
+    "pass": 51,
+    "fail": 0
+  },
+  "tools": {
+    "pass": 13,
+    "fail": 0
+  },
+  "unsignedIOSSimulatorBuild": "PASS",
+  "artifactSHA256": {
+    "environment.log": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+    "signing-gate-tests.log": "9eba17cce11da68c9b7c781e32326c0e45f79b9c04b85410432929baec1448f5",
+    "tests.log": "9f8e472f694784118e88c64c0d4dca7767eecf1096e2924b1ac836c75ec79089",
+    "ios-build.log": "c8de986fea58311136c12b5045dc0ec10b9165cd93b6fc2d17b14f85a585d6aa"
+  },
+  "scope": "offline CI, not actual device/cloud acceptance"
+}

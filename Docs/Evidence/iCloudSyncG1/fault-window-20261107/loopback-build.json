@@ -1,0 +1,12 @@
+{
+  "macBuild": "Debug universal signed; xcodebuild exit 0",
+  "packageVerification": "prepare_fault_window.py verify_signing PASS",
+  "package": "/private/tmp/SyncLab-Fault-Window-20261107-r7-loopback",
+  "macExecutableSHA256": "adf0f2d027d5b62933da071bd4f2a7309001268c8b8997406614213b12a19036",
+  "phoneSourceCommit": "67aacb83c1865a942cc499cf98370b90feb7a6c3",
+  "macSource": "working candidate loopback fix based on 9e7994c",
+  "realStageStatus": "QUEUED_NOT_RUN",
+  "nativeTests": 64,
+  "pythonTests": 23,
+  "independentLocalTests": 23
+}

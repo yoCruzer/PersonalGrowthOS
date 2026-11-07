@@ -1,0 +1,461 @@
+{
+  "completedAllCommands": true,
+  "dataset": "synthetic-g1-fault-20261107-r7",
+  "planDigest": "d0077f56d654108400ac76247fad7a81ea02f116d5169b756caf3c8ecd5e073e",
+  "planID": "probe-f-fa2827a0cbaac82d41a187b4a2145e409c5e30b97c3f34c6a397e77e57b921ed",
+  "results": [
+    {
+      "accountSource": "cachedPartitionNotCurrentAccount",
+      "checkpointHash": "042f9fc46fbfccf9b8ddc2728eebfba3163c52fc60825c477adb2894611cb327",
+      "commandDigest": "7d62857c551e1dd58dade9f6f4254224d83cacc9df9e12a12ae7312793d52c44",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [],
+      "halted": false,
+      "id": "probe-f16-open",
+      "pendingKeys": [],
+      "planID": "probe-f-fa2827a0cbaac82d41a187b4a2145e409c5e30b97c3f34c6a397e77e57b921ed",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-remote-next": {
+          "candidates": [
+            "probe-remote-next"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-next",
+            "object": "probe-remote-next",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-next",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-next",
+                "object": "probe-remote-next",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-next",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-next",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "cachedPartitionNotCurrentAccount",
+      "checkpointHash": "042f9fc46fbfccf9b8ddc2728eebfba3163c52fc60825c477adb2894611cb327",
+      "commandDigest": "6187299e9405374d94275790b0b268c5474ee9b3d1d02245925cd1a67b5242b3",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [],
+      "halted": false,
+      "id": "probe-f16-save",
+      "pendingKeys": [
+        "object-probe-phone-offline"
+      ],
+      "planID": "probe-f-fa2827a0cbaac82d41a187b4a2145e409c5e30b97c3f34c6a397e77e57b921ed",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-phone-offline": {
+          "candidates": [
+            "probe-phone-offline"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-phone-offline",
+            "object": "probe-phone-offline",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault phone-offline",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-next": {
+          "candidates": [
+            "probe-remote-next"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-next",
+            "object": "probe-remote-next",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-next",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-phone-offline",
+                "object": "probe-phone-offline",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault phone-offline",
+                "version": 1
+              }
+            ],
+            "object": "probe-phone-offline",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-next",
+                "object": "probe-remote-next",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-next",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-next",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "cachedPartitionNotCurrentAccount",
+      "checkpointHash": "042f9fc46fbfccf9b8ddc2728eebfba3163c52fc60825c477adb2894611cb327",
+      "commandDigest": "128878cc1378af72044a73a13fc42485ad82e727fc3fc33ee5592ea1416e98e4",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [],
+      "halted": false,
+      "id": "probe-f16-reopen",
+      "pendingKeys": [
+        "object-probe-phone-offline"
+      ],
+      "planID": "probe-f-fa2827a0cbaac82d41a187b4a2145e409c5e30b97c3f34c6a397e77e57b921ed",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-phone-offline": {
+          "candidates": [
+            "probe-phone-offline"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-phone-offline",
+            "object": "probe-phone-offline",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault phone-offline",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-next": {
+          "candidates": [
+            "probe-remote-next"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-next",
+            "object": "probe-remote-next",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-next",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-phone-offline",
+                "object": "probe-phone-offline",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault phone-offline",
+                "version": 1
+              }
+            ],
+            "object": "probe-phone-offline",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-next",
+                "object": "probe-remote-next",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-next",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-next",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "cachedPartitionNotCurrentAccount",
+      "checkpointHash": "042f9fc46fbfccf9b8ddc2728eebfba3163c52fc60825c477adb2894611cb327",
+      "commandDigest": "55bc491a3b064c2412613edd8051828453aa8f198699cb3361754fdd98570e92",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [],
+      "halted": false,
+      "id": "probe-f16-final",
+      "pendingKeys": [
+        "object-probe-phone-offline"
+      ],
+      "planID": "probe-f-fa2827a0cbaac82d41a187b4a2145e409c5e30b97c3f34c6a397e77e57b921ed",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-phone-offline": {
+          "candidates": [
+            "probe-phone-offline"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-phone-offline",
+            "object": "probe-phone-offline",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault phone-offline",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-next": {
+          "candidates": [
+            "probe-remote-next"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-next",
+            "object": "probe-remote-next",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-next",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-phone-offline",
+                "object": "probe-phone-offline",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault phone-offline",
+                "version": 1
+              }
+            ],
+            "object": "probe-phone-offline",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-next",
+                "object": "probe-remote-next",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-next",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-next",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    }
+  ],
+  "runID": "probe-run-20261107-r7",
+  "scope": "Command execution only; not cloud convergence or G1 acceptance"
+}

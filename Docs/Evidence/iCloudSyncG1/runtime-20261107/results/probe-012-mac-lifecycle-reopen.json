@@ -1,0 +1,104 @@
+{
+  "checkpointHash": "c7cf6aa5517d507b9c077381481204dc69c161c6981744b8b7799562f631b647",
+  "commandDigest": "b345e1ac95e6fe2b12eeb40610a479264ba32aba6f99c0e001fc90429df7d410",
+  "dataset": "synthetic-g1-20261107-r4",
+  "events": [
+    "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+  ],
+  "halted": false,
+  "id": "probe-012-mac-lifecycle-reopen",
+  "pendingKeys": [],
+  "platform": "macOS",
+  "projections": {
+    "probe-entry": {
+      "candidates": [
+        "probe-base-mac-001"
+      ],
+      "complete": true,
+      "preview": {
+        "deleted": false,
+        "id": "probe-base-mac-001",
+        "imageBytes": 68,
+        "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+        "object": "probe-entry",
+        "parents": [],
+        "requires": [],
+        "text": "SYNTHETIC G1 Mac initial text and original PNG",
+        "version": 1
+      },
+      "state": "ready"
+    },
+    "probe-mac-lifecycle": {
+      "candidates": [
+        "probe-lifecycle-delete"
+      ],
+      "complete": true,
+      "state": "deleted"
+    }
+  },
+  "runID": "probe-run-20261107-r4",
+  "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+  "snapshot": {
+    "envelopes": [
+      {
+        "mutations": [
+          {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          }
+        ],
+        "object": "probe-entry",
+        "version": 1
+      },
+      {
+        "mutations": [
+          {
+            "deleted": false,
+            "id": "probe-lifecycle-create",
+            "object": "probe-mac-lifecycle",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC lifecycle initial",
+            "version": 1
+          },
+          {
+            "deleted": true,
+            "id": "probe-lifecycle-delete",
+            "object": "probe-mac-lifecycle",
+            "parents": [
+              "probe-lifecycle-edit"
+            ],
+            "requires": [],
+            "text": "SYNTHETIC lifecycle deleted intent",
+            "version": 1
+          },
+          {
+            "deleted": false,
+            "id": "probe-lifecycle-edit",
+            "object": "probe-mac-lifecycle",
+            "parents": [
+              "probe-lifecycle-create"
+            ],
+            "requires": [],
+            "text": "SYNTHETIC lifecycle edited",
+            "version": 1
+          }
+        ],
+        "object": "probe-mac-lifecycle",
+        "version": 1
+      }
+    ],
+    "images": {
+      "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+    }
+  },
+  "status": "PASS",
+  "accountFingerprintRemoved": true
+}

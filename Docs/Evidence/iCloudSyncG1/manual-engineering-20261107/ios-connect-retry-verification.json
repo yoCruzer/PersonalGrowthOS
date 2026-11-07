@@ -1,0 +1,17 @@
+{
+  "source": "Owner-pasted exported report in chat; original device export not yet retrieved for plan002",
+  "planID": "probe-ios-plan-002-connect",
+  "runID": "probe-run-20261107-r5",
+  "dataset": "synthetic-g1-20261107-r4",
+  "planDigest": "393bf28e913226c9094b1de294ff3747a73c86b939024649b9fe466fed0e442f",
+  "commandDigest": "84005c9177ff1479e6601315bfbdc67845fb09bae6a0c7673bd9db27e32b273b",
+  "checks": {
+    "planDigestMatchesLocalInput": true,
+    "commandDigestMatchesLocalInput": true,
+    "accountFingerprintMatchesMacSameRun": true,
+    "phoneConnectPASS": true,
+    "phoneInitialSnapshotEmpty": true
+  },
+  "privacy": "account fingerprint omitted",
+  "scope": "Connection and same-account precondition only; cloud reconstruction and dual-client convergence NOT_RUN"
+}

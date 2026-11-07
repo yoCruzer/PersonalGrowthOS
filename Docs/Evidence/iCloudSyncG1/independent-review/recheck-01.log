@@ -1,0 +1,11 @@
+Building for debugging...
+[2 / 8] SyncLab
+[6 / 12] SyncLab
+[13 / 18] SyncLab
+[18 / 19] ReviewProbe-product
+Build complete! (0.78秒)
+DAG_N=18,SECONDS=0.0003420114517211914
+DAG_N=22,SECONDS=0.00022900104522705078
+DAG_N=26,SECONDS=0.0002570152282714844
+REPAIR_SUCCEEDED
+PARENT_STATE=missing_image,CHILD_STATE=staged,CHILD_COMPLETE=false

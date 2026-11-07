@@ -1,0 +1,61 @@
+Building for debugging...
+[Planning deferred tasks]
+[33 / 64]
+[34 / 65] SyncLab
+[46 / 115]
+[53 / 115]
+[54 / 115]
+[59 / 115]
+[63 / 115]
+[67 / 115]
+[69 / 115]
+[70 / 115]
+[76 / 115]
+[84 / 115] SyncLab
+[95 / 116] LabReplay-product
+[98 / 118] SyncLab
+[99 / 118] SyncLab
+[104 / 118]
+[106 / 119] LabReplay-product
+[108 / 119] SyncLabTests-product
+[125 / 153]
+[130 / 153]
+[133 / 153]
+[136 / 153]
+[137 / 153]
+[147 / 153] SyncLabTests-product
+[149 / 153] SyncLabTests-product
+Build complete! (5.93秒)
+Test Suite 'All tests' started at 2026-11-07 18:46:31.254.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 18:46:31.255.
+Test Suite 'BatchIndependentTests' started at 2026-11-07 18:46:31.255.
+Test Case '-[SyncLabTests.BatchIndependentTests testEachPublicationBoundaryAndSecondAssetWire]' started.
+Test Case '-[SyncLabTests.BatchIndependentTests testEachPublicationBoundaryAndSecondAssetWire]' passed (0.053 seconds).
+Test Case '-[SyncLabTests.BatchIndependentTests testOutputPermissionsAndFailBeforeCreatingInvalidDestination]' started.
+Test Case '-[SyncLabTests.BatchIndependentTests testOutputPermissionsAndFailBeforeCreatingInvalidDestination]' passed (0.003 seconds).
+Test Suite 'BatchIndependentTests' passed at 2026-11-07 18:46:31.311.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.056 (0.056) seconds
+Test Suite 'BatchRepeatedRunTests' started at 2026-11-07 18:46:31.311.
+Test Case '-[SyncLabTests.BatchRepeatedRunTests testNewRunCanExportWithoutCollidingWithPreservedPreviousRun]' started.
+Test Case '-[SyncLabTests.BatchRepeatedRunTests testNewRunCanExportWithoutCollidingWithPreservedPreviousRun]' passed (0.004 seconds).
+Test Suite 'BatchRepeatedRunTests' passed at 2026-11-07 18:46:31.315.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'RemainingBatchTests' started at 2026-11-07 18:46:31.315.
+Test Case '-[SyncLabTests.RemainingBatchTests testNativeStagingRepairAndFreshImagePendingWithoutCloud]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testNativeStagingRepairAndFreshImagePendingWithoutCloud]' passed (0.013 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testPlansBoundedAndDeterministicWithoutAuthorization]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testPlansBoundedAndDeterministicWithoutAuthorization]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testPreparationNeverOverwritesOriginalOrFollowsOutputSymlink]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testPreparationNeverOverwritesOriginalOrFollowsOutputSymlink]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testSecondImageIsDecodableDistinctAndStrictlyAllowlisted]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testSecondImageIsDecodableDistinctAndStrictlyAllowlisted]' passed (0.016 seconds).
+Test Suite 'RemainingBatchTests' passed at 2026-11-07 18:46:31.347.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.032 (0.032) seconds
+Test Suite 'SyncLabTests.xctest' passed at 2026-11-07 18:46:31.347.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.092 (0.092) seconds
+Test Suite 'All tests' passed at 2026-11-07 18:46:31.347.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.092 (0.094) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

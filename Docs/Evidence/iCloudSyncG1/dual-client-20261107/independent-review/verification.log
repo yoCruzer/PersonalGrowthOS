@@ -1,0 +1,112 @@
+PASS: 6 raw iOS plans/reports, 26 iOS results, 14 Mac request/results; all digests/identities/order and public redactions exact.
+PASS: 39 available same-run account fingerprints agree; first iOS CK_3 has none. No fingerprint printed or persisted.
+PASS: empty-store iOS fetch equals r4 baseline; reverse creation; sibling conflict, common ancestor preview, explicit resolution, full history/PNG equality; final iOS006 = Mac013.
+PASS: iOS001 FAIL CK_3 and Mac007 FAIL CK_2 preserved; Mac008 retry adds fresh ACK/fetch; same-process checkpoint reopen and Mac014 stop retain content.
+PASS: 23 in-memory tampering negative controls rejected (public-copy consistency bypassed for substantive controls).
+{
+  "ios": [
+    {
+      "planID": "probe-ios-plan-001-connect",
+      "requestSHA256": "76091e1af85c92807f25e5c2dc8510466f77b347950262896620a92a42ae3ae1",
+      "resultSHA256": "2a0effe21528fbed60dc1bae14aa532203521c75a6e828d765bb55d76eb664d0"
+    },
+    {
+      "planID": "probe-ios-plan-002-connect",
+      "requestSHA256": "393bf28e913226c9094b1de294ff3747a73c86b939024649b9fe466fed0e442f",
+      "resultSHA256": "204f66d47e0ed6fc946c0089fe7219758c3477e33da22f493e676c1f319b5976"
+    },
+    {
+      "planID": "probe-ios-plan-003-fetch",
+      "requestSHA256": "bb967ff4154bfddfc274d0c9c162143f886bdbda0f7535182aadc1d7566ad49a",
+      "resultSHA256": "b1bc9edee346249c70350c65fbc0d2b727284b45ce28597c261b0fe4e670cf6c"
+    },
+    {
+      "planID": "probe-ios-plan-004-phone-write",
+      "requestSHA256": "2d4c52ec019546fff9ae24105ac9ac0c501c95082a395a8ccd6aefa5e009ed5f",
+      "resultSHA256": "08669a2c4ad89715d275078f000b271467fe2f2e7c3061960d965eaefa693c0b"
+    },
+    {
+      "planID": "probe-ios-plan-005-conflict",
+      "requestSHA256": "b2e2ed65075ed6200290e8b8b68fa4706378e6e38895d955e9a32228840d8364",
+      "resultSHA256": "e48b5f07049d996dba69e17012bbc12bcd0394de305d96203191631c0a53e7da"
+    },
+    {
+      "planID": "probe-ios-plan-006-resolve",
+      "requestSHA256": "a47aa9654d8fc06a0108106c7fddcf48943af4be5e0e4b7cadb9323395536665",
+      "resultSHA256": "ad935a60ecb542f08901b167f64e90b9f25a66575cd30752a90fe02ef32a06f8"
+    }
+  ],
+  "mac": [
+    {
+      "id": "probe-mac-r5-001-connect",
+      "requestSHA256": "e1e17177f9220a05d974ede04ef2a4930f8076defd455e2538d77f3e041381d4",
+      "resultSHA256": "b7ce294c1456683c711d2e779910b4323c58d219185567d1d24dfde309399342"
+    },
+    {
+      "id": "probe-mac-r5-002-snapshot",
+      "requestSHA256": "59183f934e65f712a65cfdb64fa6f9b0fd4c2baf54bb8dc8a9f43a7b86a230f9",
+      "resultSHA256": "6e6ca66611301b9d82ac167254ea2f3ed0d46c9c406a2de995f8348b64da3ba8"
+    },
+    {
+      "id": "probe-mac-r5-003-sync",
+      "requestSHA256": "8833198bb3038f2a828d0b480c4ebfc8381cc2801d673a275bb365020a8e11c7",
+      "resultSHA256": "23cc66127d006bd4b6ef5afd8611f04e67f7e8cc0f5874ae16d118fba35f561a"
+    },
+    {
+      "id": "probe-mac-r5-004-sync",
+      "requestSHA256": "c62e2912831e1f36fe5a604eea8a2bf44b0563d6d2ac907bfb6346d03655544a",
+      "resultSHA256": "158624b01a7fdb7abb7e7a7469ac45368d613c5880367992b7116cd8679e4e8c"
+    },
+    {
+      "id": "probe-mac-r5-005-snapshot",
+      "requestSHA256": "eccec58353a55d7a7536a15c34ba9dedf4652be5086854451402f320581f9ef3",
+      "resultSHA256": "91d428d98f49135da8a863463e794e677741b818ef754764d82057968daa06fa"
+    },
+    {
+      "id": "probe-mac-r5-006-save-conflict",
+      "requestSHA256": "8e2615f8cd8fbaaa6c38535a8591e87417592eb53a4d9e3e0f88cb86286507d1",
+      "resultSHA256": "2309a0d216f067c371d434f0c2351765b656a8dda0370a754e4131ba3f099d0a"
+    },
+    {
+      "id": "probe-mac-r5-007-sync",
+      "requestSHA256": "7b6f646254c7f655d7008e23f49b30e54beec0ea6e80e99e70611c17b3c25eef",
+      "resultSHA256": "0dff7f7f6740c43e9c5c99fd99916270aacaddc47eb1367b369f3a6de131351d"
+    },
+    {
+      "id": "probe-mac-r5-008-sync",
+      "requestSHA256": "230bb5b705efe7cb6ee8b695178de7b4ab124cb7891f8ddb7a85fb9f1d373010",
+      "resultSHA256": "36b73bc560d95984978f3cf7795b299249d2a9d271d9447e256f2a50cdb2bdad"
+    },
+    {
+      "id": "probe-mac-r5-009-snapshot",
+      "requestSHA256": "4e37cf7ae7f7e3e1a07289a2eb1a5dbc66a63c08e77288273babbcbf085fbf85",
+      "resultSHA256": "a0f81b3f51ad69396dde67bd3680d686d6dd010832126619ad7c4cf18ca1965f"
+    },
+    {
+      "id": "probe-mac-r5-010-sync",
+      "requestSHA256": "3cf2e10664fddd20cfe5eee84f7b61b0ab29e8a067315421309abbbabcb9f9ff",
+      "resultSHA256": "0a5ddbe98eeab5985f9276a7540b7579bd1ee689426ac5f7858cab9482a69682"
+    },
+    {
+      "id": "probe-mac-r5-011-sync",
+      "requestSHA256": "807daa760f7b7b4dc5d6c7f03d3ce713e58972bce9e058183f250939004be902",
+      "resultSHA256": "5fc4bbc6298f33579f101511d63b5c0b79b3a2851d411824d195369e57ece596"
+    },
+    {
+      "id": "probe-mac-r5-012-reopen",
+      "requestSHA256": "f1d1bcaffaf6e1d713245f9f7a012bd45c0584eab244e0b5fafcfd7b95d44867",
+      "resultSHA256": "3bd165d45e533f82ce0c6b59ba4cf6a231688263bd2ec8acb93b7a39ef132440"
+    },
+    {
+      "id": "probe-mac-r5-013-snapshot",
+      "requestSHA256": "78cb8046ef90a504322f9537518ced6620181c6af040452a00e9c305848ef91b",
+      "resultSHA256": "92218c055a459d591477a137e27d3161fca21052c4d4c6e36105db9c408293ac"
+    },
+    {
+      "id": "probe-mac-r5-014-stop",
+      "requestSHA256": "16d5cb5a66a45cddb5d26298e2b88f4f0099e746e29cade8f32565430fa7fed8",
+      "resultSHA256": "35c80e0a366eb50a65252fc71cdc3254e9b8145d2b3f97c5c504301420a4fb6b"
+    }
+  ]
+}
+LIMIT: bounded real dual-client scenario; not complete G1, process crash/restart, offline-reconnect, production environment, restore race or actual account switching. Bridge shutdown status is parent-reported, not proven by stop JSON.

@@ -1,0 +1,36 @@
+{
+  "runID": 42332149355,
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42332149355",
+  "headSHA": "2dfbafbf0197c22d4c14661edb058d96cf3b0f97",
+  "conclusion": "success",
+  "xcode": "Xcode 27.1\nBuild version 27A9275",
+  "pythonTests": {
+    "total": 13,
+    "failed": 0
+  },
+  "nativeTests": {
+    "total": 39,
+    "failed": 0
+  },
+  "unsignedIOSSimulatorBuild": "PASS",
+  "artifact": "synclab-offline",
+  "downloadedArtifactLogSHA256": {
+    "environment.log": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+    "signing-gate-tests.log": "3b043d06138a203057408fb062b952207e06f70516aeafcec2eeaba256458f21",
+    "tests.log": "20eeecee217c3ce7a72b4576cd3a8f85c508e7b544fcb9a38d025bce35765afa",
+    "ios-build.log": "f7976c26b5d6369f26ed79c3e97e11987bed5fd055280b7b79b30dbfba62d6a3"
+  },
+  "commands": [
+    "python3 -m unittest discover -s Experiments/iCloudSyncG1/Tools -p test_*.py -v",
+    "swift test --package-path Experiments/iCloudSyncG1 --scratch-path \"$RUNNER_TEMP/synclab-swift\"",
+    "xcodebuild -project Experiments/iCloudSyncG1/SyncLab.xcodeproj -scheme SyncLab -configuration Debug -sdk iphonesimulator -destination generic/platform=iOS\\ Simulator -derivedDataPath \"$RUNNER_TEMP/synclab-ios\" CODE_SIGNING_ALLOWED=NO build"
+  ],
+  "cloudValidation": "NOT_RUN",
+  "productRegression": {
+    "previousRun": 42327441520,
+    "previousConclusion": "failure",
+    "newRun": 42332154418,
+    "sampledStatus": "in_progress",
+    "note": "No formal product/UI test changes in this SyncLab batch. Existing readability failures remain unresolved."
+  }
+}

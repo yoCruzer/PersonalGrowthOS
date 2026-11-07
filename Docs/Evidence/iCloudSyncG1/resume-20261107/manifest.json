@@ -1,0 +1,28 @@
+{
+  "implementationCommit": "8245f74c2362bb96fc8bfedfdbd112bca0d5f699",
+  "binarySourceCommit": "56a1d39e50363586cdf82e1bbb856f155d7cc0f7",
+  "scope": "Portal read-only and iOS signing; actual device/cloud NOT_RUN",
+  "files": {
+    "environment.json": "8d5b1fe4d072c161aaa7daaa078b87bd92b9cea0ddebe876def9f0026b591813",
+    "independent-review/independent-final.log": "bb47c25ad49ead8c2de145c86daf7a586b8b7b5d26333d6266251bf9bbb49c2e",
+    "independent-review/independent-gate.log": "5b0c77679eb86fa15d91761dbdf76a257f63ac1e7708bc8c86feaa45d37ecfd8",
+    "independent-review/manifest-final.json": "2aefb54d9803c0d7c2fe4f0ca4f1e1a8aa0e35ac1df2b48024ea95b0c7bbd011",
+    "independent-review/manifest-initial.json": "2a9d5565b5e5ef95dc38eb42f4dc66530051bc0dad39cefd4e3f9ddf00e11673",
+    "independent-review/preexisting-container-observation.json": "2073a41f3054a95a6f3dd5a09fa1ba1da7f7abb4f00ec2196a385ab788864ef5",
+    "independent-review/repository-final.log": "05a20e133c196f6cc84266aff1ca79d47dc5b3c124d4eb03b54941fb4ff44612",
+    "independent-review/repository-tests.log": "fa4e5a567c173d273019a7f5774bc45c9b53028764469309c0eeca0e409e20e7",
+    "independent-review/review-final.md": "1cb49ccebc1e60546158dc9a71c972591f8fac558381aea05a1041498b2bc1e9",
+    "independent-review/test_independent_gate.py": "2c2e7f44bc5a07767bff76e2c86435c2b3b77b13ec02a58529b5ba128f2f69a5",
+    "independent-review/test_independent_gate_initial.py": "4c755af8d3c3de180551bb8e4736ae861163c1ea7a2e80f193ec1f021155a0cd",
+    "ios-signing-after.json": "a699d3820309023fbfba82050a6b538c2f8cfa2d21f302813cf2907f40644a0d",
+    "ios-signing-before.json": "e7ee9c79bdbf99ada46d6c8a688fb69b2b7a487389dbbff11a70061c4eed09cf",
+    "private-log-hashes.json": "53e9036089e2d4fee352cef5544f8eda6dfa826903e1f231b20d08ae88a19a2d",
+    "signing-gate-tests.log": "05a20e133c196f6cc84266aff1ca79d47dc5b3c124d4eb03b54941fb4ff44612",
+    "ci-accepted.json": "9d5aa92fd954759cf524e29f18e25e5ad6e4cc9822fa3b4aa4b7b3ec3ce9083e",
+    "mac-signing-after-registration.json": "a699d3820309023fbfba82050a6b538c2f8cfa2d21f302813cf2907f40644a0d",
+    "authorized-mac-and-account-correction.json": "33d11e6b65092642c03532a2d65065739107640ee8c8abac8b2be1e64c55fa9c",
+    "test-user-preparation.json": "d6de2f443eca20746baafbd52d4b519670d23c39342bedf6f2f5b11f595e342b",
+    "product-regression-failure-excerpt.log": "48dcfffb7f770bb87f0d37fa1db606cc558a3461fa05b0dca7b7f6fe87ca6c86",
+    "product-regression-result.json": "a494cf6db1f5cb2bb73ef0ca560a96641c1a153e8b22bd51dd900dc143a2bdda"
+  }
+}

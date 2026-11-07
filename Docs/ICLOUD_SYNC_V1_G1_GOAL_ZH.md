@@ -1,3 +1,5 @@
+> 2026-11-07 Owner最新调整：本轮以手机侧已核验项目作为收口依据；Mac的CK_2作为Owner接受的非阻塞例外。VPN归因为Owner判断，未独立证实。原始失败保留，未运行场景继续标NOT_RUN；不以本轮收口宣称原最低真实服务矩阵全PASS。剩余可独立手机步骤集中完成后记录OWNER_ACCEPTED_PHONE_SCOPE；若其他失败出现则保留并处理。此调整覆盖下文旧的G1本轮阻塞/状态限制，未扩大merge、Production或正式产品接入权限。详见Evidence/iCloudSyncG1/fault-window-20261107/owner-scope-amendment.json。
+
 # /goal — iCloud Sync G1：环境先行的隔离纵向验证
 
 ## 授权与固定起点

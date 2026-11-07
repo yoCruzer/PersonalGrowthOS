@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-07",
+  "nativeTests": {
+    "total": 47,
+    "failed": 0
+  },
+  "independentOriginalCandidateTests": 11,
+  "independentSeamedControlFlowTests": 4,
+  "independentReleaseTests": 1,
+  "signedDebugBuilds": {
+    "iOS": "PASS",
+    "macOS": "PASS"
+  },
+  "strictSignedPackageGate": {
+    "iOS": "PASS",
+    "macOS": "PASS"
+  },
+  "unsignedIOSSimulatorRelease": "PASS",
+  "builtPackageFileSharing": {
+    "Debug": true,
+    "Release": false
+  },
+  "generatorDeterminism": "PASS",
+  "privateBuildLogSHA256": {
+    "ios-manual-final-private.log": "92702d6116e774f8f02c6c28dee4969d42e89685a107f3c8080faf912127ad45",
+    "mac-manual-final-private.log": "62a10cdbff64e64c2b9b078e4ebc55b46689d08cc51c84ac6e38fbe4d2570325",
+    "release-manual-final.log": "4b43f6bd98786041705e3959e2043c580510494f1cdf61383260f3a5019c678e"
+  },
+  "installedPhonePackageBeforeThisChange": "Old 2dfbafb Debug via Apple Configurator confirmed in device app list",
+  "newManualPhoneRuntime": "NOT_RUN",
+  "notes": [
+    "Initial new XCTest compile failed on missing try; preserved.",
+    "Independent original security/control-flow red cases preserved, then repaired.",
+    "Seamed control-flow tests do not access CloudKit and do not prove live runtime.",
+    "Configurator installation authorization persists; phone reset/supervision/Production not authorized."
+  ]
+}

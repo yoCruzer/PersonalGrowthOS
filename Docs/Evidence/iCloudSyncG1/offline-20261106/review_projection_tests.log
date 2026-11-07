@@ -1,0 +1,19 @@
+test_01_common_ancestor_preview_is_order_independent_and_incomplete (__main__.ProjectionTests) ... ok
+test_02_unrelated_conflicts_have_no_invented_value (__main__.ProjectionTests) ... ok
+test_03_delete_edit_never_revives_normal_value (__main__.ProjectionTests) ... ok
+test_04_explicit_resolution_becomes_confirmed (__main__.ProjectionTests) ... ok
+test_05_missing_dependency_arrival_unblocks_transitively (__main__.ProjectionTests) ... ok
+test_06_current_unready_revision_cannot_fall_back_to_old_live_row (__main__.ProjectionTests) ... ok
+test_07_dependency_conflict_blocks_link_until_resolved (__main__.ProjectionTests) ... ok
+test_08_required_entity_cycle_is_staged (__main__.ProjectionTests) ... ok
+test_09_cross_object_causal_parent_is_not_a_valid_history (__main__.ProjectionTests) ... ok
+test_10_unknown_version_keeps_bytes_and_blocks_dependency (__main__.ProjectionTests) ... ok
+test_11_multiple_maximal_common_ancestors_have_no_arbitrary_baseline (__main__.ProjectionTests) ... ok
+test_12_deleted_common_ancestor_is_not_used_as_a_live_preview (__main__.ProjectionTests) ... ok
+test_13_delete_dependency_all_arrival_orders_stays_unpublished (__main__.ProjectionTests) ... ok
+test_14_tombstone_does_not_wait_for_deleted_dependency (__main__.ProjectionTests) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.005s
+
+OK

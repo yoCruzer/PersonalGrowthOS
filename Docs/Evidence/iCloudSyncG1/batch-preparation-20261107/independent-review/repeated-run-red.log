@@ -1,0 +1,20 @@
+Building for debugging...
+[Planning deferred tasks]
+[6 / 15] SyncLabTests-product
+[8 / 17] SyncLabTests-product
+[14 / 16] SyncLabTests-product
+Build complete! (0.90秒)
+Test Suite 'Selected tests' started at 2026-11-07 18:45:43.095.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 18:45:43.096.
+Test Suite 'BatchRepeatedRunTests' started at 2026-11-07 18:45:43.096.
+Test Case '-[SyncLabTests.BatchRepeatedRunTests testNewRunCanExportWithoutCollidingWithPreservedPreviousRun]' started.
+/private/tmp/g1-next-batch-review/candidate/Tests/SyncLabTests/BatchRepeatedRunTests.swift:18: error: -[SyncLabTests.BatchRepeatedRunTests testNewRunCanExportWithoutCollidingWithPreservedPreviousRun] : XCTAssertNoThrow failed: threw error "identityCollision" - A new run/dataset must preserve previous export while making new result available
+Test Case '-[SyncLabTests.BatchRepeatedRunTests testNewRunCanExportWithoutCollidingWithPreservedPreviousRun]' failed (0.051 seconds).
+Test Suite 'BatchRepeatedRunTests' failed at 2026-11-07 18:45:43.147.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.051 (0.051) seconds
+Test Suite 'SyncLabTests.xctest' failed at 2026-11-07 18:45:43.147.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.051 (0.051) seconds
+Test Suite 'Selected tests' failed at 2026-11-07 18:45:43.147.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.051 (0.052) seconds
+Note: Some test targets reported failures:
+  - SyncLabTests (XCTest)

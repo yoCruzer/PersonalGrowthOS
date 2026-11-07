@@ -1,0 +1,44 @@
+Building for production...
+[Planning deferred tasks]
+[31 / 56]
+[32 / 57] SyncLab
+[43 / 100]
+[51 / 100]
+[53 / 100]
+[57 / 100]
+[59 / 100]
+[62 / 100]
+[66 / 100]
+[68 / 100]
+[69 / 100]
+[74 / 100]
+[76 / 100] SyncLab
+[87 / 102] LabReplay-product
+[89 / 103] SyncLabTests-product
+[102 / 133]
+[107 / 133]
+[110 / 133]
+[114 / 133]
+[115 / 133]
+[115 / 133] LabReplay-product
+[117 / 133]
+[121 / 133] LabReplay-product
+[123 / 133]
+[124 / 133] SyncLabTests-product
+[129 / 133] SyncLabTests-product
+Build complete! (8.39秒)
+Test Suite 'All tests' started at 2026-11-07 16:23:14.751.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 16:23:14.752.
+Test Suite 'ReleaseBoundaryTests' started at 2026-11-07 16:23:14.752.
+Test Case '-[SyncLabTests.ReleaseBoundaryTests testReleaseCannotAuthorizeEvenWithEnvironment]' started.
+Test Case '-[SyncLabTests.ReleaseBoundaryTests testReleaseCannotAuthorizeEvenWithEnvironment]' passed (0.011 seconds).
+Test Suite 'ReleaseBoundaryTests' passed at 2026-11-07 16:23:14.763.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.011 (0.011) seconds
+Test Suite 'SyncLabTests.xctest' passed at 2026-11-07 16:23:14.764.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.011 (0.011) seconds
+Test Suite 'All tests' passed at 2026-11-07 16:23:14.764.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.011 (0.012) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/g1_independent_review",
+  "timeUTC": "2026-11-05T16:32:47.661515+00:00",
+  "command": [
+    "swift",
+    "run",
+    "--package-path",
+    "/private/tmp/pgos-g1-independent-review",
+    "--scratch-path",
+    "/private/tmp/pgos-g1-independent-review-build"
+  ],
+  "scope": "Independent synthetic local SwiftData probes only. No CloudKit network or product data access. Current retained probe source includes original two cases plus subsequent DAG/restore extensions; earlier raw logs remain unmodified.",
+  "sha256": {
+    "Package.swift": "22ce7cb5c2f19cd98b75d13ef0ed44d63aabcb3bef0e4c19f1653156c3ad5340",
+    "Sources/ReviewProbe/main.swift": "9e748c9dca98643adf22eb4d2b70c0150d69d58c7b06f7dc2f4a0ca1616d956f",
+    "result.log": "cbf379e1372ddbbde21b39d6bc29e1e2ce84964924e6e7c0ee3db31690497205",
+    "dag-result.log": "21e1655da0c0eb652be8ac582196da1236d9ec9784a7e65af95b91dc31b7aa80",
+    "recheck-01.log": "86998dd4e763b51d31ce95540587e7700f54a59187e0e341750f2380afad3c9b",
+    "recheck-02.log": "a439c160b7f3fbfcd8d992671c723b5534e5330202f00ed9b59783f17a8eef7b",
+    "recheck-03.log": "e0f3fba85a17cc870d823033c7a2e70cd06b0a4c3517154a21fd7650a35f9679"
+  }
+}

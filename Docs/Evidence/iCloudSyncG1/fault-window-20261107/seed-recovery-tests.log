@@ -1,0 +1,19 @@
+test_ck4_failure_is_not_accepted_without_seed_exception (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_failure_boundary_is_exact (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_missing_recovery_report_rejected (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_nonempty_original_connect_rejected (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_normal_completed_report_still_passes (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_original_prefix_loss_cannot_be_hidden_by_recovery (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_recovery_failed_or_incomplete_rejected (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_recovery_lost_fact_in_connect_cannot_hide_at_end (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_recovery_pending_or_wrong_digest_rejected (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_recovery_plan_is_exact (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_recovery_requires_fresh_process (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_recovery_requires_same_account (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_valid_recovery_preserves_failed_original_bytes (test_verify_fault_window.SeedRecoveryTests) ... ok
+test_wrong_original_command_digest_rejected (test_verify_fault_window.SeedRecoveryTests) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.042s
+
+OK

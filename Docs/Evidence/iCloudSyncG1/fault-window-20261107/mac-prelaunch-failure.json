@@ -1,0 +1,11 @@
+{
+  "status": "PRELAUNCH_PERMISSION_FAILURE_PRESERVED",
+  "stage": "00-mac-dependency-seed",
+  "errorType": "PermissionError",
+  "errno": 1,
+  "operation": "Python exclusive create of App sandbox Documents/SyncLab-Probe-Plan.next",
+  "appLaunched": false,
+  "scope": "Launcher failure before App execution; not a CloudKit failure or acceptance result",
+  "source": "Owner supplied terminal traceback",
+  "replacement": "loopback-v1; App owns private sandbox writes; authenticated local receiver confirms durable exact bytes"
+}

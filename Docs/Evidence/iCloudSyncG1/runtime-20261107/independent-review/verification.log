@@ -1,0 +1,34 @@
+PASS: 5 Mac command/result pairs; exact request digest, dataset/run, same account fingerprint (redacted).
+PASS: one exact mutation and original 68-byte PNG retained across sync, store/engine reopen and subsequent sync.
+PASS: pending 0 -> 2 -> 0 -> 0 -> 0; ACK/fetch/state events, equal pre/post-reopen checkpoint, no halted/error results.
+PASS: 12 in-memory tampering negative controls rejected; no original input modified.
+NOT_RUN: second client, process/device restart, cloud-only reconstruction, conflict/multi-client/offline acceptance.
+{
+  "inputs": [
+    {
+      "id": "probe-001-mac-connect",
+      "requestSHA256": "ff1da14c3f088805ad95416332a174f4d274bb88a43236c294f1da4f58d7efaf",
+      "resultSHA256": "a7fcfe5ec0462dbb7a2619e500eb2785126e80645ec92ad0785f1971dc977148"
+    },
+    {
+      "id": "probe-002-mac-save-base",
+      "requestSHA256": "03adbc925c287d7a982b2d21eeee0d4df74bec3ddc3c45660a89f59f4ccc1730",
+      "resultSHA256": "82d769006eb10af95575a4a2ebc6306b78e247b8f269accc889c34e1cf801ff8"
+    },
+    {
+      "id": "probe-003-mac-sync-base",
+      "requestSHA256": "7a88bf272a238ee8fb7e0d61e43db51dd29d941db60538f187e0a15657df5cbc",
+      "resultSHA256": "6083f0b16d6d54daaa5a5cfbdcd5f04496e5e120c114b1e126fd0ccd7b45e455"
+    },
+    {
+      "id": "probe-004-mac-reopen",
+      "requestSHA256": "95e13a5c4e00ea07ae6f53e1de112255cb5fce325608c757c84f9a8ad87aedf1",
+      "resultSHA256": "12dbf18349a33726895fbe61b71d7089fa3e549263c6ed8ae30e692b5baa2bc3"
+    },
+    {
+      "id": "probe-005-mac-sync-after-reopen",
+      "requestSHA256": "e44a39bc8fe79441be80aa9f96e644a2d3e9289ca4f923e08e7f1bc81862d3ab",
+      "resultSHA256": "439228984591114e5ba13f2c0d574af0038348777d520cf4f23bd3c321514bb5"
+    }
+  ]
+}

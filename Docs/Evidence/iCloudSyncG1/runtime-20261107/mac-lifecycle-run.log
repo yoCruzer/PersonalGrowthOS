@@ -1,0 +1,9 @@
+probe-006-mac-lifecycle-create: exact mutations, preserved PNG, ready, pending=1
+probe-007-mac-lifecycle-sync-create: exact mutations, preserved PNG, ready, pending=0
+probe-008-mac-lifecycle-edit: exact mutations, preserved PNG, ready, pending=1
+probe-009-mac-lifecycle-sync-edit: exact mutations, preserved PNG, ready, pending=0
+probe-010-mac-lifecycle-delete: exact mutations, preserved PNG, deleted, pending=1
+probe-011-mac-lifecycle-sync-delete: exact mutations, preserved PNG, deleted, pending=0
+probe-012-mac-lifecycle-reopen: exact mutations, preserved PNG, deleted, pending=0
+probe-013-mac-lifecycle-sync-after-reopen: exact mutations, preserved PNG, deleted, pending=0
+Single-Mac cloud lifecycle only; no two-device acceptance claimed.

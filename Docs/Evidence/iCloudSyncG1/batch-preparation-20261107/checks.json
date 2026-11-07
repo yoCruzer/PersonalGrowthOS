@@ -1,0 +1,46 @@
+{
+  "scope": "offline engineering only; actual cloud/device batch NOT_RUN",
+  "native": {
+    "pass": 51,
+    "fail": 0
+  },
+  "toolsInitial": {
+    "pass": 8,
+    "errors": 5,
+    "reason": "sandbox denied loopback bind"
+  },
+  "toolsWithLoopbackPermission": {
+    "pass": 13,
+    "fail": 0
+  },
+  "builds": {
+    "iOSDebugSigned": "PASS",
+    "macOSDebugSigned": "PASS",
+    "iOSSimulatorReleaseUnsigned": "PASS"
+  },
+  "plans": {
+    "commandCounts": [
+      16,
+      10,
+      4
+    ],
+    "generatedWithoutCloud": true
+  },
+  "sourceHashes": {
+    "Experiments/iCloudSyncG1/App/SyncLabApp.swift": "bd7472ffd96877a5b72ce6d6153585e208d45e257421c37f5c42d7f62754d24c",
+    "Experiments/iCloudSyncG1/Package.swift": "3d63b763efc4c3608b915ab14af9bc73d1f111a199e5729ecb6647c6a988ebee",
+    "Experiments/iCloudSyncG1/Sources/LabReplay/main.swift": "f81ff84684ddd9017305be16ce69603b5da21ddfe45e17a3892ed4b709d0e548",
+    "Experiments/iCloudSyncG1/Sources/SyncLab/Cloud.swift": "cc1112147b35f7db8df42475df1e28d5e19d7963e3c8d15e54ba9f47ac1454da",
+    "Experiments/iCloudSyncG1/Sources/SyncLab/DevelopmentAuthorization.swift": "40740590ce519fb728c25f9b76cf01bfec9b7cc6a677af748a25f597ed72f701",
+    "Experiments/iCloudSyncG1/Sources/SyncLab/DevelopmentProbe.swift": "23b1fe3b075126eec68bfe4a1bf4724b0b1e8ed9b593128c1f9b3dcfafd47084",
+    "Experiments/iCloudSyncG1/Sources/SyncLab/ManualProbePlan.swift": "490f6b9fb5d00da812448ec575fe956127cab78eb6b1501d6d46846e0f6fdefa",
+    "Experiments/iCloudSyncG1/Sources/SyncLab/Protocol.swift": "f7f7916a73c990c3daa0be116740aab678c8be99882aec84f6ffec54e8b4a01d",
+    "Experiments/iCloudSyncG1/Sources/SyncLab/RemainingBatch.swift": "a17de3e8edc728d9ca99a5b9ae743759d64c5a5f69aa45b70417b6eccd34fb7d",
+    "Experiments/iCloudSyncG1/Sources/SyncLab/Store.swift": "eccb9253704d1c0f6a0aa18b2e007d1bd4df9987e31cdebc99b3a87aeb8e1876",
+    "Experiments/iCloudSyncG1/Tests/SyncLabTests/DevelopmentProbeTests.swift": "b35d68e389fa6e988e7938b8ad9d1e555e93a9d5fc269dd8a7827c8ed493a32c",
+    "Experiments/iCloudSyncG1/Tests/SyncLabTests/ManualProbeTests.swift": "3f032c6e44f6de96db8ebb50b1e1556a1e8b134ca32ed466b8aac5a1c8163645",
+    "Experiments/iCloudSyncG1/Tests/SyncLabTests/RemainingBatchTests.swift": "2f055192ec23782e454950433e428893961d8a695b29931d3708d34624b55b8e",
+    "Experiments/iCloudSyncG1/Tests/SyncLabTests/SyncLabTests.swift": "6b5ca37419511530d7e859f1215e4f1eb7f3db4c62468c180cb4690cb32bd383"
+  },
+  "reviewFix": "Plan IDs bind full SHA256(dataset|run|stage), preventing repeated-run export collisions; original failure retained"
+}

@@ -1,0 +1,2 @@
+{"case": "wrong-result-identity", "httpStatus": 409, "resultPublished": false}
+{"case": "package-under-umask077", "outputMode": "0o755", "pythonLauncherMode": "0o644", "verifierMode": "0o644", "tokenMode": "0o600"}

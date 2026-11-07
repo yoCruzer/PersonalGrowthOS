@@ -1,0 +1,19 @@
+warning: 'icloudsyncg1': Source files for target SyncLabTests should be located under 'Tests/SyncLabTests', 'Tests', or a custom sources path can be set with the 'path' property in Package.swift
+warning: 'icloudsyncg1': Source files for target SyncLabTests should be located under 'Tests/SyncLabTests', 'Tests', or a custom sources path can be set with the 'path' property in Package.swift
+Building for debugging...
+[Planning deferred tasks]
+[19 / 28]
+[20 / 29] SyncLab
+[32 / 75]
+[39 / 75]
+[40 / 75]
+[45 / 75]
+[49 / 75]
+[53 / 75]
+[55 / 75]
+[56 / 75]
+[62 / 75]
+[66 / 75] SyncLab
+[72 / 75] SyncLab
+Build complete! (4.03秒)
+error: no tests found; create a target in the 'Tests' directory

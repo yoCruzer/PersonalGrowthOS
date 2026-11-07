@@ -1,0 +1,40 @@
+Building for debugging...
+[2 / 6] SyncLab
+[3 / 7] SyncLab
+/private/tmp/g1-manual-review/green-control-flow/Sources/SyncLab/DevelopmentProbe.swift:159:9: warning: code after 'throw' will never be executed
+157 |         throw LabError.blocked // REVIEW SEAM: never call CloudKit in this copy.
+158 | 
+159 |         guard authorization.isEnabled else { throw LabError.blocked }
+    |         `- warning: code after 'throw' will never be executed
+160 |         if driver != nil { return }
+161 |         let container = CKContainer(identifier: Binding.container)
+[8 / 12] SyncLab
+[11 / 15] SyncLabTests-product
+[14 / 18] SyncLabTests-product
+[20 / 22] SyncLabTests-product
+[27 / 28] LabReplay-product
+Build complete! (1.67秒)
+Test Suite 'All tests' started at 2026-11-07 16:24:07.431.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 16:24:07.432.
+Test Suite 'ManualAuthorityTests' started at 2026-11-07 16:24:07.432.
+Test Case '-[SyncLabTests.ManualAuthorityTests testImportedCompletionAndOldSymlinkNeverBecomeAuthority]' started.
+Test Case '-[SyncLabTests.ManualAuthorityTests testImportedCompletionAndOldSymlinkNeverBecomeAuthority]' passed (0.007 seconds).
+Test Suite 'ManualAuthorityTests' passed at 2026-11-07 16:24:07.439.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.007 (0.007) seconds
+Test Suite 'ManualControlFlowTests' started at 2026-11-07 16:24:07.439.
+Test Case '-[SyncLabTests.ManualControlFlowTests testCancellationBetweenCommandsRetainsFirstAndSkipsNext]' started.
+Test Case '-[SyncLabTests.ManualControlFlowTests testCancellationBetweenCommandsRetainsFirstAndSkipsNext]' passed (0.004 seconds).
+Test Case '-[SyncLabTests.ManualControlFlowTests testCancelledPlanMustNotReachCloudEntry]' started.
+Test Case '-[SyncLabTests.ManualControlFlowTests testCancelledPlanMustNotReachCloudEntry]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualControlFlowTests testReentrantPlanMustNotReleaseActivePlanLock]' started.
+Test Case '-[SyncLabTests.ManualControlFlowTests testReentrantPlanMustNotReleaseActivePlanLock]' passed (0.004 seconds).
+Test Suite 'ManualControlFlowTests' passed at 2026-11-07 16:24:07.447.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.007 (0.008) seconds
+Test Suite 'SyncLabTests.xctest' passed at 2026-11-07 16:24:07.447.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.014 (0.015) seconds
+Test Suite 'All tests' passed at 2026-11-07 16:24:07.447.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.014 (0.015) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

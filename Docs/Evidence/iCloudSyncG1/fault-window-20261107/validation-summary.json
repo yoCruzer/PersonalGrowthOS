@@ -1,0 +1,1 @@
+{"nativeTests":64,"toolTests":38,"independentTransportTests":23,"seedRecoveryPatchReview":"parent inspected diff and separately checked actual raw reports; implementation contributor tests not self-independent review","realStatus":"Mac seed initial sync CK_4 retained; recovery four PASS; phone dependency step pending","scope":"Not full G1 or Production acceptance"}

@@ -1,0 +1,20 @@
+{
+  "status": "BUILD_7_AND_BATCH_UI_CONFIRMED",
+  "ownerObservation": "batch load/selector absent; exported report is old r5 plan006",
+  "priorInstallExitZero": "insufficient; actual update claim withdrawn",
+  "candidateBuild": "7",
+  "candidateSignature": "PASS",
+  "batchUIInDebugDylib": true,
+  "cliUpdateExit": 0,
+  "readbackAfterCLI": "1",
+  "uiAction": "Configurator existing-App replacement explicitly selected; activity ended",
+  "readbackAfterUI": "1",
+  "coreDeviceQuery": "blocked by locked device; 12040 / 10003",
+  "next": "Load imported bundle and execute only 00-phone-dependency-repair; stop if bundle missing",
+  "phoneNewBatchStatus": "NOT_RUN",
+  "ownerFollowup": "Batch-load button now visible after reopening",
+  "freshDeviceReadback": "7",
+  "candidateIPA_SHA256": "4fa91e71959ed6b47333dcdd19dd6b0d075a89b4cbcc03f8de32487b016ca837",
+  "candidateSourceCommit": "0e1f747",
+  "installationConclusion": "Prior immediate old readbacks retained; refreshed query and Owner UI now agree"
+}

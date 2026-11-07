@@ -1,0 +1,15 @@
+{
+  "review-final.md": "981dc746d2c1ba1f8ac4e10870dec765f1c36a7e5d0aad605190d57d13709dbe",
+  "source-sha256.json": "0307e920a750c147edadc374a18b9b95d4271fa873fef488de24ea69e5fcd72e",
+  "final-source-sha256.json": "57c3f31f361a5a3271bc34d28f39a8c0599a04f03ff02df825d7134144f9ceaf",
+  "native.log": "b6a8144f256049b06f7911a0c1fca2dd1af2fb32293805fd955fab6abb002682",
+  "native-fixed.log": "dca0c65cbf8e7bd3758ad8d9224f50132c2ad926c1e67340145b78ffb57a7937",
+  "cli.log": "9f93156fe8d0b9cc7960b4c61f4ff0ae154d0ae898ba703d069be5b9eeed8967",
+  "cli-fixed.log": "4272a243aade5227070d8f282a09b2d01ade5a1859df08c72fdd34dc72e8b725",
+  "repeated-run-red.log": "4d6a9ea6f6f7e62fb34ee2b2a4e656a7dbd306b46e454142bb7970eebf18b7b2",
+  "release-build.log": "10f21fcea842d81c321b2197de6dba560170b7c11fef03c0a7859b5ac0b13255",
+  "release-boundary.log": "d8a9238ae5235f3a955380ca58b12ee66faf7484568146ce40825020c3645254",
+  "verify_cli.py": "716600b7813a9d9e25fad0fd8cd157406dbb621688716f9381cdc1220ae8ab3f",
+  "verify_cli_fixed.py": "1653e8f43c07c6fb2e1032dc79c8bcc3cba8c3a7446431d8e6ccc7d23222a141",
+  "verify_release.py": "bc35a29d5e1a291f3339dabece80740777e754c86bac97e7b2cacda0ddbee356"
+}

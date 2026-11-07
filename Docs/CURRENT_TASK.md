@@ -1,3 +1,220 @@
+# 2026-11-07 G1本轮已按Owner手机侧范围收口
+
+状态 `OWNER_ACCEPTED_PHONE_SCOPE`。Owner明确接受Mac CK_2为非阻塞例外；原始失败保留、VPN归因未独立证实。手机6份原件27条命令全部PASS，核对依赖修复/新原图、联网写入、断网本地重开与pending保留、恢复联网ACK清空以及独立restore种子上传。后者不代表restore race；原完整真实故障矩阵未全覆盖，Mac依赖剩余场景列后续补证，不继续卡本轮。
+
+手机已可断开；Mac窗口已投递STOP，不部署CK_2诊断候选，不退出账户、不删数据。最终运行源码0e1f747，本机64原生/38工具通过，远端SyncLab 42379018988 SUCCESS；正式产品42379022508 release/unit成功而smoke失败，单独保留；诊断候选65项日志保留为历史但源码撤回。此时交付收口文档和脱敏证据并普通推送既有Draft PR16，不merge/Production/Archive/TestFlight或扩大正式产品接入。详见[本轮收口说明](ICLOUD_SYNC_G1_OWNER_CLOSEOUT_ZH.md)。以下为保留的历史过程，涉及旧BLOCKED/PENDING表述以本段和Owner范围调整为准。
+
+---
+
+# 2026-11-07 Owner调整：手机侧验收，Mac CK_2非阻塞
+
+按Owner最新明确决定，不再追查或等待本轮Mac CK_2。其原FAIL保留，Owner将其作为VPN相关预期例外接受（原因未独立验证）。本轮改用手机侧验收范围，依赖Mac的剩余原G1矩阵列为后续补证而不写PASS；Production/正式接入权限不变。已停止Mac等待窗口，不部署新诊断包；诊断代码仅本机65测试/签名构建通过。手机版本7及批次入口已确认，异常依赖00阶段10/10PASS、16条最终事实及新图片已核验。已一次性请求手机01、05、16断网、17恢复联网、19共5个独立步骤（约5–8分钟），遇任何错误停止；等原始报告收集核验后完成本轮Owner接受范围收口。详见[范围调整记录](Evidence/iCloudSyncG1/fault-window-20261107/owner-scope-amendment.json)。
+
+---
+
+# 2026-11-07 手机异常依赖阶段完成，Mac读取受CK_2阻塞
+
+手机原始文稿已由Configurator仅导出SyncLab取回，00-phone-dependency-repair 10/10PASS；核对同账户、原始摘要、初始12条/修复后16条事实、新图片pending及SDK ACK和原图hash。Mac00-fetch及单独的只同步恢复均connect PASS、sync FAIL CK_2，events=ZONE_SAVE_FAILED_RETAINED，两个失败均保留，未认可双端通过。手机已可拔线正常使用，暂不要求后续步骤。正在补仅Debug、限深限量、仅CK/URL数字码的诊断，65项原生PASS；将通过现有haha固定窗口诊断，不重复手机动作，不放宽验收或重放写入。
+
+---
+
+# 2026-11-07 手机新版批次入口已由Owner确认
+
+Owner最新确认已出现“载入已导入的测试批次”。覆盖更新现已取得用户界面证据；之前旧版本回执及失败排查原样保留。已请求载入批次，存在00-phone-dependency-repair才执行此项；若缺批次则停止并回报，不能启动旧单计划。等待手机结果，未推进依赖其结果的Mac fetch。haha恢复窗口保持，数据线此刻可用于必要补导入；不需再次安装。
+
+---
+
+# 2026-11-07 手机批次入口未出现：撤回安装已核实结论
+
+Owner没有执行新批次；手机缺少批次入口，所贴报告仍为旧r5/006。此前Configurator exit0不能证明覆盖安装成功。已构建并验签build7，包内确认包含批次UI；CLI覆盖后读回仍为1，改用Configurator图形界面明确选择替换，操作结束后读回仍为1；CoreDevice交叉查询被手机锁屏阻止（12040/10003）。已请求Owner彻底关闭并重开SyncLab，仅确认新按钮，不执行计划。新手机批次仍NOT_RUN；Mac种子恢复结果保持，勿把旧r5报告计入r7。后续先核实设备更新/批次导入再启动手机测试。
+
+---
+
+# 2026-11-07 集中实机窗口：修复 Mac 启动前权限失败
+
+Owner已启动haha窗口；Configurator安装SyncLab和导入8份手机计划均成功，手机尚未执行本轮计划。旧Mac启动器在写App沙盒计划时被macOS拒绝（PermissionError，App尚未启动），原失败及目录保留。改用显式授权、每阶段令牌绑定的本机回传；App自己写私有日志，回传落盘精确ACK后才执行故意退出。新Mac包已实际启动并回传：connect及12条save共13PASS，首个sync报CK_4网络失败，原报告保留；未算通过。准备独立恢复计划，仅connect/sync/sync/snapshot，不重放save。恢复窗口 /private/tmp/SyncLab-Fault-Window-20261107-r7-recovery 已启动，4/4恢复命令PASS，同账户新进程保留全部12条事实且队列为空；原失败不改写。已请求手机执行00-phone-dependency-repair，等待其结果；手机已安装67aacb8版本保持不变，新增通道仅用于Mac启动器。
+
+本机原生64/64、Python工具23/23通过；独立本机HTTP/模拟启动器23/23通过，路径验证红例已修复，均不代表真实云故障通过。完整G1仍未通过，剩余场景等待真实设备执行。失败记录与验证日志见[本次窗口证据](Evidence/iCloudSyncG1/fault-window-20261107/)。无需手机重复安装，当前可拔线正常使用。下一步完成新Mac签名包后，由Owner在haha启动替换脚本一次，先核验Mac种子，再依次安排手机操作。
+
+---
+
+# 2026-11-07 剩余故障入口与集中设备窗口（本机及独立复核完成）
+
+Owner明确授权连续补齐并验证剩余入口，不在小阶段停等确认。新增Debug缓存账户离线入口、真实SDK内容/state/lease退出点、本地提交前后退出、旧ACK期间后继编辑、缺图/截断留证修复、恢复门竞态和账户变化等待。故障证据绑定原命令、账户分区及进程nonce；缺图诊断允许恢复继续，完整备份门禁不放宽。27阶段统一计划含原3份依赖/新图片场景；手机8份批次可一次导入后拔线，通过选择器逐步显式运行。Mac由haha启动一次固定计划监听器，原用户协调；不自动切系统账户。
+
+原生62项、工具19项、独立真实进程73/74退出及新进程恢复通过；双平台签名Debug与sim Release构建及实际签名检查通过。独立复核揭示身份混标、部分缺图恢复链、工具符号链接/旧报告重用和oracle中途漏证据等问题，已修并保留红例；独立完整27阶段合成正例通过、24项篡改负控全部拒绝、mock启动器8/8通过，无剩余must-fix。已将独立回归脚本接入SyncLab定向CI。工程准备不代表新真实云场景通过。[执行安排](ICLOUD_SYNC_G1_FAULT_WINDOW_ZH.md)，[本机证据](Evidence/iCloudSyncG1/fault-preparation-20261107/)。
+
+当前不需要手机连接，未安装/启动新包或访问真实云。真实新场景全部NOT_RUN；完整G1状态仍BLOCKED_ENV（缺最终真实运行证据），没有Production/merge/TestFlight授权。既有产品CI42365486504最终Release/Unit成功、smoke失败，不能用SyncLab定向成功覆盖。Mac窗口包已准备于/private/tmp/SyncLab-Fault-Window-20261107-r7；手机IPA及8份批次在/private/tmp/g1-fault-device-final，均验签通过且尚未安装/运行。候选67aacb83c1865a942cc499cf98370b90feb7a6c3已普通推送，定向CI42370130223 SUCCESS；原始产物核对62原生/19工具、27阶段合成正例、24负控、mock窗口8例及unsigned iOS构建均通过。新产品CI42370134054仍运行，未将其写为通过。当前准备交付一次Owner窗口：haha启动一次Mac脚本；手机首次安装/导入后可拔线，8次选择执行，必要时手动断网/恢复；只在haha切换A→B→A，末次短连线导出原报告。估计30–45分钟，账户登录可能另需10–20分钟，数据线约开始3–5分钟及结束2–5分钟。
+
+---
+
+# 2026-11-07 下一批测试工程：异常依赖及新图片集中计划
+
+Owner批准继续，要求减少手机占用及逐条操作。已新增仅Debug的离线批次生成器：三阶段分别16/10/4命令，Mac先种入删除依赖、缺祖先、传递缺失、依赖环/因果环及当前新head不可发布反例；手机一次点击先获取未修复快照再补齐依赖、上传第二个固定PNG；Mac最后取回。仅生成新目录、拒绝旧目录/符号链接；不自动安装、启动云或修改系统设置。新样本按hash/长度严格匹配固定bytes，不接受任意图片路径或私人图片。
+
+51项原生测试PASS；工具首轮8PASS/5ERROR（沙箱禁止loopback bind），按所需权限复验13PASS，失败原样保留。iOS/Mac签名Debug、sim unsigned Release及双实包签名检查PASS。[工程证据](Evidence/iCloudSyncG1/batch-preparation-20261107/)。独立审查发现重复run导出文件碰撞，已以完整dataset/run/stage摘要绑定planID修复；原1项失败保留，最终7项独立原生/实际CLI及14负控PASS，无剩余must-fix。最终51原生及双平台构建复验通过。三份计划与签名IPA已准备于/private/tmp/g1-next-batch-device-final，未安装，真实新批次运行仍NOT_RUN，手机不需连接。
+
+执行必须用从未运行的新合成dataset/zone，不能仅靠空本地快照认定远端没有图片；手机必须实际出现新image pending、ACK清空及Mac原字节取回证据。先前基础双向/冲突结论保留。接下来仍需补真实SDK进程退出点/旧ACK新编辑、断网与账户隔离/图片故障和restore竞态入口，再集中安排设备窗口，不以本批离线工程填完整G1通过。既有产品两项UI失败与Production授权边界保持。 [剩余批次与集中设备窗口安排](ICLOUD_SYNC_G1_REMAINING_BATCHES_ZH.md)。源码e8b1c3f已普通推送，定向CI42365482372已SUCCESS：原始产物核对原生51/51、工具13/13及unsigned iOS Simulator构建通过。本工程批次已完成，实际云场景和其余故障入口仍未关闭。
+
+---
+
+# 2026-11-07 双端真实冲突解决后收敛，原始手机报告已取回
+
+通过Configurator仅导出SyncLab文稿，六份手机原始报告已保存于本机私有目录，逐份验证原始plan摘要和所有command摘要；公开副本仅删除账户指纹。此前Owner粘贴来源限制已由直接取回原文件补足。手机006在sync后收到与Mac009完全相同的冲突快照/投影，再保存双父解决mutation，ACK清空pending；Mac010/011取回、012同进程重开、013快照均与手机006最终完整snapshot/projections精确一致，双方历史和原图保留。两端重开checkpoint各自保留。独立复核完成：40条结果（38 PASS、手机001 CK_3与Mac007 CK_2两条保留FAIL）、39个可用同run指纹相等、23项篡改负控全部拒绝，无must-fix。
+
+[本批原始脱敏证据](Evidence/iCloudSyncG1/dual-client-20261107/)。本组基础双向文字/图片及真实版本冲突→共同祖先→解决后收敛已取得证据，仍不是完整G1通过。首次手机CK_3和Mac冲突CK_2保留；进程崩溃/离线网络恢复/真实账户切换/特殊依赖时序/旧ACK新编辑/图片失败与restore-cloud race等未覆盖，不进入G2/G3或发布。Mac014 stop已PASS、完整快照不变且pending为空；随后临时loopback bridge受控SIGINT退出130并关闭监听。手机每份手动计划结束自动停止引擎。后续需新通道启动安排，不自行重置现有事实。
+
+定向CI42362750416 SUCCESS；产品回归42362754171最终FAIL，Release/Unit成功，smoke3PASS/2FAIL，仍为AppLaunchSmokeTests.swift:3317短名称42.333>25布局断言。当前清理及独立复核完成，停在本组真实运行批次边界，不宣称正式产品发布门禁通过。手机反向对象复用既有PNG hash，未单独证明iOS上传全新CKAsset；需列入后续覆盖。
+
+---
+
+# 2026-11-07 真实云端版本冲突已触发并保留双方修改
+
+Owner手机计划005上传ACK、pending清空后，Mac执行r5-007/008/009。007原结果FAIL CK_2，含真实SERVER_RECORD_CHANGED_MERGED事件；008重试PASS且pending空，009快照相同。精确验证完整快照等于原基础事实加双方同父修改，PNG保留；投影为conflict、两个候选完整保留、共同祖先preview，complete=false。[原始脱敏证据](Evidence/iCloudSyncG1/dual-client-20261107/)。首个partial failure不改写PASS，未据此声称单次sync无错。
+
+下一步手机计划006：connect→sync→snapshot（须见双方冲突）→save（新解决mutation的parents引用双方）→sync→sync→reopen→snapshot，随后Mac读取核验解决后收敛。当前仅准备导入，待Owner点击，解决与手机冲突接收仍NOT_RUN；完整G1未完成。定向CI成功，产品回归仍运行。
+
+---
+
+# 2026-11-07 基础双向真实往返通过，双端冲突验证进行中
+
+手机计划004的Owner导出内容显示save后仅object待发，sync获ACK并清空pending，store/engine同进程重开前后checkpoint相同、内容保留；原计划和七命令摘要均匹配。Mac随后真实执行r5-003 sync、004 sync、005 snapshot，三份完整快照与旧Mac013加手机计划004指定mutation精确一致，原图字节相同，ready投影完整、pending为空。已保存[Mac原始脱敏命令/结果](Evidence/iCloudSyncG1/dual-client-20261107/)。手机原文件仍待取回，来源明确为Owner导出粘贴，不把同进程重开称为崩溃恢复。此为基础双向往返，完整G1仍未验收。
+
+冲突用例：Mac r5-006已保存probe-conflict-mac-001，父为probe-ios-create-001，pending仅object-probe-ios-roundtrip，尚未sync。手机计划005从相同父新增probe-conflict-ios-001并上传；待Owner显式启动及结果后，才让Mac sync以验证真实serverRecordChanged、双方内容保留及最终收敛。不得提前上传Mac这份修改。所有数据仍为隔离合成数据，旧证据保留。
+
+---
+
+# 2026-11-07 手机从空库取回Mac合成数据，反向验证待执行
+
+Owner提供计划003的四条结果均PASS。原始计划和四命令摘要复算匹配；手机初始空库，sync后两对象/四mutation的字段、父关系及ready/deleted投影逐项与旧Mac013一致，68字节PNG原字节/长度/SHA256匹配；再次sync及snapshot内容不变，pending为空。[核对记录](Evidence/iCloudSyncG1/manual-engineering-20261107/ios-fetch-verification.json)。来源为Owner粘贴导出内容，设备原文件尚待批量取回。可确认此方向的空库云取回证据，不代表完整G1或双向验收。
+
+下一步计划004由手机新增独立合成对象（附固定PNG），sync两次、同进程store/engine reopen、sync及snapshot，再由Mac读取逐字段核验；尚待Owner显式启动。Mac已排队只读snapshot检查通道。定向CI已SUCCESS，产品回归仍运行。首次失败保留，账户指纹不写入公开证据。
+
+---
+
+# 2026-11-07 双端账户匹配，手机云端取回验证待执行
+
+Owner提供手机计划002导出JSON，connect PASS、初始envelopes/images/pending均空；与本地原始计划及命令摘要匹配，与r5 Mac真实结果账户指纹一致。仅保存脱敏[核对记录](Evidence/iCloudSyncG1/manual-engineering-20261107/ios-connect-retry-verification.json)，来源明确为Owner粘贴，计划002设备导出文件尚待取回。首次CK_3仍保留，不推定其具体根因。
+
+下一步计划003为connect→sync→sync→snapshot，取回既有合成dataset的完整mutation历史和68字节PNG后逐ID/原字节核验；尚未执行，不能宣称双端收敛。定向CI42362750416已SUCCESS；产品回归42362754171仍运行，既有UI失败未据此消除。
+
+---
+
+# 2026-11-07 Mac新连接通过，手机首次连接报网络不可用
+
+r5 Mac connect真实结果PASS；手机手动计划001已通过Configurator导出并核验原始计划摘要，FAIL CK_3（本地Apple SDK定义CKErrorNetworkUnavailable），无账户指纹且未启动云引擎。[手机原始结果（无账户标识）](Evidence/iCloudSyncG1/manual-engineering-20261107/ios-first-connect.json)。重复点击按设计读取原失败，不重新执行；账户匹配/双端同步仍NOT_RUN。已准备独立计划002，仅connect，保留001证据；请求Owner检查手机SyncLab联网许可及网络，再用新计划重试，不切换iCloud或重置设备。
+
+Owner已明确授权普通推送，43ea9e9已成功推至现有分支；自动审批阻断已解除。定向CI42362750416与产品回归42362754171已启动，尚未验收。此前结果保持，不进入发布。
+
+---
+
+# 2026-11-07 新版已安装并导入账户连接计划，待两端显式启动
+
+固定实现 `df3c081f72d5d86681f37c57ae236543ab45d3e8` 的签名Debug IPA已通过官方Configurator `install-app` 更新到选定iPhone，`install-doc` 已导入仅connect计划；两条命令exit0、单设备匹配，IPA摘要复算一致。[安装证据](Evidence/iCloudSyncG1/manual-engineering-20261107/device-install.json)。安装成功不代表手机执行成功。
+
+已准备 `/private/tmp/SyncLab-Probe-20261107-r5/Start-SyncLab.command`，haha专用权限及签名门禁保持；r5本机认证桥HTTP200，只有Mac connect排队，尚无结果。已请Owner在haha退出旧App并启动新脚本，保持会话后返回日常用户；手机打开新版SyncLab并点“启动导入的合成 Development 测试”。待导出手机结果，与新Mac结果核对同run账户指纹，匹配后才能导入同步计划。仍使用既有synthetic-g1-20261107-r4，不重置云事实。新手机运行/账户匹配/双端同步仍NOT_RUN。
+
+普通push被自动审批拒绝，理由为未识别可信用户消息中的明确远端源码上传授权；已请求Owner明确授权向现有yoCruzer/PersonalGrowthOS的codex/icloud-sync-g1分支（Draft PR #16）普通推送。未绕过，远端仍784c80c，新增源码CI未启动。此项不阻止本机/手机验证。旧真实Mac结果、工程验证及正式产品两项UI失败保持；不进入G2/G3或发布。
+
+---
+
+# 2026-11-07 G1手机安装已恢复，手动Debug测试入口就绪
+
+Owner完成Apple Configurator安装后，已通过官方“添加App→从我的Mac选取”成功安装既有签名SyncLab，并在设备App列表核验。devicectl仍为DDI12040，不能据安装成功宣称启动/云测试通过。
+
+已实现仅Debug的固定文稿合成计划入口，需Owner手机显式点击；权威journal改存非共享Application Support，计划/命令绑定身份、摘要与plan namespace，导出副本不能当作执行完成依据；取消、重入、进程锁和不可覆盖证据已验证。原生47/47、双平台签名Debug/实包校验、unsigned iOS Simulator Release通过；独立五项问题已修复，原样11/11、无云接缝4/4、Release1/1通过。[工程证据](Evidence/iCloudSyncG1/manual-engineering-20261107/README.md)。
+
+下一步更新手机Debug包并用官方install-doc导入仅connect计划，再由Owner点一次；Mac重新准备短期桥和启动包，用新run r5访问既有synthetic-g1-20261107-r4，先比对真实账户指纹，再开始双端数据往返。旧Mac13条真实结果保留，新的手机入口运行和完整G1仍NOT_RUN。当前候选固定源码后再安装，不重置既有合成事实。
+
+已授权的Configurator/SyncLab安装和Mac登记不重复询问；不准备/监督/抹除手机，不进入G2/G3/发布/Production。正式产品两项UI布局回归失败仍未解决。以下历史按当时事实保留。
+
+---
+
+# 2026-11-07 G1部分真实服务验证完成：Mac通过，iPhone开发镜像仍阻断
+
+Owner已在haha运行启动脚本，Mac账户访问和实际CloudKit Development读写开始执行。固定合成dataset下13条命令完成：文字/68字节原图、SDK发送确认、队列清空、持久checkpoint、同进程Store/Engine重开，以及独立对象新增→修改→逻辑删除。逐mutation/原字节验证、独立审查及20个篡改负控通过；[脱敏证据](Evidence/iCloudSyncG1/runtime-20261107/README.md)。这不是进程崩溃恢复、空库纯云重建或双端G1验收，未完成项保持NOT_RUN。
+
+iPhone已实际有线连接、配对且Developer Mode enabled；App安装被DDI personalization 12040/12051（CryptexKitHost.TatsuError4）拒绝。Owner确认重启完成、重新连线和首次解锁后仍复现。当前DDI检查usable/compatible、27B52；官方devicesupport更新exit70，No matching package。没有重置/抹除/退出iCloud或变更安全配置。已从相同已签名Debug实包准备本地IPA（非发行Archive/上传），Owner已授权安装Apple官方Configurator并只用添加App尝试；商店确认窗仅显示应用/账户与取消，Owner确认无确认按钮，退出重开商店后仍复现，工具未安装。安装本身也不等于启动参数和双端证据通过。
+
+实现源码2dfbafb的定向CI42332149355为PASS（原生39、工具13、unsigned iOS build）。产品回归42332546608为FAIL：Release/Unit成功，UI smoke3PASS/2FAIL短名称布局断言；42332154418被后续提交取消。正式产品和测试未改，失败未解决。
+
+整体G1仍BLOCKED_ENV/PARTIAL：不要求第二台iPhone；恢复点为App Store确认界面可用后的已授权Configurator安装，随后核验手机安装/测试启动/证据取回。不进入G2/G3或发布，不操作正式库/Production。probe-014停止云引擎并确认快照不变，临时loopback监听已关闭；下次需创建新通道/启动包后再启动haha客户端，勿直接复用旧脚本中的失效连接。所有既有授权保留，无需再次请求Mac登记或Configurator安装许可。以下历史按当时证据保留。
+
+---
+
+# 2026-11-07 G1测试入口就绪：待Owner在haha启动及iPhone开发连接
+
+Owner已确认haha普通用户登录测试iPhone同一iCloud，并切回原控制会话；该身份尚待两端实际CloudKit指纹核验。原用户无法无密码切换执行身份，因此没有跨用户sudo或复制凭据。已在独立SyncLab中加入默认关闭、仅Debug的受限合成测试入口：固定实验容器/synthetic-g1数据集、命令白名单、固定PNG，Mac只连接127.0.0.1临时认证通道，iPhone仅通过本App启动参数与本App Documents取回结果。
+
+请求/结果绑定run、dataset和原始指令摘要；不可覆盖journal明确保留中断状态；按dataset的OS进程锁防重复启动共享store。临时通道无Shell/任意文件路径/API透传；token仅原用户和haha可读，不放入命令行或仓库。单条命令PASS仅表示执行与快照完成，绝不等同云用例通过。
+
+定向原生39/39、Python13/13、Mac/iPhone签名构建及实包校验、unsigned Mac Release构建均PASS。已请Owner在haha中打开`/private/tmp/SyncLab-Probe-20261107/Start-SyncLab.command`后保留会话并切回；iPhone需连线解锁，最近App查询被CoreDevice4016拒绝。尚未安装手机；独立复核后仅排队一条Mac账户访问探测，尚未收到结果，没有save/sync指令，云数据读写未执行。独立审查新增证据问题已修正并复验，最终记录随本批提交。
+
+自动产品回归42327441520保留FAIL（Release/Unit成功、UI smoke3PASS/2FAIL短名称布局断言），不扩大G1范围或宣称发布门禁通过。下一步是真实账户指纹匹配与逐ID/原图字节往返，而非继续增加离线替代测试。
+
+最新实现提交`2dfbafbf0197c22d4c14661edb058d96cf3b0f97`已普通推送；[定向CI42332149355](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42332149355)完成SUCCESS：Xcode27.1、工具13/13、原生39/39、unsigned iOS Simulator构建通过。产物摘要见[CI记录](Evidence/iCloudSyncG1/probe-engineering-20261107/ci-accepted.json)。自动产品回归42332154418当前仍运行，不能覆盖既有失败结论。临时本机桥已复核可达，Mac账户探测尚无结果。
+
+
+---
+
+# 2026-11-07 G1隔离用户准备：普通用户已创建，待Owner登录iCloud
+
+Owner选定在Mac mini使用专用本地用户；已亲自完成管理员验证和密码设置。系统设置实际显示新建`haha`普通用户，日常管理员保留。已请Owner切换到该用户，登录测试iPhone相同的系统iCloud，再切回当前用户并保持测试用户会话登录。尚未核实iCloud登录/Development访问资格，不跨用户读取私人内容。
+
+已准备签名启动包`/private/tmp/PersonalGrowthOS-SyncLab-TestUser-20261107`（仅实验App、只读签名门禁和启动脚本，无私钥）。复制后签名PASS，启动器语法检查PASS，在原日常用户运行的负例按预期拒绝exit1。它只为新用户打开合成dataset的离线初始页面，连接/保存/同步仍需后续执行。是否能在测试用户中运行及控制须实际核验，不假定当前控制会话跨用户可用。
+
+定向CI42327436273已PASS。自动触发的正式产品回归42327441520已结束FAIL：Release/Unit成功，UI smoke 3PASS/2FAIL，两个可读性测试在同一短中文名称单行高度断言失败（42.333>25）。签名修复未改产品或产品测试；此失败已保存，尚未解决，不重写成PASS，不扩展本轮G1到产品UI修复。
+
+[测试用户准备](Evidence/iCloudSyncG1/resume-20261107/test-user-preparation.json) · [自动产品回归结果](Evidence/iCloudSyncG1/resume-20261107/product-regression-result.json)。实际云读写/E2仍NOT_RUN，当前下一步为Owner完成隔离账户登录，随后核验运行与云访问。
+
+---
+
+# 2026-11-07 G1续接：双平台签名已通过，Owner更正两端iCloud不同
+
+Owner明确授权登记当前Mac mini并生成开发描述文件，已执行：Mac Debug签名构建exit0、严格实包签名校验PASS。此前iOS实包签名PASS保持，实体iPhone开发连接探测也已exit0。不需要重建App ID、容器或证书。
+
+**以Owner最新更正为准：当前Mac与测试iPhone登录不同iCloud账户。** 先前“同账户”回复已被撤回，不得作为真实双端身份前提。Mac SyncLab只打开离线初始页，未调用connect/save/sync，随后已退出；手机未安装，真实CloudKit读写仍NOT_RUN。未切换任何系统账户。
+
+已向Owner询问隔离环境路线：优先Mac专用本地测试用户登录iPhone同一iCloud，或另一台已有同一账户的Mac；登录由Owner完成，不退出日常主账号。原生签名成果可复用，具体新用户/设备可访问性、运行资格仍需实际核验。等待该选择与准备期间不做依赖的云测试，不把账户不同视为需要第二台iPhone。
+
+[授权登记与账户更正证据](Evidence/iCloudSyncG1/resume-20261107/authorized-mac-and-account-correction.json) · [Mac签名核验](Evidence/iCloudSyncG1/resume-20261107/mac-signing-after-registration.json)。E1双平台签名子项通过，真实读写/E2仍NOT_RUN；整体BLOCKED_ENV，P1–P4边界保持。定向CI已通过，自动触发的既有iOS regression42327441520最近采样仍RUNNING。
+
+---
+
+# 2026-11-07 G1恢复：门户核实、iOS实包签名通过，Mac登记待Owner确认
+
+Owner已解锁Mac并登录Apple门户，授权继续推进G1。Safari原生控制可用；实际核实Team、SyncLab App的iCloud/CloudKit/Push、唯一实验容器关联及Development编辑权限。Development仅看到Users类型，尚未执行合成云往返；正式容器配置/Production未操作。
+
+iOS Debug自动签名构建成功；实包严格签名校验通过，已配对实体iPhone包含在profile内。首次门禁误拒绝Apple profile的服务通配符和无序环境列表，已限定修正、保留失败输出并新增8项正反例。签名通过不等于CloudKit可用，E1仍待真实读写。
+
+Mac mini签名构建exit65：本机未登记到开发团队，缺Mac App Development profile。已向Owner集中请求登记这台Mac并生成描述文件；等待答复前不登记。另待确认Mac/iPhone系统iCloud是否相同；初查实体iPhone已配对、Developer Mode enabled，但无线tunnel disconnected。未安装、未运行云测试、未切换账户。继续按iPhone+Mac路线，不要求第二台iPhone。
+
+[本轮脱敏证据](Evidence/iCloudSyncG1/resume-20261107/environment.json) · [执行报告](ICLOUD_SYNC_G1_EXECUTION_ZH.md)。整体仍为BLOCKED_ENV（具体未完成项如上），不进入G2/G3或发布。以下历史结果原样保留。
+
+签名修复已推送`8245f74`至Draft PR #16；独立限定复核30/30、仓库8/8通过。定向CI42327436273已PASS（签名门禁8/8、原生33/33、unsigned iOS build）；自动iOS regression42327441520仍RUNNING，未声明通过。
+
+---
+
+# 2026-11-06 G1设备路线澄清 — 不依赖第二台iPhone
+
+Owner现有设备为日用iPhone、Mac mini、Intel Mac，短期无法提供第二台iPhone。默认采用**iPhone + Mac mini**完成G1真实双客户端；Intel Mac为可选补充，不设为关键路径。若Mac mini为Apple silicon，后续另获发布授权后优先验证同一iOS TestFlight候选在iPhone与Mac运行。单台真实iPhone承担iOS后台/锁屏/网络/升级验证，Mac生成远端事件；不冒称双iPhone覆盖。
+
+[具体设备、账户隔离及后续发布验证路线](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md#owner现有设备下的推进路线2026-11-06追加)。签名/权限/系统与账户条件仍需核验，真实G1/P1–P4仍NOT_RUN；当前不安装日用设备、不切换系统账户、不发布。已有离线工程/CI/独立Review及Draft PR #16保持。后续阻断应按具体缺项报告，不能泛化为缺少第二台iPhone。
+
+---
+
+# 2026-11-06 iCloud Sync G1 — BLOCKED_ENV（离线工程交付）
+
+Owner已注册正式/SyncLab App与容器，并选择本轮仅离线工程与门禁交付。已从指定PR #15 HEAD `304a91984f17efc2c61b179f0a9e85a14ba87d95`创建`codex/icloud-sync-g1`，隔离worktree `/private/tmp/PersonalGrowthOS-icloud-g1`；原工作区未知修改保持。
+
+独立SyncLab iOS/Mac工程、SwiftData事实/outbox/inbox、CKSyncEngine/CKAsset接口、冲突/恢复门禁与合成快照已实现；正式产品源码、数据库、App Group及发布流程未改。协议34项及最终原生33项通过；实现提交`099ff1766854f8731fc82aeabe670a9f22dc26df`的[定向CI](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42067859222)33/33及unsigned iOS构建通过；独立进程退出/重放与独立Review修复完成，原失败证据保留。签名预检明确缺SyncLab iCloud/Push profile；门户关联与同测试账户双客户端尚未核验。证书存在，不能重复要求注册资源。
+
+[中文执行报告](ICLOUD_SYNC_G1_EXECUTION_ZH.md) · [环境与最小清单](ICLOUD_SYNC_G1_ENVIRONMENT_ZH.md) · [wire/Production前置门禁](ICLOUD_SYNC_G1_WIRE_SCHEMA_ZH.md) · [独立Review](ICLOUD_SYNC_G1_REVIEW_ZH.md)。真实Dev八项/账户切换/Production全部NOT_RUN，G1整体未完成。已普通推送并创建[Draft PR #16](https://github.com/yoCruzer/PersonalGrowthOS/pull/16)，base保持`codex/icloud-sync-v1-audit`；保留`BLOCKED_ENV`；不进入G2/G3、merge/tag/Archive/TestFlight/Production。恢复条件为合格Development签名与隔离双客户端；之后继续真实矩阵，不能用本地或CI代替。
+
+---
+
+以下历史交接保留，不替代当前G1边界。
+
 # 2026-11-05 iCloud Sync V1 — AUDIT_COMPLETE / IMPLEMENTATION_NOT_STARTED
 
 本轮 Owner 授权仅架构审计与隔离可行性验证，基线为远端 Draft PR #14 最新 HEAD `96f72339a1a3082c43018e06d6115dd93df1df97`，独立分支 `codex/icloud-sync-v1-audit`。没有使用 main，没有修改产品源码/工程/历史 schema/CI，没有操作真实用户库。

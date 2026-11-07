@@ -1,0 +1,68 @@
+Building for debugging...
+[Planning deferred tasks]
+[33 / 64]
+[34 / 65] SyncLab
+[44 / 114]
+[52 / 114]
+[54 / 114]
+[58 / 114]
+[60 / 114]
+[63 / 114]
+[67 / 114]
+[69 / 114]
+[70 / 114]
+[75 / 114]
+[83 / 114] SyncLab
+[94 / 115] LabReplay-product
+[97 / 117] SyncLab
+[98 / 117] SyncLab
+[105 / 118] LabReplay-product
+[107 / 118] SyncLabTests-product
+[121 / 151]
+[125 / 151]
+[127 / 151]
+[131 / 151]
+[132 / 151]
+[135 / 151]
+[136 / 151]
+[145 / 151] SyncLabTests-product
+[147 / 151] SyncLabTests-product
+Build complete! (7.95秒)
+Test Suite 'All tests' started at 2026-11-07 16:23:14.065.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 16:23:14.066.
+Test Suite 'ManualIndependentTests' started at 2026-11-07 16:23:14.066.
+Test Case '-[SyncLabTests.ManualIndependentTests testExportIsCopyImmutableAndRejectsSymlinkFIFOAndDirectory]' started.
+Test Case '-[SyncLabTests.ManualIndependentTests testExportIsCopyImmutableAndRejectsSymlinkFIFOAndDirectory]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.ManualIndependentTests testPlanImportBoundsIdentityAndTerminalFailureOrder]' started.
+Test Case '-[SyncLabTests.ManualIndependentTests testPlanImportBoundsIdentityAndTerminalFailureOrder]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.ManualIndependentTests testPlansCannotReuseEarlierSnapshotOrForeignResult]' started.
+Test Case '-[SyncLabTests.ManualIndependentTests testPlansCannotReuseEarlierSnapshotOrForeignResult]' passed (0.003 seconds).
+Test Suite 'ManualIndependentTests' passed at 2026-11-07 16:23:14.073.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.007 (0.007) seconds
+Test Suite 'ManualProbeTests' started at 2026-11-07 16:23:14.073.
+Test Case '-[SyncLabTests.ManualProbeTests testFixedImportRejectsSymlinkAndOversize]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testFixedImportRejectsSymlinkAndOversize]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testInterruptedAndChangedPlanNeverReplayOrOverwrite]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testInterruptedAndChangedPlanNeverReplayOrOverwrite]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testManualOptInIsNotAmbientAndDefaultCannotTouchStorage]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testManualOptInIsNotAmbientAndDefaultCannotTouchStorage]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testPlanBoundsAndWholeBatchValidationBeforeExecution]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testPlanBoundsAndWholeBatchValidationBeforeExecution]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testPreCancelledPlanDoesNotClaimFilesOrCloud]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testPreCancelledPlanDoesNotClaimFilesOrCloud]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testReportIdentityAndCompletionCannotBeForged]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testReportIdentityAndCompletionCannotBeForged]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testSameCommandInDifferentPlansHasIndependentJournalAndIdentity]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testSameCommandInDifferentPlansHasIndependentJournalAndIdentity]' passed (0.004 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testUntrustedExportsCannotReplacePrivateEvidence]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testUntrustedExportsCannotReplacePrivateEvidence]' passed (0.001 seconds).
+Test Suite 'ManualProbeTests' passed at 2026-11-07 16:23:14.082.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.009 (0.009) seconds
+Test Suite 'SyncLabTests.xctest' passed at 2026-11-07 16:23:14.082.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.015 (0.016) seconds
+Test Suite 'All tests' passed at 2026-11-07 16:23:14.082.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.015 (0.016) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

@@ -1,0 +1,29 @@
+{
+  "dateUTC": "2026-11-07T02:54:44.950779+00:00",
+  "files": {
+    "Experiments/iCloudSyncG1/Sources/SyncLab/DevelopmentProbe.swift": {
+      "sha256": "d67cf7db7fcd2de440cc61b4dbdedbf555349223a5874d28aa80ad0ce1b04cc8",
+      "copy": "review-snapshot-DevelopmentProbe.swift"
+    },
+    "Experiments/iCloudSyncG1/App/SyncLabApp.swift": {
+      "sha256": "694289f4d91d53bae88bb75490c87fb65898239e4987f286f7014ead2a0b978d",
+      "copy": "review-snapshot-SyncLabApp.swift"
+    },
+    "Experiments/iCloudSyncG1/Tools/probe_bridge.py": {
+      "sha256": "26f9a3c46b8b4683620e399d2d237cf245d9a74ef51ae8eb61c8b5dff2fc7b82",
+      "copy": "review-snapshot-probe_bridge.py"
+    },
+    "Experiments/iCloudSyncG1/Tools/prepare_probe_package.py": {
+      "sha256": "7f287d1378c6bb0d5f2bcf521e3f9251bacbe455e10ecaada9c47ec3777985f4",
+      "copy": "review-snapshot-prepare_probe_package.py"
+    },
+    "Experiments/iCloudSyncG1/Tools/test_probe_bridge.py": {
+      "sha256": "5b1920583b02b90e755f6597ec684ba2b707c1aa61bd1b98c798a4b97a778632",
+      "copy": "review-snapshot-test_probe_bridge.py"
+    },
+    "Experiments/iCloudSyncG1/Tests/SyncLabTests/DevelopmentProbeTests.swift": {
+      "sha256": "b35d68e389fa6e988e7938b8ad9d1e555e93a9d5fc269dd8a7827c8ed493a32c",
+      "copy": "review-snapshot-DevelopmentProbeTests.swift"
+    }
+  }
+}

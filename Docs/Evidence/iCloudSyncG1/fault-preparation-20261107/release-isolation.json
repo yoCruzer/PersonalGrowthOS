@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "checks": {
+    "debug": {
+      "ProbeCloudFault": true,
+      "FaultBatch": true,
+      "ManualProbeBundle": true
+    },
+    "release": {
+      "ProbeCloudFault": false,
+      "FaultBatch": false,
+      "ManualProbeBundle": false
+    }
+  },
+  "scope": "Actual Debug dylib symbol presence versus Release build; initial stub-only symbol check failed and was corrected; no runtime cloud operation"
+}

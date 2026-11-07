@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-07",
+  "runID": "probe-run-20261107-r4",
+  "dataset": "synthetic-g1-20261107-r4",
+  "sourceCommit": "2dfbafbf0197c22d4c14661edb058d96cf3b0f97",
+  "platform": "macOS",
+  "commandCount": 13,
+  "commands": [
+    "probe-001-mac-connect",
+    "probe-002-mac-save-base",
+    "probe-003-mac-sync-base",
+    "probe-004-mac-reopen",
+    "probe-005-mac-sync-after-reopen",
+    "probe-006-mac-lifecycle-create",
+    "probe-007-mac-lifecycle-sync-create",
+    "probe-008-mac-lifecycle-edit",
+    "probe-009-mac-lifecycle-sync-edit",
+    "probe-010-mac-lifecycle-delete",
+    "probe-011-mac-lifecycle-sync-delete",
+    "probe-012-mac-lifecycle-reopen",
+    "probe-013-mac-lifecycle-sync-after-reopen"
+  ],
+  "sameAccountFingerprintAcrossCommands": true,
+  "privateRawResultSHA256": {
+    "probe-001-mac-connect.json": "a7fcfe5ec0462dbb7a2619e500eb2785126e80645ec92ad0785f1971dc977148",
+    "probe-002-mac-save-base.json": "82d769006eb10af95575a4a2ebc6306b78e247b8f269accc889c34e1cf801ff8",
+    "probe-003-mac-sync-base.json": "6083f0b16d6d54daaa5a5cfbdcd5f04496e5e120c114b1e126fd0ccd7b45e455",
+    "probe-004-mac-reopen.json": "12dbf18349a33726895fbe61b71d7089fa3e549263c6ed8ae30e692b5baa2bc3",
+    "probe-005-mac-sync-after-reopen.json": "439228984591114e5ba13f2c0d574af0038348777d520cf4f23bd3c321514bb5",
+    "probe-006-mac-lifecycle-create.json": "5728863387c5eccb28b03581e194b5c34ae100cd814d7e3f5ee326e966dfbda0",
+    "probe-007-mac-lifecycle-sync-create.json": "5e6df2fd5479470bb66f6b3a2312d0278822705695fdf8781780608661b98d0e",
+    "probe-008-mac-lifecycle-edit.json": "343758efd35724ede0aa4a978dd304a2c77c31f228891d382b4057914b613b29",
+    "probe-009-mac-lifecycle-sync-edit.json": "e5d9effb14a007908d5d308d33c738742db06a283e571b9821ddbff76cf76c54",
+    "probe-010-mac-lifecycle-delete.json": "924ab31f0668b6fd0d97e5ab39ac39681ce15bb08751ba944d38e9f3d0103c72",
+    "probe-011-mac-lifecycle-sync-delete.json": "5f536497ad64f2480a1d9e6416d04763b9f7fdfa0ce347d2ccacd5dc5d20aa38",
+    "probe-012-mac-lifecycle-reopen.json": "84b8b66b25ade5030781483dc682f60a943965d75cc4eaa024ebbc9c3cb709d4",
+    "probe-013-mac-lifecycle-sync-after-reopen.json": "de487ca0113a214e7ac1643d3f9d7ae9aa3c10d0375a361f0bdbab3afc03d5f7"
+  },
+  "scope": "Single Mac account access, synthetic save, CKSyncEngine ACK, durable state, in-process Store+Engine reopen, edit and logical delete. Not two-client convergence or fresh-cloud reconstruction.",
+  "iPhone": {
+    "wiredConnection": "connected",
+    "pairing": "paired",
+    "developerMode": "enabled",
+    "ddiServicesAvailable": false,
+    "installErrorCodes": [
+      12040,
+      12051
+    ],
+    "underlyingDomain": "CryptexKitHost.TatsuError",
+    "underlyingCode": 4,
+    "preferredDDIUsable": true,
+    "preferredDDIBuild": "27B52",
+    "deviceSupportUpdateExit": 70,
+    "deviceSupportUpdateError": "No matching device support package for tools version 27B52",
+    "next": "Resume authorized official Configurator installation once App Store confirmation sheet works; no repeated device reset/account setup.",
+    "installationSucceeded": false,
+    "existingInstallationStatus": "Not determined; DDI error prevented app inventory",
+    "ownerConfirmedRebootCompleted": true,
+    "postConfirmedRebootInstallExit": 1,
+    "postConfirmedRebootErrorCodes": [
+      12040,
+      12051
+    ]
+  },
+  "NOT_RUN": [
+    "iPhone runtime and account fingerprint match",
+    "two-client convergence",
+    "fresh-empty-store cloud reconstruction",
+    "real cross-client CAS",
+    "controlled old ACK/new edit race",
+    "actual process crash/replay",
+    "A-B-A account switching",
+    "image fault injection against real service",
+    "restore/cloud race"
+  ],
+  "productRegression": {
+    "runID": 42332546608,
+    "conclusion": "failure",
+    "release": "success",
+    "unit": "success",
+    "smoke": {
+      "total": 5,
+      "passed": 3,
+      "failed": 2,
+      "assertion": "Short Chinese name stays on one line",
+      "location": "AppLaunchSmokeTests.swift:3317"
+    },
+    "supersededRun": 42332154418,
+    "supersededConclusion": "cancelled"
+  },
+  "independentReview": {
+    "commandsVerified": 13,
+    "tamperNegativeControlsRejected": 20,
+    "mustFixRemaining": 0,
+    "scope": "Single Mac only; no independent server query or fresh-store reconstruction"
+  },
+  "alternateInstall": {
+    "officialDocumentation": "https://help.apple.com/xcode/mac/current/en.lproj/devade83d1d7.html",
+    "ownerAuthorizedConfigurator": true,
+    "preparedIPA": {
+      "sourceCommit": "2dfbafbf0197c22d4c14661edb058d96cf3b0f97",
+      "scope": "Existing signed Debug SyncLab only, Development environment, no archive/distribution/upload performed",
+      "ipaSHA256": "5314cedd1e6063347258d7b21e58e65fc07a27ee4d95befc0522fe2c764160e4",
+      "executableSHA256": "6a1ccdaace12197ddf88ed42d92825c74c49474fed70fdecc1ef07b09e4835f9",
+      "defaultCloudAccess": "disabled",
+      "manualInstallation": "Not attempted; Apple Configurator absent",
+      "runtimeLimitation": "Existing probe needs development launch environment. Alternate install alone does not provide automated launch/result retrieval."
+    },
+    "status": "BLOCKED_APP_STORE_CONFIRMATION_SHEET",
+    "observed": "Official app GET reached blank confirmation sheet with app/account and Cancel only; Owner saw same; App Store quit/reopen/retry reproduced; not installed."
+  },
+  "cleanup": {
+    "command": "probe-014-mac-stop",
+    "status": "PASS",
+    "snapshotPreserved": true,
+    "pendingKeys": [],
+    "temporaryLoopbackListener": "terminated",
+    "note": "halted field is false after driver=nil; not used as a standalone proof. STOP calls await driver.stop() and keeps existing synthetic store."
+  }
+}

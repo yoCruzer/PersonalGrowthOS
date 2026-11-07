@@ -1,0 +1,674 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project Experiments/iCloudSyncG1/SyncLab.xcodeproj -scheme SyncLab -configuration Debug -sdk iphonesimulator -destination "generic/platform=iOS Simulator" -derivedDataPath /private/tmp/pgos-g1-ios-build CODE_SIGNING_ALLOWED=NO build
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+    SDKROOT = iphonesimulator27.2
+
+2026-11-06 00:21:08.863 xcodebuild[29615:41981209] [MT] IDESchemeActionsInvocationRecord: Device <DVTiOSDeviceSimulatorPlaceholder: 0x7bb3d25f40 (Any iOS Simulator Device | undefined_arch)> is missing operatingSystemVersion, operatingSystemVersionWithBuildNumber.
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'SyncLab' in project 'SyncLab' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 850a2abc4211b62c93bab3527dc0656d
+Build description path: /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/XCBuildData/850a2abc4211b62c93bab3527dc0656d.xcbuilddata
+CreateBuildDirectory /tmp/pgos-g1-ios-build/ModuleCache.noindex
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/ModuleCache.noindex
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/Build/Products
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/Build/Products
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex
+
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -o /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/CompilationCache.noindex
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/CompilationCache.noindex
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/PrecompiledHeaders
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/PrecompiledHeaders
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/ExplicitPrecompiledModules
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab-828f6dc78e81430cc19c8159aa5db413-VFS-iphonesimulator/all-product-headers.yaml
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab-828f6dc78e81430cc19c8159aa5db413-VFS-iphonesimulator/all-product-headers.yaml
+
+CreateBuildDirectory /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/SyncLab.xcodeproj
+    builtin-create-build-directory /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-non-framework-target-headers.hmap (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibPath-normal-x86_64.txt (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibPath-normal-x86_64.txt
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibPath-normal-arm64.txt (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibPath-normal-arm64.txt
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibInstallName-normal-x86_64.txt (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibInstallName-normal-x86_64.txt
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.DependencyStaticMetadataFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.DependencyMetadataFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.DependencyMetadataFileList
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.hmap (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.hmap
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibInstallName-normal-arm64.txt (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibInstallName-normal-arm64.txt
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_const_extract_protocols.json (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_const_extract_protocols.json
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftFileList
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftConstValuesFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.LinkFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.LinkFileList
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-OutputFileMap.json (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-OutputFileMap.json
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.LinkFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.LinkFileList
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftConstValuesFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-OutputFileMap.json (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-OutputFileMap.json
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_const_extract_protocols.json (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_const_extract_protocols.json
+
+WriteAuxiliaryFile /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftFileList (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    write-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftFileList
+
+MkDir /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /bin/mkdir -p /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app
+
+ProcessInfoPlistFile /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Info.plist /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/App/Info.plist (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-infoPlistUtility /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/App/Info.plist -producttype com.apple.product-type.application -genpkginfo /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -o /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Info.plist
+
+Ld /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/__preview.dylib normal arm64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -Os -Xlinker -no_warn_duplicate_libraries -L/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -install_name @rpath/SyncLab.debug.dylib -Xlinker -dead_strip -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_dependency_info.dat -o /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/__preview.dylib
+
+Ld /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/__preview.dylib normal x86_64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -Os -Xlinker -no_warn_duplicate_libraries -L/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -install_name @rpath/SyncLab.debug.dylib -Xlinker -dead_strip -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_dependency_info.dat -o /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/__preview.dylib
+
+CreateUniversalBinary /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/__preview.dylib normal arm64\ x86_64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/__preview.dylib /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/__preview.dylib -output /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/__preview.dylib
+
+SwiftDriver SyncLab normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name SyncLab -Onone @/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -index-store-path /tmp/pgos-g1-ios-build/Index.noindex/DataStore -swift-version 5 -I /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache -output-file-map /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -sdk-module-cache-path /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/pgos-g1-ios-build/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -emit-const-values -const-gather-protocols-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/x86_64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-Swift.h -working-directory /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1 -experimental-emit-module-separately -disable-cmo
+
+SwiftDriver SyncLab normal arm64 com.apple.xcode.tools.swift.compiler (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name SyncLab -Onone @/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -index-store-path /tmp/pgos-g1-ios-build/Index.noindex/DataStore -swift-version 5 -I /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache -output-file-map /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -sdk-module-cache-path /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/pgos-g1-ios-build/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -emit-const-values -const-gather-protocols-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources-normal/arm64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/arm64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-Swift.h -working-directory /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1 -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_AvailabilityInternal-146LD2LTQQ1V0GNBT3NZIITH3.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdarg-83W8DY3A7L68FVW2RDIYADNDX.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ptrauth-39IDW3IBZIOSPBP30TDEDC9C4.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_SwiftConcurrencyShims-8AZJLSM61IFUCQRMGU1O8AT9F.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stddef-AEHECRFVRDA9DW4JC64ZTXA4R.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ptrcheck-3ZM5AWRGCEZMAPSCVF1F5JGP2.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_float-8C11IRK1OLLZIDL4T1U5BLFX1.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdbool-DDSQJES8KQMKDUVTX632GZQTH.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/DeveloperToolsSupport-D2QA3D42B1LFWET62QVG4AV7V.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/SwiftShims-24ND00EAIYQU52ZGPEQ9J7YPX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdbool-3NL2WJM25ISCHMY00OKPBC88O.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_float-DRTZIVT43AAGBXBDOLSUEJ0YC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ptrcheck-1OIQM2WZNHSBKS39QEGQBIGYK.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_AvailabilityInternal-6J4BS8PAE7QHDOMJN7AHOQOKW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/DeveloperToolsSupport-RO3QF1HLG2B5YDMKPG154GFE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_SwiftConcurrencyShims-VASYER0DT11QBP7OHMHJTZAL.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stddef-486E7FL0BGG0F569PXISR5WUY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/SwiftShims-AY8RIK1HV1E89MV4CB2VBTNJQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdarg-448YVXM34DHX69WOWW1OFDM59.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ptrauth-1CVQJYY4HM5HQFR5NLYK1L8EF.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_DarwinFoundation1-9TFAKP9LECV063OJHB72C3WIV.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_DarwinFoundation1-6TM8C5ZRO6XW7O2FN7HDUQEF0.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_limits-3I6BQF21RUMYU472JX18ZW7JC.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_DarwinFoundation2-EAHC786G0X62SU51Q9XGJEJ22.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_limits-3M8F2TE6QCDSL9C5AHYZTWCA1.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_DarwinFoundation2-CX944OSJ903HX0UZF5E9V28XU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/string_h-3IMV33IWEN046HTFG1SXDOO1W.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_tgmath-9XT8WQGU3YYT8VNV0AZR0F44C.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdint-1FQKC2SXO16BPVOLSGOC0W8HF.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/sys_types-AKRQ6OJ1RTVR1QHHF2QYCVMGD.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_DarwinFoundation3-E1B0F659O5BXA8ACX1E8XOGWM.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdatomic-9LB3VNN9GTAJ23NM015GEKOKB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/sys_types-14UYBU5YOU60O3P2212V3K6V4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_tgmath-BBFB170FDPULOYHV5NZF56V9V.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdint-ZIR5KNFC8JT9T23WJCUYUOZI.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/string_h-81M88O029L2URD0S30MOBGJR7.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_stdatomic-5JQKPEO9H7QBGGDC0AB7L0B4S.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_intrinsics-9IESAFXIOM08BXK6TEOTHBTH9.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_DarwinFoundation3-51639SZPF5RC7J84RD1SK7IJN.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_inttypes-A2P9NP303X8GHCOO5FVWX6JCH.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_intrinsics-6KC574XFP4V0QX1V2DXPQXDZY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_Builtin_inttypes-6IPIJE7XLSPSDXU88C9GY0DNE.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Darwin-47SP734LCQAUIXWVKQWDNGXY2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Darwin-C8MMN8Z1P46A0G1FMME7CR0UJ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/simd-5FOCSZ2XDD4130P7ZBJUXF1NE.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ObjectiveC-38DRYKJADSW80D8DVXI3UDHEK.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/MachO-2TAL2JO166ROYDLXUSQY1ZBQ4.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/simd-AGQP7S07VXL0VNWPKDPVKJ9OV.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ObjectiveC-5JQJ50G8S84PWUA9E1BS9W0J3.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/MachO-EF2EITBNFAK5TXNUVMW2Y26YY.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/os_object-1WLVD9INT5D3E766COOQRJXGP.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/os_object-2WO2OJNCA855DYPJKFDI273TC.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/os_workgroup-4JH7AL3X9QQ9HFZVEF8EIEEUT.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/os_workgroup-9KOLVL9BOSE7YATMOGAJUG9IF.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Dispatch-C59DO9JWL5TD7RAY28VTK4DVX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Spatial-4SMW18NQKG3CAR3UADLPZ0UC8.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Dispatch-ICU2JROB33PS9YF74KMG5CQ1.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreFoundation-E6NYG0VF71LYSN8YEDXS6WMXN.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/XPC-A98K0KLYPGRGWY33XFCJIS67V.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/os-E3GFH1JO7WO6F5E36FVW1W0ZU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/XPC-5VIHWBGK6C09NFKSFQ7SCX585.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreFoundation-C97PKVI7JPN2XP5L86A4FWU0W.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Spatial-1OKST8K9X9W02MOV1129ST2GT.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Security-57S23QCGGN9C28HB3T4LOTXHQ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreGraphics-599NDY9S6NLXCGKLTM8D5YDUP.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreAudioTypes-BBPAQKM5A8GEEGIBD7WV1B5RF.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CFNetwork-A3J8BF84IY72ADP206FTI45NH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/os-4TPGYL25638EUV0HQPW4B0PZK.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreAudio-23V4XWZRQ8F8TD48S8YXW6V08.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Foundation-6JPAPRLLZTWT1K5YVP2WAKKDY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Security-2KVVL884VIMGA0KEFL9RVG4KV.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreAudioTypes-14BG04RAFAEAXCJEO8IOR67IL.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CFNetwork-6W8NHZGUQVVAJSWTLIJ9Z2WST.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreGraphics-5GM36RF4EJ5GIFDR2S3X8V75M.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreText-9XXDJJ0OG6L54S1INIJGCMAQC.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ImageIO-BVRMBI1U3L3ZZGW1HAAMR8RD0.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreAudio-AKS74481AETK3H26H3C7GTBTS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/ImageIO-6Z7NAYNRTKSH3TN1PCNH7A5V.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreText-BL5VP1EEXFW43VXI2WXRGYYRN.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Foundation-CJKZL41J5A1IAZA7YSD7NPWAA.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/OpenGLES-B6I8DDCK951UFDAFCMLXM9GQD.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreTransferable-8L5SG9AFDCY6HD5XZC8CYAFPB.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/DataDetection-DRHCH7P835CKME8U2OVUTE82A.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/OSLog-7E3DOT0TFCXCEZWJ27BJDIG9J.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/IOSurface-11WGAEDJQN2VTK28XBEXRV15O.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UIUtilities-A24ZL67N2TZA2I68Y90EGMYLQ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/FileProvider-7LF0MZK7LAZXU83F54BJBBZXH.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UserNotifications-26WKQYMG8EEBOLAHJXP6KFI1W.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/LocalAuthentication-8PF790QEYONX70EA2LI05VXXV.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreData-CJZH2S6CWD3C0RGVCA5JTRO3W.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_LocationEssentials-EOEUA9TJ5PN9GVRF0DUT38XCR.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Symbols-DYJ0M078D6ZDGBZ0TLCJ3J8P2.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Accessibility-3BB8LUY4ORZ8R0R0TH5IIT1EG.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UniformTypeIdentifiers-ERQEK8JXZBIPZKCOHQWWCV4LD.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Metal-CQBREP47F115OVVQN8P4BTY3H.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreLocation-87ZEEJGDIE00WTJPHGDYGLYAY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UserNotifications-4MMUOSIRGW7FM6IMNQ8YLCYTO.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/LocalAuthentication-F1SN1SWYAAF6NSXBUJ9E3WD5F.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Symbols-28PWEI62UYGSYCZ3YN8DMXGNY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/OSLog-4NVXG2NCL9SJ64GAKYC9U4J3B.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UIUtilities-9F75O7QVB0096JR189T534CYF.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreData-1KIG1H5D9LDB2ELNGT2WX8JA4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/DataDetection-DWYDNG9J605SZNV7E1GJMBU5Q.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/IOSurface-D93H0QNW0N6PSD43499BRVNNC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UniformTypeIdentifiers-2A3SOL3KM2QLV7NNBMPE4TWVC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Accessibility-BI83WNWOLN0X7V5QVUTDUQXXC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/_LocationEssentials-R6696GQ854E2PALLTJF34V14.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreTransferable-7P0HSO2AH2IYYC5XJUWK2EF1N.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/OpenGLES-DXG8DMYYGIOL0QTKBM1QLZORL.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CloudKit-BRTP7VYMOAA8SZD55QQ5M0DMW.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreMotion-16Q1E0YZ1RPPHYL0PPHNOZSER.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/FileProvider-BZXVT97F9XIUK8CXZ46KN715B.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/Metal-ERWPLL1NMWRK4C76IB01U1TPT.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreVideo-3HTDRGFXY91TQOG21BV115LB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreLocation-298OD0W08ASEWGZDR7THJREGU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreMedia-1RVIINZQEIM4M2WX88Q6OIU0Q.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreImage-4FKPWR5X5ONZ5LQ66Q6RCFEVF.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/QuartzCore-1NJTBNHL8GONAVKOLQEYK2T6S.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CloudKit-C9Z5VONOQ8PITPSZQRUMQ1K26.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreMotion-ALRLPUQZMZVSS77PRU8FLQYH6.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreVideo-EV5GGWKXZDHU61827E6EF4I2F.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/SwiftUICore-377B4MEG9VE4XNAUUNSUU3PXA.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UIKit-AH6PFRLZCAG8UXQ130UCGRMFM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/QuartzCore-CKRPUKNDYI3DZL19J90M9O597.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreImage-7IWEY5AL9ARP400FT96JSUTKE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/CoreMedia-5W6BC9X7FK0N3MS99P6SBER5W.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/SwiftUICore-5AXCFZROYFVKCMCNL51REXELU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/UIKit-4T52BBIJ0ND8KDUGSZH4EDU0W.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/SwiftUI-AMO6GYZKFA78FGZMNJASDFEKF.pcm
+
+SwiftCompile normal x86_64 Compiling\ Store.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Store.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal x86_64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Store.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile Store.swift
+
+SwiftCompile normal x86_64 Compiling\ SyncLabApp.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/App/SyncLabApp.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal x86_64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/App/SyncLabApp.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile SyncLabApp.swift
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ SyncLab (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal x86_64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    
+
+SwiftCompile normal x86_64 Compiling\ Cloud.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Cloud.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal x86_64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Cloud.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile Cloud.swift
+
+SwiftCompile normal x86_64 Compiling\ Protocol.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Protocol.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal x86_64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Protocol.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile Protocol.swift
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules/SwiftUI-DRJEXT2TJC65ZWZMZKQI7DZWK.pcm
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ SyncLab (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal arm64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    
+
+SwiftCompile normal arm64 Compiling\ Protocol.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Protocol.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal arm64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Protocol.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile Protocol.swift
+
+SwiftCompile normal arm64 Compiling\ SyncLabApp.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/App/SyncLabApp.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal arm64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/App/SyncLabApp.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile SyncLabApp.swift
+
+SwiftCompile normal arm64 Compiling\ Store.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Store.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal arm64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Store.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile Store.swift
+
+SwiftCompile normal arm64 Compiling\ Cloud.swift /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Cloud.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftCompile normal arm64 /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Cloud.swift (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-SwiftPerFileCompile Cloud.swift
+
+SwiftDriverJobDiscovery normal x86_64 Emitting module for SyncLab (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriver\ Compilation\ Requirements SyncLab normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name SyncLab -Onone @/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -index-store-path /tmp/pgos-g1-ios-build/Index.noindex/DataStore -swift-version 5 -I /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache -output-file-map /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -sdk-module-cache-path /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/pgos-g1-ios-build/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -emit-const-values -const-gather-protocols-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/x86_64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-Swift.h -working-directory /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1 -experimental-emit-module-separately -disable-cmo
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/x86_64-apple-ios-simulator.abi.json /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.abi.json (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.abi.json /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/x86_64-apple-ios-simulator.abi.json
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/x86_64-apple-ios-simulator.swiftdoc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftdoc (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftdoc /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/x86_64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/x86_64-apple-ios-simulator.swiftmodule /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftmodule (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftmodule /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/x86_64-apple-ios-simulator.swiftmodule
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftsourceinfo (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftsourceinfo /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for SyncLab (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriver\ Compilation\ Requirements SyncLab normal arm64 com.apple.xcode.tools.swift.compiler (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name SyncLab -Onone @/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -index-store-path /tmp/pgos-g1-ios-build/Index.noindex/DataStore -swift-version 5 -I /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache -output-file-map /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -sdk-module-cache-path /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/pgos-g1-ios-build/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -emit-const-values -const-gather-protocols-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources-normal/arm64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/arm64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-Swift.h -working-directory /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1 -experimental-emit-module-separately -disable-cmo
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/arm64-apple-ios-simulator.swiftdoc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftdoc (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftdoc /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/arm64-apple-ios-simulator.swiftmodule /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftmodule (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftmodule /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/arm64-apple-ios-simulator.abi.json /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.abi.json (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.abi.json /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+SwiftMergeGeneratedHeaders /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/SyncLab-Swift.h /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-Swift.h /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-Swift.h (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-swiftHeaderTool -arch arm64 /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-Swift.h -arch x86_64 /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-Swift.h -o /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/SyncLab-Swift.h
+
+Copy /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftsourceinfo (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks -rename /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftsourceinfo /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+SwiftDriverJobDiscovery normal arm64 Compiling Protocol.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling Protocol.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriverJobDiscovery normal arm64 Compiling Store.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriverJobDiscovery normal arm64 Compiling Cloud.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling Store.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling Cloud.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SyncLabApp.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling SyncLabApp.swift (in target 'SyncLab' from project 'SyncLab')
+
+SwiftDriver\ Compilation SyncLab normal arm64 com.apple.xcode.tools.swift.compiler (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name SyncLab -Onone @/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -index-store-path /tmp/pgos-g1-ios-build/Index.noindex/DataStore -swift-version 5 -I /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache -output-file-map /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -sdk-module-cache-path /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/pgos-g1-ios-build/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -emit-const-values -const-gather-protocols-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources-normal/arm64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/arm64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab-Swift.h -working-directory /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1 -experimental-emit-module-separately -disable-cmo
+
+SwiftDriver\ Compilation SyncLab normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name SyncLab -Onone @/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -index-store-path /tmp/pgos-g1-ios-build/Index.noindex/DataStore -swift-version 5 -I /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -c -j12 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/pgos-g1-ios-build/SDKStatCaches.noindex/iphonesimulator27.2-24B8118-cc78df9d8a9de6526dea716b1c70fd8e.sdkstatcache -output-file-map /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/pgos-g1-ios-build/ModuleCache.noindex -sdk-module-cache-path /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/pgos-g1-ios-build/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -emit-const-values -const-gather-protocols-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_const_extract_protocols.json -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-generated-files.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-own-target-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-all-target-headers.hmap -Xcc -iquote -Xcc /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-project-headers.hmap -Xcc -I/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources-normal/x86_64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources/x86_64 -Xcc -I/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/DerivedSources -emit-objc-header -emit-objc-header-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab-Swift.h -working-directory /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1 -experimental-emit-module-separately -disable-cmo
+
+Ld /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab.debug.dylib normal arm64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -Os -Xlinker -no_warn_duplicate_libraries -L/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -filelist /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.LinkFileList -install_name @rpath/SyncLab.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_lto.o -rdynamic -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.swiftmodule -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -o /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab.debug.dylib
+
+Ld /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab.debug.dylib normal x86_64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -Os -Xlinker -no_warn_duplicate_libraries -L/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -filelist /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.LinkFileList -install_name @rpath/SyncLab.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_lto.o -rdynamic -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.swiftmodule -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -o /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab.debug.dylib
+
+ConstructStubExecutorLinkFileList /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-ExecutorLinkFileList-normal-x86_64.txt (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    construct-stub-executor-link-file-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-ExecutorLinkFileList-normal-x86_64.txt
+note: Using stub executor library with Swift entry point. (in target 'SyncLab' from project 'SyncLab')
+
+CreateUniversalBinary /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab.debug.dylib normal arm64\ x86_64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab.debug.dylib /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab.debug.dylib -output /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab.debug.dylib
+
+ConstructStubExecutorLinkFileList /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-ExecutorLinkFileList-normal-arm64.txt (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    construct-stub-executor-link-file-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'SyncLab' from project 'SyncLab')
+
+Ld /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab normal x86_64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios17.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -Os -Xlinker -no_warn_duplicate_libraries -L/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -rdynamic -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibPath-normal-x86_64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibInstallName-normal-x86_64.txt -Xlinker -filelist -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-ExecutorLinkFileList-normal-x86_64.txt /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab.debug.dylib -o /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab
+
+Ld /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab normal arm64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk -Os -Xlinker -no_warn_duplicate_libraries -L/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -F/tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -rdynamic -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab-ExecutorLinkFileList-normal-arm64.txt /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab.debug.dylib -o /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab
+
+GenerateDSYMFile /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app.dSYM /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab.debug.dylib (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    export PATH\=/Applications/Xcode.app/Contents/SharedFrameworks/SwiftBuild.framework/Versions/A/PlugIns/SWBBuildService.bundle/Contents/PlugIns/SWBUniversalPlatformPlugin.bundle/Contents/Frameworks/SWBUniversalPlatform.framework/Resources:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/local/bin:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/libexec:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/usr/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/usr/local/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/local/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/Applications/ChatGPT.app/Contents/Resources/codex-cli/codex-path:/Users/himini/.codex/tmp/arg0-macos/codex-arg01hLqFO:/Users/himini/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override:/Users/himini/.local/state/fnm_multishells/1148_1793492388563/bin:/Users/himini/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/Applications/ChatGPT.app/Contents/Resources:/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab.debug.dylib -o /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app.dSYM
+
+CreateUniversalBinary /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab normal arm64\ x86_64 (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/Binary/SyncLab /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/Binary/SyncLab -output /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab
+
+GenerateDSYMFile /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app.dSYM /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    export PATH\=/Applications/Xcode.app/Contents/SharedFrameworks/SwiftBuild.framework/Versions/A/PlugIns/SWBBuildService.bundle/Contents/PlugIns/SWBUniversalPlatformPlugin.bundle/Contents/Frameworks/SWBUniversalPlatform.framework/Resources:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/local/bin:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/libexec:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/usr/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/usr/local/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/local/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/Applications/ChatGPT.app/Contents/Resources/codex-cli/codex-path:/Users/himini/.codex/tmp/arg0-macos/codex-arg01hLqFO:/Users/himini/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override:/Users/himini/.local/state/fnm_multishells/1148_1793492388563/bin:/Users/himini/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/Applications/ChatGPT.app/Contents/Resources:/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil -q /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab -o /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app.dSYM
+
+CopySwiftLibs /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab.debug.dylib --scan-folder /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Frameworks --scan-folder /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/PlugIns --scan-folder /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SystemExtensions --scan-folder /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os --back-deploy-swift-span
+Ignoring --strip-bitcode because --sign was not passed
+
+ExtractAppIntentsMetadata (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name SyncLab --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk --xcode-version 27B52 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.yocruzer.PersonalGrowthOS.SyncLab --output /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app --target-triple arm64-apple-ios17.0-simulator --target-triple x86_64-apple-ios17.0-simulator --binary-file /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/SyncLab --dependency-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab_dependency_info.dat --dependency-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab_dependency_info.dat --stringsdata-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --stringsdata-file /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftFileList --source-file-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftFileList --metadata-file-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.DependencyMetadataFileList --static-metadata-file-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/arm64/SyncLab.SwiftConstValuesFileList --swift-const-vals-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/Objects-normal/x86_64/SyncLab.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-11-06 00:21:14.462 appintentsmetadataprocessor[29970:41983085] Starting App Intents metadata extraction
+2026-11-06 00:21:14.469 appintentsmetadataprocessor[29970:41983085] warning: Metadata extraction skipped, no AppIntents.framework dependency found
+
+AppIntentsSSUTraining (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Info.plist --temp-dir-path /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/ssu --bundle-id com.yocruzer.PersonalGrowthOS.SyncLab --product-path /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app --extracted-metadata-path /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Metadata.appintents --metadata-file-list /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SyncLab.build/Debug-iphonesimulator/SyncLab.build/SyncLab.DependencyMetadataFileList --source-file /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app/Info.plist --archive-ssu-assets
+2026-11-06 00:21:14.494 appintentsnltrainingprocessor[29975:41983109] Parsing options for appintentsnltrainingprocessor
+2026-11-06 00:21:14.495 appintentsnltrainingprocessor[29975:41983109] Starting AppIntents SSU YAML Generation
+2026-11-06 00:21:14.496 appintentsnltrainingprocessor[29975:41983109] No AppShortcuts found - Skipping.
+
+RegisterExecutionPolicyException /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-RegisterExecutionPolicyException /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app
+
+Validate /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    builtin-validationUtility /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app (in target 'SyncLab' from project 'SyncLab')
+    cd /tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1
+    /usr/bin/touch -c /tmp/pgos-g1-ios-build/Build/Products/Debug-iphonesimulator/SyncLab.app
+
+PruneExplicitPrecompiledModules /tmp/pgos-g1-ios-build/SDKExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/pgos-g1-ios-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+note: Disabling hardened runtime with ad-hoc codesigning. (in target 'SyncLab' from project 'SyncLab')
+** BUILD SUCCEEDED **
+

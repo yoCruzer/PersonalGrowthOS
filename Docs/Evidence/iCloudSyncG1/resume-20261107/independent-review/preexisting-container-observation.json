@@ -1,0 +1,19 @@
+{
+  "classification": "preexisting malformed synthetic profile observation, outside changed helper rules",
+  "exitCode": 0,
+  "result": {
+    "status": "PASS",
+    "checks": {
+      "profileNotExpired": true,
+      "bundle": true,
+      "team": true,
+      "appIdentifier": true,
+      "cloudKit": true,
+      "container": true,
+      "development": true,
+      "push": true,
+      "noProductGroup": true
+    },
+    "scope": "signature only; not cloud access"
+  }
+}

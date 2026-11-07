@@ -1,0 +1,308 @@
+{
+  "completedAllCommands": false,
+  "dataset": "synthetic-g1-fault-20261107-r7-deps",
+  "errorCode": "CK_2",
+  "planDigest": "ec481af530805247bf3d80c5774bbd71acfe5a660c002ac7f8bfa70d590b8b54",
+  "planID": "probe-r7-dependency-fetch-recover-001",
+  "results": [
+    {
+      "accountSource": "liveCloudKit",
+      "checkpointHash": "56e2f0b803273766255e26185df974783dab76714a5199f0d5ebe2ddcec94bfe",
+      "commandDigest": "c349619aac0336c03f1b6bc790ede72dc40d542b9b385065388eec59f74e34fb",
+      "dataset": "synthetic-g1-fault-20261107-r7-deps",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-r7-fetch-recover-connect",
+      "pendingKeys": [],
+      "planID": "probe-r7-dependency-fetch-recover-001",
+      "platform": "macOS",
+      "processID": 89624,
+      "processNonce": "BF3F4313-7BF3-46FA-A860-87CB0AB84ABE",
+      "projections": {
+        "probe-batch-cause": {
+          "candidates": [
+            "probe-batch-cause-a",
+            "probe-batch-cause-b"
+          ],
+          "complete": false,
+          "state": "staged"
+        },
+        "probe-batch-deleted": {
+          "candidates": [
+            "probe-batch-deleted-tombstone"
+          ],
+          "complete": true,
+          "state": "deleted"
+        },
+        "probe-batch-deleted-child": {
+          "candidates": [
+            "probe-batch-deleted-child"
+          ],
+          "complete": false,
+          "state": "staged"
+        },
+        "probe-batch-dep-a": {
+          "candidates": [
+            "probe-batch-dep-a"
+          ],
+          "complete": false,
+          "state": "staged"
+        },
+        "probe-batch-dep-b": {
+          "candidates": [
+            "probe-batch-dep-b"
+          ],
+          "complete": false,
+          "state": "staged"
+        },
+        "probe-batch-head": {
+          "candidates": [
+            "probe-batch-head-new"
+          ],
+          "complete": false,
+          "state": "staged"
+        },
+        "probe-batch-missing": {
+          "candidates": [
+            "probe-batch-missing-new"
+          ],
+          "complete": false,
+          "state": "staged"
+        },
+        "probe-batch-trans-mid": {
+          "candidates": [
+            "probe-batch-trans-mid"
+          ],
+          "complete": false,
+          "state": "staged"
+        },
+        "probe-batch-trans-root": {
+          "candidates": [
+            "probe-batch-trans-root"
+          ],
+          "complete": false,
+          "state": "staged"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-cause-a",
+                "object": "probe-batch-cause",
+                "parents": [
+                  "probe-batch-cause-b"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC batch cause-a",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-batch-cause-b",
+                "object": "probe-batch-cause",
+                "parents": [
+                  "probe-batch-cause-a"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC batch cause-b",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-cause",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-deleted-live",
+                "object": "probe-batch-deleted",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC batch deleted-live",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-batch-deleted-tombstone",
+                "object": "probe-batch-deleted",
+                "parents": [
+                  "probe-batch-deleted-live"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC batch deleted-tombstone",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-deleted",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-deleted-child",
+                "object": "probe-batch-deleted-child",
+                "parents": [],
+                "requires": [
+                  "probe-batch-deleted"
+                ],
+                "text": "SYNTHETIC batch deleted-child",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-deleted-child",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-dep-a",
+                "object": "probe-batch-dep-a",
+                "parents": [],
+                "requires": [
+                  "probe-batch-dep-b"
+                ],
+                "text": "SYNTHETIC batch dep-a",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-dep-a",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-dep-b",
+                "object": "probe-batch-dep-b",
+                "parents": [],
+                "requires": [
+                  "probe-batch-dep-a"
+                ],
+                "text": "SYNTHETIC batch dep-b",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-dep-b",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-head-new",
+                "object": "probe-batch-head",
+                "parents": [
+                  "probe-batch-head-old"
+                ],
+                "requires": [
+                  "probe-batch-head-dependency"
+                ],
+                "text": "SYNTHETIC batch head-new",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-batch-head-old",
+                "object": "probe-batch-head",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC batch head-old",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-head",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-missing-new",
+                "object": "probe-batch-missing",
+                "parents": [
+                  "probe-batch-missing-parent"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC batch missing-new",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-missing",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-trans-mid",
+                "object": "probe-batch-trans-mid",
+                "parents": [],
+                "requires": [
+                  "probe-batch-trans-leaf"
+                ],
+                "text": "SYNTHETIC batch trans-mid",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-trans-mid",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-batch-trans-root",
+                "object": "probe-batch-trans-root",
+                "parents": [],
+                "requires": [
+                  "probe-batch-trans-mid"
+                ],
+                "text": "SYNTHETIC batch trans-root",
+                "version": 1
+              }
+            ],
+            "object": "probe-batch-trans-root",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "liveCloudKit",
+      "commandDigest": "a6e2838be0408570cc9c68c22c633f722807148946edfebe55f641fc3b164663",
+      "dataset": "synthetic-g1-fault-20261107-r7-deps",
+      "errorCode": "CK_2",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+        "STATE_DURABLE",
+        "ZONE_SAVE_FAILED_RETAINED",
+        "STATE_DURABLE"
+      ],
+      "halted": false,
+      "id": "probe-r7-fetch-recover-sync",
+      "planID": "probe-r7-dependency-fetch-recover-001",
+      "platform": "macOS",
+      "processID": 89624,
+      "processNonce": "BF3F4313-7BF3-46FA-A860-87CB0AB84ABE",
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "status": "FAIL"
+    }
+  ],
+  "runID": "probe-run-20261107-r7",
+  "scope": "Command execution only; not cloud convergence or G1 acceptance"
+}

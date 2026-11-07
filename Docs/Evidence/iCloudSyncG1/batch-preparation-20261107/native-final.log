@@ -1,0 +1,135 @@
+Building for debugging...
+[1 / 10]
+[2 / 11] SyncLab
+[4 / 13] SyncLab
+[10 / 14] SyncLabTests-product
+[12 / 16] SyncLabTests-product
+[17 / 19] SyncLabTests-product
+[21 / 22] LabReplay-product
+Build complete! (1.19秒)
+Test Suite 'All tests' started at 2026-11-07 18:45:50.479.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 18:45:50.479.
+Test Suite 'DevelopmentProbeTests' started at 2026-11-07 18:45:50.479.
+Test Case '-[SyncLabTests.DevelopmentProbeTests testDuplicateProcessLockRejectedUntilOwnerReleasesIt]' started.
+Test Case '-[SyncLabTests.DevelopmentProbeTests testDuplicateProcessLockRejectedUntilOwnerReleasesIt]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeDoesNotStartCloudWithoutExplicitOptIn]' started.
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeDoesNotStartCloudWithoutExplicitOptIn]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeJournalPreservesOriginalAndSeparatesRuns]' started.
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeJournalPreservesOriginalAndSeparatesRuns]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeJournalRejectsWrongEvidenceIdentity]' started.
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeJournalRejectsWrongEvidenceIdentity]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeOnlyAcceptsExplicitLoopbackAndSyntheticDataset]' started.
+Test Case '-[SyncLabTests.DevelopmentProbeTests testProbeOnlyAcceptsExplicitLoopbackAndSyntheticDataset]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.DevelopmentProbeTests testSyntheticCommandsRejectPrivateContentPathsAndWrongImage]' started.
+Test Case '-[SyncLabTests.DevelopmentProbeTests testSyntheticCommandsRejectPrivateContentPathsAndWrongImage]' passed (0.000 seconds).
+Test Suite 'DevelopmentProbeTests' passed at 2026-11-07 18:45:50.485.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.005 (0.006) seconds
+Test Suite 'ManualProbeTests' started at 2026-11-07 18:45:50.485.
+Test Case '-[SyncLabTests.ManualProbeTests testFixedImportRejectsSymlinkAndOversize]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testFixedImportRejectsSymlinkAndOversize]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testInterruptedAndChangedPlanNeverReplayOrOverwrite]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testInterruptedAndChangedPlanNeverReplayOrOverwrite]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testManualOptInIsNotAmbientAndDefaultCannotTouchStorage]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testManualOptInIsNotAmbientAndDefaultCannotTouchStorage]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testPlanBoundsAndWholeBatchValidationBeforeExecution]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testPlanBoundsAndWholeBatchValidationBeforeExecution]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testPreCancelledPlanDoesNotClaimFilesOrCloud]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testPreCancelledPlanDoesNotClaimFilesOrCloud]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testReportIdentityAndCompletionCannotBeForged]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testReportIdentityAndCompletionCannotBeForged]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testSameCommandInDifferentPlansHasIndependentJournalAndIdentity]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testSameCommandInDifferentPlansHasIndependentJournalAndIdentity]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.ManualProbeTests testUntrustedExportsCannotReplacePrivateEvidence]' started.
+Test Case '-[SyncLabTests.ManualProbeTests testUntrustedExportsCannotReplacePrivateEvidence]' passed (0.001 seconds).
+Test Suite 'ManualProbeTests' passed at 2026-11-07 18:45:50.491.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.006 (0.006) seconds
+Test Suite 'RemainingBatchTests' started at 2026-11-07 18:45:50.491.
+Test Case '-[SyncLabTests.RemainingBatchTests testNativeStagingRepairAndFreshImagePendingWithoutCloud]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testNativeStagingRepairAndFreshImagePendingWithoutCloud]' passed (0.022 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testPlansBoundedAndDeterministicWithoutAuthorization]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testPlansBoundedAndDeterministicWithoutAuthorization]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testPreparationNeverOverwritesOriginalOrFollowsOutputSymlink]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testPreparationNeverOverwritesOriginalOrFollowsOutputSymlink]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testSecondImageIsDecodableDistinctAndStrictlyAllowlisted]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testSecondImageIsDecodableDistinctAndStrictlyAllowlisted]' passed (0.002 seconds).
+Test Suite 'RemainingBatchTests' passed at 2026-11-07 18:45:50.519.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.028 (0.028) seconds
+Test Suite 'SyncLabTests' started at 2026-11-07 18:45:50.519.
+Test Case '-[SyncLabTests.SyncLabTests testAccountPartitionsReopenAtoBtoA]' started.
+Test Case '-[SyncLabTests.SyncLabTests testAccountPartitionsReopenAtoBtoA]' passed (0.008 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testActualCloudCodecFailureRetainsOriginalRecord]' started.
+Test Case '-[SyncLabTests.SyncLabTests testActualCloudCodecFailureRetainsOriginalRecord]' passed (0.005 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testCausalCycleAndForeignParentFailClosed]' started.
+Test Case '-[SyncLabTests.SyncLabTests testCausalCycleAndForeignParentFailClosed]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testCheckpointFailureDoesNotChangePersistedState]' started.
+Test Case '-[SyncLabTests.SyncLabTests testCheckpointFailureDoesNotChangePersistedState]' passed (0.004 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testCloudCodecAllFieldsAndWrongZone]' started.
+Test Case '-[SyncLabTests.SyncLabTests testCloudCodecAllFieldsAndWrongZone]' passed (0.004 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testConflictProjectionOrderAndReplayInvariant]' started.
+Test Case '-[SyncLabTests.SyncLabTests testConflictProjectionOrderAndReplayInvariant]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testCrossObjectMutationIdentityRejected]' started.
+Test Case '-[SyncLabTests.SyncLabTests testCrossObjectMutationIdentityRejected]' passed (0.003 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testDeletedDependencyDoesNotPublish]' started.
+Test Case '-[SyncLabTests.SyncLabTests testDeletedDependencyDoesNotPublish]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testDependencyCycleDoesNotPublish]' started.
+Test Case '-[SyncLabTests.SyncLabTests testDependencyCycleDoesNotPublish]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testExportRejectsSnapshotOutsideRestoreObjectLimit]' started.
+CoreData: debug: WAL checkpoint: Database did checkpoint. Log size: 1000 checkpointed: 1000
+Test Case '-[SyncLabTests.SyncLabTests testExportRejectsSnapshotOutsideRestoreObjectLimit]' passed (0.133 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testFactAndOutboxRollbackTogether]' started.
+Test Case '-[SyncLabTests.SyncLabTests testFactAndOutboxRollbackTogether]' passed (0.003 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testFetchedUnionPreservesBothAndNeedsUpload]' started.
+Test Case '-[SyncLabTests.SyncLabTests testFetchedUnionPreservesBothAndNeedsUpload]' passed (0.005 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testImageBytesExportAndMissingOriginalFail]' started.
+Test Case '-[SyncLabTests.SyncLabTests testImageBytesExportAndMissingOriginalFail]' passed (0.005 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testInjectedCASAndPartialQuotaRetainExactPendingWork]' started.
+Test Case '-[SyncLabTests.SyncLabTests testInjectedCASAndPartialQuotaRetainExactPendingWork]' passed (0.005 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testLateCallbacksAndCheckpointRejectedAfterFence]' started.
+Test Case '-[SyncLabTests.SyncLabTests testLateCallbacksAndCheckpointRejectedAfterFence]' passed (0.004 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testMissingAncestorDoesNotPublish]' started.
+Test Case '-[SyncLabTests.SyncLabTests testMissingAncestorDoesNotPublish]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testMissingImageRestoreRetainsEmptyFactsAndFenced]' started.
+Test Case '-[SyncLabTests.SyncLabTests testMissingImageRestoreRetainsEmptyFactsAndFenced]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testMissingParentImageBlocksLinkThenRepairs]' started.
+Test Case '-[SyncLabTests.SyncLabTests testMissingParentImageBlocksLinkThenRepairs]' passed (0.005 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testNetworkFencePreservesOfflineEditing]' started.
+Test Case '-[SyncLabTests.SyncLabTests testNetworkFencePreservesOfflineEditing]' passed (0.004 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testNewInvalidHeadDoesNotFallbackAndCanRecover]' started.
+Test Case '-[SyncLabTests.SyncLabTests testNewInvalidHeadDoesNotFallbackAndCanRecover]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testNoCommonBaselineAndDeleteConflict]' started.
+Test Case '-[SyncLabTests.SyncLabTests testNoCommonBaselineAndDeleteConflict]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testOldACKRetainsNewVersionAndExactACKClearsIt]' started.
+Test Case '-[SyncLabTests.SyncLabTests testOldACKRetainsNewVersionAndExactACKClearsIt]' passed (0.004 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testReceiptRetainsCollisionWithoutReplacingOriginal]' started.
+Test Case '-[SyncLabTests.SyncLabTests testReceiptRetainsCollisionWithoutReplacingOriginal]' passed (0.005 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testRestoredPartitionCannotSendAfterReopen]' started.
+Test Case '-[SyncLabTests.SyncLabTests testRestoredPartitionCannotSendAfterReopen]' passed (0.008 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testRestoreIsolatedAndFencesRacingCallback]' started.
+Test Case '-[SyncLabTests.SyncLabTests testRestoreIsolatedAndFencesRacingCallback]' passed (0.008 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testSharedAncestorDAGHasBoundedProjectionCost]' started.
+Test Case '-[SyncLabTests.SyncLabTests testSharedAncestorDAGHasBoundedProjectionCost]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testSnapshotMutationLimitPairsExportAndRestore]' started.
+CoreData: debug: PostSaveMaintenance: incremental_vacuum with freelist_count - 13 and pages_to_free 2
+Test Case '-[SyncLabTests.SyncLabTests testSnapshotMutationLimitPairsExportAndRestore]' passed (0.193 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testSyntheticOriginalIsDecodablePNG]' started.
+Test Case '-[SyncLabTests.SyncLabTests testSyntheticOriginalIsDecodablePNG]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testTransitiveMissingDependencyDoesNotPublish]' started.
+Test Case '-[SyncLabTests.SyncLabTests testTransitiveMissingDependencyDoesNotPublish]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testTruncatedImageCanBeRepairedWithoutErasingBadEvidence]' started.
+Test Case '-[SyncLabTests.SyncLabTests testTruncatedImageCanBeRepairedWithoutErasingBadEvidence]' passed (0.006 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testTwoNearestCommonAncestorsRemainPending]' started.
+Test Case '-[SyncLabTests.SyncLabTests testTwoNearestCommonAncestorsRemainPending]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testWireUnknownVersionCollisionAndBound]' started.
+Test Case '-[SyncLabTests.SyncLabTests testWireUnknownVersionCollisionAndBound]' passed (0.000 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testWrongImageDoesNotCreateFact]' started.
+Test Case '-[SyncLabTests.SyncLabTests testWrongImageDoesNotCreateFact]' passed (0.002 seconds).
+Test Suite 'SyncLabTests' passed at 2026-11-07 18:45:50.942.
+	 Executed 33 tests, with 0 failures (0 unexpected) in 0.421 (0.423) seconds
+Test Suite 'SyncLabTests.xctest' passed at 2026-11-07 18:45:50.942.
+	 Executed 51 tests, with 0 failures (0 unexpected) in 0.461 (0.463) seconds
+Test Suite 'All tests' passed at 2026-11-07 18:45:50.942.
+	 Executed 51 tests, with 0 failures (0 unexpected) in 0.461 (0.463) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

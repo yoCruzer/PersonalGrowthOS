@@ -1,0 +1,18 @@
+Independent reviewer: /root/g1_independent_review; no implementation edits.
+Final review after bounded follow-up (2026-11-06):
+
+最终有界复核通过，未发现剩余必须修复项。
+- 导出/恢复统一128对象、4096 mutation、32MB编码包，正负成对测试成立。
+- processSaveFailure被真实SDK回调调用；CAS/quota/部分成功明确是注入。
+- PNG真实解码通过；SYNCLAB_DATASET启动参数与README一致。
+- 环境/schema准确区分Owner注册确认、实际权限UNKNOWN、离线通过与真实NOT_RUN。
+- 复核实现者native-final-11.log：33 tests / 0 failures；独立运行仍以recheck-03.log为准。
+- R1–R6关闭，最初原生反例、DAG性能和复验日志保留。
+
+Final reviewed SHA256:
+Cloud.swift eae91ef3eceec702a5b0767155c9b5aa23b54aad2e3893c4ec3411225be2a271
+Protocol.swift f7f7916a73c990c3daa0be116740aab678c8be99882aec84f6ffec54e8b4a01d
+Store.swift eccb9253704d1c0f6a0aa18b2e007d1bd4df9987e31cdebc99b3a87aeb8e1876
+SyncLabApp.swift af796ba1b1f5e2ee160ff3da8a9d430661f3163efe58fadff99bd024b177c4f4
+
+结论仅为离线工程与门禁交付可接受。真实Development双客户端、服务器CAS、SDK账户/检查点恢复及Production仍未验证；保持BLOCKED_ENV，不能称G1全部完成。

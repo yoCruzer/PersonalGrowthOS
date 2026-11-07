@@ -1,0 +1,2 @@
+PASS full 27 synthetic recovery; original failure and canonical manifest unchanged
+PASS CK_4 in phone stage still rejected

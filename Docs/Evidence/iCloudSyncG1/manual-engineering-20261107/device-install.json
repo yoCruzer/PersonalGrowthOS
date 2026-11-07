@@ -1,0 +1,49 @@
+{
+  "sourceCommit": "df3c081f72d5d86681f37c57ae236543ab45d3e8",
+  "ipaSHA256": "f325965d20711792f1dfe7dca459ef0deb45e5d38181e03e802fe56e6ae2515f",
+  "executableSHA256": "a44b319fdabd9b5981779cd171e008abb26ed6e714592be853ee31ddb96969db",
+  "signatureCheck": {
+    "status": "PASS",
+    "checks": {
+      "profileNotExpired": true,
+      "bundle": true,
+      "team": true,
+      "appIdentifier": true,
+      "cloudKit": true,
+      "container": true,
+      "development": true,
+      "push": true,
+      "noProductGroup": true
+    },
+    "scope": "signature only; not cloud access"
+  },
+  "deviceSelection": "one physical iPhone, cfgutil UDID matched existing private device inventory; exact ECID selected",
+  "operations": [
+    {
+      "command": "install-app",
+      "exitCode": 0,
+      "type": "CommandOutput",
+      "deviceCount": 1
+    },
+    {
+      "command": "install-doc",
+      "exitCode": 0,
+      "type": "CommandOutput",
+      "deviceCount": 1
+    }
+  ],
+  "plan": {
+    "commands": [
+      {
+        "action": "connect",
+        "id": "probe-ios-001-connect"
+      }
+    ],
+    "dataset": "synthetic-g1-20261107-r4",
+    "id": "probe-ios-plan-001-connect",
+    "runID": "probe-run-20261107-r5",
+    "version": 1
+  },
+  "planSHA256": "76091e1af85c92807f25e5c2dc8510466f77b347950262896620a92a42ae3ae1",
+  "scope": "Installation and plan import only; device identifiers excluded; runtime and account match NOT_RUN"
+}

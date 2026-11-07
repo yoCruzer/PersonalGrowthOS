@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-07",
+  "ownerAuthorization": "Register current Mac mini in existing team and generate Development profile",
+  "macBuildExit": 0,
+  "macSignatureGateExit": 0,
+  "privateBuildLogSHA256": "67c911caf4f21a7bbfff1384dbfaa29a7052f0936dda6f98243f639af0fb0f7a",
+  "phoneDevelopmentConnectionProbeExit": 0,
+  "ownerAccountCorrection": "Mac and test iPhone use DIFFERENT iCloud accounts; supersedes earlier same-account reply",
+  "appLaunchObserved": "signed Mac app opened offline with fresh synthetic dataset; connect/save/sync never invoked; app quit",
+  "cloudReadWrite": "NOT_RUN",
+  "phoneAppInstalled": false,
+  "systemAccountChanged": false,
+  "nextDependency": "Owner choice of isolated same-iCloud two-client environment"
+}

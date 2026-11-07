@@ -1,0 +1,5 @@
+iOS smoke	UNKNOWN STEP	2026-11-07T03:30:55.8112420Z /Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests.swift:3317: error: -[PersonalGrowthOSUITests.AppLaunchSmokeTests testUIReadabilityChineseDefaultAndLargerText] : XCTAssertLessThanOrEqual failed: ("42.33333333333337") is greater than ("25.0") - Short Chinese name stays on one line
+iOS smoke	UNKNOWN STEP	2026-11-07T03:32:10.3541210Z /Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests.swift:3317: error: -[PersonalGrowthOSUITests.AppLaunchSmokeTests testUIReadabilityEnglishDefault] : XCTAssertLessThanOrEqual failed: ("42.33333333333337") is greater than ("25.0") - Short Chinese name stays on one line
+iOS smoke	UNKNOWN STEP	2026-11-07T03:32:27.4113530Z 	 Executed 5 tests, with 2 failures (0 unexpected) in 271.468 (271.474) seconds
+iOS smoke	UNKNOWN STEP	2026-11-07T03:32:27.4423230Z 	 Executed 5 tests, with 2 failures (0 unexpected) in 271.468 (271.483) seconds
+iOS smoke	UNKNOWN STEP	2026-11-07T03:32:27.6258400Z 	 Executed 5 tests, with 2 failures (0 unexpected) in 271.468 (271.485) seconds

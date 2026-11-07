@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/private/tmp/g1-probe-review/launcher_review.py", line 27, in <module>
+    assert calls[0][0][1]==str(output/'verify_signing.py')
+AssertionError

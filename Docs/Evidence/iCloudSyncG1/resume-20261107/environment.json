@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-07",
+  "timezone": "Asia/Shanghai",
+  "sourceHead": "56a1d39e50363586cdf82e1bbb856f155d7cc0f7",
+  "portalObservationMethod": "Safari accessibility UI read-only inspection; account identifiers omitted",
+  "teamMatchesExpected": true,
+  "syncLabBundleExists": true,
+  "iCloudEnabled": true,
+  "includeCloudKitSupport": true,
+  "pushEnabled": true,
+  "appGroupsEnabled": false,
+  "assignedContainers": [
+    "iCloud.com.yocruzer.PersonalGrowthOS.SyncLab"
+  ],
+  "containerTeamMatches": true,
+  "containerPermissions": {
+    "managePermissions": true,
+    "editDevelopment": true,
+    "editProduction": true
+  },
+  "developmentRecordTypesObserved": [
+    "Users"
+  ],
+  "cloudRecordsQueried": false,
+  "portalConfigurationChanged": false,
+  "productionAccessOrDeployment": false,
+  "host": {
+    "architecture": "arm64",
+    "model": "Mac18,5",
+    "os": "27.0.1",
+    "xcode": "27.2 (27B52)"
+  },
+  "physicalPhone": {
+    "productType": "iPhone17,3",
+    "os": "27.2",
+    "developerMode": "enabled",
+    "paired": true,
+    "transport": "localNetwork",
+    "tunnelStateAtCheck": "disconnected",
+    "includedInIOSProfile": true
+  },
+  "macSignedBuild": {
+    "exit": 65,
+    "reason": "Current Mac not registered; no matching Mac App Development profile",
+    "deviceRegistrationRequested": false
+  },
+  "iosSignedBuild": {
+    "exit": 0,
+    "automaticProvisioningUpdates": true,
+    "deviceRegistrationRequested": false
+  },
+  "scope": "Portal and signing only; actual CloudKit account access, installation and dual-client service scenarios NOT_RUN"
+}

@@ -1,0 +1,98 @@
+test_authentication_and_route_limits (test_probe_bridge.ProbeBridgeTests) ... ERROR
+test_command_cannot_be_replaced_or_execute_shell (test_probe_bridge.ProbeBridgeTests) ... ERROR
+test_queue_and_immutable_result_retry (test_probe_bridge.ProbeBridgeTests) ... ERROR
+test_result_must_match_dataset_run_and_exact_command (test_probe_bridge.ProbeBridgeTests) ... ERROR
+test_unknown_result_and_path_traversal_rejected (test_probe_bridge.ProbeBridgeTests) ... ERROR
+test_container_requires_exact_array_membership (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_environment_order_does_not_matter (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_explicit_cloudkit_allowlist (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_missing_wrong_or_malformed_service_denied (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_observed_apple_profile (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_production_or_missing_environment_denied (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_profile_never_relaxes_signed_environment (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_wildcard_never_relaxes_signed_claim (test_profile_entitlements.ProfileAllowlistTests) ... ok
+
+======================================================================
+ERROR: test_authentication_and_route_limits (test_probe_bridge.ProbeBridgeTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/test_probe_bridge.py", line 15, in setUp
+    self.server = Bridge(self.root, 'synthetic-g1-test', 'probe-run')
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/probe_bridge.py", line 39, in __init__
+    super().__init__(('127.0.0.1', 0), Handler)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 138, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_command_cannot_be_replaced_or_execute_shell (test_probe_bridge.ProbeBridgeTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/test_probe_bridge.py", line 15, in setUp
+    self.server = Bridge(self.root, 'synthetic-g1-test', 'probe-run')
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/probe_bridge.py", line 39, in __init__
+    super().__init__(('127.0.0.1', 0), Handler)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 138, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_queue_and_immutable_result_retry (test_probe_bridge.ProbeBridgeTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/test_probe_bridge.py", line 15, in setUp
+    self.server = Bridge(self.root, 'synthetic-g1-test', 'probe-run')
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/probe_bridge.py", line 39, in __init__
+    super().__init__(('127.0.0.1', 0), Handler)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 138, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_result_must_match_dataset_run_and_exact_command (test_probe_bridge.ProbeBridgeTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/test_probe_bridge.py", line 15, in setUp
+    self.server = Bridge(self.root, 'synthetic-g1-test', 'probe-run')
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/probe_bridge.py", line 39, in __init__
+    super().__init__(('127.0.0.1', 0), Handler)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 138, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_unknown_result_and_path_traversal_rejected (test_probe_bridge.ProbeBridgeTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/test_probe_bridge.py", line 15, in setUp
+    self.server = Bridge(self.root, 'synthetic-g1-test', 'probe-run')
+  File "/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tools/probe_bridge.py", line 39, in __init__
+    super().__init__(('127.0.0.1', 0), Handler)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/http/server.py", line 138, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.009s
+
+FAILED (errors=5)

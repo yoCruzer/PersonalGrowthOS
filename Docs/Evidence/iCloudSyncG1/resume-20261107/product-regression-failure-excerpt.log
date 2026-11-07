@@ -1,0 +1,6 @@
+iOS smoke	Run native gate	2026-11-07T02:20:56.9696290Z /Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests.swift:3317: error: -[PersonalGrowthOSUITests.AppLaunchSmokeTests testUIReadabilityChineseDefaultAndLargerText] : XCTAssertLessThanOrEqual failed: ("42.33333333333337") is greater than ("25.0") - Short Chinese name stays on one line
+iOS smoke	Run native gate	2026-11-07T02:21:58.9899700Z /Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests.swift:3317: error: -[PersonalGrowthOSUITests.AppLaunchSmokeTests testUIReadabilityEnglishDefault] : XCTAssertLessThanOrEqual failed: ("42.33333333333337") is greater than ("25.0") - Short Chinese name stays on one line
+iOS smoke	Run native gate	2026-11-07T02:22:12.6968320Z 	 Executed 5 tests, with 2 failures (0 unexpected) in 257.098 (257.478) seconds
+iOS smoke	Run native gate	2026-11-07T02:22:12.7172100Z 	 Executed 5 tests, with 2 failures (0 unexpected) in 257.098 (257.484) seconds
+iOS smoke	Run native gate	2026-11-07T02:22:12.7381980Z 	 Executed 5 tests, with 2 failures (0 unexpected) in 257.098 (257.556) seconds
+iOS smoke	Run native gate	2026-11-07T02:22:16.6559750Z ** TEST FAILED **

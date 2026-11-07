@@ -1,0 +1,8 @@
+{
+  "check_oracle_controls.py": "cd2ab5c1f37c1a4be43fcb209ff5f0490eb9a14fe3cbbedf1aaef108fdbb4139",
+  "dependency_controls.py": "811c95af865c94dc84100327ab5f4faaab35df1912b9c0b1be61bfcb6f24227d",
+  "extra_oracle_controls.py": "3db4d5f6966218006333e9bf31c9c645d45f4489275b16571846471689b9b9ea",
+  "make_fixture.py": "4919319da7d19506cfc6aa557eb5ec714aefdf5d0dfc0ba467b131d80b9dd2ad",
+  "run_review.py": "0f79de2c1108c69614cd36e9cda07c00ab23c7aa423768eab277ad4e10b6fe1b",
+  "test_window_current.py": "30f6dd78a9f4655d61341999669d64f068f6d7921a73d4f3019f31a4e875f717"
+}

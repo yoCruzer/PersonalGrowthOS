@@ -1,0 +1,13 @@
+.......F.
+======================================================================
+FAIL: test_unsafe_command_path_rejected (__main__.Tests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/g1-loopback-review/test_receiver.py", line 40, in test_unsafe_command_path_rejected
+    with self.assertRaises(ValueError):self.server.accept('observation',w.canonical(self.obs))
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.011s
+
+FAILED (failures=1)

@@ -1,0 +1,23 @@
+[
+  {
+    "command": [
+      "python3",
+      "Docs/PoC/iCloudSyncV1/protocol_probe.py"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "python3",
+      "Docs/PoC/iCloudSyncV1/reviewer_regressions.py"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "python3",
+      "Docs/PoC/iCloudSyncV1/review_projection_tests.py"
+    ],
+    "exitCode": 0
+  }
+]

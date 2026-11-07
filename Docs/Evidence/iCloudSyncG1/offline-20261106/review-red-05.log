@@ -1,0 +1,23 @@
+Building for debugging...
+[2 / 8] SyncLabTests-product
+[4 / 10] SyncLabTests-product
+[8 / 12] SyncLabTests-product
+[10 / 12] SyncLabTests-product
+Build complete! (0.78秒)
+Test Suite 'Selected tests' started at 2026-11-06 00:23:33.066.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-06 00:23:33.066.
+Test Suite 'SyncLabTests' started at 2026-11-06 00:23:33.066.
+Test Case '-[SyncLabTests.SyncLabTests testActualCloudCodecFailureRetainsOriginalRecord]' started.
+/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Tests/SyncLabTests/SyncLabTests.swift:169: error: -[SyncLabTests.SyncLabTests testActualCloudCodecFailureRetainsOriginalRecord] : XCTAssertEqual failed: ("0") is not equal to ("1")
+Test Case '-[SyncLabTests.SyncLabTests testActualCloudCodecFailureRetainsOriginalRecord]' failed (0.071 seconds).
+Test Case '-[SyncLabTests.SyncLabTests testTruncatedImageCanBeRepairedWithoutErasingBadEvidence]' started.
+/private/tmp/PersonalGrowthOS-icloud-g1/Experiments/iCloudSyncG1/Sources/SyncLab/Store.swift:75: error: -[SyncLabTests.SyncLabTests testTruncatedImageCanBeRepairedWithoutErasingBadEvidence] : failed: caught error: "missingImage"
+Test Case '-[SyncLabTests.SyncLabTests testTruncatedImageCanBeRepairedWithoutErasingBadEvidence]' failed (0.009 seconds).
+Test Suite 'SyncLabTests' failed at 2026-11-06 00:23:33.147.
+	 Executed 2 tests, with 2 failures (1 unexpected) in 0.081 (0.081) seconds
+Test Suite 'SyncLabTests.xctest' failed at 2026-11-06 00:23:33.147.
+	 Executed 2 tests, with 2 failures (1 unexpected) in 0.081 (0.081) seconds
+Test Suite 'Selected tests' failed at 2026-11-06 00:23:33.147.
+	 Executed 2 tests, with 2 failures (1 unexpected) in 0.081 (0.081) seconds
+Note: Some test targets reported failures:
+  - SyncLabTests (XCTest)

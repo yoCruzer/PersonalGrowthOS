@@ -1,0 +1,12 @@
+{
+  "review-final.md": "db69560fd3dd8890a3529e63f9b9a1253962e0fc8790b11747b9bcc89cc3a527",
+  "final-source-sha256.json": "0592c7d28b4431ff3a63304325b1b15a1b5bee1c296416302bd952f3ca960ddb",
+  "initial-source-sha256.json": "84ef18f5afd3f4369f3b16568209141e2de1197aae777a8cabf0af652fdb7cfe",
+  "red-tests-02.log": "79485aaaead14830ef6c729b27603c615f5f0305efc73dc178f07c7c6d8e06e7",
+  "red-control-flow.log": "a2243a5defe26f6907e8eef3f73a8d464dae873ef7a3d64c630d2afd75b13844",
+  "green-tests.log": "31575c42e45f84b73d3834d0acaf83e711b6e913e50fac041b55106807a9601e",
+  "green-control-flow-final.log": "7eaf18562b0515e24b7dad4bb4d2d3bf39945cda91fc0fe1dd89a893b035afab",
+  "release-test.log": "1eac6b409bc9e46d96e9c5d35a309f3cb33171ce283a7ae780630b520db408c0",
+  "project-check.log": "a118194615b750cf59a116ac357721c23027817dcaed3b29ebebcda5aea6d096",
+  "verify_project.py": "c6e69ba495dcfab33b687c87f09ca2a8442c9bd1bf53373d3a79199b6cbfc7ff"
+}
