@@ -1,3 +1,15 @@
+# 2026-11-07 G1手机安装已恢复，手动Debug测试入口就绪
+
+Owner完成Apple Configurator安装后，已通过官方“添加App→从我的Mac选取”成功安装既有签名SyncLab，并在设备App列表核验。devicectl仍为DDI12040，不能据安装成功宣称启动/云测试通过。
+
+已实现仅Debug的固定文稿合成计划入口，需Owner手机显式点击；权威journal改存非共享Application Support，计划/命令绑定身份、摘要与plan namespace，导出副本不能当作执行完成依据；取消、重入、进程锁和不可覆盖证据已验证。原生47/47、双平台签名Debug/实包校验、unsigned iOS Simulator Release通过；独立五项问题已修复，原样11/11、无云接缝4/4、Release1/1通过。[工程证据](Evidence/iCloudSyncG1/manual-engineering-20261107/README.md)。
+
+下一步更新手机Debug包并用官方install-doc导入仅connect计划，再由Owner点一次；Mac重新准备短期桥和启动包，用新run r5访问既有synthetic-g1-20261107-r4，先比对真实账户指纹，再开始双端数据往返。旧Mac13条真实结果保留，新的手机入口运行和完整G1仍NOT_RUN。当前候选固定源码后再安装，不重置既有合成事实。
+
+已授权的Configurator/SyncLab安装和Mac登记不重复询问；不准备/监督/抹除手机，不进入G2/G3/发布/Production。正式产品两项UI布局回归失败仍未解决。以下历史按当时事实保留。
+
+---
+
 # 2026-11-07 G1部分真实服务验证完成：Mac通过，iPhone开发镜像仍阻断
 
 Owner已在haha运行启动脚本，Mac账户访问和实际CloudKit Development读写开始执行。固定合成dataset下13条命令完成：文字/68字节原图、SDK发送确认、队列清空、持久checkpoint、同进程Store/Engine重开，以及独立对象新增→修改→逻辑删除。逐mutation/原字节验证、独立审查及20个篡改负控通过；[脱敏证据](Evidence/iCloudSyncG1/runtime-20261107/README.md)。这不是进程崩溃恢复、空库纯云重建或双端G1验收，未完成项保持NOT_RUN。

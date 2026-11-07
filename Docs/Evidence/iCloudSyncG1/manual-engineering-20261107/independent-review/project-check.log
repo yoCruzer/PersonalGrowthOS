@@ -1,0 +1,1 @@
+PASS: current and independently regenerated project select sharing only in Debug; Release uses base Info without sharing; source membership and project bytes match.

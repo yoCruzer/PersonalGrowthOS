@@ -61,6 +61,7 @@ public struct ProbeProjection: Codable {
 
 public struct ProbeResult: Codable {
     public var scope = "Command execution only; not a cloud convergence or G1 acceptance verdict"
+    public var planID: String? = nil
     public var id: String
     public var dataset: String
     public var runID: String
@@ -84,10 +85,14 @@ final class ProbeJournal {
     let directory: URL
     let dataset: String
     let runID: String
-    init(root: URL, dataset: String, runID: String) throws {
+    let contextID: String?
+    init(root: URL, dataset: String, runID: String, contextID: String? = nil) throws {
         guard validID(dataset), dataset.hasPrefix("synthetic-g1-"), validID(runID), runID.hasPrefix("probe-") else { throw LabError.invalidWire }
+        if let contextID { guard validID(contextID), contextID.hasPrefix("probe-") else { throw LabError.invalidWire } }
         self.dataset = dataset; self.runID = runID
-        directory = root.appendingPathComponent(runID).appendingPathComponent(dataset)
+        self.contextID = contextID
+        let partition = root.appendingPathComponent(runID).appendingPathComponent(dataset)
+        directory = contextID.map { partition.appendingPathComponent("plans").appendingPathComponent($0) } ?? partition
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     }
     private func publish(_ bytes: Data, to target: URL) throws {
@@ -105,7 +110,7 @@ final class ProbeJournal {
             guard try Data(contentsOf: request) == bytes else { throw LabError.identityCollision }
             guard FileManager.default.fileExists(atPath: result.path) else { throw LabError.blocked }
             let old = try JSONDecoder().decode(ProbeResult.self, from: Data(contentsOf: result))
-            guard old.id == command.id, old.dataset == dataset, old.runID == runID, old.commandDigest == digest(bytes) else { throw LabError.identityCollision }
+            guard old.id == command.id, old.dataset == dataset, old.runID == runID, old.commandDigest == digest(bytes), old.planID == contextID else { throw LabError.identityCollision }
             return old
         }
         guard !FileManager.default.fileExists(atPath: result.path) else { throw LabError.identityCollision }
@@ -113,7 +118,7 @@ final class ProbeJournal {
         return nil
     }
     func complete(_ result: ProbeResult) throws {
-        guard validID(result.id), result.id.hasPrefix("probe-"), result.dataset == dataset, result.runID == runID else { throw LabError.identityCollision }
+        guard validID(result.id), result.id.hasPrefix("probe-"), result.dataset == dataset, result.runID == runID, result.planID == contextID else { throw LabError.identityCollision }
         let request = directory.appendingPathComponent(result.id + ".request.json")
         guard try digest(Data(contentsOf: request)) == result.commandDigest else { throw LabError.identityCollision }
         try publish(canonical(result), to: directory.appendingPathComponent(result.id + ".json"))
@@ -129,12 +134,15 @@ final class ProbeJournal {
     private var runID: String
     private var connectedFingerprint: String?
     private var processLock: ProbeProcessLock?
-    public init(base: URL, dataset: String, runID: String) throws {
+    private let authorization: DevelopmentAuthorization
+    private var manualPlanRunning = false
+    public init(base: URL, dataset: String, runID: String, authorization: DevelopmentAuthorization = .fromEnvironment()) throws {
         guard validID(dataset), dataset.hasPrefix("synthetic-g1-"), validID(runID), runID.hasPrefix("probe-") else { throw LabError.invalidWire }
         self.base = base; self.dataset = dataset; self.runID = runID
+        self.authorization = authorization
     }
     private func ensureExclusive() throws {
-        guard ProcessInfo.processInfo.environment["SYNCLAB_ENABLE_DEVELOPMENT"] == "YES" else { throw LabError.blocked }
+        guard authorization.isEnabled else { throw LabError.blocked }
         if processLock == nil { processLock = try ProbeProcessLock(base: base, dataset: dataset) }
     }
     public func shutdown() async {
@@ -142,7 +150,7 @@ final class ProbeJournal {
         processLock = nil
     }
     private func connect() async throws {
-        guard ProcessInfo.processInfo.environment["SYNCLAB_ENABLE_DEVELOPMENT"] == "YES" else { throw LabError.blocked }
+        guard authorization.isEnabled else { throw LabError.blocked }
         if driver != nil { return }
         let container = CKContainer(identifier: Binding.container)
         guard try await container.accountStatus() == .available else { throw LabError.blocked }
@@ -154,7 +162,7 @@ final class ProbeJournal {
         let local = try LabStore(base: base, binding: binding)
         store = local
         let cloud = CloudDriver(store: local)
-        driver = cloud; try await cloud.start()
+        driver = cloud; try await cloud.start(authorization: authorization)
     }
     public func perform(_ command: ProbeCommand) async -> ProbeResult {
         #if os(macOS)
@@ -165,7 +173,7 @@ final class ProbeJournal {
         var result = ProbeResult(id: command.id, dataset: dataset, runID: runID, commandDigest: (try? canonical(command)).map(digest) ?? "", status: "FAIL", events: [], halted: driver?.halted ?? false, platform: platform)
         do {
             try command.validate()
-            guard ProcessInfo.processInfo.environment["SYNCLAB_ENABLE_DEVELOPMENT"] == "YES" else { throw LabError.blocked }
+            guard authorization.isEnabled else { throw LabError.blocked }
             try ensureExclusive()
             if store == nil { try await connect() }
             switch command.action {
@@ -207,13 +215,26 @@ final class ProbeJournal {
         let command = try JSONDecoder().decode(ProbeCommand.self, from: data)
         try command.validate()
         try ensureExclusive()
-        let output = URL.documentsDirectory.appendingPathComponent("SyncLab-Probe", isDirectory: true)
-        let journal = try ProbeJournal(root: output, dataset: dataset, runID: runID)
-        if let existing = try journal.claim(command, bytes: data) { return existing }
+        try rejectLegacySharedJournal(command)
+        let journal = try ProbeJournal(root: base.appendingPathComponent("probe-journals"), dataset: dataset, runID: runID)
+        if let existing = try journal.claim(command, bytes: data) {
+            try exportCommand(existing); return existing
+        }
         var result = await perform(command)
         result.commandDigest = digest(data)
         try journal.complete(result)
+        try exportCommand(result)
         return result
+    }
+
+    private func rejectLegacySharedJournal(_ command: ProbeCommand) throws {
+        let legacy = URL.documentsDirectory.appendingPathComponent("SyncLab-Probe").appendingPathComponent(runID)
+            .appendingPathComponent(dataset).appendingPathComponent(command.id + ".request.json")
+        // Do not promote formerly shared files to trusted evidence or silently replay them.
+        guard !FileManager.default.fileExists(atPath: legacy.path) else { throw LabError.blocked }
+    }
+    private func exportCommand(_ result: ProbeResult) throws {
+        try publishProbeExport(canonical(result), to: URL.documentsDirectory.appendingPathComponent("SyncLab-" + runID + "-" + result.id + ".json"))
     }
 
     // A fixed loopback bridge lets the original Mac user coordinate a signed
@@ -227,7 +248,7 @@ final class ProbeJournal {
         return url
     }
     public func runBridge(_ address: String, token: String, report: (String) -> Void) async throws {
-        guard ProcessInfo.processInfo.environment["SYNCLAB_ENABLE_DEVELOPMENT"] == "YES", isHash(token) else { throw LabError.blocked }
+        guard authorization.isEnabled, isHash(token) else { throw LabError.blocked }
         let endpoint = try Self.loopbackURL(address)
         try ensureExclusive()
         let config = URLSessionConfiguration.ephemeral
@@ -245,7 +266,8 @@ final class ProbeJournal {
             if !data.isEmpty {
                 let command = try JSONDecoder().decode(ProbeCommand.self, from: data)
                 try command.validate()
-                let journal = try ProbeJournal(root: URL.documentsDirectory.appendingPathComponent("SyncLab-Probe"), dataset: dataset, runID: runID)
+                try rejectLegacySharedJournal(command)
+                let journal = try ProbeJournal(root: base.appendingPathComponent("probe-journals"), dataset: dataset, runID: runID)
                 var result: ProbeResult
                 if let existing = try journal.claim(command, bytes: data) { result = existing }
                 else {
@@ -262,6 +284,55 @@ final class ProbeJournal {
             }
             try await Task.sleep(nanoseconds: 500_000_000)
         }
+    }
+
+    // Fixed local-document transport for devices whose developer image is unavailable.
+    // Loading a document never starts this method; the Owner must tap the Debug button.
+    public func runManualPlan(_ bytes: Data, documents: URL) async throws -> ManualProbeExecution {
+        guard !manualPlanRunning else { throw LabError.blocked }
+        try Task.checkCancellation()
+        guard authorization.isEnabled else { throw LabError.blocked }
+        manualPlanRunning = true
+        defer { manualPlanRunning = false }
+        let plan = try ManualProbePlan.decode(bytes)
+        guard plan.dataset == dataset, plan.runID == runID else { throw LabError.identityCollision }
+        try ensureExclusive()
+        do {
+            let journal = try ManualProbeJournal(root: base.appendingPathComponent("manual-plan-journals"), plan: plan)
+            let output = documents.appendingPathComponent("SyncLab-Manual-" + plan.id + ".json")
+            if let cached = try journal.claim(bytes) {
+                try publishProbeExport(Data(contentsOf: journal.resultURL), to: output)
+                await shutdown(); return ManualProbeExecution(report: cached, exportURL: output, reusedOriginal: true)
+            }
+            let commands = try ProbeJournal(root: base.appendingPathComponent("probe-journals"), dataset: dataset, runID: runID, contextID: plan.id)
+            var report = ManualProbeReport(planID: plan.id, dataset: dataset, runID: runID,
+                                           planDigest: digest(bytes), results: [])
+            for command in plan.commands {
+                do {
+                    try Task.checkCancellation()
+                    let commandBytes = try canonical(command)
+                    var result: ProbeResult
+                    if let cached = try commands.claim(command, bytes: commandBytes) { result = cached }
+                    else {
+                        result = await perform(command); result.commandDigest = digest(commandBytes); result.planID = plan.id
+                        try commands.complete(result)
+                    }
+                    report.results.append(result)
+                    if result.status != "PASS" || result.halted || result.errorCode != nil {
+                        report.errorCode = result.errorCode ?? (result.halted ? "ENGINE_HALTED" : "COMMAND_FAILED"); break
+                    }
+                } catch is CancellationError { report.errorCode = "CANCELLED"; break }
+                catch let error as LabError {
+                    report.errorCode = "LAB_" + String(describing: error); break
+                } catch { report.errorCode = "LOCAL_FAILURE"; break }
+            }
+            report.completedAllCommands = report.results.count == plan.commands.count && report.results.allSatisfy { $0.status == "PASS" && !$0.halted && $0.errorCode == nil }
+            await driver?.stop(); driver = nil // Keep the process lock through report publication.
+            try journal.complete(report)
+            try publishProbeExport(Data(contentsOf: journal.resultURL), to: output)
+            await shutdown()
+            return ManualProbeExecution(report: report, exportURL: output, reusedOriginal: false)
+        } catch { await shutdown(); throw error }
     }
 }
 #endif

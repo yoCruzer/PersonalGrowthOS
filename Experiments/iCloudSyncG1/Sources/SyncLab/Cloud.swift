@@ -62,11 +62,11 @@ public enum Wire {
     public private(set) var events: [String] = [] // fixed codes only; no cloud errors containing account IDs
     public private(set) var halted = false
     public init(store: LabStore) { self.store = store; ticket = store.epoch }
-    public func start() async throws {
+    public func start(authorization: DevelopmentAuthorization = .fromEnvironment()) async throws {
         #if !DEBUG
         throw LabError.blocked
         #else
-        guard ProcessInfo.processInfo.environment["SYNCLAB_ENABLE_DEVELOPMENT"] == "YES", !halted, engine == nil else { throw LabError.blocked }
+        guard authorization.isEnabled, !halted, engine == nil else { throw LabError.blocked }
         // The runbook requires signed entitlement/profile verification BEFORE opt-in.
         let container = CKContainer(identifier: Binding.container)
         guard try await container.accountStatus() == .available else { throw LabError.blocked }

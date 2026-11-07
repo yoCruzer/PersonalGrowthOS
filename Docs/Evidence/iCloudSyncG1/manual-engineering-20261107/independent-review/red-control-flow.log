@@ -1,0 +1,52 @@
+Building for debugging...
+[Planning deferred tasks]
+[33 / 64]
+[34 / 65] SyncLab
+[44 / 114]
+[52 / 114]
+[54 / 114]
+[59 / 114]
+[63 / 114]
+[67 / 114]
+[69 / 114]
+[70 / 114]
+[76 / 114]
+[83 / 114] SyncLab
+[94 / 115] LabReplay-product
+[97 / 117] SyncLab
+[98 / 117] SyncLab
+/private/tmp/g1-manual-review/red-control-flow/Sources/SyncLab/DevelopmentProbe.swift:153:9: warning: code after 'throw' will never be executed
+151 |         throw LabError.blocked // REVIEW SEAM: never call CloudKit in this copy.
+152 | 
+153 |         guard authorization.isEnabled else { throw LabError.blocked }
+    |         `- warning: code after 'throw' will never be executed
+154 |         if driver != nil { return }
+155 |         let container = CKContainer(identifier: Binding.container)
+[105 / 118] SyncLab-product
+[105 / 118] LabReplay-product
+[107 / 118] SyncLabTests-product
+[121 / 151]
+[127 / 151]
+[132 / 151]
+[135 / 151]
+[136 / 151]
+[145 / 151] SyncLabTests-product
+[147 / 151] SyncLabTests-product
+Build complete! (6.33秒)
+Test Suite 'Selected tests' started at 2026-11-07 16:18:17.650.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 16:18:17.651.
+Test Suite 'ManualControlFlowTests' started at 2026-11-07 16:18:17.651.
+Test Case '-[SyncLabTests.ManualControlFlowTests testCancelledPlanMustNotReachCloudEntry]' started.
+/private/tmp/g1-manual-review/red-control-flow/Tests/SyncLabTests/ManualControlFlowTests.swift:12: error: -[SyncLabTests.ManualControlFlowTests testCancelledPlanMustNotReachCloudEntry] : XCTAssertEqual failed: ("1") is not equal to ("0") - Pre-cancelled plan reached connect despite cancellation
+Test Case '-[SyncLabTests.ManualControlFlowTests testCancelledPlanMustNotReachCloudEntry]' failed (0.045 seconds).
+Test Case '-[SyncLabTests.ManualControlFlowTests testReentrantPlanMustNotReleaseActivePlanLock]' started.
+/private/tmp/g1-manual-review/red-control-flow/Tests/SyncLabTests/ManualControlFlowTests.swift:24: error: -[SyncLabTests.ManualControlFlowTests testReentrantPlanMustNotReleaseActivePlanLock] : XCTAssertThrowsError failed: did not throw an error - Rejected reentrant invocation released original live process lock
+Test Case '-[SyncLabTests.ManualControlFlowTests testReentrantPlanMustNotReleaseActivePlanLock]' failed (0.004 seconds).
+Test Suite 'ManualControlFlowTests' failed at 2026-11-07 16:18:17.700.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.049 (0.049) seconds
+Test Suite 'SyncLabTests.xctest' failed at 2026-11-07 16:18:17.700.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.049 (0.049) seconds
+Test Suite 'Selected tests' failed at 2026-11-07 16:18:17.700.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.049 (0.050) seconds
+Note: Some test targets reported failures:
+  - SyncLabTests (XCTest)

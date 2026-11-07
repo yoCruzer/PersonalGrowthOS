@@ -10,6 +10,8 @@ import CloudKit
     @Published var dataset = ProcessInfo.processInfo.environment["SYNCLAB_DATASET"] ?? "synthetic-g1-001"
     @Published var summary = ""
     @Published var snapshotURL: URL?
+    @Published var manualProbeRunning = false
+    @Published var manualProbeResultURL: URL?
     var store: LabStore?
     var driver: CloudDriver?
     var probeStarted = false
@@ -94,12 +96,49 @@ import CloudKit
         } catch { status = "合成测试入口停止；原数据保留" }
         #endif
     }
+    #if DEBUG
+    func runImportedManualPlan() async {
+        let environment = ProcessInfo.processInfo.environment
+        guard !manualProbeRunning, environment["SYNCLAB_PROBE_RUN"] == nil,
+              environment["SYNCLAB_ENABLE_DEVELOPMENT"] != "YES", driver == nil else { return }
+        manualProbeRunning = true; probeStarted = true; manualProbeResultURL = nil; snapshotURL = nil
+        defer { manualProbeRunning = false }
+        do {
+            let documents = URL.documentsDirectory
+            let bytes = try ManualProbePlan.readImportedPlan(documents: documents)
+            let plan = try ManualProbePlan.decode(bytes)
+            summary = "合成测试文件：" + plan.id + "\n数据集：" + plan.dataset
+            // This method is invoked only by the explicit Debug button below.
+            // The imported document cannot grant authority or supply paths/URLs.
+            let probe = try DevelopmentProbe(base: base, dataset: plan.dataset, runID: plan.runID,
+                                             authorization: .afterExplicitManualConsent())
+            status = "正在执行合成测试，请保持本页打开：" + plan.id
+            let execution = try await probe.runManualPlan(bytes, documents: documents)
+            manualProbeResultURL = execution.exportURL
+            status = execution.report.completedAllCommands
+                ? "测试指令执行完成；请导出结果核验，尚不代表双端通过。"
+                : "测试已停止，原证据保留：" + (execution.report.errorCode ?? "UNKNOWN")
+            if execution.reusedOriginal { status = "已读取此前的原始结果，未重新执行。\n" + status }
+        } catch let error as LabError { status = "测试未启动或已停止；原证据保留：LAB_" + String(describing: error) }
+        catch { status = "无法执行导入的测试文件；请核对文件，原数据保留。" }
+    }
+    #endif
 }
 struct LabScreen: View {
     @StateObject private var model = LabViewModel()
     var body: some View {
         NavigationStack {
             Form {
+                #if DEBUG
+                if ProcessInfo.processInfo.environment["SYNCLAB_PROBE_RUN"] == nil && ProcessInfo.processInfo.environment["SYNCLAB_ENABLE_DEVELOPMENT"] != "YES" {
+                    Section("手机合成测试 · Debug") {
+                        Text("仅访问 SyncLab Development 实验容器和合成数据。请先导入测试文件；点下方按钮才会连接云端。")
+                        Button(manualProbeRunningLabel) { Task { await model.runImportedManualPlan() } }
+                            .disabled(model.manualProbeRunning)
+                        if let url = model.manualProbeResultURL { ShareLink("导出测试结果", item: url) }
+                    }
+                }
+                #endif
                 Section("SyncLab · 仅合成数据") {
                     Text("独立数据库、独立容器。Development 真实验证尚未完成。")
                     TextField("Dataset", text: $model.dataset).disabled(model.store != nil)
@@ -107,18 +146,21 @@ struct LabScreen: View {
                     Button("离线保存文字和合成原图") { model.save() }
                     Button("显式用当前文字解决全部候选") { model.save(resolve: true) }
                     Button("保存删除意图", role: .destructive) { model.save(deleted: true, resolve: true) }
-                }
-                Section("验证状态") { Text(model.summary).textSelection(.enabled); Text(model.status).textSelection(.enabled); Button("导出合成实验快照") { model.export() }; if let url = model.snapshotURL { ShareLink("保存快照副本", item: url) } }
+                }.disabled(model.probeStarted)
+                Section("验证状态") { Text(model.summary).textSelection(.enabled); Text(model.status).textSelection(.enabled); Button("导出合成实验快照") { model.export() }.disabled(model.probeStarted); if let url = model.snapshotURL { ShareLink("保存快照副本", item: url) } }
                 Section("需先完成签名与账户门禁") {
                     Button("停止网络并重开本地分区") { Task { await model.reopenLocally() } }
                     Button("打开当前测试账户分区") { Task { await model.connect() } }
                     Button("手动发送与获取") { Task { await model.sync() } }
                     Text("默认禁止云访问。只在核对 Development 签名后，按 README 显式启用运行参数；不切换系统账户。")
-                }
+                }.disabled(model.probeStarted)
             }.navigationTitle("PersonalGrowthOS SyncLab").task {
                 if ProcessInfo.processInfo.environment["SYNCLAB_PROBE_RUN"] == nil { model.openOffline() }
                 else { await model.runProbeIfRequested() }
             }
         }
+    }
+    private var manualProbeRunningLabel: String {
+        model.manualProbeRunning ? "正在执行…" : "启动导入的合成 Development 测试"
     }
 }

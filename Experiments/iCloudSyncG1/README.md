@@ -1,6 +1,6 @@
 # SyncLab G1（独立实验）
 
-状态：**BLOCKED_ENV**。2026-11-07 Owner解锁后已恢复门户核验，iOS/Mac签名实包校验均通过、Mac登记及手机连接探测成功；Owner最新更正两端iCloud不同，同账户隔离环境待准备，真实Development双客户端尚未执行。工程不引用正式产品源码、App Group、数据库或用户图片。SwiftData `.none`，仅 `G1ObjectV1` / `G1ImageV1` 两个实验 wire types。它不是39实体同步实现。
+状态：**G1部分真实服务已验证，双端验收未完成**。Mac13组实际Development命令通过，手机已通过Owner授权的Apple Configurator安装既有SyncLab，但DDI仍失败；新增Debug手动文稿入口已完成工程门禁，待手机实际执行。正式产品、App Group和私人库未接入。
 
 ## 离线复现
 
@@ -61,6 +61,16 @@ Owner已创建haha普通用户并报告登录手机同一iCloud。原控制会�
 
 `SYNCLAB_PROBE_RUN` + `SYNCLAB_ENABLE_DEVELOPMENT=YES`必须显式设置，Release不编入探针。Mac另需`SYNCLAB_PROBE_BRIDGE`/`SYNCLAB_PROBE_TOKEN`；iPhone用`SYNCLAB_PROBE_COMMAND`传递base64 JSON单次指令。每个客户端对dataset持有flock，重复实例拒绝；journal按run/dataset隔离、先保存原始指令再执行，结果硬链接发布不可覆盖。已记录请求但无结果视为中断，不能同ID静默重放。
 
-结果位于本App Documents/SyncLab-Probe/<runID>/<dataset>/<commandID>.json。其中账户指纹仅用于私下比较，同步快照只有实验数据；公开证据必须去除账户指纹，保留run/dataset/指令摘要及逐mutation/图片字节判定。**status=PASS只代表命令完成，仍须检查pending/events并独立比对双端内容，不是G1/云验收PASS。**启动桥不会自行发送命令。
+新版本权威journal位于非共享Application Support；单命令导出副本位于本App Documents/SyncLab-<runID>-<commandID>.json，Mac桥另接收同一结果。旧Documents内request不会自动晋升可信或重放，使用新runID继续。其中账户指纹仅用于私下比较，同步快照只有实验数据；公开证据必须去除账户指纹，保留run/dataset/指令摘要及逐mutation/图片字节判定。**status=PASS只代表命令完成，仍须检查pending/events并独立比对双端内容，不是G1/云验收PASS。**启动桥不会自行发送命令。
 
 当前真实CloudKit八项仍待执行；工具没有把本地故障注入冒充真实SDK/server行为。实际账户切换、真实离线/锁屏等场景仍单列，需相应Owner操作和证据。
+
+## 无开发镜像时的手动文稿入口
+
+仅Debug使用InfoDebug.plist开放实验App文件共享，Release无入口、无共享、CloudDriver始终拒绝启动。已验签Debug IPA可以通过官方Configurator添加；只操作SyncLab，不准备、监督、恢复或抹除设备。
+
+使用cfgutil的指定设备参数和install-doc com.yocruzer.PersonalGrowthOS.SyncLab <文件>导入固定文件名SyncLab-Probe-Plan.json（不使用sync删除选项）。文件包含version=1、probe-前缀id/runID、synthetic-g1-前缀dataset和1–16条既有ProbeCommand；最大256KiB，整批验证后才可能执行。文件本身不授权云访问。Owner在手机点“启动导入的合成Development测试”；仅局部Debug授权，不写环境或持久设置，普通环境授权模式不能同时进入手动模式。
+
+整计划与逐指令权威journal位于私有base，先claim再执行、原件不可覆盖；计划内命令按planID隔离并写入结果上下文。未完成claim显式阻断，取消停止后续指令，实例重入与dataset flock保护并发。完整报告只表示命令执行，仍须逐ID、原图、pending、events和账户核验；App状态只使用私有原件派生的report。
+
+完成后用Configurator“操作→导出→文稿”选择SyncLab导出，或使用App内“导出测试结果”。平坦副本名SyncLab-Manual-<planID>.json。副本不是权威历史，App不会把导入的伪结果当缓存；已有副本须与私有结果字节相同，否则拒绝覆盖。第一次手机计划只connect，实际两端指纹匹配后再进行save/sync。所有原件私留，公开证据移除账户指纹。

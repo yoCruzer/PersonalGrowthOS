@@ -40,7 +40,9 @@
 			<key>children</key>
 			<array>
 				<string>B400DE42A51D894E851C87AC</string>
+				<string>27119319BF79E67A66B9EEE0</string>
 				<string>7EEDE6560A4A8BE335A1F6B1</string>
+				<string>23C04B28AB1549F9EBA8A91C</string>
 				<string>7654C4F9B5D96C831728C5C9</string>
 				<string>470EC1EE64E015A096582405</string>
 				<string>A5D9D34EF441F57C9146C407</string>
@@ -64,6 +66,17 @@
 			<string>B400DE42A51D894E851C87AC</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
+		</dict>
+		<key>23C04B28AB1549F9EBA8A91C</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/ManualProbePlan.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>244210E48437B6556980A702</key>
 		<dict>
@@ -107,6 +120,17 @@
 			<array>
 				<string>34A04005BCAF206EEC990BD9</string>
 			</array>
+		</dict>
+		<key>27119319BF79E67A66B9EEE0</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/DevelopmentAuthorization.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>2B23A31EEC75B029432F2445</key>
 		<dict>
@@ -232,6 +256,13 @@
 			<key>name</key>
 			<string>Release</string>
 		</dict>
+		<key>6773E16591D8C7DEB2945D92</key>
+		<dict>
+			<key>fileRef</key>
+			<string>23C04B28AB1549F9EBA8A91C</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
 		<key>7654C4F9B5D96C831728C5C9</key>
 		<dict>
 			<key>isa</key>
@@ -261,7 +292,9 @@
 			<key>files</key>
 			<array>
 				<string>131949B0F1C625C25A1CBE59</string>
+				<string>B14A50F7CFD2A3D583E8B4CD</string>
 				<string>3C0726C5C0A4333BE9B3558D</string>
+				<string>6773E16591D8C7DEB2945D92</string>
 				<string>0EA8A916FB87934EDFF383F6</string>
 				<string>D8E368627DE564D016B604FE</string>
 				<string>42C4C7607E10E61F8F959728</string>
@@ -292,6 +325,13 @@
 			<string>SyncLab.app</string>
 			<key>sourceTree</key>
 			<string>BUILT_PRODUCTS_DIR</string>
+		</dict>
+		<key>B14A50F7CFD2A3D583E8B4CD</key>
+		<dict>
+			<key>fileRef</key>
+			<string>27119319BF79E67A66B9EEE0</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
 		</dict>
 		<key>B400DE42A51D894E851C87AC</key>
 		<dict>
@@ -346,7 +386,7 @@
 				<key>GENERATE_INFOPLIST_FILE</key>
 				<string>NO</string>
 				<key>INFOPLIST_FILE</key>
-				<string>App/Info.plist</string>
+				<string>App/InfoDebug.plist</string>
 				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
 				<string>17.0</string>
 				<key>MACOSX_DEPLOYMENT_TARGET</key>

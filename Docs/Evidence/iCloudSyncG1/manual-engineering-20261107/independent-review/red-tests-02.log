@@ -1,0 +1,54 @@
+Building for debugging...
+[Planning deferred tasks]
+[33 / 64]
+[34 / 65] SyncLab
+[46 / 114]
+[52 / 114]
+[54 / 114]
+[59 / 114]
+[63 / 114]
+[67 / 114]
+[69 / 114]
+[70 / 114]
+[76 / 114]
+[83 / 114] SyncLab
+[94 / 115] LabReplay-product
+[97 / 117] SyncLab
+[98 / 117] SyncLab
+[100 / 117] SyncLab
+[105 / 118] LabReplay-product
+[107 / 118] SyncLabTests-product
+[121 / 150]
+[126 / 150]
+[129 / 150]
+[132 / 150]
+[135 / 150]
+[136 / 150]
+[144 / 150] SyncLabTests-product
+[146 / 150] SyncLabTests-product
+Build complete! (6.12秒)
+Test Suite 'All tests' started at 2026-11-07 16:16:55.001.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 16:16:55.002.
+Test Suite 'ManualIndependentTests' started at 2026-11-07 16:16:55.002.
+Test Case '-[SyncLabTests.ManualIndependentTests testImportedForgedCompletionMustNotExecuteOrBeAccepted]' started.
+/private/tmp/g1-manual-review/red-candidate/Tests/SyncLabTests/ManualIndependentTests.swift:18: error: -[SyncLabTests.ManualIndependentTests testImportedForgedCompletionMustNotExecuteOrBeAccepted] : failed - Accepted imported fabricated completion without executing any command: probe-plan-first.json
+Test Case '-[SyncLabTests.ManualIndependentTests testImportedForgedCompletionMustNotExecuteOrBeAccepted]' failed (0.068 seconds).
+Test Case '-[SyncLabTests.ManualIndependentTests testImportedOutputDirectorySymlinkMustNotWriteOutsideDocuments]' started.
+/private/tmp/g1-manual-review/red-candidate/Tests/SyncLabTests/ManualIndependentTests.swift:38: error: -[SyncLabTests.ManualIndependentTests testImportedOutputDirectorySymlinkMustNotWriteOutsideDocuments] : XCTAssertThrowsError failed: did not throw an error - Writable import symlink redirects journal publication
+/private/tmp/g1-manual-review/red-candidate/Tests/SyncLabTests/ManualIndependentTests.swift:39: error: -[SyncLabTests.ManualIndependentTests testImportedOutputDirectorySymlinkMustNotWriteOutsideDocuments] : XCTAssertFalse failed
+Test Case '-[SyncLabTests.ManualIndependentTests testImportedOutputDirectorySymlinkMustNotWriteOutsideDocuments]' failed (0.002 seconds).
+Test Case '-[SyncLabTests.ManualIndependentTests testSecondPlanMustNotReuseSnapshotFromBeforeItsSave]' started.
+/private/tmp/g1-manual-review/red-candidate/Tests/SyncLabTests/ManualIndependentTests.swift:30: error: -[SyncLabTests.ManualIndependentTests testSecondPlanMustNotReuseSnapshotFromBeforeItsSave] : XCTAssertThrowsError failed: did not throw an error - Second plan accepts old snapshot after a newer save: sequence is not tied to plan
+Test Case '-[SyncLabTests.ManualIndependentTests testSecondPlanMustNotReuseSnapshotFromBeforeItsSave]' failed (0.002 seconds).
+Test Suite 'ManualIndependentTests' failed at 2026-11-07 16:16:55.073.
+	 Executed 3 tests, with 4 failures (0 unexpected) in 0.071 (0.071) seconds
+Test Suite 'SyncLabTests.xctest' failed at 2026-11-07 16:16:55.073.
+	 Executed 3 tests, with 4 failures (0 unexpected) in 0.071 (0.071) seconds
+Test Suite 'All tests' failed at 2026-11-07 16:16:55.073.
+	 Executed 3 tests, with 4 failures (0 unexpected) in 0.071 (0.073) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+Note: Some test targets reported failures:
+  - SyncLabTests (XCTest)

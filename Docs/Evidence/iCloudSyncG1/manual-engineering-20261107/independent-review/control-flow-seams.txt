@@ -1,0 +1,1 @@
+Copied red-candidate only. Injected counter/suspension + unconditional LabError.blocked at start of connect(), before all CloudKit work; redirected runOnce Documents root to synthetic base. All authorization/journal/loop/cleanup logic left unchanged. These tests demonstrate original control-flow reachability, not live-cloud outcomes. No production file changed.

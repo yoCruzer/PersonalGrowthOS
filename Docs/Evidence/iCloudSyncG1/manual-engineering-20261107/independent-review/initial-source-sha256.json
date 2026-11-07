@@ -1,0 +1,10 @@
+{
+  "Sources/SyncLab/DevelopmentAuthorization.swift": "40740590ce519fb728c25f9b76cf01bfec9b7cc6a677af748a25f597ed72f701",
+  "Sources/SyncLab/ManualProbePlan.swift": "ae6334e3a81a6534e703d06b907817b6199e9f1001f4efb98fb3206a69b173c4",
+  "Sources/SyncLab/DevelopmentProbe.swift": "e4b045ea050d8c4924293906d316d96781fb768669455450f6dfcfe16c48c7a9",
+  "Sources/SyncLab/Cloud.swift": "cc1112147b35f7db8df42475df1e28d5e19d7963e3c8d15e54ba9f47ac1454da",
+  "App/SyncLabApp.swift": "d9f120f8abc11624674f0125c308633cb3d960ea6ce896b4c58f18d623ca5346",
+  "Tools/generate_project.py": "c41dbbdb799a459177ceed265da85550b24d7df5e6ce69866f6b24e47a3e8a8c",
+  "App/InfoDebug.plist": "f7c6576b7f0669f5572e0d572bd36f61c873a60d5e1347a033b8f217e6f3bf80",
+  "Tests/SyncLabTests/ManualProbeTests.swift": "a4c2301630686cc310bd657cea8ad7de9047841836be34f74f630e629f514271"
+}
