@@ -1,7 +1,7 @@
 {
   "scope": "public redacted evidence file hashes; private raw hashes in independent review",
   "files": {
-    "README.md": "b998c3c42d134ec5780fd1ed68d20667a46cbd85d7ad2be54cb9be4ac551516b",
+    "README.md": "92af8098ac9bfe1bd86f5a8f309665e5640bb7852891f616deaa64c7718e0485",
     "SyncLab-Manual-probe-ios-plan-001-connect.json": "e3c2b9043ee6f34023a8cd1618b142021e160b294f583b77bacb4d0f171d31b5",
     "SyncLab-Manual-probe-ios-plan-002-connect.json": "8acf780ebe6440e6b66556cfd27e9f3fd03cfdfc67a52cbfaca3580d3434bf10",
     "SyncLab-Manual-probe-ios-plan-003-fetch.json": "3223b8148c1b54c9237f5e39afb49065313b5f2df1387d83a2de2306d3d12648",
