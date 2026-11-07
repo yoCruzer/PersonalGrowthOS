@@ -4,9 +4,18 @@ import SyncLab
 import Darwin
 
 @main struct Replay {
-    @MainActor static func main() throws {
+    @MainActor static func main() async throws {
         let args = CommandLine.arguments
         #if DEBUG
+        if args.count == 4, args[1] == "offline-fault" {
+            try await OfflineFaultReplay.run(mode: args[2], base: URL(fileURLWithPath: args[3], isDirectory: true))
+            return
+        }
+        if args.count == 5, args[1] == "prepare-faults" {
+            try FaultBatch.write(to: URL(fileURLWithPath: args[2], isDirectory: true), dataset: args[3], runID: args[4])
+            print("Prepared ordered synthetic fault plans; no app launch or cloud operations.")
+            return
+        }
         if args.count == 5, args[1] == "prepare-batch" {
             try RemainingBatch.write(to: URL(fileURLWithPath: args[2], isDirectory: true), dataset: args[3], runID: args[4])
             print("Prepared three ordered synthetic plans; no app launch or cloud operations.")

@@ -1,0 +1,4 @@
+POSITIVE PASS
+REJECTED asset lease has no record digest
+REJECTED after state checkpoint absent
+DOCUMENTED LIMIT: opaque account hashes have no derivable cross-field relation

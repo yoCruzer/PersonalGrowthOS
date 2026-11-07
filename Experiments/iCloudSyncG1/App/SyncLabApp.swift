@@ -1,5 +1,6 @@
 import SwiftUI
 import CloudKit
+import Darwin
 
 @main struct SyncLabApp: App {
     var body: some Scene { WindowGroup { LabScreen() } }
@@ -12,6 +13,21 @@ import CloudKit
     @Published var snapshotURL: URL?
     @Published var manualProbeRunning = false
     @Published var manualProbeResultURL: URL?
+    #if DEBUG
+    @Published var importedBundle: ManualProbeBundle?
+    @Published var selectedPlanID = ""
+    func loadBundle() {
+        guard !manualProbeRunning else { return }
+        do {
+            let bundle = try ManualProbeBundle.read(documents: .documentsDirectory)
+            importedBundle = bundle; selectedPlanID = bundle.items[0].plan.id
+            status = "批次已读取；请选择当前步骤，再点击启动。尚未连接云端。"
+        } catch {
+            importedBundle = nil; selectedPlanID = ""
+            status = "批次未载入；原有测试结果保留。"
+        }
+    }
+    #endif
     var store: LabStore?
     var driver: CloudDriver?
     var probeStarted = false
@@ -82,7 +98,15 @@ import CloudKit
             guard let run = env["SYNCLAB_PROBE_RUN"] else { throw LabError.blocked }
             let probe = try DevelopmentProbe(base: base, dataset: dataset, runID: run)
             do {
-            if let command = env["SYNCLAB_PROBE_COMMAND"] {
+            if env["SYNCLAB_PROBE_IMPORTED_PLAN"] == "YES" {
+                let bytes = try ManualProbePlan.readImportedPlan(documents: .documentsDirectory)
+                let execution = try await probe.runManualPlan(bytes, documents: .documentsDirectory)
+                status = execution.report.completedAllCommands ? "测试计划完成，原始结果已导出" : "测试计划停止，原始结果保留"
+                #if os(macOS)
+                // Only the explicitly enabled synthetic launcher exits automatically.
+                Darwin.exit(execution.report.completedAllCommands ? 0 : 42)
+                #endif
+            } else if let command = env["SYNCLAB_PROBE_COMMAND"] {
                 let result = try await probe.runOnce(command)
                 status = result.id + ": " + result.status + " " + (result.errorCode ?? "")
             } else if let address = env["SYNCLAB_PROBE_BRIDGE"], let token = env["SYNCLAB_PROBE_TOKEN"] {
@@ -105,7 +129,7 @@ import CloudKit
         defer { manualProbeRunning = false }
         do {
             let documents = URL.documentsDirectory
-            let bytes = try ManualProbePlan.readImportedPlan(documents: documents)
+            let bytes = try importedBundle.map { try $0.bytes(for: selectedPlanID) } ?? ManualProbePlan.readImportedPlan(documents: documents)
             let plan = try ManualProbePlan.decode(bytes)
             summary = "合成测试文件：" + plan.id + "\n数据集：" + plan.dataset
             // This method is invoked only by the explicit Debug button below.
@@ -132,7 +156,13 @@ struct LabScreen: View {
                 #if DEBUG
                 if ProcessInfo.processInfo.environment["SYNCLAB_PROBE_RUN"] == nil && ProcessInfo.processInfo.environment["SYNCLAB_ENABLE_DEVELOPMENT"] != "YES" {
                     Section("手机合成测试 · Debug") {
-                        Text("仅访问 SyncLab Development 实验容器和合成数据。请先导入测试文件；点下方按钮才会连接云端。")
+                        Text("仅访问 SyncLab Development 实验容器和合成数据。导入和选择步骤不会自动运行；点击启动才会执行该步骤。")
+                        Button("载入已导入的测试批次") { model.loadBundle() }.disabled(model.manualProbeRunning)
+                        if let bundle = model.importedBundle {
+                            Picker("当前测试步骤", selection: $model.selectedPlanID) {
+                                ForEach(bundle.items, id: \.plan.id) { item in Text(item.title).tag(item.plan.id) }
+                            }.disabled(model.manualProbeRunning)
+                        }
                         Button(manualProbeRunningLabel) { Task { await model.runImportedManualPlan() } }
                             .disabled(model.manualProbeRunning)
                         if let url = model.manualProbeResultURL { ShareLink("导出测试结果", item: url) }

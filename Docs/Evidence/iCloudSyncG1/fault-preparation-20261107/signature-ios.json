@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "checks": {
+    "profileNotExpired": true,
+    "bundle": true,
+    "team": true,
+    "appIdentifier": true,
+    "cloudKit": true,
+    "container": true,
+    "development": true,
+    "push": true,
+    "noProductGroup": true
+  },
+  "scope": "signature only; not cloud access"
+}

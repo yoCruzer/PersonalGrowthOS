@@ -1,0 +1,6 @@
+make_fixture.py: PASS
+check_oracle_controls.py: PASS
+dependency_controls.py: PASS
+extra_oracle_controls.py: PASS
+test_window_current.py: PASS
+Synthetic only: full 27-stage positive, 24 rejection controls, 8 mocked launcher tests. No G1/cloud verdict.

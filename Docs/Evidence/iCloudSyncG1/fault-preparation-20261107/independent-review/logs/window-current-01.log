@@ -1,0 +1,21 @@
+.F.....F
+======================================================================
+FAIL: test_bad_nested_result_context_rejected (__main__.WindowIndependentTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/g1-fault-window-review/test_window_current.py", line 45, in test_bad_nested_result_context_rejected
+    with self.assertRaises((ValueError,OSError)):self.run_window(lambda:self.reportpath.write_bytes(canon(report)))
+AssertionError: (<class 'ValueError'>, <class 'OSError'>) not raised
+
+======================================================================
+FAIL: test_preexisting_wellformed_boundary_rejected_before_launch (__main__.WindowIndependentTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/g1-fault-window-review/test_window_current.py", line 48, in test_preexisting_wellformed_boundary_rejected_before_launch
+    with self.assertRaises((ValueError,OSError)):self.run_window()
+AssertionError: (<class 'ValueError'>, <class 'OSError'>) not raised
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.032s
+
+FAILED (failures=2)

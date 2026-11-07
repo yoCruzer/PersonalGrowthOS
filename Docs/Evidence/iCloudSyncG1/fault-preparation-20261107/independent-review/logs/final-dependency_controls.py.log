@@ -1,0 +1,10 @@
+SYNTHETIC ONLY full 27-stage positive: {'status': 'PASS', 'scope': 'Fixed fault-window evidence only; not full G1 or Production acceptance', 'physicalNetworkOff': 'REQUIRES_OWNER_ACTION_RECORD', 'stages': 27}
+REJECTED nested dependency identity wrong
+REJECTED dependency process missing
+REJECTED dependency ready preview wrong old head
+REJECTED dependency preview/candidates/complete cleared
+REJECTED dependency extra projection
+REJECTED dependency cached account claimed live connect
+REJECTED dependency new image ACK absent
+REJECTED dependency mutation tamper MUST reject
+{"badInputsAccepted": [], "tested": 8, "scope": "Synthetic only, all 27 stages"}

@@ -1,0 +1,44 @@
+[
+  {
+    "step": "seed",
+    "expectedExit": 0,
+    "actualExit": 0,
+    "stdout": "PASS LOCAL_ONLY seed\n",
+    "stderr": ""
+  },
+  {
+    "step": "before",
+    "expectedExit": 73,
+    "actualExit": 73,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "step": "verify-before",
+    "expectedExit": 0,
+    "actualExit": 0,
+    "stdout": "PASS LOCAL_ONLY independent process verify-before; durable facts and outbox verified\n",
+    "stderr": ""
+  },
+  {
+    "step": "seed",
+    "expectedExit": 0,
+    "actualExit": 0,
+    "stdout": "PASS LOCAL_ONLY seed\n",
+    "stderr": ""
+  },
+  {
+    "step": "after",
+    "expectedExit": 74,
+    "actualExit": 74,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "step": "verify-after",
+    "expectedExit": 0,
+    "actualExit": 0,
+    "stdout": "PASS LOCAL_ONLY independent process verify-after; durable facts and outbox verified\n",
+    "stderr": ""
+  }
+]

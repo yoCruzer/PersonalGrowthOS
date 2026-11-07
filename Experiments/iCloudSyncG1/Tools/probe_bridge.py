@@ -127,7 +127,7 @@ def enqueue(root, source):
     command = json.loads(data)
     if len(data) > 65_536 or not isinstance(command, dict) or not valid_id(command.get('id')):
         raise ValueError('invalid command identity/size')
-    if command.get('action') not in ('connect', 'save', 'sync', 'snapshot', 'reopen', 'stop'):
+    if command.get('action') not in ('connect', 'save', 'sync', 'snapshot', 'reopen', 'stop', 'openCached', 'reopenLocal', 'crashBeforeSave', 'crashAfterSave', 'crashOnFetch', 'crashOnState', 'editDuringSend', 'inspectFaults', 'imageFaults', 'restoreIsolation', 'waitForAccountChange', 'closePartition', 'crashWithImageLease'):
         raise ValueError('unsupported action')
     target = Path(root) / 'requests' / (command['id'] + '.json')
     temporary = target.with_suffix('.' + secrets.token_hex(8) + '.tmp')

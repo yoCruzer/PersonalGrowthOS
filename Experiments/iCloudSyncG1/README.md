@@ -57,7 +57,7 @@ CLI 的 PRE-FETCH-CHECKPOINT 是本地退出顺序占位字节，不是真实 CK
 
 Owner已创建haha普通用户并报告登录手机同一iCloud。原控制会话无法直接操作新用户，使用`Tools/probe_bridge.py`在127.0.0.1建立一次性本机通道；`Tools/prepare_probe_package.py`把已通过严格签名检查的App复制到临时启动包。Owner在haha启动一次并保持登录即可，工具不会登录或退出系统账户，不包含私钥。
 
-桥固定dataset/runID，使用随机token；token文件mode600且仅指定测试用户有读取ACL，启动时只通过环境传递。App拒绝非loopback URL和重定向；只接受connect/save/sync/snapshot/reopen/stop，不接受容器、账户、路径或Shell参数。save只准probe-标识、SYNTHETIC文字及内置PNG。App数据库仍在各自沙箱中，正式库和App Group不参与。
+桥固定dataset/runID，使用随机token；token文件mode600且仅指定测试用户有读取ACL，启动时只通过环境传递。App拒绝非loopback URL和重定向；只接受ProbeCommand固定枚举（含后续Debug故障指令），不接受容器、账户、路径或Shell参数。save只准probe-标识、SYNTHETIC文字及内置PNG。App数据库仍在各自沙箱中，正式库和App Group不参与。
 
 `SYNCLAB_PROBE_RUN` + `SYNCLAB_ENABLE_DEVELOPMENT=YES`必须显式设置，Release不编入探针。Mac另需`SYNCLAB_PROBE_BRIDGE`/`SYNCLAB_PROBE_TOKEN`；iPhone用`SYNCLAB_PROBE_COMMAND`传递base64 JSON单次指令。每个客户端对dataset持有flock，重复实例拒绝；journal按run/dataset隔离、先保存原始指令再执行，结果硬链接发布不可覆盖。已记录请求但无结果视为中断，不能同ID静默重放。
 
@@ -93,3 +93,9 @@ Owner已创建haha普通用户并报告登录手机同一iCloud。原控制会�
 整个批次只使用从未运行过的新合成dataset/zone，执行前保留生成计划和身份记录。不能在旧dataset中重复同样ID并称新实验。新图片必须在seed/手机before快照中不存在，手机save新增`image-<secondPNG hash>`与对象pending，后续实际ACK清空，再由Mac实际下载逐字节核验。空本地快照不能证明远端没有未引用asset；若新zone前提无法证明，停止并标UNVERIFIED，不把复用既有asset算全新上传。
 
 生成器和51项原生测试只证明离线计划/投影/持久队列；不证明CloudKit真实依赖到达时序、新CKAsset上传、物理断网、独立进程崩溃、账户切换或完整G1。不得提前填PASS。剩余故障入口需另补齐后统一安排设备窗口，不要求Owner为本工程准备阶段持续连线。
+
+## 剩余故障集中窗口（Debug）
+
+参见 `Docs/ICLOUD_SYNC_G1_FAULT_WINDOW_ZH.md`。`LabReplay prepare-faults`生成27阶段固定计划与8份手机批次；`prepare_fault_window.py`准备专用Mac用户的有界启动器。入口新增缓存分区、提交/SDK/lease退出、旧ACK新编辑、图片故障、restore和账户变化观测；默认不运行，不因文稿获得授权。手机批次载入/选择不连接云端，仍需明确点击执行。
+
+`ProbeResult.snapshotComplete=false`及`unavailableImages`表示诊断快照缺图；允许后续恢复，但不是完整备份。`accountSource=cachedPartitionNotCurrentAccount`只证明打开已缓存的旧账户分区，联网必须再次核验身份。故障观测的`sourceAccountHash`和`accountFingerprint`仅限私有证据，公开副本递归去除。实际SDK callback与LOCAL_CALLBACK_SEAM严格分开；完整G1仍需真实双端验收。

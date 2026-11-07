@@ -61,6 +61,9 @@ public enum Wire {
     private var engine: CKSyncEngine?
     public private(set) var events: [String] = [] // fixed codes only; no cloud errors containing account IDs
     public private(set) var halted = false
+    #if DEBUG
+    var probeHook: ((ProbeCloudPoint, LabStore, [CKRecord]) throws -> Void)?
+    #endif
     public init(store: LabStore) { self.store = store; ticket = store.epoch }
     public func start(authorization: DevelopmentAuthorization = .fromEnvironment()) async throws {
         #if !DEBUG
@@ -142,16 +145,31 @@ public enum Wire {
             case .fetchedRecordZoneChanges(let change):
                 // Physical deletion is NOT a logical tombstone. Keep local evidence and stop.
                 guard change.deletions.isEmpty else { throw LabError.blocked }
+                #if DEBUG
+                try probeHook?(.beforeFetchedInstall, store, change.modifications.map(\.record))
+                #endif
                 for modified in change.modifications { try accept(modified.record) }
+                #if DEBUG
+                try probeHook?(.afterFetchedInstall, store, change.modifications.map(\.record))
+                #endif
                 events.append("FETCH_CONTENT_DURABLE")
             case .stateUpdate(let update):
                 // Delegate is serialized on MainActor. No await between content commit and state commit.
                 try store.saveCheckpoint(try canonical(update.stateSerialization), ticket: ticket)
                 events.append("STATE_DURABLE")
+                #if DEBUG
+                try probeHook?(.afterState, store, [])
+                #endif
             case .sentRecordZoneChanges(let change):
+                #if DEBUG
+                try probeHook?(.beforeACK, store, change.savedRecords)
+                #endif
                 for record in change.savedRecords {
                     try store.acknowledge(record.recordID.recordName, sent: Wire.payload(record, dataset: store.binding.dataset), fields: Wire.fields(record), ticket: ticket)
                 }
+                #if DEBUG
+                try probeHook?(.afterACK, store, change.savedRecords)
+                #endif
                 for failure in change.failedRecordSaves {
                     try processSaveFailure(failure.error)
                 }
@@ -180,6 +198,9 @@ public enum Wire {
             try store.check(ticket)
             let rows = try store.pending().filter { context.options.scope.contains(CKRecord.ID(recordName: $0.key, zoneID: Wire.zone(store.binding.dataset))) }.prefix(32)
             let records = try rows.map { try Wire.record($0, dataset: store.binding.dataset, imageURL: store.imageURL) }
+            #if DEBUG
+            try probeHook?(.batchPrepared, store, records)
+            #endif
             return records.isEmpty ? nil : CKSyncEngine.RecordZoneChangeBatch(recordsToSave: records, atomicByZone: false)
         } catch {
             halted = true; store.fence(); events.append("BATCH_FAILED_RETAINED"); return nil

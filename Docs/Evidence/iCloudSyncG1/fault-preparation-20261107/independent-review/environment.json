@@ -1,0 +1,8 @@
+{
+  "python": "3.9.6 (default, Oct 19 2026, 19:18:13) \n[Clang 21.0.0 (clang-2100.4.1.1)]",
+  "macOS": "27.0.1",
+  "baseHEAD": "53913efe6b85e9beb0d2ce1291fbc9401e24311a",
+  "manifestSHA256": "c76b3d473f6ec03608c4d5f54ab953fb58637d799ed72a2676fddf930f9bea9e",
+  "runtimeCloudOrDevice": "NOT_RUN",
+  "signingAndNativeBuilds": "Parent-reported; not independently rerun in this bounded review"
+}

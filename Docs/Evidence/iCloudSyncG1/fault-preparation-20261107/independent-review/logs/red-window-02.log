@@ -1,0 +1,9 @@
+{"case": "old-import-symlink-copies-private-target", "observed": true}
+{"case": "preexisting-report-wrong-run-and-empty-command-results-accepted", "observed": true}
+{"case": "stale-marker-wrong-digest-local-seam-no-real-launch-accepted", "observed": true}
+{"case": "package-inaccessible-under-umask077", "observed": false, "modes": {".": "0o755", "fault_window.py": "0o644", "window.json": "0o644"}}
+All subprocesses/signing/open/ACL mocked; only synthetic temporary files read. No real application, cloud, device or account accessed.
+Traceback (most recent call last):
+  File "/private/tmp/g1-fault-window-review/red_window.py", line 48, in <module>
+    assert not any(i['observed'] for i in issues),'Four security/evidence negative controls failed on original candidate'
+AssertionError: Four security/evidence negative controls failed on original candidate

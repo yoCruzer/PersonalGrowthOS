@@ -42,7 +42,10 @@
 				<string>B400DE42A51D894E851C87AC</string>
 				<string>27119319BF79E67A66B9EEE0</string>
 				<string>7EEDE6560A4A8BE335A1F6B1</string>
+				<string>8C56C11D0E853B213620FC45</string>
 				<string>23C04B28AB1549F9EBA8A91C</string>
+				<string>AF21678AB468D53F667E54E6</string>
+				<string>1B12F1D8B2ABD356B1C8CE0D</string>
 				<string>7654C4F9B5D96C831728C5C9</string>
 				<string>9A656E9FF37A739F82CFFA74</string>
 				<string>470EC1EE64E015A096582405</string>
@@ -67,6 +70,17 @@
 			<string>B400DE42A51D894E851C87AC</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
+		</dict>
+		<key>1B12F1D8B2ABD356B1C8CE0D</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/ProbeFaults.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>23C04B28AB1549F9EBA8A91C</key>
 		<dict>
@@ -132,6 +146,13 @@
 			<string>Sources/SyncLab/DevelopmentAuthorization.swift</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
+		</dict>
+		<key>27B43F03A75D910CD4C32B8F</key>
+		<dict>
+			<key>fileRef</key>
+			<string>8C56C11D0E853B213620FC45</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
 		</dict>
 		<key>2B23A31EEC75B029432F2445</key>
 		<dict>
@@ -295,7 +316,10 @@
 				<string>131949B0F1C625C25A1CBE59</string>
 				<string>B14A50F7CFD2A3D583E8B4CD</string>
 				<string>3C0726C5C0A4333BE9B3558D</string>
+				<string>27B43F03A75D910CD4C32B8F</string>
 				<string>6773E16591D8C7DEB2945D92</string>
+				<string>CC1572AE14A59D0F21700965</string>
+				<string>FC1A88F245D8C8B1B92F4E4D</string>
 				<string>0EA8A916FB87934EDFF383F6</string>
 				<string>C479B393666DD11A257CD1DF</string>
 				<string>D8E368627DE564D016B604FE</string>
@@ -305,6 +329,17 @@
 			<string>PBXSourcesBuildPhase</string>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<string>0</string>
+		</dict>
+		<key>8C56C11D0E853B213620FC45</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/FaultBatch.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>9A656E9FF37A739F82CFFA74</key>
 		<dict>
@@ -339,6 +374,17 @@
 			<key>sourceTree</key>
 			<string>BUILT_PRODUCTS_DIR</string>
 		</dict>
+		<key>AF21678AB468D53F667E54E6</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/OfflineFaultReplay.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>B14A50F7CFD2A3D583E8B4CD</key>
 		<dict>
 			<key>fileRef</key>
@@ -361,6 +407,13 @@
 		<dict>
 			<key>fileRef</key>
 			<string>9A656E9FF37A739F82CFFA74</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>CC1572AE14A59D0F21700965</key>
+		<dict>
+			<key>fileRef</key>
+			<string>AF21678AB468D53F667E54E6</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
@@ -434,6 +487,13 @@
 			<string>XCBuildConfiguration</string>
 			<key>name</key>
 			<string>Debug</string>
+		</dict>
+		<key>FC1A88F245D8C8B1B92F4E4D</key>
+		<dict>
+			<key>fileRef</key>
+			<string>1B12F1D8B2ABD356B1C8CE0D</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
 		</dict>
 	</dict>
 	<key>rootObject</key>

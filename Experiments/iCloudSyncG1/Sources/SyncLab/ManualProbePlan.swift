@@ -55,6 +55,35 @@ public struct ManualProbePlan: Codable {
     }
 }
 
+/// One bounded import for a device window. Selecting a plan never runs it.
+public struct ManualProbeBundle: Codable {
+    public struct Item: Codable {
+        public var title: String
+        public var plan: ManualProbePlan
+        public init(title: String, plan: ManualProbePlan) { self.title = title; self.plan = plan }
+    }
+    public var version = 1
+    public var items: [Item]
+    public init(items: [Item]) { self.items = items }
+    public static func decode(_ bytes: Data) throws -> Self {
+        guard bytes.count <= 524_288 else { throw LabError.limit }
+        let bundle = try JSONDecoder().decode(Self.self, from: bytes)
+        guard bundle.version == 1, (1...16).contains(bundle.items.count), Set(bundle.items.map { $0.plan.id }).count == bundle.items.count else { throw LabError.invalidWire }
+        for item in bundle.items {
+            guard !item.title.isEmpty, item.title.utf8.count <= 256, !item.title.contains("\n") else { throw LabError.invalidWire }
+            _ = try ManualProbePlan.decode(canonical(item.plan))
+        }
+        return bundle
+    }
+    public static func read(documents: URL) throws -> Self {
+        try decode(readRegularProbeBytes(documents.appendingPathComponent("SyncLab-Probe-Batch.json"), limit: 524_288))
+    }
+    public func bytes(for id: String) throws -> Data {
+        guard let item = items.first(where: { $0.plan.id == id }) else { throw LabError.invalidWire }
+        return try canonical(item.plan)
+    }
+}
+
 public struct ManualProbeReport: Codable {
     public var scope = "Command execution only; not cloud convergence or G1 acceptance"
     public var planID: String

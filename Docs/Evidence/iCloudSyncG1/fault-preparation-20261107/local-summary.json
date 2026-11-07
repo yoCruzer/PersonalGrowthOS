@@ -1,0 +1,40 @@
+{
+  "status": "LOCAL_ENGINEERING_VERIFIED_DEVICE_NOT_RUN",
+  "cloudRuntime": "NOT_RUN",
+  "nativeTests": 62,
+  "toolTestsAtLastRun": 19,
+  "independentProcess": "LOCAL_ONLY: exact DevelopmentProbe crashBeforeSave and crashAfterSave; exits 73/74; new PID/nonce; facts/outbox checked",
+  "builds": {
+    "iOSDebug": "PASS signed",
+    "macOSDebug": "PASS signed",
+    "simulatorRelease": "PASS unsigned"
+  },
+  "signatures": "PASS both with required read permissions; first sandbox attempt FAIL preserved",
+  "initialFailures": [
+    "Swift cache sandbox denial",
+    "new test source missing try compile errors",
+    "loopback sandbox denial: 13 passed / 5 errors",
+    "signature/profile subprocess sandbox denial",
+    "Package stage-name validation rejected uppercase A/B; fixed before directory creation, successful retry retained",
+    "Debug symbol check initially targeted launcher stub; corrected to actual SyncLab.debug.dylib"
+  ],
+  "scope": "No real cloud/device operation in this engineering batch; no full G1 acceptance",
+  "environment": {
+    "macOS": "27.0.1",
+    "machine": "arm64",
+    "xcode": "Xcode 27.2\nBuild version 27B52"
+  },
+  "priorProductCI": {
+    "run": 42365486504,
+    "status": "FAIL",
+    "release": "PASS",
+    "unit": "PASS",
+    "smoke": "FAIL"
+  },
+  "independentReview": "Full synthetic27 positive PASS; 24 oracle negatives rejected; mock window8/8 PASS",
+  "artifacts": {
+    "mac": "/private/tmp/SyncLab-Fault-Window-20261107-r7",
+    "phone": "/private/tmp/g1-fault-device-final"
+  },
+  "remoteCI": "PENDING_CURRENT_SOURCE_PUSH"
+}
