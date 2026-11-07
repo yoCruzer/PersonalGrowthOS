@@ -44,4 +44,12 @@ Owner新授权允许后续完整开发、独立子代理、普通推送与Draft 
 
 分块最终源码：24项包原生测试、12项独立测试全部通过，iOS17 Simulator target编译通过（iOS17运行仍NOT_RUN）。schema升级为独立PGMutationV2/PGOriginalV2/PGPayloadChunkV2、PGSyncV2 zone命名；初版未部署，无服务端旧格式需要迁移，初版代码及证据通过Git/单独目录保留。实际schema hash `6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003`。
 
-源截短/增长的独立6PASS/2FAIL红例已关闭；源码hash在独立快照和最终包之间一致。真实V16 49MB经12块SDK编解码并逐字节重组、整体摘要验证，原文件不变。修复每块Foundation临时对象滞留后，128MiB纯prepare峰值RSS从170,606,592降到40,058,880字节，4MiB对照44,236,800；完整49MB SDK/CLI为116,523,008字节，分层报告，不把一次本机测量当作所有设备性能承诺。11项自包含独立chunk回归已纳入定向CI，真实V16大输入的第12项保留本机证据。
+源截短/增长的独立6PASS/2FAIL红例已关闭；源码hash在独立快照和最终包之间一致。真实V16 49MB经12块SDK编解码并逐字节重组、整体摘要验证，原文件不变。修复每块Foundation临时对象滞留后，128MiB流式prepare/verify测试进程峰值RSS从170,606,592降到40,058,880字节，4MiB对照44,236,800；完整49MB SDK/CLI为116,523,008字节，分层报告，不把一次本机测量当作所有设备性能承诺。11项自包含独立chunk回归已纳入定向CI，真实V16大输入的第12项保留本机证据。
+
+## 继续推进的正式Development批次准备
+
+在首轮远端验证期间，独立终审指出正式Development批次准备仍可安全推进，故继续完成，未停在小阶段等待Owner。新增同包FormalProbeCore与FormalDevelopmentProbe，实际plan/replay/preflight三命令、固定合成内容和schema绑定、六条SDK检查、失败阶段/命令报告、fd相对目录访问和签名前后产物一致性检查。无CKContainer/网络，独立客户端标识只是候选，未注册/关联/签名。详见[批次准备器](ICLOUD_SYNC_FORMAL_PROBE_PREPARATION_ZH.md)。
+
+完整包34/34（原24+新增10）、iOS17共享核心编译、独立22条CLI正负例及本机并发签名产物替换负例通过，无剩余must-fix。注入签名元数据正例不算真实签名通过；实际SwiftPM产物虽可能有ad-hoc签名，仍因正式身份/能力/profile缺失得到NOT_READY、exit2。初稿损坏PNG、路径误拒绝及构建权限失败原样留证；修复后ImageIO/独立CRC/像素解压均通过。稳定22条黑盒和实际三命令已加入定向CI，时序相关并发用例只保留本机。
+
+源码99ef002的远端定向24+11、产品Release/Unit/Smoke全部成功；原始产物保存在ci-foundation-99ef002、ci-product-99ef002，前一源码2e68也独立保留。新增准备器最终候选的CI结果将单列，不能用99ef002替代。

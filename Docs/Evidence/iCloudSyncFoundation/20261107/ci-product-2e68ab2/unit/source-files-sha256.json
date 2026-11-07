@@ -1,0 +1,14 @@
+{
+  "os.log": "4ef10a0fc370704ea84699cf3851e51488598c5f1ab35cb572eb6b96278a8e5c",
+  "test-tests.json": "f37c2b46f40c97eec687c46003c710f17630383901231b04f265d8523d4f530a",
+  "boot.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "appearance.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "test-summary.json": "ef22d0dd1d0cfdfef5f26eb3c6e1dccffa0a9ddcdde4cab3beffbedbab97e574",
+  "bootstatus.log": "084c3c9ea20a4f372fda2de6199a6e244ba203c50beec23e004c9dfafe3fd04c",
+  "tests.log": "a4352530c63d0dc649b9328326de111b1d38352cd9bba59b4875703e8ab66a7f",
+  "runtimes.log": "e6ddd5ee5b3911b4c8c0276cc85a2add167d3be65eabcaa44fb8d2ed3fd08837",
+  "sdks.log": "68b2cdfa4a24ff8ff2f6fbf2e01f0ad0ffe65ce46e5217fe39fb97e2b836902f",
+  "xcode.log": "694b44731d0b415c5b11d844151e466d7f5e200a95627efda377f232f1a6ab77",
+  "environment.json": "e3f89ccfde7afa7405d4d53ad990c45602a57060a5c13aca2f355dc0d697898e",
+  "schemes.log": "c47864bd8e5fdd3bd754a436bd151ec74e92266e4659faa734bedcd24992eb2e"
+}

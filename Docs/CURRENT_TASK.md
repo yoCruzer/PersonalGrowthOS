@@ -1,16 +1,18 @@
-# 2026-11-07 后续分块协议与基线准备：本机完成，远端收口中
+# 2026-11-07 后续分块协议、V16基线与正式Development批次准备：本机完成，远端收口中
 
-工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`，分支 `codex/icloud-sync-foundation`，[Draft PR #17](https://github.com/yoCruzer/PersonalGrowthOS/pull/17)，base保持G1。Owner已授权连续后续开发；旧G1仅实验/停批次限制不再阻挡本轮，外部部署和发布边界保留。原项目仍在d72c016且原三项未提交改动保持。
+工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`，分支 `codex/icloud-sync-foundation`，[Draft PR #17](https://github.com/yoCruzer/PersonalGrowthOS/pull/17)，base保持G1。Owner已授权连续后续开发；旧G1仅实验/停批次限制不再阻挡本轮，外部部署和发布边界保留。原项目仍在d72c016，原三项未提交改动未动。
 
-已实现隔离SyncFoundation分块候选：immutable逐mutation manifest、4MiB ordered payload chunks、25MiB原图、typed身份/epoch栅栏、严格字节/hash校验与实际SDK codec。真实V16合法万行快照49,190,297字节经12块往返完全一致。原16MiB候选不足、源截短/增长负例和内存随输入增长均发现后修复；最终原生24/24、独立12/12及iOS17 target编译通过，真实128MiB纯prepare峰值RSS40,058,880字节。P0仍CANDIDATE_NOT_FROZEN。
+已实现隔离SyncFoundation v2：不可变逐mutation manifest、4MiB有序payload分块、25MiB原图、typed身份/内存epoch栅栏、严格字节/hash校验与实际SDK codec。真实V16合法万行快照49,190,297字节经12块往返完全一致；初版16MiB不足、源变化拒绝及内存问题已修复，原始失败保留。128MiB流式prepare/verify测试进程峰值RSS40,058,880字节，完整49MB SDK/CLI另测116,523,008字节，不泛化为设备内存保证。
 
-固定96f产品V16/v12合成库/WAL/原图/ZIP与全字段预期已保存并独立复核；2份分享receipt（含已删来源）、整数金额、草稿均保留，冻结输入hash不变。生成和实际容量probe各最终1/1通过，所有此前失败保留。尚未新增正式schema/迁移/outbox，不把准备称为39实体完成。
+固定96f产品V16/v12合成SQLite+WAL/原图/ZIP/全字段预期已独立复核，两份分享receipt（含已删来源）、金额、草稿及输入hash保留。新增正式Development批次准备器：固定合成计划、六条实际SDK离线回放、实际签名只读preflight；独立候选Bundle ID未注册/签名/关联，无网络发送通路，不替换产品或SyncLab。
 
-正式产品短标题smoke已局部修复，测试阈值不变，本机iPhone13mini/iOS27.0完整5/5通过；源码2e68ab2远端Release成功、Unit599=598PASS/1SKIP/0FAIL，smoke仍在收口。原0e1f747/e57fe35的smoke失败不改写。最后远端结果将在交付时追加。
+本机完整包34/34（24协议+10准备器）、分块独立12/12、准备器独立22条CLI及1个并发签名产物替换负例通过；iOS17协议与准备器核心target编译通过（iOS17运行NOT_RUN）。源码99ef002远端定向24+11通过；产品Release成功、Unit599=598PASS/1SKIP/0FAIL、iOS27.2 Smoke5/5通过。新增准备器的最终远端候选随后收口，不挪用旧计数。低空间unit需隔离32MB HFS+镜像而跳过；extended UI按workflow条件未执行。原0e1f747/e57fe35 smoke失败保留，未放宽断言。
 
-G1保持OWNER_ACCEPTED_PHONE_SCOPE：6原件27命令；Mac CK_2接受为非阻塞例外，原失败/未覆盖矩阵保留，本轮未再占手机。正式容器只读观察Development仅Users，未查业务记录；Owner选择稍后按[5–10分钟只读清单](ICLOUD_SYNC_NEXT_READINESS_ZH.md)导出，两端schema及正式关联仍待补，手机/数据线0分钟。未授权/未执行Production部署或写入、merge、Archive、TestFlight。P1/P2未完成前不进入大规模领域接入；不依赖门禁的工程准备已连续推进至本节点。
+G1保持OWNER_ACCEPTED_PHONE_SCOPE：6原件27命令；Mac CK_2为接受的非阻塞例外，原失败/未覆盖矩阵保留，本轮未再占手机。正式容器只读观察Development仅Users，未查业务记录；Owner明确选择稍后按[5–10分钟只读清单](ICLOUD_SYNC_NEXT_READINESS_ZH.md)导出，两端schema及正式App关联仍待补，手机/数据线0分钟。
 
-[执行与完整边界](ICLOUD_SYNC_FOUNDATION_EXECUTION_ZH.md) · [证据](Evidence/iCloudSyncFoundation/20261107/README.md) · [G2接缝](ICLOUD_SYNC_G2_WRITE_SEAMS_ZH.md)。以下旧历史保留，不再指挥当前开发。
+P0仍CANDIDATE_NOT_FROZEN，P1/P2未完成；正式schema迁移、持久身份/outbox/inbox、真实传输及39实体接入尚未实现，不把离线准备写成产品同步完成。后续先用导出比对固定候选，再准备必要Development差异、隔离客户端签名与真实适配器。Production部署/写入、merge、Archive、TestFlight仍未授权/未执行；不提前请求笼统批准。
+
+[执行与边界](ICLOUD_SYNC_FOUNDATION_EXECUTION_ZH.md) · [证据](Evidence/iCloudSyncFoundation/20261107/README.md) · [批次准备器](ICLOUD_SYNC_FORMAL_PROBE_PREPARATION_ZH.md) · [G2接缝](ICLOUD_SYNC_G2_WRITE_SEAMS_ZH.md)。以下旧历史原样保留，不再指挥当前开发。
 
 ---
 

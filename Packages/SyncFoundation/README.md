@@ -43,3 +43,5 @@ swift run --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgo
 The probe reads source without modifying it and retains chunk files, canonical manifest and a compact summary in the new output directory. Do not use daily private business data for engineering evidence.
 
 V16/v12 migration, persisted identity/epoch, same-transaction business/outbox writes, downloaded-file installation/leases, SDK scheduling/ACK/checkpoints, domain causal closure/conflict UI, media GC, backup/restore, notifications and Widget side effects are not implemented here.
+
+The independent [Formal Development batch preparer](FORMAL_DEVELOPMENT_PROBE.md) prepares only fixed synthetic create/edit/tombstone plans, runs actual local SDK file roundtrips and inspects selected signatures read-only. It has no CloudKit network path and does not imply P0 or client registration is complete.

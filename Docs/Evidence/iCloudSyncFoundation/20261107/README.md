@@ -32,6 +32,12 @@ v2核心为PGMutationV2、PGPayloadChunkV2、PGOriginalV2，实际codec schema h
 
 真实产品49,190,297字节payload拆成11×4,194,304+3,052,953，共12块；1584字节manifest，逐块实际SDK编码/解码、流式完整SHA和独立逐字节重组均通过，原件不变。再生成合成fixture会有新的UUID/编码字节顺序，必须从该次report读取其预期hash，不硬套本次hash。
 
-独立复核先用6PASS/2FAIL揭示源截短/增长错误成功，强制expected descriptor及源检查关闭；再揭示Foundation临时对象累积。相同128MiB prepare由170,606,592字节RSS降至40,058,880；4MiB对照44,236,800。49MB完整SDK/CLI另测116,523,008RSS（包含SDK/CLI开销），不是4MiB总内存承诺。前轮源快照、FAIL和高内存原始测量全部保留。
+独立复核先用6PASS/2FAIL揭示源截短/增长错误成功，强制expected descriptor及源检查关闭；再揭示Foundation临时对象累积。相同128MiB流式prepare/verify测试进程由170,606,592字节RSS降至40,058,880；4MiB对照44,236,800。49MB完整SDK/CLI另测116,523,008RSS（包含SDK/CLI开销），不是4MiB总内存承诺。前轮源快照、FAIL和高内存原始测量全部保留。
 
 11项自包含独立chunk回归接入定向CI；第12项依赖本机实际V16大输入，保留独立本机证据，不在远端空环境跳过后冒称通过。正式产品UI源码在2e68ab2之后没有变化，未手动重跑原失败CI。
+
+## 正式Development批次准备与远端记录
+
+[准备器实现及独立证据](formal-probe/README.md)：新增三命令工具不依赖真实schema导出，已继续完成。完整包34/34、准备器核心iOS17编译、独立22条CLI及并发产物替换负例通过；原包分块12项独立结果仍另记，不合并计数。实际三命令CI步骤本机实跑及初稿PNG失败/修复在formal-probe-root。
+
+源码99ef002的[定向CI](ci-foundation-99ef002/README.md)24+11通过、[产品CI](ci-product-99ef002/README.md)Release/Unit/Smoke成功，前一源码2e68另见ci-product-2e68ab2。均绑定head与实际PR合并checkout两个SHA。新增准备器的最终远端记录将追加，不沿用旧版本测试结果。

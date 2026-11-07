@@ -1,0 +1,29 @@
+{
+  "run_id": 42386508034,
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42386508034",
+  "conclusion": "success",
+  "head_sha": "99ef002d68685ea0e64988257b18a20c6c374f8c",
+  "checkout_sha": "8a54e2a15915b3184f5a5161cdeedeb1d0a1f2fd",
+  "artifact_id": 13579802591,
+  "artifact_archive_sha256": "815e79476894d18d2310d0fd1f166e11d1900e71b65ba1e134e2fa935d995f14",
+  "artifact_digest_verified": true,
+  "native_tests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "independent_tests": {
+    "passed": 11,
+    "failed": 0,
+    "excluded": "Actual V16 49MB fixture replay retained as local evidence, not regenerated in this CI"
+  },
+  "files_sha256": {
+    "checkout-sha.txt": "3d32d4646547b2ff7ba9706a9bfe692832f4544b554497a2418d2a958a3fadda",
+    "environment.log": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+    "independent-regressions.log": "9b494d4390252ce7253538efbe3c7e5b84512de21bf269f8e6164a914846d947",
+    "schema/schema.json": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003",
+    "schema/schema.sha256": "47ae9932d43337493a923e6ce73da165aaa58cb34086666327615c9b23ed71c3",
+    "schema/synthetic-original.bin": "ea3ed8c55eb03fa8d1ff87a485017ce7814f391b34fccaf59094b0664b366ac7",
+    "schema/synthetic-payload.bin": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558",
+    "tests.log": "1fc0c46b48e9f515423c9a8c9fdb4bbecaca5fee0e584c319f009e3aaa3416fa"
+  }
+}

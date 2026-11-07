@@ -1,0 +1,72 @@
+{
+  "environment": {
+    "macOS": "27.0.1 (26A434)",
+    "Xcode": "27.2 (27B52)",
+    "architecture": "arm64"
+  },
+  "commands": [
+    {
+      "command": "swift build --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-build --product FormalDevelopmentProbe",
+      "exit": 0,
+      "result": "initial build passed; initial Codable warnings subsequently removed",
+      "log": "build-initial.log"
+    },
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-build",
+      "exit": 1,
+      "result": "Existing24 PASS; new10 had9 unexpected path failures caused by Foundation temp alias versus strict parent-symlink policy",
+      "log": "tests-attempt1-path-fail.log"
+    },
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-build --filter FormalProbeCoreTests",
+      "exit": 1,
+      "result": "9PASS/1FAIL; standardizedFileURL changed already-existing physical temp path spelling, rejected replay. Fixed without weakening fd-relative nofollow checks.",
+      "log": "tests-attempt2-normalization-fail.log"
+    },
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-build --filter FormalProbeCoreTests",
+      "exit": 0,
+      "result": "10/10 PASS",
+      "log": "tests-new10-final.log"
+    },
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-build",
+      "exit": 0,
+      "result": "34/34 PASS in two XCTest targets: existing24 + new10",
+      "log": "tests-package34-final.log"
+    },
+    {
+      "command": "swift build --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-ios17 --sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk --triple arm64-apple-ios17.0-simulator --target FormalProbeCore",
+      "exit": 0,
+      "result": "iOS17 target compile PASS; runtime NOT_RUN",
+      "log": "ios17-core-compile.log"
+    },
+    {
+      "command": "FormalDevelopmentProbe plan /private/tmp/pgos-formal-probe-local-final/plan",
+      "exit": 0,
+      "result": "fresh synthetic plan created",
+      "log": "cli.log"
+    },
+    {
+      "command": "FormalDevelopmentProbe replay /private/tmp/pgos-formal-probe-local-final/plan 4337e38da985f82762c4d0d8a4017512b551eaf0480f7aa08d05b4a88d549f82 /private/tmp/pgos-formal-probe-local-final/replay",
+      "exit": 0,
+      "result": "6 exact SDK checks OFFLINE_PASS",
+      "log": "offline-replay-report.json"
+    },
+    {
+      "command": "FormalDevelopmentProbe preflight /private/tmp/pgos-formal-probe-local-final/plan 4337e38da985f82762c4d0d8a4017512b551eaf0480f7aa08d05b4a88d549f82 /private/tmp/pgos-sync-foundation-build/out/Products/Debug/FormalDevelopmentProbe /private/tmp/pgos-formal-probe-local-final/preflight",
+      "exit": 2,
+      "result": "actual ad-hoc signature mechanically verifies; expected identity/CloudKit/profile absent, NOT_READY. No actual positive developer-signed artifact claim.",
+      "log": "actual-unprovisioned-preflight.json"
+    }
+  ],
+  "limitations": [
+    "No CKContainer/network implementation or runtime",
+    "Candidate isolated Bundle ID not created/registered/associated",
+    "Signing metadata injected positive is a pure unit fixture only",
+    "Certificate-profile membership/device eligibility not verified",
+    "No product migration/persistence/outbox/domain integration",
+    "No P0/P1/P2 pass",
+    "Private output/artifact must remain immutable during checks; not an adversarial ABA guarantee"
+  ]
+}

@@ -1,0 +1,47 @@
+Building for debugging...
+[1 / 9]
+[2 / 6] FormalProbeCoreTests-product
+[4 / 8] FormalProbeCoreTests-product
+[10 / 12] FormalProbeCoreTests-product
+[13 / 17] FormalDevelopmentProbe-product
+[16 / 19] FormalDevelopmentProbe-product
+[18 / 19] FormalDevelopmentProbe-product
+Build complete! (1.57秒)
+Test Suite 'Selected tests' started at 2026-11-07 23:43:00.065.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:43:00.066.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 23:43:00.066.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 23:43:00.066.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-07 23:43:00.113.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-07 23:43:00.114.
+Test Suite 'FormalProbeCoreTests' started at 2026-11-07 23:43:00.114.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' passed (0.007 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' passed (0.004 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' started.
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalProbeCore/ProbeFiles.swift:11: error: -[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain] : failed: caught error: "invalidPath"
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' failed (0.054 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' passed (0.002 seconds).
+Test Suite 'FormalProbeCoreTests' failed at 2026-11-07 23:43:00.196.
+	 Executed 10 tests, with 1 failure (1 unexpected) in 0.081 (0.082) seconds
+Test Suite 'FormalProbeCoreTests.xctest' failed at 2026-11-07 23:43:00.196.
+	 Executed 10 tests, with 1 failure (1 unexpected) in 0.081 (0.082) seconds
+Test Suite 'Selected tests' failed at 2026-11-07 23:43:00.196.
+	 Executed 10 tests, with 1 failure (1 unexpected) in 0.081 (0.082) seconds
+Note: Some test targets reported failures:
+  - FormalProbeCoreTests (XCTest)

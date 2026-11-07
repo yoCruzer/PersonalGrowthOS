@@ -1,0 +1,5 @@
+{
+  "run_root": "/private/tmp/PGOS-ProbeCIStep.ixHPfa",
+  "exit": 0,
+  "command": "RUNNER_TEMP=<fresh physical temporary directory> bash -e extracted-CI-step.sh"
+}

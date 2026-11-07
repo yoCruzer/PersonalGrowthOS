@@ -1,0 +1,198 @@
+{
+  "conclusion": "success",
+  "createdAt": "2026-11-07T15:28:01Z",
+  "event": "pull_request",
+  "headSha": "99ef002d68685ea0e64988257b18a20c6c374f8c",
+  "jobs": [
+    {
+      "completedAt": "2026-11-07T15:47:52Z",
+      "conclusion": "success",
+      "databaseId": 128444938254,
+      "name": "iOS unit",
+      "startedAt": "2026-11-07T15:28:03Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-11-07T15:28:04Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-11-07T15:28:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:28:11Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-11-07T15:28:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:47:39Z",
+          "conclusion": "success",
+          "name": "Run native gate",
+          "number": 3,
+          "startedAt": "2026-11-07T15:28:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:47:45Z",
+          "conclusion": "success",
+          "name": "Save compact evidence",
+          "number": 4,
+          "startedAt": "2026-11-07T15:47:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:47:46Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 8,
+          "startedAt": "2026-11-07T15:47:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:47:49Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-11-07T15:47:46Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42386508033/job/128444938254"
+    },
+    {
+      "completedAt": "2026-11-07T15:31:25Z",
+      "conclusion": "success",
+      "databaseId": 128444938377,
+      "name": "iOS release",
+      "startedAt": "2026-11-07T15:28:04Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-11-07T15:28:05Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-11-07T15:28:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:28:10Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-11-07T15:28:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:31:18Z",
+          "conclusion": "success",
+          "name": "Run native gate",
+          "number": 3,
+          "startedAt": "2026-11-07T15:28:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:31:20Z",
+          "conclusion": "success",
+          "name": "Save compact evidence",
+          "number": 4,
+          "startedAt": "2026-11-07T15:31:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:31:21Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 8,
+          "startedAt": "2026-11-07T15:31:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:31:23Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-11-07T15:31:21Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42386508033/job/128444938377"
+    },
+    {
+      "completedAt": "2026-11-07T15:42:12Z",
+      "conclusion": "success",
+      "databaseId": 128444938563,
+      "name": "iOS smoke",
+      "startedAt": "2026-11-07T15:28:03Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-11-07T15:28:04Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-11-07T15:28:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:28:08Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "startedAt": "2026-11-07T15:28:04Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:42:05Z",
+          "conclusion": "success",
+          "name": "Run native gate",
+          "number": 3,
+          "startedAt": "2026-11-07T15:28:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:42:07Z",
+          "conclusion": "success",
+          "name": "Save compact evidence",
+          "number": 4,
+          "startedAt": "2026-11-07T15:42:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:42:08Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 8,
+          "startedAt": "2026-11-07T15:42:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-07T15:42:09Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "startedAt": "2026-11-07T15:42:08Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42386508033/job/128444938563"
+    },
+    {
+      "completedAt": "2026-11-07T15:28:01Z",
+      "conclusion": "skipped",
+      "databaseId": 128444939646,
+      "name": "Optional extended UI",
+      "startedAt": "2026-11-07T15:28:02Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42386508033/job/128444939646"
+    }
+  ],
+  "status": "completed",
+  "updatedAt": "2026-11-07T15:47:53Z",
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42386508033"
+}

@@ -1,0 +1,45 @@
+{
+  "customIndexes" : [
+
+  ],
+  "database" : "private",
+  "limits" : {
+    "chunkBytes" : 4194304,
+    "dependencies" : 1024,
+    "manifestBytes" : 65536,
+    "media" : 1024,
+    "originalBytes" : 26214400,
+    "parents" : 256,
+    "payloadBytes" : 134217728,
+    "payloadChunks" : 32
+  },
+  "networkOperations" : 0,
+  "recordNamePatterns" : [
+    "mutation-<mutation UUID lowercase>",
+    "original-<sha256 lowercase>",
+    "chunk-<sha256 lowercase>"
+  ],
+  "recordTypes" : {
+    "PGMutationV2" : {
+      "manifest" : "BYTES",
+      "sha256" : "STRING",
+      "wireVersion" : "INT64"
+    },
+    "PGOriginalV2" : {
+      "byteCount" : "INT64",
+      "original" : "ASSET",
+      "sha256" : "STRING",
+      "wireVersion" : "INT64"
+    },
+    "PGPayloadChunkV2" : {
+      "byteCount" : "INT64",
+      "chunk" : "ASSET",
+      "sha256" : "STRING",
+      "wireVersion" : "INT64"
+    }
+  },
+  "serverSchemaChecked" : false,
+  "status" : "CANDIDATE_NOT_FROZEN",
+  "wireVersion" : 2,
+  "zonePattern" : "PGSyncV2-<dataset UUID lowercase>"
+}

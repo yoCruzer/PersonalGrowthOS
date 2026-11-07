@@ -9,7 +9,7 @@
 本轮发现并修复两个问题，原失败不覆盖：
 
 1. 初稿`prepare`在emit期间源文件被截短或增长仍可能返回成功。独立原样红例8项中6 PASS / 2 FAIL。最终强制调用者传入编码完成时的expected hash/size；同一个文件描述符前后size/mtime/ctime一致，并验证最终完整hash与长度。截短、增长、同长度改写及准备前被换内容均拒绝。源仍需调用者持有不可变lease；失败部分输出不可发布，由调用者保留源并管理临时输出。
-2. 流式API实际受Foundation自动释放对象累积影响。排除审查测试自身oracle读取后，128MiB prepare峰值RSS170,606,592字节，约随payload增长。逐chunk读取/emit/hash、verify及CLI最终读取增加autoreleasepool后，同一128MiB测试RSS40,058,880字节；4MiB对照44,236,800字节。该本机有界样本已不随输入线性保留内存，不宣称任何设备上固定RSS或整个App内存预算通过。
+2. 流式API实际受Foundation自动释放对象累积影响。排除审查测试自身oracle读取后，128MiB流式prepare/verify测试进程峰值RSS170,606,592字节，约随payload增长。逐chunk读取/emit/hash、verify及CLI最终读取增加autoreleasepool后，同一128MiB测试RSS40,058,880字节；4MiB对照44,236,800字节。该本机有界样本已不随输入线性保留内存，不宣称任何设备上固定RSS或整个App内存预算通过。
 
 ## 原生命令及证据
 

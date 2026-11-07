@@ -1,0 +1,11 @@
+{
+  "snapshot": "/private/tmp/PGOS-FormalProbeIndependent.SDgRJQ/Candidate",
+  "snapshot_binary_sha256": "e685f613af60cf429728e367d0a7a3b277fd9839f3d6803f7ed4c3b0d89a5409",
+  "current_code_test_manifest_mismatches": [],
+  "README_note": "README is documentary; code/test/manifest comparison excludes only README.md",
+  "binary_build_exit": 0,
+  "blackbox_commands": 22,
+  "concurrent_artifact_replacement_cases": 1,
+  "networkOperations": 0,
+  "p0Passed": false
+}
