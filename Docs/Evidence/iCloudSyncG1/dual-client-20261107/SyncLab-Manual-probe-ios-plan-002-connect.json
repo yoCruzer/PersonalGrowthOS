@@ -1,0 +1,30 @@
+{
+  "completedAllCommands": true,
+  "dataset": "synthetic-g1-20261107-r4",
+  "planDigest": "393bf28e913226c9094b1de294ff3747a73c86b939024649b9fe466fed0e442f",
+  "planID": "probe-ios-plan-002-connect",
+  "results": [
+    {
+      "commandDigest": "84005c9177ff1479e6601315bfbdc67845fb09bae6a0c7673bd9db27e32b273b",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-ios-002-connect",
+      "pendingKeys": [],
+      "planID": "probe-ios-plan-002-connect",
+      "platform": "iOS",
+      "projections": {},
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [],
+        "images": {}
+      },
+      "status": "PASS"
+    }
+  ],
+  "runID": "probe-run-20261107-r5",
+  "scope": "Command execution only; not cloud convergence or G1 acceptance"
+}

@@ -1,3 +1,13 @@
+# 2026-11-07 双端真实冲突解决后收敛，原始手机报告已取回
+
+通过Configurator仅导出SyncLab文稿，六份手机原始报告已保存于本机私有目录，逐份验证原始plan摘要和所有command摘要；公开副本仅删除账户指纹。此前Owner粘贴来源限制已由直接取回原文件补足。手机006在sync后收到与Mac009完全相同的冲突快照/投影，再保存双父解决mutation，ACK清空pending；Mac010/011取回、012同进程重开、013快照均与手机006最终完整snapshot/projections精确一致，双方历史和原图保留。两端重开checkpoint各自保留。独立复核完成：40条结果（38 PASS、手机001 CK_3与Mac007 CK_2两条保留FAIL）、39个可用同run指纹相等、23项篡改负控全部拒绝，无must-fix。
+
+[本批原始脱敏证据](Evidence/iCloudSyncG1/dual-client-20261107/)。本组基础双向文字/图片及真实版本冲突→共同祖先→解决后收敛已取得证据，仍不是完整G1通过。首次手机CK_3和Mac冲突CK_2保留；进程崩溃/离线网络恢复/真实账户切换/特殊依赖时序/旧ACK新编辑/图片失败与restore-cloud race等未覆盖，不进入G2/G3或发布。Mac014 stop已PASS、完整快照不变且pending为空；随后临时loopback bridge受控SIGINT退出130并关闭监听。手机每份手动计划结束自动停止引擎。后续需新通道启动安排，不自行重置现有事实。
+
+定向CI42362750416 SUCCESS；产品回归42362754171最终FAIL，Release/Unit成功，smoke3PASS/2FAIL，仍为AppLaunchSmokeTests.swift:3317短名称42.333>25布局断言。当前清理及独立复核完成，停在本组真实运行批次边界，不宣称正式产品发布门禁通过。手机反向对象复用既有PNG hash，未单独证明iOS上传全新CKAsset；需列入后续覆盖。
+
+---
+
 # 2026-11-07 真实云端版本冲突已触发并保留双方修改
 
 Owner手机计划005上传ACK、pending清空后，Mac执行r5-007/008/009。007原结果FAIL CK_2，含真实SERVER_RECORD_CHANGED_MERGED事件；008重试PASS且pending空，009快照相同。精确验证完整快照等于原基础事实加双方同父修改，PNG保留；投影为conflict、两个候选完整保留、共同祖先preview，complete=false。[原始脱敏证据](Evidence/iCloudSyncG1/dual-client-20261107/)。首个partial failure不改写PASS，未据此声称单次sync无错。

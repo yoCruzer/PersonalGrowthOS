@@ -1,0 +1,24 @@
+{
+  "sourceCommit": "df3c081f72d5d86681f37c57ae236543ab45d3e8",
+  "ciHead": "43ea9e9335da1d863977d71acef4580bb8fdec33",
+  "focused": {
+    "run": 42362750416,
+    "conclusion": "success"
+  },
+  "product": {
+    "run": 42362754171,
+    "conclusion": "failure",
+    "release": "success",
+    "unit": "success",
+    "smoke": {
+      "pass": 3,
+      "fail": 2,
+      "location": "AppLaunchSmokeTests.swift:3317",
+      "assertion": "Short Chinese name stays on one line; 42.33333333333337 > 25.0",
+      "tests": [
+        "testUIReadabilityChineseDefaultAndLargerText",
+        "testUIReadabilityEnglishDefault"
+      ]
+    }
+  }
+}

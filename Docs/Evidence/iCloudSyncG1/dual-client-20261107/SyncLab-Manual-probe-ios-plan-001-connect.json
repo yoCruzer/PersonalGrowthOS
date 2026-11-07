@@ -1,0 +1,24 @@
+{
+  "completedAllCommands": false,
+  "dataset": "synthetic-g1-20261107-r4",
+  "errorCode": "CK_3",
+  "planDigest": "76091e1af85c92807f25e5c2dc8510466f77b347950262896620a92a42ae3ae1",
+  "planID": "probe-ios-plan-001-connect",
+  "results": [
+    {
+      "commandDigest": "19f00f493add96a1bb40eb6b3da28966ac044a61766ee4e70aded85bc8cd75fb",
+      "dataset": "synthetic-g1-20261107-r4",
+      "errorCode": "CK_3",
+      "events": [],
+      "halted": false,
+      "id": "probe-ios-001-connect",
+      "planID": "probe-ios-plan-001-connect",
+      "platform": "iOS",
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "status": "FAIL"
+    }
+  ],
+  "runID": "probe-run-20261107-r5",
+  "scope": "Command execution only; not cloud convergence or G1 acceptance"
+}

@@ -1,0 +1,978 @@
+{
+  "completedAllCommands": true,
+  "dataset": "synthetic-g1-20261107-r4",
+  "planDigest": "2d4c52ec019546fff9ae24105ac9ac0c501c95082a395a8ccd6aefa5e009ed5f",
+  "planID": "probe-ios-plan-004-phone-write",
+  "results": [
+    {
+      "checkpointHash": "657eccd60afb5cf3bfb2f98effa61f7081480f7863808c045447afb98fedee3a",
+      "commandDigest": "2ffbc76b072e9ea5910a7b64fe78dc6a6ffc3623d7abacc9b669639865bcf899",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-ios-004-1-connect",
+      "pendingKeys": [],
+      "planID": "probe-ios-plan-004-phone-write",
+      "platform": "iOS",
+      "projections": {
+        "probe-entry": {
+          "candidates": [
+            "probe-base-mac-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-mac-lifecycle": {
+          "candidates": [
+            "probe-lifecycle-delete"
+          ],
+          "complete": true,
+          "state": "deleted"
+        }
+      },
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-base-mac-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-entry",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC G1 Mac initial text and original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-entry",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-create",
+                "object": "probe-mac-lifecycle",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle initial",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-lifecycle-delete",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-edit"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle deleted intent",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-edit",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-create"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle edited",
+                "version": 1
+              }
+            ],
+            "object": "probe-mac-lifecycle",
+            "version": 1
+          }
+        ],
+        "images": {
+          "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "checkpointHash": "657eccd60afb5cf3bfb2f98effa61f7081480f7863808c045447afb98fedee3a",
+      "commandDigest": "e6295e8d3f77a5669b557bb88e449ae774b84baf5a2db78b0e84fc14e65eed42",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-ios-004-2-save",
+      "pendingKeys": [
+        "object-probe-ios-roundtrip"
+      ],
+      "planID": "probe-ios-plan-004-phone-write",
+      "platform": "iOS",
+      "projections": {
+        "probe-entry": {
+          "candidates": [
+            "probe-base-mac-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-ios-roundtrip": {
+          "candidates": [
+            "probe-ios-create-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-ios-create-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-ios-roundtrip",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-mac-lifecycle": {
+          "candidates": [
+            "probe-lifecycle-delete"
+          ],
+          "complete": true,
+          "state": "deleted"
+        }
+      },
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-base-mac-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-entry",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC G1 Mac initial text and original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-entry",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-ios-create-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-ios-roundtrip",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-ios-roundtrip",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-create",
+                "object": "probe-mac-lifecycle",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle initial",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-lifecycle-delete",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-edit"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle deleted intent",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-edit",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-create"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle edited",
+                "version": 1
+              }
+            ],
+            "object": "probe-mac-lifecycle",
+            "version": 1
+          }
+        ],
+        "images": {
+          "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "checkpointHash": "b9b9692584a5fb082f7ad455af9a088c6e2bdab62997a56da560ea85f770cc3a",
+      "commandDigest": "1887d8a9a2a3758645d3f34e2a90415f9b09bbef893eceeababdb367b8ff29fb",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "ACK_EXACT_AND_RESCHEDULED",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "FETCH_CONTENT_DURABLE",
+        "STATE_DURABLE"
+      ],
+      "halted": false,
+      "id": "probe-ios-004-3-sync",
+      "pendingKeys": [],
+      "planID": "probe-ios-plan-004-phone-write",
+      "platform": "iOS",
+      "projections": {
+        "probe-entry": {
+          "candidates": [
+            "probe-base-mac-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-ios-roundtrip": {
+          "candidates": [
+            "probe-ios-create-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-ios-create-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-ios-roundtrip",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-mac-lifecycle": {
+          "candidates": [
+            "probe-lifecycle-delete"
+          ],
+          "complete": true,
+          "state": "deleted"
+        }
+      },
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-base-mac-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-entry",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC G1 Mac initial text and original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-entry",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-ios-create-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-ios-roundtrip",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-ios-roundtrip",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-create",
+                "object": "probe-mac-lifecycle",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle initial",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-lifecycle-delete",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-edit"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle deleted intent",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-edit",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-create"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle edited",
+                "version": 1
+              }
+            ],
+            "object": "probe-mac-lifecycle",
+            "version": 1
+          }
+        ],
+        "images": {
+          "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "checkpointHash": "34635a02ced23a61c8f698254f03ee6b3db0ef5c48e2d9cc9d1236c920117a2f",
+      "commandDigest": "26ac3146d11ee4942be9a1dbb3c975a6beab12bbad4013abffc11167430c17b1",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "ACK_EXACT_AND_RESCHEDULED",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "FETCH_CONTENT_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE"
+      ],
+      "halted": false,
+      "id": "probe-ios-004-4-sync",
+      "pendingKeys": [],
+      "planID": "probe-ios-plan-004-phone-write",
+      "platform": "iOS",
+      "projections": {
+        "probe-entry": {
+          "candidates": [
+            "probe-base-mac-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-ios-roundtrip": {
+          "candidates": [
+            "probe-ios-create-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-ios-create-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-ios-roundtrip",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-mac-lifecycle": {
+          "candidates": [
+            "probe-lifecycle-delete"
+          ],
+          "complete": true,
+          "state": "deleted"
+        }
+      },
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-base-mac-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-entry",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC G1 Mac initial text and original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-entry",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-ios-create-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-ios-roundtrip",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-ios-roundtrip",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-create",
+                "object": "probe-mac-lifecycle",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle initial",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-lifecycle-delete",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-edit"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle deleted intent",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-edit",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-create"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle edited",
+                "version": 1
+              }
+            ],
+            "object": "probe-mac-lifecycle",
+            "version": 1
+          }
+        ],
+        "images": {
+          "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "checkpointHash": "34635a02ced23a61c8f698254f03ee6b3db0ef5c48e2d9cc9d1236c920117a2f",
+      "commandDigest": "3b4d8499c74ad7edeceea9e086ee01f2fa1e763e8b2a63b0a3101b66bb4bbebc",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-ios-004-5-reopen",
+      "pendingKeys": [],
+      "planID": "probe-ios-plan-004-phone-write",
+      "platform": "iOS",
+      "projections": {
+        "probe-entry": {
+          "candidates": [
+            "probe-base-mac-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-ios-roundtrip": {
+          "candidates": [
+            "probe-ios-create-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-ios-create-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-ios-roundtrip",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-mac-lifecycle": {
+          "candidates": [
+            "probe-lifecycle-delete"
+          ],
+          "complete": true,
+          "state": "deleted"
+        }
+      },
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-base-mac-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-entry",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC G1 Mac initial text and original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-entry",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-ios-create-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-ios-roundtrip",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-ios-roundtrip",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-create",
+                "object": "probe-mac-lifecycle",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle initial",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-lifecycle-delete",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-edit"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle deleted intent",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-edit",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-create"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle edited",
+                "version": 1
+              }
+            ],
+            "object": "probe-mac-lifecycle",
+            "version": 1
+          }
+        ],
+        "images": {
+          "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "checkpointHash": "6be581393c5fe53e001173b1da3487a17e2974933c20afd496c4281e28367572",
+      "commandDigest": "645bdc37efe198fdf4456a4025781a4a19cd2f2ad54693f26d480003c15a7efd",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE"
+      ],
+      "halted": false,
+      "id": "probe-ios-004-6-sync",
+      "pendingKeys": [],
+      "planID": "probe-ios-plan-004-phone-write",
+      "platform": "iOS",
+      "projections": {
+        "probe-entry": {
+          "candidates": [
+            "probe-base-mac-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-ios-roundtrip": {
+          "candidates": [
+            "probe-ios-create-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-ios-create-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-ios-roundtrip",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-mac-lifecycle": {
+          "candidates": [
+            "probe-lifecycle-delete"
+          ],
+          "complete": true,
+          "state": "deleted"
+        }
+      },
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-base-mac-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-entry",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC G1 Mac initial text and original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-entry",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-ios-create-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-ios-roundtrip",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-ios-roundtrip",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-create",
+                "object": "probe-mac-lifecycle",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle initial",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-lifecycle-delete",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-edit"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle deleted intent",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-edit",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-create"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle edited",
+                "version": 1
+              }
+            ],
+            "object": "probe-mac-lifecycle",
+            "version": 1
+          }
+        ],
+        "images": {
+          "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "checkpointHash": "6be581393c5fe53e001173b1da3487a17e2974933c20afd496c4281e28367572",
+      "commandDigest": "6a0ebc89f6e781504ea6e6791379eb2545f4bda0c0fd65102973c7e148e7e897",
+      "dataset": "synthetic-g1-20261107-r4",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE"
+      ],
+      "halted": false,
+      "id": "probe-ios-004-7-snapshot",
+      "pendingKeys": [],
+      "planID": "probe-ios-plan-004-phone-write",
+      "platform": "iOS",
+      "projections": {
+        "probe-entry": {
+          "candidates": [
+            "probe-base-mac-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-ios-roundtrip": {
+          "candidates": [
+            "probe-ios-create-001"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-ios-create-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-ios-roundtrip",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-mac-lifecycle": {
+          "candidates": [
+            "probe-lifecycle-delete"
+          ],
+          "complete": true,
+          "state": "deleted"
+        }
+      },
+      "runID": "probe-run-20261107-r5",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-base-mac-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-entry",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC G1 Mac initial text and original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-entry",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-ios-create-001",
+                "imageBytes": 68,
+                "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+                "object": "probe-ios-roundtrip",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC iPhone reverse roundtrip with original PNG",
+                "version": 1
+              }
+            ],
+            "object": "probe-ios-roundtrip",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-create",
+                "object": "probe-mac-lifecycle",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle initial",
+                "version": 1
+              },
+              {
+                "deleted": true,
+                "id": "probe-lifecycle-delete",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-edit"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle deleted intent",
+                "version": 1
+              },
+              {
+                "deleted": false,
+                "id": "probe-lifecycle-edit",
+                "object": "probe-mac-lifecycle",
+                "parents": [
+                  "probe-lifecycle-create"
+                ],
+                "requires": [],
+                "text": "SYNTHETIC lifecycle edited",
+                "version": 1
+              }
+            ],
+            "object": "probe-mac-lifecycle",
+            "version": 1
+          }
+        ],
+        "images": {
+          "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        }
+      },
+      "status": "PASS"
+    }
+  ],
+  "runID": "probe-run-20261107-r5",
+  "scope": "Command execution only; not cloud convergence or G1 acceptance"
+}
