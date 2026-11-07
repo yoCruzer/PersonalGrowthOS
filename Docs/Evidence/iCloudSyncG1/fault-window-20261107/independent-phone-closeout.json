@@ -1,0 +1,92 @@
+{
+  "reviewer": "Independent read-only review; implementation oracle not imported",
+  "status": "PASS_FOR_OWNER_ADJUSTED_PHONE_SCOPE",
+  "reports": 6,
+  "commands": 27,
+  "passedCommands": 27,
+  "sameAccount": {
+    "compared": 27,
+    "allEqual": true,
+    "valuesPublished": false
+  },
+  "stages": [
+    {
+      "stage": "00-phone-dependency-repair",
+      "commands": 10,
+      "status": "PASS",
+      "planSHA256": "c86c50684a51ab49ba258bb7c25b4805f237a0b33341913aae39f82503d12830",
+      "finalMutationCount": 16,
+      "finalPendingCount": 0,
+      "privateOriginalReportSHA256": "59c0a23dab01b0ef3a494db21ca89f32f12edd5b475a50e7a49da9d7fa2e1828"
+    },
+    {
+      "stage": "01-phone-seed",
+      "commands": 4,
+      "status": "PASS",
+      "planSHA256": "c5c5d1c0836230a3af7291c9aa8972dc6cf835e0db3c1a6a46cb34cae41d7199",
+      "finalMutationCount": 1,
+      "finalPendingCount": 0,
+      "privateOriginalReportSHA256": "94f417cf8f9871d6309f964706ac26ce48d1c35df168f4670f3eb10c2217bb2b"
+    },
+    {
+      "stage": "05-phone-next-content",
+      "commands": 3,
+      "status": "PASS",
+      "planSHA256": "363a27e9781e4c1c04b0f391dd4dbb535b79f6a5b13d3a2a653a366d753e7abe",
+      "finalMutationCount": 2,
+      "finalPendingCount": 0,
+      "privateOriginalReportSHA256": "0cfbd41b1fa921a664db6ef14d8399588c281714b8a0d69bb0ebc857ce2d9ca7"
+    },
+    {
+      "stage": "16-phone-offline",
+      "commands": 4,
+      "status": "PASS",
+      "planSHA256": "d0077f56d654108400ac76247fad7a81ea02f116d5169b756caf3c8ecd5e073e",
+      "finalMutationCount": 3,
+      "finalPendingCount": 1,
+      "privateOriginalReportSHA256": "c77c45c34df2432b77d26a480933b1915376192833b0111272f5aaf00995a9eb"
+    },
+    {
+      "stage": "17-phone-reconnect",
+      "commands": 3,
+      "status": "PASS",
+      "planSHA256": "636325cc87d85123e790469393d2daa632df5a055c2d37b071d49de47c7ef1fe",
+      "finalMutationCount": 3,
+      "finalPendingCount": 0,
+      "privateOriginalReportSHA256": "80bd8adc455174443b9c2bbc92b0d7b6f234196c28719f65df8d9cd10233456a"
+    },
+    {
+      "stage": "19-phone-restore-seed",
+      "commands": 3,
+      "status": "PASS",
+      "planSHA256": "c033252cb90320b05d711dc9386989a45b31e6e0c85e7a872c4b0ea3f9b43bc0",
+      "finalMutationCount": 1,
+      "finalPendingCount": 0,
+      "privateOriginalReportSHA256": "9c31817f1d6654e380b5ec02c6e10a8dfa3a0712b56ca928d9ee6a8c2c050f75"
+    }
+  ],
+  "negativeControls": {
+    "rejected": 9,
+    "total": 9
+  },
+  "checks": {
+    "allPlanAndCommandDigests": true,
+    "allCumulativeFixedFacts": true,
+    "originalImagesCompleteAndExact": true,
+    "dependencyBeforeAndAfterProjectionTruth": true,
+    "phoneNewImagePendingAndACK": true,
+    "offlineSaveReopenQueueAndCheckpointPreserved": true,
+    "offlineAccountCorrectlyLabelledCached": true,
+    "reconnectACKAndQueueDrained": true,
+    "restoreSeedUploadACKOnly": true
+  },
+  "scopeLimits": [
+    "Owner-reported physical network off/on; report alone does not independently prove radio settings.",
+    "Offline reopen is same-process store/driver reopening, not crash recovery.",
+    "Stage19 proves seed upload only, not restore race/fence.",
+    "Mac CK_2 remains actual FAIL; Owner accepted it as non-blocking. VPN causation was not independently established.",
+    "Mac fetch/new-image download and unexecuted original fault/account/restore matrix remain NOT_RUN.",
+    "Owner-adjusted closeout is not all-scenario PASS of original G1 matrix."
+  ],
+  "sourceScriptSHA256": "59a44c906abf557c446c05d98550d360e6aa78bf2506dad1ccbfec627f703eaf"
+}

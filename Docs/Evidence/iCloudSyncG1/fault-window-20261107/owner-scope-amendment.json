@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-07",
+  "authority": "Owner explicit chat instruction",
+  "decision": "Phone-side verified scenarios are acceptance basis; Mac CK_2 non-blocking accepted exception",
+  "suspectedCause": "Owner attributes CK_2 to VPN; not independently verified",
+  "rawMacResults": "FAIL CK_2 preserved; no conversion to measured PASS",
+  "remainingPhoneStages": [],
+  "phoneInstructions": "Owner confirms five requested stages completed and network restored; originals collected and verified",
+  "deferredCoverage": "Mac-dependent crash/old ACK/lease/account switch/restore race and paired new-image Mac receipt remain NOT_RUN or unverified; not grounds to claim those scenarios passed",
+  "status": "OWNER_ACCEPTED_PHONE_SCOPE",
+  "macWindow": "STOP requested; diagnostic build not deployed",
+  "releaseAuthorization": "No merge, Production, Archive or TestFlight authorization",
+  "completedPhoneStages": [
+    "00-phone-dependency-repair",
+    "01-phone-seed",
+    "05-phone-next-content",
+    "16-phone-offline",
+    "17-phone-reconnect",
+    "19-phone-restore-seed"
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "completedAllCommands": true,
+  "dataset": "synthetic-g1-fault-20261107-r7",
+  "planDigest": "363a27e9781e4c1c04b0f391dd4dbb535b79f6a5b13d3a2a653a366d753e7abe",
+  "planID": "probe-f-3535c750293ea6c3f187cdc6210c3df9910e2acd2f578c2baa9aa049e688c108",
+  "results": [
+    {
+      "accountSource": "liveCloudKit",
+      "checkpointHash": "ecc05ea6fbf990247c8a720e4c756179298934e578da11ea80a128b0b79b6062",
+      "commandDigest": "ab9fe4e9f7d6ae4b27c9c3237472cbe6d4baf8b45b206bf17499e6944364c785",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-f05-connect",
+      "pendingKeys": [],
+      "planID": "probe-f-3535c750293ea6c3f187cdc6210c3df9910e2acd2f578c2baa9aa049e688c108",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "liveCloudKit",
+      "checkpointHash": "ecc05ea6fbf990247c8a720e4c756179298934e578da11ea80a128b0b79b6062",
+      "commandDigest": "deaeed6847cca8c4c4251703112ca1b797a2ed6f784e75ae886d5a312824a8ff",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-f05-save",
+      "pendingKeys": [
+        "object-probe-remote-next"
+      ],
+      "planID": "probe-f-3535c750293ea6c3f187cdc6210c3df9910e2acd2f578c2baa9aa049e688c108",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-remote-next": {
+          "candidates": [
+            "probe-remote-next"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-next",
+            "object": "probe-remote-next",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-next",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-next",
+                "object": "probe-remote-next",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-next",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-next",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "liveCloudKit",
+      "checkpointHash": "042f9fc46fbfccf9b8ddc2728eebfba3163c52fc60825c477adb2894611cb327",
+      "commandDigest": "c53f8b8680936c94fc01a7b907a4c898fcd569e56265ad4d5a4ecee73da6a073",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "ACK_EXACT_AND_RESCHEDULED",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "FETCH_CONTENT_DURABLE",
+        "STATE_DURABLE"
+      ],
+      "halted": false,
+      "id": "probe-f05-sync",
+      "pendingKeys": [],
+      "planID": "probe-f-3535c750293ea6c3f187cdc6210c3df9910e2acd2f578c2baa9aa049e688c108",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-remote-next": {
+          "candidates": [
+            "probe-remote-next"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-next",
+            "object": "probe-remote-next",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-next",
+            "version": 1
+          },
+          "state": "ready"
+        },
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-next",
+                "object": "probe-remote-next",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-next",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-next",
+            "version": 1
+          },
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    }
+  ],
+  "runID": "probe-run-20261107-r7",
+  "scope": "Command execution only; not cloud convergence or G1 acceptance"
+}

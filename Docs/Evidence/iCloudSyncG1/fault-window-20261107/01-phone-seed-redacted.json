@@ -1,0 +1,190 @@
+{
+  "completedAllCommands": true,
+  "dataset": "synthetic-g1-fault-20261107-r7",
+  "planDigest": "c5c5d1c0836230a3af7291c9aa8972dc6cf835e0db3c1a6a46cb34cae41d7199",
+  "planID": "probe-f-f4896dd9af42acbfea8c338b8b742468b1dcfc55e1f8eb88d9469acca0720a3a",
+  "results": [
+    {
+      "accountSource": "liveCloudKit",
+      "commandDigest": "95938d430428e2cc1b9253fb1073cf6b53a68d04a2e14567f3373caadcb36d2c",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-f01-connect",
+      "pendingKeys": [],
+      "planID": "probe-f-f4896dd9af42acbfea8c338b8b742468b1dcfc55e1f8eb88d9469acca0720a3a",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {},
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "liveCloudKit",
+      "commandDigest": "340ce5b59b4c36c56432659e97428c1b6d740ba0fef7bed5d1c2e31c449dbc24",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-f01-empty",
+      "pendingKeys": [],
+      "planID": "probe-f-f4896dd9af42acbfea8c338b8b742468b1dcfc55e1f8eb88d9469acca0720a3a",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {},
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "liveCloudKit",
+      "commandDigest": "10834797435a71003b512cd8eca32cec71375f9abe477f577204244f8cf51948",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+      ],
+      "halted": false,
+      "id": "probe-f01-save",
+      "pendingKeys": [
+        "object-probe-remote-seed"
+      ],
+      "planID": "probe-f-f4896dd9af42acbfea8c338b8b742468b1dcfc55e1f8eb88d9469acca0720a3a",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    },
+    {
+      "accountSource": "liveCloudKit",
+      "checkpointHash": "ecc05ea6fbf990247c8a720e4c756179298934e578da11ea80a128b0b79b6062",
+      "commandDigest": "4f383d8ef9a20872114f0283365da26e52017a706c24b3b8fcbed291c635db7d",
+      "dataset": "synthetic-g1-fault-20261107-r7",
+      "events": [
+        "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+        "SAME_ACCOUNT_QUEUE_REBUILT",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "ACK_EXACT_AND_RESCHEDULED",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "STATE_DURABLE",
+        "FETCH_CONTENT_DURABLE",
+        "STATE_DURABLE"
+      ],
+      "halted": false,
+      "id": "probe-f01-sync",
+      "pendingKeys": [],
+      "planID": "probe-f-f4896dd9af42acbfea8c338b8b742468b1dcfc55e1f8eb88d9469acca0720a3a",
+      "platform": "iOS",
+      "processID": 1643,
+      "processNonce": "3ECB3502-9CC7-49A2-B65A-9D928E9BCD82",
+      "projections": {
+        "probe-remote-seed": {
+          "candidates": [
+            "probe-remote-seed"
+          ],
+          "complete": true,
+          "preview": {
+            "deleted": false,
+            "id": "probe-remote-seed",
+            "object": "probe-remote-seed",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC fault remote-seed",
+            "version": 1
+          },
+          "state": "ready"
+        }
+      },
+      "runID": "probe-run-20261107-r7",
+      "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+      "snapshot": {
+        "envelopes": [
+          {
+            "mutations": [
+              {
+                "deleted": false,
+                "id": "probe-remote-seed",
+                "object": "probe-remote-seed",
+                "parents": [],
+                "requires": [],
+                "text": "SYNTHETIC fault remote-seed",
+                "version": 1
+              }
+            ],
+            "object": "probe-remote-seed",
+            "version": 1
+          }
+        ],
+        "images": {}
+      },
+      "snapshotComplete": true,
+      "status": "PASS",
+      "unavailableImages": []
+    }
+  ],
+  "runID": "probe-run-20261107-r7",
+  "scope": "Command execution only; not cloud convergence or G1 acceptance"
+}

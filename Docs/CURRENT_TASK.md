@@ -1,3 +1,35 @@
+# 2026-11-07 G1本轮已按Owner手机侧范围收口
+
+状态 `OWNER_ACCEPTED_PHONE_SCOPE`。Owner明确接受Mac CK_2为非阻塞例外；原始失败保留、VPN归因未独立证实。手机6份原件27条命令全部PASS，核对依赖修复/新原图、联网写入、断网本地重开与pending保留、恢复联网ACK清空以及独立restore种子上传。后者不代表restore race；原完整真实故障矩阵未全覆盖，Mac依赖剩余场景列后续补证，不继续卡本轮。
+
+手机已可断开；Mac窗口已投递STOP，不部署CK_2诊断候选，不退出账户、不删数据。最终运行源码0e1f747，本机64原生/38工具通过，远端SyncLab 42379018988 SUCCESS；正式产品42379022508 release/unit成功而smoke失败，单独保留；诊断候选65项日志保留为历史但源码撤回。此时交付收口文档和脱敏证据并普通推送既有Draft PR16，不merge/Production/Archive/TestFlight或扩大正式产品接入。详见[本轮收口说明](ICLOUD_SYNC_G1_OWNER_CLOSEOUT_ZH.md)。以下为保留的历史过程，涉及旧BLOCKED/PENDING表述以本段和Owner范围调整为准。
+
+---
+
+# 2026-11-07 Owner调整：手机侧验收，Mac CK_2非阻塞
+
+按Owner最新明确决定，不再追查或等待本轮Mac CK_2。其原FAIL保留，Owner将其作为VPN相关预期例外接受（原因未独立验证）。本轮改用手机侧验收范围，依赖Mac的剩余原G1矩阵列为后续补证而不写PASS；Production/正式接入权限不变。已停止Mac等待窗口，不部署新诊断包；诊断代码仅本机65测试/签名构建通过。手机版本7及批次入口已确认，异常依赖00阶段10/10PASS、16条最终事实及新图片已核验。已一次性请求手机01、05、16断网、17恢复联网、19共5个独立步骤（约5–8分钟），遇任何错误停止；等原始报告收集核验后完成本轮Owner接受范围收口。详见[范围调整记录](Evidence/iCloudSyncG1/fault-window-20261107/owner-scope-amendment.json)。
+
+---
+
+# 2026-11-07 手机异常依赖阶段完成，Mac读取受CK_2阻塞
+
+手机原始文稿已由Configurator仅导出SyncLab取回，00-phone-dependency-repair 10/10PASS；核对同账户、原始摘要、初始12条/修复后16条事实、新图片pending及SDK ACK和原图hash。Mac00-fetch及单独的只同步恢复均connect PASS、sync FAIL CK_2，events=ZONE_SAVE_FAILED_RETAINED，两个失败均保留，未认可双端通过。手机已可拔线正常使用，暂不要求后续步骤。正在补仅Debug、限深限量、仅CK/URL数字码的诊断，65项原生PASS；将通过现有haha固定窗口诊断，不重复手机动作，不放宽验收或重放写入。
+
+---
+
+# 2026-11-07 手机新版批次入口已由Owner确认
+
+Owner最新确认已出现“载入已导入的测试批次”。覆盖更新现已取得用户界面证据；之前旧版本回执及失败排查原样保留。已请求载入批次，存在00-phone-dependency-repair才执行此项；若缺批次则停止并回报，不能启动旧单计划。等待手机结果，未推进依赖其结果的Mac fetch。haha恢复窗口保持，数据线此刻可用于必要补导入；不需再次安装。
+
+---
+
+# 2026-11-07 手机批次入口未出现：撤回安装已核实结论
+
+Owner没有执行新批次；手机缺少批次入口，所贴报告仍为旧r5/006。此前Configurator exit0不能证明覆盖安装成功。已构建并验签build7，包内确认包含批次UI；CLI覆盖后读回仍为1，改用Configurator图形界面明确选择替换，操作结束后读回仍为1；CoreDevice交叉查询被手机锁屏阻止（12040/10003）。已请求Owner彻底关闭并重开SyncLab，仅确认新按钮，不执行计划。新手机批次仍NOT_RUN；Mac种子恢复结果保持，勿把旧r5报告计入r7。后续先核实设备更新/批次导入再启动手机测试。
+
+---
+
 # 2026-11-07 集中实机窗口：修复 Mac 启动前权限失败
 
 Owner已启动haha窗口；Configurator安装SyncLab和导入8份手机计划均成功，手机尚未执行本轮计划。旧Mac启动器在写App沙盒计划时被macOS拒绝（PermissionError，App尚未启动），原失败及目录保留。改用显式授权、每阶段令牌绑定的本机回传；App自己写私有日志，回传落盘精确ACK后才执行故意退出。新Mac包已实际启动并回传：connect及12条save共13PASS，首个sync报CK_4网络失败，原报告保留；未算通过。准备独立恢复计划，仅connect/sync/sync/snapshot，不重放save。恢复窗口 /private/tmp/SyncLab-Fault-Window-20261107-r7-recovery 已启动，4/4恢复命令PASS，同账户新进程保留全部12条事实且队列为空；原失败不改写。已请求手机执行00-phone-dependency-repair，等待其结果；手机已安装67aacb8版本保持不变，新增通道仅用于Mac启动器。
