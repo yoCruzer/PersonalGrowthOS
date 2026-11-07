@@ -87,3 +87,11 @@ Owner选择专用本地用户方案并亲自完成密码步骤；系统设置已
 ## 2026-11-07 受限Debug探针就绪
 
 Owner已在haha中登录测试手机同一iCloud并切回当前会话。跨用户直接执行需要密码，未尝试索取或绕过；实现一次Owner启动的受限合成测试入口，详见实验README。当前工程门禁及独立复核通过；[39项原生/13项工具/签名及审查证据](Evidence/iCloudSyncG1/probe-engineering-20261107/README.md)。已请Owner在haha中运行`/private/tmp/SyncLab-Probe-20261107/Start-SyncLab.command`并保留会话，同时连线解锁iPhone。最近手机App查询被CoreDevice4016拒绝，尚未安装；复核后仅排队Mac账户访问探测，结果尚未返回，未排队save/sync。真实测试后另记结果，绝不拿工程门禁补填真实矩阵。
+
+## 2026-11-07 单Mac真实Development部分验证
+
+专用haha用户运行签名Debug后，13条固定合成命令及独立复核通过：文字/68字节原图、真实SDK ACK及pending清空、checkpoint持久、同进程Store/Engine重开与再次同步、独立对象新增/修改/逻辑删除且历史完整。20个内存篡改负控拒绝。[运行证据及限定](Evidence/iCloudSyncG1/runtime-20261107/README.md)。矩阵1/5/7取得单Mac部分证据，所有双端/进程崩溃/空库重建要求仍未完成，不改G1为通过。
+
+iPhone本轮安装在DDI personalization阶段失败；Owner确认重启、重连、首次解锁后仍为12040/12051/TatsuError4。官方devicesupport更新无匹配27B52包，未实施系统降级、关闭安全措施或设备重置。Owner授权通过官方Configurator尝试已准备且验签的同一Debug IPA；待实际结果，自动启动/取回证据也需另验。产品回归42332546608再次出现同两项布局失败，Release/Unit成功，既有失败保持。
+
+Configurator官方商店GET后确认窗口无确认按钮，Owner观察一致，退出重开商店重试仍复现；工具与手机实验包未成功安装。已记录为明确环境阻断，不以安装尝试替代成功。probe-014已停止云引擎，完整快照与空pending保持，临时本机桥已关闭。恢复时先重新准备短期通道，原合成库与证据保留；既有安装授权持续有效。

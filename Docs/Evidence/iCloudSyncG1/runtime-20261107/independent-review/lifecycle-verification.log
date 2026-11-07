@@ -1,0 +1,49 @@
+PASS: all 13 identities/digests/account equality (redacted); eight lifecycle steps preserve original object and PNG.
+PASS: exact create -> edit -> logical-delete ancestry retained; fresh ACK/fetch/state after each save; pending 1,0,1,0,1,0,0,0.
+PASS: deletion remains complete/deleted with original history through Store/Engine reopen and sync; checkpoint retained at reopen.
+PASS: 8 additional in-memory tampering negative controls rejected.
+LIMIT: one Mac; Store/Engine reopen only; no second client, crash/restart, or cloud-only reconstruction.
+{
+  "inputs": [
+    {
+      "id": "probe-006-mac-lifecycle-create",
+      "requestSHA256": "573c97bfbbfc6a7341e0a4454bd3e600fe08de19c9edd8a69f47ed75ec51d53a",
+      "resultSHA256": "5728863387c5eccb28b03581e194b5c34ae100cd814d7e3f5ee326e966dfbda0"
+    },
+    {
+      "id": "probe-007-mac-lifecycle-sync-create",
+      "requestSHA256": "8a1eda50bcea9def0b0a23178edba190eec891df0cb29085a407e9852cee2b71",
+      "resultSHA256": "5e6df2fd5479470bb66f6b3a2312d0278822705695fdf8781780608661b98d0e"
+    },
+    {
+      "id": "probe-008-mac-lifecycle-edit",
+      "requestSHA256": "7e988b0f4f118b4264d9b024f55a68e9315324dd8c33fe3106d7eed1645e7701",
+      "resultSHA256": "343758efd35724ede0aa4a978dd304a2c77c31f228891d382b4057914b613b29"
+    },
+    {
+      "id": "probe-009-mac-lifecycle-sync-edit",
+      "requestSHA256": "a70723e5bc7b38b535918ad26ed1db6e7ebbabd8b73665be0f8870899c0f8a89",
+      "resultSHA256": "e5d9effb14a007908d5d308d33c738742db06a283e571b9821ddbff76cf76c54"
+    },
+    {
+      "id": "probe-010-mac-lifecycle-delete",
+      "requestSHA256": "4f709605abf21be93c9af7c764d9934e5bfc54892db2089d95d3312f35c49e1c",
+      "resultSHA256": "924ab31f0668b6fd0d97e5ab39ac39681ce15bb08751ba944d38e9f3d0103c72"
+    },
+    {
+      "id": "probe-011-mac-lifecycle-sync-delete",
+      "requestSHA256": "19e767604bdf148a3eb71e887a20c13f5a57c1114409e3752db0a54fcd292709",
+      "resultSHA256": "5f536497ad64f2480a1d9e6416d04763b9f7fdfa0ce347d2ccacd5dc5d20aa38"
+    },
+    {
+      "id": "probe-012-mac-lifecycle-reopen",
+      "requestSHA256": "b345e1ac95e6fe2b12eeb40610a479264ba32aba6f99c0e001fc90429df7d410",
+      "resultSHA256": "84b8b66b25ade5030781483dc682f60a943965d75cc4eaa024ebbc9c3cb709d4"
+    },
+    {
+      "id": "probe-013-mac-lifecycle-sync-after-reopen",
+      "requestSHA256": "b30f85cfb8032ebd20dc08df91050e7a96528645e6d4966e0a31f64c8a8855d8",
+      "resultSHA256": "de487ca0113a214e7ac1643d3f9d7ae9aa3c10d0375a361f0bdbab3afc03d5f7"
+    }
+  ]
+}

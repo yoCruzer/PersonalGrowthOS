@@ -1,0 +1,60 @@
+{
+  "checkpointHash": "12f87ef7e11b6b56f19b01fcc7c0dab09232cda3d5868c32b03539d6c7c75a58",
+  "commandDigest": "95e13a5c4e00ea07ae6f53e1de112255cb5fce325608c757c84f9a8ad87aedf1",
+  "dataset": "synthetic-g1-20261107-r4",
+  "events": [
+    "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+  ],
+  "halted": false,
+  "id": "probe-004-mac-reopen",
+  "pendingKeys": [],
+  "platform": "macOS",
+  "projections": {
+    "probe-entry": {
+      "candidates": [
+        "probe-base-mac-001"
+      ],
+      "complete": true,
+      "preview": {
+        "deleted": false,
+        "id": "probe-base-mac-001",
+        "imageBytes": 68,
+        "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+        "object": "probe-entry",
+        "parents": [],
+        "requires": [],
+        "text": "SYNTHETIC G1 Mac initial text and original PNG",
+        "version": 1
+      },
+      "state": "ready"
+    }
+  },
+  "runID": "probe-run-20261107-r4",
+  "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+  "snapshot": {
+    "envelopes": [
+      {
+        "mutations": [
+          {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          }
+        ],
+        "object": "probe-entry",
+        "version": 1
+      }
+    ],
+    "images": {
+      "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+    }
+  },
+  "status": "PASS",
+  "accountFingerprintRemoved": true
+}

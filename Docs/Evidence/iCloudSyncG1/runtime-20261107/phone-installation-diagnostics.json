@@ -1,0 +1,34 @@
+{
+  "scope": "Development tooling diagnostics; private raw logs retained locally",
+  "rawFileSHA256": {
+    "phone-app-query-after-owner-private.json": "87a948d2e3aec2214aa5be48a4eb0146101384208ee625db189a3f4d2cdbd613",
+    "phone-install-after-owner-private.json": "b1867c0eb5a391f991e2ceb61eb07976759d389c323690424f8fc116532bf9dc",
+    "phone-retry-install-private.json": "39dd2b7a44a9ecfb47969716086a55d9356776536602ac5f02c680ec82c17803",
+    "phone-install-confirmed-reboot-private.json": "83f7d7c00f2bdc9b9b49434d128ff93260dc1e463f51fb5a5595bb04c059bebb",
+    "devicesupport-update.log": "973207743358d9ed1021b8438a549f05bdd3747ab57ca040b5526e40190b5360",
+    "preferred-ddi.json": "73f5167b789f6c0f2a22828950115402936539da4e7c8d5d851489ed39fa84ab"
+  },
+  "confirmedOwnerActions": [
+    "iPhone reboot completed",
+    "USB reconnected",
+    "first unlock completed"
+  ],
+  "postConfirmedRebootErrorChain": [
+    {
+      "domain": "com.apple.dt.CoreDeviceError",
+      "code": 12040
+    },
+    {
+      "domain": "com.apple.dt.CoreDeviceError",
+      "code": 12051
+    },
+    {
+      "domain": "CryptexKitHost.TatsuError",
+      "code": 4
+    }
+  ],
+  "matchingSupportPackageDownload": "FAILED exit70; No matching device support package for tools version 27B52",
+  "proxyConfiguration": "No system proxy entries reported",
+  "appleEndpointCheck": "HTTPS gs.apple.com reachable; root HEAD returns401, not proof personalization endpoint succeeds",
+  "installationSucceeded": false
+}

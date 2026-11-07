@@ -1,0 +1,1 @@
+{"action":"save","id":"probe-010-mac-lifecycle-delete","mutation":{"deleted":true,"id":"probe-lifecycle-delete","object":"probe-mac-lifecycle","parents":["probe-lifecycle-edit"],"requires":[],"text":"SYNTHETIC lifecycle deleted intent","version":1}}

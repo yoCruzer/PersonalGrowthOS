@@ -1,0 +1,64 @@
+{
+  "checkpointHash": "dcfa635cd61f9b04e4ed334144c416575302922cae1a14917ac54382e4388ee3",
+  "commandDigest": "03adbc925c287d7a982b2d21eeee0d4df74bec3ddc3c45660a89f59f4ccc1730",
+  "dataset": "synthetic-g1-20261107-r4",
+  "events": [
+    "ENGINE_STARTED_DEVELOPMENT_OPT_IN",
+    "STATE_DURABLE"
+  ],
+  "halted": false,
+  "id": "probe-002-mac-save-base",
+  "pendingKeys": [
+    "image-6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+    "object-probe-entry"
+  ],
+  "platform": "macOS",
+  "projections": {
+    "probe-entry": {
+      "candidates": [
+        "probe-base-mac-001"
+      ],
+      "complete": true,
+      "preview": {
+        "deleted": false,
+        "id": "probe-base-mac-001",
+        "imageBytes": 68,
+        "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+        "object": "probe-entry",
+        "parents": [],
+        "requires": [],
+        "text": "SYNTHETIC G1 Mac initial text and original PNG",
+        "version": 1
+      },
+      "state": "ready"
+    }
+  },
+  "runID": "probe-run-20261107-r4",
+  "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+  "snapshot": {
+    "envelopes": [
+      {
+        "mutations": [
+          {
+            "deleted": false,
+            "id": "probe-base-mac-001",
+            "imageBytes": 68,
+            "imageHash": "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec",
+            "object": "probe-entry",
+            "parents": [],
+            "requires": [],
+            "text": "SYNTHETIC G1 Mac initial text and original PNG",
+            "version": 1
+          }
+        ],
+        "object": "probe-entry",
+        "version": 1
+      }
+    ],
+    "images": {
+      "6b1048f8a6d40bac0b2954c18fefa40c4ea7a96120fc2e54b7317c0e43c2bbec": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+    }
+  },
+  "status": "PASS",
+  "accountFingerprintRemoved": true
+}

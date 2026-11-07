@@ -1,0 +1,20 @@
+{
+  "commandDigest": "ff1da14c3f088805ad95416332a174f4d274bb88a43236c294f1da4f58d7efaf",
+  "dataset": "synthetic-g1-20261107-r4",
+  "events": [
+    "ENGINE_STARTED_DEVELOPMENT_OPT_IN"
+  ],
+  "halted": false,
+  "id": "probe-001-mac-connect",
+  "pendingKeys": [],
+  "platform": "macOS",
+  "projections": {},
+  "runID": "probe-run-20261107-r4",
+  "scope": "Command execution only; not a cloud convergence or G1 acceptance verdict",
+  "snapshot": {
+    "envelopes": [],
+    "images": {}
+  },
+  "status": "PASS",
+  "accountFingerprintRemoved": true
+}

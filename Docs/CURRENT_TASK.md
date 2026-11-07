@@ -1,3 +1,15 @@
+# 2026-11-07 G1部分真实服务验证完成：Mac通过，iPhone开发镜像仍阻断
+
+Owner已在haha运行启动脚本，Mac账户访问和实际CloudKit Development读写开始执行。固定合成dataset下13条命令完成：文字/68字节原图、SDK发送确认、队列清空、持久checkpoint、同进程Store/Engine重开，以及独立对象新增→修改→逻辑删除。逐mutation/原字节验证、独立审查及20个篡改负控通过；[脱敏证据](Evidence/iCloudSyncG1/runtime-20261107/README.md)。这不是进程崩溃恢复、空库纯云重建或双端G1验收，未完成项保持NOT_RUN。
+
+iPhone已实际有线连接、配对且Developer Mode enabled；App安装被DDI personalization 12040/12051（CryptexKitHost.TatsuError4）拒绝。Owner确认重启完成、重新连线和首次解锁后仍复现。当前DDI检查usable/compatible、27B52；官方devicesupport更新exit70，No matching package。没有重置/抹除/退出iCloud或变更安全配置。已从相同已签名Debug实包准备本地IPA（非发行Archive/上传），Owner已授权安装Apple官方Configurator并只用添加App尝试；商店确认窗仅显示应用/账户与取消，Owner确认无确认按钮，退出重开商店后仍复现，工具未安装。安装本身也不等于启动参数和双端证据通过。
+
+实现源码2dfbafb的定向CI42332149355为PASS（原生39、工具13、unsigned iOS build）。产品回归42332546608为FAIL：Release/Unit成功，UI smoke3PASS/2FAIL短名称布局断言；42332154418被后续提交取消。正式产品和测试未改，失败未解决。
+
+整体G1仍BLOCKED_ENV/PARTIAL：不要求第二台iPhone；恢复点为App Store确认界面可用后的已授权Configurator安装，随后核验手机安装/测试启动/证据取回。不进入G2/G3或发布，不操作正式库/Production。probe-014停止云引擎并确认快照不变，临时loopback监听已关闭；下次需创建新通道/启动包后再启动haha客户端，勿直接复用旧脚本中的失效连接。所有既有授权保留，无需再次请求Mac登记或Configurator安装许可。以下历史按当时证据保留。
+
+---
+
 # 2026-11-07 G1测试入口就绪：待Owner在haha启动及iPhone开发连接
 
 Owner已确认haha普通用户登录测试iPhone同一iCloud，并切回原控制会话；该身份尚待两端实际CloudKit指纹核验。原用户无法无密码切换执行身份，因此没有跨用户sudo或复制凭据。已在独立SyncLab中加入默认关闭、仅Debug的受限合成测试入口：固定实验容器/synthetic-g1数据集、命令白名单、固定PNG，Mac只连接127.0.0.1临时认证通道，iPhone仅通过本App启动参数与本App Documents取回结果。
