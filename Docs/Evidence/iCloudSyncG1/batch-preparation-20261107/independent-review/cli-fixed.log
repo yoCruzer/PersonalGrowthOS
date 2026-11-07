@@ -1,0 +1,8 @@
+PASS: actual Debug CLI creates only three fixed plans, root700 even umask000; existing output refused without changing bytes.
+PASS: independent exact action/edge/deletion/image oracle; second PNG all chunk CRCs, IHDR and decompression valid; 14 tampering controls rejected.
+SECOND_PNG 70 4d2e03d73058507a3641207a868534b609e130c3498dc298361d2421873a1e43
+{
+  "01-mac-seed": "35c54979771f73d4a3011624c0b0b60609bd99633d6cdaab3186cff8063c15fd",
+  "02-ios-repair": "ea19060627bc0e1b5efbac56bdf501abb3f65352f032fb9da5e5f5d039306f6b",
+  "03-mac-fetch": "57c5f0276b498e79ab4e3676ddc02f5bbbc6b36dbbcdf981a5e055de2a6d6f36"
+}

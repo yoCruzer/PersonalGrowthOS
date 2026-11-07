@@ -1,0 +1,55 @@
+Building for debugging...
+[Planning deferred tasks]
+[33 / 64]
+[34 / 65] SyncLab
+[46 / 115]
+[53 / 115]
+[54 / 115]
+[59 / 115]
+[63 / 115]
+[67 / 115]
+[69 / 115]
+[70 / 115]
+[76 / 115]
+[84 / 115] SyncLab
+[95 / 116] LabReplay-product
+[98 / 118] SyncLab
+[99 / 118] SyncLab
+[106 / 119] LabReplay-product
+[108 / 119] SyncLabTests-product
+[125 / 152]
+[128 / 152]
+[133 / 152]
+[136 / 152]
+[137 / 152]
+[146 / 152] SyncLabTests-product
+[148 / 152] SyncLabTests-product
+Build complete! (6.30秒)
+Test Suite 'All tests' started at 2026-11-07 18:43:17.942.
+Test Suite 'SyncLabTests.xctest' started at 2026-11-07 18:43:17.943.
+Test Suite 'BatchIndependentTests' started at 2026-11-07 18:43:17.943.
+Test Case '-[SyncLabTests.BatchIndependentTests testEachPublicationBoundaryAndSecondAssetWire]' started.
+Test Case '-[SyncLabTests.BatchIndependentTests testEachPublicationBoundaryAndSecondAssetWire]' passed (0.045 seconds).
+Test Case '-[SyncLabTests.BatchIndependentTests testOutputPermissionsAndFailBeforeCreatingInvalidDestination]' started.
+Test Case '-[SyncLabTests.BatchIndependentTests testOutputPermissionsAndFailBeforeCreatingInvalidDestination]' passed (0.003 seconds).
+Test Suite 'BatchIndependentTests' passed at 2026-11-07 18:43:17.991.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.048 (0.048) seconds
+Test Suite 'RemainingBatchTests' started at 2026-11-07 18:43:17.991.
+Test Case '-[SyncLabTests.RemainingBatchTests testNativeStagingRepairAndFreshImagePendingWithoutCloud]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testNativeStagingRepairAndFreshImagePendingWithoutCloud]' passed (0.013 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testPlansBoundedAndDeterministicWithoutAuthorization]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testPlansBoundedAndDeterministicWithoutAuthorization]' passed (0.001 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testPreparationNeverOverwritesOriginalOrFollowsOutputSymlink]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testPreparationNeverOverwritesOriginalOrFollowsOutputSymlink]' passed (0.002 seconds).
+Test Case '-[SyncLabTests.RemainingBatchTests testSecondImageIsDecodableDistinctAndStrictlyAllowlisted]' started.
+Test Case '-[SyncLabTests.RemainingBatchTests testSecondImageIsDecodableDistinctAndStrictlyAllowlisted]' passed (0.018 seconds).
+Test Suite 'RemainingBatchTests' passed at 2026-11-07 18:43:18.025.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.034 (0.034) seconds
+Test Suite 'SyncLabTests.xctest' passed at 2026-11-07 18:43:18.025.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.081 (0.082) seconds
+Test Suite 'All tests' passed at 2026-11-07 18:43:18.025.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.081 (0.083) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

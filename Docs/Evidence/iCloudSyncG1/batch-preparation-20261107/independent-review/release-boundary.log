@@ -1,0 +1,1 @@
+PASS: actual Release CLI rejects prepare-batch before destination creation; RemainingBatch absent from symbols. Expected nonzero exit: -5

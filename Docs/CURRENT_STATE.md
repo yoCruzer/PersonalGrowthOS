@@ -2,9 +2,9 @@
 
 Owner批准继续，要求减少手机占用及逐条操作。已新增仅Debug的离线批次生成器：三阶段分别16/10/4命令，Mac先种入删除依赖、缺祖先、传递缺失、依赖环/因果环及当前新head不可发布反例；手机一次点击先获取未修复快照再补齐依赖、上传第二个固定PNG；Mac最后取回。仅生成新目录、拒绝旧目录/符号链接；不自动安装、启动云或修改系统设置。新样本按hash/长度严格匹配固定bytes，不接受任意图片路径或私人图片。
 
-51项原生测试PASS；工具首轮8PASS/5ERROR（沙箱禁止loopback bind），按所需权限复验13PASS，失败原样保留。iOS/Mac签名Debug、sim unsigned Release及双实包签名检查PASS。[工程证据](Evidence/iCloudSyncG1/batch-preparation-20261107/)。独立审查进行中；三份计划已在私有临时目录生成，真实新批次运行仍NOT_RUN，手机不需连接。
+51项原生测试PASS；工具首轮8PASS/5ERROR（沙箱禁止loopback bind），按所需权限复验13PASS，失败原样保留。iOS/Mac签名Debug、sim unsigned Release及双实包签名检查PASS。[工程证据](Evidence/iCloudSyncG1/batch-preparation-20261107/)。独立审查发现重复run导出文件碰撞，已以完整dataset/run/stage摘要绑定planID修复；原1项失败保留，最终7项独立原生/实际CLI及14负控PASS，无剩余must-fix。最终51原生及双平台构建复验通过。三份计划与签名IPA已准备于/private/tmp/g1-next-batch-device-final，未安装，真实新批次运行仍NOT_RUN，手机不需连接。
 
-执行必须用从未运行的新合成dataset/zone，不能仅靠空本地快照认定远端没有图片；手机必须实际出现新image pending、ACK清空及Mac原字节取回证据。先前基础双向/冲突结论保留。接下来仍需补真实SDK进程退出点/旧ACK新编辑、断网与账户隔离/图片故障和restore竞态入口，再集中安排设备窗口，不以本批离线工程填完整G1通过。既有产品两项UI失败与Production授权边界保持。
+执行必须用从未运行的新合成dataset/zone，不能仅靠空本地快照认定远端没有图片；手机必须实际出现新image pending、ACK清空及Mac原字节取回证据。先前基础双向/冲突结论保留。接下来仍需补真实SDK进程退出点/旧ACK新编辑、断网与账户隔离/图片故障和restore竞态入口，再集中安排设备窗口，不以本批离线工程填完整G1通过。既有产品两项UI失败与Production授权边界保持。 [剩余批次与集中设备窗口安排](ICLOUD_SYNC_G1_REMAINING_BATCHES_ZH.md)。源码e8b1c3f已普通推送，定向CI42365482372已SUCCESS：原始产物核对原生51/51、工具13/13及unsigned iOS Simulator构建通过。本工程批次已完成，实际云场景和其余故障入口仍未关闭。
 
 ---
 
