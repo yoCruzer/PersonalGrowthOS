@@ -1,3 +1,19 @@
+# 2026-11-07 双端账户匹配，手机云端取回验证待执行
+
+Owner提供手机计划002导出JSON，connect PASS、初始envelopes/images/pending均空；与本地原始计划及命令摘要匹配，与r5 Mac真实结果账户指纹一致。仅保存脱敏[核对记录](Evidence/iCloudSyncG1/manual-engineering-20261107/ios-connect-retry-verification.json)，来源明确为Owner粘贴，计划002设备导出文件尚待取回。首次CK_3仍保留，不推定其具体根因。
+
+下一步计划003为connect→sync→sync→snapshot，取回既有合成dataset的完整mutation历史和68字节PNG后逐ID/原字节核验；尚未执行，不能宣称双端收敛。定向CI42362750416已SUCCESS；产品回归42362754171仍运行，既有UI失败未据此消除。
+
+---
+
+# 2026-11-07 Mac新连接通过，手机首次连接报网络不可用
+
+r5 Mac connect真实结果PASS；手机手动计划001已通过Configurator导出并核验原始计划摘要，FAIL CK_3（本地Apple SDK定义CKErrorNetworkUnavailable），无账户指纹且未启动云引擎。[手机原始结果（无账户标识）](Evidence/iCloudSyncG1/manual-engineering-20261107/ios-first-connect.json)。重复点击按设计读取原失败，不重新执行；账户匹配/双端同步仍NOT_RUN。已准备独立计划002，仅connect，保留001证据；请求Owner检查手机SyncLab联网许可及网络，再用新计划重试，不切换iCloud或重置设备。
+
+Owner已明确授权普通推送，43ea9e9已成功推至现有分支；自动审批阻断已解除。定向CI42362750416与产品回归42362754171已启动，尚未验收。此前结果保持，不进入发布。
+
+---
+
 # 2026-11-07 新版已安装并导入账户连接计划，待两端显式启动
 
 固定实现 `df3c081f72d5d86681f37c57ae236543ab45d3e8` 的签名Debug IPA已通过官方Configurator `install-app` 更新到选定iPhone，`install-doc` 已导入仅connect计划；两条命令exit0、单设备匹配，IPA摘要复算一致。[安装证据](Evidence/iCloudSyncG1/manual-engineering-20261107/device-install.json)。安装成功不代表手机执行成功。
