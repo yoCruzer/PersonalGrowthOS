@@ -44,6 +44,7 @@
 				<string>7EEDE6560A4A8BE335A1F6B1</string>
 				<string>23C04B28AB1549F9EBA8A91C</string>
 				<string>7654C4F9B5D96C831728C5C9</string>
+				<string>9A656E9FF37A739F82CFFA74</string>
 				<string>470EC1EE64E015A096582405</string>
 				<string>A5D9D34EF441F57C9146C407</string>
 				<string>0A3E27B8CA818264D75C8D81</string>
@@ -296,6 +297,7 @@
 				<string>3C0726C5C0A4333BE9B3558D</string>
 				<string>6773E16591D8C7DEB2945D92</string>
 				<string>0EA8A916FB87934EDFF383F6</string>
+				<string>C479B393666DD11A257CD1DF</string>
 				<string>D8E368627DE564D016B604FE</string>
 				<string>42C4C7607E10E61F8F959728</string>
 			</array>
@@ -303,6 +305,17 @@
 			<string>PBXSourcesBuildPhase</string>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<string>0</string>
+		</dict>
+		<key>9A656E9FF37A739F82CFFA74</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>Sources/SyncLab/RemainingBatch.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>A5D9D34EF441F57C9146C407</key>
 		<dict>
@@ -343,6 +356,13 @@
 			<string>Sources/SyncLab/Cloud.swift</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
+		</dict>
+		<key>C479B393666DD11A257CD1DF</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9A656E9FF37A739F82CFFA74</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
 		</dict>
 		<key>CD7C985718C27B30B80E0BF9</key>
 		<dict>

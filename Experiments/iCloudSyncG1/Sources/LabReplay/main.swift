@@ -6,6 +6,13 @@ import Darwin
 @main struct Replay {
     @MainActor static func main() throws {
         let args = CommandLine.arguments
+        #if DEBUG
+        if args.count == 5, args[1] == "prepare-batch" {
+            try RemainingBatch.write(to: URL(fileURLWithPath: args[2], isDirectory: true), dataset: args[3], runID: args[4])
+            print("Prepared three ordered synthetic plans; no app launch or cloud operations.")
+            return
+        }
+        #endif
         guard args.count == 3 else { fatalError("Usage: LabReplay MODE NEW_SYNTHETIC_ROOT") }
         let base = URL(fileURLWithPath: args[2], isDirectory: true)
         let binding = try Binding(accountHash: digest(Data("SYNTHETIC-PROCESS-A".utf8)), dataset: "replay")

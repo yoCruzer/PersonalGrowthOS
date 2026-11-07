@@ -1,0 +1,18 @@
+test_authentication_and_route_limits (test_probe_bridge.ProbeBridgeTests) ... ok
+test_command_cannot_be_replaced_or_execute_shell (test_probe_bridge.ProbeBridgeTests) ... ok
+test_queue_and_immutable_result_retry (test_probe_bridge.ProbeBridgeTests) ... ok
+test_result_must_match_dataset_run_and_exact_command (test_probe_bridge.ProbeBridgeTests) ... ok
+test_unknown_result_and_path_traversal_rejected (test_probe_bridge.ProbeBridgeTests) ... ok
+test_container_requires_exact_array_membership (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_environment_order_does_not_matter (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_explicit_cloudkit_allowlist (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_missing_wrong_or_malformed_service_denied (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_observed_apple_profile (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_production_or_missing_environment_denied (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_profile_never_relaxes_signed_environment (test_profile_entitlements.ProfileAllowlistTests) ... ok
+test_wildcard_never_relaxes_signed_claim (test_profile_entitlements.ProfileAllowlistTests) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 2.563s
+
+OK

@@ -74,3 +74,22 @@ Owner已创建haha普通用户并报告登录手机同一iCloud。原控制会�
 整计划与逐指令权威journal位于私有base，先claim再执行、原件不可覆盖；计划内命令按planID隔离并写入结果上下文。未完成claim显式阻断，取消停止后续指令，实例重入与dataset flock保护并发。完整报告只表示命令执行，仍须逐ID、原图、pending、events和账户核验；App状态只使用私有原件派生的report。
 
 完成后用Configurator“操作→导出→文稿”选择SyncLab导出，或使用App内“导出测试结果”。平坦副本名SyncLab-Manual-<planID>.json。副本不是权威历史，App不会把导入的伪结果当缓存；已有副本须与私有结果字节相同，否则拒绝覆盖。第一次手机计划只connect，实际两端指纹匹配后再进行save/sync。所有原件私留，公开证据移除账户指纹。
+
+
+## 批次准备：异常依赖与手机新图片（仅Debug，真实运行尚待安排）
+
+`swift run --package-path Experiments/iCloudSyncG1 LabReplay prepare-batch NEW_OUTPUT_DIRECTORY synthetic-g1-UNUSED_DATASET probe-NEW_RUN` 仅在本机生成固定计划，不启动App、不授权云访问、不连接设备。输出目录必须全新；已有目录/符号链接拒绝，不覆盖旧证据。Release不包含此模式或批次实现。
+
+按顺序执行，不能并发跑三个阶段：
+
+计划ID为`probe-阶段编号-完整SHA256(dataset|run|stage)`，使新一轮导出不会撞上旧结果；以下阶段名对应命令ID，导出目录使用生成的计划ID。
+
+1. `01-mac-seed`：Mac一次启动桥后由控制端依次执行16条命令。先确认connect初始快照/队列为空。保存删除依赖、缺祖先、传递缺失、依赖环、因果环，以及旧head原本ready而新head因缺依赖变staged的事实；同步后导出证据。
+2. `02-ios-repair`：仅在Mac前阶段结果核验后导入手机，Owner只需点击一次，连续执行10条命令。先fetch+snapshot，核验未修复状态与Mac一致；之后补齐祖先/传递依赖/当前head依赖，并保存第二个固定PNG，最后同步、取快照。
+3. `03-mac-fetch`：控制端执行4条命令，核验修复后的完整mutation集合/原图字节与手机一致；删除依赖、两类环仍应staged，不误报全部ready。
+
+手机before快照在同一次连续执行中保留，并不是暂停点或自动前置断言；完成后必须核对该快照与Mac种入结果。不匹配时该场景不能验收，不能仅凭completedAllCommands填PASS。
+
+整个批次只使用从未运行过的新合成dataset/zone，执行前保留生成计划和身份记录。不能在旧dataset中重复同样ID并称新实验。新图片必须在seed/手机before快照中不存在，手机save新增`image-<secondPNG hash>`与对象pending，后续实际ACK清空，再由Mac实际下载逐字节核验。空本地快照不能证明远端没有未引用asset；若新zone前提无法证明，停止并标UNVERIFIED，不把复用既有asset算全新上传。
+
+生成器和51项原生测试只证明离线计划/投影/持久队列；不证明CloudKit真实依赖到达时序、新CKAsset上传、物理断网、独立进程崩溃、账户切换或完整G1。不得提前填PASS。剩余故障入口需另补齐后统一安排设备窗口，不要求Owner为本工程准备阶段持续连线。

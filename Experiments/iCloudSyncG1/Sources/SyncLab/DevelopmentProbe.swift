@@ -46,7 +46,7 @@ public struct ProbeCommand: Codable {
                   m.requires.allSatisfy({ $0.hasPrefix("probe-") }),
                   m.text.hasPrefix("SYNTHETIC"),
                   (m.imageHash == nil && m.imageBytes == nil) ||
-                    (m.imageHash == digest(DevelopmentProbe.png) && m.imageBytes == DevelopmentProbe.png.count)
+                    (DevelopmentProbe.fixture(hash: m.imageHash, count: m.imageBytes) != nil)
             else { throw LabError.invalidWire }
         } else { guard mutation == nil else { throw LabError.invalidWire } }
     }
@@ -127,6 +127,11 @@ final class ProbeJournal {
 
 @MainActor public final class DevelopmentProbe {
     public nonisolated static let png = Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=")!
+    // A second, distinct fixed original permits testing a genuinely new iOS CKAsset.
+    public nonisolated static let secondPNG = Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGMQT7z8HwAEKQJLn6egIAAAAABJRU5ErkJggg==")!
+    public nonisolated static func fixture(hash: String?, count: Int?) -> Data? {
+        [png, secondPNG].first { digest($0) == hash && $0.count == count }
+    }
     public let dataset: String
     private let base: URL
     private var store: LabStore?
@@ -180,7 +185,7 @@ final class ProbeJournal {
             case .connect: try await connect()
             case .save:
                 guard let store, let m = command.mutation else { throw LabError.blocked }
-                try store.save(m, image: m.imageHash == nil ? nil : Self.png)
+                try store.save(m, image: Self.fixture(hash: m.imageHash, count: m.imageBytes))
             case .sync:
                 guard let driver else { throw LabError.blocked }
                 try await driver.sync()
