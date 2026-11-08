@@ -1,0 +1,62 @@
+{
+  "artifacts": [
+    {
+      "id": 13600315451,
+      "name": "ios-smoke-1",
+      "size_in_bytes": 50992,
+      "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13600315451",
+      "archive_download_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13600315451/zip",
+      "expired": false,
+      "created_at": "2026-11-08T02:03:43Z",
+      "expires_at": "2026-11-11T02:03:41Z",
+      "updated_at": "2026-11-08T02:03:43Z",
+      "digest": "sha256:5a3fc68885c376f2912b76dba6b8fc43e73fbfe12e91acd3c0929a5f0bbadb7d",
+      "workflow_run": {
+        "id": 42435822140,
+        "repository_id": 1301751228,
+        "head_repository_id": 1301751228,
+        "head_branch": "codex/icloud-sync-foundation",
+        "head_sha": "d508ae41f8f87adff790c65cc090f217206e0e18"
+      }
+    },
+    {
+      "id": 13599736852,
+      "name": "ios-release-1",
+      "size_in_bytes": 30173,
+      "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13599736852",
+      "archive_download_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13599736852/zip",
+      "expired": false,
+      "created_at": "2026-11-08T01:52:02Z",
+      "expires_at": "2026-11-11T01:52:00Z",
+      "updated_at": "2026-11-08T01:52:02Z",
+      "digest": "sha256:0b13d60e06c71eafb354653d01af35ac9cab14e14828dba1e1b56dd83af3f6f8",
+      "workflow_run": {
+        "id": 42435822140,
+        "repository_id": 1301751228,
+        "head_repository_id": 1301751228,
+        "head_branch": "codex/icloud-sync-foundation",
+        "head_sha": "d508ae41f8f87adff790c65cc090f217206e0e18"
+      }
+    },
+    {
+      "id": 13598959076,
+      "name": "ios-unit-1",
+      "size_in_bytes": 109277,
+      "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13598959076",
+      "archive_download_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13598959076/zip",
+      "expired": false,
+      "created_at": "2026-11-08T02:03:15Z",
+      "expires_at": "2026-11-11T02:03:14Z",
+      "updated_at": "2026-11-08T02:03:15Z",
+      "digest": "sha256:c726b80b02f66056f15930212840e00c0301b97804ffd4d29ee8c4a1c503579d",
+      "workflow_run": {
+        "id": 42435822140,
+        "repository_id": 1301751228,
+        "head_repository_id": 1301751228,
+        "head_branch": "codex/icloud-sync-foundation",
+        "head_sha": "d508ae41f8f87adff790c65cc090f217206e0e18"
+      }
+    }
+  ]
+}
+

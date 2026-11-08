@@ -1,0 +1,14 @@
+[
+  {
+    "file": "test.log",
+    "originalPrivateSHA256": "3511abb8c299e6e607c729a1e177c9212e2dd66aee2e3934cf6ac725fb3b982c",
+    "publishedRedactedSHA256": "b976b63f4b6ae9ed7f940e13e543e7c884d63613c32f710a36baa2d6c8f8c0ae",
+    "redaction": "home username only; original retained outside Git"
+  },
+  {
+    "file": "test-swift.log",
+    "originalPrivateSHA256": "e270838546aa918bfad6b7cc05f7936ec787db41aef633a92ed049ea039f0346",
+    "publishedRedactedSHA256": "c64b5f4b29c5ac7339c47985155bf7fbf1625d590c159635bd216e12d0b9d4eb",
+    "redaction": "home username only; original retained outside Git"
+  }
+]

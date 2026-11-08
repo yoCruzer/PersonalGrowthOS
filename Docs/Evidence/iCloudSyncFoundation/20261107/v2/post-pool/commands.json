@@ -1,0 +1,41 @@
+{
+  "environment": {
+    "macOS": "27.0.1 (26A434)",
+    "Xcode": "27.2 (27B52)",
+    "arch": "arm64"
+  },
+  "commands": [
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-build",
+      "exit": 0,
+      "result": "24/24 PASS",
+      "log": "native-final.log"
+    },
+    {
+      "command": "swift build --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-foundation-ios17 --sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk --triple arm64-apple-ios17.0-simulator --target SyncFoundation",
+      "exit": 0,
+      "result": "iOS17 target compiled, runtime NOT_RUN",
+      "log": "ios17-compile.log"
+    },
+    {
+      "command": "/usr/bin/time -l /private/tmp/pgos-sync-foundation-build/out/Products/Debug/SyncPayloadProbe /private/tmp/pgos-sync-v16-capacity-20261107/actual-v16-payload.json 9e97f46caef1fb89babb217a5cb7e25ee223beec74d6ce71408f211672fb9b13 49190297 /private/tmp/pgos-sync-v2-actual-payload-post-pool",
+      "exit": 0,
+      "log": "actual-payload-time-memory.log",
+      "result": "49,190,297 bytes / 12 ordered chunks / exact hash unchanged; RSS 116523008 bytes; peak footprint107873072. Full SDK/CLI overhead included, not a 4MiB RSS claim."
+    }
+  ],
+  "limitations": [
+    "No network or server schema access",
+    "No actual domain projection/persistence/SDK scheduling",
+    "No iOS17 runtime",
+    "128MiB is a candidate budget, not a finite upper bound on grapheme-limited business values"
+  ],
+  "sourceInput": {
+    "bytes": 49190297,
+    "sha256": "9e97f46caef1fb89babb217a5cb7e25ee223beec74d6ce71408f211672fb9b13",
+    "synthetic": true,
+    "generationScript": "Scripts/Fixtures/MeasureSyncV16Payload.swift"
+  },
+  "historicalStatus": null,
+  "note": "Final source as of post-pool snapshot. Independent bounded-memory comparison reported separately in review-v2."
+}

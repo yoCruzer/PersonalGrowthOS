@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "binary_sha256": "e685f613af60cf429728e367d0a7a3b277fd9839f3d6803f7ed4c3b0d89a5409",
+  "commands": [
+    {
+      "name": "plan",
+      "exit": 0
+    },
+    {
+      "name": "fresh-plan",
+      "exit": 0
+    },
+    {
+      "name": "replay",
+      "exit": 0
+    },
+    {
+      "name": "existing-plan",
+      "exit": 2
+    },
+    {
+      "name": "existing-report",
+      "exit": 2
+    },
+    {
+      "name": "wrong-expected",
+      "exit": 2
+    },
+    {
+      "name": "changed-payload",
+      "exit": 2
+    },
+    {
+      "name": "missing-original",
+      "exit": 2
+    },
+    {
+      "name": "extra-file",
+      "exit": 2
+    },
+    {
+      "name": "production-plan",
+      "exit": 2
+    },
+    {
+      "name": "container-plan",
+      "exit": 2
+    },
+    {
+      "name": "schema-plan",
+      "exit": 2
+    },
+    {
+      "name": "version-plan",
+      "exit": 2
+    },
+    {
+      "name": "leaf-symlink",
+      "exit": 2
+    },
+    {
+      "name": "escape-plan",
+      "exit": 2
+    },
+    {
+      "name": "root-symlink",
+      "exit": 2
+    },
+    {
+      "name": "ancestor-symlink",
+      "exit": 2
+    },
+    {
+      "name": "output-symlink-ancestor",
+      "exit": 2
+    },
+    {
+      "name": "preflight-actual-unsigned",
+      "exit": 2
+    }
+  ],
+  "command_count": 19,
+  "original_png_sha256": "cf1b9bb2d2fb01ab3c6dec56322138bf863063df45291ce340ea4e9e259e3977",
+  "plan_sha256": "9a750d47f7a969a84afae82e383dde8a1d3d8d0dfb13480a3c1b60779ce2ce74",
+  "source_unchanged": true,
+  "networkOperations": 0,
+  "p0Passed": false
+}

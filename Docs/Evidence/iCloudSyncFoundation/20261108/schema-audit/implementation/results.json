@@ -1,0 +1,19 @@
+{
+  "command": "python3 -m unittest discover -s Scripts/SyncSchemaAudit -p 'test_*.py' -v",
+  "python": "3.9.6 (default, Oct 19 2026, 19:18:13) \n[Clang 21.0.0 (clang-2100.4.1.1)]",
+  "exitCode": 0,
+  "tests": 16,
+  "fixture": "Independent Users with only auditSyntheticLabel STRING/auditSyntheticScores LIST<DOUBLE>, custom synthetic roles; no system fields or roles field. Reserved names each tested separately in one-field SyntheticSystemProbe records.",
+  "sourceSHA256": {
+    "Scripts/SyncSchemaAudit/audit.py": "d175b24b2380c2dc3d41e24f734cf0523e96975d6348b4168891fcda4e9a7123",
+    "Scripts/SyncSchemaAudit/README.md": "2deca58a4c7c4f552c0045903faafb295c05db700e8e0e610e0ad54db82e96a9",
+    "Scripts/SyncSchemaAudit/test_audit.py": "8e950a00f219d63ebd4fd375d14d045befddcfa00d000126a17cfe26554047d0"
+  },
+  "priorEvidence": "Original and first replacement evidence preserved verbatim outside repository before further fixture revision; latest assertion failure separately recorded.",
+  "cloudAccess": "NOT_RUN",
+  "gatesPassed": {
+    "P0": false,
+    "P1": false,
+    "P2": false
+  }
+}

@@ -1,0 +1,35 @@
+Building for debugging...
+[Computing dependencies]
+[Provisioning 2 / 5]
+[Using on-disk description]
+[1 / 6]
+[2 / 4] SyncFoundationTests-product
+[4 / 6] SyncFoundationTests-product
+[9 / 10] SyncFoundationTests-product
+[10 / 11] SyncFoundationTests-product
+Build complete! (11.82秒)
+Test Suite 'Selected tests' started at 2026-11-07 23:01:39.518.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:01:39.538.
+Test Suite 'IndependentBoundaryTests' started at 2026-11-07 23:01:39.538.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testEveryRoutingDimensionAndInstanceHasFenceBoundary]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testEveryRoutingDimensionAndInstanceHasFenceBoundary]' passed (0.023 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testForeignOwnerZoneIsRejectedWithSameDatasetAndName]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testForeignOwnerZoneIsRejectedWithSameDatasetAndName]' passed (0.020 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testHardLimitsUseActualFileSizeNotAdvertisedMetadata]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testHardLimitsUseActualFileSizeNotAdvertisedMetadata]' passed (0.042 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIndependentFixedDigestBytesAndTypedCollision]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIndependentFixedDigestBytesAndTypedCollision]' passed (0.004 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIntegerOverflowNegativeAndIntegralFloatRejected]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testIntegerOverflowNegativeAndIntegralFloatRejected]' passed (0.020 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testReorderCanonicalizesCollectionsButDoesNotRewritePayload]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testReorderCanonicalizesCollectionsButDoesNotRewritePayload]' passed (0.011 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testSpecialFileDoesNotHangAndFileSchemeRequired]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testSpecialFileDoesNotHangAndFileSchemeRequired]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testUnknownNestedFieldAndNullOptionAreRejected]' started.
+Test Case '-[SyncFoundationTests.IndependentBoundaryTests testUnknownNestedFieldAndNullOptionAreRejected]' passed (0.025 seconds).
+Test Suite 'IndependentBoundaryTests' passed at 2026-11-07 23:01:39.690.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.147 (0.151) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 23:01:39.690.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.147 (0.152) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 23:01:39.690.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.147 (0.173) seconds

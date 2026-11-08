@@ -1,0 +1,6 @@
+{
+  "Scripts/FormalDevelopmentHost/README.md": "51fa39885a33805a6b7da85ddada5a8751017d5a9a858fa6d3af2d07a62e0022",
+  "Scripts/FormalDevelopmentHost/package_locked_host.py": "a591393b35a93e969aa25849b5d180b9d766944b4cebc8e3e3198886001999e7",
+  "Scripts/FormalDevelopmentHost/trusted-source-sha256.json": "9dd6874b3245e432f46393977094fa223043f010d62d079f08a50fb2387957b7",
+  "Scripts/FormalDevelopmentHost/verify_packaging.py": "07fc32e57269de1012ae04e9d4f003f71ad156d4b2431df46f64fcdff694c6c8"
+}

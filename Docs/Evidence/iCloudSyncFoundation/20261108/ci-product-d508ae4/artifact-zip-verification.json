@@ -1,0 +1,23 @@
+[
+  {
+    "id": 13600315451,
+    "name": "ios-smoke-1",
+    "zipSHA256": "sha256:5a3fc68885c376f2912b76dba6b8fc43e73fbfe12e91acd3c0929a5f0bbadb7d",
+    "verifiedAgainstGitHubDigest": true,
+    "retainedOutsideRepository": true
+  },
+  {
+    "id": 13599736852,
+    "name": "ios-release-1",
+    "zipSHA256": "sha256:0b13d60e06c71eafb354653d01af35ac9cab14e14828dba1e1b56dd83af3f6f8",
+    "verifiedAgainstGitHubDigest": true,
+    "retainedOutsideRepository": true
+  },
+  {
+    "id": 13598959076,
+    "name": "ios-unit-1",
+    "zipSHA256": "sha256:c726b80b02f66056f15930212840e00c0301b97804ffd4d29ee8c4a1c503579d",
+    "verifiedAgainstGitHubDigest": true,
+    "retainedOutsideRepository": true
+  }
+]

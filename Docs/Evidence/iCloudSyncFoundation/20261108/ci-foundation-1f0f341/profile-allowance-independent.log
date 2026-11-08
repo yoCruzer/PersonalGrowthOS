@@ -1,0 +1,38 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 356]
+[Planning deferred tasks]
+[1 / 5]
+[8 / 17] FormalProbeCoreTests-product
+[10 / 19] FormalProbeCoreTests-product
+[14 / 18] FormalProbeCoreTests-product
+[16 / 18] FormalProbeCoreTests-product
+[20 / 31] SyncSchema-product
+Build complete! (2.57 sec)
+Test Suite 'Selected tests' started at 2026-11-08 05:35:54.243.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 05:35:54.245.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 05:35:54.245.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 05:35:54.245.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.003) seconds
+Test Suite 'Selected tests' started at 2026-11-08 05:35:54.326.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 05:35:54.327.
+Test Suite 'IndependentAllowanceReviewTests' started at 2026-11-08 05:35:54.327.
+Test Case '-[FormalProbeCoreTests.IndependentAllowanceReviewTests testCrossProductUsesAnIndependentExplicitOracle]' started.
+Test Case '-[FormalProbeCoreTests.IndependentAllowanceReviewTests testCrossProductUsesAnIndependentExplicitOracle]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentAllowanceReviewTests testProfileAllowanceCannotReplaceActualSignatureOrExactClaims]' started.
+Test Case '-[FormalProbeCoreTests.IndependentAllowanceReviewTests testProfileAllowanceCannotReplaceActualSignatureOrExactClaims]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentAllowanceReviewTests testSerializedAllowancesRoundTripWithoutBroadening]' started.
+Test Case '-[FormalProbeCoreTests.IndependentAllowanceReviewTests testSerializedAllowancesRoundTripWithoutBroadening]' passed (0.001 seconds).
+Test Suite 'IndependentAllowanceReviewTests' passed at 2026-11-08 05:35:54.332.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.004 (0.005) seconds
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 05:35:54.332.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.004 (0.005) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 05:35:54.332.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.004 (0.006) seconds
+Test Suite 'Selected tests' started at 2026-11-08 05:35:54.432.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 05:35:54.433.
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 05:35:54.433.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 05:35:54.433.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds

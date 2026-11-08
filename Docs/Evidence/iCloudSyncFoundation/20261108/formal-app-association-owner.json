@@ -1,0 +1,18 @@
+{
+  "status": "OWNER_REPORTED_READ_ONLY_CONFIRMED",
+  "source": "Owner reply in current conversation on 2026-11-08 Asia/Shanghai",
+  "appBundleIdentifier": "com.yocruzer.PersonalGrowthOS",
+  "iCloudEnabled": true,
+  "includeCloudKitSupport": true,
+  "associatedContainer": "iCloud.com.yocruzer.PersonalGrowthOS",
+  "pushNotificationsEnabled": true,
+  "agentPortalInspection": false,
+  "teamIndependentlyConfirmedByThisReply": false,
+  "signedArtifactOrProfileVerified": false,
+  "independentProbeRegistrationVerified": false,
+  "portalMutationsPerformed": false,
+  "cloudOperationsPerformed": 0,
+  "p0Passed": false,
+  "p1Passed": false,
+  "p2Passed": false
+}

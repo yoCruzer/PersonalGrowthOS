@@ -1,0 +1,94 @@
+{
+  "environment": {
+    "macOS": "27.0.1",
+    "architecture": "arm64",
+    "Xcode": "Xcode 27.2\nBuild version 27B52"
+  },
+  "commands": [
+    {
+      "argv": [
+        "swift",
+        "test",
+        "--package-path",
+        "Packages/SyncFoundation",
+        "--scratch-path",
+        "/private/tmp/pgos-signing-final-tests"
+      ],
+      "exitCode": 0,
+      "uniqueXCTests": 62
+    },
+    {
+      "argv": [
+        "python3",
+        "Scripts/FormalDevelopmentHost/package_locked_host.py",
+        "--output",
+        "/private/tmp/pgos-signed-host-final-source-20261108"
+      ],
+      "exitCode": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "Scripts/FormalDevelopmentHost/verify_packaging.py",
+        "--package-output",
+        "/private/tmp/pgos-signed-host-final-source-20261108",
+        "--probe-binary",
+        "/private/tmp/pgos-signing-final-tests/out/Products/Debug/FormalDevelopmentProbe",
+        "--evidence-output",
+        "/private/tmp/pgos-signed-host-final-package-checks"
+      ],
+      "exitCode": 0,
+      "checks": 32
+    },
+    {
+      "argv": [
+        "python3",
+        "Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py",
+        "/private/tmp/pgos-signing-final-tests/out/Products/Debug/FormalDevelopmentProbe",
+        "/private/tmp/pgos-signing-final-cli"
+      ],
+      "exitCode": 0,
+      "commands": 22
+    },
+    {
+      "argv": [
+        "swift",
+        "build",
+        "--package-path",
+        "Packages/SyncFoundation",
+        "--scratch-path",
+        "/private/tmp/pgos-signing-final-ios17",
+        "--sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk",
+        "--triple",
+        "arm64-apple-ios17.0-simulator",
+        "--target",
+        "FormalDevelopmentSDK"
+      ],
+      "exitCode": 0,
+      "runtime": "NOT_RUN"
+    },
+    {
+      "command": "codesign --force --sign <private existing matched identity> --entitlements <candidate.entitlements> <private isolated App copy>",
+      "exitCode": 0,
+      "redactedFields": "private local identity selector and signed artifact location"
+    },
+    {
+      "command": "codesign --verify --deep --strict --all-architectures <private isolated App copy>",
+      "exitCode": 0
+    },
+    {
+      "command": "FormalDevelopmentProbe preflight <fixed synthetic plan> <expected SHA256> <private isolated App copy> <fresh output>",
+      "exitCode": 0,
+      "rawSanitizedReport": "preflight-final.json"
+    },
+    {
+      "command": "<private isolated App>/Contents/MacOS/FormalDevelopmentHost inspect-fixture",
+      "exitCode": 2,
+      "rawSanitizedReport": "signed-inspect-fixture-final.json",
+      "expectedGateResult": true
+    }
+  ],
+  "cloudOperations": 0,
+  "sourceHashes": "packaging-final.json"
+}

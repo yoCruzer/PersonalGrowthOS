@@ -1,0 +1,9 @@
+# 47df1f3 定向远端验证
+
+[Run42438147024](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42438147024) SUCCESS。源码47df1f3cad80270bded407078fab86d26be6f46b，实际PR合并checkout 55aef2cf3152843079971ff82024c114e2f0542e。
+
+原生51/51（24+10+17）、分块独立11、准备器独立CLI22、schema自测16及独立20、SDK独立11全部通过。新增远端实际Mac打包与28项检查通过；打包产物与本机因工具链/路径差异不宣称逐字节相同，各自二进制hash/来源清单留证。实际inspect/preflight仍NOT_READY，未开发签名/嵌profile/注册/安装或访问CloudKit。
+
+原始合成artifact ZIP保留，SHA256 ae8e4214f2eeef6c83fd89227ea6a649b91b4a0cb393489c3786b09476e4f56f 与GitHub digest一致。旁附关键日志与精确报告，完整原始合成输入在ZIP内。打包验证的故意symlink临时目录、.app及编译缓存没有上传，仅收取指定报告。无原始profile/证书/设备标识或Owner CKDB/截图。
+
+schema候选hash仍6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003，Swift核心未改。P0/P1/P2仍未通过；本CI不代表真实签名资格或CloudKit往返成功。

@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "checks": {
+    "strictAllArchitecturesVerification": true,
+    "metadataInspectionSucceeded": true,
+    "codeIdentifierExact": true,
+    "codeTeamExact": true,
+    "appIdentifierExact": true,
+    "entitlementTeamExact": true,
+    "signedContainerExact": true,
+    "signedServicesCloudKitOnly": true,
+    "signedEnvironmentDevelopmentOnly": true,
+    "sandboxAndNetworkClient": true,
+    "embeddedProfileExact": true,
+    "leafIncludedInProfile": true,
+    "leafMatchesUniqueValidLocalIdentity": true,
+    "explicitMacUDIDCovered": true,
+    "infoUnchanged": true,
+    "originalUnsignedBinaryUnchanged": true,
+    "candidateEntitlementsExactlyApplied": true
+  },
+  "checkCount": 17,
+  "signedBinarySHA256": "8cb8dede6c7e5b8f478841eef4e9dc5a657bc39a83f37641ee8798f8fd2b572f",
+  "profileSHA256": "4456877adea83b7a24f71d198265ae48408821474f6ee56fb492c9f54e5df754",
+  "profileAllowanceInterpretation": "Profile allows multiple environments and wildcard service; actual signed entitlement is only Development/CloudKit.",
+  "trustVerification": "codesign strict all architectures exit 0",
+  "profileCMSOnly": "openssl cms -noverify validates embedded cryptographic signature, not certificate chain",
+  "p0Passed": false,
+  "cloudOperations": 0,
+  "signingPerformedByReviewer": false,
+  "privateProfileCertificatesDevicesIdentifiersPublished": false
+}

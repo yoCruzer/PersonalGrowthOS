@@ -1,0 +1,248 @@
+[
+  {
+    "case": "actual-binary-hash",
+    "passed": true
+  },
+  {
+    "case": "info-hash",
+    "passed": true
+  },
+  {
+    "case": "entitlements-hash",
+    "passed": true
+  },
+  {
+    "case": "independent-mac-identity",
+    "passed": true
+  },
+  {
+    "case": "candidate-only-no-profile-signature-resource",
+    "passed": true
+  },
+  {
+    "case": "no-appgroups-production-push",
+    "passed": true
+  },
+  {
+    "case": "source-snapshot-hashes",
+    "passed": true
+  },
+  {
+    "case": "make-fixed-synthetic-plan",
+    "command": [
+      "/private/tmp/pgos-sync-sdk-build/out/Products/Debug/FormalDevelopmentProbe",
+      "plan",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/plan"
+    ],
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "stdout": "OFFLINE_ONLY plan SHA256 91d5564791ff73377600ce4eb54c04f79ce70b8cc6ed00f94a1b8e8f501aa58f\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "actual-app-executable-locked",
+    "command": [
+      "/private/tmp/pgos-locked-app-bound-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/plan",
+      "91d5564791ff73377600ce4eb54c04f79ce70b8cc6ed00f94a1b8e8f501aa58f",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/inspect"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "NOT_READY EXTERNAL_GATE_NOT_COMPLETE; networkOperations=0\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "inspect-never-authorizes",
+    "passed": true
+  },
+  {
+    "case": "actual-app-preflight-rejects",
+    "command": [
+      "/private/tmp/pgos-sync-sdk-build/out/Products/Debug/FormalDevelopmentProbe",
+      "preflight",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/plan",
+      "91d5564791ff73377600ce4eb54c04f79ce70b8cc6ed00f94a1b8e8f501aa58f",
+      "/private/tmp/pgos-locked-app-bound-20261108/FormalSyncProbe.app",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/preflight"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "NOT_READY; no signing, installation, account change or network operation.\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "preflight-real-unprovisioned-rejection",
+    "passed": true
+  },
+  {
+    "case": "live-option-rejected",
+    "command": [
+      "/private/tmp/pgos-locked-app-bound-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "live",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/plan",
+      "91d5564791ff73377600ce4eb54c04f79ce70b8cc6ed00f94a1b8e8f501aa58f",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/live"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR\n",
+    "passed": true
+  },
+  {
+    "case": "wrong-plan-hash-rejected",
+    "command": [
+      "/private/tmp/pgos-locked-app-bound-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/plan",
+      "0000000000000000000000000000000000000000000000000000000000000000",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/wrong-hash"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "OFFLINE_VALIDATION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "existing-output-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-foundation/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-20261108"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: FileExistsError\n",
+    "passed": true
+  },
+  {
+    "case": "existing-output-preserved",
+    "passed": true
+  },
+  {
+    "case": "output-symlink-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-foundation/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/output-link"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: FileExistsError\n",
+    "passed": true
+  },
+  {
+    "case": "parent-symlink-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-foundation/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/parent-link/new"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: NotADirectoryError\n",
+    "passed": true
+  },
+  {
+    "case": "dotdot-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-foundation/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/../escaped"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: PATH_REJECTED\n",
+    "passed": true
+  },
+  {
+    "case": "symlinks-did-not-create-output",
+    "passed": true
+  },
+  {
+    "case": "source-symlink-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/source-link-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: SOURCE_SYMLINK\n",
+    "passed": true
+  },
+  {
+    "case": "source-rejected-before-output",
+    "passed": true
+  },
+  {
+    "case": "unreviewed-swift-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/changed-source-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: UNREVIEWED_SWIFT_SOURCE\n",
+    "passed": true
+  },
+  {
+    "case": "swift-rejected-before-output",
+    "passed": true
+  },
+  {
+    "case": "output-inside-package-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/repo-fixture/Packages/SyncFoundation/new-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: OUTPUT_INSIDE_SOURCE_PACKAGE\n",
+    "passed": true
+  },
+  {
+    "case": "no-source-self-mutation",
+    "passed": true
+  },
+  {
+    "case": "unreviewed-manifest-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-locked-app-bound-check-20261108/changed-manifest-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: UNREVIEWED_PACKAGE_MANIFEST\n",
+    "passed": true
+  },
+  {
+    "case": "manifest-rejected-before-output",
+    "passed": true
+  }
+]

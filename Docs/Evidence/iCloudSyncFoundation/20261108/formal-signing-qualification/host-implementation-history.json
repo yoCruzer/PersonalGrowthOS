@@ -1,0 +1,37 @@
+{
+  "scope": "Fixed offline inspect-fixture plus metadata-only directory ancestor traversal; no caller input path accepted by new command; no CloudKit/live authority added.",
+  "commands": [
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-host-selfcheck-build --filter BatchRunnerTests",
+      "result": "17 PASS",
+      "log": "pgos-host-selfcheck-first-tests.log"
+    },
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-host-selfcheck-build --filter 'LockedHostTests|BatchRunnerTests'",
+      "result": "First 20 PASS/1 unexpected invalidPath; fixed system temp canonicalization then21 PASS",
+      "failedLog": "pgos-host-selfcheck-tests21.log",
+      "finalLog": "pgos-host-selfcheck-tests21-final.log"
+    },
+    {
+      "command": "FormalDevelopmentHost inspect-fixture (twice); extra path; --live; live; no args",
+      "result": "6 correct expected exits (2,2,64,64,64,64)",
+      "evidence": "pgos-host-selfcheck-cli.json"
+    }
+  ],
+  "sourceHashes": "pgos-host-selfcheck-source-sha256.json",
+  "sandboxEvidence": "pgos-metadata-ancestor-4yzt9r9q",
+  "sandboxResults": {
+    "agentSandboxPolicyInstall": "sandbox_apply71 (not permission proof)",
+    "externalSandboxLoader": "SIGABRT -6 before test code (not traversal proof)",
+    "inProcessOldRead": "root denied errno1 exit1",
+    "inProcessEventOnly": "root denied errno1 exit1",
+    "inProcessSearchOnly": "ancestor chain plus final readable leaf exit0",
+    "inProcessFinalLeafReadDenied": "search ancestors pass; final O_RDONLY denied errno1 exit5"
+  },
+  "limitations": [
+    "Real developer-signed AppSandbox host execution delegated to root and not claimed here.",
+    "System process temporaryDirectory configuration may depend on operating environment; no new custom path/environment override exists.",
+    "No P0/P1/P2 qualification or remote operation.",
+    "verify_packaging additions await actual updated package; not counted as passed before execution."
+  ]
+}

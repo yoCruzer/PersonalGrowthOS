@@ -1,0 +1,28 @@
+[
+  {
+    "case": "new-a",
+    "exit": 0,
+    "expected": 0,
+    "stdout": "Generated local candidate schema; P0/server/Production remain unverified.\n",
+    "stderr": ""
+  },
+  {
+    "case": "new-b",
+    "exit": 0,
+    "expected": 0,
+    "stdout": "Generated local candidate schema; P0/server/Production remain unverified.\n",
+    "stderr": ""
+  },
+  {
+    "case": "existing",
+    "exit": 1,
+    "expected": 1,
+    "stdout": "",
+    "stderr": "SyncSchema failed: Error Domain=NSPOSIXErrorDomain Code=17 \"File exists\"\n"
+  },
+  {
+    "case": "independent-field-oracle",
+    "pass": true,
+    "sha256": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003"
+  }
+]

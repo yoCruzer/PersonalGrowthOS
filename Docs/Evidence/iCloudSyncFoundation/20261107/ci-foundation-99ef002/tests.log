@@ -1,0 +1,116 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 153]
+[Planning deferred tasks]
+[38 / 76]
+[39 / 77] SyncFoundation
+[43 / 123]
+[49 / 123]
+[51 / 123]
+[57 / 123]
+[59 / 123]
+[62 / 123]
+[64 / 123]
+[66 / 123]
+[69 / 123]
+[72 / 123]
+[74 / 123]
+[75 / 123]
+[80 / 123]
+[81 / 123]
+[85 / 123] SyncFoundation
+[86 / 123] SyncFoundation
+[101 / 125]
+[105 / 126] SyncFoundationTests-product
+[108 / 130] SyncSchema-product
+[110 / 130] SyncSchema-product
+[115 / 130]
+[117 / 165]
+[119 / 165]
+[121 / 165]
+[122 / 165]
+[124 / 165]
+[126 / 165]
+[128 / 165]
+[129 / 165]
+[132 / 165]
+[135 / 165]
+[137 / 165]
+[144 / 165] SyncPayloadProbe-product
+[145 / 165]
+[146 / 165]
+[147 / 165]
+[148 / 165]
+[149 / 165]
+[150 / 165]
+[154 / 165] SyncFoundationTests-product
+[155 / 165] SyncFoundationTests-product
+[159 / 165] SyncFoundationTests-product
+[161 / 165] SyncFoundationTests-product
+[164 / 165] SyncFoundationTests-product
+Build complete! (22.89 sec)
+Test Suite 'All tests' started at 2026-11-07 15:28:53.529.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 15:28:53.532.
+Test Suite 'PayloadChunkTests' started at 2026-11-07 15:28:53.532.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkBoundaryAndBudgetRejectBeforeUnboundedRead]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkBoundaryAndBudgetRejectBeforeUnboundedRead]' passed (0.038 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkSDKRoutingTruncationAndUnknownFieldsReject]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkSDKRoutingTruncationAndUnknownFieldsReject]' passed (0.026 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testFortyMiBPlusTenThousandRowShapeStreamsThroughRealSDKChunks]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testFortyMiBPlusTenThousandRowShapeStreamsThroughRealSDKChunks]' passed (1.575 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testMissingReorderedDuplicateAndExtraIndicesReject]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testMissingReorderedDuplicateAndExtraIndicesReject]' passed (0.020 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testRepeatedContentAtDistinctPositionsIsLegal]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testRepeatedContentAtDistinctPositionsIsLegal]' passed (0.017 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testWholeDigestAndPerChunkDigestAreBothRequired]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testWholeDigestAndPerChunkDigestAreBothRequired]' passed (0.001 seconds).
+Test Suite 'PayloadChunkTests' passed at 2026-11-07 15:28:55.211.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 1.677 (1.679) seconds
+Test Suite 'SyncFoundationTests' started at 2026-11-07 15:28:55.211.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' passed (0.065 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' passed (0.031 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' passed (0.077 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' passed (0.001 seconds).
+Test Suite 'SyncFoundationTests' passed at 2026-11-07 15:28:55.403.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 0.189 (0.191) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 15:28:55.403.
+	 Executed 24 tests, with 0 failures (0 unexpected) in 1.866 (1.870) seconds
+Test Suite 'All tests' passed at 2026-11-07 15:28:55.403.
+	 Executed 24 tests, with 0 failures (0 unexpected) in 1.866 (1.873) seconds
+CHUNK_CAPACITY totalBytes=49210071 chunkCount=12 maxCallbackBytes=4194304
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

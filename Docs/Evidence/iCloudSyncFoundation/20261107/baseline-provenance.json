@@ -1,0 +1,40 @@
+{
+  "sourceCommit": "96f72339a1a3082c43018e06d6115dd93df1df97",
+  "sourceMethod": "git archive; only test-file import plus appended synthetic generator",
+  "modifiedTrackedPaths": [
+    "PersonalGrowthOSTests/PersistenceMediaFoundationTests.swift"
+  ],
+  "fixtureGenerationTest": "PersonalGrowthOSTests/SyncV16BaselineFixtureGenerationTests/testGenerateFixedV16Baseline",
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "FAIL",
+      "tests": 1,
+      "reason": "Fixture assertion incorrectly excluded capture receipts from v12; product correctly preserves them. Original output retained separately."
+    },
+    {
+      "attempt": 2,
+      "status": "BUILD_FAILED",
+      "tests": 0,
+      "reason": "Generator omitted CryptoKit import after a wrong-cwd helper failure."
+    },
+    {
+      "attempt": 3,
+      "status": "PASS",
+      "tests": 1,
+      "reason": "Receipt IDs, full transfer fields, originals, independent money oracle, copy reopen and frozen hash invariance verified."
+    }
+  ],
+  "environment": {
+    "xcode": "27.2 (27B52)",
+    "simulator": "iPhone 16 / iOS 27.0",
+    "codeSigning": false
+  },
+  "outputRoot": "/private/tmp/pgos-sync-v16-fixture-20261107-r2/frozen",
+  "limitations": [
+    "Synthetic representative fixture, not all optional combinations of 39 entities",
+    "V16 -> new Sync schema migration NOT_RUN",
+    "Private daily data not accessed",
+    "Previous failed outputs not relabelled or overwritten"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "files": {
+    "Packages/SyncFoundation/Sources/FormalProbeCore/ProbeSigning.swift": "c4a6aaf12ec8ac4b55527dcac6b551b97c558af9350f572d8451600debb27c5d",
+    "Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift": "dd9bd74b76879ea040de8d8cc0f85dfe2663291716cdeb8fd86c69705b95a809",
+    "Packages/SyncFoundation/Tests/FormalProbeCoreTests/ProfileAllowanceTests.swift": "315e4c3b929325cff8ec729ea03450451b21bf44136a39f3f5221db6400bcd97"
+  },
+  "commands": [
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-profile-allowlist-build --filter 'FormalProbeCoreTests|ProfileAllowanceTests'",
+      "log": "/private/tmp/pgos-profile-allowlist-tests-first.log",
+      "tests": 17,
+      "exitCode": 0
+    },
+    {
+      "command": "swift build --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-profile-allowlist-ios17 --sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk --triple arm64-apple-ios17.0-simulator --target FormalProbeCore",
+      "log": "/private/tmp/pgos-profile-allowlist-ios17.log",
+      "exitCode": 0
+    }
+  ],
+  "CLI": "/private/tmp/pgos-profile-allowlist-cli/checks.json",
+  "privateProfileAccessed": false,
+  "signingPerformed": false,
+  "cloudOperations": 0,
+  "actualSignedPositive": "NOT_RUN",
+  "sourcePinsUpdated": false,
+  "docsModified": false,
+  "reference": "https://developer.apple.com/documentation/technotes/tn3125-inside-code-signing-provisioning-profiles"
+}

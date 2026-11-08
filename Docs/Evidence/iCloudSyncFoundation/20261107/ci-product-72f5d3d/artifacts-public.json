@@ -1,0 +1,31 @@
+{
+  "artifacts": [
+    {
+      "id": 13580779222,
+      "name": "ios-unit-1",
+      "size_in_bytes": 109414,
+      "digest": "sha256:12ac747e9b473c92a1917f626b15d7abcc9ca3255aad7aa4a932148a59e44247",
+      "created_at": "2026-11-07T16:13:33Z",
+      "expires_at": "2026-11-10T16:13:32Z",
+      "expired": false
+    },
+    {
+      "id": 13580214154,
+      "name": "ios-smoke-1",
+      "size_in_bytes": 49808,
+      "digest": "sha256:3884e719b459cbb5ab7065c12418a59be8c41a1cb3db494b3495aa46464afd8c",
+      "created_at": "2026-11-07T16:08:28Z",
+      "expires_at": "2026-11-10T16:08:27Z",
+      "expired": false
+    },
+    {
+      "id": 13580169405,
+      "name": "ios-release-1",
+      "size_in_bytes": 30149,
+      "digest": "sha256:ab38cd1daa2d0cae50cf6c4fb4b7fdc7e1570216a7395dfeebc98dec8d51af18",
+      "created_at": "2026-11-07T15:54:19Z",
+      "expires_at": "2026-11-10T15:54:18Z",
+      "expired": false
+    }
+  ]
+}

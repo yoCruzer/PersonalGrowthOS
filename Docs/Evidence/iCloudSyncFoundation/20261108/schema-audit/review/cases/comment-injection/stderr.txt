@@ -1,0 +1,1 @@
+SCHEMA_AUDIT_REJECTED: AuditError: Unsupported CKDB token at character 227

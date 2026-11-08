@@ -1,0 +1,37 @@
+{
+  "reviewDate": "2026-11-08",
+  "scope": "Docs/Evidence/iCloudSyncFoundation/20261107",
+  "method": "Read-only byte-pattern scan including decompressed gzip and ZIP members; reviewed synthetic fixture generator/provenance and synthetic UI screenshots; no daily datastore opened",
+  "filesScanned": 320,
+  "gzipExpanded": 6,
+  "zipMembersScanned": 216,
+  "scannedFileManifestSHA256": "db0a20136bd6f4898f446a0dc042ed0d472b0fd09dd32e613cb105a6ddb0de11",
+  "patternFindings": [
+    {
+      "path": "baseline-attempt1.log.gz",
+      "kind": "email",
+      "count": 2,
+      "classification": "asset_catalog_scale_filename_false_positive"
+    },
+    {
+      "path": "capacity/attempt1-wrong-workdir-cancelled.log.gz",
+      "kind": "email",
+      "count": 2,
+      "classification": "asset_catalog_scale_filename_false_positive"
+    },
+    {
+      "path": "capacity/attempt3-final.log.gz",
+      "kind": "email",
+      "count": 2,
+      "classification": "asset_catalog_scale_filename_false_positive"
+    }
+  ],
+  "conclusion": "No credential or private business-data finding in reviewed evidence. All email-shaped hits were @2x/@3x PNG asset filenames. Fixture source constructs a fresh temporary store with synthetic entries, fixed synthetic amounts and a generated 4x4 blue image.",
+  "retainedMetadata": [
+    "Public developer Team/container identifiers",
+    "Build tool versions and source hashes",
+    "Local development paths in historical logs"
+  ],
+  "redaction": "CI public environments omit runner names, temporary simulator UUID/paths and full device inventories; raw result counts are preserved",
+  "limits": "Pattern scan is supplemented by synthetic-data provenance and screenshot review; not an audit of data outside this repository evidence directory."
+}

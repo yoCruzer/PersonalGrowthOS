@@ -1,0 +1,72 @@
+Building for debugging...
+[Constructing description]
+[Planning deferred tasks]
+[38 / 76]
+[39 / 77] SyncFoundation
+[46 / 123]
+[49 / 123]
+[54 / 123]
+[58 / 123]
+[59 / 123]
+[63 / 123]
+[65 / 123]
+[68 / 123]
+[72 / 123]
+[74 / 123]
+[75 / 123]
+[80 / 123]
+[81 / 123]
+[85 / 123] SyncFoundation
+[102 / 125] SyncFoundation-product
+[105 / 126] SyncFoundationTests-product
+[110 / 130] SyncSchema-product
+[115 / 130]
+[118 / 165]
+[121 / 165]
+[124 / 165]
+[127 / 165]
+[131 / 165]
+[134 / 165] SyncSchema-product
+[136 / 165] SyncPayloadProbe-product
+[143 / 165]
+[144 / 165]
+[146 / 165]
+[147 / 165]
+[148 / 165]
+[149 / 165]
+[150 / 165]
+[154 / 165] SyncFoundationTests-product
+[155 / 165] SyncFoundationTests-product
+[161 / 165] SyncFoundationTests-product
+Build complete! (16.80 sec)
+Test Suite 'Selected tests' started at 2026-11-07 15:29:17.835.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 15:29:17.836.
+Test Suite 'IndependentChunkTests' started at 2026-11-07 15:29:17.836.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testChunkRecordRoutingTypesIntegrityAndVersionAreStrict]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testChunkRecordRoutingTypesIntegrityAndVersionAreStrict]' passed (0.003 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testExpectedDescriptorRejectsSourceChangedBeforePreparation]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testExpectedDescriptorRejectsSourceChangedBeforePreparation]' passed (0.012 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testManifestTotalsAndIndexShapeAreStrict]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testManifestTotalsAndIndexShapeAreStrict]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testOrderedChunksMissingDuplicateAndExtraAreRejected]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testOrderedChunksMissingDuplicateAndExtraAreRejected]' passed (0.019 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSameSizeSourceRewriteDuringEmit]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSameSizeSourceRewriteDuringEmit]' passed (0.022 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceGrowthDuringEmit]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceGrowthDuringEmit]' passed (0.011 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceTruncatedDuringEmit]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceTruncatedDuringEmit]' passed (0.019 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testRepeatedEqualChunksAtDifferentPositionsAreLegal]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testRepeatedEqualChunksAtDifferentPositionsAreLegal]' passed (0.022 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' passed (0.016 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' passed (0.332 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testValidChunkHashesCannotHideWrongWholeHash]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testValidChunkHashesCannotHideWrongWholeHash]' passed (0.011 seconds).
+Test Suite 'IndependentChunkTests' passed at 2026-11-07 15:29:18.306.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.467 (0.470) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 15:29:18.306.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.467 (0.470) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 15:29:18.306.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.467 (0.471) seconds

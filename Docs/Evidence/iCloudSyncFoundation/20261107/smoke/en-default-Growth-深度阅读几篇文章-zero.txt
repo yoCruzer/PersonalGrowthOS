@@ -1,0 +1,163 @@
+Attributes: Application, 0x109b93ac0, pid: 3581, label: '随心log'
+Element subtree:
+ →Application, 0x109b93ac0, pid: 3581, label: '随心log'
+    Window (Main), 0x109b92440, {{0.0, 0.0}, {375.0, 812.0}}
+      Other, 0x109b91680, {{0.0, 0.0}, {375.0, 812.0}}
+      Other, 0x105277ac0, {{0.0, 0.0}, {375.0, 812.0}}
+        Other, 0x109b826c0, {{0.0, 0.0}, {375.0, 812.0}}
+          Other, 0x109b82580, {{0.0, 0.0}, {375.0, 812.0}}
+            Other, 0x109b808c0, {{0.0, 0.0}, {375.0, 812.0}}
+              Other, 0x109b80640, {{0.0, 0.0}, {375.0, 812.0}}, identifier: 'app-shell'
+                Other, 0x109b81180, {{0.0, 0.0}, {375.0, 812.0}}
+                  Other, 0x109b81b80, {{0.0, 0.0}, {375.0, 812.0}}
+                    Other, 0x109b81540, {{0.0, 0.0}, {375.0, 812.0}}
+                      Other, 0x109b82d00, {{0.0, 0.0}, {375.0, 812.0}}
+                        Other, 0x109b82e40, {{0.0, 0.0}, {375.0, 812.0}}
+                          Other, 0x109b82440, {{0.0, 0.0}, {375.0, 812.0}}
+                            NavigationBar, 0x109b83980, {{0.0, 50.0}, {375.0, 54.0}}, identifier: 'Habits'
+                              Button, 0x109b81e00, {{16.0, 50.0}, {44.0, 44.0}}, identifier: 'BackButton', label: 'Growth'
+                              StaticText, 0x109b82bc0, {{161.3, 61.7}, {52.0, 20.7}}, label: 'Habits'
+                              Button, 0x109b83ac0, {{319.0, 54.0}, {36.0, 36.0}}, identifier: 'add-habit', label: 'Add Habit'
+                            Other, 0x109b81cc0, {{0.0, 0.0}, {375.0, 812.0}}
+                              Other, 0x109b821c0, {{0.0, 0.0}, {375.0, 812.0}}
+                                Other, 0x109b83e80, {{0.0, 0.0}, {375.0, 812.0}}
+                                  Other, 0x109b812c0, {{0.0, 0.0}, {375.0, 812.0}}
+                                    CollectionView, 0x109b81400, {{0.0, 0.0}, {375.0, 812.0}}
+                                      Other, 0x109b83700, {{-16.0, -1520.0}, {407.0, 1838.0}}
+                                      Other, 0x109b82a80, {{0.0, 0.0}, {375.0, 812.0}}
+                                        Other, 0x109b82080, {{0.0, 0.0}, {375.0, 144.0}}
+                                        Other, 0x108077700, {{0.0, 679.0}, {375.0, 133.0}}
+                                      Other, 0x108076080, {{0.0, 0.0}, {375.0, 812.0}}
+                                      Cell, 0x108077200, {{16.0, 104.0}, {343.0, 40.3}}
+                                        Other, 0x108075040, {{16.0, 104.0}, {343.0, 40.3}}
+                                        Other, 0x108076a80, {{16.0, 104.0}, {343.0, 40.3}}
+                                          Other, 0x1080770c0, {{16.0, 104.0}, {343.0, 40.3}}
+                                            Other, 0x1080761c0, {{16.0, 104.0}, {343.0, 40.3}}
+                                              StaticText, 0x108077ac0, {{16.0, 104.0}, {343.0, 40.3}}, label: 'Today'
+                                      Cell, 0x108075f40, {{16.0, 144.3}, {343.0, 78.0}}
+                                        Other, 0x108076d00, {{16.0, 144.3}, {343.0, 78.0}}
+                                          Other, 0x108077d40, {{16.0, 144.3}, {343.0, 78.0}}
+                                        Other, 0x108074f00, {{16.0, 144.3}, {343.0, 78.0}}
+                                          Other, 0x108077840, {{16.0, 144.3}, {343.0, 78.0}}
+                                            Other, 0x108076bc0, {{16.0, 144.3}, {343.0, 78.0}}
+                                              Button, 0x1080775c0, {{32.0, 159.3}, {252.7, 48.0}}, identifier: 'habit-quiet reading', label: 'Quiet reading, 1/1 today'
+                                                StaticText, 0x108076440, {{32.0, 162.7}, {102.7, 20.3}}, identifier: 'habit-title-quiet reading', label: 'Quiet reading'
+                                                Image, 0x108077480, {{277.7, 177.3}, {7.0, 12.0}}, identifier: 'chevron.forward'
+                                                StaticText, 0x108074dc0, {{32.0, 186.0}, {60.3, 18.0}}, label: '1/1 today'
+                                              Button, 0x108075cc0, {{299.0, 161.3}, {44.0, 44.0}}, identifier: 'habit-overview-check-in', label: 'Check in Quiet reading', Selected, Disabled
+                                      Cell, 0x1080752c0, {{16.0, 222.3}, {343.0, 78.0}}
+                                        Other, 0x1080766c0, {{16.0, 222.3}, {343.0, 78.0}}
+                                          Other, 0x108074a00, {{16.0, 222.3}, {343.0, 78.0}}
+                                        Other, 0x109b70b40, {{16.0, 222.3}, {343.0, 78.0}}
+                                          Other, 0x109b70dc0, {{16.0, 222.3}, {343.0, 78.0}}
+                                            Other, 0x109b73c00, {{16.0, 222.3}, {343.0, 78.0}}
+                                              Button, 0x109b73980, {{32.0, 237.3}, {176.7, 48.0}}, identifier: 'habit-每天喝水几次', label: '每天喝水几次, 0/8 today'
+                                                StaticText, 0x109b70c80, {{32.0, 240.7}, {101.3, 20.3}}, identifier: 'habit-title-每天喝水几次', label: '每天喝水几次'
+                                                Image, 0x109b72bc0, {{201.7, 255.3}, {7.0, 12.0}}, identifier: 'chevron.forward'
+                                                StaticText, 0x109b70640, {{32.0, 264.0}, {65.3, 18.0}}, label: '0/8 today'
+                                              Button, 0x109b70000, {{223.0, 239.0}, {44.0, 45.0}}, identifier: 'habit-overview-每天喝水几次-counter-decrease', label: 'Decrease 每天喝水几次', value: Current count: 0, Disabled
+                                              Button, 0x109b70a00, {{299.0, 239.0}, {44.0, 45.0}}, identifier: 'habit-overview-每天喝水几次-counter-increase', label: 'Increase 每天喝水几次', value: Current count: 0
+                                              StaticText, 0x109b73d40, {{271.0, 252.3}, {24.0, 18.0}}, identifier: 'habit-overview-每天喝水几次-counter-count', label: 'Current count', value: 0
+                                      Other, 0x109b72d00, {{32.0, 221.3}, {311.0, 1.0}}
+                                      Other, 0x109b730c0, {{-16.0, 318.0}, {407.0, 251.3}}
+                                      Cell, 0x109b73700, {{16.0, 318.0}, {343.0, 40.3}}
+                                        Other, 0x109b73340, {{16.0, 318.0}, {343.0, 40.3}}
+                                        Other, 0x109b73840, {{16.0, 318.0}, {343.0, 40.3}}
+                                          Other, 0x109b73200, {{16.0, 318.0}, {343.0, 40.3}}
+                                            Other, 0x109b72f80, {{16.0, 318.0}, {343.0, 40.3}}
+                                              StaticText, 0x109b73e80, {{16.0, 318.0}, {343.0, 40.3}}, label: 'This Week'
+                                      Cell, 0x109b708c0, {{16.0, 358.3}, {343.0, 78.0}}
+                                        Other, 0x109b72e40, {{16.0, 358.3}, {343.0, 78.0}}
+                                          Other, 0x109b73ac0, {{16.0, 358.3}, {343.0, 78.0}}
+                                        Other, 0x109b70140, {{16.0, 358.3}, {343.0, 78.0}}
+                                          Other, 0x109b703c0, {{16.0, 358.3}, {343.0, 78.0}}
+                                            Other, 0x109b70280, {{16.0, 358.3}, {343.0, 78.0}}
+                                              Button, 0x109b73480, {{32.0, 373.3}, {191.0, 48.0}}, identifier: 'habit-每周锻炼几次', label: '每周锻炼几次, 2/3 this week'
+                                                StaticText, 0x109b735c0, {{32.0, 376.7}, {101.3, 20.3}}, identifier: 'habit-title-每周锻炼几次', label: '每周锻炼几次'
+                                                Image, 0x109b70500, {{216.0, 391.3}, {7.0, 12.0}}, identifier: 'chevron.forward'
+                                                StaticText, 0x109b70780, {{32.0, 400.0}, {91.0, 18.0}}, label: '2/3 this week'
+                                              Button, 0x111f66f80, {{237.3, 375.0}, {44.0, 45.0}}, identifier: 'habit-overview-每周锻炼几次-counter-decrease', label: 'Decrease 每周锻炼几次', value: Current count: 0, Disabled
+                                              Button, 0x111f65180, {{299.0, 375.0}, {44.0, 45.0}}, identifier: 'habit-overview-每周锻炼几次-counter-increase', label: 'Increase 每周锻炼几次', value: Current count: 0
+                                              StaticText, 0x111f64640, {{285.3, 388.3}, {9.7, 18.0}}, identifier: 'habit-overview-每周锻炼几次-counter-count', label: 'Current count', value: 0
+                                      Cell, 0x111f657c0, {{16.0, 436.3}, {343.0, 115.3}}
+                                        Other, 0x111f66300, {{16.0, 436.3}, {343.0, 115.3}}
+                                          Other, 0x111f67d40, {{16.0, 436.3}, {343.0, 115.3}}
+                                        Other, 0x111f64780, {{16.0, 436.3}, {343.0, 115.3}}
+                                          Other, 0x111f65e00, {{16.0, 436.3}, {343.0, 115.3}}
+                                            Other, 0x111f66800, {{16.0, 436.3}, {343.0, 115.3}}
+                                              Button, 0x111f67200, {{32.0, 451.3}, {191.0, 85.3}}, identifier: 'habit-这是一个真正很长需要合理换行的每周习惯名称', label: '这是一个真正很长需要合理换行的每周习惯名称, 0/4 this week'
+                                                StaticText, 0x111f64f00, {{32.0, 451.3}, {168.7, 64.3}}, identifier: 'habit-title-这是一个真正很长需要合理换行的每周习惯名称', label: '这是一个真正很长需要合理换行的每周习惯名称'
+                                                Image, 0x111f66d00, {{216.0, 488.0}, {7.0, 12.0}}, identifier: 'chevron.forward'
+                                                StaticText, 0x111f65b80, {{32.0, 518.7}, {91.3, 18.0}}, label: '0/4 this week'
+                                              Button, 0x111f65540, {{237.3, 471.3}, {44.0, 45.3}}, identifier: 'habit-overview-这是一个真正很长需要合理换行的每周习惯名称-counter-decrease', label: 'Decrease 这是一个真正很长需要合理换行的每周习惯名称', value: Current count: 0, Disabled
+                                              Button, 0x111f65900, {{299.0, 471.3}, {44.0, 45.3}}, identifier: 'habit-overview-这是一个真正很长需要合理换行的每周习惯名称-counter-increase', label: 'Increase 这是一个真正很长需要合理换行的每周习惯名称', value: Current count: 0
+                                              StaticText, 0x111f670c0, {{285.3, 485.0}, {9.7, 18.0}}, identifier: 'habit-overview-这是一个真正很长需要合理换行的每周习惯名称-counter-count', label: 'Current count', value: 0
+                                      Other, 0x111f661c0, {{32.0, 435.3}, {311.0, 1.0}}
+                                      Other, 0x111f64140, {{-16.0, 569.0}, {407.0, 1762.3}}
+                                      Cell, 0x111f66e40, {{16.0, 569.0}, {343.0, 40.3}}
+                                        Other, 0x111f67e80, {{16.0, 569.0}, {343.0, 40.3}}
+                                        Other, 0x111f64c80, {{16.0, 569.0}, {343.0, 40.3}}
+                                          Other, 0x111f65680, {{16.0, 569.0}, {343.0, 40.3}}
+                                            Other, 0x111f67340, {{16.0, 569.0}, {343.0, 40.3}}
+                                              StaticText, 0x111f643c0, {{16.0, 569.0}, {343.0, 40.3}}, label: 'This Month'
+                                      Cell, 0x111f648c0, {{16.0, 609.3}, {343.0, 78.0}}
+                                        Other, 0x111f66940, {{16.0, 609.3}, {343.0, 78.0}}
+                                          Other, 0x111f64280, {{16.0, 609.3}, {343.0, 78.0}}
+                                        Other, 0x111f67ac0, {{16.0, 609.3}, {343.0, 78.0}}
+                                          Other, 0x111f64dc0, {{16.0, 609.3}, {343.0, 78.0}}
+                                            Other, 0x111f66bc0, {{16.0, 609.3}, {343.0, 78.0}}
+                                              Button, 0x111f66580, {{32.0, 624.3}, {191.0, 48.0}}, identifier: 'habit-深度阅读几篇文章', label: '深度阅读几篇文章, 2/10 this month'
+                                                StaticText, 0x111f67c00, {{32.0, 627.7}, {135.0, 20.3}}, identifier: 'habit-title-深度阅读几篇文章', label: '深度阅读几篇文章'
+                                                Image, 0x111f67980, {{216.0, 642.3}, {7.0, 12.0}}, identifier: 'chevron.forward'
+                                                StaticText, 0x111f67700, {{32.0, 651.0}, {106.0, 18.0}}, label: '2/10 this month'
+                                              Button, 0x111f65040, {{237.3, 626.0}, {44.0, 45.0}}, identifier: 'habit-overview-深度阅读几篇文章-counter-decrease', label: 'Decrease 深度阅读几篇文章', value: Current count: 0, Disabled
+                                              Button, 0x111f66440, {{299.0, 626.0}, {44.0, 45.0}}, identifier: 'habit-overview-深度阅读几篇文章-counter-increase', label: 'Increase 深度阅读几篇文章', value: Current count: 0
+                                              StaticText, 0x111f65400, {{285.3, 639.3}, {9.7, 18.0}}, identifier: 'habit-overview-深度阅读几篇文章-counter-count', label: 'Current count', value: 0
+                                      Other, 0x111f64a00, {{342.0, 104.0}, {30.0, 625.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x111f666c0, {{369.0, 128.7}, {3.0, 597.3}}
+                                      Other, 0x111f652c0, {{342.0, 104.0}, {30.0, 625.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x111f65cc0, {{369.0, 128.7}, {3.0, 597.3}}
+                            Toolbar, 0x111f64000, {{0.0, 0.0}, {375.0, 812.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                              Other, 0x111f64500, {{0.0, 0.0}, {375.0, 812.0}}
+                Other, 0x111f675c0, {{0.0, 0.0}, {375.0, 812.0}}
+                  Other, 0x111f66a80, {{0.0, 729.0}, {375.0, 83.0}}
+                    Other, 0x111f67840, {{0.0, 0.0}, {375.0, 812.0}}
+                      TabBar, 0x111f65f40, {{0.0, 729.0}, {375.0, 83.0}}, label: 'Tab Bar'
+                        Other, 0x111f66080, {{21.0, 729.0}, {333.0, 62.0}}
+                          Other, 0x111f65a40, {{21.0, 729.0}, {81.0, 54.0}}
+                          Other, 0x111f67480, {{21.0, 729.0}, {333.0, 62.0}}
+                            Button, 0x111f6c000, {{25.0, 733.0}, {81.0, 54.0}}, identifier: 'sun.max', label: 'Today'
+                              Image, 0x111f6c140, {{51.0, 738.0}, {29.0, 29.3}}, identifier: 'sun.max.fill', label: 'brightness higher'
+                            Button, 0x111f6c280, {{86.0, 733.0}, {81.0, 54.0}}, identifier: 'clock', label: 'Timeline'
+                              Image, 0x111f6c3c0, {{113.0, 739.3}, {27.3, 27.3}}, identifier: 'clock.fill', label: 'clock'
+                            Button, 0x111f6c500, {{147.0, 733.0}, {81.0, 54.0}}, identifier: 'plus.circle.fill', label: 'Record'
+                              Image, 0x111f6c640, {{174.0, 739.3}, {27.3, 27.3}}, identifier: 'plus.circle.fill', label: 'add'
+                            Button, 0x111f6c780, {{208.0, 733.0}, {81.0, 54.0}}, identifier: 'leaf', label: 'Growth', Selected
+                              Image, 0x111f6c8c0, {{234.3, 740.3}, {28.7, 25.3}}, identifier: 'leaf.fill', label: 'Leaf'
+                            Button, 0x111f6ca00, {{269.0, 733.0}, {81.0, 54.0}}, identifier: 'books.vertical', label: 'Library'
+                              Image, 0x111f6cb40, {{293.0, 738.0}, {33.3, 29.3}}, identifier: 'books.vertical.fill', label: 'Bookshelf'
+                          Other, 0x111f6cc80, {{21.0, 729.0}, {333.0, 62.0}}
+                          Other, 0x111f6cdc0, {{208.0, 733.0}, {81.0, 54.0}}
+                            Other, 0x111f6cf00, {{208.0, 733.0}, {81.0, 54.0}}
+                              Other, 0x111f6d040, {{208.0, 733.0}, {81.0, 54.0}}
+                              Other, 0x111f6d180, {{208.0, 733.0}, {81.0, 54.0}}
+                                Other, 0x111f6d2c0, {{208.0, 733.0}, {81.0, 54.0}}
+                                  Other, 0x111f6d400, {{208.0, 733.0}, {81.0, 54.0}}
+                                    Other, 0x111f6d540, {{208.0, 733.0}, {81.0, 54.0}}
+                                  Other, 0x111f6d680, {{208.0, 733.0}, {81.0, 54.0}}
+                                Other, 0x111f6d7c0, {{208.0, 733.0}, {81.0, 54.0}}
+                    Other, 0x111f6d900, {{0.0, 729.0}, {375.0, 83.0}}
+                      Other, 0x111f6da40, {{0.0, 729.0}, {375.0, 83.0}}
+                        Other, 0x111f6db80, {{0.0, 729.0}, {375.0, 83.0}}
+                          Other, 0x111f6dcc0, {{0.0, 729.0}, {375.0, 83.0}}
+                            Other, 0x111f6de00, {{0.0, 729.0}, {375.0, 83.0}}
+                              Other, 0x111f6df40, {{0.0, 729.0}, {375.0, 83.0}}
+                          Other, 0x111f6e080, {{0.0, 729.0}, {375.0, 83.0}}
+                            Other, 0x111f6e1c0, {{0.0, 729.0}, {375.0, 83.0}}
+Path to element:
+ →Application, 0x109b93ac0, pid: 3581, label: '随心log'
+Query chain:
+ →Find: Target Application 'com.yocruzer.PersonalGrowthOS'
+  Output: {
+    Application, 0x111f6e300, pid: 3581, label: '随心log'
+  }

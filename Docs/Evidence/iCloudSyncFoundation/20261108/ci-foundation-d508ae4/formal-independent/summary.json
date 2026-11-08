@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "binary_sha256": "baa2ca7c0cf67122ff3cb65993616b265133bff9d4a69aabcfb069d5dc9fd598",
+  "commands": [
+    {
+      "name": "plan",
+      "exit": 0
+    },
+    {
+      "name": "fresh-plan",
+      "exit": 0
+    },
+    {
+      "name": "replay",
+      "exit": 0
+    },
+    {
+      "name": "existing-plan",
+      "exit": 2
+    },
+    {
+      "name": "existing-report",
+      "exit": 2
+    },
+    {
+      "name": "wrong-expected",
+      "exit": 2
+    },
+    {
+      "name": "changed-payload",
+      "exit": 2
+    },
+    {
+      "name": "missing-original",
+      "exit": 2
+    },
+    {
+      "name": "extra-file",
+      "exit": 2
+    },
+    {
+      "name": "production-plan",
+      "exit": 2
+    },
+    {
+      "name": "container-plan",
+      "exit": 2
+    },
+    {
+      "name": "schema-plan",
+      "exit": 2
+    },
+    {
+      "name": "version-plan",
+      "exit": 2
+    },
+    {
+      "name": "leaf-symlink",
+      "exit": 2
+    },
+    {
+      "name": "escape-plan",
+      "exit": 2
+    },
+    {
+      "name": "duplicate-record",
+      "exit": 2
+    },
+    {
+      "name": "missing-record",
+      "exit": 2
+    },
+    {
+      "name": "reorder-record",
+      "exit": 2
+    },
+    {
+      "name": "root-symlink",
+      "exit": 2
+    },
+    {
+      "name": "ancestor-symlink",
+      "exit": 2
+    },
+    {
+      "name": "output-symlink-ancestor",
+      "exit": 2
+    },
+    {
+      "name": "preflight-actual-unqualified",
+      "exit": 2
+    }
+  ],
+  "command_count": 22,
+  "original_png_sha256": "cf1b9bb2d2fb01ab3c6dec56322138bf863063df45291ce340ea4e9e259e3977",
+  "plan_sha256": "f246db0982eaf10f599252b84bae336e5ccc3365cec7c89728204acf9fc4e40b",
+  "source_unchanged": true,
+  "networkOperations": 0,
+  "p0Passed": false
+}

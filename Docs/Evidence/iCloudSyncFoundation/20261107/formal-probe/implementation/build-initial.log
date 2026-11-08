@@ -1,0 +1,90 @@
+warning: 'syncfoundation': Source files for target FormalProbeCoreTests should be located under 'Tests/FormalProbeCoreTests', or a custom sources path can be set with the 'path' property in Package.swift
+warning: 'syncfoundation': Source files for target FormalProbeCoreTests should be located under 'Tests/FormalProbeCoreTests', or a custom sources path can be set with the 'path' property in Package.swift
+Building for debugging...
+[Planning deferred tasks]
+[13 / 28] FormalProbeCore
+[18 / 33] FormalProbeCore
+[27 / 34] FormalProbeCore
+[31 / 36] FormalDevelopmentProbe-product
+[32 / 36] FormalDevelopmentProbe-product
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:83:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 81 | }
+ 82 | struct PreflightReport: Codable {
+ 83 |     let mode = "READ_ONLY_PREFLIGHT"
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'mode' case to silence this warning
+    |         `- note: make the property mutable instead
+ 84 |     let status: String
+ 85 |     let planSHA256: String
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:91:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 89 |     let environment: String
+ 90 |     let candidateBundle: String
+ 91 |     let candidateRegistration = "PROPOSED_NOT_REGISTERED_OR_VERIFIED"
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'candidateRegistration' case to silence this warning
+    |         `- note: make the property mutable instead
+ 92 |     let signatureVerified: Bool
+ 93 |     let codeDirectoryHash: String?
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:96:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 94 |     let profileSHA256: String?
+ 95 |     let rejectionCodes: [String]
+ 96 |     let networkOperations = 0
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'networkOperations' case to silence this warning
+    |         `- note: make the property mutable instead
+ 97 |     let networkAuthorized = false
+ 98 |     let readyForCloudRun = false
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:97:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 95 |     let rejectionCodes: [String]
+ 96 |     let networkOperations = 0
+ 97 |     let networkAuthorized = false
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'networkAuthorized' case to silence this warning
+    |         `- note: make the property mutable instead
+ 98 |     let readyForCloudRun = false
+ 99 |     let p0Passed = false
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:98:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 96 |     let networkOperations = 0
+ 97 |     let networkAuthorized = false
+ 98 |     let readyForCloudRun = false
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'readyForCloudRun' case to silence this warning
+    |         `- note: make the property mutable instead
+ 99 |     let p0Passed = false
+100 |     let certificateProfileDeviceEligibility = "NOT_VERIFIED"
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:99:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 97 |     let networkAuthorized = false
+ 98 |     let readyForCloudRun = false
+ 99 |     let p0Passed = false
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'p0Passed' case to silence this warning
+    |         `- note: make the property mutable instead
+100 |     let certificateProfileDeviceEligibility = "NOT_VERIFIED"
+101 |     let actualServiceAccess = "NOT_RUN"
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:100:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 98 |     let readyForCloudRun = false
+ 99 |     let p0Passed = false
+100 |     let certificateProfileDeviceEligibility = "NOT_VERIFIED"
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'certificateProfileDeviceEligibility' case to silence this warning
+    |         `- note: make the property mutable instead
+101 |     let actualServiceAccess = "NOT_RUN"
+102 | }
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentProbe/main.swift:101:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 99 |     let p0Passed = false
+100 |     let certificateProfileDeviceEligibility = "NOT_VERIFIED"
+101 |     let actualServiceAccess = "NOT_RUN"
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'actualServiceAccess' case to silence this warning
+    |         `- note: make the property mutable instead
+102 | }
+103 | #endif
+[34 / 36] FormalDevelopmentProbe-product
+Build complete! (1.50秒)

@@ -1,0 +1,52 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "FC0CE11C-BBF8-475D-89DA-FC19FA493272",
+        "deviceName" : "PGOS-CI-unit",
+        "modelName" : "iPhone 13 mini",
+        "osBuildNumber" : "24B8117",
+        "osVersion" : "27.2",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 0,
+      "passedTests" : 598,
+      "skippedTests" : 1,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "PersonalGrowthOS · Built with macOS 27.0.1",
+  "expectedFailures" : 0,
+  "failedTests" : 0,
+  "finishTime" : 1794105110.396,
+  "passedTests" : 598,
+  "result" : "Passed",
+  "runtimeWarnings" : [
+
+  ],
+  "skippedTests" : 1,
+  "startTime" : 1794104649.96,
+  "statistics" : [
+    {
+      "subtitle" : "3 test runs",
+      "title" : "3 tests collected performance metrics"
+    }
+  ],
+  "testFailures" : [
+
+  ],
+  "title" : "Test - PersonalGrowthOS",
+  "topInsights" : [
+    {
+      "category" : "Longest Test Runs",
+      "impact" : "53% of duration",
+      "text" : "6 longest test runs with outlier durations exceeding 5.19s (three standard deviations)"
+    }
+  ],
+  "totalTestCount" : 599
+}

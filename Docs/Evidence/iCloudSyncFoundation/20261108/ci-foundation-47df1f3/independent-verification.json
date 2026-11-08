@@ -1,0 +1,96 @@
+{
+  "artifact": {
+    "extractedFilesByteIdenticalToArchive": {
+      "checkout-sha.txt": "11aa318f713dca9653e3ca5ae1ea042e9ea6435d4050e067558a5cae061d202c",
+      "environment.log": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+      "formal-independent.log": "fda4e9a33019dbef722f5837d1456487a05147b8c8aa265bb1ef8f7486674252",
+      "formal-independent/summary.json": "fda4e9a33019dbef722f5837d1456487a05147b8c8aa265bb1ef8f7486674252",
+      "formal-preflight/report.json": "390828de734fc7acb1d40e080db09404581642123a7640f215bcb3601c1b0667",
+      "formal-replay/report.json": "a9a234ef87f9e05296a3417c7e4e2fa8967fdb464851fcf394b285e8105c5730",
+      "host-packaging/actual-code-signature.json": "6095860602697f80b334c2519f58a3f964fe390c8b826d5fec8304e61c4c0583",
+      "host-packaging/checks.json": "1aa240f05cb9647be17b4fcb860a985cca741a9478e2db1d4191e9b02125bdaa",
+      "host-packaging/inspect-report.json": "fe5918e52d7f102e6b1fb7bfcf7b951213acd0ce5ee7961dcb7efb780b2a1f9a",
+      "host-packaging/package.log": "d48dfb50adfd1511368a33218a89b63672990a2145ceed6f7c725909269e2c36",
+      "host-packaging/packaging.json": "eaa8aaa98c2113fbd54a7596cf0df6531fb48907e3382209c1fbef9eeaf1a6b9",
+      "host-packaging/preflight-report.json": "7f1e35e46aeed91b112f2635a98c721df397a2600c7d6169307ce35b247a27dc",
+      "host-packaging/verification.log": "a40e7ffefe2cdf78f6705a9ff93e49159509b8ebc6b1206eefb95bb1627a6481",
+      "independent-regressions.log": "70c383b814488e468bc9dd527e278a07f16f0708546b8b3dbfe1a4747b325654",
+      "locked-host/report.json": "a530221deb54e1e1dc69814272aa39280710eeb1718088a19098b9f7df826bb4",
+      "schema-audit-tests.log": "610a76dece0b473d6a5abe4c0807951e7dd9097d6d8de9cb266a395298853064",
+      "schema-independent.log": "86ca08815fac324912abb9ef0e003c490f3290eb3106422df71291d00fa7e3ad",
+      "schema-independent/summary.json": "86ca08815fac324912abb9ef0e003c490f3290eb3106422df71291d00fa7e3ad",
+      "schema/schema.json": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003",
+      "sdk-independent.log": "56074084b3c96df76b1df4e997fa6a4121a1fa8ac263243752ca0a59f5551c3d",
+      "tests.log": "87528802af3b9e98ee22e53cd334452fda0e482eec36d6b87287a439b7e63143"
+    },
+    "id": 13599629663,
+    "localNonArchiveFilesExcludedFromRawEquality": [
+      "README.md",
+      "artifact.zip",
+      "artifacts.json",
+      "verification.json"
+    ],
+    "metadataDigestAndSizeMatch": true,
+    "runId": 42438147024,
+    "zipEntriesUniqueAndRelative": true,
+    "zipSHA256": "ae8e4214f2eeef6c83fd89227ea6a649b91b4a0cb393489c3786b09476e4f56f",
+    "zipSize": 126009
+  },
+  "hostEvidence": {
+    "actualInspectExitCode": 2,
+    "actualPreflightExitCode": 2,
+    "appExecutionPerformedByPackaging": false,
+    "appExecutionSeparatelyReportedByVerification": true,
+    "buildExitCode": 0,
+    "developerSigningPerformed": false,
+    "networkAuthorized": false,
+    "observedCodeVerifyExitCode": 1,
+    "observedProfile": "PROFILE_MISSING",
+    "observedSignatureKind": "adhoc",
+    "observedTeam": "not set",
+    "p0Passed": false,
+    "samePlanRunDatasetAcrossReports": true,
+    "status": "NOT_READY"
+  },
+  "limitations": [
+    "No tests/builds/apps/signing/network rerun by this review.",
+    "Archive contains reports/hashes, not app binary or full compiler snapshot; binary/compiler-input checks verified as recorded CI assertions, not independently rehashed executable bytes.",
+    "Actual checkout SHA verified in original archive; Git object absent locally, no independent merge-tree comparison/fetch. All 20 source hashes match committed workflow-head trusted pin and source Git blobs.",
+    "NOT_READY and missing profile/identity are negative controls, not Apple CloudKit/signing/Production qualification."
+  ],
+  "networkOperationsPerformedByReview": 0,
+  "reruns": 0,
+  "results": {
+    "failures": 0,
+    "formalCLICommands": 22,
+    "formalOfflineReplayRecords": 6,
+    "hostPackagingChecks": 28,
+    "independentChunkTests": 11,
+    "independentSDKTests": 11,
+    "independentSchemaChecks": 20,
+    "individualXCTestPassLinesCounted": {
+      "independent-regressions.log": 11,
+      "sdk-independent.log": 11,
+      "tests.log": 51
+    },
+    "nativeTests": 51,
+    "schemaAuditTests": 16
+  },
+  "reviewedAtUTC": "2026-11-08T02:26:09.507342+00:00",
+  "reviewer": "wire_foundation independent read-only audit",
+  "revision": {
+    "actualCheckoutMatchesRequestedValue": true,
+    "actualCheckoutRecordedInArtifact": "55aef2cf3152843079971ff82024c114e2f0542e",
+    "checkoutObjectAvailableLocally": false,
+    "mergeTreeIndependentlyFetched": false,
+    "workflowHeadSHA": "47df1f3cad80270bded407078fab86d26be6f46b"
+  },
+  "sourceBinding": {
+    "allTwentyPinnedFilesEqualWorkflowHeadGitBlobs": true,
+    "committedPinRevision": "47df1f3cad80270bded407078fab86d26be6f46b",
+    "committedPinSHA256": "9dd6874b3245e432f46393977094fa223043f010d62d079f08a50fb2387957b7",
+    "receiptEqualsCommittedTrustedPin": true,
+    "sourceCount": 20
+  },
+  "status": "PASS_WITH_EXPLICIT_EVIDENCE_LIMITS"
+}

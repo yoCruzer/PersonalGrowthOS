@@ -1,0 +1,11 @@
+{
+  "verifyExitCode": 1,
+  "detailsExitCode": 0,
+  "technicalFields": {
+    "Identifier": "FormalDevelopmentHost-55554944718e1267c3f336c0b33a788f9aa058a2",
+    "CDHash": "337ab17853549591f5aa06d987b4fb5856657e40",
+    "Signature": "adhoc",
+    "TeamIdentifier": "not set"
+  },
+  "developerSigningPerformed": false
+}

@@ -1,0 +1,29 @@
+Test Suite 'Selected tests' started at 2026-11-07 23:18:37.122.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:18:37.124.
+Test Suite 'IndependentChunkTests' started at 2026-11-07 23:18:37.124.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' passed (0.014 seconds).
+Test Suite 'IndependentChunkTests' passed at 2026-11-07 23:18:37.138.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.014 (0.015) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 23:18:37.138.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.014 (0.015) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 23:18:37.138.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.014 (0.016) seconds
+        0.12 real         0.04 user         0.03 sys
+            44236800  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+                3362  page reclaims
+                 574  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                 360  voluntary context switches
+                 413  involuntary context switches
+           923895012  instructions retired
+           336415711  cycles elapsed
+            23020216  peak memory footprint

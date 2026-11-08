@@ -1,0 +1,15 @@
+{
+  "lane": "smoke",
+  "checkoutSHA": "8a54e2a15915b3184f5a5161cdeedeb1d0a1f2fd",
+  "headSHA": "99ef002d68685ea0e64988257b18a20c6c374f8c",
+  "event": "pull_request",
+  "xcode": "Xcode 27.0\nBuild version 27A266a\n",
+  "arch": "ARM64",
+  "image": "20261104.0337.1",
+  "runtime": {
+    "name": "iOS 27.2",
+    "version": "27.2",
+    "buildversion": "24B8117"
+  },
+  "device": "iPhone 13 mini"
+}

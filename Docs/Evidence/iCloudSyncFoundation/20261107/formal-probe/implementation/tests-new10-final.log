@@ -1,0 +1,42 @@
+Building for debugging...
+[2 / 5] FormalProbeCore
+[3 / 6] FormalProbeCore
+[7 / 9] FormalProbeCore
+[10 / 11] FormalProbeCoreTests-product
+[14 / 15] FormalDevelopmentProbe-product
+Build complete! (1.10秒)
+Test Suite 'Selected tests' started at 2026-11-07 23:43:51.318.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:43:51.319.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 23:43:51.319.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 23:43:51.319.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-07 23:43:51.362.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-07 23:43:51.362.
+Test Suite 'FormalProbeCoreTests' started at 2026-11-07 23:43:51.362.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' passed (0.006 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' passed (0.008 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' passed (0.006 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' passed (0.004 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' passed (0.003 seconds).
+Test Suite 'FormalProbeCoreTests' passed at 2026-11-07 23:43:51.402.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.039 (0.040) seconds
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-07 23:43:51.402.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.039 (0.040) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 23:43:51.402.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.039 (0.041) seconds

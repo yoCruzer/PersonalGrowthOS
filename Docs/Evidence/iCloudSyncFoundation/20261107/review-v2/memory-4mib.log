@@ -1,0 +1,19 @@
+xcrun: warning: confstr() failed with code 5: couldn't get path of DARWIN_USER_TEMP_DIR; using /tmp instead
+2026-11-07 23:14:46.800 xcodebuild[9301:47740063]  DVTFilePathFSEvents: Failed to start fs event stream.
+2026-11-07 23:14:46.980 xcodebuild[9301:47740051] [MT] DVTDeveloperPaths: Failed to get length of DARWIN_USER_CACHE_DIR from confstr(3), error = Error Domain=NSPOSIXErrorDomain Code=5 "Input/output error". Using NSCachesDirectory instead.
+2026-11-07 23:14:47.412 xcodebuild[9304:47740100]  DVTFilePathFSEvents: Failed to start fs event stream.
+2026-11-07 23:14:47.502 xcodebuild[9304:47740098] [MT] DVTDeveloperPaths: Failed to get length of DARWIN_USER_CACHE_DIR from confstr(3), error = Error Domain=NSPOSIXErrorDomain Code=5 "Input/output error". Using NSCachesDirectory instead.
+xcrun: warning: confstr() failed with code 5: couldn't get path of DARWIN_USER_TEMP_DIR; using /tmp instead
+Test Suite 'Selected tests' started at 2026-11-07 23:14:48.229.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-07 23:14:48.230.
+Test Suite 'IndependentChunkTests' started at 2026-11-07 23:14:48.230.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' passed (0.012 seconds).
+Test Suite 'IndependentChunkTests' passed at 2026-11-07 23:14:48.242.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.012 (0.012) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-07 23:14:48.242.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.012 (0.012) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 23:14:48.242.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.012 (0.012) seconds
+        2.41 real         0.04 user         0.01 sys
+time: sysctl kern.clockrate: Operation not permitted

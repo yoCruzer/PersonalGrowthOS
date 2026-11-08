@@ -1,0 +1,23 @@
+{
+  "artifacts": [
+    {
+      "id": 13599629663,
+      "name": "sync-foundation-candidate",
+      "size_in_bytes": 126009,
+      "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13599629663",
+      "archive_download_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/13599629663/zip",
+      "expired": false,
+      "created_at": "2026-11-08T02:22:48Z",
+      "expires_at": "2026-11-15T02:22:47Z",
+      "updated_at": "2026-11-08T02:22:48Z",
+      "digest": "sha256:ae8e4214f2eeef6c83fd89227ea6a649b91b4a0cb393489c3786b09476e4f56f",
+      "workflow_run": {
+        "id": 42438147024,
+        "repository_id": 1301751228,
+        "head_repository_id": 1301751228,
+        "head_branch": "codex/icloud-sync-foundation",
+        "head_sha": "47df1f3cad80270bded407078fab86d26be6f46b"
+      }
+    }
+  ]
+}

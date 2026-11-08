@@ -1,0 +1,41 @@
+[
+  {
+    "name": "locked",
+    "args": [
+      "inspect",
+      "/private/tmp/pgos-sdk-host-check-20261108/plan",
+      "49454495ba2505c6d36e2a154ee48f5673d88544fadd91beafb5e5ac8a214fa8",
+      "/private/tmp/pgos-sdk-host-check-20261108/locked"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "NOT_READY EXTERNAL_GATE_NOT_COMPLETE; networkOperations=0\n",
+    "stderr": ""
+  },
+  {
+    "name": "wrong-hash",
+    "args": [
+      "inspect",
+      "/private/tmp/pgos-sdk-host-check-20261108/plan",
+      "0000000000000000000000000000000000000000000000000000000000000000",
+      "/private/tmp/pgos-sdk-host-check-20261108/wrong-hash"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "OFFLINE_VALIDATION_FAILED\n"
+  },
+  {
+    "name": "live-flag",
+    "args": [
+      "live",
+      "/private/tmp/pgos-sdk-host-check-20261108/plan",
+      "49454495ba2505c6d36e2a154ee48f5673d88544fadd91beafb5e5ac8a214fa8",
+      "/private/tmp/pgos-sdk-host-check-20261108/live"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR\n"
+  }
+]

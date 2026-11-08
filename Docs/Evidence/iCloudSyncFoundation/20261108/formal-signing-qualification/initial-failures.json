@@ -1,0 +1,41 @@
+{
+  "failuresPreserved": [
+    {
+      "stage": "profile CMS in restricted tool sandbox",
+      "exit": 1,
+      "resolution": "same file decoded using security cms in normal host context; exit 0"
+    },
+    {
+      "stage": "codesign verification in restricted tool sandbox",
+      "exit": 1,
+      "failure": "CSSMERR_TP_NOT_TRUSTED",
+      "resolution": "same signature verified in normal host context; exit 0; no trust settings changed"
+    },
+    {
+      "stage": "certificate extraction command",
+      "exit": 1,
+      "failure": "optional prefix parsed as path",
+      "resolution": "corrected --extract-certificates=PREFIX; exit 0; no private key export"
+    },
+    {
+      "stage": "original signed preflight",
+      "exit": 2,
+      "failure": "PROFILE_MISMATCH_OR_EXPIRED",
+      "signatureVerified": true,
+      "resolution": "profile allowlist type compatibility fix; same signed artifact passes static match; cloud gate remains closed"
+    },
+    {
+      "stage": "signed inspect with external temporary fixture",
+      "exit": 1,
+      "failure": "OFFLINE_VALIDATION_FAILED",
+      "reportCreated": false
+    },
+    {
+      "stage": "external write to new probe container",
+      "failure": "macOS PermissionError EPERM",
+      "fixtureCopyCreated": false,
+      "securityProtectionDisabled": false
+    }
+  ],
+  "rawLogs": "retained in private local signing workspace; not published"
+}

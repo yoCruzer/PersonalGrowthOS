@@ -1,0 +1,53 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 356]
+[Planning deferred tasks]
+[4 / 25]
+[6 / 15] FormalDevelopmentSDKTests-product
+[8 / 17] FormalDevelopmentSDKTests-product
+[14 / 16] FormalDevelopmentSDKTests-product
+[21 / 30] FormalProbeCoreTests-product
+[23 / 32] FormalProbeCoreTests-product
+[27 / 31] FormalProbeCoreTests-product
+[29 / 31] FormalProbeCoreTests-product
+Build complete! (3.25 sec)
+Test Suite 'Selected tests' started at 2026-11-08 05:35:59.931.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 05:35:59.932.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 05:35:59.932.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 05:35:59.932.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 05:36:00.061.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 05:36:00.063.
+Test Suite 'IndependentDirectoryReviewTests' started at 2026-11-08 05:36:00.063.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testAncestorReplacementDetectedAndWritesStayOnHeldFD]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testAncestorReplacementDetectedAndWritesStayOnHeldFD]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testExistingOutputAndFileStayImmutable]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testExistingOutputAndFileStayImmutable]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSearchAncestorsAndReadableLeafRoundTrip]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSearchAncestorsAndReadableLeafRoundTrip]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkAncestorCannotBeFollowed]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkAncestorCannotBeFollowed]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkLeafAndFileCannotBeFollowed]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkLeafAndFileCannotBeFollowed]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testTraversalAndSpecialFilesReject]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testTraversalAndSpecialFilesReject]' passed (0.002 seconds).
+Test Suite 'IndependentDirectoryReviewTests' passed at 2026-11-08 05:36:00.073.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.010 (0.011) seconds
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 05:36:00.074.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.010 (0.011) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 05:36:00.074.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.010 (0.012) seconds
+Test Suite 'Selected tests' started at 2026-11-08 05:36:00.188.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 05:36:00.190.
+Test Suite 'IndependentFixtureReviewTests' started at 2026-11-08 05:36:00.190.
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testFixedFixtureReportsClosedGatesWithoutPrivatePaths]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testFixedFixtureReportsClosedGatesWithoutPrivatePaths]' passed (0.010 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testTwoInvocationsCreateDistinctSyntheticIdentities]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testTwoInvocationsCreateDistinctSyntheticIdentities]' passed (0.043 seconds).
+Test Suite 'IndependentFixtureReviewTests' passed at 2026-11-08 05:36:00.244.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.053 (0.054) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 05:36:00.244.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.053 (0.054) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 05:36:00.244.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.053 (0.056) seconds

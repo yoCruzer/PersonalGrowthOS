@@ -1,0 +1,15 @@
+{
+  "command": "python3 -m unittest discover -s Scripts/SyncSchemaAudit -p 'test_*.py' -v",
+  "exitCode": 1,
+  "tests": 16,
+  "passed": 15,
+  "failures": 1,
+  "failingTest": "test_synthetic_schema_preserves_users_permissions_and_missing_business_types",
+  "actual": {
+    "Users": {}
+  },
+  "expected": {},
+  "cause": "Fixture now has no system fields; existing report retains empty per-type map. Assertion adjusted to existing intended report shape.",
+  "failedSourceSHA256": "a9ff63f9535324715d2b1426bacead80ae6baf56f1320dd1e86786102f44b680",
+  "recordType": "failure summary reconstructed from captured tool output; not raw log"
+}

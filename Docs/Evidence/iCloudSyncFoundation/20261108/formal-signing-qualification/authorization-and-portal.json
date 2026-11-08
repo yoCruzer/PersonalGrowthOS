@@ -1,0 +1,26 @@
+{
+  "ownerAuthorization": "Explicit conversation approval of independent App ID/container association, existing certificate/device reuse, Mac Development profile, local isolated signing and offline preflight.",
+  "team": "83SKX2PM7B",
+  "bundle": "com.yocruzer.PersonalGrowthOS.FormalSyncProbe",
+  "container": "iCloud.com.yocruzer.PersonalGrowthOS",
+  "portal": {
+    "independentIDAbsentBeforeCreation": true,
+    "registeredAndReadBack": true,
+    "cloudKitEnabled": true,
+    "onlyFormalContainerSelectedAfterSave": true,
+    "profileType": "macOS App Development",
+    "profileName": "PGOS FormalSyncProbe Mac Development",
+    "downloadBytes": 14014,
+    "existingCertificatesSelected": 1,
+    "existingDevicesSelected": 1,
+    "newCertificatesCreated": 0,
+    "newDevicesRegistered": 0
+  },
+  "formalAppModified": false,
+  "syncLabModified": false,
+  "cloudOperations": 0,
+  "productionOperations": 0,
+  "phoneForegroundMinutes": 0,
+  "phoneCableMinutes": 0,
+  "privateArtifactsPublished": false
+}

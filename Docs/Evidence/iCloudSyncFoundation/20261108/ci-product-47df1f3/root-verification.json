@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "artifacts": [
+    "ios-unit-1",
+    "ios-release-1",
+    "ios-smoke-1"
+  ],
+  "method": "Independent root rehash/CRC/exact original report bytes, source/checkout and count comparison",
+  "noTestRerun": true
+}

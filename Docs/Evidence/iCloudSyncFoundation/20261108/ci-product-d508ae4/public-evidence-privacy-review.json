@@ -1,0 +1,7 @@
+{
+  "scope": "Only this CI evidence directory; CI-created synthetic test records. No Owner files inspected or copied.",
+  "findings": [],
+  "rawSummariesUnmodified": true,
+  "hostedSimulatorUUIDs": "CI-generated ephemeral IDs retained in original xcresult summaries",
+  "externalAction": "read/download existing CI artifacts only"
+}

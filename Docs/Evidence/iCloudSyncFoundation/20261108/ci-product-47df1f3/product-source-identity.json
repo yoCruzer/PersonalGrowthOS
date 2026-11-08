@@ -1,0 +1,37 @@
+{
+  "priorHead": "d508ae41f8f87adff790c65cc090f217206e0e18",
+  "candidateHead": "47df1f3cad80270bded407078fab86d26be6f46b",
+  "paths": {
+    "PersonalGrowthOS": {
+      "priorObject": "cb1cd52530e2e998ade792ce2fd271f36ad984a3",
+      "candidateObject": "cb1cd52530e2e998ade792ce2fd271f36ad984a3",
+      "identical": true
+    },
+    "PersonalGrowthOSTests": {
+      "priorObject": "74f89b2365b23ea96da3cac2a393f4828cc07236",
+      "candidateObject": "74f89b2365b23ea96da3cac2a393f4828cc07236",
+      "identical": true
+    },
+    "PersonalGrowthOSUITests": {
+      "priorObject": "5ba1f0bdfbc88e4c5ed0db57b67cfc2898f2904e",
+      "candidateObject": "5ba1f0bdfbc88e4c5ed0db57b67cfc2898f2904e",
+      "identical": true
+    },
+    "PersonalGrowthOS.xcodeproj": {
+      "priorObject": "5fdb37be86fc6cf90205954077d0c8743a1c2a49",
+      "candidateObject": "5fdb37be86fc6cf90205954077d0c8743a1c2a49",
+      "identical": true
+    },
+    ".github/workflows/ios-regression.yml": {
+      "priorObject": "2d6ee93832f9307ef4d41e3065c982f99b057efd",
+      "candidateObject": "2d6ee93832f9307ef4d41e3065c982f99b057efd",
+      "identical": true
+    },
+    "Scripts/ci/run_ios.py": {
+      "priorObject": "167c118d28ff1cb510e47b530f8d28cd0a64d756",
+      "candidateObject": "167c118d28ff1cb510e47b530f8d28cd0a64d756",
+      "identical": true
+    }
+  },
+  "scope": "Git object equality only; does not substitute for this candidate actual CI results."
+}

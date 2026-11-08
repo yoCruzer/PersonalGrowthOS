@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "manifest": "sdk-preparation/implementation/post-review/source-hashes.json",
+      "mismatches": []
+    },
+    {
+      "manifest": "sdk-preparation/review/package-final-source-sha256.json",
+      "mismatches": []
+    }
+  ],
+  "schema_script_matches_independent_snapshot": true,
+  "owner_originals_and_archives_unchanged": true,
+  "first_root_check": "FAIL: verifier incorrectly resolved review-relative README.md against repository root instead of Packages/SyncFoundation; verifier path mapping corrected, no implementation/manifest files changed",
+  "yaml_and_all_run_shell_syntax": "PASS Ruby YAML + bash -n; no cloud operation",
+  "owner_original_preservation": "Repository-external private storage; complete parser report also private. Public intake now contains reduced findings and hashes only.",
+  "public_test_fixtures": "Independently authored; previous fixtures and reports retained outside repository."
+}

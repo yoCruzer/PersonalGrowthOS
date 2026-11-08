@@ -1,0 +1,18 @@
+{
+  "change": "Post-write directory identity checks only; prior full51 evidence remains valid for unchanged behavior",
+  "tests": 17,
+  "testsExitCode": 0,
+  "iOS17CompileExitCode": 0,
+  "hostCommand": [
+    "/private/tmp/pgos-sync-sdk-build/out/Products/Debug/FormalDevelopmentHost",
+    "inspect",
+    "/private/tmp/pgos-sdk-host-check-20261108/plan",
+    "49454495ba2505c6d36e2a154ee48f5673d88544fadd91beafb5e5ac8a214fa8",
+    "/private/tmp/pgos-sdk-host-check-20261108/locked-post-review"
+  ],
+  "hostExitCode": 2,
+  "hostStdout": "NOT_READY EXTERNAL_GATE_NOT_COMPLETE; networkOperations=0\n",
+  "networkOperations": 0,
+  "actualCloudKit": "NOT_RUN",
+  "signatureIdentityFactory": "NOT_IMPLEMENTED"
+}

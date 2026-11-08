@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "sourceSHA": "47df1f3cad80270bded407078fab86d26be6f46b",
+  "checkoutSHA": "55aef2cf3152843079971ff82024c114e2f0542e",
+  "runID": 42438147024,
+  "nativeTests": 51,
+  "independentChunkTests": 11,
+  "independentFormalCLICommands": 22,
+  "schemaSelfTests": 16,
+  "schemaIndependentChecks": 20,
+  "sdkIndependentTests": 11,
+  "packagingChecks": 28,
+  "artifactSHA256": "ae8e4214f2eeef6c83fd89227ea6a649b91b4a0cb393489c3786b09476e4f56f",
+  "actualCloudOperations": 0,
+  "developerSigningPerformed": false,
+  "p0Passed": false
+}
