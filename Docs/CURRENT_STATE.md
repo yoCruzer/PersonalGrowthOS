@@ -2,7 +2,7 @@
 
 Owner报告build10的底部同步错误提示遮挡Tab，随后明确不再继续陪测。本轮停止主动请求安装/点击/截图和真实云操作，不把旧流程的待复测安排当作继续要求。截图中的accountChanged为保留状态，没有新一次Sync now成功执行证据。
 
-已移除全局底部错误提示，详情保留同步设置页；build11只恢复导航，不改身份、429队列或同步状态。合成paused状态UI回归1/1通过，包含两次启动/10次Tab选中断言/两次设置访问；截图已视觉核对，加入现有Smoke列表。签名修复包与源码待本轮收口绑定，真实云验收暂停、不能宣称同步已完成。详见[持续证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。不卸载/清库/恢复覆盖/切换账户，不merge/Production/Archive/TestFlight/发布。原项目三项未提交工作不动。
+已移除全局底部错误提示，详情保留同步设置页；build11只恢复导航，不改身份、429队列或同步状态。合成paused状态UI回归1/1通过，包含两次启动/10次Tab选中断言/两次设置访问；截图已视觉核对，加入现有Smoke列表。签名修复包已绑定源码36ad76f/Dirty=false，位于`/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev11-36ad76f`；原包/ZIP解包验签及三二进制hash通过，未替Owner安装。新源码CI定向运行中/产品排队中，不提前判通过。真实云验收暂停、不能宣称同步已完成。详见[持续证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。不卸载/清库/恢复覆盖/切换账户，不merge/Production/Archive/TestFlight/发布。原项目三项未提交工作不动。后续真实云阶段等待Owner重新安排，本轮不再发人工请求。
 
 ---
 

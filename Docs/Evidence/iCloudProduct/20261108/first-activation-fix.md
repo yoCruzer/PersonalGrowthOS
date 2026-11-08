@@ -1,3 +1,5 @@
+最新Owner边界：已停止本轮真机协助；仅交付文末build11可选导航恢复包，不再要求安装/点击/截图。前文所有旧复测安排均为历史，不再生效。
+
 # 真机首次启用 missingSupplement 修复
 
 ## Owner原始反馈
@@ -75,3 +77,14 @@ Owner提供`截屏 2026-11-09 00.23.13.png`，说明build10打开后底部错误
 已移除TabView根部的bottom safeAreaInset错误提示；暂停原因仍在同步设置页可查，不改同步状态、数据、队列或恢复权限。补充仅DEBUG+uiTesting+reset显式参数才运行的合成paused fixture，不触及正常启动/私人库；新UITest在常规及最大字号启动参数两次启动后分别点选五个Tab并断言选中，打开Settings→iCloud确认原始accountChanged仍可读。该项`PGOS-Paused-Navigation-Fix.xcresult` **1/1 PASS、0FAIL/0SKIP/runtimeWarnings空**，一项内共10次Tab切换、两次设置访问。两张合成截图已导出并人工查看，底部导航完整，无错误文字覆盖；字号参数传入不泛化为所有视图字号响应验收。日志`/private/tmp/pgos-paused-navigation-fix.log`、截图`/private/tmp/PGOS-Paused-Navigation-Images`保留本机。该回归加入现有Smoke列表，后续7项。
 
 build11仅作为恢复正常导航的Development修复包准备，保留原数据及同步暂停；不要求Owner安装或恢复真机验证。build10远端定向/Release通过、Unit/Smoke在最新检查时仍运行，不提前判通过。后续源码CI按真实状态记录；真实云验收暂停、Production/TestFlight未执行。所有此前真实失败与未完成项保留。
+
+
+### build11固定交付（非云验收完成）
+
+源码`36ad76f2d3d99e4bd3d7d83b33eae247f6311483`、Dirty=false；App和两个扩展build11。Development能力实际签名回读匹配，原包/ZIP解包严格验签、三个二进制摘要一致。私有目录`/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev11-36ad76f`含app、ZIP、artifact.json及明确“不要求安装/测试”的说明。
+
+ZIP `PersonalGrowthOS-iCloud-Dev11-36ad76f.app.zip`，12020739 bytes，SHA256 `2069afd1e67e840d5689dcbebbe36de63341f2672e81a37abf0084ef4d8aba74`；主程序SHA256 `8028e32b2ad38278f0b5c8f8e9eba214cdee0266dd0851f4992b537fb7cd673d`。这不是已实际安装/真机验证的声明。
+
+截至收口，[build11定向CI42500310013](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42500310013)运行中，[产品CI42500310016](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42500310016)排队中，不提前判通过。build10产品CI最后观察为Release成功、Smoke已取消、Unit仍运行；被后续候选取代，不将未完成部分写为PASS。build10定向官方ZIP SHA256 `abcf41bf740bd75ba2f3a3cd59e63a62acfc03f79986a7b330b955190c24a01f`、307成员CRC、24源码pins、32打包检查已核对。
+
+最后仅文档收口使用[skip ci]；精确运行源码与安装包仍绑定36ad76f。Draft PR19保持，原项目d72c016三项未提交改动未动。后续真实云验收等待Owner重新安排，不自动继续请求手机协助；云双向/推送/Production及发布保持未完成。
