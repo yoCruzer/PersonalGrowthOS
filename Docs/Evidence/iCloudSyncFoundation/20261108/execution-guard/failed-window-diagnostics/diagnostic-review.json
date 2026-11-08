@@ -1,0 +1,24 @@
+{
+  "review": "Independent failure classification and original-cause preservation review",
+  "reviewer": "export_review",
+  "implementationReviewer": "fatal_review",
+  "runnerSHA256": "828778f00539db51e6f6da1c9772abc700a875e19fc4a4b648e1218e5d14de14",
+  "focusedTests": 6,
+  "failures": 0,
+  "findingsFixed": [
+    "Hardlink export containment",
+    "Original runtime gate error overwritten by cancellation",
+    "Contradictory started enqueue must remain fatal",
+    "No inference of globally known remote outcome from zero admission or first cause"
+  ],
+  "failureOutcomePolicy": "ALL_FAILURES_REMOTE_OUTCOME_UNKNOWN",
+  "reviewPrivateOriginalsRead": false,
+  "cloudOperations": 0,
+  "keychainOperations": 0,
+  "notRun": [
+    "New cloud window",
+    "Production",
+    "iOS runtime",
+    "Complete product sync"
+  ]
+}

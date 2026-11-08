@@ -1,0 +1,17 @@
+{
+  "status": "SUCCESS",
+  "code": "b3cd0136e1f18c0994908c59a8e5e59e8817ca2a",
+  "run": 42474881433,
+  "artifactID": 13615530713,
+  "artifactSHA256": "5a631f2ba4bb417622827550e4e5bc9cac6d81ce535ba4ba320ab14dac5f749c",
+  "archiveMembers": 308,
+  "checkout": "75739e054431d5b60ee810f94e0772d82b9436c0",
+  "sourceFiles": 47,
+  "sourceHashesMatch": true,
+  "nativeTests": 178,
+  "guardIndependentTests": 35,
+  "packagingChecks": 40,
+  "actualCloudWindow": "NOT_RUN",
+  "production": "NOT_RUN",
+  "productCI": "42474881346_IN_PROGRESS_SEPARATE_UNCHANGED_PRODUCT_CODE"
+}

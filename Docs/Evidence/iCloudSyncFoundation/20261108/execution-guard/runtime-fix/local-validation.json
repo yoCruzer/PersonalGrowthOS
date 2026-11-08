@@ -1,0 +1,63 @@
+{
+  "status": "LOCAL_AND_TARGET_OFFLINE_AND_REMOTE_PASS",
+  "native": {
+    "total": 187,
+    "protocol": 24,
+    "core": 17,
+    "sdk": 146,
+    "failures": 0
+  },
+  "retainedIndependent": {
+    "total": 35,
+    "failures": 0
+  },
+  "packaging": {
+    "checks": 46,
+    "failures": 0
+  },
+  "independentOSReviewTests": 2,
+  "ios17Compile": "PASS",
+  "ios17Runtime": "NOT_RUN",
+  "signedSynchronous": "PASS",
+  "signedAsyncPhases": 4,
+  "signedAsyncNetworkOperations": 0,
+  "signedAsyncKeychainOperations": 0,
+  "targetHahaNewArtifact": "FOUR_ASYNC_PHASES_PASS",
+  "newCloudWindow": "NOT_AUTHORIZED_NOT_RUN",
+  "xcode": "Xcode 27.2\nBuild version 27B52",
+  "macOS": "27.0.1",
+  "arch": "arm64",
+  "sourcePinCount": 50,
+  "privateLogs": {
+    "native": {
+      "path": "/private/tmp/pgos-runtime-fix-full-tests.log",
+      "sha256": "f870a5a6d39c8bbefe60fe8a4e08b8ffa7d7d46275532bdf41fd8dcbff50652a"
+    },
+    "retainedIndependent": {
+      "path": "/private/tmp/pgos-runtime-retained-review.log",
+      "sha256": "19739fdfc1cedd2ea417e13396ddd03740604d8d75c0d8456137cc77989b05ea"
+    },
+    "packaging": {
+      "path": "/private/tmp/pgos-runtime-fixed-packaging-checks.log",
+      "sha256": "1b6f25f64b1d8987dd25a4b0538b4e2fbeb0a4b0e097eec8356cc9810fe4b4cc"
+    },
+    "ios17Compile": {
+      "path": "/private/tmp/pgos-runtime-fixed-ios17.log",
+      "sha256": "0a79b91ff67218318c501685e573d94668187bd47e548f287394dcd82a53cc4e"
+    },
+    "independentReview": {
+      "path": "/private/tmp/PGOS-runtime-os-independent-review-final-20261108.log",
+      "sha256": "c5692cc125829f0bb9543d0959e99d4e1b77b8c2dd30e9e809cc8efdfc130638"
+    }
+  },
+  "commands": [
+    "xcrun swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-guard-final-build",
+    "PGOS_SYNTHETIC_CMS=<repository>/Docs/Evidence/iCloudSyncFoundation/20261108/execution-guard/review-runtime-boundaries/synthetic.cms xcrun swift test --package-path /private/tmp/pgos-runtime-final-review-package --scratch-path /private/tmp/pgos-runtime-final-review-build --filter 'IndependentLedgerReviewTests|IndependentGuardedRunnerTests|RuntimeIndependentTests|GuardBoundaryIndependentTests|IndependentProductionEntryTests'",
+    "/usr/bin/python3 Scripts/FormalDevelopmentHost/package_locked_host.py --output /private/tmp/pgos-runtime-fixed-package-20261108",
+    "/usr/bin/python3 Scripts/FormalDevelopmentHost/verify_packaging.py --package-output /private/tmp/pgos-runtime-fixed-package-20261108 --probe-binary /private/tmp/pgos-guard-final-build/debug/FormalDevelopmentProbe --evidence-output /private/tmp/pgos-runtime-fixed-packaging-checks",
+    "xcrun swift build --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-failure-diagnostics-ios17 --target FormalDevelopmentSDK --triple arm64-apple-ios17.0 --sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk",
+    "Signed isolated host inspect-runtime BASE64_CANONICAL_OFFLINE_REQUEST",
+    "Signed isolated host inspect-runtime-async BASE64_CANONICAL_OFFLINE_REQUEST"
+  ],
+  "remoteRun": 42482033378
+}

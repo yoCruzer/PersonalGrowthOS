@@ -1,0 +1,33 @@
+{
+  "status": "SUCCESS_VERIFIED",
+  "run": 42482033378,
+  "head": "a72befa6c46516ede572e9d561c735c07d8cf5fc",
+  "checkout": "f873cca66e31414be5d4769c3fcd9a4481e0b9a8",
+  "artifact": 13618106722,
+  "zipSHA256": "4546e77f14b1497d5dfbe3803ba0843e549a7d6f20c92728fcb3c1c6a316de2b",
+  "zipMembers": 308,
+  "sourcePinsMatched": 50,
+  "native": {
+    "protocol": 24,
+    "core": 17,
+    "sdk": 146,
+    "total": 187,
+    "failures": 0
+  },
+  "retainedGuardIndependent": 35,
+  "packagingChecks": 46,
+  "cloudOperations": 0,
+  "signedOwnerQualificationPerformedByCI": false,
+  "otherRegressionLogs": {
+    "environment.log": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8",
+    "formal-independent.log": "ab1520a7f8e818742e1b11ef1c4c24c4d157bb0e619b81643ceffef9e112ab52",
+    "guard-independent.log": "46ad1f11d242469f1c15e76113c9c050f17948dc5af786e6636f52e6f0c1d394",
+    "independent-regressions.log": "50c1c84b6baecf85fa88efbc988c57689ccca78b84e85d39671252996d3aabe8",
+    "locked-host-independent.log": "3c217c78f9fdb646f2732655d8d5dd6cd1e4a64facd97b1b751bffa1efa6d4d2",
+    "profile-allowance-independent.log": "5d43fca32008481582b961b9dbc193753cfce8aa49244d955caa9135fb6bc76b",
+    "schema-audit-tests.log": "ed55e79f73b351b219f416537904ce9b67192d9116ceefe912ab5a30a0f52b60",
+    "schema-independent.log": "86ca08815fac324912abb9ef0e003c490f3290eb3106422df71291d00fa7e3ad",
+    "sdk-independent.log": "4da10f00c5e1649630da63885e0e67362994dc7d54a35282321d17d193f35575",
+    "tests.log": "e5d254b8ebab47e7d9f88a326a7be181ed0e1ac074ae3d555aa947c992abbc90"
+  }
+}

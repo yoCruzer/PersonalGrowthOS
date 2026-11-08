@@ -1,0 +1,69 @@
+Building for debugging...
+[Pre-planning 1 / 356]
+[Constructing 108 / 777]
+[79 / 178]
+[80 / 179] SyncFoundation
+[90 / 226]
+[98 / 226]
+[100 / 226]
+[105 / 226]
+[109 / 226]
+[113 / 226]
+[115 / 226]
+[116 / 226]
+[122 / 226]
+[140 / 227] SyncSchema-product
+[142 / 229] SyncPayloadProbe-product
+[151 / 238] FormalProbeCore
+[153 / 238] FormalProbeCore
+[164 / 239]
+[165 / 240]
+[168 / 255] FormalDevelopmentProbe-product
+[184 / 255] SyncPayloadProbe-product
+[192 / 255] FormalDevelopmentHost-product
+[196 / 255] FormalDevelopmentSDK
+[208 / 258] SyncPayloadProbe-product
+[214 / 258] FormalDevelopmentSDK
+[214 / 258] FormalDevelopmentHost-product
+[219 / 260] FormalDevelopmentHost-product
+[236 / 297] FormalDevelopmentSDK
+[246 / 298]
+[252 / 298]
+[253 / 310]
+[256 / 310]
+[257 / 310]
+[270 / 310] SyncFoundationTests-product
+[283 / 310] FormalProbeCoreTests-product
+[286 / 310] FormalDevelopmentSDKTests-product
+[290 / 310] FormalDevelopmentSDKTests-product
+[296 / 310] FormalDevelopmentSDKTests-product
+[304 / 310] FormalDevelopmentSDKTests-product
+[306 / 310] FormalDevelopmentSDKTests-product
+Build complete! (7.98秒)
+Test Suite 'Selected tests' started at 2026-11-08 14:34:27.462.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 14:34:27.463.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 14:34:27.463.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 14:34:27.463.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 14:34:27.522.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 14:34:27.523.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 14:34:27.523.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 14:34:27.523.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 14:34:27.565.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 14:34:27.565.
+Test Suite 'IndependentGuardedRunnerTests' started at 2026-11-08 14:34:27.565.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentOldRunLateFatalCancelsNewWindowOnSameRunnerAndLedger]' started.
+/private/tmp/PGOS-GuardedReview-skwrnv9m/crossrun-red/package/Tests/FormalDevelopmentSDKTests/IndependentGuardedRunnerTests.swift:282: error: -[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentOldRunLateFatalCancelsNewWindowOnSameRunnerAndLedger] : Asynchronous wait failed: Exceeded timeout of 2 seconds, with unfulfilled expectations: "old run fatal must cancel current run".
+/private/tmp/PGOS-GuardedReview-skwrnv9m/crossrun-red/package/Tests/FormalDevelopmentSDKTests/IndependentGuardedRunnerTests.swift:286: error: -[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentOldRunLateFatalCancelsNewWindowOnSameRunnerAndLedger] : XCTAssertTrue failed - Late failure must reach the new active context without another callback
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentOldRunLateFatalCancelsNewWindowOnSameRunnerAndLedger]' failed (4.232 seconds).
+Test Suite 'IndependentGuardedRunnerTests' failed at 2026-11-08 14:34:31.797.
+	 Executed 1 test, with 2 failures (0 unexpected) in 4.232 (4.232) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' failed at 2026-11-08 14:34:31.797.
+	 Executed 1 test, with 2 failures (0 unexpected) in 4.232 (4.232) seconds
+Test Suite 'Selected tests' failed at 2026-11-08 14:34:31.797.
+	 Executed 1 test, with 2 failures (0 unexpected) in 4.232 (4.233) seconds
+Note: Some test targets reported failures:
+  - FormalDevelopmentSDKTests (XCTest)

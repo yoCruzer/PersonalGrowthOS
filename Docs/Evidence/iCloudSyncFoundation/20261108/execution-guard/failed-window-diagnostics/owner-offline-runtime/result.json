@@ -1,0 +1,27 @@
+{
+  "operation": "OFFLINE_RUNTIME_ONLY",
+  "checks": [
+    {
+      "index": 0,
+      "exit": 0,
+      "elapsedSeconds": 0.305854959
+    },
+    {
+      "index": 1,
+      "exit": 0,
+      "elapsedSeconds": 0.07605404199999999
+    },
+    {
+      "index": 2,
+      "exit": 0,
+      "elapsedSeconds": 0.07043041699999997
+    },
+    {
+      "index": 3,
+      "exit": 0,
+      "elapsedSeconds": 0.08322458299999996
+    }
+  ],
+  "cloudOperations": 0,
+  "keychainOperations": 0
+}

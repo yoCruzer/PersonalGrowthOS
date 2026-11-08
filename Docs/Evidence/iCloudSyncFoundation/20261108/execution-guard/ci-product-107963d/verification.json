@@ -1,0 +1,28 @@
+{
+  "source": "107963dcddd71da1ff15f623a44b41dfd1bd5b11",
+  "checkout": "68a637be9f68ff93423ceda5501ebb0561c104c3",
+  "run": 42467777172,
+  "result": "SUCCESS",
+  "unit": {
+    "total": 599,
+    "passed": 598,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Isolated 32MB HFS+ low-space image unavailable"
+  },
+  "smoke": {
+    "passed": 5,
+    "failed": 0
+  },
+  "releaseUnsignedBundles": 3,
+  "optionalExtendedUI": "CONDITIONALLY_SKIPPED",
+  "runtimeWarnings": {
+    "unit": [],
+    "smoke": []
+  },
+  "artifacts": {
+    "unit": "c11fc026b33ea8640b5d6cbf34e3d131d67115b983cd83cf7765a92928f8c5a4",
+    "release": "ea4ce4a74a88c36ea9ee0d494f7e3a682c4160821e37478fd11f1032aa2a0a5e",
+    "smoke": "6ed8988601d4000875c3ab455b79a788b448631fde3b21d5e58caaeec7e777f3"
+  }
+}

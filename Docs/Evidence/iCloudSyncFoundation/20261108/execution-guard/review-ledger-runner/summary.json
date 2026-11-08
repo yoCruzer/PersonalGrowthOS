@@ -1,0 +1,19 @@
+{
+  "finalIndependentPassed": 20,
+  "runnerIndependent": 9,
+  "ledgerIndependent": 11,
+  "failed": 0,
+  "scopeSourceMismatches": [],
+  "red": {
+    "tests": 1,
+    "failedAssertions": 2,
+    "reason": "Old run late evidence fatal did not actively cancel a new legitimate window on same runner and ledger"
+  },
+  "finalBehavior": "Permanent global poison latches before bounded recursive active-context fatal/cancellation; subsequent starts reject",
+  "cloudOperations": 0,
+  "realKeychainWrites": 0,
+  "limits": [
+    "Prior19 report retains its original source snapshot; this20 uses the new source manifest",
+    "New production entry is reviewed separately, not covered by these20"
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "complete-current-source-map-and-reviewed-pins",
+      "passed": true
+    },
+    {
+      "check": "receipt-and-actual-compiler-source-snapshot",
+      "passed": true
+    },
+    {
+      "check": "build-success-without-cloud-or-signing-authority",
+      "passed": true
+    },
+    {
+      "check": "unsigned-binary-receipt",
+      "passed": true
+    },
+    {
+      "check": "signed-copy-retains-exact-unsigned-receipt",
+      "passed": true
+    },
+    {
+      "check": "signed-info-bound-to-reviewed-receipt",
+      "passed": true
+    },
+    {
+      "check": "external-entitlement-candidate-bound-to-receipt",
+      "passed": true
+    },
+    {
+      "check": "offline-input-mode-and-canonical-bytes",
+      "passed": true
+    },
+    {
+      "check": "offline-receipt-byte-binding",
+      "passed": true
+    },
+    {
+      "check": "offline-source-pins-map-and-byte-binding",
+      "passed": true
+    },
+    {
+      "check": "signed-executable-and-profile-byte-binding",
+      "passed": true
+    },
+    {
+      "check": "independent-strict-code-signature-verification",
+      "passed": true
+    },
+    {
+      "check": "actual-code-directory-team-and-independent-bundle",
+      "passed": true
+    },
+    {
+      "check": "actual-applied-entitlements-match-reviewed-candidate",
+      "passed": true
+    },
+    {
+      "check": "existing-execution-report-bound-to-binary-and-request",
+      "passed": true
+    },
+    {
+      "check": "existing-real-runtime-qualified-signature-device-session-path",
+      "passed": true
+    },
+    {
+      "check": "existing-runtime-report-makes-no-cloud-owner-or-p0-claim",
+      "passed": true
+    }
+  ],
+  "passed": 17,
+  "failed": 0,
+  "sourceFiles": 40,
+  "signedBinarySHA256": "9291c390e9dbbf8b6999dbe06b87f45769be53f4e76744e7f5139298c867577e",
+  "codeDirectoryHash": "0ffd234eccb190959d51684746e0ffe4ca2c5e89",
+  "profileSHA256": "4456877adea83b7a24f71d198265ae48408821474f6ee56fb492c9f54e5df754",
+  "packagingReceiptSHA256": "1b8abd8c52c40f961eca87520084e3edc1b5217864abcb3c8feb719c49753cbb",
+  "sourcePinsSHA256": "83746bcb0948e750964cd73daf19b1e3342ebf8915182137bdb5a7711bd7b78b",
+  "reviewedRuntimeReportSHA256": "85ea9756cf52e96859cdf78cd6d2b388f81d629a16809c35cd0322bfbfe39641",
+  "applicationReexecuted": false,
+  "cloudOperations": 0,
+  "privateCertificateOrDeviceValuesPublished": false,
+  "limits": [
+    "Existing signed runtime observation was independently rebound, not rerun.",
+    "This verifies offline artifact/source/signing correspondence, not test iCloud identity or real service behavior.",
+    "No raw profile, certificates, device identifiers or Apple account values copied or emitted."
+  ]
+}

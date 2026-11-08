@@ -1,0 +1,13 @@
+{
+  "source": "107963dcddd71da1ff15f623a44b41dfd1bd5b11",
+  "checkout": "68a637be9f68ff93423ceda5501ebb0561c104c3",
+  "run": 42467777146,
+  "result": "SUCCESS",
+  "native": 156,
+  "independentExecution": 35,
+  "packagingChecks": 38,
+  "artifactID": 13611839990,
+  "artifactSHA256": "49f8090aba33a2e4d7adfb9a554e7802d440aa20630badad816775f39dfbc6b7",
+  "artifactMembers": 308,
+  "sourceFilesMatched": 40
+}

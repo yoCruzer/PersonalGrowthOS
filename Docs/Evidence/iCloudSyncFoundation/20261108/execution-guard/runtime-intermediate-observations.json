@@ -1,0 +1,88 @@
+[
+  {
+    "candidate": "runtime-intermediate",
+    "report": {
+      "accountQualification": "NOT_RUN",
+      "actualServiceAccess": "NOT_RUN",
+      "mode": "OFFLINE_ONLY",
+      "networkAuthorized": false,
+      "networkOperations": 0,
+      "operation": "RUNNING_SELF_QUALIFICATION",
+      "ownerApprovalVerified": false,
+      "p0Passed": false,
+      "rejection": "selfSignatureInvalid",
+      "signatureProfileDeviceVerified": false,
+      "status": "NOT_READY"
+    },
+    "execution": {
+      "exit": 2,
+      "binarySHA256": "12ae21d43f31914ec6c55d06d937fef9ba9deb6067c69bd3831c714d7f0d04d0",
+      "requestSHA256": "a2628d0aea6d4ff26c05468a573c18d7b3a3e895dec5703b167221c1ab5bd968"
+    }
+  },
+  {
+    "candidate": "runtime-diagnostic",
+    "report": {
+      "accountQualification": "NOT_RUN",
+      "actualServiceAccess": "NOT_RUN",
+      "diagnosticStage": "dynamicValidity",
+      "diagnosticStatus": -67070,
+      "mode": "OFFLINE_ONLY",
+      "networkAuthorized": false,
+      "networkOperations": 0,
+      "operation": "RUNNING_SELF_QUALIFICATION",
+      "ownerApprovalVerified": false,
+      "p0Passed": false,
+      "rejection": "selfSignatureInvalid",
+      "signatureProfileDeviceVerified": false,
+      "status": "NOT_READY"
+    },
+    "execution": {
+      "exit": 2,
+      "binarySHA256": "f6cf448d75e73bbebebf93f74477dfc64808cf305ef23422e538d4eebceed932",
+      "requestSHA256": "9700c2e5cfb168cc7fd1dd83e594e42660dc92eecf288e05149d8e81e4cf91e8"
+    }
+  },
+  {
+    "candidate": "runtime-flags-fixed",
+    "report": {
+      "accountQualification": "NOT_RUN",
+      "actualServiceAccess": "NOT_RUN",
+      "mode": "OFFLINE_ONLY",
+      "networkAuthorized": false,
+      "networkOperations": 0,
+      "operation": "RUNNING_SELF_QUALIFICATION",
+      "ownerApprovalVerified": false,
+      "p0Passed": false,
+      "rejection": "profileTrustUnavailable",
+      "signatureProfileDeviceVerified": false,
+      "status": "NOT_READY"
+    },
+    "execution": {
+      "exit": 2,
+      "binarySHA256": "3862e389e567b126373dcc7762d0ee9bbb1ba07ea64569b62ff988e26398b77d",
+      "requestSHA256": "bb2d0d04129e5bc131bd15b60d39a058dd5b4310d53c02da70247a5b98ec7961"
+    }
+  },
+  {
+    "candidate": "runtime-purpose-fixed",
+    "report": {
+      "accountQualification": "NOT_RUN",
+      "actualServiceAccess": "NOT_RUN",
+      "mode": "OFFLINE_ONLY",
+      "networkAuthorized": false,
+      "networkOperations": 0,
+      "operation": "RUNNING_SELF_QUALIFICATION",
+      "ownerApprovalVerified": false,
+      "p0Passed": false,
+      "rejection": "deviceEvidenceUnavailable",
+      "signatureProfileDeviceVerified": false,
+      "status": "NOT_READY"
+    },
+    "execution": {
+      "exit": 2,
+      "binarySHA256": "b6cf269ca93f2fcef7d355f5565ca02325349fac3083bacf3b39a97170d917bc",
+      "requestSHA256": "adece21f3a3a5d12bbe7d362ad3bb9fce99840ec28bcf20280bdf1defffca397"
+    }
+  }
+]

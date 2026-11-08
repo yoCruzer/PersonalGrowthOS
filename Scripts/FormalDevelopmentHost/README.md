@@ -57,9 +57,47 @@ not a graphical client; use `Contents/MacOS/FormalDevelopmentHost inspect ...`, 
 Finder launch. Future actual Mac signing/profile qualification and real authority
 factory remain external gates. This does not authorize signing or network execution.
 
+The additional `inspect-runtime BASE64_REQUEST` command performs offline self-signing
+inspection and returns a report, never a capability. Its canonical JSON input has
+`mode: OFFLINE_RUNTIME_INSPECTION`, the five reviewed hashes in `runtime`, and base64
+`packagingReceipt` / `sourcePins` bytes. It reads its own sealed app; no caller artifact
+path or CloudKit/account operation is accepted. An unqualified app or unavailable
+device evidence returns exit2 / NOT_READY. Even a SELF_QUALIFICATION_PASS does not
+authorize a cloud request. `inspect-fixture` remains a parameterless, fixed synthetic
+offline test. The separate `enroll-guard BASE64_APPROVAL EXPECTED_SHA` and `run-approved BASE64_APPROVAL EXPECTED_SHA` commands require a canonical, explicitly approved purpose/window and real self qualification. They must not be invoked without the corresponding Owner authorization; malformed/template inputs reject before storage or CloudKit. Enrollment is the only path allowed to initialize the local guard. Each process permits one production attempt, and the durable ledger forbids replay across processes. Actual provisioning and
+offline signed observations are recorded separately in the project execution evidence.
+
+`export-run RUN_UUID` reads only the matching run and execution ledger under this
+probe's OS-selected Application Support directory. It never opens the Keychain,
+constructs a CloudKit container, acquires a ledger lock, repairs state, or executes a
+window. Output is private JSON with exact file bytes and SHA256 values. Keep it out
+of public Git/PR attachments. A complete export does not authenticate ledger HMACs
+or establish P0 success; rejected/missing sections are explicitly listed. File
+allowlists, ownership, no-follow/single-link checks and bounded reads reject unsafe
+inputs. A failed cloud window remains consumed after export.
+
+`closeout-unknown BASE64_APPROVAL EXPECTED_SHA` is a separately approved local
+mutation. Its canonical envelope binds a fresh bounded Owner window, the current
+signed artifact, the exact old run/dataset/plan, and the reviewed ledger head's
+sequence and file SHA256. It authenticates the existing ledger/Keychain anchor,
+holds the existing lock, and appends one `ownerClosedUnknown` terminal containing
+the complete approval digest. It never constructs a CloudKit container, resets an
+anchor, deletes evidence, or revives an old plan. A new cloud run still requires
+its own explicit approval and fresh run/dataset. Older binaries may reject the new
+terminal case; fail-closed rollback is expected, not a reason to remove history.
+
 File access uses held directory fds, exclusive creation and no-follow flags. Before
 and after external build operations it verifies directory identities. Caller-owned
 immutable source/output leases are still required: URL-based compiler paths cannot
 claim protection against a malicious same-user ABA replacement. This is a repeatable
 build workflow with source hashes, not a promise of bit-for-bit builds across Xcode,
 architectures, directory paths or compiler versions.
+
+Runtime evidence v2 validates restricted entitlements using the live process OS status;
+it no longer launches system_profiler or independently rechecks current UDID membership
+in the exact pinned embedded profile. Signature/profile authenticity and OS admission
+are separate facts. The legacy signatureProfileDeviceVerified is always false.
+inspect-runtime-async uses the same canonical request for four bounded MainActor/
+continuation observations, stopping on first failure, without Keychain or cloud access.
+Guarded top-level rejections retain whitelisted causes and never infer side effects.
+See Docs/ICLOUD_SYNC_RUNTIME_REPAIR_ZH.md for actual failures and validation limits.

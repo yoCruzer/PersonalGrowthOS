@@ -1,0 +1,61 @@
+{
+  "review": "Independent runtime OS status boundary review",
+  "result": "PASS_CORE_REPORT_AND_DOCUMENTATION",
+  "files": {
+    "Sources/FormalDevelopmentSDK/RuntimeSigningInspector.swift": {
+      "sha256": "8ba1098721c62323d0e4663a90d82a4e4eee02ff9400aefa4f8652fcedb22fd9",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentSDK/RuntimeInspectionEntry.swift": {
+      "sha256": "420e56410d5298acd6de9bceed93225faf28cd6933947c4728b2284800240648",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentSDK/GuardedBatchRunner.swift": {
+      "sha256": "4bbc93cdc00d52a8210a6020659f9e32493ebe7a44719eb1212ff17ef753c91c",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentHost/main.swift": {
+      "sha256": "6bc9e21bf74495f65b850f2e172d363d2300dbcbc19c017a15a52789f95b2724",
+      "matchesLive": true
+    },
+    "Tests/FormalDevelopmentSDKTests/IndependentRuntimeOSReviewTests.swift": {
+      "sha256": "fef230c42e5b91b45aaae9b44ee0a07e79afbf01b9af301c2fe76505a1410419",
+      "matchesLive": true
+    }
+  },
+  "syntheticTests": 2,
+  "failures": 0,
+  "cases": "64 bit-policy plist cases plus invalid number types and 3 malformed report inputs",
+  "log": "/private/tmp/PGOS-runtime-os-independent-review-final-20261108.log",
+  "scope": [
+    "Dynamic self status obtained through public SecCode API before and after disk checks",
+    "Require VALID and ENTITLEMENTS_VALIDATED, reject ADHOC and LINKER_SIGNED",
+    "Pinned embedded profile metadata/signature is separate from OS selected profile",
+    "No exact current UDID membership runtime claim",
+    "No real Keychain, cloud, private data or hardware report access"
+  ],
+  "recommendation": "RESOLVED: failed qualification emits NOT_VERIFIED",
+  "officialSources": [
+    "https://developer.apple.com/documentation/xcode/accessing-app-group-containers",
+    "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/SecCode.cpp",
+    "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/cskernel.cpp",
+    "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/osfmk/kern/cs_blobs.h"
+  ],
+  "documentationReview": {
+    "result": "PASS",
+    "documents": {
+      "Docs/ICLOUD_SYNC_RUNTIME_REPAIR_ZH.md": "64b3b66b605fec7662280fb95b978fc876abd8a3278ed10b4bf227f0c67efdfb",
+      "Docs/CURRENT_STATE.md": "14987a4bf056619e94439359c0cbc37d9a85a54ecd877716e48745ce54f777bc",
+      "Docs/CURRENT_TASK.md": "af02ab33f394fb8359c1d299d3567052760c62c634f9b9088c7f60dd757086dc",
+      "Docs/ICLOUD_SYNC_FORMAL_CLOSEOUT_WINDOW_ZH.md": "5bc01299097192895b15e11f27fe912567146559ca906f25ca5c0df885843308"
+    },
+    "findings": [
+      "Explicitly states OS validated entitlements do not identify the OS-selected profile or establish exact embedded profile UDID membership",
+      "V2 retains signatureProfileDeviceVerified=false and exact membership NOT_RECHECKED_AT_RUNTIME",
+      "Developer-session offline success is not reported as haha or CloudKit success",
+      "Closed old window is historical and not repeatable; P0/P1/P2 remain unpassed",
+      "Published four-phase status and timing agree with runtime-fix/async-summary.json"
+    ],
+    "evidenceBoundary": "Read public/redacted summaries and source; did not independently inspect private original logs, user data, Keychain, or live CloudKit. Author-reported full-suite/product-CI counts were checked against published summaries, not independently rerun."
+  }
+}

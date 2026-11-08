@@ -1,0 +1,72 @@
+Building for debugging...
+[Pre-planning 1 / 356]
+[Constructing 396 / 777]
+[79 / 178]
+[80 / 179] SyncFoundation
+[92 / 226]
+[99 / 226]
+[100 / 226]
+[105 / 226]
+[109 / 226]
+[113 / 226]
+[115 / 226]
+[116 / 226]
+[122 / 226]
+[142 / 229] SyncPayloadProbe-product
+[152 / 238] SyncPayloadProbe-product
+[165 / 240]
+[168 / 255] FormalDevelopmentProbe-product
+[179 / 255] SyncFoundation
+[187 / 255] FormalDevelopmentSDK
+[198 / 255] FormalDevelopmentSDK
+[208 / 258] FormalDevelopmentSDK
+[213 / 258] SyncSchema-product
+[214 / 258] FormalDevelopmentHost-product
+[219 / 260] FormalDevelopmentSDK
+[233 / 297] FormalDevelopmentSDK
+[243 / 298]
+[248 / 298]
+[252 / 298]
+[253 / 310]
+[256 / 310]
+[257 / 310]
+[271 / 310] FormalProbeCoreTests-product
+[285 / 310] FormalDevelopmentSDKTests-product
+[287 / 310] FormalDevelopmentSDKTests-product
+[296 / 310] FormalDevelopmentSDKTests-product
+[302 / 310] FormalProbeCoreTests-product
+[306 / 310] FormalDevelopmentSDKTests-product
+Build complete! (7.52秒)
+Test Suite 'Selected tests' started at 2026-11-08 17:30:09.358.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 17:30:09.359.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 17:30:09.359.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 17:30:09.359.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 17:30:09.412.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 17:30:09.412.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 17:30:09.412.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 17:30:09.412.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 17:30:09.454.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 17:30:09.455.
+Test Suite 'IndependentProductionEntryTests' started at 2026-11-08 17:30:09.455.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testMissingAncestorCannotTriggerRecursiveCreation]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testMissingAncestorCannotTriggerRecursiveCreation]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOfflineEntryFailureDoesNotClaimOSOrPathQualification]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOfflineEntryFailureDoesNotClaimOSOrPathQualification]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOSSessionDigestHasDomainAndEverySessionDimension]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOSSessionDigestHasDomainAndEverySessionDimension]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testPublicEntrypointsRejectMalformedInputBeforeAnyAuthorityAndDoNotCallFatal]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testPublicEntrypointsRejectMalformedInputBeforeAnyAuthorityAndDoNotCallFatal]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testReadOnlyDoesNotCreateAndEnrollmentCreatesOnlySelectedLeaf]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testReadOnlyDoesNotCreateAndEnrollmentCreatesOnlySelectedLeaf]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testSymlinkParentAndLeafAndRegularFileAreRejectedWithoutMutation]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testSymlinkParentAndLeafAndRegularFileAreRejectedWithoutMutation]' passed (0.001 seconds).
+Test Suite 'IndependentProductionEntryTests' passed at 2026-11-08 17:30:09.459.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 17:30:09.459.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 17:30:09.459.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.004 (0.005) seconds

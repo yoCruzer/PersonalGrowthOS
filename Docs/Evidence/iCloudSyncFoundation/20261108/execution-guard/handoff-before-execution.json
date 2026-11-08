@@ -1,0 +1,20 @@
+{
+  "initialAttempt": {
+    "source": "Owner supplied terminal traceback",
+    "failedAt": "Python read of staged signed binary before digest verification",
+    "error": "PermissionError",
+    "errno": 13,
+    "probeProcessStarted": false,
+    "guardEnrollmentStarted": false,
+    "cloudCallsStarted": false
+  },
+  "deliveryFix": {
+    "method": "Extract fixed archive into haha-owned private temporary directory",
+    "signedArtifactBytesChanged": false,
+    "allFiveArchiveMembersByteMatched": true,
+    "runCommandUnchanged": true,
+    "oldStagingRetained": true
+  },
+  "state": "WAITING_FOR_OWNER_CORRECTED_COMMAND_RESULT",
+  "permission": "Previously approved fixed window remains applicable; no cloud attempt consumed"
+}

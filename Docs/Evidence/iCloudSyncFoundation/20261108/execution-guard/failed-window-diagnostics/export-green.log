@@ -1,0 +1,47 @@
+Building for debugging...
+[1 / 5]
+[2 / 6] FormalDevelopmentSDK
+[3 / 7] FormalDevelopmentSDK
+[8 / 12] FormalDevelopmentSDK
+[11 / 13] FormalDevelopmentSDKTests-product
+[14 / 16] FormalDevelopmentSDKTests-product
+[18 / 19] FormalDevelopmentSDKTests-product
+[23 / 27] FormalDevelopmentHost-product
+[26 / 27] FormalDevelopmentHost-product
+Build complete! (1.60秒)
+Test Suite 'Selected tests' started at 2026-11-08 18:32:00.233.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 18:32:00.234.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 18:32:00.234.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:32:00.234.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 18:32:00.284.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 18:32:00.284.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 18:32:00.284.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:32:00.284.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 18:32:00.323.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 18:32:00.323.
+Test Suite 'EvidenceExportTests' started at 2026-11-08 18:32:00.323.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testExactRawBytesAndHashesWithoutMutationOrAuthenticationClaim]' started.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testExactRawBytesAndHashesWithoutMutationOrAuthenticationClaim]' passed (0.004 seconds).
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testMissingRunNeverCreatesItAndStillPreservesLedgerBytes]' started.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testMissingRunNeverCreatesItAndStillPreservesLedgerBytes]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testSymlinkOrUnexpectedFileRejectsWholeSectionWithoutFollowing]' started.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testSymlinkOrUnexpectedFileRejectsWholeSectionWithoutFollowing]' passed (0.002 seconds).
+Test Suite 'EvidenceExportTests' passed at 2026-11-08 18:32:00.330.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.007 (0.007) seconds
+Test Suite 'IndependentEvidenceExportTests' started at 2026-11-08 18:32:00.330.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testExactBytesHashAndReadOnlyClaimRemainDistinctFromLedgerAuthentication]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testExactBytesHashAndReadOnlyClaimRemainDistinctFromLedgerAuthentication]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testRootSymlinkAndOversizedMemberNeverClaimCompleteSection]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testRootSymlinkAndOversizedMemberNeverClaimCompleteSection]' passed (0.001 seconds).
+Test Suite 'IndependentEvidenceExportTests' passed at 2026-11-08 18:32:00.334.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.003 (0.003) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 18:32:00.334.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.010 (0.010) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:32:00.334.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.010 (0.011) seconds

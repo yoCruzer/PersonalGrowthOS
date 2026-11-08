@@ -1,0 +1,13 @@
+{
+  "run": 42473375861,
+  "status": "SUCCESS",
+  "code": "dd450994f6dca0073678719a60ae8941c417065b",
+  "checkout": "351f2e6bac722610e35f6787265b081f327fa397",
+  "artifactID": 13614083843,
+  "artifactSHA256": "1c0a0379780899af730949cac585bc03d243108edca47acfc0cccea970eb0337",
+  "sourceFiles": 43,
+  "sourceHashesMatch": true,
+  "nativeTests": 164,
+  "independentGuardTests": 35,
+  "coversCloseoutImplementation": false
+}

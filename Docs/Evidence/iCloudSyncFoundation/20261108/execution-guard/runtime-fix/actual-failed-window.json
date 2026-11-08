@@ -1,0 +1,38 @@
+{
+  "code": "b3cd0136e1f18c0994908c59a8e5e59e8817ca2a",
+  "closeoutExit": 0,
+  "newRunExit": 1,
+  "readOnlyExportExits": [
+    0,
+    0
+  ],
+  "appendedTerminalSequence": 6,
+  "appendedTerminalSHA256": "2b786f232c3921e0accebbd9c4c652d2346f5f9ffefb914922acbf7a000ece61",
+  "terminalMeaning": "ownerClosedUnknown; no historical cloud-success inference",
+  "newRunDirectoryAvailable": false,
+  "newLedgerConsumptionObserved": false,
+  "explicitAccountAPICalls": 0,
+  "transportCalls": 0,
+  "basis": "exported immutable ledger/run sections plus source ordering and process-specific system logs; no OS-level service activity claim",
+  "rootCauseEvidence": "run hardware-report subprocess timed out after five seconds and returned no SPHardwareDataType items",
+  "exactApplicationRejectionCode": "NOT_RECORDED_BY_OLD_TOP_LEVEL_CATCH",
+  "retryAuthorized": false,
+  "p0Passed": false,
+  "privateOriginalSHA256": {
+    "old-export.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "run-approved.stderr": "7a12f7450844907552651fa78f81733eb28cafd292af9b194a5e7440402b5058",
+    "run-approved.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "commands.json": "79df3c56b8dccbe85057e8f9dfa6a2eed7c3d95c3c8a6e47da3d5ad01472caaa",
+    "new-export.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "new-probe-export.json": "a3078d58165c243b61cd88d213229e77bcb3d945c6e25b1bcdc36befec590acd",
+    "closeout-unknown.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "old-probe-export.json": "660d64b65d8395c010421e9040b05d3d52a0a2710d7a965b824051fdf9e1ed56",
+    "run-approved-approval.json": "69b37104e10e95a6f636241ec64de5617f41ab70b9895e3f6c011c5b44c858c1",
+    "closeout-unknown.stdout": "2420aab6888828270c8408cc7081b9b4a9c8bfa5eafeedc1cb99746a8e693466",
+    "closeout-unknown-approval.json": "eb458e9b752a9e33353542357f97eebaef437a58be06e33d4bff62198075cedc"
+  },
+  "privateSystemLogSHA256": {
+    "pgos-probe-process-log-1F834BD0.json": "0bac8bbbd61f2a06d2aa70ebfdf3ef370a0e61de0d474cd272876d9c0e299cd2",
+    "pgos-profiler-log-1F834BD0.json": "8e14806cfe3f957b5305d8b339ea64524e44551b520128a3b88cb6941835968f"
+  }
+}

@@ -1,0 +1,14 @@
+test_expiry_between_commands_never_reports_success (__main__.WrapperTests) ... FAIL
+
+======================================================================
+FAIL: test_expiry_between_commands_never_reports_success (__main__.WrapperTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/PGOS-wrapper-independent-review-20261108/old_repro.py", line 79, in test_expiry_between_commands_never_reports_success
+    code,calls=self.exercise(times=[1000,1001,1901]); self.assertNotEqual(code,0)
+AssertionError: 0 == 0
+
+----------------------------------------------------------------------
+Ran 1 test in 0.007s
+
+FAILED (failures=1)

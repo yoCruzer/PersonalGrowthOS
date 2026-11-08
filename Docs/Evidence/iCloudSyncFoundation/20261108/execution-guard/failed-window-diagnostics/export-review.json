@@ -1,0 +1,27 @@
+{
+  "review": "Narrow independent read-only evidence exporter review",
+  "sourceSHA256": {
+    "Sources/FormalDevelopmentSDK/EvidenceExport.swift": "befc3a9f8eb7d9d45f8686df325016f7190d76aa4c3e9ec4cb3a81e8cdab8467",
+    "Sources/FormalDevelopmentHost/main.swift": "0fca556a2841c82be893993b19010c996089251d118e347d3748dac1d72017b5",
+    "Tests/FormalDevelopmentSDKTests/IndependentEvidenceExportTests.swift": "99712248d7666326a2f76ff45b140c1ce56f96b60daf5971cb7acbc39de0297a"
+  },
+  "originalHardlinkReproducer": {
+    "tests": 1,
+    "assertionFailures": 4,
+    "log": "/private/tmp/pgos-export-review-hfm9ers2/red.log"
+  },
+  "finalFocusedTests": {
+    "author": 3,
+    "independent": 3,
+    "failures": 0,
+    "log": "/private/tmp/pgos-export-review-hfm9ers2/green.log"
+  },
+  "realDataRead": false,
+  "cloudOperations": 0,
+  "keychainOperations": 0,
+  "limits": [
+    "No real signed export executed",
+    "Ledger HMAC authentication intentionally not performed",
+    "No claim that exported capture proves cloud result"
+  ]
+}

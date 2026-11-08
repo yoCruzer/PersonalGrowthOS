@@ -1,0 +1,43 @@
+{
+  "result": "PASS_AFTER_NONZERO_FAILURE_EXIT_FIX",
+  "scriptSHA256": "28a8e1e57f907c02589a35bd7ff1966567493ee4384121f3bd15f6b16234c371",
+  "manifestSHA256": "4c4932ca3d84901e2a26538ca38b0cee2b8cbb655f8263c9d99ffa35dfa471f7",
+  "artifactConsistency": {
+    "checks": {
+      "request": true,
+      "archive": true,
+      "requestMode": true,
+      "binaryRequestBinding": true,
+      "uniqueNames": true,
+      "safeRegularMembers": true,
+      "binary": true,
+      "profile": true,
+      "receipt": true,
+      "pins": true,
+      "info": true,
+      "sourceMapsEqual": true,
+      "sourcePinsMatchCheckout": true
+    },
+    "memberCount": 5,
+    "sourcePinCount": 50,
+    "pass": true
+  },
+  "mockTests": 8,
+  "failures": 0,
+  "testsLog": "/private/tmp/PGOS-offline-wrapper-review-20261108/tests.log",
+  "coverage": [
+    "Exactly one fixed inspect-runtime-async invocation",
+    "UID mismatch and input-hash mismatch stop before execution",
+    "Zip traversal and symlink members stop before execution",
+    "Binary hash mismatch stops before execution",
+    "Rejection preserves stdout/stderr and returns nonzero",
+    "Timeout preserves partial stdout/stderr and returns nonzero, no retry"
+  ],
+  "permissionsObserved": "Root 0700 plus one named-user read/search ACL; four inputs 0600 plus same named-user read-only ACL. Parent confirmed this principal is haha UID502. No account switch or real cross-user execution performed.",
+  "limitations": [
+    "All subprocesses mocked; synthetic archives and fake identities only",
+    "Real signed probe and actual haha session were NOT_RUN by reviewer",
+    "No real Keychain, CloudKit, business data, or old guard access",
+    "Artifact integrity compared ZIP/request/receipt/pins/checkout; existing signature qualification evidence supplied by parent"
+  ]
+}

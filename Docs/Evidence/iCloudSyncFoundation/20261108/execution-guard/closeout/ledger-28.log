@@ -1,0 +1,87 @@
+warning: /Users/himini/Library/org.swift.swiftpm/configuration is not accessible or not writable, disabling user-level cache features.
+warning: /Users/himini/Library/org.swift.swiftpm/security is not accessible or not writable, disabling user-level cache features.
+warning: /Users/himini/Library/Caches/org.swift.swiftpm is not accessible or not writable, disabling user-level cache features.
+warning: 'syncfoundation': failed storing manifest for 'syncfoundation' in cache: attempt to write a readonly database
+Building for debugging...
+[1 / 2] SyncFoundation-product
+[2 / 7] FormalDevelopmentSDKTests-product
+[4 / 9] FormalDevelopmentSDKTests-product
+[9 / 13] FormalDevelopmentSDKTests-product
+Build complete! (0.98秒)
+Test Suite 'Selected tests' started at 2026-11-08 19:00:18.568.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 19:00:18.568.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 19:00:18.568.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:00:18.569.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' started at 2026-11-08 19:00:18.621.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 19:00:18.622.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 19:00:18.622.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:00:18.622.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' started at 2026-11-08 19:00:18.662.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 19:00:18.662.
+Test Suite 'ExecutionLedgerTests' started at 2026-11-08 19:00:18.662.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAbruptSubprocessExitPreservesConsumedAndIntentOrRejectsCommitGap]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAbruptSubprocessExitPreservesConsumedAndIntentOrRejectsCommitGap]' passed (2.070 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAccountHMACStablePrivateDomainAndNeverStoredPlaintext]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAccountHMACStablePrivateDomainAndNeverStoredPlaintext]' passed (0.005 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAnchorCommittedThenJournalChangedBeforePermitReturnRejects]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAnchorCommittedThenJournalChangedBeforePermitReturnRejects]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCancellationLateObservationCannotAdvanceOrAttachToAnotherPermit]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCancellationLateObservationCannotAdvanceOrAttachToAnotherPermit]' passed (0.015 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutAlreadyTerminalAndRepeatedCloseoutRejectWithoutMutation]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutAlreadyTerminalAndRepeatedCloseoutRejectWithoutMutation]' passed (0.008 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutAnchorCommitGapPoisonsWithoutRewritingPriorHistory]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutAnchorCommitGapPoisonsWithoutRewritingPriorHistory]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutAppendsUnknownAfterExpiryPreservesHistoryAndOnlyNewDistinctPlanCanRun]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutAppendsUnknownAfterExpiryPreservesHistoryAndOnlyNewDistinctPlanCanRun]' passed (0.011 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutRejectsActiveInstanceAndConcurrentOpen]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutRejectsActiveInstanceAndConcurrentOpen]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutWrongHeadRunDatasetPlanAndApprovalLeaveAllBytesUnchanged]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCloseoutWrongHeadRunDatasetPlanAndApprovalLeaveAllBytesUnchanged]' passed (0.004 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCrashAfterIntentIsUnresolvedAndCannotResumeOrStartNewRun]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCrashAfterIntentIsUnresolvedAndCannotResumeOrStartNewRun]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFailureAndUnknownReturnNeverValidateOrStartNextRequest]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFailureAndUnknownReturnNeverValidateOrStartNextRequest]' passed (0.010 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFirstQualificationNeedsConsumedPermitAndStrictOrder]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFirstQualificationNeedsConsumedPermitAndStrictOrder]' passed (0.005 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFrozenWallCannotExtendWindowPastMonotonicDeadline]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFrozenWallCannotExtendWindowPastMonotonicDeadline]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFullDurableQualificationAndFiveStagesWithTenAccountChecks]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFullDurableQualificationAndFiveStagesWithTenAccountChecks]' passed (0.384 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testJournalDurableButAnchorUpdateFailurePoisonsAndNeverRetries]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testJournalDurableButAnchorUpdateFailurePoisonsAndNeverRetries]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testLockReplacementAndSymlinkRootReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testLockReplacementAndSymlinkRootReject]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testMissingAnchorJournalAndCorruptAnchorFailClosedWithoutRepair]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testMissingAnchorJournalAndCorruptAnchorFailClosedWithoutRepair]' passed (0.006 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testMultipleUnresolvedAuthenticatedHistoryRejectedBeforeCloseoutAndNeverRepaired]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testMultipleUnresolvedAuthenticatedHistoryRejectedBeforeCloseoutAndNeverRepaired]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testOwnerWindowAndApprovalInputCannotBeReusedWithNewPlanAndIDs]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testOwnerWindowAndApprovalInputCannotBeReusedWithNewPlanAndIDs]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRecreatedLockCannotLetSecondOpenerBypassOriginalHeldLock]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRecreatedLockCannotLetSecondOpenerBypassOriginalHeldLock]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReopeningAfterQualificationCannotResetMonotonicWindow]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReopeningAfterQualificationCannotResetMonotonicWindow]' passed (0.013 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReplayCannotChangeOwnerWindowPlanOrOutput]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReplayCannotChangeOwnerWindowPlanOrOutput]' passed (0.004 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRootReplacementEvenWithCopiedJournalAndAnchorRejects]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRootReplacementEvenWithCopiedJournalAndAnchorRejects]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testSameProcessAndIndependentProcessCannotAcquireHeldLock]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testSameProcessAndIndependentProcessCannotAcquireHeldLock]' passed (0.063 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testValidAnchorWithTruncatedOrReorderedJournalCannotRollback]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testValidAnchorWithTruncatedOrReorderedJournalCannotRollback]' passed (0.005 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallAndMonotonicClockRollbackCannotGrantNewIntent]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallAndMonotonicClockRollbackCannotGrantNewIntent]' passed (0.004 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallMonotonicDriftRejectsEvenBeforeEnd]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallMonotonicDriftRejectsEvenBeforeEnd]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWrongAccountCannotValidateAndExpiredWindowStillPreservesReturns]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWrongAccountCannotValidateAndExpiredWindowStillPreservesReturns]' passed (0.035 seconds).
+Test Suite 'ExecutionLedgerTests' passed at 2026-11-08 19:00:21.330.
+	 Executed 28 tests, with 0 failures (0 unexpected) in 2.667 (2.668) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 19:00:21.330.
+	 Executed 28 tests, with 0 failures (0 unexpected) in 2.667 (2.668) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:00:21.330.
+	 Executed 28 tests, with 0 failures (0 unexpected) in 2.667 (2.668) seconds

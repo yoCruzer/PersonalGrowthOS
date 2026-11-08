@@ -1,0 +1,49 @@
+{
+  "result": "PASS_NARROW_REVIEW",
+  "files": {
+    "Sources/FormalDevelopmentSDK/ExecutionLedger.swift": {
+      "sha256": "bc3ff3d74fe4cf335756714456c8094e9cb4ce994962deee744ac25b9a533ca3",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentSDK/ExecutionLedgerTypes.swift": {
+      "sha256": "c7ebcf53c41c8ce36d0ad65fa8a983ff432f936d82adba7a2a5f429e273f91bb",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentSDK/OwnerCloseoutApproval.swift": {
+      "sha256": "87017e43d5445d760b80dc81a289673757fc38525d8dab58600982b02b42b808",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentSDK/OwnerExecutionApproval.swift": {
+      "sha256": "b7dfece26b97f03180d13a69e34af4f60206212f28cb477bcda7d9812405785b",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentSDK/GuardedExecutionEntry.swift": {
+      "sha256": "4a204092f1d53f36f8968fef73210f30b4b875e53d6ed8374d41a39a9f4eada6",
+      "matchesLive": true
+    },
+    "Sources/FormalDevelopmentHost/main.swift": {
+      "sha256": "2cecc40ccecc89bd3ddcdbdf8147d9a5a473b23635c68b83cee19a6c4ff87fbc",
+      "matchesLive": true
+    },
+    "Tests/FormalDevelopmentSDKTests/IndependentCloseoutReviewTests.swift": {
+      "sha256": "bebbc758d97484d6d37cc34f3eee021217d353b477f8b5c20219ab6ec52aaafc",
+      "matchesLive": true
+    }
+  },
+  "testCount": 3,
+  "failures": 0,
+  "log": "/private/tmp/PGOS-closeout-independent-review-20261108.log",
+  "coverage": [
+    "stale head after late observation rejects without mutation",
+    "closed development batch permanently rejects each old run/dataset/plan/window/approval identity",
+    "new batch needs separate qualification",
+    "outer approval SHA exactly anchored in terminal",
+    "prior record bytes preserved and tampering still rejected"
+  ],
+  "boundaries": [
+    "Synthetic fake anchor and clock only",
+    "No real Keychain or CloudKit",
+    "No production code edits",
+    "Production signed execution NOT_RUN"
+  ]
+}

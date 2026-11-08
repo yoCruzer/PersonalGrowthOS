@@ -1,0 +1,13 @@
+{
+  "codeCommit": "107963dcddd71da1ff15f623a44b41dfd1bd5b11",
+  "ownerTestSessionConfirmation": "已进入 haha，测试 iCloud 已确认",
+  "ownerWindowAuthorization": "授权本次固定 Development 窗口",
+  "condition": "CI final verification passes before execution",
+  "scope": "One local guard enrollment and one fixed synthetic Development batch",
+  "maximumSeconds": 900,
+  "maximumAccountAPICalls": 12,
+  "maximumTransportMethodInvocations": 5,
+  "productionAuthorized": false,
+  "actualCommandsExecuted": false,
+  "userExecutionRequired": "Developer tool UID differs from approved haha UID; Owner must start the prepared command within haha."
+}

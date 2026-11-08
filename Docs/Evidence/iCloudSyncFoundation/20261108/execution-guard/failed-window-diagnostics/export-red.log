@@ -1,0 +1,69 @@
+Building for debugging...
+[Pre-planning 1 / 356]
+[Planning deferred tasks]
+[79 / 178]
+[80 / 179] SyncFoundation
+[92 / 226]
+[99 / 226]
+[100 / 226]
+[105 / 226]
+[109 / 226]
+[113 / 226]
+[115 / 226]
+[116 / 226]
+[122 / 226]
+[141 / 228]
+[142 / 229] FormalProbeCore
+[151 / 238] FormalProbeCore
+[165 / 240]
+[168 / 255] FormalDevelopmentProbe-product
+[185 / 255] SyncPayloadProbe-product
+[194 / 255] FormalDevelopmentSDKTests-product
+[201 / 256] FormalProbeCore
+[204 / 257] SyncFoundationTests-product
+[208 / 258] FormalProbeCoreTests-product
+[216 / 260] FormalDevelopmentSDK
+[217 / 260] FormalDevelopmentProbe-product
+[232 / 297]
+[238 / 297] FormalDevelopmentSDK
+[246 / 298]
+[250 / 298] FormalDevelopmentHost-product
+[253 / 311]
+[256 / 311]
+[257 / 311]
+[270 / 311] SyncFoundationTests-product
+[284 / 311] FormalDevelopmentSDKTests-product
+[295 / 311] FormalProbeCoreTests-product
+[297 / 311] FormalDevelopmentSDKTests-product
+[299 / 311] SyncFoundationTests-product
+[307 / 311] FormalDevelopmentSDKTests-product
+Build complete! (8.35秒)
+Test Suite 'Selected tests' started at 2026-11-08 18:30:03.791.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 18:30:03.792.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 18:30:03.792.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:30:03.792.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 18:30:03.850.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 18:30:03.850.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 18:30:03.850.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:30:03.850.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 18:30:03.902.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 18:30:03.903.
+Test Suite 'IndependentEvidenceExportTests' started at 2026-11-08 18:30:03.903.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes]' started.
+/private/tmp/pgos-export-review-hfm9ers2/package/Tests/FormalDevelopmentSDKTests/IndependentEvidenceExportTests.swift:28: error: -[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes] : XCTAssertEqual failed: ("Optional([])") is not equal to ("Optional(["run"])")
+/private/tmp/pgos-export-review-hfm9ers2/package/Tests/FormalDevelopmentSDKTests/IndependentEvidenceExportTests.swift:29: error: -[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes] : XCTAssertTrue failed
+/private/tmp/pgos-export-review-hfm9ers2/package/Tests/FormalDevelopmentSDKTests/IndependentEvidenceExportTests.swift:28: error: -[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes] : XCTAssertEqual failed: ("Optional([])") is not equal to ("Optional(["ledger"])")
+/private/tmp/pgos-export-review-hfm9ers2/package/Tests/FormalDevelopmentSDKTests/IndependentEvidenceExportTests.swift:29: error: -[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes] : XCTAssertTrue failed
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes]' failed (0.117 seconds).
+Test Suite 'IndependentEvidenceExportTests' failed at 2026-11-08 18:30:04.021.
+	 Executed 1 test, with 4 failures (0 unexpected) in 0.117 (0.118) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' failed at 2026-11-08 18:30:04.021.
+	 Executed 1 test, with 4 failures (0 unexpected) in 0.117 (0.118) seconds
+Test Suite 'Selected tests' failed at 2026-11-08 18:30:04.021.
+	 Executed 1 test, with 4 failures (0 unexpected) in 0.117 (0.118) seconds
+Note: Some test targets reported failures:
+  - FormalDevelopmentSDKTests (XCTest)

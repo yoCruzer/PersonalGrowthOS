@@ -1,0 +1,42 @@
+{
+  "result": "PASS_AFTER_EXPORT_FAILURE_EXIT_FIX",
+  "scriptSHA256": "9792174ed8febbdc3a33d300344ffd8ceeb84fc8249630794304ddab2c21b6a8",
+  "scopeSHA256": "a51012194a2a04fcd1266f04514eea00676249f29ecfd8372baef22057cacc89",
+  "ownerApproved": false,
+  "testCount": 9,
+  "failures": 0,
+  "testLog": "/private/tmp/PGOS-fixed-window-review-20261108/final.log",
+  "artifactChecks": {
+    "checks": {
+      "ownerStillUnapproved": true,
+      "codeBoundToVerifiedMarker": true,
+      "samePreviouslyReviewedArchive": true,
+      "archiveHash": true,
+      "newIdentifiers": true,
+      "uniqueSafeRegularMembers": true,
+      "binaryHash": true,
+      "profileHash": true,
+      "receiptHash": true,
+      "pinsHash": true,
+      "infoHash": true,
+      "pinMapsEqual": true,
+      "pinsMatchCheckout": true
+    },
+    "pass": true,
+    "members": 5,
+    "pins": 50
+  },
+  "review": [
+    "Only one fixed new run-approved and one new-run export; no enroll or closeout",
+    "New Owner approval required; current scope remains unapproved",
+    "CI marker matches fixed code; same previously reviewed signed artifact and 50 source pins",
+    "Run failure or timeout preserves original output, exports once, never retries",
+    "Export failure/timeout returns nonzero without rerunning cloud mutation",
+    "Pre-run window expiry cannot be mistaken for successful cloud execution"
+  ],
+  "limitations": [
+    "Synthetic mock subprocess tests only; no real wrapper/probe execution",
+    "No real Keychain, CloudKit, account switch, or private business data access",
+    "Real haha offline result and CI conclusion supplied by parent; reviewer verified fixed local artifact bindings"
+  ]
+}

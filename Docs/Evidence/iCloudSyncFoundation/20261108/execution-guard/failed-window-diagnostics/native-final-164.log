@@ -1,0 +1,414 @@
+Building for debugging...
+[1 / 10]
+[2 / 11] FormalDevelopmentSDK
+[4 / 13] FormalDevelopmentSDK
+[7 / 13] FormalDevelopmentSDK
+[10 / 13] FormalDevelopmentSDKTests-product
+[12 / 15] FormalDevelopmentSDKTests-product
+[18 / 20] FormalDevelopmentSDKTests-product
+[21 / 22] FormalDevelopmentHost-product
+Build complete! (2.01秒)
+Test Suite 'All tests' started at 2026-11-08 18:51:59.978.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 18:51:59.978.
+Test Suite 'PayloadChunkTests' started at 2026-11-08 18:51:59.979.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkBoundaryAndBudgetRejectBeforeUnboundedRead]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkBoundaryAndBudgetRejectBeforeUnboundedRead]' passed (0.016 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkSDKRoutingTruncationAndUnknownFieldsReject]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkSDKRoutingTruncationAndUnknownFieldsReject]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testFortyMiBPlusTenThousandRowShapeStreamsThroughRealSDKChunks]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testFortyMiBPlusTenThousandRowShapeStreamsThroughRealSDKChunks]' passed (0.536 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testMissingReorderedDuplicateAndExtraIndicesReject]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testMissingReorderedDuplicateAndExtraIndicesReject]' passed (0.013 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testRepeatedContentAtDistinctPositionsIsLegal]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testRepeatedContentAtDistinctPositionsIsLegal]' passed (0.012 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testWholeDigestAndPerChunkDigestAreBothRequired]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testWholeDigestAndPerChunkDigestAreBothRequired]' passed (0.001 seconds).
+Test Suite 'PayloadChunkTests' passed at 2026-11-08 18:52:00.559.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.580 (0.580) seconds
+Test Suite 'SyncFoundationTests' started at 2026-11-08 18:52:00.559.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' passed (0.034 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' passed (0.015 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' passed (0.039 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' passed (0.001 seconds).
+Test Suite 'SyncFoundationTests' passed at 2026-11-08 18:52:00.659.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 0.099 (0.100) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 18:52:00.659.
+	 Executed 24 tests, with 0 failures (0 unexpected) in 0.679 (0.680) seconds
+Test Suite 'All tests' passed at 2026-11-08 18:52:00.659.
+	 Executed 24 tests, with 0 failures (0 unexpected) in 0.679 (0.681) seconds
+CHUNK_CAPACITY totalBytes=49210071 chunkCount=12 maxCallbackBytes=4194304
+Test Suite 'All tests' started at 2026-11-08 18:52:00.729.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 18:52:00.729.
+Test Suite 'FormalProbeCoreTests' started at 2026-11-08 18:52:00.729.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' passed (0.013 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' passed (0.006 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' passed (0.007 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' passed (0.005 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' passed (0.002 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' passed (0.003 seconds).
+Test Suite 'FormalProbeCoreTests' passed at 2026-11-08 18:52:00.775.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.045 (0.046) seconds
+Test Suite 'ProfileAllowanceTests' started at 2026-11-08 18:52:00.775.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testActualPropertyListTypesUseSameParser]' started.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testActualPropertyListTypesUseSameParser]' passed (0.000 seconds).
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testAllowlistNeverWidensSignedEntitlementsOrIdentity]' started.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testAllowlistNeverWidensSignedEntitlementsOrIdentity]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testLegacyExplicitAndSingleEnvironmentRemainCompatible]' started.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testLegacyExplicitAndSingleEnvironmentRemainCompatible]' passed (0.000 seconds).
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testMissingUnknownMixedOrDuplicateEnvironmentsReject]' started.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testMissingUnknownMixedOrDuplicateEnvironmentsReject]' passed (0.000 seconds).
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testMissingUnknownMixedOrDuplicateServicesReject]' started.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testMissingUnknownMixedOrDuplicateServicesReject]' passed (0.000 seconds).
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testObservedWildcardDualEnvironmentAllowsOnlyDevelopmentClaim]' started.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testObservedWildcardDualEnvironmentAllowsOnlyDevelopmentClaim]' passed (0.000 seconds).
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testProductionOnlyProfileDoesNotPermitDevelopment]' started.
+Test Case '-[FormalProbeCoreTests.ProfileAllowanceTests testProductionOnlyProfileDoesNotPermitDevelopment]' passed (0.000 seconds).
+Test Suite 'ProfileAllowanceTests' passed at 2026-11-08 18:52:00.776.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 18:52:00.776.
+	 Executed 17 tests, with 0 failures (0 unexpected) in 0.046 (0.047) seconds
+Test Suite 'All tests' passed at 2026-11-08 18:52:00.776.
+	 Executed 17 tests, with 0 failures (0 unexpected) in 0.046 (0.048) seconds
+Test Suite 'All tests' started at 2026-11-08 18:52:00.877.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 18:52:00.877.
+Test Suite 'AccountReadPolicyTests' started at 2026-11-08 18:52:00.877.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testEveryApprovalBindingFieldIsComparedNotOnlyOwnerWindow]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testEveryApprovalBindingFieldIsComparedNotOnlyOwnerWindow]' passed (0.008 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testIntentMustStillBePendingAtTakeAndAtEnqueue]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testIntentMustStillBePendingAtTakeAndAtEnqueue]' passed (0.007 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testNoIntentWrongIDWrongKindAndOneShotTicket]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testNoIntentWrongIDWrongKindAndOneShotTicket]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTamperedJournalAtEveryBoundaryCannotAuthorizeRead]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTamperedJournalAtEveryBoundaryCannotAuthorizeRead]' passed (0.007 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTwelveReadsAcrossDurableQualificationAndFiveStagesThenStops]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTwelveReadsAcrossDurableQualificationAndFiveStagesThenStops]' passed (0.464 seconds).
+Test Suite 'AccountReadPolicyTests' passed at 2026-11-08 18:52:01.367.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.489 (0.489) seconds
+Test Suite 'BatchRunnerTests' started at 2026-11-08 18:52:01.367.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testCancellationAfterAcknowledgmentStops]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testCancellationAfterAcknowledgmentStops]' passed (0.009 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testDirectoryReplacementDuringAwaitStops]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testDirectoryReplacementDuringAwaitStops]' passed (0.009 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testEpochChangedDuringEveryAwaitStopsFollowingOperation]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testEpochChangedDuringEveryAwaitStopsFollowingOperation]' passed (0.041 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testErrorsRedactUnknownIdentityAndLocalizedDetails]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testErrorsRedactUnknownIdentityAndLocalizedDetails]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExactSixRecordRoundtripAndNoAuthorityClaim]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExactSixRecordRoundtripAndNoAuthorityClaim]' passed (0.013 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingOutputPreservedTicketStillConsumed]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingOutputPreservedTicketStillConsumed]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingZoneStopsBeforeWrites]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingZoneStopsBeforeWrites]' passed (0.006 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testFetchRequiresExactSetAndBytes]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testFetchRequiresExactSetAndBytes]' passed (0.037 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testFinalReportCollisionCannotReturnSuccess]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testFinalReportCollisionCannotReturnSuccess]' passed (0.013 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testLockedHostNeverAuthorizes]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testLockedHostNeverAuthorizes]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testMissingAndExtraSaveResultsFail]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testMissingAndExtraSaveResultsFail]' passed (0.017 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPartialSavePreservesReturnedEvidenceAndStops]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPartialSavePreservesReturnedEvidenceAndStops]' passed (0.011 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPlanAndLeaseChangesDuringAwaitStop]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPlanAndLeaseChangesDuringAwaitStop]' passed (0.020 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testSingleFlightAndTicketCannotBeReusedInNewOutput]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testSingleFlightAndTicketCannotBeReusedInNewOutput]' passed (0.016 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testThrownCloudErrorRetainedAndNoRetry]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testThrownCloudErrorRetainedAndNoRetry]' passed (0.009 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testTicketInvalidationDuringAwait]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testTicketInvalidationDuringAwait]' passed (0.005 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testWrongZoneStopsBeforeRecords]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testWrongZoneStopsBeforeRecords]' passed (0.007 seconds).
+Test Suite 'BatchRunnerTests' passed at 2026-11-08 18:52:01.585.
+	 Executed 17 tests, with 0 failures (0 unexpected) in 0.217 (0.218) seconds
+Test Suite 'EvidenceExportTests' started at 2026-11-08 18:52:01.585.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testExactRawBytesAndHashesWithoutMutationOrAuthenticationClaim]' started.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testExactRawBytesAndHashesWithoutMutationOrAuthenticationClaim]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testMissingRunNeverCreatesItAndStillPreservesLedgerBytes]' started.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testMissingRunNeverCreatesItAndStillPreservesLedgerBytes]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testSymlinkOrUnexpectedFileRejectsWholeSectionWithoutFollowing]' started.
+Test Case '-[FormalDevelopmentSDKTests.EvidenceExportTests testSymlinkOrUnexpectedFileRejectsWholeSectionWithoutFollowing]' passed (0.001 seconds).
+Test Suite 'EvidenceExportTests' passed at 2026-11-08 18:52:01.587.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.003 (0.003) seconds
+Test Suite 'ExecutionLedgerTests' started at 2026-11-08 18:52:01.588.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAbruptSubprocessExitPreservesConsumedAndIntentOrRejectsCommitGap]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAbruptSubprocessExitPreservesConsumedAndIntentOrRejectsCommitGap]' passed (1.476 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAccountHMACStablePrivateDomainAndNeverStoredPlaintext]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAccountHMACStablePrivateDomainAndNeverStoredPlaintext]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAnchorCommittedThenJournalChangedBeforePermitReturnRejects]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testAnchorCommittedThenJournalChangedBeforePermitReturnRejects]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCancellationLateObservationCannotAdvanceOrAttachToAnotherPermit]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCancellationLateObservationCannotAdvanceOrAttachToAnotherPermit]' passed (0.008 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCrashAfterIntentIsUnresolvedAndCannotResumeOrStartNewRun]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testCrashAfterIntentIsUnresolvedAndCannotResumeOrStartNewRun]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFailureAndUnknownReturnNeverValidateOrStartNextRequest]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFailureAndUnknownReturnNeverValidateOrStartNextRequest]' passed (0.009 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFirstQualificationNeedsConsumedPermitAndStrictOrder]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFirstQualificationNeedsConsumedPermitAndStrictOrder]' passed (0.005 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFrozenWallCannotExtendWindowPastMonotonicDeadline]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFrozenWallCannotExtendWindowPastMonotonicDeadline]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFullDurableQualificationAndFiveStagesWithTenAccountChecks]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testFullDurableQualificationAndFiveStagesWithTenAccountChecks]' passed (0.517 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testJournalDurableButAnchorUpdateFailurePoisonsAndNeverRetries]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testJournalDurableButAnchorUpdateFailurePoisonsAndNeverRetries]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testLockReplacementAndSymlinkRootReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testLockReplacementAndSymlinkRootReject]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testMissingAnchorJournalAndCorruptAnchorFailClosedWithoutRepair]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testMissingAnchorJournalAndCorruptAnchorFailClosedWithoutRepair]' passed (0.004 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testOwnerWindowAndApprovalInputCannotBeReusedWithNewPlanAndIDs]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testOwnerWindowAndApprovalInputCannotBeReusedWithNewPlanAndIDs]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRecreatedLockCannotLetSecondOpenerBypassOriginalHeldLock]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRecreatedLockCannotLetSecondOpenerBypassOriginalHeldLock]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReopeningAfterQualificationCannotResetMonotonicWindow]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReopeningAfterQualificationCannotResetMonotonicWindow]' passed (0.014 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReplayCannotChangeOwnerWindowPlanOrOutput]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testReplayCannotChangeOwnerWindowPlanOrOutput]' passed (0.008 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRootReplacementEvenWithCopiedJournalAndAnchorRejects]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testRootReplacementEvenWithCopiedJournalAndAnchorRejects]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testSameProcessAndIndependentProcessCannotAcquireHeldLock]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testSameProcessAndIndependentProcessCannotAcquireHeldLock]' passed (0.067 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testValidAnchorWithTruncatedOrReorderedJournalCannotRollback]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testValidAnchorWithTruncatedOrReorderedJournalCannotRollback]' passed (0.028 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallAndMonotonicClockRollbackCannotGrantNewIntent]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallAndMonotonicClockRollbackCannotGrantNewIntent]' passed (0.024 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallMonotonicDriftRejectsEvenBeforeEnd]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWallMonotonicDriftRejectsEvenBeforeEnd]' passed (0.020 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWrongAccountCannotValidateAndExpiredWindowStillPreservesReturns]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testWrongAccountCannotValidateAndExpiredWindowStillPreservesReturns]' passed (0.153 seconds).
+Test Suite 'ExecutionLedgerTests' passed at 2026-11-08 18:52:03.936.
+	 Executed 22 tests, with 0 failures (0 unexpected) in 2.348 (2.349) seconds
+Test Suite 'GuardedBatchRunnerTests' started at 2026-11-08 18:52:03.936.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEpochInvalidationAtEachTransportSuspensionStopsNextStage]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEpochInvalidationAtEachTransportSuspensionStopsNextStage]' passed (4.160 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEveryPublishedSuccessEvidenceFileIsLinkedByLedgerDigest]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEveryPublishedSuccessEvidenceFileIsLinkedByLedgerDigest]' passed (1.726 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEvidenceFailurePoisonsRunnerAndCannotReturnSuccess]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEvidenceFailurePoisonsRunnerAndCannotReturnSuccess]' passed (0.015 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testExpiredWindowDuringLookupStopsAndKeepsRawResponse]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testExpiredWindowDuringLookupStopsAndKeepsRawResponse]' passed (0.073 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testFinalReportCollisionNeverReturnsSuccessOrOverwrites]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testFinalReportCollisionNeverReturnsSuccessOrOverwrites]' passed (1.794 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testGateFailureWithFatalMarkerCollisionPreservesOriginalAndRemainsUnknown]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testGateFailureWithFatalMarkerCollisionPreservesOriginalAndRemainsUnknown]' passed (0.010 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testHangingAccountReadIsCancelledAtOwnerDeadlineWithoutRetry]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testHangingAccountReadIsCancelledAtOwnerDeadlineWithoutRetry]' passed (1.329 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testHangingTransportIsCancelledAtOwnerDeadlineAndLateACKRetained]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testHangingTransportIsCancelledAtOwnerDeadlineAndLateACKRetained]' passed (2.093 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testIdentitySwitchAfterProbeStopsBeforeZoneWrite]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testIdentitySwitchAfterProbeStopsBeforeZoneWrite]' passed (0.157 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLateEvidenceWriteFailureAddsMarkerAndNotifiesAfterTerminal]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLateEvidenceWriteFailureAddsMarkerAndNotifiesAfterTerminal]' passed (1.860 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLateQualificationFatalMarkerAnchorsOriginalQualificationOperation]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLateQualificationFatalMarkerAnchorsOriginalQualificationOperation]' passed (1.735 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLeaseAndPlanMutationDuringLookupStopsBeforeWrites]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLeaseAndPlanMutationDuringLookupStopsBeforeWrites]' passed (0.139 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testOldScopeFatalStopsNewActiveRunOnSameRunnerAndLedger]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testOldScopeFatalStopsNewActiveRunOnSameRunnerAndLedger]' passed (1.941 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testOutputCollisionPreservesOriginalAndConsumesNoLookup]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testOutputCollisionPreservesOriginalAndConsumesNoLookup]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testOutputDirectoryReplacementStopsAndWritesOnlyHeldOriginal]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testOutputDirectoryReplacementStopsAndWritesOnlyHeldOriginal]' passed (0.069 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testPartialAndMissingOrCorruptFetchNeverFinishBatch]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testPartialAndMissingOrCorruptFetchNeverFinishBatch]' passed (3.956 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testPostTerminalReportTamperDetectedByLateCallbackAndRawEventPreserved]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testPostTerminalReportTamperDetectedByLateCallbackAndRawEventPreserved]' passed (1.870 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testPreviouslyWrittenCallbackReturnedAndValidatedEvidenceCannotBeChanged]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testPreviouslyWrittenCallbackReturnedAndValidatedEvidenceCannotBeChanged]' passed (0.376 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testProviderClaimingStartedBeforeEnqueueCannotClaimNoSDKInvocation]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testProviderClaimingStartedBeforeEnqueueCannotClaimNoSDKInvocation]' passed (0.012 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testRuntimeRecheckAtEnqueueCanPreventFirstProviderInvocation]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testRuntimeRecheckAtEnqueueCanPreventFirstProviderInvocation]' passed (0.012 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testSingleFlightCancellationAndLateACKRemainOriginalPermit]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testSingleFlightCancellationAndLateACKRemainOriginalPermit]' passed (0.014 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testTwelveAccountReadsFiveTransportStagesAndNoRealAuthorityClaim]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testTwelveAccountReadsFiveTransportStagesAndNoRealAuthorityClaim]' passed (1.731 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testValidOldLateCallbackKeepsNewWindowAndItsEvidenceIsolated]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testValidOldLateCallbackKeepsNewWindowAndItsEvidenceIsolated]' passed (6.731 seconds).
+Test Suite 'GuardedBatchRunnerTests' passed at 2026-11-08 18:52:35.745.
+	 Executed 23 tests, with 0 failures (0 unexpected) in 31.807 (31.809) seconds
+Test Suite 'GuardedExecutionEntryTests' started at 2026-11-08 18:52:35.745.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testProductionAttemptLatchIsIrreversibleAcrossSuccessOrFailure]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testProductionAttemptLatchIsIrreversibleAcrossSuccessOrFailure]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollmentInvalidArtifactStopsBeforeKeychainAndCanRejectAgain]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollmentInvalidArtifactStopsBeforeKeychainAndCanRejectAgain]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollRejectsBatchPurposeBeforeSigningOrStorage]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollRejectsBatchPurposeBeforeSigningOrStorage]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunInvalidArtifactStopsBeforeAnyContainerOrAccount]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunInvalidArtifactStopsBeforeAnyContainerOrAccount]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunRejectsEnrollmentPurposeBeforeSigningOrStorage]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunRejectsEnrollmentPurposeBeforeSigningOrStorage]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSBindingChangesForBootUserAuditSessionOrAttributes]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSBindingChangesForBootUserAuditSessionOrAttributes]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSSessionPolicyRejectsRootRemoteInvalidAndChangedEffectiveUID]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSSessionPolicyRejectsRootRemoteInvalidAndChangedEffectiveUID]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPurePreflightRequiresCanonicalBytesAndExternalDigest]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPurePreflightRequiresCanonicalBytesAndExternalDigest]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testTemplateWrongWindowAndArtifactBindingCannotBecomePermission]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testTemplateWrongWindowAndArtifactBindingCannotBecomePermission]' passed (0.002 seconds).
+Test Suite 'GuardedExecutionEntryTests' passed at 2026-11-08 18:52:35.758.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.013 (0.013) seconds
+Test Suite 'IndependentEvidenceExportTests' started at 2026-11-08 18:52:35.758.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testExactBytesHashAndReadOnlyClaimRemainDistinctFromLedgerAuthentication]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testExactBytesHashAndReadOnlyClaimRemainDistinctFromLedgerAuthentication]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testHardlinkWithAllowedNameCannotExportOutsideSyntheticBytes]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testRootSymlinkAndOversizedMemberNeverClaimCompleteSection]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentEvidenceExportTests testRootSymlinkAndOversizedMemberNeverClaimCompleteSection]' passed (0.001 seconds).
+Test Suite 'IndependentEvidenceExportTests' passed at 2026-11-08 18:52:35.762.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.003 (0.003) seconds
+Test Suite 'LockedHostTests' started at 2026-11-08 18:52:35.762.
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testInternalFixtureFreshIdentityAndLockedReport]' started.
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testInternalFixtureFreshIdentityAndLockedReport]' passed (0.005 seconds).
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testInvalidHashAndChangedFixtureCannotPublish]' started.
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testInvalidHashAndChangedFixtureCannotPublish]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testReturnedReportMatchesExclusivePublishedBytes]' started.
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testReturnedReportMatchesExclusivePublishedBytes]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testSearchAncestorStillRejectsSymlinkAndReboundDirectory]' started.
+Test Case '-[FormalDevelopmentSDKTests.LockedHostTests testSearchAncestorStillRejectsSymlinkAndReboundDirectory]' passed (0.000 seconds).
+Test Suite 'LockedHostTests' passed at 2026-11-08 18:52:35.773.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.011 (0.011) seconds
+Test Suite 'OperationBridgeTests' started at 2026-11-08 18:52:35.773.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testAdapterExplicitOperationsPreserveExactPolicyAndIDs]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testAdapterExplicitOperationsPreserveExactPolicyAndIDs]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testAdapterRequiresEvidenceAndRejectsDuplicateOrEmptyIDs]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testAdapterRequiresEvidenceAndRejectsDuplicateOrEmptyIDs]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testCancelBeforeHandleNeverEnqueuesAndPersistsBeforeCancel]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testCancelBeforeHandleNeverEnqueuesAndPersistsBeforeCancel]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testCancellationReentrantFromEnqueueEvidencePreventsEnqueue]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testCancellationReentrantFromEnqueueEvidencePreventsEnqueue]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testDuplicateItemAndUnknownItemStopAndDoNotOverwrite]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testDuplicateItemAndUnknownItemStopAndDoNotOverwrite]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testEvidenceFailureDuringItemOrAggregateCannotSucceed]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testEvidenceFailureDuringItemOrAggregateCannotSucceed]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testJournalFailureBeforeEnqueueNeverSendsAndNotifiesFatal]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testJournalFailureBeforeEnqueueNeverSendsAndNotifiesFatal]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testJournalFailureOnCancellationBestEffortCancelsWithoutClaimingPersistence]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testJournalFailureOnCancellationBestEffortCancelsWithoutClaimingPersistence]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testLateCallbacksRemainInOriginalSinkAfterRebindingAdapter]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testLateCallbacksRemainInOriginalSinkAfterRebindingAdapter]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testMissingResultAndWrongValueFailClosed]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testMissingResultAndWrongValueFailClosed]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testPartialErrorsPersistOnlyNumericDetails]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testPartialErrorsPersistOnlyNumericDetails]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testSynchronousCallbacksAndDuplicateCompletionResumeOnlyOnce]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testSynchronousCallbacksAndDuplicateCompletionResumeOnlyOnce]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testTaskAlreadyCancelledBeforeExecuteNeverEnqueues]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testTaskAlreadyCancelledBeforeExecuteNeverEnqueues]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testTaskCancellationRetainsLateACKAndSynchronousCancelCallback]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testTaskCancellationRetainsLateACKAndSynchronousCancelCallback]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testUnexpectedDeleteCallbackCannotBeAValidSave]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testUnexpectedDeleteCallbackCannotBeAValidSave]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testZoneAbsenceRequiresExactPerZoneResultAndCompatibleAggregate]' started.
+Test Case '-[FormalDevelopmentSDKTests.OperationBridgeTests testZoneAbsenceRequiresExactPerZoneResultAndCompatibleAggregate]' passed (0.000 seconds).
+Test Suite 'OperationBridgeTests' passed at 2026-11-08 18:52:35.777.
+	 Executed 16 tests, with 0 failures (0 unexpected) in 0.003 (0.004) seconds
+Test Suite 'OwnerExecutionApprovalTests' started at 2026-11-08 18:52:35.777.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testCanonicalDecisionIsOnlyAWindowNotRuntimeQualification]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testCanonicalDecisionIsOnlyAWindowNotRuntimeQualification]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testFrozenWallClockCannotExtendRemainingSecond]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testFrozenWallClockCannotExtendRemainingSecond]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testLaterClockRollbackCannotReopenWindow]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testLaterClockRollbackCannotReopenWindow]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testPlanAndArtifactInputsRemainBound]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testPlanAndArtifactInputsRemainBound]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testTemplateUnknownPurposeAndMissingDecisionRejectEvenWithNewHash]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testTemplateUnknownPurposeAndMissingDecisionRejectEvenWithNewHash]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnboundedWindowOrRootIdentityReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnboundedWindowOrRootIdentityReject]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnknownFieldsAndNoncanonicalBytesReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnknownFieldsAndNoncanonicalBytesReject]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testWindowStartInclusiveEndExclusiveAndWrongUser]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testWindowStartInclusiveEndExclusiveAndWrongUser]' passed (0.003 seconds).
+Test Suite 'OwnerExecutionApprovalTests' passed at 2026-11-08 18:52:35.789.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.012 (0.012) seconds
+Test Suite 'RuntimeSigningInspectorTests' started at 2026-11-08 18:52:35.789.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testActualUnqualifiedSelfCannotMintQualification]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testActualUnqualifiedSelfCannotMintQualification]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testDeviceDiagnosticsExposeOnlyFixedStageAndNumericReason]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testDeviceDiagnosticsExposeOnlyFixedStageAndNumericReason]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testEmptyMalformedAndPlaintextProfilesAreNotTrustedCMS]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testEmptyMalformedAndPlaintextProfilesAreNotTrustedCMS]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testExactRuntimeEntitlementsAndNoProfileWildcardInClaims]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testExactRuntimeEntitlementsAndNoProfileWildcardInClaims]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testExpectedBindingsRejectMalformedOrUppercaseHashes]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testExpectedBindingsRejectMalformedOrUppercaseHashes]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testExplicitDeviceFieldOnlyNoHardwareUUIDFallback]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testExplicitDeviceFieldOnlyNoHardwareUUIDFallback]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testProfileDatesAndCertificateDeviceMembershipFailClosed]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testProfileDatesAndCertificateDeviceMembershipFailClosed]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testPublicAppleRootCannotActAsProfileSigningLeaf]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testPublicAppleRootCannotActAsProfileSigningLeaf]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testReceiptIdentityAndVersionRejectEvenWhenHashUpdated]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testReceiptIdentityAndVersionRejectEvenWhenHashUpdated]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testReviewedReceiptAndPinsBindBytesWithoutEquatingSignedAndUnsignedHashes]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testReviewedReceiptAndPinsBindBytesWithoutEquatingSignedAndUnsignedHashes]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testStandaloneProfileMarkersAndDigitalSignatureUsage]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testStandaloneProfileMarkersAndDigitalSignatureUsage]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testSyntheticProfileAllowanceAndLocalMembership]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testSyntheticProfileAllowanceAndLocalMembership]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testWrongProfilePlatformTeamWildcardContainerAndProductionOnlyReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeSigningInspectorTests testWrongProfilePlatformTeamWildcardContainerAndProductionOnlyReject]' passed (0.000 seconds).
+Test Suite 'RuntimeSigningInspectorTests' passed at 2026-11-08 18:52:35.795.
+	 Executed 13 tests, with 0 failures (0 unexpected) in 0.006 (0.006) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 18:52:35.795.
+	 Executed 123 tests, with 0 failures (0 unexpected) in 34.912 (34.918) seconds
+Test Suite 'All tests' passed at 2026-11-08 18:52:35.795.
+	 Executed 123 tests, with 0 failures (0 unexpected) in 34.912 (34.918) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

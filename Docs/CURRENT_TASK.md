@@ -1,3 +1,61 @@
+## 2026-11-08 当前：新窗口CK_4失败，完成原始证据审查，不再试跑
+
+已授权的a72befa/3afb421d…窗口实际run exit1，export exit0；3账户wrapper返回成功，首个zone-probe收到CKErrorDomain4，未进入create/save。独立核验56文件、33账本、回调/报告引用完整；已存在未知结果terminal，无需再次closeout。原始日志关联到同一task/连接：TLS握手阶段约11秒超时（NSURLErrorDomain -1001），同时有隧道路径及probe Bundle ID的delegation/LaunchServices识别警告。不能断言VPN、纯环境故障或排除启动方式兼容问题。
+
+入口已停用，无新云授权/执行，不再请求Owner重跑或重复只读检查。当前完成[失败与责任复盘](ICLOUD_SYNC_CK4_FAILURE_REVIEW_ZH.md)；后续先独立验证启动方式和诊断缺口，不用CI/离线PASS替代真实链路。P0/P1/P2与完整同步均未完成，原失败/私人证据/原项目改动和G1接受范围保留。以下“等待启动/结果”为历史，已被本节替代。
+
+---
+
+## 2026-11-08 当前：真实失败已定位，运行时检查修复进入验证交付
+
+Owner已批准并执行b3cd013窗口：旧批次本地closeout成功追加第6条未知terminal；新run在资格检查阶段exit1、尚未消费新ledger，两次只读导出成功。系统日志确认硬件报告子进程5秒超时并返回空项；旧顶层错误码缺失保留，不推断首次107963d同因。旧入口已停用，不重跑、不重新enrollment、不再要求Owner用云批次诊断。
+
+已移除生产路径system_profiler依赖，改用实际进程的OS受限entitlements验证状态，并保留签名/profile/证书/hash检查；v2明确不再运行时独立证明精确profile的当前UDID membership。新增只读异步四阶段诊断与白名单顶层错误。完整包187、打包46、iOS17编译、实际签名同步及四异步阶段通过；独立审查和保留边界回归见[修复记录](ICLOUD_SYNC_RUNTIME_REPAIR_ZH.md)。代码a72befa定向CI42482033378成功，187原生/35保留独立/46打包、ZIP/checkout/50源指纹已核验。haha同一签名产物4阶段也PASS（0.93秒，云/Keychain0）；Owner随后明确回复“授权本次单独新窗口”，决定摘要e22c3d66…已记录；同一已审脚本已启用，等待haha单次启动后的实际结果，尚未观察到云执行。P0/P1/P2和完整产品同步仍未完成。
+
+此前b3cd013产品CI42474881346已SUCCESS：Unit598PASS/1SKIP、Smoke5/5、Release3个unsigned bundle，ZIP/checkout核验。原项目三项未提交改动不动，G1手机接受范围/CK_2例外保持，Production/发布/合并未授权。自动重复产品CI42482033328已主动取消（Release成功、unit/smoke取消，不算通过），因产品所有相关Git对象与b3cd013相同且隔离探针未链接。[新固定窗口](ICLOUD_SYNC_RUNTIME_FIXED_WINDOW_ZH.md)的单次云授权已收到，无需再次确认；当前只需Owner在haha启动已提供的同一命令并返回证据目录，旧收口不重复。只读haha步骤已经完成，无需重做。以下为历史，旧“审批未到/尚未执行/产品CI运行”已被上述实际结果替代。
+
+---
+
+## 2026-11-08 当前任务：交付追加收口并验证一个新固定窗口
+
+代码`b3cd013`已推送PR18，最终定向CI42474881433成功；ZIP/checkout/47源绑定及178原生+35独立+40打包已核验。当前人工依赖仅[固定清单](ICLOUD_SYNC_FORMAL_CLOSEOUT_WINDOW_ZH.md)的一次明确审批（本地追加＋新Development窗口），审批尚未收到、脚本尚未启用。旧单次失败授权不自动复用。产品代码与107963d完整全绿基线相同，当前自动产品CI另行跟踪，不重复手动全量测试。
+
+原始失败证据已保留，haha四次离线检查全部通过，未复现具体拒绝。已完成独立审批的本地追加收口实现和审查：旧anchor/记录不重置，精确head拒绝竞态变化，只追加未知terminal，旧计划仍永久不可复用。完整包178/178、保留独立35/35、新独立3/3、打包40/40及iOS17编译通过；已签候选自身资格通过。脚本mock10/10，真实操作未执行。
+
+下一步核验最终定向CI，然后按[固定清单](ICLOUD_SYNC_FORMAL_CLOSEOUT_WINDOW_ZH.md)一次申请本地追加和新Development窗口审批。新run/plan与旧批次分离，不再enrollment，不删除、不自动重试；一次haha终端操作，手机/数据线0，最多15分钟执行＋1分钟本地导出。若成功，再基于实际写入结果要求Development schema导出复核。P0未通过，不因四次离线PASS或closeout代码PASS而宣称云验证成功。
+
+`dd45099`定向CI成功只覆盖前一诊断代码，产品CI尚在运行；不冒称新实现远端通过。以下旧等待诊断输入已完成，作为历史保留。
+
+---
+
+## 历史任务：修复首次入队前失败并保留真实证据
+
+真实 enrollment exit0，run exit74；只读导出15份探针文件完整、摘要匹配，首次账户请求在入队前被拒，旧代码未保留原因。guard/Keychain anchor及已消费窗口必须保留，不重新 enrollment、不重跑旧命令、不推定 CK_2。`export-run` 已完成且 Owner 实际执行成功，无云/Keychain访问；账本 HMAC 未认证。
+
+已修复只读导出硬链接漏洞（6/6）及原始错误被取消掩盖问题；最终完整包164/164、独立边界35/35、保守分类定向6/6、打包38/38通过，iOS17 SDK编译通过。独立复核确认旧批次显式账户API与transport/data均0；新代码所有失败仍保持远端结果未知。当前等待 Owner 的有界离线资格诊断，并交付已审查修复。旧107963d CI不能覆盖新修改。需要新真实云窗口时先完成具体产物与清单；既有单次授权不被扩大成自动重试。
+
+[本批证据](Evidence/iCloudSyncFoundation/20261108/execution-guard/failed-window-diagnostics/owner-window-result.json)。正式产品完整同步及P0/P1/P2仍未完成；Production/发布/合并边界不变。以下为保留历史，不覆盖上述当前范围。
+
+---
+
+## 历史：Owner 固定 Development 窗口已授权，待 CI 收尾后由 haha 启动
+
+Owner 已明确确认“已进入 haha，测试 iCloud 已确认”，并回复“授权本次固定 Development 窗口”。授权绑定 PR18 / `107963d`、签名产物 `9291c390…` 和已固定合成计划，包含一次本地 guard/Keychain anchor 初始化及 Development 六条记录写读；前提为最终 CI 核验通过，最长15分钟，失败即停，不自动重试。不得再次询问同一授权。执行工具身份仍非haha，Owner须在haha终端启动已准备脚本；未自动切换账户，也尚未执行真实命令。
+
+[定向CI42467777146](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42467777146) SUCCESS，156原生+35本批独立+38打包及既有回归均通过；308成员ZIP摘要、40源pins与checkout已核验。产品[CI42467777172](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42467777172)最终SUCCESS：Release3个unsigned bundle、Unit599=598PASS/1SKIP/0FAIL、Smoke5/5；runtimeWarnings均为空，三份ZIP摘要/实际源已核验。低空间镜像缺失跳过、optional extended UI条件跳过保留。CI门禁已完成。首次haha启动脚本在读取跨用户App二进制时PermissionError13，探针未启动、guard/云批次均未开始；已修正为haha私有目录解包，五文件逐字节不变，已请Owner运行修正后的同一命令一次。等待真实结果，不重复询问既有授权。[固定授权记录](Evidence/iCloudSyncFoundation/20261108/execution-guard/owner-authorization.json)。
+
+# 2026-11-08 正式 Development 执行入口已实现，待批准固定真实窗口
+
+独立分支 `codex/icloud-formal-execution-guard`，基线 `07c1bcf`，工作树 `/private/tmp/PersonalGrowthOS-icloud-execution-guard`。已完成持久消费/跨进程锁、真实自身签名资格、审批绑定、账户变化隔离、显式取消、固定五步合成 runner，以及 `enroll-guard` / `run-approved` 生产入口。不是仅设计稿；真实命令仍未执行。
+
+本机完整包156/156、打包38检查、iOS17 SDK编译通过；iOS17运行NOT_RUN。独立ledger/runner20、runtime/边界9、生产入口6项通过。最终签名副本 `9291c390…677577e` 的只读自身资格、OS会话、Application Support检查均通过；云调用0。原签名参数/profile用途/设备证据拒绝、证据篡改与跨run晚故障红例及测试计数误写均保留，未改写为成功。当前源远端CI待本节点独立验证。
+
+下一人工依赖仅[集中固定窗口清单](ICLOUD_SYNC_FORMAL_DEVELOPMENT_WINDOW_ZH.md)：Owner手动进入Mac mini专用用户haha、只读确认测试iCloud，并明确批准本地guard初始化及正式Development新合成zone/六记录写读（最多12次账户API+5次transport，手机/数据线0）。此前配置/签名许可已完成，不重复申请；已有两份schema及正式App关联不用重做。当前console与agent均非haha，不能沿用旧会话假设。
+
+P0/P1/P2未通过；Production、正式产品G2大规模39实体接入、合并与发布边界保留。G1已接受手机范围/CK_2例外不变，原项目三项未提交改动未动。[实现与验证](ICLOUD_SYNC_FORMAL_EXECUTION_GUARD_EXECUTION_ZH.md) · [证据](Evidence/iCloudSyncFoundation/20261108/execution-guard/README.md)。以下为历史，不覆盖本节。
+
+---
+
 # 2026-11-08 独立Mac配置、签名与离线资格已完成
 
 Owner明确批准“按清单配置和预检”。独立App ID `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 已创建并回读确认仅关联正式容器，Mac Development profile已生成下载，复用既有开发证书及已登记Mac。没有改正式App/SyncLab、新建证书或注册设备，原始profile/证书/设备值仅本机保留。

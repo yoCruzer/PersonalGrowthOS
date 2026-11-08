@@ -1,0 +1,37 @@
+Building for debugging...
+[1 / 10]
+[2 / 6] FormalDevelopmentSDKTests-product
+[4 / 8] FormalDevelopmentSDKTests-product
+[9 / 11] FormalDevelopmentSDKTests-product
+Build complete! (0.79秒)
+Test Suite 'Selected tests' started at 2026-11-08 14:31:21.577.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 14:31:21.578.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 14:31:21.578.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 14:31:21.578.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 14:31:21.634.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 14:31:21.635.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 14:31:21.635.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 14:31:21.635.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 14:31:21.677.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 14:31:21.677.
+Test Suite 'AccountReadPolicyTests' started at 2026-11-08 14:31:21.677.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testEveryApprovalBindingFieldIsComparedNotOnlyOwnerWindow]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testEveryApprovalBindingFieldIsComparedNotOnlyOwnerWindow]' passed (0.008 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testIntentMustStillBePendingAtTakeAndAtEnqueue]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testIntentMustStillBePendingAtTakeAndAtEnqueue]' passed (0.007 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testNoIntentWrongIDWrongKindAndOneShotTicket]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testNoIntentWrongIDWrongKindAndOneShotTicket]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTamperedJournalAtEveryBoundaryCannotAuthorizeRead]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTamperedJournalAtEveryBoundaryCannotAuthorizeRead]' passed (0.006 seconds).
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTwelveReadsAcrossDurableQualificationAndFiveStagesThenStops]' started.
+Test Case '-[FormalDevelopmentSDKTests.AccountReadPolicyTests testTwelveReadsAcrossDurableQualificationAndFiveStagesThenStops]' passed (0.444 seconds).
+Test Suite 'AccountReadPolicyTests' passed at 2026-11-08 14:31:22.146.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.468 (0.468) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 14:31:22.146.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.468 (0.468) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 14:31:22.146.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.468 (0.469) seconds
