@@ -90,7 +90,7 @@ jobs:
       - name: Independent schema and SDK boundary regressions
         run: |
           set -o pipefail
-          python3 Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py Scripts/SyncSchemaAudit/audit.py "$RUNNER_TEMP/sync-foundation-evidence/schema/schema.json" "$RUNNER_TEMP/sync-foundation-evidence/schema-independent" | tee "$RUNNER_TEMP/sync-foundation-evidence/schema-independent.log"
+          python3 Scripts/SyncSchemaAudit/review_schema.py Scripts/SyncSchemaAudit/audit.py "$RUNNER_TEMP/sync-foundation-evidence/schema/schema.json" "$RUNNER_TEMP/sync-foundation-evidence/schema-independent" | tee "$RUNNER_TEMP/sync-foundation-evidence/schema-independent.log"
           cp Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/IndependentSDKTests.swift"
           swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter IndependentSDKTests 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/sdk-independent.log"
       - name: Independent provisioning allowance regressions

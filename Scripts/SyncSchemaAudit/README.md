@@ -22,16 +22,19 @@ Supported grammar is deliberately a closed subset:
 ```text
 schema := DEFINE SCHEMA record+
 record := RECORD TYPE name ( entry (, entry)* );
-entry  := name type | GRANT (READ | WRITE | CREATE) TO name
+entry  := name type modifier* | GRANT (READ | WRITE | CREATE) TO name
+modifier := QUERYABLE | SEARCHABLE | SORTABLE
 type   := scalar | LIST<scalar>
 scalar := INT64 | DOUBLE | STRING | BYTES | TIMESTAMP | REFERENCE | ASSET | LOCATION
 name   := ASCII identifier, optionally double-quoted, without escapes
 ```
 
-Identifiers contain at most 128 ASCII letters/digits/underscores and start with a letter/underscore. Keywords are uppercase. Whitespace is accepted between tokens; comments, indexes, nested lists, escapes, unknown types/clauses, duplicate declarations, and trailing syntax are rejected rather than guessed. Names beginning with `__` are reserved for the six explicitly known system fields. Future export grammar or a changed candidate requires an explicit parser/pin review.
+Identifiers contain at most 128 ASCII letters/digits/underscores and start with a letter/underscore. Keywords are uppercase. Whitespace is accepted between tokens; comments, standalone index declarations, nested lists, escapes, unknown types/clauses, duplicate declarations/modifiers, and trailing syntax are rejected rather than guessed. Names beginning with `__` are reserved for the six explicitly known system fields. Future export grammar or a changed candidate requires an explicit parser/pin review.
 
 The candidate pin binds the exact 1,032-byte, three-type/eleven-field v2 SDK codec artifact under `Docs/Evidence/iCloudSyncFoundation/20261107/ci-foundation-72f5d3d/schema/schema.json`. An attacker-supplied replacement plus its recomputed hash is not a new trusted candidate.
 
-Reports retain the full observed structures, including extra business types/fields, system fields, Users.roles, and each observed grant. They separate byte identity from normalized structural identity. Missing candidate types count all their missing fields. Users permissions are not copied to candidate types: custom permissions and candidate system fields stay `NOT_SPECIFIED`. Matching schemas say nothing about record counts. Assigning files to Development/Production is an Owner-provided association, not content-level attestation; Team/container/environment and schema deployment are not verified by this tool.
+Reports retain the full observed structures, including extra business types/fields, system fields, Users.roles, and each observed grant. The three supported field modifiers are retained as sorted `fieldIndexes`; index-only changes affect structural equality. Missing modifiers are not invented, and the unindexed report shape remains unchanged. They separate byte identity from normalized structural identity. Missing candidate types count all their missing fields. Users permissions are not copied to candidate types: custom permissions and candidate system fields stay `NOT_SPECIFIED`. Matching schemas say nothing about record counts. Assigning files to Development/Production is an Owner-provided association, not content-level attestation; Team/container/environment and schema deployment are not verified by this tool.
 
 Tests use freshly constructed temporary files and the pinned public artifact. The independent fixture contains invented `auditSyntheticLabel` and `auditSyntheticScores` fields plus `SyntheticAuditWriter`/`SyntheticAuditReader` roles; it is not a reformatted or re-encoded Owner export. Reserved system-field names are exercised individually in separate one-field records; the baseline contains no system-field block or `roles` field. They cover Users grammar, reorder/whitespace equality, changed grants, additional types/fields, wrong field types, complete-field matches with closed gates, all supported scalars/lists, malformed and duplicate grammar with recomputed hashes, candidate substitution, FIFO/directory/oversize rejection, symlink ancestors/leaves, concurrent input modification, output-parent substitution, competing publishers, and original-byte preservation.
+
+The active independent CLI reviewer is `Scripts/SyncSchemaAudit/review_schema.py`. It retains the original 20 threat/binding checks and adds 3 field-index positive/negative checks. The dated 20261108 reviewer and its outputs remain immutable historical evidence; its old QUERYABLE-as-unknown fixture no longer represents the explicitly supported grammar.

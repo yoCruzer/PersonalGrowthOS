@@ -44,3 +44,12 @@ Production当前导出预览只见Users七字段及原grants。审计绑定输�
 Safari只读到上述结构和既有ASC会话；随后Mac锁屏，CUA自动解锁失败，已结束UI操作。未绕过锁屏/提取凭据。解锁后须重新导出Production、复核精确部署差异及XcodeCloud既有testflight-*触发/Release Archive/分发组/构建号，再推进已授权标签。当前没有本轮testflight标签、Archive分发或TestFlight可用的成功证据。代码/本机验证已完成，继续固定源码并做Release离线Archive和远端独立CI。
 
 不需手机或数据线；醒后只需解锁Mac（若Apple重新登录/验证码，Owner在Apple界面输入）。最终真实Production/双向/故障矩阵、TestFlight安装验收保持待验证，不能用Dev429→0或CI通过替代。
+
+
+## 固定候选的Archive与独立CI后续
+
+代码候选`32ce4ea7e4172eb4314ab68a7cc229e8d607786f`已普通推送。Release普通无签名Archive成功，来源32ce4ea/Dirty=false，主App/Share/Widget均1.0(12)，编译后的中文资源已逐值核对；runtime pin=production，请求的CloudKit环境Production、APS production、正式bundle/Team均匹配。私有原件`/private/tmp/PGOS-TF-Unsigned-32ce4ea.xcarchive`、receipt`/private/tmp/PGOS-TestFlight-20261109/archive-32ce4ea.json`。它未发行签名、未上传，不能填P3签名通过。
+
+[首轮定向CI42506613444](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42506613444)失败：旧历史independent reviewer把现在明确支持的QUERYABLE当未知语法，AssertionError unknown-index（expected2/actual0）；原始工具日志保存在私有`foundation-32ce4ea-failure-tool-result.json`，后续独立SDK/打包步骤因此跳过。schema21自测及此前native阶段通过，不把整轮写PASS。
+
+保留旧日期checker及原输出不动，新增active reviewer `Scripts/SyncSchemaAudit/review_schema.py`：原20检查保留，仅该负例改真正FUTURE_INDEX，增加已知3flags完整保留/索引顺序等价/已知后未知拒绝三个独立case。23/23通过且另一个审查者独立重放通过；CI仅改调用路径，不删gate、不把字段匹配当部署通过。修改不涉及应用/协议代码，因此不重跑本机全Unit/UI；最终远端结果及新源码Archive绑定将在收口记录。
