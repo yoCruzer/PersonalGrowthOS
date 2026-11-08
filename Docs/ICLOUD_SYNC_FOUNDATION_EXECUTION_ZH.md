@@ -1,6 +1,6 @@
 # 2026-11-08 接续：正式导出核验与隔离SDK准备
 
-Owner已提供Development/Production导出和相应截图，本机核验仅Users7字段、候选缺3类型/11字段；不再等待重复导出。原件保存在仓库外私有目录，公开来源摘要和结构结论。正式App能力关联仍待只读确认。新增严格schema审计、带证据绑定的内部Development SDK适配准备和无网络入口的锁定host，已完成本机实现与独立复核；固定候选远端验证进行中，详见[本轮结构审查](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md)和[证据](Evidence/iCloudSyncFoundation/20261108/README.md)。P0/P1/P2仍未通过，真实容器操作与发布边界不变。下文是既有交付历史，其中“尚待导出”状态已被本段替代。
+Owner已提供Development/Production导出和相应截图，本机核验仅Users7字段、候选缺3类型/11字段；不再等待重复导出。原件保存在仓库外私有目录，公开来源摘要和结构结论。正式App能力关联仍待只读确认。新增严格schema审计、带证据绑定的内部Development SDK适配准备和无网络入口的锁定host，已完成本机实现与独立复核；固定d508ae4的定向与产品远端验证均成功，详见[本轮结构审查](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md)和[证据](Evidence/iCloudSyncFoundation/20261108/README.md)。P0/P1/P2仍未通过，真实容器操作与发布边界不变。下文是既有交付历史，其中“尚待导出”状态已被本段替代。
 
 ---
 

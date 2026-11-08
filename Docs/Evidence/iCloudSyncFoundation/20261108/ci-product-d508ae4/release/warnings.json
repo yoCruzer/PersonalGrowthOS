@@ -1,0 +1,8 @@
+{
+  "source": "release.log",
+  "lines": [
+    "2026-11-08 01:49:14.723 appintentsmetadataprocessor[9101:241869] warning: Metadata extraction skipped, no AppIntents.framework dependency found"
+  ],
+  "buildSucceeded": true,
+  "scope": "Unsigned iOS build only, no Archive/TestFlight/release"
+}

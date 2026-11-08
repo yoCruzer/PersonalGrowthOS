@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "sourceSHA": "d508ae41f8f87adff790c65cc090f217206e0e18",
+  "checkoutSHA": "ead8f0c1e1850740a2aa43138075b04357796e73",
+  "runID": 42435822157,
+  "nativeTests": 51,
+  "nativeTargetCounts": [
+    24,
+    10,
+    17
+  ],
+  "independentChunkTests": 11,
+  "independentFormalCLICommands": 22,
+  "schemaSelfTests": 16,
+  "schemaIndependentChecks": 20,
+  "sdkIndependentTests": 11,
+  "offlineSDKCommands": 6,
+  "lockedHost": "NOT_READY/EXTERNAL_GATE_NOT_COMPLETE",
+  "actualCloudOperations": 0,
+  "artifactSHA256": "9f17ed61280b6a1da404284e62ecda9856a254be3eca03dda4ac09dfdea8ba94",
+  "ownerOriginalsPresentInArtifact": false,
+  "downloadFallback": "Connector metadata request ConnectTimeout; same-run gh read-only artifact download succeeded; no test rerun",
+  "p0Passed": false
+}

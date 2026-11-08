@@ -2,7 +2,15 @@
 
 Owner刚提供两份原始CKDB及对应正式容器截图。两文件逐字节相同、各356B，SHA256均为`60fec48392126eab598a05dbe0f7f9557494a992df8fb62295ccd3752a7768db`，仅Users7fields。与实际v2 SDK候选的差异是新增3种业务类型/11个业务字段，系统字段与权限仍单独审查，不生成可部署DDL。详见[本轮正式结构审查](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md)及[原始来源记录](Evidence/iCloudSyncFoundation/20261108/formal-schema-intake/receipt.json)。
 
-**不需要重复导出。** 现在只缺正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/Push和已关联容器的只读结果；两张Console截图不能替代App ID能力关联。云数据未查询，P0/P1/P2保持未通过。正在完成离线比较与锁定的Development SDK适配准备，实际执行仍待后续具体门禁。
+**不需要重复导出。** 现在只缺正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/Push和已关联容器的只读结果；两张Console截图不能替代App ID能力关联。云数据未查询，P0/P1/P2保持未通过。离线比较与锁定的Development SDK适配准备已完成本机及远端验证，实际执行仍待后续具体门禁。
+
+剩余只读动作预计2–3分钟，手机前台/数据线均0分钟。前置条件是能登录对应Apple Developer团队；密码/验证码由Owner在Apple界面输入。
+
+1. 在Apple Developer的Certificates, Identifiers & Profiles → Identifiers，打开Bundle ID精确为`com.yocruzer.PersonalGrowthOS`的正式App，确认所选Team与项目Team一致。
+2. 只读查看iCloud是否启用、是否包含CloudKit support、Push Notifications是否启用。若需展开iCloud关联窗口，只查看目前已选容器，不改勾选、不Save。
+3. 回复四项实际结果即可：`iCloud=…；CloudKit support=…；Push=…；容器=…`。目标容器为`iCloud.com.yocruzer.PersonalGrowthOS`；未显示、无法查看或尚未配置均照实记录，不把未知填通过。
+
+完成判据是正式App的当前能力及容器关联有明确只读结果；没有缺项需要变更时不安排额外操作。后续签名准备与Development执行清单依赖此结果，无法现在合并成可执行的云写入步骤；Production仍需在Development覆盖/读回后形成精确差异并另行批准。
 
 下面保留2026-11-07准备记录，其中“待导出/Production未查看”描述的是当时状态，以本段新证据为准；原导出步骤仅作复现说明，不是要求Owner再做一遍。
 

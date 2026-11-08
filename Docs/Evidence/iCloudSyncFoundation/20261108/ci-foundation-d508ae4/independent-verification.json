@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "reviewer": "/root/readiness",
+  "method": "Read-only verification of retained artifact bytes, GitHub artifact metadata, exact log cases, report bindings, synthetic inputs, and committed source hashes; no test rerun or cloud operation",
+  "runID": 42435822157,
+  "artifactID": 13599109014,
+  "sourceSHA": "d508ae41f8f87adff790c65cc090f217206e0e18",
+  "checkoutSHA": "ead8f0c1e1850740a2aa43138075b04357796e73",
+  "sourceBinding": {
+    "artifactMetadataHeadMatchesCommittedCandidate": true,
+    "checkoutFileInArchiveMatchesDocumentedPRMergeSHA": true,
+    "mergeCommitReconstructedLocally": false,
+    "committedPackageCodeTestsAndManifestMatchFinalIndependentLocalSnapshot": true,
+    "committedSchemaAuditSHA256": "d175b24b2380c2dc3d41e24f734cf0523e96975d6348b4168891fcda4e9a7123",
+    "committedSyntheticReviewScriptSHA256": "a2c105194b034ecb3a918257cd48dcae7c41b94b89ae6cb94a9d72118a73a184"
+  },
+  "artifact": {
+    "sha256": "9f17ed61280b6a1da404284e62ecda9856a254be3eca03dda4ac09dfdea8ba94",
+    "matchesGitHubDigest": true,
+    "zipCRCFailures": null,
+    "entries": 298,
+    "allRetainedLooseArtifactFilesMatchArchive": true
+  },
+  "actualUniquePassedCases": {
+    "native": {
+      "PayloadChunkTests": 6,
+      "SyncFoundationTests": 18,
+      "FormalProbeCoreTests": 10,
+      "BatchRunnerTests": 17,
+      "total": 51
+    },
+    "independentChunk": 11,
+    "independentSDK": 11,
+    "nativeFailedCaseLines": 0,
+    "schemaUnittest": 16,
+    "schemaUnittestResult": "OK",
+    "independentFormalCLICommands": 22,
+    "independentSchemaChecks": 20,
+    "independentSchemaComposition": "19 CLI calls plus one direct publication API negative control",
+    "duplicateSummaryLinesNotCounted": true,
+    "zeroMatchOtherTargetsNotCounted": true
+  },
+  "reports": {
+    "sixOfflineSDKCommands": "OFFLINE_PASS",
+    "actualUnprovisionedPreflight": "NOT_READY",
+    "lockedHost": "NOT_READY/EXTERNAL_GATE_NOT_COMPLETE",
+    "allThreeReportsBoundToSameActualPlanRunDatasetAndSHA": true,
+    "independentSummaryObjectsMatchRawLogs": true,
+    "schemaSHA256": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003"
+  },
+  "privacy": {
+    "ownerOriginalsOrScreenshotsInArtifact": false,
+    "scannedEveryZipMemberForFourOriginalBlobsAndWholeBase64HexEncodings": true,
+    "normalizedCompleteOwnerSchemaFound": false,
+    "completeOriginalFieldDictionaryInJSONFound": false,
+    "schemaBaseline": "Original ReviewFixture with three invented fields and invented roles; inspected directly in archived CLI input",
+    "ownerOriginalAuditRemainsLocalOnly": true
+  },
+  "boundaries": {
+    "cloudKitNetworkExecuted": false,
+    "realAppleRoundTripProven": false,
+    "realSigningAccountEnvironmentEligibilityProven": false,
+    "p0Passed": false,
+    "p1Passed": false,
+    "p2Passed": false,
+    "actualV16LargeFixtureNotCountedAsRemoteIndependentChunkTest": true,
+    "productCIReviewed": false
+  },
+  "findings": []
+}

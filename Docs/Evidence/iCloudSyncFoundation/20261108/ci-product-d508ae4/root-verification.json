@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "method": "Independent root rehash of three retained original ZIPs; CRC and exact extracted test/bundle report equality; source/checkout and actual counts verified",
+  "artifacts": [
+    "ios-smoke-1",
+    "ios-release-1",
+    "ios-unit-1"
+  ],
+  "noTestRerun": true
+}

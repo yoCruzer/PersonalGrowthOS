@@ -1,0 +1,54 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 356]
+[Planning deferred tasks]
+[4 / 24] SyncFoundation
+[6 / 15] FormalDevelopmentSDKTests-product
+[8 / 17] FormalDevelopmentSDKTests-product
+[12 / 16] FormalDevelopmentSDKTests-product
+[14 / 16] FormalDevelopmentSDKTests-product
+[20 / 21] SyncFoundationTests-product
+Build complete! (3.75 sec)
+Test Suite 'Selected tests' started at 2026-11-08 01:50:06.608.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 01:50:06.611.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 01:50:06.611.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 01:50:06.611.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.002) seconds
+Test Suite 'Selected tests' started at 2026-11-08 01:50:06.855.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 01:50:06.856.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 01:50:06.856.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 01:50:06.856.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 01:50:06.974.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 01:50:06.975.
+Test Suite 'IndependentSDKTests' started at 2026-11-08 01:50:06.975.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testDistinctConcurrentTicketRejectedAndConsumedTicketCannotReplay]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testDistinctConcurrentTicketRejectedAndConsumedTicketCannotReplay]' passed (0.045 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testFetchedSetAndBytesMustMatchEvenAfterAllSaveAcknowledgments]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testFetchedSetAndBytesMustMatchEvenAfterAllSaveAcknowledgments]' passed (0.147 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testIndependentExactFixtureAndExistingZoneNegative]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testIndependentExactFixtureAndExistingZoneNegative]' passed (0.062 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testLockedHostFinalBoundReportStillRefusesAllAuthority]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testLockedHostFinalBoundReportStillRefusesAllAuthority]' passed (0.009 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testOutputDirectoryReplacementDuringAwaitCannotPublishSuccess]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testOutputDirectoryReplacementDuringAwaitCannotPublishSuccess]' passed (0.026 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testPartialErrorsRetainNumericEvidenceAndRedactForeignIdentities]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testPartialErrorsRetainNumericEvidenceAndRedactForeignIdentities]' passed (0.026 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testPlanAndLeasedBytesChangedDuringActualAwaitReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testPlanAndLeasedBytesChangedDuringActualAwaitReject]' passed (0.055 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testRealSuspensionCancellationDoesNotAdvanceAfterReturn]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testRealSuspensionCancellationDoesNotAdvanceAfterReturn]' passed (0.062 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testRealSuspensionEpochFencesEveryBoundary]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testRealSuspensionEpochFencesEveryBoundary]' passed (0.121 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testReportCollisionNeverReturnsSuccessOrOverwritesEvidence]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testReportCollisionNeverReturnsSuccessOrOverwritesEvidence]' passed (0.037 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testUnexpectedResultsIncludingSameNameWrongZoneAreRedactedAndRejected]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentSDKTests testUnexpectedResultsIncludingSameNameWrongZoneAreRedactedAndRejected]' passed (0.021 seconds).
+Test Suite 'IndependentSDKTests' passed at 2026-11-08 01:50:07.588.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.611 (0.613) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 01:50:07.588.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.611 (0.613) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 01:50:07.588.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.611 (0.614) seconds
