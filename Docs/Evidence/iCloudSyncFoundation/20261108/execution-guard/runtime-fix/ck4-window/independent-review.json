@@ -1,0 +1,91 @@
+{
+  "result": "PASS_EVIDENCE_STRUCTURE_NOT_HMAC_AUTHENTICATION",
+  "checks": {
+    "rawFileHashes": true,
+    "noDuplicates": true,
+    "noUnavailableSections": true,
+    "ledgerFilesContiguous": true,
+    "ledgerSequenceAndPreviousLinks": true,
+    "twoCurrentPermits": true,
+    "planBinding": true,
+    "leaseBytesMatchPlan": true,
+    "callbacksBoundToIntentAndLedger": true,
+    "callbackSequencesContiguous": true,
+    "allCurrentLedgerSummaryReferencesResolve": true,
+    "failedReportLedgerPublished": true,
+    "allPermitsHaveTerminal": true,
+    "currentTerminalsExpected": true,
+    "identityDigestsConsistentWithoutDisclosure": true,
+    "failureReportFacts": true,
+    "noSuccessOrFatalMarker": true,
+    "onlyZoneProbeTransportIntent": true,
+    "reviewedProductionSourceEqualsA72befa": true
+  },
+  "files": {
+    "total": 56,
+    "run": 23,
+    "ledger": 33
+  },
+  "callbacks": 11,
+  "resolvedCurrentSummaryReferences": 16,
+  "observations": {
+    "accountWrapperInvocations": 3,
+    "transportWrapperInvocations": 1,
+    "admittedSDKEnqueues": 4,
+    "threeAccountOperationsSucceeded": true,
+    "failedStage": "zone-probe aggregate callback",
+    "cloudKitErrorDomain": "CKErrorDomain",
+    "cloudKitErrorCode": 4,
+    "cloudKitErrorName": "networkFailure",
+    "noCreateOrSaveInvocationInReviewedSourcePath": true,
+    "wireRequestCount": "NOT_OBSERVABLE",
+    "terminalAtSequence": 32,
+    "reportPublishedAtSequence": 33,
+    "needsAnotherCloseout": false,
+    "enqueueObservationToCallbackMS": 11066
+  },
+  "diagnosticLimitations": [
+    "Application evidence omits underlying errors/retry hints; specific timeout was recovered only from separately authorized same-operation system logs.",
+    "CKError maps ledger stop reason to validationFailed despite transport-stage failure; report retains CK_4 and stage.",
+    "Do not attribute this to VPN or Apple service, and do not claim pure external network failure or rule out packaging/launch integration: invalid bundle/delegation and LaunchServices clues remain unresolved.",
+    "Three successful account wrappers may involve caches or different service paths. They do not prove this zone-fetch HTTP path healthy or count actual wire requests.",
+    "No create/save invocation on this reviewed code path. Task byte metrics do not establish absence of all OS network traffic."
+  ],
+  "authenticationLimit": "Export intentionally skipped Keychain; SHA/link/reference checks do not authenticate HMAC chain or current anchor. Terminal completeness is inferred from captured ledger and source, not live Keychain verification.",
+  "privacy": "Read only the authorized probe export and three explicitly scoped process/task/connection logs. No URL, IP, private task/operation IDs, account identifier or HMAC value emitted. No cloud operation, account switch, script rerun or Keychain access.",
+  "sources": {
+    "sdkErrorMapping": "Local Apple SDK CloudKit.framework/Headers/CKError.h:69",
+    "appleMeaning": "https://developer.apple.com/documentation/cloudkit/ckerror/code/networkfailure"
+  },
+  "systemLogCrossCheck": {
+    "sameUniqueTaskIDAcrossProbeTaskAndConnectionLogs": true,
+    "sameUniqueOperationIDAcrossProbeAndDaemonLogs": true,
+    "probeErrorHasCK4AndUnderlyingTimeout": true,
+    "operationClassObserved": true,
+    "daemonHTTPFailureCount": 1,
+    "daemonReportedTransferBytes": [
+      0,
+      0
+    ],
+    "transactionMetrics": {
+      "transaction_duration_ms": "10987",
+      "response_status": "-1",
+      "request_bytes": "0",
+      "response_bytes": "0",
+      "cache_hit": "false"
+    }
+  },
+  "connectionClues": {
+    "tunnelInterfaceMentioned": true,
+    "readServerHelloLogCount": 6,
+    "delegationFailureInvalidBundleIDCount": 7,
+    "delegationFailureMentionsProbeBundle": true,
+    "probeLaunchServicesErrorMinus10819Count": 2
+  },
+  "systemLogSHA256": {
+    "pgos-runtime-window-process-4906546A.json": "008a9ebd0b694368c0b632934517272c555646f78a1b852d215466e6ed85e60e",
+    "pgos-runtime-window-task-4906546A.json": "6e829c889c4e7154f1e94bdba76768aeb3b2824b4f668877ea7f77925c7ad4c6",
+    "pgos-runtime-window-connection-4906546A.json": "535e302fb26eb23b1ee25009ea33d090f7c681ea7415295fc12d3af23751f309"
+  },
+  "rootCauseProvenScope": "The exact zone-fetch SDK operation returned CK_4 with nested NSURLErrorDomain -1001, correlated to its daemon URL task timing out after 10987ms, no HTTP response status and reported 0/0 request/response bytes. Matching connection logs include tunnel-interface paths, TLS read_server_hello stalls and network delegation invalid-bundle failures; probe logs include LaunchServices -10819. Timeout location is supported, but initiating cause remains unresolved."
+}

@@ -1,3 +1,11 @@
+## 2026-11-08 当前：新窗口CK_4失败，完成原始证据审查，不再试跑
+
+已授权的a72befa/3afb421d…窗口实际run exit1，export exit0；3账户wrapper返回成功，首个zone-probe收到CKErrorDomain4，未进入create/save。独立核验56文件、33账本、回调/报告引用完整；已存在未知结果terminal，无需再次closeout。原始日志关联到同一task/连接：TLS握手阶段约11秒超时（NSURLErrorDomain -1001），同时有隧道路径及probe Bundle ID的delegation/LaunchServices识别警告。不能断言VPN、纯环境故障或排除启动方式兼容问题。
+
+入口已停用，无新云授权/执行，不再请求Owner重跑或重复只读检查。当前完成[失败与责任复盘](ICLOUD_SYNC_CK4_FAILURE_REVIEW_ZH.md)；后续先独立验证启动方式和诊断缺口，不用CI/离线PASS替代真实链路。P0/P1/P2与完整同步均未完成，原失败/私人证据/原项目改动和G1接受范围保留。以下“等待启动/结果”为历史，已被本节替代。
+
+---
+
 ## 2026-11-08 当前：真实失败已定位，运行时检查修复进入验证交付
 
 Owner已批准并执行b3cd013窗口：旧批次本地closeout成功追加第6条未知terminal；新run在资格检查阶段exit1、尚未消费新ledger，两次只读导出成功。系统日志确认硬件报告子进程5秒超时并返回空项；旧顶层错误码缺失保留，不推断首次107963d同因。旧入口已停用，不重跑、不重新enrollment、不再要求Owner用云批次诊断。

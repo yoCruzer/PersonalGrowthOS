@@ -1,5 +1,7 @@
 # 修复后的固定 Development 验证窗口
 
+最新结果：本单次窗口已执行并失败（run exit1/CK_4，export exit0），交付入口停用；无需再次收口，不得重跑。详见[证据与复盘](ICLOUD_SYNC_CK4_FAILURE_REVIEW_ZH.md)。以下审批和固定范围为原始历史。
+
 状态：代码、签名产物、本机与haha四阶段只读资格、独立审查及定向CI均已通过；Owner已明确批准“授权本次单独新窗口”，决定SHA256 `e22c3d66371b52efdad462446d0aead0666e242040849f80053925003abd1536`。已启用同一已审交付包，等待haha单次启动的实际结果；尚未观察到云执行。旧单次失败授权不复用。
 
 - 源码：`a72befa6c46516ede572e9d561c735c07d8cf5fc`，PR18；定向CI42482033378 SUCCESS，原ZIP/merge checkout/50源指纹已核验。
