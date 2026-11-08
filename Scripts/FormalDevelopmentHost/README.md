@@ -67,6 +67,15 @@ authorize a cloud request. `inspect-fixture` remains a parameterless, fixed synt
 offline test. The separate `enroll-guard BASE64_APPROVAL EXPECTED_SHA` and `run-approved BASE64_APPROVAL EXPECTED_SHA` commands require a canonical, explicitly approved purpose/window and real self qualification. They must not be invoked without the corresponding Owner authorization; malformed/template inputs reject before storage or CloudKit. Enrollment is the only path allowed to initialize the local guard. Each process permits one production attempt, and the durable ledger forbids replay across processes. Actual provisioning and
 offline signed observations are recorded separately in the project execution evidence.
 
+`export-run RUN_UUID` reads only the matching run and execution ledger under this
+probe's OS-selected Application Support directory. It never opens the Keychain,
+constructs a CloudKit container, acquires a ledger lock, repairs state, or executes a
+window. Output is private JSON with exact file bytes and SHA256 values. Keep it out
+of public Git/PR attachments. A complete export does not authenticate ledger HMACs
+or establish P0 success; rejected/missing sections are explicitly listed. File
+allowlists, ownership, no-follow/single-link checks and bounded reads reject unsafe
+inputs. A failed cloud window remains consumed after export.
+
 File access uses held directory fds, exclusive creation and no-follow flags. Before
 and after external build operations it verifies directory identities. Caller-owned
 immutable source/output leases are still required: URL-based compiler paths cannot

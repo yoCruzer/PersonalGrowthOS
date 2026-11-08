@@ -18,6 +18,10 @@ struct GuardedBatchReport: Encodable {
     let completedStages: [String]
     let failure: String?
     let remoteOutcomeUnknown: Bool
+    let failureStage: String?
+    let operationEnqueuePrevented: Bool
+    // Admission is not an assertion that the provider reached its SDK call.
+    let sdkEnqueuesAdmitted: Int
 }
 private struct GuardedFatalMarker: Encodable {
     let status = "FATAL_EXECUTION_OR_EVIDENCE_UNKNOWN"
@@ -27,11 +31,18 @@ private struct GuardedFatalMarker: Encodable {
     let ledgerOperationID: UUID?
     let operation: LedgerOperation?
     let postTerminal: Bool
+    let failureStage: String
+    let failureCode: String
+    let operationEnqueuePrevented: Bool
+    let sdkEnqueuesAdmitted: Int
 }
 private func guardedCode(_ error: Error) -> String {
     if let value = error as? GuardedBatchFailure { return "GUARDED_" + value.rawValue }
     if let value = error as? GuardedAccountError { return "ACCOUNT_" + value.rawValue }
     if let value = error as? OwnerWindowError { return "WINDOW_" + value.rawValue }
+    if let value = error as? RuntimeSigningDiagnosticFailure { return "RUNTIME_" + value.stage.rawValue + "_" + String(value.status) }
+    if let value = error as? RuntimeSigningError { return "RUNTIME_" + value.rawValue }
+    if let value = error as? GuardedEntryError { return "ENTRY_" + value.rawValue }
     if error is LedgerFailure { return "LEDGER_REJECTED" }
     return code(error)
 }
@@ -74,6 +85,10 @@ private struct GuardedCallbackRecord: Encodable {
     var accountCalls = 0
     var transportCalls = 0
     var completed: [String] = []
+    var primaryFailure: Error?
+    var failureStage: String?
+    var operationEnqueuePrevented = false
+    var sdkEnqueuesAdmitted = 0
     let onFatal: () -> Void
     init(directory: ProbeDirectory, fixture: ProbeFixture, ledger: ExecutionLedger, permit: ExecutionPermit,
          provider: BatchAccountProvider, onFatal: @escaping () -> Void) {
@@ -124,14 +139,19 @@ private struct GuardedCallbackRecord: Encodable {
         // CloudKit may still finish remotely. Late callbacks keep the original sink.
         provider?.requestCancellation(); transport?.value.requestCancellation()
     }
-    func failEvidence(operationID: UUID? = nil, operation: LedgerOperation? = nil, originalPermit: ExecutionPermit? = nil) {
+    func failEvidence(operationID: UUID? = nil, operation: LedgerOperation? = nil, originalPermit: ExecutionPermit? = nil,
+                      error: Error = GuardedBatchFailure.evidence, stage: String = "evidence", enqueuePrevented: Bool = false) {
         guard !fatal else { return }; fatal = true
+        // Capture the first cause before cancellation can resume an awaiting bridge.
+        primaryFailure = error; failureStage = stage; operationEnqueuePrevented = enqueuePrevented
         // Never rewrite an already returned report. A durable sidecar, when storage
         // permits, records post-terminal failure; the caller also receives onFatal.
         do {
             let bytes = try json(GuardedFatalMarker(run: fixture.plan.run, dataset: fixture.plan.dataset,
                 planSHA256: try fixture.plan.digest, ledgerOperationID: operationID ?? lastOperationID,
-                operation: operation ?? lastOperation, postTerminal: terminal))
+                operation: operation ?? lastOperation, postTerminal: terminal,
+                failureStage: stage, failureCode: guardedCode(error), operationEnqueuePrevented: enqueuePrevented,
+                sdkEnqueuesAdmitted: sdkEnqueuesAdmitted))
             try writeNamed("fatal-unknown.json", bytes: bytes)
             if let id = operationID ?? lastOperationID {
                 try ledger.recordObservation(operationID: id, event: .callbackRejected,
@@ -213,12 +233,24 @@ private struct GuardedCallbackRecord: Encodable {
             // mutation even if this is a late callback after the original return.
             try context.checkEvidence(operationID: ledgerID, operation: operation, originalPermit: permit)
             if incoming.event == "OPERATION_ENQUEUE_REQUESTED" {
-                guard !enqueued else { throw GuardedBatchFailure.callbackProtocol }
-                try beforeEnqueue() // Bridge cannot enqueue unless this synchronous check returns.
-                enqueued = true
+                // A provider claiming it already started cannot also establish a
+                // pre-SDK rejection. Preserve that contradiction as unknown.
+                guard !enqueued, !incoming.started, !incoming.cancellationRequested,
+                      !incoming.remoteOutcomeUnknown else { throw GuardedBatchFailure.callbackProtocol }
+                do { try beforeEnqueue() } // Bridge cannot enqueue unless this synchronous check returns.
+                catch {
+                    context.failEvidence(operationID: ledgerID, operation: operation, originalPermit: permit,
+                        error: error, stage: "pre-enqueue-gate", enqueuePrevented: true)
+                    throw error
+                }
+                enqueued = true; context.sdkEnqueuesAdmitted += 1
             }
             if incoming.event == "OPERATION_RETURNED" { completed = true }
-        } catch { context.failEvidence(operationID: ledgerID, operation: operation, originalPermit: permit); throw error }
+        } catch {
+            context.failEvidence(operationID: ledgerID, operation: operation, originalPermit: permit,
+                error: error, stage: "callback-evidence")
+            throw error
+        }
     }
     private func knownEvent(_ event: String) -> Bool {
         ["OPERATION_ENQUEUE_REQUESTED", "CANCEL_REQUESTED", "ITEM_RETURNED", "OPERATION_RETURNED", "UNEXPECTED_CALLBACK",
@@ -372,7 +404,7 @@ private struct GuardedCallbackRecord: Encodable {
             try check()
             return success
         } catch {
-            let error: Error = context?.deadlineExpired == true ? OwnerWindowError.outsideWindow : error
+            let error: Error = context?.primaryFailure ?? (context?.deadlineExpired == true ? OwnerWindowError.outsideWindow : error)
             if let state = context {
                 if let active = state.activeOperation {
                     do {
@@ -443,10 +475,14 @@ private struct GuardedCallbackRecord: Encodable {
         }
     }
     private func report(window: ValidatedOwnerWindow, context: GuardedRunEvidence, failure: String?) -> GuardedBatchReport {
-        GuardedBatchReport(status: failure == nil ? "GUARDED_STEPS_VERIFIED" : "REMOTE_OUTCOME_UNKNOWN", planSHA256: window.approval.planSHA256,
+        // Gate/admission fields describe local events only. They cannot guarantee
+        // global remote effects or evidence integrity, including after late callbacks.
+        return GuardedBatchReport(status: failure == nil ? "GUARDED_STEPS_VERIFIED" : "REMOTE_OUTCOME_UNKNOWN", planSHA256: window.approval.planSHA256,
             run: window.approval.run, dataset: window.approval.dataset, ownerWindow: window.approval.window,
             providerMethodInvocations: context.accountCalls, transportMethodInvocations: context.transportCalls,
-            completedStages: context.completed, failure: failure, remoteOutcomeUnknown: failure != nil)
+            completedStages: context.completed, failure: failure, remoteOutcomeUnknown: failure != nil,
+            failureStage: context.failureStage, operationEnqueuePrevented: context.operationEnqueuePrevented,
+            sdkEnqueuesAdmitted: context.sdkEnqueuesAdmitted)
     }
     private func stopReason(_ error: Error) -> LedgerStopReason {
         if error is CancellationError { return .cancelled }

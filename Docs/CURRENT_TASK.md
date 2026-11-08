@@ -1,4 +1,14 @@
-## Owner 固定 Development 窗口已授权，待 CI 收尾后由 haha 启动
+## 2026-11-08 当前任务：修复首次入队前失败并保留真实证据
+
+真实 enrollment exit0，run exit74；只读导出15份探针文件完整、摘要匹配，首次账户请求在入队前被拒，旧代码未保留原因。guard/Keychain anchor及已消费窗口必须保留，不重新 enrollment、不重跑旧命令、不推定 CK_2。`export-run` 已完成且 Owner 实际执行成功，无云/Keychain访问；账本 HMAC 未认证。
+
+已修复只读导出硬链接漏洞（6/6）及原始错误被取消掩盖问题；最终完整包164/164、独立边界35/35、保守分类定向6/6、打包38/38通过，iOS17 SDK编译通过。独立复核确认旧批次显式账户API与transport/data均0；新代码所有失败仍保持远端结果未知。当前等待 Owner 的有界离线资格诊断，并交付已审查修复。旧107963d CI不能覆盖新修改。需要新真实云窗口时先完成具体产物与清单；既有单次授权不被扩大成自动重试。
+
+[本批证据](Evidence/iCloudSyncFoundation/20261108/execution-guard/failed-window-diagnostics/owner-window-result.json)。正式产品完整同步及P0/P1/P2仍未完成；Production/发布/合并边界不变。以下为保留历史，不覆盖上述当前范围。
+
+---
+
+## 历史：Owner 固定 Development 窗口已授权，待 CI 收尾后由 haha 启动
 
 Owner 已明确确认“已进入 haha，测试 iCloud 已确认”，并回复“授权本次固定 Development 窗口”。授权绑定 PR18 / `107963d`、签名产物 `9291c390…` 和已固定合成计划，包含一次本地 guard/Keychain anchor 初始化及 Development 六条记录写读；前提为最终 CI 核验通过，最长15分钟，失败即停，不自动重试。不得再次询问同一授权。执行工具身份仍非haha，Owner须在haha终端启动已准备脚本；未自动切换账户，也尚未执行真实命令。
 

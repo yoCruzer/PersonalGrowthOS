@@ -1,0 +1,46 @@
+warning: /Users/himini/Library/org.swift.swiftpm/configuration is not accessible or not writable, disabling user-level cache features.
+warning: /Users/himini/Library/org.swift.swiftpm/security is not accessible or not writable, disabling user-level cache features.
+warning: /Users/himini/Library/Caches/org.swift.swiftpm is not accessible or not writable, disabling user-level cache features.
+warning: 'syncfoundation': failed storing manifest for 'syncfoundation' in cache: attempt to write a readonly database
+Building for debugging...
+[2 / 14] FormalDevelopmentSDK
+[4 / 16] FormalDevelopmentSDK
+[7 / 17] FormalDevelopmentSDK
+[11 / 16] FormalDevelopmentHost-product
+[13 / 18] FormalDevelopmentSDKTests-product
+[17 / 20] FormalDevelopmentSDKTests-product
+[19 / 23] FormalDevelopmentSDKTests-product
+Build complete! (1.91秒)
+Test Suite 'Selected tests' started at 2026-11-08 18:50:55.725.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 18:50:55.726.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 18:50:55.726.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:50:55.726.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 18:50:55.779.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 18:50:55.780.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 18:50:55.780.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:50:55.780.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 18:50:55.821.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 18:50:55.822.
+Test Suite 'GuardedBatchRunnerTests' started at 2026-11-08 18:50:55.822.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEvidenceFailurePoisonsRunnerAndCannotReturnSuccess]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testEvidenceFailurePoisonsRunnerAndCannotReturnSuccess]' passed (0.017 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testGateFailureWithFatalMarkerCollisionPreservesOriginalAndRemainsUnknown]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testGateFailureWithFatalMarkerCollisionPreservesOriginalAndRemainsUnknown]' passed (0.011 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLateEvidenceWriteFailureAddsMarkerAndNotifiesAfterTerminal]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testLateEvidenceWriteFailureAddsMarkerAndNotifiesAfterTerminal]' passed (1.748 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testProviderClaimingStartedBeforeEnqueueCannotClaimNoSDKInvocation]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testProviderClaimingStartedBeforeEnqueueCannotClaimNoSDKInvocation]' passed (0.012 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testRuntimeRecheckAtEnqueueCanPreventFirstProviderInvocation]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testRuntimeRecheckAtEnqueueCanPreventFirstProviderInvocation]' passed (0.012 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testSingleFlightCancellationAndLateACKRemainOriginalPermit]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testSingleFlightCancellationAndLateACKRemainOriginalPermit]' passed (0.014 seconds).
+Test Suite 'GuardedBatchRunnerTests' passed at 2026-11-08 18:50:57.635.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 1.813 (1.814) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 18:50:57.635.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 1.813 (1.814) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 18:50:57.635.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 1.813 (1.814) seconds

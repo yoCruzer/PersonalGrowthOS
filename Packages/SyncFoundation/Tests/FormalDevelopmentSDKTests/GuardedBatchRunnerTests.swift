@@ -18,13 +18,16 @@ import SyncFoundation
     var holdAt: Int?
     var retained: [Bridge] = []
     var cancellations = 0
+    var evidenceTransform: ((TransportOperationEvidence) -> TransportOperationEvidence)?
     init(_ ledger: ExecutionLedger) { self.ledger = ledger }
     func authorizeRead(_ operation: LedgerOperation, operationID: UUID, permit: ExecutionPermit) throws {
         guard pending == nil else { throw GuardedAccountError.busy }
         _ = try ledger.requirePendingIntent(operation, operationID: operationID, permit: permit)
         pending = (operation, operationID, permit)
     }
-    func bindOperationEvidence(_ sink: @escaping TransportEvidenceSink, onFailure: @escaping TransportEvidenceFailure) throws { evidence = (sink, onFailure) }
+    func bindOperationEvidence(_ sink: @escaping TransportEvidenceSink, onFailure: @escaping TransportEvidenceFailure) throws {
+        evidence = ({ [weak self] value in try sink(self?.evidenceTransform?(value) ?? value) }, onFailure)
+    }
     func checkEpoch() throws { guard epochValid else { throw GuardedAccountError.changed } }
     func requestCancellation() { cancellations += 1; cancel?() }
     func available() async throws { _ = try await read(status: true) }
@@ -178,11 +181,70 @@ import SyncFoundation
     }
     func testRuntimeRecheckAtEnqueueCanPreventFirstProviderInvocation() async throws {
         let c = try context(); var checks = 0
+        do {
+            _ = try await run(c, runtime: {
+                checks += 1
+                if checks == 4 { throw RuntimeSigningDiagnosticFailure(stage: .deviceTimeout, status: 1) }
+            })
+            XCTFail("gate rejection must remain fail closed")
+        } catch let error as RuntimeSigningDiagnosticFailure {
+            XCTAssertEqual(error.stage, .deviceTimeout); XCTAssertEqual(error.status, 1)
+        } catch { XCTFail("original rejection was replaced: \(type(of: error))") }
+        XCTAssertEqual(c.account.calls, 0); XCTAssertEqual(c.cloud.calls.count, 0)
+        XCTAssertTrue(c.runner.evidenceFatal)
+        let marker = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: c.output.appendingPathComponent("fatal-unknown.json"))) as? [String: Any])
+        XCTAssertEqual(marker["failureStage"] as? String, "pre-enqueue-gate")
+        XCTAssertEqual(marker["failureCode"] as? String, "RUNTIME_deviceTimeout_1")
+        XCTAssertEqual(marker["operationEnqueuePrevented"] as? Bool, true)
+        XCTAssertEqual(marker["sdkEnqueuesAdmitted"] as? Int, 0)
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: c.output.appendingPathComponent("failed-report.json"))) as? [String: Any])
+        XCTAssertEqual(report["failure"] as? String, "RUNTIME_deviceTimeout_1")
+        XCTAssertEqual(report["status"] as? String, "REMOTE_OUTCOME_UNKNOWN")
+        XCTAssertEqual(report["remoteOutcomeUnknown"] as? Bool, true)
+        XCTAssertEqual(report["providerMethodInvocations"] as? Int, 1, "Wrapper entry is distinct from an SDK invocation")
+        XCTAssertThrowsError(try c.ledger.binding(for: c.permit, requiring: .qualificationRead))
+    }
+    func testGateFailureWithFatalMarkerCollisionPreservesOriginalAndRemainsUnknown() async throws {
+        let c = try context(); var checks = 0
+        let sentinel = Data("preserve-existing-fatal-marker".utf8)
+        let markerURL = c.output.appendingPathComponent("fatal-unknown.json")
         await failure(c, runtime: {
             checks += 1
-            if checks == 4 { throw GuardedBatchFailure.binding }
+            if checks == 4 {
+                try sentinel.write(to: markerURL)
+                throw RuntimeSigningDiagnosticFailure(stage: .deviceTimeout, status: 1)
+            }
         })
-        XCTAssertEqual(c.account.calls, 0); XCTAssertEqual(c.cloud.calls.count, 0)
+        XCTAssertEqual(try Data(contentsOf: markerURL), sentinel)
+        XCTAssertTrue(c.runner.evidenceFatal); XCTAssertEqual(c.account.calls, 0); XCTAssertEqual(c.cloud.calls.count, 0)
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: c.output.appendingPathComponent("failed-report.json"))) as? [String: Any])
+        XCTAssertEqual(report["failure"] as? String, "RUNTIME_deviceTimeout_1")
+        XCTAssertEqual(report["failureStage"] as? String, "pre-enqueue-gate")
+        XCTAssertEqual(report["sdkEnqueuesAdmitted"] as? Int, 0)
+        XCTAssertEqual(report["operationEnqueuePrevented"] as? Bool, true)
+        XCTAssertEqual(report["status"] as? String, "REMOTE_OUTCOME_UNKNOWN")
+        XCTAssertEqual(report["remoteOutcomeUnknown"] as? Bool, true)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: c.output.appendingPathComponent("verified-report.json").path))
+        do { _ = try await run(c); XCTFail("fatal marker failure must not permit retry") } catch GuardedBatchFailure.poisoned {}
+    }
+    func testProviderClaimingStartedBeforeEnqueueCannotClaimNoSDKInvocation() async throws {
+        let c = try context()
+        c.account.evidenceTransform = { value in
+            guard value.event == "OPERATION_ENQUEUE_REQUESTED" else { return value }
+            return TransportOperationEvidence(operationID: value.operationID, stage: value.stage, sequence: value.sequence,
+                event: value.event, started: true, cancellationRequested: value.cancellationRequested,
+                remoteOutcomeUnknown: value.remoteOutcomeUnknown, cancellationScope: value.cancellationScope, items: value.items)
+        }
+        await failure(c)
+        XCTAssertTrue(c.runner.evidenceFatal); XCTAssertEqual(c.account.calls, 0)
+        let marker = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: c.output.appendingPathComponent("fatal-unknown.json"))) as? [String: Any])
+        XCTAssertEqual(marker["failureStage"] as? String, "callback-evidence")
+        XCTAssertEqual(marker["failureCode"] as? String, "GUARDED_callbackProtocol")
+        XCTAssertEqual(marker["operationEnqueuePrevented"] as? Bool, false)
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: c.output.appendingPathComponent("failed-report.json"))) as? [String: Any])
+        XCTAssertEqual(report["sdkEnqueuesAdmitted"] as? Int, 0)
+        XCTAssertEqual(report["status"] as? String, "REMOTE_OUTCOME_UNKNOWN")
+        XCTAssertEqual(report["remoteOutcomeUnknown"] as? Bool, true)
     }
     func testPartialAndMissingOrCorruptFetchNeverFinishBatch() async throws {
         for fault in ["partial", "missingFetch", "badBytes", "existingZone"] {
@@ -228,6 +290,15 @@ import SyncFoundation
             }
         }
         await failure(c); XCTAssertTrue(c.runner.evidenceFatal); XCTAssertEqual(c.cloud.calls.count, 0)
+        XCTAssertEqual(c.account.calls, 1)
+        let marker = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: c.output.appendingPathComponent("fatal-unknown.json"))) as? [String: Any])
+        XCTAssertEqual(marker["failureStage"] as? String, "callback-evidence")
+        XCTAssertEqual(marker["operationEnqueuePrevented"] as? Bool, false)
+        XCTAssertEqual(marker["sdkEnqueuesAdmitted"] as? Int, 1)
+        let report = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: c.output.appendingPathComponent("failed-report.json"))) as? [String: Any])
+        XCTAssertEqual(report["status"] as? String, "REMOTE_OUTCOME_UNKNOWN")
+        XCTAssertEqual(report["remoteOutcomeUnknown"] as? Bool, true)
+        XCTAssertNotEqual(report["failure"] as? String, "cancelled")
         XCTAssertEqual(try String(contentsOf: c.output.appendingPathComponent("000001-callback.json")), "preserve-existing")
         XCTAssertFalse(FileManager.default.fileExists(atPath: c.output.appendingPathComponent("verified-report.json").path))
         do { _ = try await run(c); XCTFail() } catch GuardedBatchFailure.poisoned {}

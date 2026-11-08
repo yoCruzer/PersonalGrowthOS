@@ -1,4 +1,14 @@
-## Owner 固定 Development 窗口已授权，待 CI 收尾后由 haha 启动
+## 2026-11-08 最新：真实窗口已停止，正在诊断与修复
+
+Owner 已执行固定窗口：`enroll-guard` exit 0，本地 guard/Keychain anchor 已建立；`run-approved` exit 74，返回 `FATAL_EXECUTION_OR_EVIDENCE_UNKNOWN`。终端读取 sandbox 被拒后，已实现并签名 `export-run` 只读入口；Owner 导出成功，15份探针文件摘要均匹配，无缺失 section。原始回调只有首次 account-status 的 ENQUEUE_REQUESTED 与 CANCEL_REQUESTED，均 started=false；没有请求启动或返回证据。旧代码未保留具体拒绝原因，不归因 CK_2，不宣称 P0 通过；导出未访问 Keychain，因此未声称 HMAC 账本认证通过。
+
+只读导出独立复核发现并修复硬链接读取风险，6/6 定向测试通过、签名离线自检通过。enqueue 前原始错误被 CancellationError 掩盖的诊断缺陷已修；最终完整包164/164、独立边界35/35、最终保守分类定向6/6、打包38/38通过，iOS17 SDK编译通过（运行NOT_RUN）。所有失败继续报告远端结果未知，局部gate/admission事实不冒充全局保证。独立代码/原始证据复核确认旧批次显式账户API与transport/data均0，CKContainer已构造。已请 Owner 运行最多4次、首次失败即停的离线资格检查来定位真实拒绝码；不执行云命令，不重新 enrollment，不重跑已消费窗口。手机/数据线0。
+
+[真实结果与只读导出证据](Evidence/iCloudSyncFoundation/20261108/execution-guard/failed-window-diagnostics/owner-window-result.json)。旧代码107963d两条CI成功，不覆盖本次诊断修改。正式产品完整同步及P0/P1/P2仍未完成。以下均为保留历史，旧“未执行/待授权”不代表当前状态。
+
+---
+
+## 历史：Owner 固定 Development 窗口已授权，待 CI 收尾后由 haha 启动
 
 Owner 已明确确认“已进入 haha，测试 iCloud 已确认”，并回复“授权本次固定 Development 窗口”。授权绑定 PR18 / `107963d`、签名产物 `9291c390…` 和已固定合成计划，包含一次本地 guard/Keychain anchor 初始化及 Development 六条记录写读；前提为最终 CI 核验通过，最长15分钟，失败即停，不自动重试。不得再次询问同一授权。执行工具身份仍非haha，Owner须在haha终端启动已准备脚本；未自动切换账户，也尚未执行真实命令。
 

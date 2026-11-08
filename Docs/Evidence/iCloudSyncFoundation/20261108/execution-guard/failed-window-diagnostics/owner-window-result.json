@@ -1,0 +1,56 @@
+{
+  "status": "STOPPED_BEFORE_FIRST_ENQUEUE_ORIGINAL_CAUSE_NOT_RECORDED",
+  "code": "107963dcddd71da1ff15f623a44b41dfd1bd5b11",
+  "enrollment": {
+    "exit": 0,
+    "result": "LOCAL_GUARD_ENROLLED",
+    "accountOperations": 0,
+    "transportOperations": 0
+  },
+  "run": {
+    "exit": 74,
+    "stderrCode": "FATAL_EXECUTION_OR_EVIDENCE_UNKNOWN",
+    "observedCallbacks": [
+      "OPERATION_ENQUEUE_REQUESTED:started=false",
+      "CANCEL_REQUESTED:started=false"
+    ],
+    "completedStages": [],
+    "p0Passed": false,
+    "explicitAccountAPICalls": 0,
+    "explicitTransportCalls": 0,
+    "containerConstructed": true,
+    "callCountBasis": "Independent original callback/ledger hash-link review plus 107963d bridge and AccountSession enqueue ordering; not HMAC authentication or an assertion of zero implicit OS service activity",
+    "originalFailureCause": "NOT_RECORDED",
+    "enqueueToFatalMilliseconds": 5066
+  },
+  "initialCollectionErrors": [
+    "ledger:PermissionError",
+    "run:PermissionError"
+  ],
+  "readOnlyExport": {
+    "exit": 0,
+    "files": 15,
+    "unavailableSections": [],
+    "cloudOperations": 0,
+    "keychainOperations": 0,
+    "ledgerAuthentication": "NOT_PERFORMED_NO_KEYCHAIN_ACCESS",
+    "exportSHA256": "130f09f458008a8d503c74ad57ff2ee824699916051a38c4799c957bf9f0b5ae"
+  },
+  "automaticRetryPerformed": false,
+  "originalFilesSHA256": {
+    "collection.json": "7bf409139782408bc128f9e1c91f7fa5828f53720d5573390bef5c4aba3ca472",
+    "commands.json": "5e370ed3a3324f5daf8f174dea37bf7b1801983bb676d822e8c9bc2fbfbf2fc0",
+    "enroll-guard-approval.json": "20b66945cbca4d06cff2670c37c6540d915a64918b6e60ab0b0dad92ec8445e7",
+    "enroll-guard.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "enroll-guard.stdout": "b69ea3a1551afd407e5c9531e92782548bd26540a5bc161a8444229dd953c54d",
+    "run-approved-approval.json": "838765e6efc7b14b8b92eb3a8a2cc9b2d1ece3fe5dadab20ceb2f65ec6365f34",
+    "run-approved.stderr": "0172a55d08aa41d50629ab4c120baeff4b0ea05074a22bea68e1c58348d229d5",
+    "run-approved.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limitations": [
+    "No CK_2 observed; original code omitted failure cause",
+    "No HMAC authentication of exported ledger; structural/hash review only",
+    "No re-enrollment, anchor reset, deletion or repeat cloud execution",
+    "Private raw evidence not published"
+  ]
+}
