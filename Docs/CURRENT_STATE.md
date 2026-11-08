@@ -2,7 +2,7 @@
 
 Owner已自愿在build11完成Create workspace，报告正式Development新types、Pending429→0、约5分钟Latest sync completed；非双设备/Production验收。重进Waiting、发热及中文遗漏已修复。Owner进一步明确授权睡后继续，包括代码普通推送、testflight-*标签及TestFlight测试；不重复询问这些许可，手机陪测不作前提。
 
-当前源码候选build12/V18：去逐条全库投影、四阶段/历史完成时间、中文200条、Release Production配置与双realm隔离及保留旧metadata已实现并独立复核。本机全Unit702=701PASS/0FAIL/1SKIP、UI8/8PASS；旧V17模型声明保持字节一致，迁移/恢复/回转及事务门通过。非skip源码32ce4ea已普通推送，Release无签名Archive三Bundle版本/中文资源/production请求配置核对成功；未作为发行签名证明。首轮定向CI发现旧checker将已支持QUERYABLE当未知语法，新增active reviewer保留原威胁检查并加3个索引正反例，23/23及独立复核通过，正收口最终远端CI与源码绑定。见[执行范围](ICLOUD_SYNC_TESTFLIGHT_EXECUTION_20261109_ZH.md)与[证据](Evidence/iCloudProduct/20261109/README.md)。
+当前源码候选build12/V18：去逐条全库投影、四阶段/历史完成时间、中文200条、Release Production配置与双realm隔离及保留旧metadata已实现并独立复核。本机全Unit702=701PASS/0FAIL/1SKIP、UI8/8PASS；旧V17模型声明保持字节一致，迁移/恢复/回转及事务门通过。最终非skip源码4d4fc812739fb51394364f4c5e629ff7cd42ea4f已普通推送；Release无签名Archive绑定同SHA/Dirty=false，三Bundle版本12/中文资源/production pin核对成功，未作为发行签名证明。首轮定向CI的旧checker负例问题已修，原失败保留；最终定向CI42507643926成功，官方ZIP摘要、实际checkout8832002f及24个源码pin已核验。最终产品CI42507643991成功：Release三unsigned bundle、Unit702=701PASS/0FAIL/1SKIP、Smoke8/8PASS；三官方ZIP摘要/CRC/相同实际checkout及headSHA已核验，两个runtimeWarnings为空。唯一Unit跳过需隔离32MB HFS+镜像，optional extended UI未跑。源码、本机与远端验证及unsigned Archive节点已完成；仅文档收口，不重复全量测试。未来TestFlight标签必须仍指向非skip源码4d4fc81，不能指向本次文档提交。见[执行范围](ICLOUD_SYNC_TESTFLIGHT_EXECUTION_20261109_ZH.md)与[证据](Evidence/iCloudProduct/20261109/README.md)。
 
 正式Dev当前结构已比对匹配3类/11字段并完整保留索引/grants；Production当前只读预览仍Users，尚未部署。Mac已锁屏且自动解锁失败，因此部署/既有Cloud workflow核验及最终TestFlight标签受实际外部阻塞；不在schema缺项时触发已知不可同步分发。醒后只需解锁Mac，无手机/数据线或重复授权。Production真实收发、TestFlight可用/安装及公开发布均不能冒称通过。原项目三项未提交工作仍不动。
 

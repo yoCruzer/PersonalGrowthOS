@@ -8,6 +8,8 @@ Owner于2026-11-09明确授权：“我要去睡觉了，明确授权你接下�
 
 性能收尾、进度/完成时间与简体中文已修复；Release正式环境路由及V18双realm本地选择器已实现、独立审查通过。完整Unit701PASS/1SKIP、UI8/8PASS。Dev/Prod不共享ACK/token/inbox；本地业务事实保留，首次Production启用仍需用户在App明确确认，不自动把Dev云记录复制到Prod。详情与真实失败见[证据](Evidence/iCloudProduct/20261109/README.md)。
 
+最终非skip候选4d4fc812739fb51394364f4c5e629ff7cd42ea4f已推送；定向CI42507643926与产品CI42507643991均成功，官方产物源码绑定/摘要与精确来源unsigned Archive核验完成。未来标签固定此源码，不能使用后续[skip ci]文档提交。当前仅剩下节门户操作受Mac锁屏阻塞，未创建本轮TestFlight标签。
+
 本机源码构建号12；不能把它当作最终XcodeCloud/TestFlight构建号。V18升级后不以降级旧build11作为回滚方式；旧Store/备份保留，不卸载或清库。
 
 ## 具体后续顺序

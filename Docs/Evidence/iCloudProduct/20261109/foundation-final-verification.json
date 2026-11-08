@@ -1,0 +1,27 @@
+{
+  "sourceHead": "4d4fc812739fb51394364f4c5e629ff7cd42ea4f",
+  "checkoutSHA": "8832002fece75c1371c993dfc7ccd0a469311e8a",
+  "runID": 42507643926,
+  "conclusion": "success",
+  "artifactID": 13628002932,
+  "zipSHA256": "860056fc654d9430e2de8cc6594ae0f8d58a606682b591d0c8eb98fadb7daca1",
+  "zipCRC": "PASS",
+  "environment": "Xcode 27.1\nBuild version 27A9275",
+  "checks": {
+    "nativeProtocol": 44,
+    "nativeProbeCore": 17,
+    "nativeSDK": 21,
+    "independentChunks": 11,
+    "independentCLI": 22,
+    "syntheticSchema": 21,
+    "independentSchema": 23,
+    "independentSDK": 11,
+    "independentAllowance": 3,
+    "independentDirectoryAndFixture": 8,
+    "packaging": 32,
+    "sourcePinsVerified": 24,
+    "offlineReplay": 6
+  },
+  "realCloudOperations": 0,
+  "excludedMaximumPayloadCase": "Retained local 49MB V16 evidence; skipped in this remote independent chunk filter, not counted as remote PASS"
+}
