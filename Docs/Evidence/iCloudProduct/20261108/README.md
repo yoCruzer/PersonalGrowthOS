@@ -13,7 +13,7 @@
 - 双设备产品链路：`PGOS-Product-Integration-1.xcresult` 10/10 PASS（4端到端 + 6 store），两个独立磁盘库、同account/dataset不同generation；乱序/重复、并发全parents解决、真实合成PNG闭合、tombstone依赖与旧版本防复活、草稿阻投影后的重放。不是两台真实设备云测试。
 - 冲突可读预览：9/9 codec PASS，包含23聚合无传输ID/hash/raw JSON、正文差异与资产冻结金额，不以当前资产名称改写历史。
 - UI smoke：`PGOS-Product-Smoke-1.xcresult` 6/6 PASS（既有5项全部通过，新增默认关闭/启用确认后取消不上传）；同轮codec9/9 PASS。
-- 最终CI和最终签名产物绑定：交付收口时补充，不预先判通过。
+- 最终源码CI及签名安装包已核验，见下方收口记录；各本机阶段计数不重复累加。
 
 原始本机日志和xcresult只保留本地；公开摘要不包含账户ID、设备UDID、签名profile或私人证据。编译中的既有warning不隐藏。各测试套件是不同阶段快照，不能把计数相加声称所有最终源码都受同一轮验证。
 
@@ -37,3 +37,30 @@
 统一push、前台恢复、本地保存的自动唤醒门；暂停后不会被静默push绕过，用户手动同步仍可重试。启动失败后重试成功重绑push协调器。定向`PGOS-Product-Activation-Fix.xcresult` 17/17 PASS（配置6、store/自动门7、双设备集成4）；纯profile harness 7/7（含仅本地真实profile解析）。
 
 首个远端定向CI [42491119740](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491119740) 在离线打包步骤失败 `UNREVIEWED_SWIFT_SOURCE`：新因果图源/测试已独立审查但未加入旧打包器的整包hash锁。精确增加这两个已审查hash，原22项未变，实际snapshot24项逐项匹配；未删门禁、未宽化未知源码规则、未重跑Mac云探针。此失败保留；修复后的最终CI另记。
+
+## 签名安装交付（本机私有）
+
+正式App Development build8已由Xcode普通build生成并验签，无Archive、安装或发布。`BuildProvenance.plist`回读源码`a52e24b166cd2c4969dbecf45955924ad6a35b81`、Dirty=false。主App和两个扩展均为build8；有效签名精确包含正式容器、CloudKit、Development、开发push、get-task-allow。profile有效期至2027-11-08（实际安装仍受已登记设备/系统开发者模式约束）；不是实际iPhone安装/启动验收。
+
+- 安装ZIP：`PersonalGrowthOS-iCloud-Dev8-a52e24b.app.zip`，11989852 bytes。
+- ZIP SHA256：`347e494f637ec24e7406a6a959dce2f7de35a06dd59b2dda697e77c18d3d9fc9`。
+- 主程序SHA256：`dff36d28917ed9fd491cb59a54c51dde0395e0f1f0cc65c7da693ab086893f9b`。
+- ZIP解包后：三个二进制摘要一致，`codesign --verify --strict --deep`通过。
+
+包、内嵌profile、完整本机receipt与安装步骤位于Owner本机Development/Builds的`PersonalGrowthOS-iCloud-Dev8-a52e24b`目录，不上传公开仓库。安装会更新同bundle正式App，未自动执行；原SyncLab不改。已查看合成UI截图：同步默认关闭、确认取消后仍关闭，未显示业务数据。
+
+## 最终远端验证（完成）
+
+[Draft PR #19](https://github.com/yoCruzer/PersonalGrowthOS/pull/19)，base PR17，代码`a52e24b`。[定向CI42491840398](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491840398) SUCCESS：44协议/图、17准备器、21SDK/host原生测试；保留的独立测试和32离线打包检查通过。下载原ZIP的SHA256 `ba1e70c6d905356c00269cdce9b90dc24cfce23c0bb0303fcc23075958d3fd8d`与GitHub官方digest一致，307成员CRC检查通过，24源码pins逐项匹配该提交Git对象。
+
+[产品CI42491840354](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491840354) SUCCESS：Release三个unsigned bundle；全量Unit **669执行 = 668 PASS / 0 FAIL / 1 SKIP**；Smoke **6/6 PASS**，包括既有5项和新增启用确认取消。Xcode27.0 / iOS27.2 / iPhone13mini模拟器，实际PR合并checkout `384ad041dca4119118d44df00b7e2097cb1ef60c`，三个lane的head均绑定完整`a52e24b166cd2c4969dbecf45955924ad6a35b81`。两个测试lane的runtimeWarnings均为空，不代表没有编译warning。
+
+唯一Unit跳过为`TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`：未提供隔离32MB HFS+镜像；没有填满主卷。Optional extended UI按条件SKIPPED，不计入通过。下载三个官方ZIP并逐一核对digest、CRC、environment及测试摘要；完整原件保留本机`/private/tmp/pgos-product-final-{release,unit,smoke}.zip`。
+
+| CI产物 | SHA256 |
+| --- | --- |
+| ios-release-1 | `d9784ec4153e9c1baa845c8c1a64e03cc909f4d491747baf69b52b30df14a348` |
+| ios-unit-1 | `33b876268a0efdcc9328fe141ff7b92107c496f3dae7589d429f6924e5bce073` |
+| ios-smoke-1 | `88b4f1e1362b84c87d28362f7178e56707b0d196324d789fe51cc4b23b214f60` |
+
+本轮代码和可安装Development产物已交付。最后收口仅修改文档，使用`[skip ci]`；安装包与验证仍精确绑定a52e24b，不以文档提交冒充重新构建。PR保持Draft且未合并，真实云与Production仍未验收，不再要求Mac探针操作。

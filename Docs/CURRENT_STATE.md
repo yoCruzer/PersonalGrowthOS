@@ -1,8 +1,14 @@
-## 2026-11-08 最新Owner决定：正式App代码与可安装开发构建优先
+## 2026-11-08 最新交付：正式App同步代码与Development build8已完成
 
-Owner已要求停止围绕双用户Mac/tmp探针试错，先实现正式同步代码/架构，后移真实云验证。按[产品实现范围](ICLOUD_SYNC_PRODUCT_IMPLEMENTATION_ZH.md)连续推进V17/所有业务写入同事务outbox、领域合并、媒体/账户隔离、CKSyncEngine及App界面；默认关闭同步，不自动上传既有数据。P0/P1/P2不再作为代码接入前置，仍未通过且保留生产验收/发布门，不授权Production/Archive/TestFlight/上架或覆盖日常安装。
+Owner要求停止Mac双用户/tmp探针试错、优先完成正式产品代码与可安装构建，本轮已按此顺序交付。默认关闭同步，显式确认后才允许上传；真实云/Production验收后移且仍未通过。旧历史的“探针前置/未接入正式App/待签名”等状态不再代表当前任务。
 
-新持久工作树`/Users/himini/Development/Projects/PersonalGrowthOS-icloud-product`、分支`codex/icloud-product`，基线PR17/07c1bcf。PR18最新290bfc0的失败、原始证据和责任复盘保留在原分支，不继续排查或运行该探针。原项目三项未提交工作不动。正式产品实现已落地，正在完成最终UI/CI/签名产物收口；见[产品交付范围](ICLOUD_SYNC_PRODUCT_DELIVERY_ZH.md)与[真实测试记录](Evidence/iCloudProduct/20261108/README.md)。已完成全量Unit655PASS/0FAIL/1SKIP及双设备合成集成4/4；真实云/Production不因本轮代码通过而升级为通过。
+独立持久工作树`/Users/himini/Development/Projects/PersonalGrowthOS-icloud-product`，分支`codex/icloud-product`，[Draft PR #19](https://github.com/yoCruzer/PersonalGrowthOS/pull/19)基于PR17/07c1bcf，不依赖PR18执行器。最终运行代码`a52e24b166cd2c4969dbecf45955924ad6a35b81`，最后文档提交不改变该代码。V17、38实体/23聚合、同事务outbox、因果冲突/删除、媒体闭合、持久inbox/ACK、账户与dataset隔离及设置/推送桥已实现并独立复核。
+
+[定向CI42491840398](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491840398)与[产品CI42491840354](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491840354)均SUCCESS。最终产品Unit669执行=668PASS/0FAIL/1SKIP，Smoke6/6，Release三个unsigned bundle；低空间隔离镜像测试与optional extended UI未跑。实际checkout384ad041、官方产物digest/源码绑定与测试摘要已核验；本机双库合成集成4/4及相邻路径通过。原始失败保留，详情见[真实测试记录](Evidence/iCloudProduct/20261108/README.md)。
+
+Development build8已签名并解包验签，源码a52e24b/Dirty=false；本机私有目录`/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev8-a52e24b`含app、ZIP、receipt和安装步骤。未实际安装或启用云同步；原项目三项未提交工作、日常业务数据、SyncLab均未改动。安装会更新同bundle正式App，Owner可按[交付说明](ICLOUD_SYNC_PRODUCT_DELIVERY_ZH.md)先备份再自行选择安装，当前无需人工操作。
+
+真实CloudKit端到端/账号切换/后台推送、完整故障矩阵和Production仍NOT_RUN；容量越界保留本地并暂停、自然键冲突不自动吞并。G1手机接受范围与CK_2非阻塞例外保持，PR18失败留在原分支，不重跑Mac探针。Release编译门仍关闭同步；Production部署、Archive、TestFlight、公开发布与merge均未授权/未执行。
 
 ---
 
