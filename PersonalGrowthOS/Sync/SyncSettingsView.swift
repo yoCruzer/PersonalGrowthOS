@@ -3,6 +3,7 @@ import SwiftUI
 struct SyncSettingsView: View {
     @ObservedObject var coordinator: SyncProductCoordinator
     @State private var confirmsEnable = false
+    @State private var confirmsInitialSetup = false
     @State private var selectedConflict: SyncConflictSummary?
     var body: some View {
         List {
@@ -14,6 +15,9 @@ struct SyncSettingsView: View {
                     Button("Turn off iCloud sync") { Task { await coordinator.disable() } }
                 } else {
                     Button("Enable iCloud sync") { confirmsEnable = true }.disabled(coordinator.busy).accessibilityIdentifier("sync-enable")
+                }
+                if coordinator.canConfirmInitialZoneCreation {
+                    Button("Set up iCloud workspace") { confirmsInitialSetup = true }.disabled(coordinator.busy)
                 }
                 LabeledContent("Pending revisions", value: "\(coordinator.pendingCount)")
             } header: { Text("iCloud sync") }
@@ -39,6 +43,12 @@ struct SyncSettingsView: View {
             Button("Cancel", role: .cancel) {}
             Button("Enable") { Task { await coordinator.enable() } }
         } message: { Text("Existing records and original photos will be uploaded to the currently signed-in iCloud account. Other installations using that account can receive them. Concurrent edits are kept for review.") }
+        .alert("Set up this iCloud workspace?", isPresented: $confirmsInitialSetup) {
+            Button("Cancel", role: .cancel) { _ = coordinator.takeInitialZoneConsent() }
+            Button("Create workspace") { Task { await coordinator.confirmInitialZoneCreation() } }
+        } message: {
+            Text("The previous setup was not confirmed and iCloud reports no workspace. Create it using the local records and photos kept on this device? This cannot restore anything that existed only in iCloud.")
+        }
         .sheet(item: $selectedConflict) { conflict in
             SyncConflictView(coordinator: coordinator, conflict: conflict)
         }

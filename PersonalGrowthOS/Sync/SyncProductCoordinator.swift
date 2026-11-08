@@ -5,6 +5,8 @@ import Combine
 import UIKit
 import SyncFoundation
 
+enum SyncInitialZoneSetupError: Error { case confirmationRequired, ineligible }
+
 extension Notification.Name { static let productSyncLocalCommit = Notification.Name("ProductSyncLocalCommit") }
 
 /// One coordinator per open store. It owns no CloudKit object until explicit opt-in.
@@ -21,6 +23,8 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     @Published private(set) var requiresAttention = false
     @Published private(set) var pendingCount = 0
     @Published private(set) var conflicts: [SyncConflictSummary] = []
+    @Published private(set) var canConfirmInitialZoneCreation = false
+    private var initialZoneConsent: SyncBinding?
     private var activation = UUID()
     private var driver: SyncCloudTransport?
     private var wakeTask: Task<Void, Never>?
@@ -67,9 +71,22 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     }
 
     /// UI consent explicitly covers uploading existing local data to this account's private database.
-    func enable() async {
+    func enable() async { await activate(initialZoneConsent: nil) }
+    func confirmInitialZoneCreation() async {
+        guard let consent = takeInitialZoneConsent() else { return }
+        await activate(initialZoneConsent: consent)
+    }
+    func takeInitialZoneConsent() -> SyncBinding? {
+        let consent = initialZoneConsent
+        initialZoneConsent = nil; canConfirmInitialZoneCreation = false
+        return consent
+    }
+    private func activate(initialZoneConsent consent: SyncBinding?) async {
         guard !busy else { return }; busy = true; defer { busy = false }
         let attempt = UUID(); activation = attempt
+        _ = takeInitialZoneConsent()
+        var consentAccepted = false
+        var failureBinding: SyncBinding?
         do {
             guard let environment else { throw SyncCloudTransportError.paused(.environmentMismatch) }
             let cloud = CKContainer(identifier: Self.containerID)
@@ -88,12 +105,17 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                     guard prior == account, value.environment == environment.rawValue else { throw ProductSyncFailure.accountChanged }
                 }
                 guard !value.needsReconciliation, !value.zoneLost else { throw ProductSyncFailure.corruptState }
+                if let consent {
+                    guard try initialZoneRecoveryEligible(consent, context: context) else { throw SyncInitialZoneSetupError.ineligible }
+                    consentAccepted = true
+                }
                 value.accountHash = account; value.environment = environment.rawValue
                 value.generation = UUID(); value.enabled = true; value.blockedReason = nil
                 try ProductSyncCommit.initialize(context, dataset: value)
                 try context.save()
                 return try SyncBinding(container: Self.containerID, environment: environment, accountHash: account, dataset: value.id, generation: value.generation)
             }
+            failureBinding = binding
             if let driver { await driver.stop() }
             guard activation == attempt else { throw SyncCloudTransportError.staleSession }
             let transport = SyncCloudTransport(persistence: self); driver = transport
@@ -101,11 +123,23 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             if !value.zoneEstablished && value.zoneCreationAttempted {
                 // A prior attempted creation is not permission to recreate a deleted zone.
                 // Read only the known zone metadata; absent/unknown stays paused.
-                _ = try await cloud.privateCloudDatabase.recordZone(for: CloudRecordCodec.zone(dataset: binding.dataset))
+                let exists = try await Self.initialZoneExists(binding: binding,
+                    check: { [self] in
+                        guard activation == attempt else { throw SyncCloudTransportError.staleSession }
+                        _ = try requireDataset(binding)
+                    }, account: { SyncCloudTransport.accountFingerprint(recordID: try await cloud.userRecordID()) },
+                    fetch: { try await cloud.privateCloudDatabase.recordZone(for: $0) })
                 guard activation == attempt else { throw SyncCloudTransportError.staleSession }
-                try StorePublication.perform(at: mediaRoot) {
-                    let write = ModelContext(container); let current = try requireDataset(binding, context: write)
-                    current.zoneEstablished = true; try write.save()
+                if exists {
+                    try StorePublication.perform(at: mediaRoot) {
+                        let write = ModelContext(container); let current = try requireDataset(binding, context: write)
+                        current.zoneEstablished = true; try write.save()
+                    }
+                } else if !consentAccepted {
+                    try offerInitialZoneConsent(binding)
+                    throw SyncInitialZoneSetupError.confirmationRequired
+                } else {
+                    guard try initialZoneRecoveryEligible(binding) else { throw SyncInitialZoneSetupError.ineligible }
                 }
                 value = try requireDataset(binding)
             }
@@ -113,7 +147,10 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             if createZone {
                 try StorePublication.perform(at: mediaRoot) {
                     let write = ModelContext(container); let current = try requireDataset(binding, context: write)
-                    guard !current.zoneCreationAttempted, !current.zoneLost else { throw ProductSyncFailure.corruptState }
+                    guard !current.zoneLost, !current.zoneEstablished else { throw ProductSyncFailure.corruptState }
+                    if current.zoneCreationAttempted {
+                        guard consentAccepted, try initialZoneRecoveryEligible(binding, context: write) else { throw SyncInitialZoneSetupError.ineligible }
+                    }
                     current.zoneCreationAttempted = true; try write.save()
                 }
             }
@@ -125,9 +162,13 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             guard let session = transport.session else { throw SyncCloudTransportError.staleSession }
             try project(session)
             try markSuccessful(binding)
-        } catch { refreshStatus(); requiresAttention = true; status = message(error) }
+        } catch {
+            guard activation == attempt else { return }
+            presentFailure(error, binding: failureBinding)
+        }
     }
     func disable() async {
+        _ = takeInitialZoneConsent()
         activation = UUID(); wakeTask?.cancel(); wakeTask = nil
         driver?.session?.invalidate()
         do {
@@ -142,9 +183,73 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     func synchronize() async {
         guard !busy, enabled else { return }
         guard let driver, let session = driver.session, session.active else { await enable(); return }
+        let attempt = activation
         busy = true; defer { busy = false }
         do { try project(session); try await driver.synchronize(); try project(session); try markSuccessful(session.binding) }
-        catch { refreshStatus(); requiresAttention = true; status = message(error) }
+        catch {
+            guard activation == attempt else { return }
+            presentFailure(error, binding: session.binding)
+        }
+    }
+    /// Only an exact zoneNotFound is evidence for offering initial setup consent.
+    /// This read-only seam never creates a zone and fences every account/metadata await.
+    static func initialZoneExists(binding: SyncBinding, check: () throws -> Void,
+                                  account: () async throws -> String,
+                                  fetch: (CKRecordZone.ID) async throws -> CKRecordZone) async throws -> Bool {
+        try check()
+        let before = try await account(); try check()
+        guard before == binding.accountHash else { throw SyncCloudTransportError.paused(.accountChanged) }
+        let expected = CloudRecordCodec.zone(dataset: binding.dataset)
+        let result: CKRecordZone?
+        do { result = try await fetch(expected) }
+        catch {
+            try check()
+            guard let cloud = error as? CKError, cloud.code == .zoneNotFound else { throw error }
+            result = nil
+        }
+        try check()
+        let after = try await account(); try check()
+        guard after == binding.accountHash else { throw SyncCloudTransportError.paused(.accountChanged) }
+        if let result, result.zoneID != expected { throw SyncValidationError.invalidIdentity }
+        return result != nil
+    }
+    func initialZoneRecoveryEligible(_ binding: SyncBinding, context: ModelContext? = nil) throws -> Bool {
+        let context = context ?? ModelContext(container), value = try requireDataset(binding, context: context)
+        guard value.initialized, value.zoneCreationAttempted, !value.zoneEstablished, !value.zoneLost,
+              value.lastSuccess == nil else { return false }
+        let id = binding.dataset
+        guard try context.fetchCount(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.dataset == id })) == 0 else { return false }
+        guard try context.fetch(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == id })).allSatisfy({ $0.local }) else { return false }
+        for row in try context.fetch(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id })) {
+            guard !row.completed, try JSONDecoder().decode([String].self, from: row.acknowledgedRecords).isEmpty else { return false }
+        }
+        return true
+    }
+    /// Called only after the read-only metadata seam returned an exact missing zone.
+    func offerInitialZoneConsent(_ binding: SyncBinding) throws {
+        try StorePublication.perform(at: mediaRoot) {
+            let context = ModelContext(container)
+            guard try initialZoneRecoveryEligible(binding, context: context) else { throw SyncInitialZoneSetupError.ineligible }
+            let value = try requireDataset(binding, context: context)
+            value.blockedReason = "Initial iCloud setup was not confirmed. Review setup before continuing; local data and pending revisions are kept."
+            try context.save()
+        }
+        initialZoneConsent = binding; canConfirmInitialZoneCreation = true
+    }
+    /// A callback can pause durably, then SDK cancellation throws a secondary error.
+    /// Keep the matching activation's first persisted reason; stale callbacks must not
+    /// overwrite a newer activation or a user-requested stop.
+    func presentFailure(_ error: Error, binding: SyncBinding?) {
+        if let binding {
+            do {
+                guard binding.container == Self.containerID, let value = try dataset(in: ModelContext(container)),
+                      value.id == binding.dataset, value.generation == binding.generation,
+                      value.accountHash == binding.accountHash, value.environment == binding.environment.rawValue else { return }
+                refreshStatus(); requiresAttention = true
+                if let first = value.blockedReason { status = first; return }
+            } catch { status = "Sync metadata needs attention; local data is preserved."; requiresAttention = true; return }
+        } else { refreshStatus(); requiresAttention = true }
+        status = message(error)
     }
     var canAutomaticallySync: Bool { automaticSync && enabled && !requiresAttention && !busy }
     func resumeIfEnabled() async { if canAutomaticallySync { await synchronize() } }
@@ -157,6 +262,9 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         }
     }
     private func message(_ error: Error) -> String {
+        if case SyncCloudTransportError.paused(let reason) = error {
+            return "Sync paused (\(reason)); local data and pending revisions are kept."
+        }
         if error is StorePublicationFailure { return "Save or close the current edit, then sync again." }
         if case ProductSyncFailure.accountChanged = error { return "This workspace belongs to a different iCloud account. Sync is paused; local data is kept." }
         return "Sync paused (\(String(describing: error))). Local data and pending changes are kept."
@@ -291,6 +399,10 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             else { context.insert(ProductSyncEngineState(key: key, bytes: bytes)) }
             _ = try checked(session, context: context); try context.save()
         }
+    }
+    func permitsPendingZoneCreation(session: SyncCloudSession) throws -> Bool {
+        let value = try checked(session, context: ModelContext(container))
+        return value.initialized && value.zoneCreationAttempted && !value.zoneEstablished && !value.zoneLost
     }
     func didSaveZone(session: SyncCloudSession) async throws {
         try StorePublication.perform(at: mediaRoot) {

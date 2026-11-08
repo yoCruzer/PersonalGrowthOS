@@ -1,3 +1,9 @@
+## 最新build10准备：账户首次事件与初始化恢复
+
+Owner已确认build9安装且原数据正常；首次启用产生429待同步版本，但因accountChanged暂停，未换iCloud账户。build9 missingSupplement修复已越过、独立CI通过，不代表云同步已成功。build10正在修复首次同账户signIn、取消码遮盖首因及严格显式setup恢复，最终产物收口中；详见[持续修复证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。当前不需要Owner重复点击、清库或切换账户。以下build8安装记录保留作历史。
+
+---
+
 # iCloud正式App开发版交付
 
 Owner最新顺序为先完成正式App代码与可安装Development版本，再安排真实云/生产验收；本轮停止Mac双用户/tmp探针排障。该决定改变开发依赖顺序，不改变数据完整性或发布权限。

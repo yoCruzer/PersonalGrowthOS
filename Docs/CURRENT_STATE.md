@@ -1,3 +1,13 @@
+## 2026-11-09 真机反馈继续修复：同账户首次signIn误暂停
+
+Owner已备份、确认build8和build9覆盖后的本地检查通过；build8 missingSupplement已修复，build9初始化生成429待同步版本，但真实启用先显示CK20，重新进入页面读回持久accountChanged。Owner确认iCloud账户始终未变。原始失败与截图来源保留，不声称已上传成功。
+
+build9源码1e4fdca的定向和产品CI均SUCCESS（Unit671PASS/1SKIP/0FAIL，Smoke6/6，Release通过），但不覆盖此次真实SDK事件。build10正在修复同账户signIn处理、首因保留/旧回调保护、严格显式首次setup恢复；本机核心59与进一步恢复42项通过、独立审查通过，最终源码/签名/CI收口中。详见[持续修复证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。保留429队列、身份及原数据，不自动重建已丢失zone，不需Mac探针、清库、恢复覆盖或账户切换。
+
+当前无需Owner继续点击。build10真实云验证仍未完成；Production/Archive/TestFlight/发布/merge边界保持。以下旧build8交付记录为历史。
+
+---
+
 ## 2026-11-08 最新交付：正式App同步代码与Development build8已完成
 
 Owner要求停止Mac双用户/tmp探针试错、优先完成正式产品代码与可安装构建，本轮已按此顺序交付。默认关闭同步，显式确认后才允许上传；真实云/Production验收后移且仍未通过。旧历史的“探针前置/未接入正式App/待签名”等状态不再代表当前任务。

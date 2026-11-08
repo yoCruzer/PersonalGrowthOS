@@ -10,10 +10,18 @@ import SyncFoundation
         var paused: [SyncCloudPauseReason] = []
         var inboxFailure = false
         var stateFailure = false
+        var pending: [CKRecord.ID] = []
+        var permitsZoneCreation = false
+        var durableReads = 0
         var suspendInbox = false
         var waiting: CheckedContinuation<Void, Never>?
         func loadEngineState(binding: SyncBinding) throws -> Data? { nil }
-        func pendingRecordIDs(session: SyncCloudSession) throws -> [CKRecord.ID] { try session.check(); return [] }
+        func pendingRecordIDs(session: SyncCloudSession) throws -> [CKRecord.ID] {
+            try session.check(); durableReads += 1; return pending
+        }
+        func permitsPendingZoneCreation(session: SyncCloudSession) throws -> Bool {
+            try session.check(); durableReads += 1; return permitsZoneCreation
+        }
         func uploadRecord(id: CKRecord.ID, session: SyncCloudSession) async throws -> SyncCloudUpload? { nil }
         func durableInbox(_ records: [SyncCloudDownloaded], session: SyncCloudSession) async throws {
             if suspendInbox { await withCheckedContinuation { waiting = $0 } }
@@ -304,6 +312,113 @@ import SyncFoundation
             XCTFail("Wrong fetched ID must not return")
         } catch {}
         XCTAssertEqual(checks, 1)
+    }
+
+    private func accountSession(_ user: CKRecord.ID) throws -> SyncCloudSession {
+        let binding = try session().binding
+        return SyncCloudSession(binding: try SyncBinding(container: binding.container, environment: binding.environment,
+            accountHash: SyncCloudTransport.accountFingerprint(recordID: user), dataset: binding.dataset, generation: binding.generation))
+    }
+    func testMatchedSignInRequeuesDurableRecordsWithoutAcknowledgingOrCreatingUnauthorizedZone() throws {
+        let user = CKRecord.ID(recordName: "synthetic-account"), store = Store(), active = try accountSession(user)
+        store.pending = [CloudRecordCodec.mutationID(UUID(), dataset: active.binding.dataset),
+                         CloudRecordCodec.chunkID(String(repeating: "a", count: 64), dataset: active.binding.dataset)]
+        for inMemoryPermission in [false, true] {
+            for durablePermission in [false, true] {
+                store.permitsZoneCreation = durablePermission
+                let plan = try SyncCloudTransport.accountChangePlan(.signIn(currentUser: user), session: active,
+                    allowsInitialZoneCreation: inMemoryPermission, persistence: store)
+                XCTAssertEqual(plan.records, store.pending)
+                XCTAssertEqual(plan.createZone, inMemoryPermission && durablePermission)
+                XCTAssertTrue(active.active); XCTAssertNil(active.firstPauseReason)
+                XCTAssertTrue(store.committed.isEmpty); XCTAssertTrue(store.acknowledgements.isEmpty)
+            }
+        }
+        XCTAssertEqual(store.durableReads, 8)
+    }
+    func testSignOutSwitchAndWrongSignInNeverReadOrRequeueAnotherBinding() throws {
+        let user = CKRecord.ID(recordName: "synthetic-account"), other = CKRecord.ID(recordName: "other-account")
+        let changes: [CKSyncEngine.Event.AccountChange.ChangeType] = [
+            .signOut(previousUser: user), .signIn(currentUser: other),
+            .switchAccounts(previousUser: other, currentUser: user),
+            .switchAccounts(previousUser: user, currentUser: user)]
+        for change in changes {
+            let store = Store(), active = try accountSession(user)
+            store.permitsZoneCreation = true
+            XCTAssertThrowsError(try SyncCloudTransport.accountChangePlan(change, session: active,
+                allowsInitialZoneCreation: true, persistence: store)) {
+                XCTAssertEqual($0 as? SyncCloudTransportError, .paused(.accountChanged))
+            }
+            XCTAssertEqual(store.durableReads, 0)
+            XCTAssertTrue(store.committed.isEmpty); XCTAssertTrue(store.acknowledgements.isEmpty)
+        }
+    }
+    func testSignInPlanRechecksSessionAndRejectsForeignOutboxZone() throws {
+        let user = CKRecord.ID(recordName: "synthetic-account"), store = Store(), active = try accountSession(user)
+        store.pending = [CloudRecordCodec.mutationID(UUID(), dataset: UUID())]
+        XCTAssertThrowsError(try SyncCloudTransport.accountChangePlan(.signIn(currentUser: user), session: active,
+            allowsInitialZoneCreation: true, persistence: store)) {
+            XCTAssertEqual($0 as? SyncValidationError, .invalidIdentity)
+        }
+        active.invalidate(); store.durableReads = 0
+        XCTAssertThrowsError(try SyncCloudTransport.accountChangePlan(.signIn(currentUser: user), session: active,
+            allowsInitialZoneCreation: true, persistence: store)) {
+            XCTAssertEqual($0 as? SyncCloudTransportError, .staleSession)
+        }
+        XCTAssertEqual(store.durableReads, 0)
+    }
+    func testFirstPauseSurvivesSecondarySDKCancellationButUncausedCancelRemainsFailure() throws {
+        let active = try session()
+        active.pause(.accountChanged); active.pause(.invalidRecord)
+        let error = active.observeFailure(CKError(.operationCancelled))
+        XCTAssertEqual(error as? SyncCloudTransportError, .paused(.accountChanged))
+        XCTAssertEqual(active.firstPauseReason, .accountChanged)
+        XCTAssertEqual(active.secondaryCloudErrorCode, CKError.Code.operationCancelled.rawValue)
+        XCTAssertFalse(active.active)
+        let unpaused = try session()
+        XCTAssertEqual((unpaused.observeFailure(CKError(.operationCancelled)) as? CKError)?.code, .operationCancelled)
+        XCTAssertNil(unpaused.firstPauseReason); XCTAssertNil(unpaused.secondaryCloudErrorCode)
+    }
+
+    func testEstablishedZoneRetiresOnlyItsRestoredSaveIntentAndKeepsRecordWork() throws {
+        let dataset = UUID(), zone = CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: UUID()))
+        let own = CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: dataset))
+        let records: [CKSyncEngine.PendingRecordZoneChange] = [
+            .saveRecord(CloudRecordCodec.mutationID(UUID(), dataset: dataset)),
+            .saveRecord(CloudRecordCodec.chunkID(String(repeating: "a", count: 64), dataset: dataset))]
+        let originalRecords = records
+        let database: [CKSyncEngine.PendingDatabaseChange] = [.saveZone(own)]
+        let retired = try SyncCloudTransport.restoredZoneSavesToRemove(recordChanges: records,
+            databaseChanges: database, dataset: dataset, createZone: false)
+        XCTAssertEqual(retired, database)
+        XCTAssertEqual(records, originalRecords)
+        let remaining = database.filter { !retired.contains($0) }
+        XCTAssertNoThrow(try SyncCloudTransport.validatePending(recordChanges: records,
+            databaseChanges: remaining, dataset: dataset, createZone: false))
+        XCTAssertThrowsError(try SyncCloudTransport.restoredZoneSavesToRemove(recordChanges: records,
+            databaseChanges: [.saveZone(own), .saveZone(zone)], dataset: dataset, createZone: false))
+    }
+    func testFreshZoneKeepsRestoredCreationAndRejectsEveryForeignOrDeleteBeforeReconciliation() throws {
+        let dataset = UUID(), own = CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: UUID()))
+        let permittedZone = CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: dataset))
+        let record = CloudRecordCodec.mutationID(UUID(), dataset: dataset)
+        let safe: [CKSyncEngine.PendingDatabaseChange] = [.saveZone(permittedZone)]
+        XCTAssertTrue(try SyncCloudTransport.restoredZoneSavesToRemove(recordChanges: [.saveRecord(record)],
+            databaseChanges: safe, dataset: dataset, createZone: true).isEmpty)
+        for createZone in [false, true] {
+            for invalid: [CKSyncEngine.PendingDatabaseChange] in [
+                [.saveZone(permittedZone), .deleteZone(permittedZone.zoneID)],
+                [.saveZone(permittedZone), .saveZone(own)]] {
+                XCTAssertThrowsError(try SyncCloudTransport.restoredZoneSavesToRemove(recordChanges: [.saveRecord(record)],
+                    databaseChanges: invalid, dataset: dataset, createZone: createZone))
+                XCTAssertEqual(invalid.count, 2) // Policy is pure; no partially consumed input.
+            }
+            for invalid: CKSyncEngine.PendingRecordZoneChange in [
+                .deleteRecord(record), .saveRecord(CloudRecordCodec.mutationID(UUID(), dataset: UUID()))] {
+                XCTAssertThrowsError(try SyncCloudTransport.restoredZoneSavesToRemove(recordChanges: [.saveRecord(record), invalid],
+                    databaseChanges: safe, dataset: dataset, createZone: createZone))
+            }
+        }
     }
 
 }

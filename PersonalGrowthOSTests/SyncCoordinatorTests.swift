@@ -49,6 +49,120 @@ import SyncFoundation
             accountHash: account ?? binding.accountHash, dataset: binding.dataset, generation: generation ?? binding.generation))
     }
 
+    func testPrimaryDurablePauseSurvivesSecondaryCancellationAndReconciliationFlags() throws {
+        for reason in [SyncCloudPauseReason.accountChanged, .zoneMissing, .invalidRecord, .persistenceFailure] {
+            let (container, coordinator, session) = try fixture()
+            coordinator.didPause(reason, binding: session.binding)
+            let first = coordinator.status
+            coordinator.presentFailure(CKError(.operationCancelled), binding: session.binding)
+            XCTAssertEqual(coordinator.status, first)
+            XCTAssertTrue(coordinator.requiresAttention)
+            XCTAssertFalse(coordinator.canAutomaticallySync)
+            XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.blockedReason, first)
+        }
+    }
+    func testOldGenerationCancellationCannotOverwriteCurrentStatus() throws {
+        let (container, coordinator, session) = try fixture()
+        let context = ModelContext(container), value = try XCTUnwrap(context.fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        value.generation = UUID(); value.enabled = false; try context.save()
+        coordinator.refreshStatus(); let status = coordinator.status
+        coordinator.presentFailure(CKError(.operationCancelled), binding: session.binding)
+        XCTAssertEqual(coordinator.status, status); XCTAssertFalse(coordinator.requiresAttention); XCTAssertFalse(coordinator.enabled)
+    }
+    func testPreBindingFailureDoesNotPresentAnEarlierPersistedReason() throws {
+        let (_, coordinator, session) = try fixture()
+        coordinator.didPause(.accountChanged, binding: session.binding)
+        coordinator.presentFailure(SyncCloudTransportError.paused(.environmentMismatch), binding: nil)
+        XCTAssertTrue(coordinator.status.contains("environmentMismatch")); XCTAssertFalse(coordinator.status.contains("accountChanged"))
+    }
+    func testZoneCreationAdmissionRequiresExactBindingAndUnconsumedPersistentIntent() throws {
+        let (container, coordinator, session) = try fixture()
+        let context = ModelContext(container), value = try XCTUnwrap(context.fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        XCTAssertFalse(try coordinator.permitsPendingZoneCreation(session: session))
+        value.zoneCreationAttempted = true; try context.save()
+        XCTAssertTrue(try coordinator.permitsPendingZoneCreation(session: session))
+        value.zoneEstablished = true; try context.save()
+        XCTAssertFalse(try coordinator.permitsPendingZoneCreation(session: session))
+        value.zoneEstablished = false; value.zoneLost = true; try context.save()
+        XCTAssertFalse(try coordinator.permitsPendingZoneCreation(session: session))
+        XCTAssertThrowsError(try coordinator.permitsPendingZoneCreation(session: cloned(session.binding, generation: UUID())))
+        session.invalidate()
+        XCTAssertThrowsError(try coordinator.permitsPendingZoneCreation(session: session))
+    }
+    func testInitialZoneProbeOnlyAcceptsExactMissingAndFencesAccountChanges() async throws {
+        let (_, _, session) = try fixture(), binding = session.binding
+        let zone = CloudRecordCodec.zone(dataset: binding.dataset)
+        var requests = 0
+        let existing = try await SyncProductCoordinator.initialZoneExists(binding: binding, check: { try session.check() },
+            account: { binding.accountHash }, fetch: { id in requests += 1; XCTAssertEqual(id, zone); return CKRecordZone(zoneID: id) })
+        XCTAssertTrue(existing); XCTAssertEqual(requests, 1)
+        let missing = try await SyncProductCoordinator.initialZoneExists(binding: binding, check: { try session.check() },
+            account: { binding.accountHash }, fetch: { _ in throw CKError(.zoneNotFound) })
+        XCTAssertFalse(missing)
+        for code in [CKError.Code.networkUnavailable, .unknownItem, .partialFailure, .userDeletedZone] {
+            do {
+                _ = try await SyncProductCoordinator.initialZoneExists(binding: binding, check: { try session.check() },
+                    account: { binding.accountHash }, fetch: { _ in throw CKError(code) })
+                XCTFail("Only exact zoneNotFound may offer setup")
+            } catch { XCTAssertEqual((error as? CKError)?.code, code) }
+        }
+        var samples = 0
+        do {
+            _ = try await SyncProductCoordinator.initialZoneExists(binding: binding, check: { try session.check() },
+                account: { samples += 1; return samples == 1 ? binding.accountHash : String(repeating: "b", count: 64) },
+                fetch: { _ in throw CKError(.zoneNotFound) })
+            XCTFail("A changed account cannot authorize setup")
+        } catch { XCTAssertEqual(error as? SyncCloudTransportError, .paused(.accountChanged)) }
+        do {
+            _ = try await SyncProductCoordinator.initialZoneExists(binding: binding, check: { try session.check() },
+                account: { binding.accountHash }, fetch: { _ in session.invalidate(); throw CKError(.zoneNotFound) })
+            XCTFail("A stop during metadata lookup must fence setup")
+        } catch { XCTAssertEqual(error as? SyncCloudTransportError, .staleSession) }
+    }
+    func testInitialZoneConsentIsSingleUseAndPreservesExistingLocalQueue() throws {
+        let (container, coordinator, session) = try fixture(), context = ModelContext(container)
+        let value = try XCTUnwrap(context.fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        value.zoneCreationAttempted = true; try context.save()
+        let change = try mutation(dataset: session.binding.dataset, object: UUID(), content: "retained original")
+        try queue([change], in: container)
+        XCTAssertTrue(try coordinator.initialZoneRecoveryEligible(session.binding))
+        try coordinator.offerInitialZoneConsent(session.binding)
+        XCTAssertTrue(coordinator.canConfirmInitialZoneCreation)
+        XCTAssertEqual(coordinator.takeInitialZoneConsent(), session.binding)
+        XCTAssertNil(coordinator.takeInitialZoneConsent()); XCTAssertFalse(coordinator.canConfirmInitialZoneCreation)
+        let read = ModelContext(container)
+        XCTAssertEqual(try read.fetch(FetchDescriptor<ProductSyncMutation>()).map(\.id), [change.id])
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<ProductSyncOutbox>()), 1)
+        XCTAssertTrue(try XCTUnwrap(read.fetch(FetchDescriptor<ProductSyncDataset>()).first).zoneCreationAttempted)
+        XCTAssertThrowsError(try coordinator.offerInitialZoneConsent(cloned(session.binding, generation: UUID()).binding))
+    }
+    func testInitialZoneConsentRejectsAnySuccessRemoteEvidenceOrCorruptAcknowledgements() throws {
+        for scenario in 0..<9 {
+            let (container, coordinator, session) = try fixture(), context = container.mainContext
+            let value = try XCTUnwrap(context.fetch(FetchDescriptor<ProductSyncDataset>()).first)
+            value.zoneCreationAttempted = true
+            switch scenario {
+            case 0: value.zoneEstablished = true
+            case 1: value.zoneLost = true
+            case 2: value.needsReconciliation = true
+            case 3: value.lastSuccess = Date()
+            case 4: context.insert(ProductSyncInbox(dataset: value.id, recordName: "synthetic", recordType: "synthetic", bytes: Data()))
+            default:
+                let change = try mutation(dataset: value.id, object: UUID(), content: "synthetic")
+                change.local = scenario != 5
+                context.insert(change)
+                let outbox = ProductSyncOutbox(change)
+                if scenario == 6 { outbox.acknowledgedRecords = Data("[\"synthetic-ack\"]".utf8) }
+                if scenario == 7 { outbox.completed = true }
+                if scenario == 8 { outbox.acknowledgedRecords = Data("invalid JSON".utf8) }
+                context.insert(outbox)
+            }
+            try context.save()
+            XCTAssertThrowsError(try coordinator.offerInitialZoneConsent(session.binding), "scenario \(scenario)")
+            XCTAssertFalse(coordinator.canConfirmInitialZoneCreation)
+            XCTAssertNil(coordinator.takeInitialZoneConsent())
+        }
+    }
     func testDefaultInitializationHasNoImplicitDatasetOrCloudActivation() throws {
         let container = try PersistenceContainerFactory.makeInMemory()
         let coordinator = SyncProductCoordinator(container: container, mediaRoot: try root(), environment: .development, automaticSync: false)

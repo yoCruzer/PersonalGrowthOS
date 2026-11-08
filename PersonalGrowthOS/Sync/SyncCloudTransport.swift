@@ -19,9 +19,26 @@ enum SyncCloudTransportError: Error, Equatable {
 @MainActor final class SyncCloudSession {
     let binding: SyncBinding
     private(set) var active = true
+    private(set) var firstPauseReason: SyncCloudPauseReason?
+    private(set) var secondaryCloudErrorCode: Int?
     init(binding: SyncBinding) { self.binding = binding }
     func check() throws { guard active else { throw SyncCloudTransportError.staleSession } }
     func invalidate() { active = false }
+    func pause(_ reason: SyncCloudPauseReason) {
+        guard active else { return }
+        if firstPauseReason == nil { firstPauseReason = reason }
+        active = false
+    }
+    /// Preserve a recorded failure when SDK cancellation follows our fail-closed stop.
+    /// A cancellation without an earlier pause remains an error, never synthetic success.
+    func observeFailure(_ error: Error) -> Error {
+        guard let firstPauseReason else { return error }
+        if let cloud = error as? CKError, secondaryCloudErrorCode == nil,
+           firstPauseReason != .cloudFailure(cloud.code.rawValue) {
+            secondaryCloudErrorCode = cloud.code.rawValue
+        }
+        return SyncCloudTransportError.paused(firstPauseReason)
+    }
 }
 
 enum SyncCloudDownloaded: Equatable, Sendable {
@@ -67,6 +84,9 @@ enum SyncCloudUpload {
     func loadEngineState(binding: SyncBinding) throws -> Data?
     /// Return only this binding's immutable records, including every still-unacknowledged asset.
     func pendingRecordIDs(session: SyncCloudSession) throws -> [CKRecord.ID]
+    /// Recheck the complete binding and durable initial-creation intent. A lost/established
+    /// zone or a missing explicit intent never grants fresh creation permission.
+    func permitsPendingZoneCreation(session: SyncCloudSession) throws -> Bool
     func uploadRecord(id: CKRecord.ID, session: SyncCloudSession) async throws -> SyncCloudUpload?
     /// Persist bytes before returning; never retain SDK temporary asset URLs as durable content.
     func durableInbox(_ records: [SyncCloudDownloaded], session: SyncCloudSession) async throws
@@ -105,13 +125,13 @@ enum SyncCloudUpload {
                 case .state(let bytes): try await persistence.saveEngineState(bytes, session: session)
                 case .zoneSaved: try await persistence.didSaveZone(session: session)
                 case .pause(let reason):
-                    session.invalidate(); persistence.didPause(reason, binding: session.binding)
+                    session.pause(reason); persistence.didPause(reason, binding: session.binding)
                     throw SyncCloudTransportError.paused(reason)
                 }
                 try session.check()
             } catch {
                 if session.active {
-                    session.invalidate(); persistence.didPause(.persistenceFailure, binding: session.binding)
+                    session.pause(.persistenceFailure); persistence.didPause(.persistenceFailure, binding: session.binding)
                 }
                 throw error
             }
@@ -167,11 +187,18 @@ enum SyncCloudUpload {
             configuration.automaticallySync = false
             let created = CKSyncEngine(configuration)
             engine = created; cloudContainer = container
+            let obsoleteZoneSaves = try Self.restoredZoneSavesToRemove(
+                recordChanges: created.state.pendingRecordZoneChanges,
+                databaseChanges: created.state.pendingDatabaseChanges,
+                dataset: binding.dataset, createZone: createZone)
+            if !obsoleteZoneSaves.isEmpty { created.state.remove(pendingDatabaseChanges: obsoleteZoneSaves) }
+            try Self.validatePending(recordChanges: created.state.pendingRecordZoneChanges,
+                databaseChanges: created.state.pendingDatabaseChanges, dataset: binding.dataset, createZone: createZone)
             if createZone { created.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: binding.dataset)))]) }
             try refreshOutbox(engine: created, session: active)
         } catch {
             if active.active { pause(reason(for: error), session: active) }
-            throw error
+            throw active.observeFailure(error)
         }
     }
 
@@ -200,7 +227,7 @@ enum SyncCloudUpload {
             try session.check()
         } catch {
             if session.active { pause(reason(for: error), session: session) }
-            throw error
+            throw session.observeFailure(error)
         }
     }
 
@@ -223,8 +250,15 @@ enum SyncCloudUpload {
             switch event {
             case .stateUpdate(let update):
                 try await events.accept(.state(try JSONEncoder().encode(update.stateSerialization)))
-            case .accountChange:
-                pause(.accountChanged, session: session)
+            case .accountChange(let change):
+                let plan = try Self.accountChangePlan(change.changeType, session: session,
+                    allowsInitialZoneCreation: allowsInitialZoneCreation, persistence: persistence)
+                // CKSyncEngine clears its pending changes when establishing an account.
+                // Restore durable work only for this already-verified account; never ACK it.
+                if plan.createZone {
+                    syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: zone))])
+                }
+                syncEngine.state.add(pendingRecordZoneChanges: plan.records.map { .saveRecord($0) })
             case .fetchedDatabaseChanges(let changes):
                 if changes.deletions.contains(where: { $0.zoneID == zone }) { pause(.zoneMissing, session: session) }
             case .fetchedRecordZoneChanges(let changes):
@@ -325,6 +359,37 @@ enum SyncCloudUpload {
             if session.active { pause(reason(for: error), session: session) }
             return nil
         }
+    }
+
+    /// The first engine account event may be a sign-in to the account independently
+    /// verified during start. It is not permission to adopt a different account or to
+    /// recreate an established/lost zone. All other account transitions fail closed.
+    static func accountChangePlan(_ change: CKSyncEngine.Event.AccountChange.ChangeType,
+                                  session: SyncCloudSession, allowsInitialZoneCreation: Bool,
+                                  persistence: any SyncCloudPersistence) throws -> (records: [CKRecord.ID], createZone: Bool) {
+        try session.check()
+        guard case .signIn(let user) = change,
+              accountFingerprint(recordID: user) == session.binding.accountHash else {
+            throw SyncCloudTransportError.paused(.accountChanged)
+        }
+        let durableZonePermission = try persistence.permitsPendingZoneCreation(session: session)
+        let records = try persistence.pendingRecordIDs(session: session)
+        try session.check()
+        let zone = CloudRecordCodec.zone(dataset: session.binding.dataset)
+        guard records.allSatisfy({ $0.zoneID == zone }) else { throw SyncValidationError.invalidIdentity }
+        return (records, allowsInitialZoneCreation && durableZonePermission)
+    }
+
+    /// A prior initial-zone save may survive in serialized engine state even after
+    /// independent metadata verification confirms the exact zone already exists. Validate
+    /// the ENTIRE restored scope first; then retire only those same-zone save intents when
+    /// this activation has no creation permission. Record work and all other state survive.
+    static func restoredZoneSavesToRemove(recordChanges: [CKSyncEngine.PendingRecordZoneChange],
+                                         databaseChanges: [CKSyncEngine.PendingDatabaseChange],
+                                         dataset: UUID, createZone: Bool) throws -> [CKSyncEngine.PendingDatabaseChange] {
+        try validatePending(recordChanges: recordChanges, databaseChanges: databaseChanges,
+                            dataset: dataset, createZone: true)
+        return createZone ? [] : databaseChanges
     }
 
     /// Treat restored engine state as scoped input, not authority to delete or recreate data.
@@ -447,7 +512,7 @@ enum SyncCloudUpload {
     }
     private func pause(_ reason: SyncCloudPauseReason, session: SyncCloudSession) {
         guard session.active else { return }
-        session.invalidate(); persistence.didPause(reason, binding: session.binding)
+        session.pause(reason); persistence.didPause(reason, binding: session.binding)
         if let engine { cancelLater(engine) }
     }
     private func cancelLater(_ engine: CKSyncEngine) {
