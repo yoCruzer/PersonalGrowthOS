@@ -11,6 +11,7 @@ import sys
 MAX_BYTES = 1024 * 1024
 CANDIDATE_SHA256 = "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003"
 SCALARS = {"INT64", "DOUBLE", "STRING", "BYTES", "TIMESTAMP", "REFERENCE", "ASSET", "LOCATION"}
+INDEX_FLAGS = {"QUERYABLE", "SEARCHABLE", "SORTABLE"}
 SYSTEM_FIELDS = {
     "___createTime": "TIMESTAMP", "___createdBy": "REFERENCE", "___etag": "STRING",
     "___modTime": "TIMESTAMP", "___modifiedBy": "REFERENCE", "___recordID": "REFERENCE",
@@ -140,6 +141,19 @@ class Parser:
             raise AuditError("Unsupported scalar field type")
         return name
 
+    def field_indexes(self):
+        # Index modifiers belong to exactly one field. Preserve their set semantics
+        # canonically, but never silently consume unknown or repeated modifiers.
+        flags = set()
+        while self.index < len(self.tokens) and self.tokens[self.index] not in {",", ")"}:
+            flag = self.take()
+            if flag not in INDEX_FLAGS:
+                raise AuditError("Unsupported field index modifier")
+            if flag in flags:
+                raise AuditError("Duplicate field index modifier")
+            flags.add(flag)
+        return sorted(flags)
+
     def parse(self):
         self.take("DEFINE")
         self.take("SCHEMA")
@@ -151,7 +165,7 @@ class Parser:
             if name in records:
                 raise AuditError("Duplicate record type")
             self.take("(")
-            fields, grants = {}, set()
+            fields, grants, indexes = {}, set(), {}
             while True:
                 if self.index < len(self.tokens) and self.tokens[self.index] == "GRANT":
                     self.take("GRANT")
@@ -170,6 +184,9 @@ class Parser:
                     if field.startswith("__") and field not in SYSTEM_FIELDS:
                         raise AuditError("Unknown system field")
                     fields[field] = self.field_type()
+                    flags = self.field_indexes()
+                    if flags:
+                        indexes[field] = flags
                 separator = self.take()
                 if separator == ")":
                     break
@@ -178,6 +195,9 @@ class Parser:
             self.take(";")
             records[name] = {"fields": dict(sorted(fields.items())), "grants": [
                 {"permission": p, "role": r} for p, r in sorted(grants)]}
+            # Old unindexed exports retain their exact report shape.
+            if indexes:
+                records[name]["fieldIndexes"] = dict(sorted(indexes.items()))
         if not records:
             raise AuditError("No record declarations in supported schema")
         return dict(sorted(records.items()))

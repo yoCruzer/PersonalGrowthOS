@@ -1,3 +1,5 @@
+> 2026-11-09最新Owner已授权自主推进TestFlight标签/测试分发；性能/中文/V18环境隔离及Release配置已实现、本机Unit701PASS/1SKIP、UI8/8。实际Production部署与发行签名/TF可用仍未验证，当前Mac锁屏阻塞后台，见[本次执行范围](ICLOUD_SYNC_TESTFLIGHT_EXECUTION_20261109_ZH.md)。以下旧授权/Release关闭状态作为历史保留。
+
 > 2026-11-08 Owner新决定：P0/P1/P2真实服务验收后移，不再阻塞正式App代码接入；未验证状态与Production/发布授权边界保留。以[当前实现范围](ICLOUD_SYNC_PRODUCT_IMPLEMENTATION_ZH.md)为准。
 
 2026-11-08最新证据：[独立Mac配置、签名及离线资格已完成](Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/README.md)。Owner明确配置授权已执行，实际签名与真实沙盒离线自检通过；真实Development/P0、Production/P1/P2未通过。下文旧“待配置/未注册”依此更新，实际云/发布边界不变。

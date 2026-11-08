@@ -3,6 +3,124 @@ import SwiftData
 import SyncFoundation
 
 // These rows share the business store. They are deliberately absent from backup v12.
+/// Added only in V18. The V17 entities below retain their original schema unchanged.
+/// This singleton routes local capture and cloud callbacks; archived datasets remain intact.
+@Model final class ProductSyncSelection {
+    @Attribute(.unique) var key: String
+    var developmentDatasetID: UUID?
+    var productionDatasetID: UUID?
+    var environment: String
+    var activeDatasetID: UUID? {
+        switch CloudEnvironment(rawValue: environment) {
+        case .development: return developmentDatasetID
+        case .production: return productionDatasetID
+        case nil: return nil
+        }
+    }
+    init(environment: CloudEnvironment, activeDatasetID: UUID? = nil) {
+        key = "active"; self.environment = environment.rawValue
+        developmentDatasetID = environment == .development ? activeDatasetID : nil
+        productionDatasetID = environment == .production ? activeDatasetID : nil
+    }
+    fileprivate func select(_ id: UUID, for environment: CloudEnvironment) {
+        switch environment {
+        case .development: developmentDatasetID = id
+        case .production: productionDatasetID = id
+        }
+    }
+}
+
+/// Call mutations inside the caller's StorePublication lease and save them together with
+/// the owning transaction. These methods never save, contact CloudKit or erase old metadata.
+enum ProductSyncStoreSelection {
+    static func defaultDatasetID(for environment: CloudEnvironment) -> UUID {
+        switch environment {
+        case .development: return UUID(uuidString: "EAB541A0-45A1-43E4-9009-4E6F316EA001")!
+        case .production: return UUID(uuidString: "EAB541A0-45A1-43E4-9009-4E6F316EA002")!
+        }
+    }
+    private static func selection(in context: ModelContext) throws -> ProductSyncSelection? {
+        let rows = try context.fetch(FetchDescriptor<ProductSyncSelection>())
+        guard rows.count <= 1 else { throw ProductSyncFailure.corruptState }
+        if let row = rows.first {
+            guard row.key == "active", CloudEnvironment(rawValue: row.environment) != nil else { throw ProductSyncFailure.corruptState }
+            let datasets = try context.fetch(FetchDescriptor<ProductSyncDataset>())
+            // Validate both realms, including the inactive pointer. Never infer a replacement
+            // from retained headers: restore deliberately leaves older identities archived.
+            for (id, environment) in [(row.developmentDatasetID, CloudEnvironment.development),
+                                      (row.productionDatasetID, CloudEnvironment.production)] {
+                guard let id else { continue }
+                let matches = datasets.filter { $0.id == id }
+                guard matches.count == 1, matches[0].environment == environment.rawValue else {
+                    throw ProductSyncFailure.corruptState
+                }
+            }
+        }
+        return rows.first
+    }
+    static func selectedDataset(in context: ModelContext) throws -> ProductSyncDataset? {
+        if let selector = try selection(in: context) {
+            // Explicitly unselected (e.g. first Production launch) must not fall back to Development.
+            guard let id = selector.activeDatasetID else { return nil }
+            let rows = try context.fetch(FetchDescriptor<ProductSyncDataset>(predicate: #Predicate { $0.id == id }))
+            guard rows.count == 1, rows[0].environment == selector.environment else { throw ProductSyncFailure.corruptState }
+            return rows[0]
+        }
+        let legacy = try context.fetch(FetchDescriptor<ProductSyncDataset>())
+        guard legacy.count <= 1 else { throw ProductSyncFailure.corruptState }
+        if let row = legacy.first, CloudEnvironment(rawValue: row.environment) == nil { throw ProductSyncFailure.corruptState }
+        return legacy.first
+    }
+    static func selectedEnvironment(in context: ModelContext) throws -> CloudEnvironment? {
+        if let selector = try selection(in: context) { return CloudEnvironment(rawValue: selector.environment) }
+        return try selectedDataset(in: context).flatMap { CloudEnvironment(rawValue: $0.environment) }
+    }
+    static func prepare(context: ModelContext, environment: CloudEnvironment) throws {
+        let existing = try selection(in: context)
+        let current = try selectedDataset(in: context) // Validate before changing any row.
+        let rows = try context.fetch(FetchDescriptor<ProductSyncDataset>())
+        let changesEnvironment = (existing?.environment ?? current?.environment).map { $0 != environment.rawValue } ?? false
+        if let existing {
+            if changesEnvironment {
+                for row in rows { row.enabled = false; row.generation = UUID() }
+                existing.environment = environment.rawValue
+            } else {
+                for row in rows where row.id != existing.activeDatasetID && row.enabled {
+                    row.enabled = false; row.generation = UUID()
+                }
+            }
+        } else {
+            if changesEnvironment {
+                for row in rows { row.enabled = false; row.generation = UUID() }
+            }
+            let selector = ProductSyncSelection(environment: environment)
+            if let current, let oldEnvironment = CloudEnvironment(rawValue: current.environment) {
+                selector.select(current.id, for: oldEnvironment)
+            }
+            context.insert(selector)
+        }
+    }
+    static func activate(_ newDataset: ProductSyncDataset, in context: ModelContext) throws {
+        guard let selector = try selection(in: context),
+              newDataset.environment == selector.environment else { throw ProductSyncFailure.corruptState }
+        let rows = try context.fetch(FetchDescriptor<ProductSyncDataset>())
+        // Do not let SwiftData uniqueness upsert silently replace a retained dataset header.
+        guard !rows.contains(where: { $0.id == newDataset.id }) else { throw ProductSyncFailure.corruptState }
+        for row in rows where row.enabled { row.enabled = false; row.generation = UUID() }
+        context.insert(newDataset)
+        selector.select(newDataset.id, for: CloudEnvironment(rawValue: selector.environment)!)
+    }
+    static func isolateRestoredWorkspace(in context: ModelContext) throws {
+        let environment = try selectedEnvironment(in: context) ?? .development
+        try prepare(context: context, environment: environment)
+        for row in try context.fetch(FetchDescriptor<ProductSyncDataset>()) {
+            row.enabled = false; row.generation = UUID()
+        }
+        let fresh = ProductSyncDataset(); fresh.environment = environment.rawValue
+        try activate(fresh, in: context)
+    }
+}
+
 @Model final class ProductSyncDataset {
     @Attribute(.unique) var id: UUID
     var accountHash: String?
@@ -115,18 +233,13 @@ enum ProductSyncCommit {
             do {
                 context.autosaveEnabled = false
                 if origin == .restoreNewDataset {
-                    for dataset in try context.fetch(FetchDescriptor<ProductSyncDataset>()) {
-                        dataset.enabled = false; dataset.generation = UUID()
-                    }
-                    // A restored workspace never inherits old account/token/ack state.
-                    for row in try context.fetch(FetchDescriptor<ProductSyncDataset>()) { context.delete(row) }
-                    context.insert(ProductSyncDataset())
+                    // Retain old headers, account binding, immutable history and acknowledgements.
+                    // Only the active pointer moves to a new unbound, disabled random dataset.
+                    try ProductSyncStoreSelection.isolateRestoredWorkspace(in: context)
                 } else if origin == .local {
                     let kinds = try dirtyKinds(context)
                     if !kinds.isEmpty {
-                        let datasets = try context.fetch(FetchDescriptor<ProductSyncDataset>())
-                        guard datasets.count <= 1 else { throw ProductSyncFailure.corruptState }
-                        if let dataset = datasets.first, dataset.initialized {
+                        if let dataset = try ProductSyncStoreSelection.selectedDataset(in: context), dataset.initialized {
                             do { try stage(context, dataset: dataset, kinds: kinds) }
                             catch ProductSyncFailure.unresolvedConflict { throw ProductSyncFailure.unresolvedConflict }
                             catch {
@@ -152,7 +265,9 @@ enum ProductSyncCommit {
     static func initialize(_ context: ModelContext, dataset: ProductSyncDataset) throws {
         try StorePublication.performCommit(at: StorePublication.root(for: context.container)) {
             do {
-                guard !dataset.initialized else { return }
+                // Explicit Enable also reconciles facts changed while another environment
+                // was selected. Stable fingerprints add nothing; changed facts descend from
+                // this dataset's retained heads without rewriting its acknowledgements.
                 try stage(context, dataset: dataset, kinds: Set(SyncDomainKind.allCases))
                 dataset.initialized = true
                 try context.save()
@@ -248,7 +363,7 @@ enum ProductSyncCommit {
             case is BodyReferenceSettings: kinds.insert(.bodyReference)
             case is NetWorthItem: kinds.insert(.netWorthItem)
             case is NetWorthSnapshot: kinds.insert(.netWorthSnapshot)
-            case is TodoReminderDeviceRecord, is ProductSyncDataset, is ProductSyncObjectState, is ProductSyncMutation,
+            case is TodoReminderDeviceRecord, is ProductSyncSelection, is ProductSyncDataset, is ProductSyncObjectState, is ProductSyncMutation,
                  is ProductSyncOutbox, is ProductSyncInbox, is ProductSyncEngineState, is ProductSyncMediaLease: break
             default: throw ProductSyncFailure.unknownModel(String(describing: type(of: model)))
             }

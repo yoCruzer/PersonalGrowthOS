@@ -58,7 +58,9 @@ import SyncFoundation
             XCTAssertEqual(coordinator.status, first)
             XCTAssertTrue(coordinator.requiresAttention)
             XCTAssertFalse(coordinator.canAutomaticallySync)
-            XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.blockedReason, first)
+            let canonical = "Sync paused (\(reason)); local data and pending revisions are kept."
+            XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.blockedReason, canonical)
+            XCTAssertEqual(SyncProductCoordinator.localizedStoredStatus(canonical), first)
         }
     }
     func testOldGenerationCancellationCannotOverwriteCurrentStatus() throws {
@@ -162,6 +164,50 @@ import SyncFoundation
             XCTAssertFalse(coordinator.canConfirmInitialZoneCreation)
             XCTAssertNil(coordinator.takeInitialZoneConsent())
         }
+    }
+    func testRefreshRetainsHistoricalCompletionAndDoesNotOverwriteActiveDownloadPhase() throws {
+        let (container, coordinator, session) = try fixture(), context = ModelContext(container)
+        let value = try XCTUnwrap(context.fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        let completed = Date(timeIntervalSince1970: 1_700_000_000)
+        value.lastSuccess = completed; try context.save()
+        coordinator.refreshStatus()
+        let expected = String.localizedStringWithFormat(String(localized: "Last sync completed at %@"), completed.formatted(date: .abbreviated, time: .standard))
+        XCTAssertEqual(coordinator.displayedStatus, expected)
+        let reopened = SyncProductCoordinator(container: container, mediaRoot: try root(), environment: .development, automaticSync: false)
+        XCTAssertEqual(reopened.displayedStatus, expected)
+        try coordinator.didChangeActivity(.downloading, session: session)
+        coordinator.refreshStatus()
+        XCTAssertEqual(coordinator.pendingCount, 0)
+        XCTAssertEqual(coordinator.displayedStatus, String(localized: "Downloading from iCloud…"))
+        coordinator.didPause(.accountChanged, binding: session.binding)
+        XCTAssertNil(coordinator.activity); XCTAssertTrue(coordinator.displayedStatus.contains("accountChanged"))
+        session.invalidate()
+        XCTAssertThrowsError(try coordinator.didChangeActivity(.uploading, session: session))
+        XCTAssertTrue(coordinator.displayedStatus.contains("accountChanged"))
+    }
+    func testOnlyCompleteAppliedAndAcknowledgedCycleAdvancesCompletionTime() async throws {
+        let (container, coordinator, session) = try fixture(), context = ModelContext(container)
+        let value = try XCTUnwrap(context.fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        let old = Date(timeIntervalSince1970: 1_600_000_000), next = Date(timeIntervalSince1970: 1_700_000_000)
+        value.lastSuccess = old; value.blockedReason = "Synthetic missing asset"; try context.save()
+        try coordinator.markSuccessful(session.binding, completedAt: next)
+        XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess, old)
+        value.blockedReason = nil; try context.save()
+        container.mainContext.insert(Entry(body: "unsaved synthetic", createdAt: next))
+        try await coordinator.applyDurableInbox(session: session)
+        try coordinator.markSuccessful(session.binding, completedAt: next)
+        XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess, old)
+        container.mainContext.rollback()
+        try await coordinator.applyDurableInbox(session: session)
+        let pending = try mutation(dataset: session.binding.dataset, object: UUID(), content: "pending synthetic")
+        try queue([pending], in: container)
+        try coordinator.markSuccessful(session.binding, completedAt: next)
+        XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess, old)
+        let write = ModelContext(container)
+        try XCTUnwrap(write.fetch(FetchDescriptor<ProductSyncOutbox>()).first).completed = true
+        try write.save()
+        try coordinator.markSuccessful(session.binding, completedAt: next)
+        XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess, next)
     }
     func testDefaultInitializationHasNoImplicitDatasetOrCloudActivation() throws {
         let container = try PersistenceContainerFactory.makeInMemory()

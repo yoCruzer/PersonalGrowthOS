@@ -8,6 +8,8 @@ import SyncFoundation
         var committed: [String] = []
         var acknowledgements: [SyncCloudAcknowledgement] = []
         var paused: [SyncCloudPauseReason] = []
+        var activities: [SyncCloudActivity] = []
+        var invalidateOnActivity = false
         var inboxFailure = false
         var stateFailure = false
         var pending: [CKRecord.ID] = []
@@ -15,6 +17,10 @@ import SyncFoundation
         var durableReads = 0
         var suspendInbox = false
         var waiting: CheckedContinuation<Void, Never>?
+        func didChangeActivity(_ activity: SyncCloudActivity, session: SyncCloudSession) throws {
+            try session.check(); activities.append(activity)
+            if invalidateOnActivity { session.invalidate() }
+        }
         func loadEngineState(binding: SyncBinding) throws -> Data? { nil }
         func pendingRecordIDs(session: SyncCloudSession) throws -> [CKRecord.ID] {
             try session.check(); durableReads += 1; return pending
@@ -419,6 +425,25 @@ import SyncFoundation
                     databaseChanges: safe, dataset: dataset, createZone: createZone))
             }
         }
+    }
+
+    func testActivityReportingPreservesPhasesAndRejectsOldSessionWithoutSideEffects() throws {
+        let store = Store(), active = try session()
+        try SyncCloudTransport.reportActivity(.uploading, session: active, persistence: store)
+        try SyncCloudTransport.reportActivity(.downloading, session: active, persistence: store)
+        XCTAssertEqual(store.activities, [.uploading, .downloading])
+        XCTAssertTrue(store.committed.isEmpty); XCTAssertTrue(store.acknowledgements.isEmpty)
+        active.invalidate()
+        XCTAssertThrowsError(try SyncCloudTransport.reportActivity(.applying, session: active, persistence: store)) {
+            XCTAssertEqual($0 as? SyncCloudTransportError, .staleSession)
+        }
+        XCTAssertEqual(store.activities, [.uploading, .downloading])
+        let replaced = try session()
+        store.invalidateOnActivity = true
+        XCTAssertThrowsError(try SyncCloudTransport.reportActivity(.checking, session: replaced, persistence: store)) {
+            XCTAssertEqual($0 as? SyncCloudTransportError, .staleSession)
+        }
+        XCTAssertEqual(store.activities, [.uploading, .downloading, .checking])
     }
 
 }

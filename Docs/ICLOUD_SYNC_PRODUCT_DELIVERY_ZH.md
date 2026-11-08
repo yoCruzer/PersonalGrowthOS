@@ -1,3 +1,5 @@
+> 2026-11-09最新Owner已授权自主推进TestFlight标签/测试分发；性能/中文/V18环境隔离及Release配置已实现、本机Unit701PASS/1SKIP、UI8/8。实际Production部署与发行签名/TF可用仍未验证，当前Mac锁屏阻塞后台，见[本次执行范围](ICLOUD_SYNC_TESTFLIGHT_EXECUTION_20261109_ZH.md)。以下旧授权/Release关闭状态作为历史保留。
+
 ## 最新边界：停止真机协助，build11仅恢复导航
 
 Owner已停止本轮真机协助，不再要求安装、点击或截图。build10底部全局错误提示遮挡Tab已移除，错误详情保留在同步设置；合成暂停状态下五个Tab与设置访问回归通过，build11仅为恢复正常导航的开发修复包，源码36ad76f，私有目录`/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev11-36ad76f`，签名/解包核验通过；远端CI尚未完成，未替Owner安装。同步状态、原数据和429队列不重置，真实云验收仍暂停；不是TestFlight/Production候选。证据和后续包摘要见[持续修复记录](Evidence/iCloudProduct/20261108/first-activation-fix.md)。以下旧验证安排不得当作当前人工请求。

@@ -62,9 +62,61 @@ final class SyncBuildConfigurationTests: XCTestCase {
                 bundleIdentifier: "com.yocruzer.PersonalGrowthOS", profileBytes: invalid))
         }
     }
-    func testSimulatorOrReleaseRuntimeCannotActivate() {
-        #if !DEBUG || targetEnvironment(simulator)
+    func testReleaseProductionDoesNotRequireEmbeddedProfile() {
+        XCTAssertEqual(SyncBuildConfiguration.permittedEnvironment(buildMode: .release, isSimulator: false,
+            pin: "production", bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier), .production)
+        // An optional profile does not become Release signing evidence or alter the selected realm.
+        XCTAssertEqual(SyncBuildConfiguration.permittedEnvironment(buildMode: .release, isSimulator: false,
+            pin: "production", bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier,
+            profileBytes: Data("not a profile".utf8)), .production)
+    }
+    func testReleaseRejectsUnknownPinsAndWrongBundle() {
+        for pin in [nil, "development", "Production", " production", "production ", "$(PGOS_CLOUD_RUNTIME_ENVIRONMENT)"] as [String?] {
+            XCTAssertNil(SyncBuildConfiguration.permittedEnvironment(buildMode: .release, isSimulator: false,
+                pin: pin, bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier))
+        }
+        for bundle in [nil, "com.synthetic.other", SyncBuildConfiguration.productBundleIdentifier + ".FormalSyncProbe"] as [String?] {
+            XCTAssertNil(SyncBuildConfiguration.permittedEnvironment(buildMode: .release, isSimulator: false,
+                pin: "production", bundleIdentifier: bundle))
+        }
+    }
+    func testDebugDeviceRequiresDevelopmentMetadataAndProfile() throws {
+        let xml = try PropertyListSerialization.data(fromPropertyList: ["Entitlements": entitlements], format: .xml, options: 0)
+        XCTAssertEqual(SyncBuildConfiguration.permittedEnvironment(buildMode: .debug, isSimulator: false,
+            pin: "development", bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier,
+            profileBytes: xml), .development)
+        XCTAssertNil(SyncBuildConfiguration.permittedEnvironment(buildMode: .debug, isSimulator: false,
+            pin: "development", bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier))
+        XCTAssertNil(SyncBuildConfiguration.permittedEnvironment(buildMode: .debug, isSimulator: false,
+            pin: "production", bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier, profileBytes: xml))
+        var invalid = entitlements
+        invalid["com.apple.developer.team-identifier"] = "OTHERTEAM"
+        let badXML = try PropertyListSerialization.data(fromPropertyList: ["Entitlements": invalid], format: .xml, options: 0)
+        XCTAssertNil(SyncBuildConfiguration.permittedEnvironment(buildMode: .debug, isSimulator: false,
+            pin: "development", bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier, profileBytes: badXML))
+    }
+    func testSimulatorNeverActivatesEvenWithValidBuildMetadataAndProfile() throws {
+        let xml = try PropertyListSerialization.data(fromPropertyList: ["Entitlements": entitlements], format: .xml, options: 0)
+        for (mode, pin): (SyncBuildConfiguration.BuildMode, String) in [(.debug, "development"), (.release, "production")] {
+            XCTAssertNil(SyncBuildConfiguration.permittedEnvironment(buildMode: mode, isSimulator: true,
+                pin: pin, bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier, profileBytes: xml))
+        }
+        #if targetEnvironment(simulator)
         XCTAssertNil(SyncBuildConfiguration.environment())
         #endif
+    }
+    func testLocalMetadataSelectorDoesNotRequireCloudEligibility() {
+        XCTAssertEqual(SyncBuildConfiguration.metadataEnvironment(buildMode: .debug, pin: "development",
+            bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier), .development)
+        XCTAssertEqual(SyncBuildConfiguration.metadataEnvironment(buildMode: .release, pin: "production",
+            bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier), .production)
+        for (mode, wrongPin): (SyncBuildConfiguration.BuildMode, String) in [(.debug, "production"), (.release, "development")] {
+            XCTAssertNil(SyncBuildConfiguration.metadataEnvironment(buildMode: mode, pin: wrongPin,
+                bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier))
+            XCTAssertNil(SyncBuildConfiguration.metadataEnvironment(buildMode: mode, pin: nil,
+                bundleIdentifier: SyncBuildConfiguration.productBundleIdentifier))
+            XCTAssertNil(SyncBuildConfiguration.metadataEnvironment(buildMode: mode, pin: wrongPin,
+                bundleIdentifier: "com.synthetic.other"))
+        }
     }
 }

@@ -3,6 +3,8 @@ import CloudKit
 import CoreFoundation
 import SyncFoundation
 
+enum SyncCloudActivity: Equatable, Sendable { case checking, uploading, downloading, applying }
+
 enum SyncCloudPauseReason: Equatable, Sendable {
     case accountChanged, accountUnavailable, identityMismatch, environmentMismatch
     case zoneMissing, remoteDeletion, conflict, invalidRecord, persistenceFailure
@@ -81,6 +83,7 @@ enum SyncCloudUpload {
 }
 
 @MainActor protocol SyncCloudPersistence: AnyObject {
+    func didChangeActivity(_ activity: SyncCloudActivity, session: SyncCloudSession) throws
     func loadEngineState(binding: SyncBinding) throws -> Data?
     /// Return only this binding's immutable records, including every still-unacknowledged asset.
     func pendingRecordIDs(session: SyncCloudSession) throws -> [CKRecord.ID]
@@ -219,16 +222,26 @@ enum SyncCloudUpload {
         do {
             try refreshOutbox(engine: engine, session: session)
             let zone = CloudRecordCodec.zone(dataset: session.binding.dataset)
+            try Self.reportActivity(.uploading, session: session, persistence: persistence)
             try await engine.sendChanges(.init(scope: .zoneIDs([zone])))
             try session.check()
             // Old ACKs may have coincided with newer local edits. Re-read durable outbox.
             try refreshOutbox(engine: engine, session: session)
+            try Self.reportActivity(.downloading, session: session, persistence: persistence)
             try await engine.fetchChanges(.init(scope: .zoneIDs([zone])))
             try session.check()
         } catch {
             if session.active { pause(reason(for: error), session: session) }
             throw session.observeFailure(error)
         }
+    }
+
+    /// Activity is informational and cannot bypass the activation fence or durable binding.
+    static func reportActivity(_ activity: SyncCloudActivity, session: SyncCloudSession,
+                               persistence: any SyncCloudPersistence) throws {
+        try session.check()
+        try persistence.didChangeActivity(activity, session: session)
+        try session.check()
     }
 
     private func refreshOutbox(engine: CKSyncEngine, session: SyncCloudSession) throws {

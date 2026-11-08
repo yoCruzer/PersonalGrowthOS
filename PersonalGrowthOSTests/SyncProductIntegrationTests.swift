@@ -86,11 +86,36 @@ import SyncFoundation
     }
     private func deliver(_ records:[SyncCloudDownloaded],to device:Device) async throws {
         try await device.coordinator.durableInbox(records,session:device.session)
+        try await device.coordinator.applyDurableInbox(session: device.session)
     }
     private func outboxCount(_ device:Device) throws -> Int {
         try ModelContext(device.container).fetchCount(FetchDescriptor<ProductSyncOutbox>())
     }
 
+    func testManyDownloadedRecordsStayDurableWithoutPerRecordProjectionThenApplyOnceAfterReopen() async throws {
+        let a = try device(), b = try device(), count = 64
+        try write(a) { context in
+            for index in 0..<count { context.insert(Entry(body: "Synthetic batch \(index)", createdAt: instant)) }
+        }
+        let records = try allPackets(a)
+        XCTAssertEqual(records.count, count * 2) // One exact manifest and payload chunk per independent entry.
+        for record in records { try await b.coordinator.durableInbox([record], session: b.session) }
+        XCTAssertEqual(b.coordinator.projectionPassCount, 0)
+        XCTAssertEqual(try ModelContext(b.container).fetchCount(FetchDescriptor<Entry>()), 0)
+        XCTAssertEqual(try ModelContext(b.container).fetchCount(FetchDescriptor<ProductSyncInbox>()), records.count)
+        let checkpoint = Data("synthetic-durable-checkpoint".utf8)
+        try await b.coordinator.saveEngineState(checkpoint, session: b.session)
+        XCTAssertEqual(try ModelContext(b.container).fetch(FetchDescriptor<ProductSyncEngineState>()).first?.bytes, checkpoint)
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: b.root.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        reopened.mainContext.autosaveEnabled = false
+        let replay = SyncProductCoordinator(container: reopened, mediaRoot: b.root, environment: .development, automaticSync: false)
+        try await replay.applyDurableInbox(session: SyncCloudSession(binding: b.session.binding))
+        XCTAssertEqual(replay.projectionPassCount, 1)
+        XCTAssertEqual(try ModelContext(reopened).fetch(FetchDescriptor<Entry>()).map { try XCTUnwrap($0.body) }.sorted(),
+                       (0..<count).map { "Synthetic batch \($0)" }.sorted())
+        XCTAssertEqual(try ModelContext(reopened).fetchCount(FetchDescriptor<ProductSyncOutbox>()), 0)
+        XCTAssertEqual(try ModelContext(reopened).fetchCount(FetchDescriptor<ProductSyncInbox>()), records.count)
+    }
     func testDiskStoresConvergeAfterChildBeforeParentAndDuplicateDeliveryWithoutEcho() async throws {
         let a=try device(),b=try device()
         XCTAssertNotEqual(a.session.binding.generation,b.session.binding.generation)

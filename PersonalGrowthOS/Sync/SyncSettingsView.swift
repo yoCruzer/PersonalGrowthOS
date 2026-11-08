@@ -8,7 +8,7 @@ struct SyncSettingsView: View {
     var body: some View {
         List {
             Section {
-                Text(coordinator.status).accessibilityIdentifier("sync-status")
+                Text(coordinator.displayedStatus).accessibilityIdentifier("sync-status")
                 if coordinator.busy { ProgressView() }
                 if coordinator.enabled {
                     Button("Sync now") { Task { await coordinator.synchronize() } }.disabled(coordinator.busy)
@@ -20,8 +20,14 @@ struct SyncSettingsView: View {
                     Button("Set up iCloud workspace") { confirmsInitialSetup = true }.disabled(coordinator.busy)
                 }
                 LabeledContent("Pending revisions", value: "\(coordinator.pendingCount)")
+                LabeledContent("iCloud environment", value: coordinator.environmentLabel)
             } header: { Text("iCloud sync") }
             footer: { Text("Sync uses your iCloud private database. Turning it off keeps local data and queued changes. Photos may use additional iCloud storage.") }
+            if coordinator.metadataRealm == .production && coordinator.hasRetainedOtherRealm {
+                Section {
+                    Text("This build uses production iCloud. Local records are kept; development sync history and its cloud data stay separate. Enable sync to upload this device’s local records to production.")
+                }
+            }
             if !coordinator.conflicts.isEmpty {
                 Section("Versions to review") {
                     ForEach(coordinator.conflicts) { conflict in
@@ -42,7 +48,11 @@ struct SyncSettingsView: View {
         .alert("Upload this workspace to iCloud?", isPresented: $confirmsEnable) {
             Button("Cancel", role: .cancel) {}
             Button("Enable") { Task { await coordinator.enable() } }
-        } message: { Text("Existing records and original photos will be uploaded to the currently signed-in iCloud account. Other installations using that account can receive them. Concurrent edits are kept for review.") }
+        } message: {
+            Text(coordinator.metadataRealm == .production
+                ? String(localized: "Existing records and original photos will be uploaded to the current account’s production iCloud database. Development cloud data and sync history are not transferred. Concurrent edits are kept for review.")
+                : String(localized: "Existing records and original photos will be uploaded to the currently signed-in iCloud account. Other installations using that account can receive them. Concurrent edits are kept for review."))
+        }
         .alert("Set up this iCloud workspace?", isPresented: $confirmsInitialSetup) {
             Button("Cancel", role: .cancel) { _ = coordinator.takeInitialZoneConsent() }
             Button("Create workspace") { Task { await coordinator.confirmInitialZoneCreation() } }
@@ -68,10 +78,10 @@ private struct SyncConflictView: View {
             List {
                 Text("Review every version. Choosing one creates a new revision that resolves all versions shown; the originals remain in sync history.")
                 ForEach(versions) { version in
-                    Section(version.deleted ? "Deleted version" : "Saved version") {
+                    Section(version.deleted ? String(localized: "Deleted version") : String(localized: "Saved version")) {
                         Text("Received \(version.receivedAt.formatted())").font(.caption)
                         Text(version.payload).font(.body).textSelection(.enabled)
-                        Button(version.deleted ? "Keep deletion" : "Keep this version") { selected = version }
+                        Button(version.deleted ? String(localized: "Keep deletion") : String(localized: "Keep this version")) { selected = version }
                     }
                 }
                 if versions.count < conflict.heads.count { Text("Some version contents are still downloading. Sync again before resolving.") }
@@ -81,13 +91,13 @@ private struct SyncConflictView: View {
             .toolbar { Button("Done") { dismiss() } }
             .onAppear {
                 do { versions = try coordinator.conflictVersions(conflict) }
-                catch { failure = String(describing: error) }
+                catch { failure = String.localizedStringWithFormat(String(localized: "Unable to load versions (%@)."), String(describing: error)) }
             }
             .confirmationDialog("Keep this version and resolve all concurrent versions?", isPresented: Binding(get: { selected != nil }, set: { if !$0 { selected = nil } })) {
                 Button("Keep selected version", role: selected?.deleted == true ? .destructive : nil) {
                     guard let selected else { return }
                     do { try coordinator.resolve(conflict, choosing: selected.id); dismiss() }
-                    catch { failure = String(describing: error) }
+                    catch { failure = String.localizedStringWithFormat(String(localized: "Unable to resolve versions (%@)."), String(describing: error)) }
                     self.selected = nil
                 }
             }
@@ -127,7 +137,7 @@ extension SyncDomainKind {
         case .sleepGoal: return String(localized: "Sleep goal")
         case .captureReceipt: return String(localized: "Shared record receipt")
         case .investmentParticipant: return String(localized: "Participant")
-        case .investmentActivity: return String(localized: "Activity")
+        case .investmentActivity: return String(localized: "Investment activity")
         case .investmentRecord: return String(localized: "Time investment")
         case .bodyReference: return String(localized: "Body reference")
         case .netWorthItem: return String(localized: "Asset or liability")

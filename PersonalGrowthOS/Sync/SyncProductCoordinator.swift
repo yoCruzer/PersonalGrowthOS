@@ -17,7 +17,41 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     static let defaultDatasetID = UUID(uuidString: "EAB541A0-45A1-43E4-9009-4E6F316EA001")!
     let container: ModelContainer
     let mediaRoot: URL
-    @Published private(set) var status = "iCloud sync is off"
+    @Published private(set) var status = String(localized: "iCloud sync is off")
+    @Published private(set) var activity: SyncCloudActivity?
+    #if DEBUG
+    private(set) var projectionPassCount = 0
+    #endif
+    var displayedStatus: String {
+        switch activity {
+        case .checking: return String(localized: "Checking iCloud account…")
+        case .uploading: return String(localized: "Uploading to iCloud…")
+        case .downloading: return String(localized: "Downloading from iCloud…")
+        case .applying: return String(localized: "Applying downloaded changes…")
+        case nil: return status
+        }
+    }
+    static func localizedStoredStatus(_ value: String) -> String {
+        let prefix = "Sync paused (", suffix = "); local data and pending revisions are kept."
+        if value.hasPrefix(prefix), value.hasSuffix(suffix) {
+            let reason = String(value.dropFirst(prefix.count).dropLast(suffix.count))
+            return String.localizedStringWithFormat(String(localized: "Sync paused (%@); local data and pending revisions are kept."), reason)
+        }
+        let capacityPrefix = "Local changes saved; synchronization requires reconciliation ("
+        if value.hasPrefix(capacityPrefix), value.hasSuffix(").") {
+            return String.localizedStringWithFormat(String(localized: "Local changes saved; synchronization requires reconciliation (%@)."), String(value.dropFirst(capacityPrefix.count).dropLast(2)))
+        }
+        return String(localized: String.LocalizationValue(value))
+    }
+    @Published private(set) var metadataRealm: CloudEnvironment?
+    @Published private(set) var hasRetainedOtherRealm = false
+    var environmentLabel: String {
+        switch metadataRealm {
+        case .production: return String(localized: "Production")
+        case .development: return String(localized: "Development")
+        case nil: return String(localized: "Unavailable")
+        }
+    }
     @Published private(set) var enabled = false
     @Published private(set) var busy = false
     @Published private(set) var requiresAttention = false
@@ -47,14 +81,19 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     deinit { if let observer { NotificationCenter.default.removeObserver(observer) }; wakeTask?.cancel() }
 
     private func dataset(in context: ModelContext) throws -> ProductSyncDataset? {
-        let rows = try context.fetch(FetchDescriptor<ProductSyncDataset>())
-        guard rows.count <= 1 else { throw ProductSyncFailure.corruptState }
-        return rows.first
+        try ProductSyncStoreSelection.selectedDataset(in: context)
     }
     func refreshStatus() {
         do {
             let context = ModelContext(container)
-            guard let dataset = try dataset(in: context) else { enabled = false; pendingCount = 0; return }
+            metadataRealm = try ProductSyncStoreSelection.selectedEnvironment(in: context) ?? environment
+            hasRetainedOtherRealm = try context.fetch(FetchDescriptor<ProductSyncDataset>()).contains {
+                $0.initialized && $0.environment != metadataRealm?.rawValue
+            }
+            guard let dataset = try dataset(in: context) else {
+                enabled = false; pendingCount = 0; requiresAttention = false; conflicts = []
+                status = String(localized: "iCloud sync is off"); return
+            }
             enabled = dataset.enabled
             requiresAttention = dataset.needsReconciliation || dataset.blockedReason != nil
             let id = dataset.id
@@ -64,10 +103,14 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                     return SyncConflictSummary(key: .init(kind: kind, id: state.businessID), heads: heads)
                 }
             pendingCount = try context.fetch(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id && !$0.completed })).count
-            if let reason = dataset.blockedReason { status = reason }
-            else if !enabled { status = "iCloud sync is off" }
-            else { status = pendingCount == 0 ? "Waiting to check iCloud" : "\(pendingCount) local revisions waiting" }
-        } catch { status = "Sync metadata needs attention; local data is preserved." }
+            if let reason = dataset.blockedReason { status = Self.localizedStoredStatus(reason) }
+            else if !enabled { status = String(localized: "iCloud sync is off") }
+            else if pendingCount > 0 {
+                status = String.localizedStringWithFormat(String(localized: "%lld local revisions waiting"), Int64(pendingCount))
+            } else if let completed = dataset.lastSuccess {
+                status = String.localizedStringWithFormat(String(localized: "Last sync completed at %@"), completed.formatted(date: .abbreviated, time: .standard))
+            } else { status = String(localized: "Waiting to check iCloud") }
+        } catch { status = String(localized: "Sync metadata needs attention; local data is preserved.") }
     }
 
     /// UI consent explicitly covers uploading existing local data to this account's private database.
@@ -82,7 +125,8 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         return consent
     }
     private func activate(initialZoneConsent consent: SyncBinding?) async {
-        guard !busy else { return }; busy = true; defer { busy = false }
+        guard !busy else { return }; busy = true; activity = .checking
+        defer { busy = false; activity = nil }
         let attempt = UUID(); activation = attempt
         _ = takeInitialZoneConsent()
         var consentAccepted = false
@@ -98,9 +142,16 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             let context = ModelContext(container); context.autosaveEnabled = false
             let binding = try StorePublication.perform(at: mediaRoot) {
                 guard !container.mainContext.hasChanges else { throw StorePublicationFailure.busy }
+                let selected = try ProductSyncStoreSelection.selectedEnvironment(in: context)
+                guard selected == nil || selected == environment else { throw SyncCloudTransportError.paused(.environmentMismatch) }
+                try ProductSyncStoreSelection.prepare(context: context, environment: environment)
                 let value: ProductSyncDataset
                 if let existing = try dataset(in: context) { value = existing }
-                else { value = ProductSyncDataset(id: Self.defaultDatasetID); context.insert(value) }
+                else {
+                    value = ProductSyncDataset(id: ProductSyncStoreSelection.defaultDatasetID(for: environment))
+                    value.environment = environment.rawValue
+                    try ProductSyncStoreSelection.activate(value, in: context)
+                }
                 if let prior = value.accountHash {
                     guard prior == account, value.environment == environment.rawValue else { throw ProductSyncFailure.accountChanged }
                 }
@@ -160,7 +211,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             if automaticSync { UIApplication.shared.registerForRemoteNotifications() }
             try await transport.synchronize()
             guard let session = transport.session else { throw SyncCloudTransportError.staleSession }
-            try project(session)
+            try await applyDurableInbox(session: session)
             try markSuccessful(binding)
         } catch {
             guard activation == attempt else { return }
@@ -168,6 +219,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         }
     }
     func disable() async {
+        activity = nil
         _ = takeInitialZoneConsent()
         activation = UUID(); wakeTask?.cancel(); wakeTask = nil
         driver?.session?.invalidate()
@@ -178,14 +230,19 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             }
         } catch { status = message(error); return }
         if let driver { await driver.stop() }; driver = nil
-        enabled = false; requiresAttention = false; status = "iCloud sync is off. Local data and pending revisions are kept."
+        enabled = false; requiresAttention = false; status = String(localized: "iCloud sync is off. Local data and pending revisions are kept.")
     }
     func synchronize() async {
         guard !busy, enabled else { return }
         guard let driver, let session = driver.session, session.active else { await enable(); return }
         let attempt = activation
-        busy = true; defer { busy = false }
-        do { try project(session); try await driver.synchronize(); try project(session); try markSuccessful(session.binding) }
+        busy = true; defer { busy = false; activity = nil }
+        do {
+            try await applyDurableInbox(session: session)
+            try await driver.synchronize()
+            try await applyDurableInbox(session: session)
+            try markSuccessful(session.binding)
+        }
         catch {
             guard activation == attempt else { return }
             presentFailure(error, binding: session.binding)
@@ -245,10 +302,10 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 guard binding.container == Self.containerID, let value = try dataset(in: ModelContext(container)),
                       value.id == binding.dataset, value.generation == binding.generation,
                       value.accountHash == binding.accountHash, value.environment == binding.environment.rawValue else { return }
-                refreshStatus(); requiresAttention = true
-                if let first = value.blockedReason { status = first; return }
-            } catch { status = "Sync metadata needs attention; local data is preserved."; requiresAttention = true; return }
-        } else { refreshStatus(); requiresAttention = true }
+                activity = nil; refreshStatus(); requiresAttention = true
+                if let first = value.blockedReason { status = Self.localizedStoredStatus(first); return }
+            } catch { status = String(localized: "Sync metadata needs attention; local data is preserved."); requiresAttention = true; return }
+        } else { activity = nil; refreshStatus(); requiresAttention = true }
         status = message(error)
     }
     var canAutomaticallySync: Bool { automaticSync && enabled && !requiresAttention && !busy }
@@ -263,11 +320,11 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     }
     private func message(_ error: Error) -> String {
         if case SyncCloudTransportError.paused(let reason) = error {
-            return "Sync paused (\(reason)); local data and pending revisions are kept."
+            return Self.localizedStoredStatus("Sync paused (\(reason)); local data and pending revisions are kept.")
         }
-        if error is StorePublicationFailure { return "Save or close the current edit, then sync again." }
-        if case ProductSyncFailure.accountChanged = error { return "This workspace belongs to a different iCloud account. Sync is paused; local data is kept." }
-        return "Sync paused (\(String(describing: error))). Local data and pending changes are kept."
+        if error is StorePublicationFailure { return String(localized: "Save or close the current edit, then sync again.") }
+        if case ProductSyncFailure.accountChanged = error { return String(localized: "This workspace belongs to a different iCloud account. Sync is paused; local data is kept.") }
+        return String.localizedStringWithFormat(String(localized: "Sync paused (%@). Local data and pending changes are kept."), String(describing: error))
     }
     private func requireDataset(_ binding: SyncBinding, context: ModelContext? = nil) throws -> ProductSyncDataset {
         let context = context ?? ModelContext(container)
@@ -361,6 +418,19 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 try context.save()
             } catch { context.rollback(); throw error }
         }
+        // Receipt only: projection is deliberately deferred until the operation boundary.
+        // Bytes/assets are durable before any following engine checkpoint can be accepted.
+    }
+    func didChangeActivity(_ activity: SyncCloudActivity, session: SyncCloudSession) throws {
+        _ = try checked(session, context: ModelContext(container))
+        self.activity = activity
+    }
+    func applyDurableInbox(session: SyncCloudSession) async throws {
+        try didChangeActivity(.applying, session: session)
+        let applying = activity
+        defer { if activity == applying { activity = nil } }
+        await Task.yield()
+        try session.check()
         try project(session)
     }
     func acknowledge(_ records: [SyncCloudAcknowledgement], session: SyncCloudSession) async throws {
@@ -425,15 +495,17 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 try context.save()
             }
         } catch { /* A matching session's failure remains visible even when disk is unavailable. */ }
-        if accepted { requiresAttention = true; status = "Sync paused (\(reason)); local data and pending revisions are kept." }
+        if accepted { activity = nil; requiresAttention = true; status = Self.localizedStoredStatus("Sync paused (\(reason)); local data and pending revisions are kept.") }
     }
-    private func markSuccessful(_ binding: SyncBinding) throws {
+    func markSuccessful(_ binding: SyncBinding, completedAt: Date = Date()) throws {
         try StorePublication.perform(at: mediaRoot) {
             let context = ModelContext(container); let value = try requireDataset(binding, context: context)
-            value.lastSuccess = Date(); try context.save()
+            let id = binding.dataset
+            guard value.blockedReason == nil,
+                  try context.fetchCount(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id && !$0.completed })) == 0 else { return }
+            value.lastSuccess = completedAt; try context.save()
         }
         refreshStatus()
-        if conflicts.isEmpty, try dataset(in: ModelContext(container))?.blockedReason == nil { status = pendingCount == 0 ? "Latest sync completed" : "\(pendingCount) revisions still waiting" }
     }
 }
 
@@ -448,9 +520,12 @@ extension SyncProductCoordinator {
         try StorePublication.perform(at: mediaRoot) {
             let context = ModelContext(container); context.autosaveEnabled = false
             let value = try checked(session, context: context)
+            #if DEBUG
+            projectionPassCount += 1
+            #endif
             guard !container.mainContext.hasChanges else {
                 value.blockedReason = "Downloaded changes are not yet applied. Finish the current edit, then sync again."
-                try context.save(); status = value.blockedReason!
+                try context.save(); status = Self.localizedStoredStatus(value.blockedReason!)
                 return
             }
             let datasetID = value.id

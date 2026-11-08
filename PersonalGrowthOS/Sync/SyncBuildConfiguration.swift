@@ -1,28 +1,77 @@
 import Foundation
 import SyncFoundation
 
-/// Checks the compiled product environment and provisioning *allowances*. A provisioning
-/// allowlist is not the running executable's effective entitlements. iOS validates installed
-/// code/profile signatures; delivery additionally verifies the signed artifact's actual
-/// CloudKit environment. Production activation is deliberately unavailable in this build.
+/// Selects the build's CloudKit environment; this is not a signature or entitlement verifier.
+/// Debug device builds additionally inspect provisioning allowances. Distribution builds may
+/// have no embedded profile, so Release relies on exact compiled metadata and independently
+/// verified distribution signing. Neither metadata nor profile parsing proves effective rights.
 enum SyncBuildConfiguration {
+    enum BuildMode { case debug, release }
+
     static let profileByteLimit = 4 * 1_024 * 1_024
     static let productBundleIdentifier = "com.yocruzer.PersonalGrowthOS"
     static let productTeamIdentifier = "83SKX2PM7B"
 
+    private static var compiledBuildMode: BuildMode {
+        #if DEBUG
+        return .debug
+        #else
+        return .release
+        #endif
+    }
+
+    /// Local persistence realm selection only. A simulator can select a local realm but cannot
+    /// activate CloudKit. Unknown metadata must remain unknown, rather than relabel local facts.
+    static func metadataEnvironment(bundle: Bundle = .main) -> CloudEnvironment? {
+        metadataEnvironment(buildMode: compiledBuildMode,
+            pin: bundle.object(forInfoDictionaryKey: "PGOSCloudEnvironment") as? String,
+            bundleIdentifier: bundle.bundleIdentifier)
+    }
+
+    static func metadataEnvironment(buildMode: BuildMode, pin: String?,
+                                    bundleIdentifier: String?) -> CloudEnvironment? {
+        guard bundleIdentifier == productBundleIdentifier else { return nil }
+        switch buildMode {
+        case .debug: return pin == "development" ? .development : nil
+        case .release: return pin == "production" ? .production : nil
+        }
+    }
+
     static func environment(bundle: Bundle = .main) -> CloudEnvironment? {
-        #if DEBUG && !targetEnvironment(simulator)
+        #if targetEnvironment(simulator)
+        return nil
+        #elseif DEBUG
         guard let url = bundle.url(forResource: "embedded", withExtension: "mobileprovision"),
               let file = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { try? file.close() }
         guard let bytes = try? file.read(upToCount: profileByteLimit + 1) else { return nil }
-        return permittedDevelopmentEnvironment(
+        return permittedEnvironment(buildMode: .debug, isSimulator: false,
             pin: bundle.object(forInfoDictionaryKey: "PGOSCloudEnvironment") as? String,
             bundleIdentifier: bundle.bundleIdentifier, profileBytes: bytes)
         #else
-        // Release and simulator never activate CloudKit, even if a runtime plist pin is supplied.
-        return nil
+        return permittedEnvironment(buildMode: .release, isSimulator: false,
+            pin: bundle.object(forInfoDictionaryKey: "PGOSCloudEnvironment") as? String,
+            bundleIdentifier: bundle.bundleIdentifier)
         #endif
+    }
+
+    /// Pure routing policy for tests and offline review, not evidence of valid code signing.
+    static func permittedEnvironment(buildMode: BuildMode, isSimulator: Bool,
+                                     pin: String?, bundleIdentifier: String?,
+                                     profileBytes: Data? = nil) -> CloudEnvironment? {
+        guard !isSimulator,
+              let selected = metadataEnvironment(buildMode: buildMode, pin: pin,
+                                                   bundleIdentifier: bundleIdentifier) else { return nil }
+        switch buildMode {
+        case .debug:
+            guard let profileBytes else { return nil }
+            return permittedDevelopmentEnvironment(pin: pin, bundleIdentifier: bundleIdentifier,
+                                                    profileBytes: profileBytes)
+        case .release:
+            // Profile presence/contents are not a Release runtime authority. Archive and
+            // distribution checks must independently verify actual signed entitlements.
+            return selected
+        }
     }
 
     /// Pure metadata parser for offline verification. CMS bytes are already part of the signed

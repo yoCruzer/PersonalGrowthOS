@@ -307,6 +307,11 @@ enum PersonalGrowthSchemaV17: VersionedSchema {
     }
 }
 
+enum PersonalGrowthSchemaV18: VersionedSchema {
+    static let versionIdentifier = Schema.Version(18, 0, 0)
+    static var models: [any PersistentModel.Type] { PersonalGrowthSchemaV17.models + [ProductSyncSelection.self] }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -327,7 +332,8 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             PersonalGrowthSchemaV14.self,
             PersonalGrowthSchemaV15.self,
             PersonalGrowthSchemaV16.self,
-            PersonalGrowthSchemaV17.self
+            PersonalGrowthSchemaV17.self,
+            PersonalGrowthSchemaV18.self
         ]
     }
 
@@ -376,7 +382,8 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV13.self, toVersion: PersonalGrowthSchemaV14.self),
             MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV14.self, toVersion: PersonalGrowthSchemaV15.self),
             MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV15.self, toVersion: PersonalGrowthSchemaV16.self),
-            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV16.self, toVersion: PersonalGrowthSchemaV17.self)
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV16.self, toVersion: PersonalGrowthSchemaV17.self),
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV17.self, toVersion: PersonalGrowthSchemaV18.self)
         ]
     }
 }
@@ -385,7 +392,7 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV17.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV18.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
@@ -394,7 +401,7 @@ enum PersistenceContainerFactory {
     static func makeOnDisk(at storeURL: URL, allowsSave: Bool = true) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV17.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV18.self),
             url: storeURL,
             allowsSave: allowsSave,
             cloudKitDatabase: .none
@@ -403,7 +410,7 @@ enum PersistenceContainerFactory {
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV17.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV18.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )

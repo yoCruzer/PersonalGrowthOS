@@ -51,7 +51,7 @@ struct AppContainer {
             mediaStore: mediaStore
         )
         self.mediaIntegrityReport = mediaIntegrityReport
-        self.syncCoordinator = SyncProductCoordinator(container: modelContainer, mediaRoot: mediaStore.rootURL)
+        self.syncCoordinator = SyncProductCoordinator(container: modelContainer, mediaRoot: mediaStore.rootURL, automaticSync: configuration.launchMode != .uiTesting)
     }
 
     static func make(
@@ -124,6 +124,13 @@ struct AppContainer {
             catch {
                 throw integrityFailure(error, rootURL: rootURL)
             }
+            if let environment = SyncBuildConfiguration.metadataEnvironment() {
+                try StorePublication.perform(at: rootURL) {
+                    let routing = ModelContext(modelContainer); routing.autosaveEnabled = false
+                    try ProductSyncStoreSelection.prepare(context: routing, environment: environment)
+                    try routing.save()
+                }
+            }
             modelContainer.mainContext.autosaveEnabled = false
             stage = .mediaRecovery
             let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
@@ -195,7 +202,7 @@ enum StartupStoreProtection {
         guard sqlite3_step(statement) == SQLITE_ROW, let bytes = sqlite3_column_blob(statement, 0) else { return false }
         let data = Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, 0)))
         guard let metadata = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { return false }
-        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV17.versionIdentifier.description]
+        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV18.versionIdentifier.description]
     }
 
     // Content identity ignores SQLite header/checkpoint changes. Equal logical

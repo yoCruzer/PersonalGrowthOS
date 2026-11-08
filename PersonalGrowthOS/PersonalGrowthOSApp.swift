@@ -24,12 +24,27 @@ struct PersonalGrowthOSApp: App {
             SyncPushBridge.coordinator = container.syncCoordinator
             #if DEBUG
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSSyncStatusLocalizationTest") {
+                let dataset = ProductSyncDataset()
+                dataset.enabled = true; dataset.initialized = true
+                dataset.accountHash = String(repeating: "a", count: 64)
+                dataset.lastSuccess = Date(timeIntervalSince1970: 1_700_000_000)
+                try ProductSyncStoreSelection.activate(dataset, in: container.modelContainer.mainContext)
+                try container.modelContainer.mainContext.save()
+                container.syncCoordinator.refreshStatus()
+                if ProcessInfo.processInfo.arguments.contains("-PGOSSyncDownloadingTest") {
+                    let session = SyncCloudSession(binding: try .init(container: SyncProductCoordinator.containerID,
+                        environment: .development, accountHash: dataset.accountHash!, dataset: dataset.id, generation: dataset.generation))
+                    try container.syncCoordinator.didChangeActivity(.downloading, session: session)
+                }
+            }
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSSyncPausedNavigationTest") {
                 let dataset = ProductSyncDataset()
                 dataset.enabled = true; dataset.initialized = true
                 dataset.accountHash = String(repeating: "a", count: 64)
                 dataset.blockedReason = "Sync paused (accountChanged); local data and pending revisions are kept."
-                container.modelContainer.mainContext.insert(dataset)
+                try ProductSyncStoreSelection.activate(dataset, in: container.modelContainer.mainContext)
                 try container.modelContainer.mainContext.save()
                 container.syncCoordinator.refreshStatus()
             }

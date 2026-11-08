@@ -87,7 +87,7 @@ else:
             'testUITestingLaunchShowsAppShell', 'testCoreShellRemainsOperableAtLargestAccessibilityTextSize',
             'testUIReadabilityChineseDefaultAndLargerText', 'testUIReadabilityEnglishDefault',
             'testRepeatableHabitCounterIncrementsDecrementsAndPersists',
-            'testICloudSettingsStartOffAndRequireExplicitConsent', 'testPausedSyncKeepsEveryTabAndSettingsOperable']]
+            'testICloudSettingsStartOffAndRequireExplicitConsent', 'testPausedSyncKeepsEveryTabAndSettingsOperable', 'testICloudSyncChineseConsentCompletionAndProgressAreLocalized']]
     try:
         run(args, 'tests')
     finally:
