@@ -1,6 +1,6 @@
 # 修复后的固定 Development 验证窗口
 
-状态：代码、签名产物、本机与haha四阶段只读资格、独立审查及定向CI均已通过；以下是一个新的具体云操作范围，尚未获批、尚未执行。旧单次失败授权不复用。
+状态：代码、签名产物、本机与haha四阶段只读资格、独立审查及定向CI均已通过；Owner已明确批准“授权本次单独新窗口”，决定SHA256 `e22c3d66371b52efdad462446d0aead0666e242040849f80053925003abd1536`。已启用同一已审交付包，等待haha单次启动的实际结果；尚未观察到云执行。旧单次失败授权不复用。
 
 - 源码：`a72befa6c46516ede572e9d561c735c07d8cf5fc`，PR18；定向CI42482033378 SUCCESS，原ZIP/merge checkout/50源指纹已核验。
 - 同一已在haha验证的签名二进制：`3afb421d0b92c34d1090d4afeccf71e58fef7c4c5cc3352258ab99eb1c9afe7f`。haha异步4/4 PASS，约0.93秒，云/Keychain调用0；不重新签名或换产物。
@@ -15,7 +15,7 @@
 
 运行成功或失败后，仅调用一次同一新run的只读证据导出。云窗口最多15分钟，随后导出最多30秒；正常预计2–5分钟。手机前台/数据线占用均0。云成功但证据导出失败仍以非零返回，不能当完整验收通过，不能据此重跑云。
 
-交付目录`/private/tmp/PGOS-RuntimeFixedWindow-20261108`。授权前`ownerApproved=false`，脚本拒绝执行。获批后只需在haha终端启动一次`/usr/bin/python3 /private/tmp/PGOS-RuntimeFixedWindow-20261108/run-reviewed-window.py`，回复打印的证据目录；不重复旧命令。
+交付目录`/private/tmp/PGOS-RuntimeFixedWindow-20261108`。审批前的`ownerApproved=false`已在保存本次明确决定后置为true；脚本与签名产物不变。现在只需在haha终端启动一次`/usr/bin/python3 /private/tmp/PGOS-RuntimeFixedWindow-20261108/run-reviewed-window.py`，回复打印的证据目录；不重复旧命令。
 
 ## 验收与边界
 
