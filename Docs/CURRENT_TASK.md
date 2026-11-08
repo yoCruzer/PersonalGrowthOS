@@ -1,3 +1,19 @@
+# 2026-11-08 正式App关联已确认，独立Mac客户端签名前准备
+
+Owner确认正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/Push启用，并关联`iCloud.com.yocruzer.PersonalGrowthOS`；[来源记录](Evidence/iCloudSyncFoundation/20261108/formal-app-association-owner.json)。这是Owner只读核对结果，不冒称agent门户复验；已关闭该输入缺项，无需重复导出或截图。
+
+本机6份profile中没有精确独立候选`com.yocruzer.PersonalGrowthOS.FormalSyncProbe`，通配profile不适用于Mac/CloudKit。证书subject OU与有效签名身份交叉核验找到1个目标Team的Apple Development身份，可优先复用；最初只按显示名筛选0的观察已被更准确核验取代，不要求因此新建证书。原profile/证书/设备信息未发布，也不从本机缺profile推断门户无Identifier。
+
+已新增隔离Mac `.app` 打包器与实际产物验证：固定受审源码完整hash、构建快照、外置候选entitlements及产物摘要；不签名、不嵌profile、不注册、不安装，不改正式工程/G1/Swift核心。链接器ad-hoc签名保留但不视为开发签名。28项本机检查通过，实际inspect和preflight均正确返回NOT_READY；独立发现的编译输入快照绑定缺口已修，红例保留。完整结果见[签名前准备证据](Evidence/iCloudSyncFoundation/20261108/formal-host-preparation/README.md)。
+
+本轮固定候选待提交远端定向验证；既有Swift核心与产品Git对象未变，前轮d508ae4的51项原生及产品Release/Unit/Smoke成功证据保留，不替代新增打包器验证。
+
+[集中配置清单](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)已具体到Team/独立AppID/既有容器/Mac Development profile，先查复用已有Identifier和证书，缺项才在获批后创建/配置；约10–15分钟，手机/数据线0。新增永久Identifier及关联配置仍需Owner明确授权，收到正式App只读结果不自动授权新Identifier。当前host没有真实authority factory；持久单次执行、账号/环境绑定和真实云往返仍未实现。P0/P1/P2未通过，Production/Archive/TestFlight/merge未授权、未执行。
+
+工作树与Draft PR17保持，原项目d72c016及三项未提交改动未动，G1手机接受范围与CK_2非阻塞例外保持。以下为已验证的前轮历史。
+
+---
+
 # 2026-11-08 正式schema审计与Development适配准备：远端验证完成
 
 Owner新提交的Development/Production原件已在本机核验：各356字节、逐字节相同、仅Users7字段。与v2候选相比，均缺3种业务类型/11个字段；不能由此推断无业务记录。两张截图显示正式容器及对应环境，文件不内嵌Team/容器/环境身份；来源绑定为Owner说明+截图。原件、截图及完整解析报告仅保存在仓库外私有目录，仓库保留来源摘要、hash和差异结论。无需重复导出。
@@ -8,7 +24,7 @@ Owner新提交的Development/Production原件已在本机核验：各356字节�
 
 [产品CI42435822140](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42435822140) SUCCESS：Release三个unsigned bundle检查通过，Unit599=598PASS/1SKIP/0FAIL，iPhone13mini/iOS27.2 Smoke5/5通过，两个测试lane的runtimeWarnings均为空。唯一Unit跳过需要隔离32MB HFS+低空间镜像；optional extended UI条件未执行。既有测试的Swift6异步上下文wait编译警告及AppIntents metadata警告如实保留，未称零编译警告。产品/测试/工程/产品CI与72f5d3d逐Git对象相同；此次由PR工作流自动触发，无手动重跑。旧G1 smoke失败不改写。
 
-剩余当前外部输入仅为正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/Push及已关联容器只读结果；[集中清单](ICLOUD_SYNC_NEXT_READINESS_ZH.md)约2–3分钟，手机/数据线均0。确认后才能准备准确签名配置与Development执行窗口；Production部署/写入、merge、Archive、TestFlight仍未授权。39实体/持久outbox-inbox/正式迁移与完整同步尚未实现。
+Owner随后已确认正式App `com.yocruzer.PersonalGrowthOS` 的iCloud、CloudKit support、Push均启用，并关联`iCloud.com.yocruzer.PersonalGrowthOS`；[来源记录](Evidence/iCloudSyncFoundation/20261108/formal-app-association-owner.json)。无需重复核对或导出。此为Owner只读结果，不替代实际profile/签名资格。继续准备独立Mac客户端的本机可构建产物与资格检查；真实Development执行、Production部署/写入、merge、Archive、TestFlight仍未授权。39实体/持久outbox-inbox/正式迁移与完整同步尚未实现。
 
 原项目d72c016及其三项未提交改动未动；G1仍e57fe35，手机6原件27命令接受范围、CK_2非阻塞例外和未覆盖故障矩阵保持，不重跑手机批次。[结构审查](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md) · [本轮证据](Evidence/iCloudSyncFoundation/20261108/README.md)。最后仅补文档与证据，使用`[skip ci]`避免已验证代码的重复全量运行，不是发布候选。以下为历史交付状态，以本段最新证据为准。
 

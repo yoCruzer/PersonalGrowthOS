@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "packagerSHA256": "a591393b35a93e969aa25849b5d180b9d766944b4cebc8e3e3198886001999e7",
+  "trustedSourcePinSHA256": "9dd6874b3245e432f46393977094fa223043f010d62d079f08a50fb2387957b7",
+  "independentArtifactChecks": 20,
+  "compilerSnapshotMutationRegression": {
+    "red": "FAIL_RETAINED",
+    "fixed": "PASS_REJECTED_COMPILER_INPUT_CHANGED",
+    "actualSwiftBuildExecutedForBoth": true
+  },
+  "actualAppArtifact": "/private/tmp/pgos-locked-app-bound-20261108/FormalSyncProbe.app",
+  "actualBinarySHA256": "850e08fe6ecb6afa1de96f39db29db101d85c8027094b591ebc97da3a77f35c4",
+  "allTwentyReceiptInputFilesMatchSnapshotAndCurrentSource": true,
+  "developerSigningPerformed": false,
+  "cloudKitNetworkOperations": 0,
+  "p0Passed": false
+}

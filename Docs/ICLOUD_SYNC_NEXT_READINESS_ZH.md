@@ -1,3 +1,13 @@
+# 2026-11-08 补充：正式App关联已由Owner只读确认
+
+Owner回复确认正式App `com.yocruzer.PersonalGrowthOS`：iCloud已启用、Include CloudKit support已勾选、已关联`iCloud.com.yocruzer.PersonalGrowthOS`、Push Notifications已启用。[来源记录](Evidence/iCloudSyncFoundation/20261108/formal-app-association-owner.json)。此项只读输入已完成，不再要求重复截图、导出或核对。
+
+这是一份Owner文字核对结果，不是agent重新登录门户的独立观察，也不验证当前profile、签名产物、账户或Development访问资格。正在准备独立Mac客户端 `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 的未配置开发签名App产物；它与正式App/既有SyncLab安装和数据隔离。真实签名/Development执行与P0/P1/P2保持未通过。
+
+以下为收到本次回复前的准备记录，其中“剩余正式App关联”已被本段关闭。
+
+---
+
 # 2026-11-08 更新：两环境导出已收到，正式App关联仍待核对
 
 Owner刚提供两份原始CKDB及对应正式容器截图。两文件逐字节相同、各356B，SHA256均为`60fec48392126eab598a05dbe0f7f9557494a992df8fb62295ccd3752a7768db`，仅Users7fields。与实际v2 SDK候选的差异是新增3种业务类型/11个业务字段，系统字段与权限仍单独审查，不生成可部署DDL。详见[本轮正式结构审查](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md)及[原始来源记录](Evidence/iCloudSyncFoundation/20261108/formal-schema-intake/receipt.json)。

@@ -1,7 +1,7 @@
 name: Sync foundation candidate
 on:
   pull_request:
-    paths: ['Packages/SyncFoundation/**', 'Scripts/SyncSchemaAudit/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py', 'Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
+    paths: ['Packages/SyncFoundation/**', 'Scripts/SyncSchemaAudit/**', 'Scripts/FormalDevelopmentHost/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py', 'Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
 permissions:
   contents: read
 concurrency:
@@ -93,6 +93,21 @@ jobs:
           python3 Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py Scripts/SyncSchemaAudit/audit.py "$RUNNER_TEMP/sync-foundation-evidence/schema/schema.json" "$RUNNER_TEMP/sync-foundation-evidence/schema-independent" | tee "$RUNNER_TEMP/sync-foundation-evidence/schema-independent.log"
           cp Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/IndependentSDKTests.swift"
           swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter IndependentSDKTests 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/sdk-independent.log"
+      - name: Package and inspect the isolated unprovisioned Mac host
+        run: |
+          set -o pipefail
+          probe_root=$(cd "$RUNNER_TEMP" && pwd -P)
+          evidence="$probe_root/sync-foundation-evidence/host-packaging"
+          mkdir -p "$evidence"
+          python3 Scripts/FormalDevelopmentHost/package_locked_host.py --output "$probe_root/locked-host-package" 2>&1 | tee "$evidence/package.log"
+          probe_bin=$(swift build --package-path Packages/SyncFoundation --scratch-path "$probe_root/sync-foundation-build" --show-bin-path)/FormalDevelopmentProbe
+          python3 Scripts/FormalDevelopmentHost/verify_packaging.py --package-output "$probe_root/locked-host-package" --probe-binary "$probe_bin" --evidence-output "$probe_root/locked-host-checks" 2>&1 | tee "$evidence/verification.log"
+          # Verification creates deliberate symlinks in its private scratch root. Upload only named report files.
+          cp "$probe_root/locked-host-package/packaging.json" "$evidence/packaging.json"
+          cp "$probe_root/locked-host-checks/checks.json" "$evidence/checks.json"
+          cp "$probe_root/locked-host-checks/actual-code-signature.json" "$evidence/actual-code-signature.json"
+          cp "$probe_root/locked-host-checks/inspect/report.json" "$evidence/inspect-report.json"
+          cp "$probe_root/locked-host-checks/preflight/report.json" "$evidence/preflight-report.json"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

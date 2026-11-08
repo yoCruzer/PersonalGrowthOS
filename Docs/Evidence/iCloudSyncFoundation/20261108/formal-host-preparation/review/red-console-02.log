@@ -1,0 +1,12 @@
+UNPROVISIONED_NO_DEVELOPER_SIGNATURE; appExecutionPerformed=false; packagingCloudOperations=0
+{
+  "scriptSHA256": "f20bdde1f60c33367c048213419fd32fa53f5baeff70cc459e18f6d7f8d9515c",
+  "injectedSyntheticSnapshotChange": true,
+  "returnedSuccess": true,
+  "error": null,
+  "receiptSourceSHA256": "ac26d613165dc746324e5906c2fc5af75d1f88bc9fcc91ab0ce2218faec23dbf",
+  "actualCompiledSnapshotSourceSHA256": "c7ccf3668232cee8576152ee64787096ed4856459cd636d217f5778b88d9e880",
+  "mismatch": true,
+  "expected": "Reject mutated build snapshot before publishing successful provenance",
+  "result": "FAIL"
+}

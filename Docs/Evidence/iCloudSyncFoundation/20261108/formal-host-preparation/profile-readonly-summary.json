@@ -1,0 +1,115 @@
+{
+  "observedAtUTC": "2026-11-08T02:12:59.819480+00:00",
+  "sourceHEAD": "53ac209edcf192f0db7fdf570c4d92c64df93779",
+  "scope": "Read-only local provisioning-profile metadata for the proposed isolated macOS candidate. No Developer portal query, profile creation, signing, installation, account change, private-key request or CloudKit operation.",
+  "expected": {
+    "team": "83SKX2PM7B",
+    "candidateBundle": "com.yocruzer.PersonalGrowthOS.FormalSyncProbe",
+    "container": "iCloud.com.yocruzer.PersonalGrowthOS",
+    "environment": "Development"
+  },
+  "directories": [
+    {
+      "path": "~/Library/MobileDevice/Provisioning Profiles",
+      "exists": false,
+      "profilesExamined": 0
+    },
+    {
+      "path": "~/Library/Developer/Xcode/UserData/Provisioning Profiles",
+      "exists": true,
+      "profilesExamined": 6
+    }
+  ],
+  "initialDecoder": {
+    "command": "security cms -D (stdin and a bounded explicit-file diagnostic)",
+    "decodedProfiles": 0,
+    "failedProfiles": 6,
+    "error": "cert import failed: One or more parameters passed to a function were not valid; problem decoding",
+    "absenceNotInferredFromDecoderFailure": true
+  },
+  "fallbackDecoder": {
+    "command": "openssl cms -verify -noverify -inform DER via stdin; stdout parsed in memory",
+    "decodedProfiles": 6,
+    "failedProfiles": 0,
+    "keychainNotUsedByFallback": true,
+    "trustChainVerified": false,
+    "rawDecodedProfilesNotWrittenOrPublished": true
+  },
+  "localAvailability": {
+    "sameTeamDecodedProfiles": 6,
+    "exactCandidateAppIDMatches": 0,
+    "candidateCoveringWildcardProfiles": [
+      {
+        "applicationIdentifier": "83SKX2PM7B.*",
+        "sha256": "a9f2008dd41d5b36a4caa0dbf68dcf44bd05b1191fc3f5fd30338cbc8b010e31",
+        "platforms": [
+          "iOS",
+          "xrOS",
+          "visionOS"
+        ],
+        "unexpiredAtInspection": true,
+        "expiresUTC": "2027-10-08T16:10:21+00:00",
+        "CloudKitContainers": [],
+        "CloudKitServices": [],
+        "CloudKitEnvironment": null,
+        "usableForCurrentMacCandidate": false,
+        "reasons": [
+          "Not the exact candidate application identifier",
+          "No CloudKit container/services/environment qualification",
+          "Not a macOS profile"
+        ]
+      }
+    ],
+    "noMatchingLocalProfileIsNotProofOfMissingPortalIdentifier": true
+  },
+  "preflightRequirements": {
+    "exactCodeAndEntitlementIdentity": true,
+    "exactSingleFormalContainer": true,
+    "CloudKitService": true,
+    "DevelopmentEnvironment": true,
+    "macSandboxAndNetworkClient": true,
+    "matchingUnexpiredEmbeddedProfile": true,
+    "actualSignatureVerification": true,
+    "successIsOnly": "STATIC_SIGNING_MATCH_REQUIRES_OWNER_GATE",
+    "readyForCloudRun": false
+  },
+  "notVerified": [
+    "Portal existence or registration of the proposed candidate Identifier",
+    "Platform/certificate/device eligibility of a future signed artifact",
+    "Actual private-key use for signing (local metadata identity exists; signing NOT_RUN)",
+    "CloudKit account identity or service access"
+  ],
+  "privacy": {
+    "otherAppIDsPublished": false,
+    "certificateBytesPublished": false,
+    "deviceIDsPublished": false,
+    "accountIdentifiersPublished": false,
+    "profileBytesPublished": false
+  },
+  "p0Passed": false,
+  "networkOperations": 0,
+  "signingIdentityReadOnly": {
+    "command": "security find-identity -v -p codesigning",
+    "exitCode": 0,
+    "matchingValidAppleDevelopmentIdentities": 0,
+    "availableToCurrentReadOnlyCommand": false,
+    "scope": "Current local command context only; no private-key export/read, no signing, no account or certificate creation",
+    "certificateSubjectsHashesOtherTeamsNotPublished": true,
+    "status": "NO_MATCH_RETURNED_IN_CURRENT_COMMAND_CONTEXT",
+    "globalAbsenceNotProven": true,
+    "interpretation": "Historical display-name filter only; superseded by certificate OU/fingerprint intersection. A zero display-name match does not mean zero Team identities."
+  },
+  "signingIdentityAccurateReadOnly": {
+    "method": "Read-only Apple Development certificate subject OU=83SKX2PM7B intersected with valid codesigning identity SHA1 fingerprints, entirely in memory",
+    "context": "One authorized check outside sandbox",
+    "identityCommandExit": 0,
+    "certificateQueryExit": 0,
+    "certificateParseErrors": 0,
+    "matchingValidIdentitiesForExpectedTeam": 1,
+    "status": "VERIFIED_LOCAL_METADATA_MATCH",
+    "reuseExistingIdentityBeforeConsideringNewCertificate": true,
+    "actualSigning": "NOT_RUN",
+    "privateKeyReadOrExported": false,
+    "certificateNamesBytesAndFingerprintsPublished": false
+  }
+}

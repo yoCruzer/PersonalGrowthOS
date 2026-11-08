@@ -1,0 +1,20 @@
+{
+  "baseHEAD": "53ac209edcf192f0db7fdf570c4d92c64df93779",
+  "buildCommand": "python3 Scripts/FormalDevelopmentHost/package_locked_host.py --output /private/tmp/pgos-locked-app-bound-20261108",
+  "buildExitCode": 0,
+  "validationCommand": "python3 Scripts/FormalDevelopmentHost/verify_packaging.py --package-output /private/tmp/pgos-locked-app-bound-20261108 --probe-binary /private/tmp/pgos-sync-sdk-build/out/Products/Debug/FormalDevelopmentProbe --evidence-output /private/tmp/pgos-locked-app-bound-check-20261108",
+  "validationExitCode": 0,
+  "checks": 28,
+  "originalEarlyBuilds": "first / pinned logs retained; final is bound compiler-input fix",
+  "packagingCloudOperations": 0,
+  "developerSigningPerformed": false,
+  "profileEmbedded": false,
+  "actualInspectExitCode": 2,
+  "actualPreflightExitCode": 2,
+  "limitations": [
+    "Local native architecture build, not universal or distribution artifact",
+    "Compiler ad-hoc signature preserved; app verification observed failure, no developer identity/profile",
+    "No cloud operation, installation, signing, registration or real authority factory",
+    "Independent review tracks compiler-input tampering red/green separately"
+  ]
+}

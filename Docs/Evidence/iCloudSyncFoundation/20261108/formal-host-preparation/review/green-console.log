@@ -1,0 +1,11 @@
+{
+  "scriptSHA256": "a591393b35a93e969aa25849b5d180b9d766944b4cebc8e3e3198886001999e7",
+  "injectedSyntheticSnapshotChange": true,
+  "returnedSuccess": false,
+  "error": "Rejected: COMPILER_INPUT_CHANGED",
+  "receiptSourceSHA256": null,
+  "actualCompiledSnapshotSourceSHA256": "c7ccf3668232cee8576152ee64787096ed4856459cd636d217f5778b88d9e880",
+  "mismatch": true,
+  "expected": "Reject mutated build snapshot before publishing successful provenance",
+  "result": "PASS"
+}

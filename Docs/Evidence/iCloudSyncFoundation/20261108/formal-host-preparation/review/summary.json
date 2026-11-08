@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "count": 20,
+  "checks": [
+    {
+      "name": "all-20-input-files-bound-to-receipt-snapshot-and-current-source",
+      "passed": true
+    },
+    {
+      "name": "three-artifact-hashes",
+      "passed": true
+    },
+    {
+      "name": "exact-independent-macos-identity",
+      "passed": true
+    },
+    {
+      "name": "candidate-not-applied-and-no-profile",
+      "passed": true
+    },
+    {
+      "name": "receipt-claims-only-build",
+      "passed": true
+    },
+    {
+      "name": "create-plan",
+      "exit": 0,
+      "expected": 0
+    },
+    {
+      "name": "app-still-locked",
+      "exit": 2,
+      "expected": 2
+    },
+    {
+      "name": "runtime-rejects-authority",
+      "passed": true
+    },
+    {
+      "name": "real-preflight-rejects-app",
+      "exit": 2,
+      "expected": 2
+    },
+    {
+      "name": "real-preflight-no-profile-or-identity",
+      "passed": true
+    },
+    {
+      "name": "live-option-rejected",
+      "exit": 64,
+      "expected": 64
+    },
+    {
+      "name": "existing-output-rejected",
+      "exit": 1,
+      "expected": 1
+    },
+    {
+      "name": "existing-receipt-unchanged",
+      "passed": true
+    },
+    {
+      "name": "parent-symlink-rejected",
+      "exit": 1,
+      "expected": 1
+    },
+    {
+      "name": "no-symlink-output",
+      "passed": true
+    },
+    {
+      "name": "extra-source-rejected",
+      "exit": 1,
+      "expected": 1
+    },
+    {
+      "name": "extra-source-rejects-before-output",
+      "passed": true
+    },
+    {
+      "name": "missing-source-rejected",
+      "exit": 1,
+      "expected": 1
+    },
+    {
+      "name": "output-inside-source-rejected",
+      "exit": 1,
+      "expected": 1
+    },
+    {
+      "name": "source-path-unchanged",
+      "passed": true
+    }
+  ],
+  "reviewedPackagerSHA256": "a591393b35a93e969aa25849b5d180b9d766944b4cebc8e3e3198886001999e7",
+  "actualBinarySHA256": "850e08fe6ecb6afa1de96f39db29db101d85c8027094b591ebc97da3a77f35c4",
+  "developerSigningPerformed": false,
+  "cloudKitNetworkOperations": 0,
+  "p0Passed": false
+}
