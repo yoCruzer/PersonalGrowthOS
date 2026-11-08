@@ -1,0 +1,12 @@
+{
+  "run": 42482033328,
+  "conclusion": "cancelled",
+  "reason": "Agent explicitly cancelled redundant automatic product run; all product sources/tests/project/workflows unchanged from successful b3cd013, isolated probe not linked into product",
+  "release": "success",
+  "unit": "cancelled",
+  "smoke": "cancelled",
+  "extendedUI": "skipped",
+  "treatedAsPass": false,
+  "reusedProductEvidenceRun": 42474881346,
+  "newProbeEvidenceRun": 42482033378
+}

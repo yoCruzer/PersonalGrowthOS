@@ -1,5 +1,5 @@
 {
-  "status": "LOCAL_PASS_REMOTE_NOT_YET_RUN",
+  "status": "LOCAL_AND_TARGET_OFFLINE_AND_REMOTE_PASS",
   "native": {
     "total": 187,
     "protocol": 24,
@@ -22,7 +22,7 @@
   "signedAsyncPhases": 4,
   "signedAsyncNetworkOperations": 0,
   "signedAsyncKeychainOperations": 0,
-  "targetHahaNewArtifact": "NOT_RUN",
+  "targetHahaNewArtifact": "FOUR_ASYNC_PHASES_PASS",
   "newCloudWindow": "NOT_AUTHORIZED_NOT_RUN",
   "xcode": "Xcode 27.2\nBuild version 27B52",
   "macOS": "27.0.1",
@@ -58,5 +58,6 @@
     "xcrun swift build --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-failure-diagnostics-ios17 --target FormalDevelopmentSDK --triple arm64-apple-ios17.0 --sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk",
     "Signed isolated host inspect-runtime BASE64_CANONICAL_OFFLINE_REQUEST",
     "Signed isolated host inspect-runtime-async BASE64_CANONICAL_OFFLINE_REQUEST"
-  ]
+  ],
+  "remoteRun": 42482033378
 }

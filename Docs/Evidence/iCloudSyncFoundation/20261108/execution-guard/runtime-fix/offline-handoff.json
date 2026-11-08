@@ -1,0 +1,13 @@
+{
+  "mode": "OFFLINE_ASYNC_ONLY",
+  "code": "a72befa6c46516ede572e9d561c735c07d8cf5fc",
+  "scriptSHA256": "28a8e1e57f907c02589a35bd7ff1966567493ee4384121f3bd15f6b16234c371",
+  "expectedUser": "haha",
+  "maximumSeconds": 30,
+  "cloudOperations": 0,
+  "keychainOperations": 0,
+  "ownerInvocationRequested": true,
+  "actualHahaResult": "PASS_FOUR_PHASES",
+  "oldCloseoutRepeated": false,
+  "newCloudRunAuthorized": false
+}

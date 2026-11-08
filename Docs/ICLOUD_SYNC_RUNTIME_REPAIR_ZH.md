@@ -24,6 +24,6 @@ Owner批准的`b3cd013`固定窗口已执行：旧run的closeout exit0，验证�
 
 完整包187/187（协议24、core17、SDK146），包含独立状态位/数值类型与拒绝报告测试；保留独立边界35项另行验证。新打包46/46，iOS17 SDK编译通过、运行NOT_RUN。实际签名产物同步检查及四异步阶段全部PASS，后者共约0.04秒，无Keychain/云调用；原始报告与签名binary摘要见[证据目录](Evidence/iCloudSyncFoundation/20261108/execution-guard/runtime-fix)。50个Swift源码/测试文件绑定到打包快照。
 
-这是开发用户上的实际签名结果；新产物在haha会话的离线与云验证均NOT_RUN。不得从纯测试或开发用户PASS推断haha/账户服务通过。下一次目标用户验证应先使用只读异步检查；真实Development新批次必须重新形成具体产物与范围并获授权，不能复用本次失败授权。已有closeout不重复、anchor不重新初始化，手机/数据线均不需要。Production/发布/合并未授权且未执行。
+这是开发用户上的实际签名结果；随后Owner已在haha执行同一签名产物，只读四阶段4/4 PASS、约0.93秒、无云/Keychain调用；新云验证仍NOT_RUN。不得从纯测试或开发用户PASS推断haha/账户服务通过。目标用户只读检查已完成，不重复；[真实Development新批次](ICLOUD_SYNC_RUNTIME_FIXED_WINDOW_ZH.md)的具体产物与范围已准备，须获新授权，不能复用本次失败授权。已有closeout不重复、anchor不重新初始化，手机/数据线均不需要。Production/发布/合并未授权且未执行。
 
-之前`b3cd013`[产品CI42474881346](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42474881346)已SUCCESS，三份ZIP摘要与checkout核验：Release3个unsigned bundle、Unit598PASS/1SKIP/0FAIL、Smoke5/5，runtimeWarnings为空。低空间镜像前置缺失与optional extended UI未运行保留。新改动限隔离探针与测试，不修改正式产品代码；该旧CI不覆盖新探针代码。新节点CI待推送后核验。
+之前`b3cd013`[产品CI42474881346](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42474881346)已SUCCESS，三份ZIP摘要与checkout核验：Release3个unsigned bundle、Unit598PASS/1SKIP/0FAIL、Smoke5/5，runtimeWarnings为空。低空间镜像前置缺失与optional extended UI未运行保留。新改动限隔离探针与测试，不修改正式产品代码；该旧CI不覆盖新探针代码。新节点a72befa定向CI42482033378 SUCCESS；187原生、35保留独立、46打包及既有检查通过，ZIP摘要/308成员/merge checkout f873cca/50源pins核验。自动产品CI42482033328因产品Git对象与已全绿b3cd013完全相同主动取消，Release成功、Unit/Smoke取消，未算通过。

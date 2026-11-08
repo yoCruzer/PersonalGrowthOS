@@ -2,9 +2,9 @@
 
 Owner已批准并执行b3cd013窗口：旧批次本地closeout成功追加第6条未知terminal；新run在资格检查阶段exit1、尚未消费新ledger，两次只读导出成功。系统日志确认硬件报告子进程5秒超时并返回空项；旧顶层错误码缺失保留，不推断首次107963d同因。旧入口已停用，不重跑、不重新enrollment、不再要求Owner用云批次诊断。
 
-已移除生产路径system_profiler依赖，改用实际进程的OS受限entitlements验证状态，并保留签名/profile/证书/hash检查；v2明确不再运行时独立证明精确profile的当前UDID membership。新增只读异步四阶段诊断与白名单顶层错误。完整包187、打包46、iOS17编译、实际签名同步及四异步阶段通过；独立审查和保留边界回归见[修复记录](ICLOUD_SYNC_RUNTIME_REPAIR_ZH.md)。当前新源远端CI待完成，haha新产物/云验证NOT_RUN，无新的云窗口授权；P0/P1/P2和完整产品同步仍未完成。
+已移除生产路径system_profiler依赖，改用实际进程的OS受限entitlements验证状态，并保留签名/profile/证书/hash检查；v2明确不再运行时独立证明精确profile的当前UDID membership。新增只读异步四阶段诊断与白名单顶层错误。完整包187、打包46、iOS17编译、实际签名同步及四异步阶段通过；独立审查和保留边界回归见[修复记录](ICLOUD_SYNC_RUNTIME_REPAIR_ZH.md)。代码a72befa定向CI42482033378成功，187原生/35保留独立/46打包、ZIP/checkout/50源指纹已核验。haha同一签名产物4阶段也PASS（0.93秒，云/Keychain0）；新云验证尚未授权/执行，P0/P1/P2和完整产品同步仍未完成。
 
-此前b3cd013产品CI42474881346已SUCCESS：Unit598PASS/1SKIP、Smoke5/5、Release3个unsigned bundle，ZIP/checkout核验。原项目三项未提交改动不动，G1手机接受范围/CK_2例外保持，Production/发布/合并未授权。当前无需要Owner立即操作的事项；先完成本修复交付，不再次发出试云命令。以下为历史，旧“审批未到/尚未执行/产品CI运行”已被上述实际结果替代。
+此前b3cd013产品CI42474881346已SUCCESS：Unit598PASS/1SKIP、Smoke5/5、Release3个unsigned bundle，ZIP/checkout核验。原项目三项未提交改动不动，G1手机接受范围/CK_2例外保持，Production/发布/合并未授权。自动重复产品CI42482033328已主动取消（Release成功、unit/smoke取消，不算通过），因产品所有相关Git对象与b3cd013相同且隔离探针未链接。当前唯一人工依赖是[新固定窗口](ICLOUD_SYNC_RUNTIME_FIXED_WINDOW_ZH.md)的单次云授权；具体产物/计划已准备，旧收口不重复，脚本授权前禁用。只读haha步骤已经完成，无需重做。以下为历史，旧“审批未到/尚未执行/产品CI运行”已被上述实际结果替代。
 
 ---
 

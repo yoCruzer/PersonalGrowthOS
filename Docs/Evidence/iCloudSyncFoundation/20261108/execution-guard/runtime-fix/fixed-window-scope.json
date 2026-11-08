@@ -1,0 +1,29 @@
+{
+  "mode": "ONE_NEW_FIXED_DEVELOPMENT_WINDOW",
+  "ownerApproved": false,
+  "code": "a72befa6c46516ede572e9d561c735c07d8cf5fc",
+  "run": "3254C900-8C8D-4AD4-95B7-10CB3C36F6DE",
+  "dataset": "3314BECE-01A8-4692-89F7-B858EF5FD32E",
+  "planSHA256": "2d74da8e35536be1e719899dd10ad2ab0a39560cd824444cf86587e13768121f",
+  "schemaSHA256": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003",
+  "runtime": {
+    "codeDirectoryHash": "dc4baa7a5dfa4577513ae53817cbf6c926e66bdc",
+    "packagingReceiptSHA256": "03e34ba8ac14d9d97155f6b8e912c1fe3e289c404d9abde351710a98b4cafec0",
+    "profileSHA256": "4456877adea83b7a24f71d198265ae48408821474f6ee56fb492c9f54e5df754",
+    "signedBinarySHA256": "3afb421d0b92c34d1090d4afeccf71e58fef7c4c5cc3352258ab99eb1c9afe7f",
+    "sourcePinsSHA256": "5f62d02f546931d6065c2cfaf104a6802717c3b74ccbfcba525046faab5e2b9c"
+  },
+  "archiveSHA256": "a2e9f3184ec1872c7e1bfb3f43e67f488852d6948914b5017049b26e4439faf1",
+  "scriptSHA256": "9792174ed8febbdc3a33d300344ffd8ceeb84fc8249630794304ddab2c21b6a8",
+  "maxAccountCalls": 12,
+  "maxTransportCalls": 5,
+  "maxWindowSeconds": 900,
+  "maxExportSeconds": 30,
+  "localCloseout": false,
+  "enrollment": false,
+  "retry": false,
+  "production": false,
+  "cloudExecution": "NOT_AUTHORIZED_NOT_RUN",
+  "offlineFixtureSDKChecks": 6,
+  "wrapperMockTests": 9
+}
