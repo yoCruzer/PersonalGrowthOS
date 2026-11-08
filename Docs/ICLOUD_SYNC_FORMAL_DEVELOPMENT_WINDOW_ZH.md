@@ -1,6 +1,6 @@
 # 正式 Development 首次固定窗口：Owner 集中清单
 
-状态：**代码、测试与最终签名候选已完成；尚未取得真实执行授权，不得执行 enrollment 或 run 命令。** 固定输入见[审阅请求](Evidence/iCloudSyncFoundation/20261108/execution-guard/owner-window-proposal.json)。签名二进制 SHA256：`9291c390e9dbbf8b6999dbe06b87f45769be53f4e76744e7f5139298c867577e`；plan SHA256：`30f1fef8a9d1431f7817d49647bd0bb99621854802eabcdeeca2bfd1a6fe2f74`。已有独立 App ID/profile/签名权限和正式 App 关联/schema 导出均已完成，不需要重复配置或导出。
+状态：**Owner 已明确批准本次固定窗口；待最终 CI 核验通过，再由 haha 会话启动。** 不重复请求同一授权，当前尚未实际运行。 固定输入见[审阅请求](Evidence/iCloudSyncFoundation/20261108/execution-guard/owner-window-proposal.json)。签名二进制 SHA256：`9291c390e9dbbf8b6999dbe06b87f45769be53f4e76744e7f5139298c867577e`；plan SHA256：`30f1fef8a9d1431f7817d49647bd0bb99621854802eabcdeeca2bfd1a6fe2f74`。已有独立 App ID/profile/签名权限和正式 App 关联/schema 导出均已完成，不需要重复配置或导出。
 
 ## 目的和精确范围
 

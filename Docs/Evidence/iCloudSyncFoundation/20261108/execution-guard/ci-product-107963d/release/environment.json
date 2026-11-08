@@ -1,0 +1,12 @@
+{
+  "lane": "release",
+  "checkoutSHA": "68a637be9f68ff93423ceda5501ebb0561c104c3",
+  "event": "pull_request",
+  "githubSHA": "68a637be9f68ff93423ceda5501ebb0561c104c3",
+  "headSHA": "107963dcddd71da1ff15f623a44b41dfd1bd5b11",
+  "runner": "GitHub Actions 1000000255",
+  "image": "20261104.0337.1",
+  "arch": "ARM64",
+  "xcode": "Xcode 27.0\nBuild version 27A266a\n",
+  "developerDir": "/Applications/Xcode_27.app/Contents/Developer"
+}

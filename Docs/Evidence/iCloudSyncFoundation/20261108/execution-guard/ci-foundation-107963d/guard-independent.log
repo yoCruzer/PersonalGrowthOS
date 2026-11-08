@@ -1,0 +1,113 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 356]
+[Planning deferred tasks]
+[6 / 15] FormalDevelopmentSDKTests-product
+[10 / 19] FormalDevelopmentSDKTests-product
+[11 / 19] FormalDevelopmentSDKTests-product
+[14 / 18] FormalDevelopmentSDKTests-product
+[16 / 18] FormalDevelopmentSDKTests-product
+Build complete! (2.08 sec)
+Test Suite 'Selected tests' started at 2026-11-08 09:37:33.936.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 09:37:33.937.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 09:37:33.937.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 09:37:33.937.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 09:37:34.036.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 09:37:34.037.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 09:37:34.037.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 09:37:34.037.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 09:37:34.111.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 09:37:34.112.
+Test Suite 'GuardBoundaryIndependentTests' started at 2026-11-08 09:37:34.112.
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testAccountEpochCrossQueueChangeIsImmediateStickyAndSafe]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testAccountEpochCrossQueueChangeIsImmediateStickyAndSafe]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testDefaultSDKScopeDoesNotBecomeLocalWaitScope]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testDefaultSDKScopeDoesNotBecomeLocalWaitScope]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testLocalWaitCancellationScopeSurvivesLateAccountCallbackWithoutPayload]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testLocalWaitCancellationScopeSurvivesLateAccountCallbackWithoutPayload]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testOfflineInspectionRejectsInputWithoutEchoOrAuthority]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testOfflineInspectionRejectsInputWithoutEchoOrAuthority]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testWindowElapsedBudgetExpiresEvenWithFrozenWallTime]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testWindowElapsedBudgetExpiresEvenWithFrozenWallTime]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testWindowMonotonicRollbackIsStickyAndCannotBeReopened]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardBoundaryIndependentTests testWindowMonotonicRollbackIsStickyAndCannotBeReopened]' passed (0.003 seconds).
+Test Suite 'GuardBoundaryIndependentTests' passed at 2026-11-08 09:37:34.122.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.009 (0.010) seconds
+Test Suite 'IndependentGuardedRunnerTests' started at 2026-11-08 09:37:34.122.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentEvidenceSymlinkIsNotReadOrOverwritten]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentEvidenceSymlinkIsNotReadOrOverwritten]' passed (0.179 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentExpiredWindowCancelsSuspendedAccountWithoutCallback]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentExpiredWindowCancelsSuspendedAccountWithoutCallback]' passed (1.802 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentExpiredWindowCancelsSuspendedCloudWithoutCallback]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentExpiredWindowCancelsSuspendedCloudWithoutCallback]' passed (2.042 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentLateCallbackDiscoversTamperWithoutRewritingSuccess]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentLateCallbackDiscoversTamperWithoutRewritingSuccess]' passed (3.447 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentMissingEvidenceFailsClosed]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentMissingEvidenceFailsClosed]' passed (0.141 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentOldRunLateFatalCancelsNewWindowOnSameRunnerAndLedger]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentOldRunLateFatalCancelsNewWindowOnSameRunnerAndLedger]' passed (3.807 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentPriorEvidenceTamperMustNotCommitSuccess]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentPriorEvidenceTamperMustNotCommitSuccess]' passed (0.143 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentPriorReturnTamperPreventsNextWriteStage]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentPriorReturnTamperPreventsNextWriteStage]' passed (0.421 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentSuccessfulOutputMatchesEveryJournalSummaryHash]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentGuardedRunnerTests testIndependentSuccessfulOutputMatchesEveryJournalSummaryHash]' passed (3.268 seconds).
+Test Suite 'IndependentGuardedRunnerTests' passed at 2026-11-08 09:37:49.372.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 15.249 (15.250) seconds
+Test Suite 'IndependentLedgerReviewTests' started at 2026-11-08 09:37:49.372.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testAnchorCommitGapPreservesFailureAndCannotReopenOrReenroll]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testAnchorCommitGapPreservesFailureAndCannotReopenOrReenroll]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testFrozenWallCannotExtendMonotonicWindow]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testFrozenWallCannotExtendMonotonicWindow]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testFullFiveStageFlowThenDurableReplayRejection]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testFullFiveStageFlowThenDurableReplayRejection]' passed (0.760 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testHardlinkedRecordFailsIntegrityWithoutChangingEitherCopy]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testHardlinkedRecordFailsIntegrityWithoutChangingEitherCopy]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testLateReturnAndObservationPreserveEvidenceWithoutRevivingPermit]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testLateReturnAndObservationPreserveEvidenceWithoutRevivingPermit]' passed (0.011 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testMissingLedgerWithRetainedAnchorNeverCreatesFreshState]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testMissingLedgerWithRetainedAnchorNeverCreatesFreshState]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testPendingIntentBindsExactOperationIDAndAwaitingState]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testPendingIntentBindsExactOperationIDAndAwaitingState]' passed (0.008 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testPendingIntentRetainsOriginalOriginAfterReopen]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testPendingIntentRetainsOriginalOriginAfterReopen]' passed (0.032 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testQualificationCannotAuthorizeDifferentReceiptOrAccount]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testQualificationCannotAuthorizeDifferentReceiptOrAccount]' passed (0.028 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testReopeningDoesNotResetQualificationMonotonicBudget]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testReopeningDoesNotResetQualificationMonotonicBudget]' passed (0.021 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testReplacedLockCannotAdmitSecondHolderWhileFirstLives]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentLedgerReviewTests testReplacedLockCannotAdmitSecondHolderWhileFirstLives]' passed (0.001 seconds).
+Test Suite 'IndependentLedgerReviewTests' passed at 2026-11-08 09:37:50.244.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.870 (0.871) seconds
+Test Suite 'IndependentProductionEntryTests' started at 2026-11-08 09:37:50.244.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testMissingAncestorCannotTriggerRecursiveCreation]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testMissingAncestorCannotTriggerRecursiveCreation]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOfflineEntryFailureDoesNotClaimOSOrPathQualification]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOfflineEntryFailureDoesNotClaimOSOrPathQualification]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOSSessionDigestHasDomainAndEverySessionDimension]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testOSSessionDigestHasDomainAndEverySessionDimension]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testPublicEntrypointsRejectMalformedInputBeforeAnyAuthorityAndDoNotCallFatal]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testPublicEntrypointsRejectMalformedInputBeforeAnyAuthorityAndDoNotCallFatal]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testReadOnlyDoesNotCreateAndEnrollmentCreatesOnlySelectedLeaf]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testReadOnlyDoesNotCreateAndEnrollmentCreatesOnlySelectedLeaf]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testSymlinkParentAndLeafAndRegularFileAreRejectedWithoutMutation]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentProductionEntryTests testSymlinkParentAndLeafAndRegularFileAreRejectedWithoutMutation]' passed (0.001 seconds).
+Test Suite 'IndependentProductionEntryTests' passed at 2026-11-08 09:37:50.248.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.003 (0.004) seconds
+Test Suite 'RuntimeIndependentTests' started at 2026-11-08 09:37:50.248.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeIndependentTests testCryptographicallyValidButUntrustedSyntheticCMSRejects]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeIndependentTests testCryptographicallyValidButUntrustedSyntheticCMSRejects]' passed (0.009 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeIndependentTests testDuplicateAliasesAndUnknownDeviceFieldsReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeIndependentTests testDuplicateAliasesAndUnknownDeviceFieldsReject]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.RuntimeIndependentTests testNonBooleanSandboxAndUnknownEntitlementReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.RuntimeIndependentTests testNonBooleanSandboxAndUnknownEntitlementReject]' passed (0.000 seconds).
+Test Suite 'RuntimeIndependentTests' passed at 2026-11-08 09:37:50.258.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.010 (0.010) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 09:37:50.258.
+	 Executed 35 tests, with 0 failures (0 unexpected) in 16.141 (16.146) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 09:37:50.258.
+	 Executed 35 tests, with 0 failures (0 unexpected) in 16.141 (16.147) seconds

@@ -1,3 +1,9 @@
+## Owner 固定 Development 窗口已授权，待 CI 收尾后由 haha 启动
+
+Owner 已明确确认“已进入 haha，测试 iCloud 已确认”，并回复“授权本次固定 Development 窗口”。授权绑定 PR18 / `107963d`、签名产物 `9291c390…` 和已固定合成计划，包含一次本地 guard/Keychain anchor 初始化及 Development 六条记录写读；前提为最终 CI 核验通过，最长15分钟，失败即停，不自动重试。不得再次询问同一授权。执行工具身份仍非haha，Owner须在haha终端启动已准备脚本；未自动切换账户，也尚未执行真实命令。
+
+[定向CI42467777146](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42467777146) SUCCESS，156原生+35本批独立+38打包及既有回归均通过；308成员ZIP摘要、40源pins与checkout已核验。产品[CI42467777172](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42467777172)最终SUCCESS：Release3个unsigned bundle、Unit599=598PASS/1SKIP/0FAIL、Smoke5/5；runtimeWarnings均为空，三份ZIP摘要/实际源已核验。低空间镜像缺失跳过、optional extended UI条件跳过保留。CI门禁已完成。首次haha启动脚本在读取跨用户App二进制时PermissionError13，探针未启动、guard/云批次均未开始；已修正为haha私有目录解包，五文件逐字节不变，已请Owner运行修正后的同一命令一次。等待真实结果，不重复询问既有授权。[固定授权记录](Evidence/iCloudSyncFoundation/20261108/execution-guard/owner-authorization.json)。
+
 # 2026-11-08 正式 Development 执行入口已实现，待批准固定真实窗口
 
 独立分支 `codex/icloud-formal-execution-guard`，基线 `07c1bcf`，工作树 `/private/tmp/PersonalGrowthOS-icloud-execution-guard`。已完成持久消费/跨进程锁、真实自身签名资格、审批绑定、账户变化隔离、显式取消、固定五步合成 runner，以及 `enroll-guard` / `run-approved` 生产入口。不是仅设计稿；真实命令仍未执行。
