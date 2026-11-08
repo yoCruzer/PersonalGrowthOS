@@ -1,10 +1,18 @@
+## 2026-11-09 最新Owner边界：停止真机协助，仅收口导航修复
+
+Owner报告build10的底部同步错误提示遮挡Tab，随后明确不再继续陪测。本轮停止主动请求安装/点击/截图和真实云操作，不把旧流程的待复测安排当作继续要求。截图中的accountChanged为保留状态，没有新一次Sync now成功执行证据。
+
+已移除全局底部错误提示，详情保留同步设置页；build11只恢复导航，不改身份、429队列或同步状态。合成paused状态UI回归1/1通过，包含两次启动/10次Tab选中断言/两次设置访问；截图已视觉核对，加入现有Smoke列表。签名修复包与源码待本轮收口绑定，真实云验收暂停、不能宣称同步已完成。详见[持续证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。不卸载/清库/恢复覆盖/切换账户，不merge/Production/Archive/TestFlight/发布。原项目三项未提交工作不动。
+
+---
+
 ## 2026-11-09 真机反馈继续修复：同账户首次signIn误暂停
 
 Owner已备份、确认build8和build9覆盖后的本地检查通过；build8 missingSupplement已修复，build9初始化生成429待同步版本，但真实启用先显示CK20，重新进入页面读回持久accountChanged。Owner确认iCloud账户始终未变。原始失败与截图来源保留，不声称已上传成功。
 
-build9源码1e4fdca的定向和产品CI均SUCCESS（Unit671PASS/1SKIP/0FAIL，Smoke6/6，Release通过），但不覆盖此次真实SDK事件。build10正在修复同账户signIn处理、首因保留/旧回调保护、严格显式首次setup恢复；本机核心59与进一步恢复42项通过、独立审查通过，最终源码/签名/CI收口中。详见[持续修复证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。保留429队列、身份及原数据，不自动重建已丢失zone，不需Mac探针、清库、恢复覆盖或账户切换。
+build9源码1e4fdca的定向和产品CI均SUCCESS（Unit671PASS/1SKIP/0FAIL，Smoke6/6，Release通过），但不覆盖此次真实SDK事件。build10已修复同账户signIn处理、首因保留/旧回调保护、严格显式首次setup恢复及旧建区意图撤销；最终源码9882c28、本机50/50(44核心+6UI)、独立审查、签名/解包验签、定向CI及Release通过，Unit/Smoke运行中。详见[持续修复证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。保留429队列、身份及原数据，不自动重建已丢失zone，不需Mac探针、清库、恢复覆盖或账户切换。
 
-当前无需Owner继续点击。build10真实云验证仍未完成；Production/Archive/TestFlight/发布/merge边界保持。以下旧build8交付记录为历史。
+已集中安排Owner一次build10覆盖更新和原入口复测，当前等待状态。build10真实云验证仍未完成；Production/Archive/TestFlight/发布/merge边界保持。以下旧build8交付记录为历史。
 
 ---
 

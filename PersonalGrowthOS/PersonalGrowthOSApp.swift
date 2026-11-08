@@ -23,6 +23,16 @@ struct PersonalGrowthOSApp: App {
             let container = try AppContainer.make(configuration: configuration)
             SyncPushBridge.coordinator = container.syncCoordinator
             #if DEBUG
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSSyncPausedNavigationTest") {
+                let dataset = ProductSyncDataset()
+                dataset.enabled = true; dataset.initialized = true
+                dataset.accountHash = String(repeating: "a", count: 64)
+                dataset.blockedReason = "Sync paused (accountChanged); local data and pending revisions are kept."
+                container.modelContainer.mainContext.insert(dataset)
+                try container.modelContainer.mainContext.save()
+                container.syncCoordinator.refreshStatus()
+            }
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch {
                 for key in ["sleep.showToday", "sleep.introductionDismissed", "sleep.morningReminder.plannedFires", SleepReminderPreferences.enabledKey, SleepReminderPreferences.minuteKey] { UserDefaults.standard.removeObject(forKey: key) }
             }

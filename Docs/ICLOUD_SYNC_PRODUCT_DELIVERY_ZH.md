@@ -1,6 +1,12 @@
-## 最新build10准备：账户首次事件与初始化恢复
+## 最新边界：停止真机协助，build11仅恢复导航
 
-Owner已确认build9安装且原数据正常；首次启用产生429待同步版本，但因accountChanged暂停，未换iCloud账户。build9 missingSupplement修复已越过、独立CI通过，不代表云同步已成功。build10正在修复首次同账户signIn、取消码遮盖首因及严格显式setup恢复，最终产物收口中；详见[持续修复证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。当前不需要Owner重复点击、清库或切换账户。以下build8安装记录保留作历史。
+Owner已停止本轮真机协助，不再要求安装、点击或截图。build10底部全局错误提示遮挡Tab已移除，错误详情保留在同步设置；合成暂停状态下五个Tab与设置访问回归通过，build11仅为恢复正常导航的开发修复包。同步状态、原数据和429队列不重置，真实云验收仍暂停；不是TestFlight/Production候选。证据和后续包摘要见[持续修复记录](Evidence/iCloudProduct/20261108/first-activation-fix.md)。以下旧验证安排不得当作当前人工请求。
+
+---
+
+## 最新build10：账户首次事件与初始化恢复
+
+Owner已确认build9安装且原数据正常；首次启用产生429待同步版本，但因accountChanged暂停，未换iCloud账户。build9 missingSupplement修复已越过、独立CI通过，不代表云同步已成功。build10已修复首次同账户signIn、取消码遮盖首因及严格显式setup恢复，源码9882c28；签名产物位于`/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev10-9882c28`，本机50/50、定向CI与Release通过，Unit/Smoke及真机复测仍待结果；详见[持续修复证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。已给出一次覆盖更新/Sync now及按需显式初建确认说明，不重复点击、清库或切换账户。以下build8安装记录保留作历史。
 
 ---
 

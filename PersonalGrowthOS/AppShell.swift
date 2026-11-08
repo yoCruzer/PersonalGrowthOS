@@ -269,7 +269,6 @@ struct AppShell: View {
                 syncCoordinator:container.syncCoordinator
             )
         }
-        .safeAreaInset(edge: .bottom) { SyncStatusBanner(coordinator: container.syncCoordinator) }
         .task { await container.syncCoordinator.resumeIfEnabled() }
         .onChange(of: captureScenePhase) { _, phase in
             if phase == .active { Task { await container.syncCoordinator.resumeIfEnabled() } }

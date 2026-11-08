@@ -54,4 +54,24 @@ build10修复：仅匹配既有完整绑定账户的signIn可重排持久outbox�
 
 build10最终代码、剩余恢复意图检查、签名产物和最终CI收口中，不能沿用build9 CI冒称新代码通过。真实云双向、推送、Production/TestFlight均仍未验收。
 
-恢复serialization中的旧saveZone意图另经完整范围校验后，仅在当前不再允许建区时撤销exact同zone的冗余意图，再严格校验；不清record队列及其他状态。foreign/delete整体拒绝。独立合成26/26、iOS17typecheck和最终只读复核通过。最终本机44核心+6产品UI集中验证运行中；不提前判通过。
+恢复serialization中的旧saveZone意图另经完整范围校验后，仅在当前不再允许建区时撤销exact同zone的冗余意图，再严格校验；不清record队列及其他状态。foreign/delete整体拒绝。独立合成26/26、iOS17typecheck和最终只读复核通过。最终`PGOS-Build10-Final.xcresult`为44核心/恢复/双库集成+6产品UI，**50/50 PASS，0FAIL/0SKIP/runtimeWarnings空**，日志`/private/tmp/pgos-build10-final.log`。
+
+
+## build10固定产物与当前验证
+
+最终运行源码 `9882c288a24b241af5dc22b6b74637ab9ca8b69f`，BuildProvenance回读Dirty=false。正式App及两个扩展build10，实际签名精确为正式App/容器、CloudKit、Development、开发push、get-task-allow；原bundle及ZIP解包后严格验签，三个二进制摘要一致。目录仅本机 `/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev10-9882c28`，含app/ZIP/receipt/安装步骤，不发布profile。
+
+ZIP `PersonalGrowthOS-iCloud-Dev10-9882c28.app.zip`，12022478 bytes，SHA256 `ba4aa9b4c9ecee3c0daee9dde1aaadc4268f73ac3abd771e0ac3779e8c898556`；主程序 `b008794b79ce0cd1e407e36927e3f9c25a204db75f390ee59ced5c8d26d1e82a`。
+
+[定向CI42499136819](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42499136819) SUCCESS；[产品CI42499136863](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42499136863) Release SUCCESS、Unit/Smoke运行中。未沿用build9通过结果。
+
+已集中给Owner一次build10覆盖更新+Sync now复测说明；若初建元数据明确missing且资格满足，额外初始化只由Owner阅读弹窗并主动Create workspace重新授权，不自动执行。当前等待Owner页面状态，真实云未判通过。无需Mac测试用户、清库或重跑G1。
+
+
+## Owner停止真机协助；仅修复导航阻塞（build11）
+
+Owner提供`截屏 2026-11-09 00.23.13.png`，说明build10打开后底部错误文字遮挡Tab。截图中的accountChanged是既有持久状态；没有Owner确认Sync now已执行，不能据此宣称build10又发生了新的云失败。Owner随后明确不再继续陪测，本轮不再请求任何安装/点击/截图或云操作。
+
+已移除TabView根部的bottom safeAreaInset错误提示；暂停原因仍在同步设置页可查，不改同步状态、数据、队列或恢复权限。补充仅DEBUG+uiTesting+reset显式参数才运行的合成paused fixture，不触及正常启动/私人库；新UITest在常规及最大字号启动参数两次启动后分别点选五个Tab并断言选中，打开Settings→iCloud确认原始accountChanged仍可读。该项`PGOS-Paused-Navigation-Fix.xcresult` **1/1 PASS、0FAIL/0SKIP/runtimeWarnings空**，一项内共10次Tab切换、两次设置访问。两张合成截图已导出并人工查看，底部导航完整，无错误文字覆盖；字号参数传入不泛化为所有视图字号响应验收。日志`/private/tmp/pgos-paused-navigation-fix.log`、截图`/private/tmp/PGOS-Paused-Navigation-Images`保留本机。该回归加入现有Smoke列表，后续7项。
+
+build11仅作为恢复正常导航的Development修复包准备，保留原数据及同步暂停；不要求Owner安装或恢复真机验证。build10远端定向/Release通过、Unit/Smoke在最新检查时仍运行，不提前判通过。后续源码CI按真实状态记录；真实云验收暂停、Production/TestFlight未执行。所有此前真实失败与未完成项保留。

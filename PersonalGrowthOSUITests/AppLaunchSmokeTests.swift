@@ -3,6 +3,29 @@ import Network
 import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testPausedSyncKeepsEveryTabAndSettingsOperable() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        for large in [false, true] {
+            app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSSyncPausedNavigationTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+            if large { app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge"] }
+            app.launch()
+            for tab in ["Timeline", "Record", "Growth", "Library", "Today"] {
+                let button = app.tabBars.buttons[tab]
+                XCTAssertTrue(button.waitForExistence(timeout: 5)); XCTAssertTrue(button.isHittable)
+                button.tap(); XCTAssertTrue(button.isSelected, "Paused sync must not intercept \(tab)")
+            }
+            let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = large ? "paused-sync-tabs-largest-text" : "paused-sync-tabs-default"; shot.lifetime = .keepAlways; add(shot)
+            app.buttons["Settings"].tap()
+            let sync = app.buttons["settings-icloud-sync"]
+            XCTAssertTrue(sync.waitForExistence(timeout: 5)); sync.tap()
+            let status = app.staticTexts["sync-status"]
+            XCTAssertTrue(status.waitForExistence(timeout: 5)); XCTAssertTrue(status.label.contains("accountChanged"))
+            XCTAssertTrue(app.buttons["Sync now"].exists)
+            app.terminate()
+        }
+    }
+
     func testICloudSettingsStartOffAndRequireExplicitConsent() {
         continueAfterFailure = false
         let app = XCUIApplication()
