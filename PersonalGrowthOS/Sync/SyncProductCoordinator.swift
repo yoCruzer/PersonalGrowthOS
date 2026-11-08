@@ -146,9 +146,10 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         do { try project(session); try await driver.synchronize(); try project(session); try markSuccessful(session.binding) }
         catch { refreshStatus(); requiresAttention = true; status = message(error) }
     }
-    func resumeIfEnabled() async { if enabled { await synchronize() } }
+    var canAutomaticallySync: Bool { automaticSync && enabled && !requiresAttention && !busy }
+    func resumeIfEnabled() async { if canAutomaticallySync { await synchronize() } }
     private func scheduleSync() {
-        guard automaticSync, enabled, !requiresAttention else { return }; wakeTask?.cancel()
+        guard canAutomaticallySync else { return }; wakeTask?.cancel()
         wakeTask = Task { @MainActor [weak self] in
             do { try await Task.sleep(nanoseconds: 1_000_000_000); try Task.checkCancellation() }
             catch { return }
@@ -508,7 +509,7 @@ struct SyncConflictVersion: Identifiable {
         guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo),
               notification.containerIdentifier == SyncProductCoordinator.containerID,
               notification.notificationType == .recordZone,
-              let coordinator, coordinator.enabled else { return .noData }
+              let coordinator, coordinator.canAutomaticallySync else { return .noData }
         await coordinator.synchronize()
         return coordinator.requiresAttention ? .failed : .newData
     }

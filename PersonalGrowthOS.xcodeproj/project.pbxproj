@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+4ED4077A370F8040EBA486F9 = {isa = PBXBuildFile; fileRef = 2BA462F4808C414EBD1FE77E; };
 825282BED2F9FF17F95E7031 = {isa = PBXBuildFile; fileRef = 009AD52545854BEF583BEBB3; };
 A6D0E1A294A6CC1AB5FEA01D = {isa = PBXBuildFile; fileRef = AFEF2F2780565668FF9FA453; };
 F312F5F26ED71B009743D83A = {isa = PBXBuildFile; fileRef = 6B1EA1AF32ABA50417D67CB1; };
@@ -163,6 +164,7 @@ CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H0000
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+2BA462F4808C414EBD1FE77E = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncBuildConfigurationTests.swift"; sourceTree = SOURCE_ROOT; };
 009AD52545854BEF583BEBB3 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncProductIntegrationTests.swift"; sourceTree = SOURCE_ROOT; };
 AFEF2F2780565668FF9FA453 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncCommitBoundaryTests.swift"; sourceTree = SOURCE_ROOT; };
 6B1EA1AF32ABA50417D67CB1 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncAssetStoreTests.swift"; sourceTree = SOURCE_ROOT; };
@@ -429,6 +431,7 @@ CB0000000000000000000001,
 		C00000000000000000000003 /* PersonalGrowthOSTests */ = {
 			isa = PBXGroup;
 			children = (
+                2BA462F4808C414EBD1FE77E,
                 009AD52545854BEF583BEBB3,
                 AFEF2F2780565668FF9FA453,
                 6B1EA1AF32ABA50417D67CB1,
@@ -845,6 +848,7 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                4ED4077A370F8040EBA486F9,
                 825282BED2F9FF17F95E7031,
                 A6D0E1A294A6CC1AB5FEA01D,
                 F312F5F26ED71B009743D83A,

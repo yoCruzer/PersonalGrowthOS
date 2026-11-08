@@ -29,3 +29,11 @@
 真实CloudKit双向收发、真实账号切换/后台推送、完整故障矩阵、Production schema/容器实际写读、TestFlight及App Store均 NOT_RUN。G1手机验收和Mac CK_2非阻塞例外保持原范围。
 
 协议仍有有界容量：单manifest64KiB、payload128MiB、原图25MiB、直接依赖1024、因果图默认10000 manifests等。超过限制的合法本地事实保留并持久暂停发送（1025行合法净资产快照有正反测试），**不宣称该数据已同步**；更大数据的协议扩展/历史整理尚未交付。跨UUID自然键冲突及不可读/缺失版本采取整体不发布并保留本地，不能把“保留”描述成已自动解决。恢复仍创建隔离dataset，不复用旧账户/token/ACK。
+
+## 最终离线收口修复
+
+最终产物检查发现Apple真实profile的环境是允许集合 `[Production, Development]`、服务是`*`；初版运行资格解析错误地只接受单字符串/数组，虽签名构建成功却会拒绝启用。已修正允许集合解析，保持Debug真机Development编译门，Release/simulator恒拒绝，并用Security API另行核对实际签名是精确Development/CloudKit/正式容器/正式App ID/开发push/get-task-allow。profile允许值没有被当作实际签名环境。实际profile纯只读解析验证通过，未运行云请求。
+
+统一push、前台恢复、本地保存的自动唤醒门；暂停后不会被静默push绕过，用户手动同步仍可重试。启动失败后重试成功重绑push协调器。定向`PGOS-Product-Activation-Fix.xcresult` 17/17 PASS（配置6、store/自动门7、双设备集成4）；纯profile harness 7/7（含仅本地真实profile解析）。
+
+首个远端定向CI [42491119740](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491119740) 在离线打包步骤失败 `UNREVIEWED_SWIFT_SOURCE`：新因果图源/测试已独立审查但未加入旧打包器的整包hash锁。精确增加这两个已审查hash，原22项未变，实际snapshot24项逐项匹配；未删门禁、未宽化未知源码规则、未重跑Mac云探针。此失败保留；修复后的最终CI另记。

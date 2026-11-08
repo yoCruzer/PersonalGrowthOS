@@ -9,6 +9,7 @@
   "Sources/FormalProbeCore/ProbePlan.swift": "5091de60248683e1ef7c5bd6e86db38e6cbbcb00d2334e5b9b0effe667f2d63b",
   "Sources/FormalProbeCore/ProbeReplay.swift": "1588525790eaf52379c1b9b40ee4ab4469684e7c9e8d11eced5ded4f294bfa61",
   "Sources/FormalProbeCore/ProbeSigning.swift": "c4a6aaf12ec8ac4b55527dcac6b551b97c558af9350f572d8451600debb27c5d",
+  "Sources/SyncFoundation/CausalProjection.swift": "011e438bdf4e53b8f6bf9385f6ec4ff270ba1effa1f88d168696a809ba5b5ef2",
   "Sources/SyncFoundation/CloudRecordCodec.swift": "d8905d3571dfb10908b0fdf898ef391c2d86e1364fb2cd5f5bd7f97670b3044a",
   "Sources/SyncFoundation/Identity.swift": "8f969000acc8f97a2a1fb536d3c6449e0302b3fa6845b5e40c690593998c18d3",
   "Sources/SyncFoundation/Manifest.swift": "16440cd69f601ac7f2c852112f49c28ff60362f89e8df58fce93ebefdadee8ba",
@@ -19,6 +20,7 @@
   "Tests/FormalDevelopmentSDKTests/LockedHostTests.swift": "9dfff832493dfa041660330df7cb830df02939d867ac80432d8371db8c31dc49",
   "Tests/FormalProbeCoreTests/FormalProbeCoreTests.swift": "6db07b470c6dfb2618befa2c99834601cf933caa099a19aee94a498a562beb49",
   "Tests/FormalProbeCoreTests/ProfileAllowanceTests.swift": "315e4c3b929325cff8ec729ea03450451b21bf44136a39f3f5221db6400bcd97",
+  "Tests/SyncFoundationTests/CausalProjectionTests.swift": "d3e2c20796033a52e7ad3a55623992e8023634d2e81374ecf21c7eb7e15affca",
   "Tests/SyncFoundationTests/PayloadChunkTests.swift": "2e4ff7b1eea2c74258a8a243ee4b740923327221f0efae57178b762323c79139",
   "Tests/SyncFoundationTests/SyncFoundationTests.swift": "2a8ee15e27c889c4f4a727dfe7c7701de9a51bc5e8d64732006eff2c4d9f3c48"
 }

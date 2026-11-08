@@ -139,4 +139,36 @@ import SyncFoundation
         XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncInbox>()).first?.bytes, try first.encoded())
         XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<Entry>()), 0)
     }
+    func testAutomaticWakeGateHonorsOptInPauseAndExplicitTestDisable() async throws {
+        let (container, _, _) = try fixture()
+        let media = try root()
+        let allowed = SyncProductCoordinator(container: container, mediaRoot: media, automaticSync: true)
+        // A positive gate is inspected only. Never activate a real transport in this test.
+        XCTAssertTrue(allowed.canAutomaticallySync)
+        let disabledAutomation = SyncProductCoordinator(container: container, mediaRoot: media, automaticSync: false)
+        XCTAssertFalse(disabledAutomation.canAutomaticallySync)
+        let unchanged = disabledAutomation.status
+        await disabledAutomation.resumeIfEnabled()
+        XCTAssertEqual(disabledAutomation.status, unchanged)
+        XCTAssertFalse(disabledAutomation.busy)
+
+        let context = ModelContext(container)
+        let dataset = try XCTUnwrap(context.fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        dataset.blockedReason = "Synthetic pause requiring attention"; try context.save()
+        allowed.refreshStatus()
+        XCTAssertFalse(allowed.canAutomaticallySync)
+        let paused = allowed.status
+        await allowed.resumeIfEnabled()
+        XCTAssertEqual(allowed.status, paused)
+        XCTAssertFalse(allowed.busy)
+
+        dataset.blockedReason = nil; dataset.enabled = false; try context.save()
+        allowed.refreshStatus()
+        XCTAssertFalse(allowed.canAutomaticallySync)
+        let off = allowed.status
+        await allowed.resumeIfEnabled()
+        XCTAssertEqual(allowed.status, off)
+        XCTAssertFalse(allowed.busy)
+    }
+
 }

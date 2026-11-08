@@ -189,7 +189,11 @@ struct PersonalGrowthOSApp: App {
             await Task.yield()
             let current = AppConfiguration.current()
             let configuration = AppConfiguration(launchMode: current.launchMode, resetDataOnLaunch: false)
-            startup = Result { try AppContainer.make(configuration: configuration) }
+            startup = Result {
+                let container = try AppContainer.make(configuration: configuration)
+                SyncPushBridge.coordinator = container.syncCoordinator
+                return container
+            }
             isRetrying = false
         }
     }
