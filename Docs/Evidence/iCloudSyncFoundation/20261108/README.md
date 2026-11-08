@@ -1,3 +1,5 @@
+新增1f0f341远端原证据：[定向CI](ci-foundation-1f0f341/README.md)与[产品CI](ci-product-1f0f341/README.md)均SUCCESS，source/checkout/artifact/准确计数已独立核验。
+
 本轮新增：[独立Mac配置、签名及真实沙盒离线资格验证](formal-signing-qualification/README.md)。Owner授权已执行，原profile等仅本机保留；P0/P1/P2仍未通过。
 
 # 2026-11-08 正式结构输入与隔离SDK准备

@@ -23,4 +23,4 @@
 
 最初47df1f3签名副本和最终新副本分别留证，签名会改变Mach-O摘要，不要求已签hash等于未签hash。最终签名二进制SHA256为`5708bd5bd9b4bfcb81937310c535b590965047bdab19833e521213be380ca7cf`；没有重复运行独立审查中已有的实际App自检。
 
-当前候选远端CI待稳定提交后验证，旧47df1f3成功不替代本次。未重新跑G1、未占手机或数据线、未切换系统账户。正式Development/P0真实往返、Production/P1/P2仍未通过；真实authority factory、持久单次执行和账户/取消保护尚待实现，见[后续保护设计](../../../../ICLOUD_SYNC_FORMAL_EXECUTION_GUARD_DESIGN_ZH.md)。本次未进行任何CloudKit操作、Production、Archive、TestFlight或merge。
+固定代码1f0f341的[定向CI42451239845](../ci-foundation-1f0f341/README.md)与[产品CI42451239824](../ci-product-1f0f341/README.md)均SUCCESS，原artifact摘要与成员独立核验；精确计数和限制见各自证据。旧47df1f3成功不替代本次。未重新跑G1、未占手机或数据线、未切换系统账户。正式Development/P0真实往返、Production/P1/P2仍未通过；真实authority factory、持久单次执行和账户/取消保护尚待实现，见[后续保护设计](../../../../ICLOUD_SYNC_FORMAL_EXECUTION_GUARD_DESIGN_ZH.md)。本次未进行任何CloudKit操作、Production、Archive、TestFlight或merge。

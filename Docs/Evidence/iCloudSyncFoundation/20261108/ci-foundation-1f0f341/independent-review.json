@@ -1,0 +1,147 @@
+{
+  "reviewType": "Independent read-only raw CI artifact audit; no tests rerun",
+  "source": "1f0f341",
+  "checkoutSHA": "81657233020f033c6dfc3f9d0fc44c143af7d4cb",
+  "archiveSHA256": "7d23c5630d9d844bf1b1b7412dc5b33aa532bdf5f956961025a7f0953f9efae8",
+  "archiveBytes": 128782,
+  "archiveMembersVerified": 307,
+  "failedFirstDownloadBytes": 0,
+  "sourcePinsVerified": 22,
+  "checks": {
+    "packaging": 32,
+    "native": 62,
+    "independentChunk": 11,
+    "independentSDK": 11,
+    "independentAllowance": 3,
+    "independentHost": 8,
+    "independentCLI": 22,
+    "schemaUnit": 16,
+    "schemaIndependent": 20
+  },
+  "selfFixtureExit": 2,
+  "selfFixtureStatus": "NOT_READY",
+  "selfFixtureFailure": "EXTERNAL_GATE_NOT_COMPLETE",
+  "networkOperations": 0,
+  "p0Passed": false,
+  "developerSigningPerformedByCI": false,
+  "unqualifiedPreflightCorrectlyRejected": true,
+  "privacyScanFindings": [],
+  "limitations": [
+    "GitHub digest comparison here uses the exact expected digest supplied by root; independently recomputed archive hash agrees.",
+    "Raw build logs have zero-test auxiliary suites from filtering; native totals count actual passed test cases only.",
+    "This unsigned/ad-hoc CI package is not actual developer-signed qualification or a cloud run."
+  ],
+  "sourceBindings": [
+    {
+      "path": "Package.swift",
+      "sha256": "0e382fc3909736e6158093989a48cd67ba19c0f07967bb2b89b87f6c5cce6955",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalDevelopmentHost/main.swift",
+      "sha256": "5544d10c5cd3fac4f655d589f4471c62f07c3a766719a0eda9a3b536743da8b8",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalDevelopmentProbe/main.swift",
+      "sha256": "dd9bd74b76879ea040de8d8cc0f85dfe2663291716cdeb8fd86c69705b95a809",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalDevelopmentSDK/BatchRunner.swift",
+      "sha256": "0257537d5870af97391b36e0feaac9861deddfca97a59e5513d99c8aea9d6433",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalDevelopmentSDK/LockedHost.swift",
+      "sha256": "05961cb92329ae6a14d9df885b892594583fae10082b17e96ffd1dee169992e6",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalDevelopmentSDK/Transport.swift",
+      "sha256": "2c8cdfb0113db1d466603a98a15597328c2b083a25e29e707eab47b57d437a50",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalProbeCore/ProbeFiles.swift",
+      "sha256": "727b804ae8b2747cabf03087ba108d837262a00c17e423a0bd9fbc190c9bf8ce",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalProbeCore/ProbePlan.swift",
+      "sha256": "5091de60248683e1ef7c5bd6e86db38e6cbbcb00d2334e5b9b0effe667f2d63b",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalProbeCore/ProbeReplay.swift",
+      "sha256": "1588525790eaf52379c1b9b40ee4ab4469684e7c9e8d11eced5ded4f294bfa61",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/FormalProbeCore/ProbeSigning.swift",
+      "sha256": "c4a6aaf12ec8ac4b55527dcac6b551b97c558af9350f572d8451600debb27c5d",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/SyncFoundation/CloudRecordCodec.swift",
+      "sha256": "d8905d3571dfb10908b0fdf898ef391c2d86e1364fb2cd5f5bd7f97670b3044a",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/SyncFoundation/Identity.swift",
+      "sha256": "8f969000acc8f97a2a1fb536d3c6449e0302b3fa6845b5e40c690593998c18d3",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/SyncFoundation/Manifest.swift",
+      "sha256": "16440cd69f601ac7f2c852112f49c28ff60362f89e8df58fce93ebefdadee8ba",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/SyncFoundation/PayloadManifest.swift",
+      "sha256": "baa6f1040be0e0f707fa2f92d7e2abe11705e7d9fae709d60db781326fbf2273",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/SyncPayloadProbe/main.swift",
+      "sha256": "cc36f43ad97ff02208a3d7e1962db517877b96034ca1696632ecfb00474fef72",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Sources/SyncSchema/main.swift",
+      "sha256": "9e2442200708703031d6f5cbe95a1c1a2dba2c4b2095f53b4e57fe3cf8422173",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Tests/FormalDevelopmentSDKTests/BatchRunnerTests.swift",
+      "sha256": "50ba249a08184009b8a6c92b63b2305b3ad051e84d0d099638cdb660a15af740",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Tests/FormalDevelopmentSDKTests/LockedHostTests.swift",
+      "sha256": "9dfff832493dfa041660330df7cb830df02939d867ac80432d8371db8c31dc49",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Tests/FormalProbeCoreTests/FormalProbeCoreTests.swift",
+      "sha256": "6db07b470c6dfb2618befa2c99834601cf933caa099a19aee94a498a562beb49",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Tests/FormalProbeCoreTests/ProfileAllowanceTests.swift",
+      "sha256": "315e4c3b929325cff8ec729ea03450451b21bf44136a39f3f5221db6400bcd97",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Tests/SyncFoundationTests/PayloadChunkTests.swift",
+      "sha256": "2e4ff7b1eea2c74258a8a243ee4b740923327221f0efae57178b762323c79139",
+      "matchesSourceCommit": true
+    },
+    {
+      "path": "Tests/SyncFoundationTests/SyncFoundationTests.swift",
+      "sha256": "2a8ee15e27c889c4f4a727dfe7c7701de9a51bc5e8d64732006eff2c4d9f3c48",
+      "matchesSourceCommit": true
+    }
+  ],
+  "findings": []
+}

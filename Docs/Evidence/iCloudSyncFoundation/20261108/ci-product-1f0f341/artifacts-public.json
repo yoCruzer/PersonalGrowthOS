@@ -1,0 +1,26 @@
+{
+  "runID": 42451239824,
+  "sourceHead": "1f0f34105195a2660cebb61d8857641aa6b86ce6",
+  "source": "GitHub connector fetch_workflow_run_artifacts, selected public metadata fields",
+  "artifacts": [
+    {
+      "id": 13606380675,
+      "name": "ios-smoke-1",
+      "size_in_bytes": 50285,
+      "digest": "sha256:4dfcb7e1529befa44189b8cbe68bc8d4d55368aae184fc35302ddcdc0dd5a6ff"
+    },
+    {
+      "id": 13606167985,
+      "name": "ios-unit-1",
+      "size_in_bytes": 110773,
+      "digest": "sha256:4829e5e07516b1125eb855c56eb5a900ff51ed0179c4400f9f7516ce1380d2ab"
+    },
+    {
+      "id": 13606111734,
+      "name": "ios-release-1",
+      "size_in_bytes": 30198,
+      "digest": "sha256:d1200d415067901da90a15d188b0f92ce03965c9a9096b777c8613dc305bbea1"
+    }
+  ]
+}
+

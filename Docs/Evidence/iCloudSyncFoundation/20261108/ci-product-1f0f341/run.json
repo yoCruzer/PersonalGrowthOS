@@ -1,0 +1,162 @@
+{
+  "id": 42451239824,
+  "name": "iOS regression",
+  "status": "completed",
+  "conclusion": "success",
+  "run_number": 20,
+  "jobs_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/runs/42451239824/jobs",
+  "logs_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/runs/42451239824/logs",
+  "workflow_id": 390246302,
+  "headSHA": "1f0f34105195a2660cebb61d8857641aa6b86ce6",
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42451239824",
+  "jobs": [
+    {
+      "id": 128640715316,
+      "name": "iOS smoke",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42451239824,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run native gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Save compact evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ]
+    },
+    {
+      "id": 128640715476,
+      "name": "iOS unit",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42451239824,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run native gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Save compact evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ]
+    },
+    {
+      "id": 128640715497,
+      "name": "iOS release",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42451239824,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run native gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Save compact evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        }
+      ]
+    },
+    {
+      "id": 128640716409,
+      "name": "Optional extended UI",
+      "status": "completed",
+      "conclusion": "skipped",
+      "run_id": 42451239824,
+      "logs_url": null,
+      "steps": null
+    }
+  ]
+}
+

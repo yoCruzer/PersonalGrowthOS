@@ -1,0 +1,8 @@
+{
+  "scope": "Only this compact synthetic CI evidence directory",
+  "findings": [],
+  "rawSummariesUnmodified": true,
+  "hostedSimulatorUUIDs": "CI-generated ephemeral IDs retained in original xcresult summaries",
+  "noRawIdentityLogOrPrivateInputs": true,
+  "networkAction": "Read existing completed CI only; no rerun"
+}

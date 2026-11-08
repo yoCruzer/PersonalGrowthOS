@@ -1,0 +1,35 @@
+{
+  "status": "SUCCESS",
+  "sourceSHA": "1f0f34105195a2660cebb61d8857641aa6b86ce6",
+  "checkoutSHA": "81657233020f033c6dfc3f9d0fc44c143af7d4cb",
+  "runID": 42451239845,
+  "runURL": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42451239845",
+  "artifactID": 13605926366,
+  "artifactBytes": 128782,
+  "artifactSHA256": "7d23c5630d9d844bf1b1b7412dc5b33aa532bdf5f956961025a7f0953f9efae8",
+  "artifactMembers": 307,
+  "environment": "Xcode 27.1\nBuild version 27A9275",
+  "counts": {
+    "native": 62,
+    "independentChunk": 11,
+    "independentCLI": 22,
+    "schemaSelf": 16,
+    "schemaIndependent": 20,
+    "sdkIndependent": 11,
+    "profileAllowanceIndependent": 3,
+    "directoryFixtureIndependent": 8,
+    "actualPackagedHostChecks": 32
+  },
+  "sourcePinsMatch": true,
+  "sourcePinCount": 22,
+  "developerSigningInCI": false,
+  "cloudOperations": 0,
+  "p0Passed": false,
+  "firstArtifactDownload": {
+    "success": false,
+    "bytes": 0,
+    "reason": "gh nonzero; no CI rerun; empty attempt retained privately"
+  },
+  "secondArtifactDownload": "digest verified against GitHub metadata",
+  "independentReview": "independent-review.json"
+}
