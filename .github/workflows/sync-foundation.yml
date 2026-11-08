@@ -1,7 +1,7 @@
 name: Sync foundation candidate
 on:
   pull_request:
-    paths: ['Packages/SyncFoundation/**', 'Scripts/SyncSchemaAudit/**', 'Scripts/FormalDevelopmentHost/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py', 'Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-allowance/IndependentAllowanceReviewTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-host/*.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
+    paths: ['Packages/SyncFoundation/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/execution-guard/review-*/*.swift', 'Docs/Evidence/iCloudSyncFoundation/20261108/execution-guard/review-*/*.cms', 'Scripts/SyncSchemaAudit/**', 'Scripts/FormalDevelopmentHost/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py', 'Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-allowance/IndependentAllowanceReviewTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-host/*.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
 permissions:
   contents: read
 concurrency:
@@ -104,6 +104,15 @@ jobs:
           cp Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-host/IndependentDirectoryReviewTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalProbeCoreTests/IndependentDirectoryReviewTests.swift"
           cp Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-host/IndependentFixtureReviewTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/IndependentFixtureReviewTests.swift"
           swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter 'IndependentDirectoryReviewTests|IndependentFixtureReviewTests' 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/locked-host-independent.log"
+      - name: Independent execution ledger, callback and runtime boundaries
+        run: |
+          set -o pipefail
+          review=Docs/Evidence/iCloudSyncFoundation/20261108/execution-guard
+          cp "$review"/review-ledger-runner/*Tests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/"
+          cp "$review"/review-runtime-boundaries/*Tests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/"
+          cp "$review"/review-production-entry/*Tests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/"
+          export PGOS_SYNTHETIC_CMS="$GITHUB_WORKSPACE/$review/review-runtime-boundaries/synthetic.cms"
+          swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter 'IndependentLedgerReviewTests|IndependentGuardedRunnerTests|RuntimeIndependentTests|GuardBoundaryIndependentTests|IndependentProductionEntryTests' 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/guard-independent.log"
       - name: Package and inspect the isolated unprovisioned Mac host
         run: |
           set -o pipefail

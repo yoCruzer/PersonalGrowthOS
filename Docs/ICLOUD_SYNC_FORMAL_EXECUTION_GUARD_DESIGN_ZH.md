@@ -1,6 +1,8 @@
-# 正式 Development 固定批次：执行保护设计（未实现）
+# 正式 Development 固定批次：执行保护设计
 
-2026-11-08。本文是对当前 `FormalDevelopmentSDK` 的只读审计及下一实现切分，**不是已完成实现、云执行授权或 P0 通过证据**。
+当前实施进展见[实现与验证](ICLOUD_SYNC_FORMAL_EXECUTION_GUARD_EXECUTION_ZH.md)。下文保留设计起点的缺项和原调用形态，不将旧“未实现”状态覆盖新证据；审批绑定的真实 CLI 入口已实现，外部执行仍未授权/未执行。
+
+2026-11-08 设计起点。本文是对当时 `FormalDevelopmentSDK` 的只读审计及下一实现切分，**不是已完成实现、云执行授权或 P0 通过证据**。
 
 当前 Owner 已批准独立 Mac 探针的配置、Development 签名及离线核验。该授权不包含本设计所述的真实 CloudKit 账户资格读取、建 zone 或保存记录。当前 host 继续硬阻断 live；已有 `preflight` 的静态匹配结果、`signatureVerified`、传入的 `CKDatabase` 或任意本地布尔字段，均不能转化成真实执行许可。后续工程可在这个边界内持续实现、离线验证和独立审查，再为固定产物与计划集中提出精确执行窗口。
 

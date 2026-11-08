@@ -1,0 +1,48 @@
+{
+  "status": "REVIEWED_CODE_SIDE_PREPARATION_ONLY",
+  "mustFixFindings": [],
+  "sourceSHA256": {
+    "OwnerExecutionApproval.swift": "e47b505482cfc803599e327a60e74ffadee852f2aa3dcaf37cc866f8436b6883",
+    "GuardedAccountSession.swift": "95e5a3678cb254d7dc92035336db534b21fad3d5223d65161f697562d64e6cee",
+    "RuntimeInspectionEntry.swift": "a64639a40141505e1742f974f58363dfd455cac410da2d3d01d558e96533ad32",
+    "RuntimeSigningInspector.swift": "10be9c99dab9f4b3effe6f9fa407b91107920e0769732f8b8f99c6c9cb6f6185",
+    "OperationBridge.swift": "7954bf752698f5456871d8797f28a48d3dad631b741f8c01bc748979de7048e8"
+  },
+  "testCounts": {
+    "independentRuntime": 3,
+    "independentGuardBoundaries": 6,
+    "authorRuntime": 13,
+    "authorOwnerWindow": 8,
+    "total": 30,
+    "failed": 0
+  },
+  "command": "swift test --package-path /private/tmp/pgos-guard-independent-final-qy40r3gr/package --filter 'RuntimeSigningInspectorTests|RuntimeIndependentTests|GuardBoundaryIndependentTests|OwnerExecutionApprovalTests'",
+  "rawLog": "tests-final-01.log",
+  "observations": [
+    "Owner window binds canonical input digest, fixed fixture plan/schema, OS user, artifact byte digests; [start,end) and sticky wall/uptime rollback/deadline checks retained.",
+    "Session factory compares durable qualification binding, precise start/end milliseconds, five runtime artifact hashes and qualification age/profile expiry; batch transition uses full sameApproval comparison.",
+    "Account session calls actual SDK only after AccountReadPolicy durable pending-intent checks at authorize/take/before-enqueue, with one-shot tickets and a 12-read cap. AccountReadPolicy extraction was authored by this reviewer; root independently reviewed it, so this report is not an independent approval of that new implementation.",
+    "Root localWaitOnly evidence scope survives cancellation and late callback with immutable old operation ID and no opaque account value in encoded evidence. It denotes cancellation of local wait, not server cancellation. Original bridge was authored by this reviewer; independent claim is limited to root-added scope and these boundary cases.",
+    "Offline entry rejects malformed/oversized or unknown-mode requests with a bounded redacted report: networkOperations=0, networkAuthorized=false, accountQualification=NOT_RUN, actualServiceAccess=NOT_RUN, p0Passed=false.",
+    "Dynamic/static SecCode allowlisted noNetworkAccess/considerExpiration flags checked against Apple source; unsupported checkTrustedAnchors removed. Static strict/allarch/nested remains. Fresh CodeSigning SecTrust independently disables fetch, uses current date, validates chain and pins Apple root.",
+    "CMS requires cryptographically valid single signer, fresh explicit current-date offline trust chain, pinned public Apple root, standalone leaf .100.4.11 marker, intermediate WWDR .100.6.2.1 and leaf digitalSignature KU. Old .4.11, EKU placement and wrong KU are rejected.",
+    "Device diagnostic change exposes fixed stage and numeric reason only; 8-second/256KiB bounds and explicit provisioning-UDID-only parser remain fail-closed."
+  ],
+  "limitations": [
+    "No real CKContainer, account lookup, CKDatabase enqueue or private profile/certificate was exercised in these tests.",
+    "No live Owner approval, P0/P1/P2, account identity, remote schema/data, or Production gate was established.",
+    "Offline trust does not establish current online OCSP revocation status; Apple public profile policy also specifies OCSP, intentionally not contacted by this offline check.",
+    "Actual signed-self qualification is separately blocked at deviceEvidenceUnavailable per parent evidence; these unit checks do not override that gate.",
+    "Prior 13/14 runtime reports remain historical and are superseded for final source assessment; they did not detect InvalidFlags or the shortened OID flaw later revealed by real signed runs."
+  ],
+  "references": [
+    "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/SecCode.cpp",
+    "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/SecStaticCode.cpp",
+    "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/sec/Security/SecPolicy.c"
+  ],
+  "evidenceSHA256": {
+    "tests-final-01.log": "5aaacbd5c3de31590c045f4682eed82c7d71f6aff5727266203065e5fe8d6a7e",
+    "synthetic.cms": "e2d133462f222c5d8c4f353e88846c769485df870dfd5905a63c58aeb9602504",
+    "source-sha256.json": "4773beabd45f122631a0f7785dc9cd11e1efcd5fbe176e3edae5c08547b5dc98"
+  }
+}

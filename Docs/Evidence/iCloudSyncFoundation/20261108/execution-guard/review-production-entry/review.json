@@ -1,0 +1,30 @@
+{
+  "status": "REVIEWED_CODE_SIDE_ENTRY",
+  "independentTests": 6,
+  "passed": 6,
+  "failed": 0,
+  "mustFixFindings": [],
+  "sourceSHA256": {
+    "Sources/FormalDevelopmentSDK/GuardedExecutionEntry.swift": "5e8380d0499e05c12853d02e1141f2014e3c131ecc382805c346dbabd8e2b626",
+    "Sources/FormalDevelopmentSDK/RuntimeInspectionEntry.swift": "3fe305fecfea2082656006ddd9cf5d94f72a5ca03f7e53ea0708d1af3c78b980",
+    "Sources/FormalDevelopmentHost/main.swift": "52f8be71ab47b696a932a4aa299833959cca1aca5e52fba686fcb09ceb6b4153",
+    "Tests/FormalDevelopmentSDKTests/GuardedExecutionEntryTests.swift": "7edd774ba9dfb4e2f5331d397eb16d581fd330b15e3bc6cba8b88bb4319d15f9"
+  },
+  "currentScopeMismatches": [],
+  "command": "swift test --package-path /private/tmp/pgos-entry-review-20261108-o3pfpjnh/package --scratch-path /private/tmp/pgos-entry-review-20261108-o3pfpjnh/build --filter IndependentProductionEntryTests",
+  "realCloudOperations": 0,
+  "realKeychainOperations": 0,
+  "observations": [
+    "Canonical approval and exact purpose, self-signing, process OS session and fixed paths precede Keychain/ledger access; consumed qualification precedes CKContainer construction.",
+    "ProductionAttemptLatch has no reset and is consumed before first persistent production attempt, fencing same-process entry reuse. Invalid input rejects before the latch and state are consumed.",
+    "Application Support inspection is read-only. Enrollment may create one selected leaf beneath an existing held parent, with fsync and no-follow inode checks; no recursive ancestor creation or existing-state repair.",
+    "Parent/leaf symlinks and regular-file replacement reject; existing input bytes/inode remain unchanged.",
+    "CLI fatal exits nonzero; callbacks cannot be observed after process termination. Outer stdout report is explicitly derived, not ledger-anchored, and references inner observation hash.",
+    "OS session proves process membership in a graphical local security session, not current foreground console user or intended iCloud identity. Owner test-session confirmation and actual account qualification remain mandatory."
+  ],
+  "limitations": [
+    "Only pure OS policy, synthetic directories and malformed-input rejection executed. No production enrollment/run, CKContainer, account API or real Keychain access.",
+    "Actual signed sandbox OS-session/sysctl/Application Support qualification is a separate root-owned offline verification; these six tests do not establish it.",
+    "No broad regression repeated; retained ledger/runner/runtime independent evidence is separate."
+  ]
+}

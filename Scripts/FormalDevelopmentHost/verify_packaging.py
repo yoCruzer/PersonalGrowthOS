@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline black-box validation of an already packaged locked host and packaging rejects."""
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -61,6 +62,17 @@ def main():
               and 'CODE_IDENTITY_MISMATCH' in preflight['rejectionCodes'] and not preflight['networkAuthorized'] and not preflight['p0Passed'])
         self_check = command('internal-fixture-locked', [binary, 'inspect-fixture'], 2)
         self_report = json.loads(self_check.stdout)
+        command('runtime-invalid-base64-rejected', [binary, 'inspect-runtime', '%%%'], 64)
+        rejected_runtime = command('runtime-unqualified-input-rejected', [binary, 'inspect-runtime', base64.b64encode(b'{}').decode()], 2)
+        runtime_report = json.loads(rejected_runtime.stdout)
+        check('runtime-rejection-never-authorizes', runtime_report['status'] == 'NOT_READY'
+              and runtime_report['mode'] == 'OFFLINE_ONLY' and runtime_report['networkOperations'] == 0
+              and not runtime_report['networkAuthorized'] and not runtime_report['ownerApprovalVerified']
+              and not runtime_report['signatureProfileDeviceVerified'] and not runtime_report['p0Passed']
+              and runtime_report['accountQualification'] == 'NOT_RUN' and runtime_report['actualServiceAccess'] == 'NOT_RUN')
+        command('guarded-cli-requires-complete-input', [binary, 'run-approved', 'unused'], 64)
+        for verb in ('enroll-guard', 'run-approved'):
+            command(verb + '-rejects-missing-approval', [binary, verb, base64.b64encode(b'{}').decode(), hashlib.sha256(b'{}').hexdigest()], 1)
         check('internal-fixture-report-redacted-locked', self_report['mode'] == 'OFFLINE_ONLY'
               and self_report['status'] == 'NOT_READY' and self_report['failure'] == 'EXTERNAL_GATE_NOT_COMPLETE'
               and self_report['networkOperations'] == 0 and not self_report['networkAuthorized'] and not self_report['p0Passed']

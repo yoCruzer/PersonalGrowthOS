@@ -1,3 +1,15 @@
+# 2026-11-08 正式 Development 执行入口已实现，待批准固定真实窗口
+
+独立分支 `codex/icloud-formal-execution-guard`，基线 `07c1bcf`，工作树 `/private/tmp/PersonalGrowthOS-icloud-execution-guard`。已完成持久消费/跨进程锁、真实自身签名资格、审批绑定、账户变化隔离、显式取消、固定五步合成 runner，以及 `enroll-guard` / `run-approved` 生产入口。不是仅设计稿；真实命令仍未执行。
+
+本机完整包156/156、打包38检查、iOS17 SDK编译通过；iOS17运行NOT_RUN。独立ledger/runner20、runtime/边界9、生产入口6项通过。最终签名副本 `9291c390…677577e` 的只读自身资格、OS会话、Application Support检查均通过；云调用0。原签名参数/profile用途/设备证据拒绝、证据篡改与跨run晚故障红例及测试计数误写均保留，未改写为成功。当前源远端CI待本节点独立验证。
+
+下一人工依赖仅[集中固定窗口清单](ICLOUD_SYNC_FORMAL_DEVELOPMENT_WINDOW_ZH.md)：Owner手动进入Mac mini专用用户haha、只读确认测试iCloud，并明确批准本地guard初始化及正式Development新合成zone/六记录写读（最多12次账户API+5次transport，手机/数据线0）。此前配置/签名许可已完成，不重复申请；已有两份schema及正式App关联不用重做。当前console与agent均非haha，不能沿用旧会话假设。
+
+P0/P1/P2未通过；Production、正式产品G2大规模39实体接入、合并与发布边界保留。G1已接受手机范围/CK_2例外不变，原项目三项未提交改动未动。[实现与验证](ICLOUD_SYNC_FORMAL_EXECUTION_GUARD_EXECUTION_ZH.md) · [证据](Evidence/iCloudSyncFoundation/20261108/execution-guard/README.md)。以下为历史，不覆盖本节。
+
+---
+
 # 2026-11-08 独立Mac配置、签名与离线资格已完成
 
 Owner明确批准“按清单配置和预检”。独立App ID `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 已创建并回读确认仅关联正式容器，Mac Development profile已生成下载，复用既有开发证书及已登记Mac。没有改正式App/SyncLab、新建证书或注册设备，原始profile/证书/设备值仅本机保留。

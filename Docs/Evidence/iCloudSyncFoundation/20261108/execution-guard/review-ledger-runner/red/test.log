@@ -1,0 +1,67 @@
+Building for debugging...
+[Pre-planning 1 / 356]
+[Creating build graph]
+[79 / 178]
+[80 / 179] SyncFoundation
+[92 / 226]
+[99 / 226]
+[100 / 226]
+[105 / 226]
+[109 / 226]
+[113 / 226]
+[115 / 226]
+[116 / 226]
+[122 / 226]
+[140 / 227] SyncSchema-product
+[142 / 229] SyncSchema-product
+[151 / 238] SyncPayloadProbe-product
+[165 / 240] FormalDevelopmentSDK
+[168 / 255] FormalDevelopmentProbe-product
+[169 / 255] FormalDevelopmentSDK
+[180 / 255] FormalDevelopmentSDKTests-product
+[192 / 255] FormalDevelopmentHost-product
+[203 / 256] FormalProbeCore
+[208 / 258] SyncSchema-product
+[214 / 258] FormalDevelopmentSDK
+[216 / 260] FormalDevelopmentProbe-product
+[226 / 266]
+[240 / 298]
+[244 / 298]
+[250 / 298] FormalDevelopmentSDKTests-product
+[253 / 307]
+[256 / 307]
+[257 / 307]
+[270 / 307] SyncFoundationTests-product
+[285 / 307] FormalDevelopmentSDKTests-product
+[289 / 307] FormalDevelopmentSDKTests-product
+[293 / 307] FormalDevelopmentSDKTests-product
+[295 / 307] FormalProbeCoreTests-product
+[305 / 307] FormalDevelopmentSDKTests-product
+Build complete! (7.51秒)
+Test Suite 'Selected tests' started at 2026-11-08 14:18:44.448.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 14:18:44.448.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 14:18:44.448.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 14:18:44.448.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 14:18:44.500.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 14:18:44.500.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 14:18:44.500.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 14:18:44.500.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 14:18:44.540.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 14:18:44.540.
+Test Suite 'GuardedBatchRunnerTests' started at 2026-11-08 14:18:44.540.
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testIndependentPriorEvidenceTamperMustNotCommitSuccess]' started.
+/private/tmp/PGOS-GuardedReview-skwrnv9m/package/Tests/FormalDevelopmentSDKTests/GuardedBatchRunnerTests.swift:285: error: -[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testIndependentPriorEvidenceTamperMustNotCommitSuccess] : failed - Changed raw evidence must prevent successful commit
+/private/tmp/PGOS-GuardedReview-skwrnv9m/package/Tests/FormalDevelopmentSDKTests/GuardedBatchRunnerTests.swift:286: error: -[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testIndependentPriorEvidenceTamperMustNotCommitSuccess] : XCTAssertFalse failed
+Test Case '-[FormalDevelopmentSDKTests.GuardedBatchRunnerTests testIndependentPriorEvidenceTamperMustNotCommitSuccess]' failed (1.599 seconds).
+Test Suite 'GuardedBatchRunnerTests' failed at 2026-11-08 14:18:46.140.
+	 Executed 1 test, with 2 failures (0 unexpected) in 1.599 (1.600) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' failed at 2026-11-08 14:18:46.140.
+	 Executed 1 test, with 2 failures (0 unexpected) in 1.599 (1.600) seconds
+Test Suite 'Selected tests' failed at 2026-11-08 14:18:46.140.
+	 Executed 1 test, with 2 failures (0 unexpected) in 1.599 (1.600) seconds
+Note: Some test targets reported failures:
+  - FormalDevelopmentSDKTests (XCTest)

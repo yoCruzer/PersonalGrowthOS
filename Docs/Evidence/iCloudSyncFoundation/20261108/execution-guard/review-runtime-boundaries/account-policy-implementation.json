@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "sessionSHA256": "95e5a3678cb254d7dc92035336db534b21fad3d5223d65161f697562d64e6cee",
+  "testSHA256": "0ff298f3e5e9b89b9b73a9ef19439d3f371fc43802c0bb09d25d2b605bd4158b",
+  "command": "swift test --package-path Packages/SyncFoundation --filter 'AccountReadPolicyTests|ExecutionLedgerTests|GuardedBatchRunnerTests|OwnerExecutionApprovalTests'",
+  "counts": {
+    "AccountReadPolicyTests": 5,
+    "ExecutionLedgerTests": 22,
+    "GuardedBatchRunnerTests": 19,
+    "OwnerExecutionApprovalTests": 8,
+    "total": 54,
+    "failed": 0
+  },
+  "logs": {
+    "01": "Swift manifest compiler-cache sandbox denial; zero tests",
+    "02": "5 tests: 4 passed, 1 failed test-only expected field-count typo (expected18 actual17); preserved",
+    "03": "54 passed including corrected explicit 17-key set and all mutations"
+  },
+  "limitations": [
+    "Implementation tests, not self-independent review; root performed cross-review.",
+    "All fixtures synthetic, durable real ledger with fake in-memory anchor; no CloudKit or Keychain access."
+  ]
+}

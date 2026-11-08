@@ -1,0 +1,352 @@
+[
+  {
+    "case": "actual-binary-hash",
+    "passed": true
+  },
+  {
+    "case": "info-hash",
+    "passed": true
+  },
+  {
+    "case": "entitlements-hash",
+    "passed": true
+  },
+  {
+    "case": "independent-mac-identity",
+    "passed": true
+  },
+  {
+    "case": "candidate-only-no-profile-signature-resource",
+    "passed": true
+  },
+  {
+    "case": "no-appgroups-production-push",
+    "passed": true
+  },
+  {
+    "case": "source-snapshot-hashes",
+    "passed": true
+  },
+  {
+    "case": "make-fixed-synthetic-plan",
+    "command": [
+      "/private/tmp/pgos-guard-final-build/debug/FormalDevelopmentProbe",
+      "plan",
+      "/private/tmp/pgos-guard-completion-packaging-checks/plan"
+    ],
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "stdout": "OFFLINE_ONLY plan SHA256 e0d9640d42dbe1a8fe6525c0273a90bd99affbc78a343ea7b22c38bbee6b9fe1\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "actual-app-executable-locked",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect",
+      "/private/tmp/pgos-guard-completion-packaging-checks/plan",
+      "e0d9640d42dbe1a8fe6525c0273a90bd99affbc78a343ea7b22c38bbee6b9fe1",
+      "/private/tmp/pgos-guard-completion-packaging-checks/inspect"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "NOT_READY EXTERNAL_GATE_NOT_COMPLETE; networkOperations=0\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "inspect-never-authorizes",
+    "passed": true
+  },
+  {
+    "case": "actual-app-preflight-rejects",
+    "command": [
+      "/private/tmp/pgos-guard-final-build/debug/FormalDevelopmentProbe",
+      "preflight",
+      "/private/tmp/pgos-guard-completion-packaging-checks/plan",
+      "e0d9640d42dbe1a8fe6525c0273a90bd99affbc78a343ea7b22c38bbee6b9fe1",
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app",
+      "/private/tmp/pgos-guard-completion-packaging-checks/preflight"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "NOT_READY; no signing, installation, account change or network operation.\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "preflight-real-unprovisioned-rejection",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-locked",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-fixture"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "{\"container\":\"iCloud.com.yocruzer.PersonalGrowthOS\",\"dataset\":\"3CA6D73B-A1F1-4D1C-B248-CFC4375438A9\",\"environment\":\"Development\",\"failure\":\"EXTERNAL_GATE_NOT_COMPLETE\",\"missingFactory\":\"SIGNING_ACCOUNT_ENVIRONMENT_AND_OWNER_WINDOW_AUTHORITY\",\"mode\":\"OFFLINE_ONLY\",\"networkAuthorized\":false,\"networkOperations\":0,\"p0Passed\":false,\"planSHA256\":\"327eced137a311bb2a94fa26a0d428e86afbeb7848e8bb540efd98c565735b3c\",\"run\":\"1A557864-B301-4FD6-8978-6811081A0DCA\",\"status\":\"NOT_READY\"}\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "runtime-invalid-base64-rejected",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-runtime",
+      "%%%"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "runtime-unqualified-input-rejected",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-runtime",
+      "e30="
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "{\"accountQualification\":\"NOT_RUN\",\"actualServiceAccess\":\"NOT_RUN\",\"applicationSupportParentVerified\":false,\"mode\":\"OFFLINE_ONLY\",\"networkAuthorized\":false,\"networkOperations\":0,\"operation\":\"RUNNING_SELF_QUALIFICATION\",\"osSessionVerified\":false,\"ownerApprovalVerified\":false,\"p0Passed\":false,\"rejection\":\"OFFLINE_RUNTIME_INPUT_REJECTED\",\"signatureProfileDeviceVerified\":false,\"status\":\"NOT_READY\"}\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "runtime-rejection-never-authorizes",
+    "passed": true
+  },
+  {
+    "case": "guarded-cli-requires-complete-input",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "run-approved",
+      "unused"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA\n",
+    "passed": true
+  },
+  {
+    "case": "enroll-guard-rejects-missing-approval",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "enroll-guard",
+      "e30=",
+      "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "GUARDED_EXECUTION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "run-approved-rejects-missing-approval",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "run-approved",
+      "e30=",
+      "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "GUARDED_EXECUTION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-report-redacted-locked",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-extra-path-rejected",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-fixture",
+      "/private/tmp/pgos-guard-completion-packaging-checks/forbidden-path"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA\n",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-cannot-create-caller-output",
+    "passed": true
+  },
+  {
+    "case": "live-option-rejected",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "live",
+      "/private/tmp/pgos-guard-completion-packaging-checks/plan",
+      "e0d9640d42dbe1a8fe6525c0273a90bd99affbc78a343ea7b22c38bbee6b9fe1",
+      "/private/tmp/pgos-guard-completion-packaging-checks/live"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA\n",
+    "passed": true
+  },
+  {
+    "case": "wrong-plan-hash-rejected",
+    "command": [
+      "/private/tmp/pgos-guard-completion-package-20261108/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect",
+      "/private/tmp/pgos-guard-completion-packaging-checks/plan",
+      "0000000000000000000000000000000000000000000000000000000000000000",
+      "/private/tmp/pgos-guard-completion-packaging-checks/wrong-hash"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "OFFLINE_VALIDATION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "existing-output-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-execution-guard/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-package-20261108"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: FileExistsError\n",
+    "passed": true
+  },
+  {
+    "case": "existing-output-preserved",
+    "passed": true
+  },
+  {
+    "case": "output-symlink-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-execution-guard/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-packaging-checks/output-link"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: FileExistsError\n",
+    "passed": true
+  },
+  {
+    "case": "parent-symlink-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-execution-guard/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-packaging-checks/parent-link/new"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: NotADirectoryError\n",
+    "passed": true
+  },
+  {
+    "case": "dotdot-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/PersonalGrowthOS-icloud-execution-guard/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-packaging-checks/../escaped"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: PATH_REJECTED\n",
+    "passed": true
+  },
+  {
+    "case": "symlinks-did-not-create-output",
+    "passed": true
+  },
+  {
+    "case": "source-symlink-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-guard-completion-packaging-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-packaging-checks/source-link-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: SOURCE_SYMLINK\n",
+    "passed": true
+  },
+  {
+    "case": "source-rejected-before-output",
+    "passed": true
+  },
+  {
+    "case": "unreviewed-swift-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-guard-completion-packaging-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-packaging-checks/changed-source-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: UNREVIEWED_SWIFT_SOURCE\n",
+    "passed": true
+  },
+  {
+    "case": "swift-rejected-before-output",
+    "passed": true
+  },
+  {
+    "case": "output-inside-package-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-guard-completion-packaging-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-packaging-checks/repo-fixture/Packages/SyncFoundation/new-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: OUTPUT_INSIDE_SOURCE_PACKAGE\n",
+    "passed": true
+  },
+  {
+    "case": "no-source-self-mutation",
+    "passed": true
+  },
+  {
+    "case": "unreviewed-manifest-rejected",
+    "command": [
+      "/Applications/Xcode.app/Contents/Developer/usr/bin/python3",
+      "/private/tmp/pgos-guard-completion-packaging-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/private/tmp/pgos-guard-completion-packaging-checks/changed-manifest-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: UNREVIEWED_PACKAGE_MANIFEST\n",
+    "passed": true
+  },
+  {
+    "case": "manifest-rejected-before-output",
+    "passed": true
+  }
+]

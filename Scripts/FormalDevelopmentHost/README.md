@@ -57,6 +57,16 @@ not a graphical client; use `Contents/MacOS/FormalDevelopmentHost inspect ...`, 
 Finder launch. Future actual Mac signing/profile qualification and real authority
 factory remain external gates. This does not authorize signing or network execution.
 
+The additional `inspect-runtime BASE64_REQUEST` command performs offline self-signing
+inspection and returns a report, never a capability. Its canonical JSON input has
+`mode: OFFLINE_RUNTIME_INSPECTION`, the five reviewed hashes in `runtime`, and base64
+`packagingReceipt` / `sourcePins` bytes. It reads its own sealed app; no caller artifact
+path or CloudKit/account operation is accepted. An unqualified app or unavailable
+device evidence returns exit2 / NOT_READY. Even a SELF_QUALIFICATION_PASS does not
+authorize a cloud request. `inspect-fixture` remains a parameterless, fixed synthetic
+offline test. The separate `enroll-guard BASE64_APPROVAL EXPECTED_SHA` and `run-approved BASE64_APPROVAL EXPECTED_SHA` commands require a canonical, explicitly approved purpose/window and real self qualification. They must not be invoked without the corresponding Owner authorization; malformed/template inputs reject before storage or CloudKit. Enrollment is the only path allowed to initialize the local guard. Each process permits one production attempt, and the durable ledger forbids replay across processes. Actual provisioning and
+offline signed observations are recorded separately in the project execution evidence.
+
 File access uses held directory fds, exclusive creation and no-follow flags. Before
 and after external build operations it verifies directory identities. Caller-owned
 immutable source/output leases are still required: URL-based compiler paths cannot

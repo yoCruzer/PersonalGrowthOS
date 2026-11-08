@@ -1,0 +1,24 @@
+{
+  "disposition": "OWNER_REVIEW_REQUEST_NOT_AUTHORIZED",
+  "runtime": {
+    "codeDirectoryHash": "0ffd234eccb190959d51684746e0ffe4ca2c5e89",
+    "packagingReceiptSHA256": "1b8abd8c52c40f961eca87520084e3edc1b5217864abcb3c8feb719c49753cbb",
+    "profileSHA256": "4456877adea83b7a24f71d198265ae48408821474f6ee56fb492c9f54e5df754",
+    "signedBinarySHA256": "9291c390e9dbbf8b6999dbe06b87f45769be53f4e76744e7f5139298c867577e",
+    "sourcePinsSHA256": "83746bcb0948e750964cd73daf19b1e3342ebf8915182137bdb5a7711bd7b78b"
+  },
+  "run": "F2300A35-3533-43CF-8254-B674557ED5F0",
+  "dataset": "6389FCC2-BEE5-43CE-88EC-B7C7842A94C9",
+  "planSHA256": "30f1fef8a9d1431f7817d49647bd0bb99621854802eabcdeeca2bfd1a6fe2f74",
+  "schemaSHA256": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003",
+  "purpose": [
+    "LOCAL_GUARD_ENROLLMENT",
+    "FIXED_SYNTHETIC_DEVELOPMENT_BATCH"
+  ],
+  "maximumAccountAPICalls": 12,
+  "maximumTransportMethodInvocations": 5,
+  "windowSecondsMaximum": 900,
+  "testSessionConfirmed": false,
+  "productionAuthorized": false,
+  "cloudExecuted": false
+}
