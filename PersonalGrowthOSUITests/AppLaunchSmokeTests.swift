@@ -3,6 +3,24 @@ import Network
 import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testICloudSettingsStartOffAndRequireExplicitConsent() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 10))
+        app.buttons["Settings"].tap()
+        let sync = app.buttons["settings-icloud-sync"]
+        XCTAssertTrue(sync.waitForExistence(timeout: 5)); sync.tap()
+        let status = app.staticTexts["sync-status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 5)); XCTAssertTrue(status.label.contains("off"))
+        app.buttons["sync-enable"].tap()
+        XCTAssertTrue(app.alerts["Upload this workspace to iCloud?"].waitForExistence(timeout: 3))
+        app.alerts.buttons["Cancel"].tap()
+        XCTAssertTrue(status.label.contains("off")); XCTAssertTrue(app.buttons["sync-enable"].exists)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "iCloud-default-off-consent"; shot.lifetime = .keepAlways; add(shot)
+    }
+
     func testUsageHabitDailyFourAndTwoFactsExpandAndOpenExactOriginal() {
         continueAfterFailure = false
         let app = XCUIApplication()

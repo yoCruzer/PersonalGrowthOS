@@ -119,7 +119,7 @@ final class ImportantDayService {
     private let now: () -> Date
     private let commit: () throws -> Void
     init(context: ModelContext, mediaStore: MediaStore, now: @escaping () -> Date = Date.init, commit: (() throws -> Void)? = nil) {
-        self.context = context; self.mediaStore = mediaStore; self.now = now; self.commit = commit ?? { try context.save() }
+        self.context = context; self.mediaStore = mediaStore; self.now = now; self.commit = commit ?? { try ProductSyncCommit.save(context) }
     }
     func day(id: UUID) throws -> ImportantDay {
         guard let day = try context.fetch(FetchDescriptor<ImportantDay>(predicate: #Predicate { $0.id == id })).first else { throw ImportantDayError.missingDay }

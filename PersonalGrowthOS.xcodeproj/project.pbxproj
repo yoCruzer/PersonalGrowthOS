@@ -7,6 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+825282BED2F9FF17F95E7031 = {isa = PBXBuildFile; fileRef = 009AD52545854BEF583BEBB3; };
+A6D0E1A294A6CC1AB5FEA01D = {isa = PBXBuildFile; fileRef = AFEF2F2780565668FF9FA453; };
+F312F5F26ED71B009743D83A = {isa = PBXBuildFile; fileRef = 6B1EA1AF32ABA50417D67CB1; };
+D82DFC8668C226299F64E9DB = {isa = PBXBuildFile; fileRef = 8655CC330A76839BADAEC0AE; };
+CC5903B0B35010C2A67D296C = {isa = PBXBuildFile; fileRef = 98528E605E33F25007AB75D8; };
+5C22CD839336E0F5CB8809D8 = {isa = PBXBuildFile; fileRef = 97BA9C305E713F4B42D7497A; };
+5ADA0AA753726F82D1CF97BB = {isa = PBXBuildFile; fileRef = 93289EFB3FF0F5930D43993D; };
+B90D986641F6110D59D9443B = {isa = PBXBuildFile; fileRef = DC7DCB2013B49F6511B13373; };
+9AF7716746544E33921047AB = {isa = PBXBuildFile; fileRef = E34F3FDB3654EF36CB0DE669; };
+38E118407C71A7AB30E936A8 = {isa = PBXBuildFile; fileRef = B516D76DB8C673B316992CB5; };
+22E049A684B865D159DACBA0 = {isa = PBXBuildFile; fileRef = 84C3EFAC362088BDEA743DAF; };
+664B38A1F7E840525F06AF75 = {isa = PBXBuildFile; fileRef = C33AD3E056C213D4EFFD6D53; };
+FE0B31E13D7DCAFA678A932D = {isa = PBXBuildFile; productRef = 0F0852BF667568994C5173FF; };
+1B184B4B4C880A1BA948397B = {isa = PBXBuildFile; fileRef = 82AC88AA9C786D257B9D2CAB; };
+D1DAA89D4E712BF81A08BB0B = {isa = PBXBuildFile; fileRef = D4B17D85192F01A2A63F2D60; };
+DC1D51BD1766AD92392E6629 = {isa = PBXBuildFile; fileRef = CFCCB79048F65EED0D8395F2; };
+E89DB7843AC6C33510CBC9ED = {isa = PBXBuildFile; fileRef = 94994CD5A4E441EAA07E301E; };
 B16100000000000000000006 = {isa = PBXBuildFile; fileRef = B16000000000000000000006; };
 B16100000000000000000005 = {isa = PBXBuildFile; fileRef = B16000000000000000000005; };
 B16100000000000000000004 = {isa = PBXBuildFile; fileRef = B16000000000000000000004; };
@@ -146,6 +163,22 @@ CA0000000000000000000024 = {isa = PBXContainerItemProxy; containerPortal = H0000
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+009AD52545854BEF583BEBB3 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncProductIntegrationTests.swift"; sourceTree = SOURCE_ROOT; };
+AFEF2F2780565668FF9FA453 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncCommitBoundaryTests.swift"; sourceTree = SOURCE_ROOT; };
+6B1EA1AF32ABA50417D67CB1 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncAssetStoreTests.swift"; sourceTree = SOURCE_ROOT; };
+8655CC330A76839BADAEC0AE = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncBuildConfiguration.swift"; sourceTree = SOURCE_ROOT; };
+98528E605E33F25007AB75D8 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncCoordinatorTests.swift"; sourceTree = SOURCE_ROOT; };
+97BA9C305E713F4B42D7497A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncDomainInstallerTests.swift"; sourceTree = SOURCE_ROOT; };
+93289EFB3FF0F5930D43993D = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncCloudTransportTests.swift"; sourceTree = SOURCE_ROOT; };
+DC7DCB2013B49F6511B13373 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncSettingsView.swift"; sourceTree = SOURCE_ROOT; };
+E34F3FDB3654EF36CB0DE669 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncProductCoordinator.swift"; sourceTree = SOURCE_ROOT; };
+B516D76DB8C673B316992CB5 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncDomainInstaller.swift"; sourceTree = SOURCE_ROOT; };
+84C3EFAC362088BDEA743DAF = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncCloudTransport.swift"; sourceTree = SOURCE_ROOT; };
+C33AD3E056C213D4EFFD6D53 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncAssetStore.swift"; sourceTree = SOURCE_ROOT; };
+82AC88AA9C786D257B9D2CAB = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncPersistenceTests.swift"; sourceTree = SOURCE_ROOT; };
+D4B17D85192F01A2A63F2D60 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/SyncDomainCodecTests.swift"; sourceTree = SOURCE_ROOT; };
+CFCCB79048F65EED0D8395F2 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncPersistence.swift"; sourceTree = SOURCE_ROOT; };
+94994CD5A4E441EAA07E301E = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/Sync/SyncDomainCodec.swift"; sourceTree = SOURCE_ROOT; };
 B16000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = folder; path = "PersonalGrowthOSTests/Fixtures/NetWorthBaselineV15Fixture"; sourceTree = SOURCE_ROOT; };
 B16000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/NetWorthUITests.swift"; sourceTree = SOURCE_ROOT; };
 B16000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/NetWorthTests.swift"; sourceTree = SOURCE_ROOT; };
@@ -264,6 +297,7 @@ E366E7EC8D7B082E7CCDC395 = {isa = PBXFileReference; lastKnownFileType = sourceco
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                FE0B31E13D7DCAFA678A932D,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -362,6 +396,14 @@ CB0000000000000000000001,
 		C00000000000000000000002 /* PersonalGrowthOS */ = {
 			isa = PBXGroup;
 			children = (
+                8655CC330A76839BADAEC0AE,
+                DC7DCB2013B49F6511B13373,
+                E34F3FDB3654EF36CB0DE669,
+                B516D76DB8C673B316992CB5,
+                84C3EFAC362088BDEA743DAF,
+                C33AD3E056C213D4EFFD6D53,
+                CFCCB79048F65EED0D8395F2,
+                94994CD5A4E441EAA07E301E,
 				A00000000000000000000001 /* PersonalGrowthOSApp.swift */,
 				A00000000000000000000002 /* AppShell.swift */,
 				C00000000000000000000006 /* App */,
@@ -387,6 +429,14 @@ CB0000000000000000000001,
 		C00000000000000000000003 /* PersonalGrowthOSTests */ = {
 			isa = PBXGroup;
 			children = (
+                009AD52545854BEF583BEBB3,
+                AFEF2F2780565668FF9FA453,
+                6B1EA1AF32ABA50417D67CB1,
+                98528E605E33F25007AB75D8,
+                97BA9C305E713F4B42D7497A,
+                93289EFB3FF0F5930D43993D,
+                82AC88AA9C786D257B9D2CAB,
+                D4B17D85192F01A2A63F2D60,
 				A00000000000000000000004 /* AppCompositionTests.swift */,
 				A00000000000000000000012 /* EntryDomainTests.swift */,
 				A00000000000000000000015 /* PersistenceMediaFoundationTests.swift */,
@@ -563,6 +613,7 @@ CA0000000000000000000013,
 			dependencies = (CA0000000000000000000025, 43B44AE516092D7A924BE2AB,
 			);
 			name = PersonalGrowthOS;
+            packageProductDependencies = (0F0852BF667568994C5173FF,);
 			productName = PersonalGrowthOS;
 			productReference = A00000000000000000000006 /* PersonalGrowthOS.app */;
 			productType = "com.apple.product-type.application";
@@ -640,6 +691,7 @@ CA0000000000000000000020 = {isa = PBXNativeTarget; buildConfigurationList = CA00
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C00000000000000000000005 /* Products */;
 			projectDirPath = "";
+            packageReferences = (18B10B02A68321B6AE1CB2A8,);
 			projectRoot = "";
 			targets = (
 33D624FDC5DFEC2DC6F32BEC,
@@ -650,6 +702,13 @@ CA0000000000000000000020,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin XCLocalSwiftPackageReference section */
+18B10B02A68321B6AE1CB2A8 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/SyncFoundation; };
+/* End XCLocalSwiftPackageReference section */
+/* Begin XCSwiftPackageProductDependency section */
+0F0852BF667568994C5173FF = {isa = XCSwiftPackageProductDependency; package = 18B10B02A68321B6AE1CB2A8; productName = SyncFoundation; };
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin PBXResourcesBuildPhase section */
 		D00000000000000000000003 /* Resources */ = {
@@ -707,6 +766,14 @@ TD5000000000000000000001 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                D82DFC8668C226299F64E9DB,
+                B90D986641F6110D59D9443B,
+                9AF7716746544E33921047AB,
+                38E118407C71A7AB30E936A8,
+                22E049A684B865D159DACBA0,
+                664B38A1F7E840525F06AF75,
+                DC1D51BD1766AD92392E6629,
+                E89DB7843AC6C33510CBC9ED,
 B16100000000000000000003,
 B16100000000000000000002,
 B16100000000000000000001,
@@ -778,6 +845,14 @@ CB0000000000000000000101,
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                825282BED2F9FF17F95E7031,
+                A6D0E1A294A6CC1AB5FEA01D,
+                F312F5F26ED71B009743D83A,
+                CC5903B0B35010C2A67D296C,
+                5C22CD839336E0F5CB8809D8,
+                5ADA0AA753726F82D1CF97BB,
+                1B184B4B4C880A1BA948397B,
+                D1DAA89D4E712BF81A08BB0B,
 B16100000000000000000004,
 711000000000000000000005,
 711000000000000000000003,
@@ -871,9 +946,11 @@ CA0000000000000000000025 = {isa = PBXTargetDependency; target = CA00000000000000
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
+PGOS_CLOUD_SIGNING_ENVIRONMENT = Development;
+PGOS_CLOUD_RUNTIME_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 83SKX2PM7B;
 				GENERATE_INFOPLIST_FILE = YES;
                 INFOPLIST_FILE = PersonalGrowthOS/App/ImportantDayURLInfo.plist;
@@ -901,9 +978,10 @@ CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
+PGOS_CLOUD_SIGNING_ENVIRONMENT = Development;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 83SKX2PM7B;
 				GENERATE_INFOPLIST_FILE = YES;
                 INFOPLIST_FILE = PersonalGrowthOS/App/ImportantDayURLInfo.plist;
@@ -1004,10 +1082,10 @@ CODE_SIGN_ENTITLEMENTS = PersonalGrowthOS/PersonalGrowthOS.entitlements;
 			};
 			name = Release;
 		};
-CA0000000000000000000022 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
-CA0000000000000000000023 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
-91E59C41253DACDF72E373E9 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ImportantDaysWidget/ImportantDaysWidget.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ImportantDaysWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ImportantDaysWidget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
-4E9B0AFC132BEE500A07EEE8 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ImportantDaysWidget/ImportantDaysWidget.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 7; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ImportantDaysWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ImportantDaysWidget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+CA0000000000000000000022 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 8; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+CA0000000000000000000023 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 8; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ShareExtension/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ShareExtension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+91E59C41253DACDF72E373E9 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ImportantDaysWidget/ImportantDaysWidget.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 8; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ImportantDaysWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ImportantDaysWidget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+4E9B0AFC132BEE500A07EEE8 = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = ImportantDaysWidget/ImportantDaysWidget.entitlements; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 8; DEVELOPMENT_TEAM = 83SKX2PM7B; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ImportantDaysWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", ); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.yocruzer.PersonalGrowthOS.ImportantDaysWidget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */

@@ -29,6 +29,7 @@ struct AppContainer {
     let thumbnailStore: ThumbnailStore
     let importExportService: ImportExportService
     let mediaIntegrityReport: MediaIntegrityReport
+    let syncCoordinator: SyncProductCoordinator
 
     init(
         configuration: AppConfiguration,
@@ -50,6 +51,7 @@ struct AppContainer {
             mediaStore: mediaStore
         )
         self.mediaIntegrityReport = mediaIntegrityReport
+        self.syncCoordinator = SyncProductCoordinator(container: modelContainer, mediaRoot: mediaStore.rootURL)
     }
 
     static func make(
@@ -122,7 +124,7 @@ struct AppContainer {
             catch {
                 throw integrityFailure(error, rootURL: rootURL)
             }
-            modelContainer.mainContext.autosaveEnabled = true
+            modelContainer.mainContext.autosaveEnabled = false
             stage = .mediaRecovery
             let mediaStore = MediaStore(rootURL: rootURL, fileManager: fileManager)
             try? ImportExportService.cleanupInterruptedTransfers(
@@ -193,7 +195,7 @@ enum StartupStoreProtection {
         guard sqlite3_step(statement) == SQLITE_ROW, let bytes = sqlite3_column_blob(statement, 0) else { return false }
         let data = Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, 0)))
         guard let metadata = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { return false }
-        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV16.versionIdentifier.description]
+        return metadata["NSStoreModelVersionIdentifiers"] as? [String] == [PersonalGrowthSchemaV17.versionIdentifier.description]
     }
 
     // Content identity ignores SQLite header/checkpoint changes. Equal logical

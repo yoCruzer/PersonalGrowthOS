@@ -265,8 +265,14 @@ struct AppShell: View {
                 importExportService: container.importExportService,
                 integrityReport: container.mediaIntegrityReport,
                 reminderSettingsIntents:reminderSettingsIntents,
-                reminderScheduler:settingsReminderScheduler
+                reminderScheduler:settingsReminderScheduler,
+                syncCoordinator:container.syncCoordinator
             )
+        }
+        .safeAreaInset(edge: .bottom) { SyncStatusBanner(coordinator: container.syncCoordinator) }
+        .task { await container.syncCoordinator.resumeIfEnabled() }
+        .onChange(of: captureScenePhase) { _, phase in
+            if phase == .active { Task { await container.syncCoordinator.resumeIfEnabled() } }
         }
         .environment(investmentWorkspace)
         .environment(sleepWorkspace)
@@ -1024,6 +1030,7 @@ struct MediaStorageView: View {
     let integrityReport: MediaIntegrityReport
     let reminderSettingsIntents: ReminderSettingsIntents
     var reminderScheduler=LocalReminderScheduler()
+    var syncCoordinator: SyncProductCoordinator? = nil
 
     @Environment(\.dismiss) private var dismiss
     @State private var pendingImportURL: URL?
@@ -1055,6 +1062,9 @@ struct MediaStorageView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let syncCoordinator {
+                    Section { NavigationLink("iCloud sync") { SyncSettingsView(coordinator: syncCoordinator) }.accessibilityIdentifier("settings-icloud-sync") }
+                }
                 Section {
                     LabeledContent("Original photos") {
                         if let byteCount {

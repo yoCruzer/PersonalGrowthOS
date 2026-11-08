@@ -289,7 +289,7 @@ final class TagLinkService {
     ) {
         self.context = context
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func createTag(displayName: String) throws -> Tag {

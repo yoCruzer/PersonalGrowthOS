@@ -260,7 +260,7 @@ extension Notification.Name { static let investmentChanged = Notification.Name("
     private let clock: () -> InvestmentClock
     private let commit: (ModelContext) throws -> Void
     init(context: ModelContext, clock: @escaping () -> InvestmentClock = InvestmentClock.current,
-         commit: @escaping (ModelContext) throws -> Void = { try $0.save() }) {
+         commit: @escaping (ModelContext) throws -> Void = { try ProductSyncCommit.save($0) }) {
         container = context.container; self.clock = clock; self.commit = commit
     }
     private func transaction<T>(change: InvestmentChange = .all, _ body: (ModelContext, InvestmentClock) throws -> T) throws -> T {

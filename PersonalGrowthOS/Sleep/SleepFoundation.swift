@@ -271,7 +271,7 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         record.valueData = try JSONEncoder().encode(values)
         record.updatedAt = TechnicalTimestamp.updated(now: timestamp, createdAt: record.createdAt, previous: record.updatedAt)
         record.revision += 1; record.observedAt = max(record.observedAt, timestamp)
-        do { if let commit { try commit(context) } else { try context.save() } }
+        do { if let commit { try commit(context) } else { try ProductSyncCommit.save(context) } }
         catch { context.rollback(); throw error }
         NotificationCenter.default.post(name: .sleepRecordsChanged, object: owner.container)
         return record.id
@@ -281,7 +281,7 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         guard let record = try context.fetch(FetchDescriptor<SleepRecord>()).first(where: { $0.id == id }) else { throw SleepFailure.missing }
         guard record.revision == revision else { throw SleepFailure.conflict }
         context.delete(record)
-        do { if let commit { try commit(context) } else { try context.save() } }
+        do { if let commit { try commit(context) } else { try ProductSyncCommit.save(context) } }
         catch { context.rollback(); throw error }
         NotificationCenter.default.post(name: .sleepRecordsChanged, object: owner.container)
     }
@@ -305,7 +305,7 @@ extension Notification.Name { static let sleepRecordsChanged = Notification.Name
         }
         else { context.insert(SleepGoalRule(effectiveDay: effective.identifier, cutoffMinute: cutoffMinute, createdAt: timestamp,
             observationTimeZoneID: timeZone.identifier, hasTakenEffect: effective <= today)) }
-        do { if let commit { try commit(context) } else { try context.save() } }
+        do { if let commit { try commit(context) } else { try ProductSyncCommit.save(context) } }
         catch { context.rollback(); throw error }
         NotificationCenter.default.post(name: .sleepRecordsChanged, object: owner.container)
     }
@@ -381,7 +381,7 @@ enum SleepGoalSemantics {
                 #if DEBUG
                 SleepGoalObservationProbe.willSave?(owner.container)
                 #endif
-                do {try context.save()} catch {context.rollback();throw error}
+                do {try ProductSyncCommit.save(context)} catch {context.rollback();throw error}
             }
             fences.removeValue(forKey:key)
         }

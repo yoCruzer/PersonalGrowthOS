@@ -120,7 +120,7 @@ final class WeightRecordService {
     ) {
         self.context = context
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func create(weightKilograms: Double, recordedAt: Date) throws -> WeightRecord {
@@ -443,7 +443,7 @@ enum BodyReferenceFailure: Error, LocalizedError {
         if preference.heightCentimeters == nil && preference.reference == .china {rows.forEach(write.delete)}
         else if let row=rows.first {row.heightCentimeters=preference.heightCentimeters;row.referenceRawValue=preference.reference.rawValue}
         else {write.insert(BodyReferenceSettings(heightCentimeters:preference.heightCentimeters,reference:preference.reference))}
-        try write.save()
+        try ProductSyncCommit.save(write)
     }
 }
 

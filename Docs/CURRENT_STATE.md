@@ -1,3 +1,11 @@
+## 2026-11-08 最新Owner决定：正式App代码与可安装开发构建优先
+
+Owner已要求停止围绕双用户Mac/tmp探针试错，先实现正式同步代码/架构，后移真实云验证。按[产品实现范围](ICLOUD_SYNC_PRODUCT_IMPLEMENTATION_ZH.md)连续推进V17/所有业务写入同事务outbox、领域合并、媒体/账户隔离、CKSyncEngine及App界面；默认关闭同步，不自动上传既有数据。P0/P1/P2不再作为代码接入前置，仍未通过且保留生产验收/发布门，不授权Production/Archive/TestFlight/上架或覆盖日常安装。
+
+新持久工作树`/Users/himini/Development/Projects/PersonalGrowthOS-icloud-product`、分支`codex/icloud-product`，基线PR17/07c1bcf。PR18最新290bfc0的失败、原始证据和责任复盘保留在原分支，不继续排查或运行该探针。原项目三项未提交工作不动。正式产品实现已落地，正在完成最终UI/CI/签名产物收口；见[产品交付范围](ICLOUD_SYNC_PRODUCT_DELIVERY_ZH.md)与[真实测试记录](Evidence/iCloudProduct/20261108/README.md)。已完成全量Unit655PASS/0FAIL/1SKIP及双设备合成集成4/4；真实云/Production不因本轮代码通过而升级为通过。
+
+---
+
 # 2026-11-08 独立Mac配置、签名与离线资格已完成
 
 Owner明确批准“按清单配置和预检”。独立App ID `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 已创建并回读确认仅关联正式容器，Mac Development profile已生成下载，复用既有开发证书及已登记Mac。没有改正式App/SyncLab、新建证书或注册设备，原始profile/证书/设备值仅本机保留。

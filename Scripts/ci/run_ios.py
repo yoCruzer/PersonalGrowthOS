@@ -86,7 +86,8 @@ else:
         args += ['-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/' + name for name in [
             'testUITestingLaunchShowsAppShell', 'testCoreShellRemainsOperableAtLargestAccessibilityTextSize',
             'testUIReadabilityChineseDefaultAndLargerText', 'testUIReadabilityEnglishDefault',
-            'testRepeatableHabitCounterIncrementsDecrementsAndPersists']]
+            'testRepeatableHabitCounterIncrementsDecrementsAndPersists',
+            'testICloudSettingsStartOffAndRequireExplicitConsent']]
     try:
         run(args, 'tests')
     finally:

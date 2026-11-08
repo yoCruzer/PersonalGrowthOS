@@ -241,7 +241,7 @@ struct NetWorthLedger {
     private let container: ModelContainer
     private let now: () -> Date
     private let commit: (ModelContext) throws -> Void
-    init(context: ModelContext, now: @escaping () -> Date = Date.init, commit: @escaping (ModelContext) throws -> Void = { try $0.save() }) {
+    init(context: ModelContext, now: @escaping () -> Date = Date.init, commit: @escaping (ModelContext) throws -> Void = { try ProductSyncCommit.save($0) }) {
         container = context.container; self.now = now; self.commit = commit
     }
     nonisolated static func read(_ context: ModelContext) throws -> NetWorthLedger {

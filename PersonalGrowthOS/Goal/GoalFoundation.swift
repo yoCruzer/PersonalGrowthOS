@@ -83,7 +83,7 @@ final class GoalService {
     ) {
         self.context = context
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func create(title: String, kind: GoalKind) throws -> Goal {
@@ -218,7 +218,7 @@ final class CoreLinkService {
     ) {
         self.context = context
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func setEntry(_ entry: Entry, relatesTo habit: Habit, linked: Bool) throws {

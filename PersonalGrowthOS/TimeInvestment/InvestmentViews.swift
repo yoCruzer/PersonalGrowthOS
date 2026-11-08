@@ -83,7 +83,7 @@ import UIKit
 #if DEBUG
                 try InvestmentReviewTestSupport.draftCommit(context)
 #else
-                try context.save()
+                try ProductSyncCommit.save(context)
 #endif
             }
             operationRevision = try InvestmentService(context:context,commit:save).storeDraft(id:id,participantID:participantID,
@@ -251,7 +251,7 @@ import UIKit
         editors[editor.id] = editor; return editor
     }
     func saveEditor(_ editor: InvestmentEditorState,context:ModelContext,confirmDuplicate:Bool = false,
-                    commit: @escaping (ModelContext) throws -> Void = {try $0.save()}) throws {
+                    commit: @escaping (ModelContext) throws -> Void = {try ProductSyncCommit.save($0)}) throws {
         guard editor.hasValidDuration else {throw InvestmentFailure.invalid}
         let service=InvestmentService(context:context,commit:commit)
             if editor.timerConfirmation {
@@ -963,19 +963,19 @@ struct InvestmentSessionDetailView: View {
         if args.contains("-PGOSUITesting"),args.contains("-PGOSRenameWriteFailure"),!renameFailureConsumed {
             renameFailureConsumed=true;throw CocoaError(.fileWriteOutOfSpace)
         }
-        try context.save()
+        try ProductSyncCommit.save(context)
     }
     static func saveCommit(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
         if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentSaveWriteFailure"),!saveFailureConsumed {
             saveFailureConsumed=true;throw CocoaError(.fileWriteOutOfSpace)
         }
-        try context.save()
+        try ProductSyncCommit.save(context)
     }
     static func draftCommit(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
         if args.contains("-PGOSUITesting"),args.contains("-PGOSInvestmentCloseWriteFailure"),!closeFailureConsumed {throw CocoaError(.fileWriteOutOfSpace)}
-        try context.save()
+        try ProductSyncCommit.save(context)
     }
     static func closeCommit(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments
@@ -983,7 +983,7 @@ struct InvestmentSessionDetailView: View {
             closeFailureConsumed=true
             throw CocoaError(.fileWriteOutOfSpace)
         }
-        try context.save()
+        try ProductSyncCommit.save(context)
     }
     static func seedUsageHistoryIfRequested(_ context: ModelContext) throws {
         let args=ProcessInfo.processInfo.arguments

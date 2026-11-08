@@ -21,6 +21,7 @@ struct PersonalGrowthOSApp: App {
         #endif
         let result = Result<AppContainer, Error> {
             let container = try AppContainer.make(configuration: configuration)
+            SyncPushBridge.coordinator = container.syncCoordinator
             #if DEBUG
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch {
                 for key in ["sleep.showToday", "sleep.introductionDismissed", "sleep.morningReminder.plannedFires", SleepReminderPreferences.enabledKey, SleepReminderPreferences.minuteKey] { UserDefaults.standard.removeObject(forKey: key) }

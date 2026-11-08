@@ -192,7 +192,7 @@ final class WeeklyReviewService {
         self.context = context
         self.timeZone = timeZone
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func review(containing date: Date, createIfNeeded: Bool = true) throws -> WeeklyReview? {
