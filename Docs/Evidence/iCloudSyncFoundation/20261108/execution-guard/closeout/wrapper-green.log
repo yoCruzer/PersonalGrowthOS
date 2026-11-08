@@ -1,0 +1,15 @@
+test_closeout_failure_stops_cloud (__main__.WrapperTests) ... ok
+test_closeout_timeout_stops_cloud (__main__.WrapperTests) ... ok
+test_expiry_before_closeout_never_mutates (__main__.WrapperTests) ... ok
+test_expiry_between_commands_never_reports_success (__main__.WrapperTests) ... ok
+test_readonly_export_timeout_never_retries_mutations (__main__.WrapperTests) ... ok
+test_run_failure_no_retry (__main__.WrapperTests) ... ok
+test_run_timeout_no_retry (__main__.WrapperTests) ... ok
+test_success_fixed_order (__main__.WrapperTests) ... ok
+test_unapproved_zero_processes (__main__.WrapperTests) ... ok
+test_unverified_ci_zero_processes (__main__.WrapperTests) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.018s
+
+OK

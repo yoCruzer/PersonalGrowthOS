@@ -1,0 +1,42 @@
+Building for debugging...
+[Pre-planning 1 / 356]
+[Constructing 44 / 777]
+[8 / 29] FormalDevelopmentSDK
+[15 / 36] FormalDevelopmentSDK
+[20 / 33] FormalDevelopmentSDK
+[23 / 36] FormalDevelopmentSDK
+[27 / 36] FormalDevelopmentSDKTests-product
+[40 / 49] FormalDevelopmentSDKTests-product
+[44 / 48] FormalDevelopmentSDKTests-product
+[46 / 48] FormalDevelopmentSDKTests-product
+[53 / 57] FormalDevelopmentHost-product
+[56 / 59] FormalDevelopmentHost-product
+[58 / 59] FormalDevelopmentHost-product
+Build complete! (2.60秒)
+Test Suite 'Selected tests' started at 2026-11-08 19:02:44.018.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 19:02:44.019.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 19:02:44.019.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:02:44.019.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 19:02:44.069.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 19:02:44.069.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 19:02:44.069.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:02:44.069.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 19:02:44.108.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 19:02:44.108.
+Test Suite 'ExecutionLedgerTests' started at 2026-11-08 19:02:44.108.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testIndependentCloseoutOfBatchCannotReuseAnyOldIdentityOrQualification]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testIndependentCloseoutOfBatchCannotReuseAnyOldIdentityOrQualification]' passed (0.040 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testIndependentCloseoutRejectsHeadAdvancedByLateObservation]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testIndependentCloseoutRejectsHeadAdvancedByLateObservation]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testIndependentOuterApprovalDigestPersistsExactlyAndOldBytesRemainAuthoritative]' started.
+Test Case '-[FormalDevelopmentSDKTests.ExecutionLedgerTests testIndependentOuterApprovalDigestPersistsExactlyAndOldBytesRemainAuthoritative]' passed (0.004 seconds).
+Test Suite 'ExecutionLedgerTests' passed at 2026-11-08 19:02:44.156.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.048 (0.048) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 19:02:44.156.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.048 (0.048) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:02:44.156.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.048 (0.048) seconds

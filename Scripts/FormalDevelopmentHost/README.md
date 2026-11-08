@@ -76,6 +76,16 @@ or establish P0 success; rejected/missing sections are explicitly listed. File
 allowlists, ownership, no-follow/single-link checks and bounded reads reject unsafe
 inputs. A failed cloud window remains consumed after export.
 
+`closeout-unknown BASE64_APPROVAL EXPECTED_SHA` is a separately approved local
+mutation. Its canonical envelope binds a fresh bounded Owner window, the current
+signed artifact, the exact old run/dataset/plan, and the reviewed ledger head's
+sequence and file SHA256. It authenticates the existing ledger/Keychain anchor,
+holds the existing lock, and appends one `ownerClosedUnknown` terminal containing
+the complete approval digest. It never constructs a CloudKit container, resets an
+anchor, deletes evidence, or revives an old plan. A new cloud run still requires
+its own explicit approval and fresh run/dataset. Older binaries may reject the new
+terminal case; fail-closed rollback is expected, not a reason to remove history.
+
 File access uses held directory fds, exclusive creation and no-follow flags. Before
 and after external build operations it verifies directory identities. Caller-owned
 immutable source/output leases are still required: URL-based compiler paths cannot

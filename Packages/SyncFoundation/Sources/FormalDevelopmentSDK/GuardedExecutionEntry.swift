@@ -127,6 +127,25 @@ private struct GuardedEntryReport: Encodable {
     private static var busy = false
     private static let attempt = ProductionAttemptLatch()
 
+    /// Explicit local closeout only. No container or account provider is created.
+    /// The original ledger/anchor is authenticated, never reset or re-enrolled.
+    public static func closeoutUnknown(approval bytes: Data, expectedSHA256: String) throws -> Data {
+        guard !busy else { throw GuardedEntryError.busy }; try attempt.check()
+        busy = true; defer { busy = false }
+        let (window, target) = try OwnerCloseoutApproval.validate(bytes, expectedSHA256: expectedSHA256)
+        _ = try qualify(window)
+        let session = try OSExecutionSession.current()
+        guard session.userID == window.approval.osUserID else { throw OwnerWindowError.wrongUser }
+        _ = try GuardedExecutionPaths.inspectApplicationSupport()
+        try session.recheck(); try window.check(); try Task.checkCancellation()
+        try attempt.consume()
+        let ledger = try ExecutionLedger.openProduction()
+        try session.recheck(); try window.check(); try Task.checkCancellation()
+        let result = try ledger.closeoutUnknown(target: target)
+        try session.recheck(); try window.check()
+        return try json(LocalCloseoutReport(closeout: result))
+    }
+
     /// Shared pure preflight. Defaults are used by the production entry; explicit
     /// time/user arguments exist only for synthetic rejection tests, not the CLI.
     static func validateApproval(_ bytes: Data, expectedSHA256: String, purpose: String,

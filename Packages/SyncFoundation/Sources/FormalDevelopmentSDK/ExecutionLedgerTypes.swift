@@ -14,6 +14,28 @@ enum LedgerReturnStatus: String, Codable { case success, failure, unknown }
 enum LedgerStopReason: String, Codable { case cancelled, accountChanged, expired, validationFailed, transportFailed, evidenceFailed, interrupted }
 enum LedgerObservation: String, Codable { case enqueueRequested, recordReturned, operationReturned, cancellationRequested, lateCallback, callbackRejected, validationEvidence, reportPrepared, reportPublished }
 
+/// Exact, externally approved historic head. This is a comparison input, never a
+/// permit or authority to execute a CloudKit operation.
+struct LedgerCloseoutTarget {
+    let run: UUID
+    let dataset: UUID
+    let planSHA256: String
+    let expectedHeadSequence: Int
+    let expectedHeadFileSHA256: String
+    let approvalSHA256: String
+}
+struct LedgerCloseoutSummary: Encodable {
+    let status = "CLOSED_REMOTE_OUTCOME_UNKNOWN"
+    let run: UUID
+    let dataset: UUID
+    let planSHA256: String
+    let approvalSHA256: String
+    let previousHeadSequence: Int
+    let previousHeadFileSHA256: String
+    let appendedSequence: Int
+    let appendedFileSHA256: String
+}
+
 struct ExecutionBinding: Codable, Equatable {
     let ownerWindow: UUID
     let approvalInputSHA256: String

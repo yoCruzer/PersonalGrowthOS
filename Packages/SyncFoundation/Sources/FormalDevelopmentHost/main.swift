@@ -7,9 +7,9 @@ let arguments = Array(CommandLine.arguments.dropFirst())
 let fixtureOnly = arguments == ["inspect-fixture"]
 let runtimeOnly = arguments.count == 2 && arguments.first == "inspect-runtime"
 let exportOnly = arguments.count == 2 && arguments.first == "export-run"
-let guarded = arguments.count == 3 && ["enroll-guard", "run-approved"].contains(arguments[0])
+let guarded = arguments.count == 3 && ["enroll-guard", "run-approved", "closeout-unknown"].contains(arguments[0])
 guard exportOnly || guarded || fixtureOnly || runtimeOnly || (arguments.count == 4 && arguments.first == "inspect") else {
-    FileHandle.standardError.write(Data("usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA\n".utf8)); exit(64)
+    FileHandle.standardError.write(Data("usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA | closeout-unknown BASE64_APPROVAL EXPECTED_SHA\n".utf8)); exit(64)
 }
 do {
     if exportOnly {
@@ -21,6 +21,8 @@ do {
         let report: Data
         if arguments[0] == "enroll-guard" {
             report = try FormalDevelopmentGuardedExecution.enroll(approval: bytes, expectedSHA256: arguments[2])
+        } else if arguments[0] == "closeout-unknown" {
+            report = try FormalDevelopmentGuardedExecution.closeoutUnknown(approval: bytes, expectedSHA256: arguments[2])
         } else {
             report = try await FormalDevelopmentGuardedExecution.run(approval: bytes, expectedSHA256: arguments[2]) {
                 FileHandle.standardError.write(Data("FATAL_EXECUTION_OR_EVIDENCE_UNKNOWN\n".utf8)); exit(74)

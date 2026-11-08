@@ -1,0 +1,31 @@
+{
+  "result": "PASS_AFTER_EXIT_CLASSIFICATION_FIX",
+  "scriptSHA256": "14830024e4356128703904e421f7e7a408d2da905c7091df479c39442592012b",
+  "matchesTestedSnapshot": true,
+  "scopeSHA256": "f4b9c9a82bdad974ea193a6de5b98edb5f7061b119575158f2d9dad9e0f1297f",
+  "ownerApproved": false,
+  "ciMarkerExists": false,
+  "tests": 10,
+  "failures": 0,
+  "reconstructedOriginalRegression": {
+    "tests": 1,
+    "failures": 1,
+    "note": "Original exit expression and catch reconstructed after concurrent author fix; not a pristine original source snapshot."
+  },
+  "reviewedBoundaries": [
+    "Only closeout-unknown then one new run-approved",
+    "No enrollment or old-run replay",
+    "Closeout failure/timeout stops run",
+    "Read-only exports follow stop without mutation retries",
+    "Owner approval and CI marker block before subprocess",
+    "Window expiry before/between commands returns failure",
+    "Signed archive/binary hash gates preserved"
+  ],
+  "limitations": [
+    "Subprocesses, identity and clock fully mocked; synthetic archive only",
+    "No real wrapper execution or binary launch",
+    "No Keychain or CloudKit access",
+    "Read-only exports may take up to 60 seconds after the 900-second mutating window",
+    "Public report excludes scope identifiers and private artifacts"
+  ]
+}

@@ -1,4 +1,16 @@
-## 2026-11-08 最新：真实窗口已停止，正在诊断与修复
+## 2026-11-08 最新：追加收口已实现，待最终定向CI与固定窗口审批
+
+Owner已完成haha的4次离线资格检查，全部PASS，原拒绝未复现。未结束的旧qualification记录正确阻止新批次；已实现独立审批的`closeout-unknown`：认证既有anchor/ledger、精确核对旧head/run/plan，仅追加含完整审批摘要的未知结果terminal，保留所有原件。新旧目的隔离，不恢复旧run、不重新enrollment、不删除记录。
+
+最终本机完整包178/178、保留独立边界35/35、新增独立closeout3/3、账本28/28、审批入口22/22、打包40/40、iOS17 SDK编译通过；真实iOS运行NOT_RUN。签名候选`27dfec36…`自身离线资格通过。交付脚本独立mock10/10通过，超窗后只读export被误算成执行成功的负例已修，原红例保留。脚本当前ownerApproved=false、无CI marker，真实收口/新窗口均未执行。
+
+[集中固定清单](ICLOUD_SYNC_FORMAL_CLOSEOUT_WINDOW_ZH.md)已固定旧head第5条和新run/dataset，准备一次“本地追加＋新Development六条记录写读”，最大12账户API/5transport，执行15分钟＋最多1分钟只读导出，手机/数据线0。完成最终定向CI后申请一次精确审批；不得扩大旧单次授权。`dd45099`定向CI42473375861成功且原ZIP已核验；它只覆盖前一诊断代码，不覆盖本节新收口实现。对应产品CI42473375956尚在运行，不虚报成功。
+
+[本轮收口证据](Evidence/iCloudSyncFoundation/20261108/execution-guard/closeout/)。P0/P1/P2与正式产品完整同步仍未完成，Production/发布/合并边界不变。以下为保留历史。
+
+---
+
+## 历史：真实窗口已停止，正在诊断与修复
 
 Owner 已执行固定窗口：`enroll-guard` exit 0，本地 guard/Keychain anchor 已建立；`run-approved` exit 74，返回 `FATAL_EXECUTION_OR_EVIDENCE_UNKNOWN`。终端读取 sandbox 被拒后，已实现并签名 `export-run` 只读入口；Owner 导出成功，15份探针文件摘要均匹配，无缺失 section。原始回调只有首次 account-status 的 ENQUEUE_REQUESTED 与 CANCEL_REQUESTED，均 started=false；没有请求启动或返回证据。旧代码未保留具体拒绝原因，不归因 CK_2，不宣称 P0 通过；导出未访问 Keychain，因此未声称 HMAC 账本认证通过。
 

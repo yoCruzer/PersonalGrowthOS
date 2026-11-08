@@ -1,0 +1,86 @@
+Building for debugging...
+[Pre-planning 1 / 356]
+[Constructing 396 / 777]
+[8 / 29] FormalDevelopmentSDK
+[14 / 35] FormalDevelopmentSDK
+[19 / 32] FormalDevelopmentSDK
+[23 / 36] FormalDevelopmentSDK
+[27 / 36] FormalDevelopmentSDKTests-product
+[40 / 49] FormalDevelopmentSDKTests-product
+[44 / 48] FormalDevelopmentSDKTests-product
+[46 / 48] FormalDevelopmentSDKTests-product
+[53 / 57] FormalDevelopmentHost-product
+[55 / 59] FormalDevelopmentHost-product
+[58 / 59] FormalDevelopmentHost-product
+Build complete! (2.48秒)
+Test Suite 'Selected tests' started at 2026-11-08 19:00:55.755.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 19:00:55.756.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 19:00:55.756.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:00:55.756.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 19:00:55.809.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 19:00:55.810.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 19:00:55.810.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:00:55.810.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 19:00:55.859.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 19:00:55.860.
+Test Suite 'GuardedExecutionEntryTests' started at 2026-11-08 19:00:55.860.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testProductionAttemptLatchIsIrreversibleAcrossSuccessOrFailure]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testProductionAttemptLatchIsIrreversibleAcrossSuccessOrFailure]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollmentInvalidArtifactStopsBeforeKeychainAndCanRejectAgain]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollmentInvalidArtifactStopsBeforeKeychainAndCanRejectAgain]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollRejectsBatchPurposeBeforeSigningOrStorage]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicEnrollRejectsBatchPurposeBeforeSigningOrStorage]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunInvalidArtifactStopsBeforeAnyContainerOrAccount]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunInvalidArtifactStopsBeforeAnyContainerOrAccount]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunRejectsEnrollmentPurposeBeforeSigningOrStorage]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPublicRunRejectsEnrollmentPurposeBeforeSigningOrStorage]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSBindingChangesForBootUserAuditSessionOrAttributes]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSBindingChangesForBootUserAuditSessionOrAttributes]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSSessionPolicyRejectsRootRemoteInvalidAndChangedEffectiveUID]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPureOSSessionPolicyRejectsRootRemoteInvalidAndChangedEffectiveUID]' passed (0.000 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPurePreflightRequiresCanonicalBytesAndExternalDigest]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testPurePreflightRequiresCanonicalBytesAndExternalDigest]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testTemplateWrongWindowAndArtifactBindingCannotBecomePermission]' started.
+Test Case '-[FormalDevelopmentSDKTests.GuardedExecutionEntryTests testTemplateWrongWindowAndArtifactBindingCannotBecomePermission]' passed (0.002 seconds).
+Test Suite 'GuardedExecutionEntryTests' passed at 2026-11-08 19:00:55.870.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.010 (0.011) seconds
+Test Suite 'OwnerCloseoutApprovalTests' started at 2026-11-08 19:00:55.870.
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testCanonicalOuterDigestBindsHeadAndTargetWithoutGrantingRuntimeAuthority]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testCanonicalOuterDigestBindsHeadAndTargetWithoutGrantingRuntimeAuthority]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testLocalCloseoutApprovalCannotEnterEnrollmentOrCloudRun]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testLocalCloseoutApprovalCannotEnterEnrollmentOrCloudRun]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testPublicCloseoutRejectsFakeArtifactBeforeKeychainOrStorage]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testPublicCloseoutRejectsFakeArtifactBeforeKeychainOrStorage]' passed (0.004 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testRejectsUnboundOrNoncanonicalHeadAndExtraFields]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testRejectsUnboundOrNoncanonicalHeadAndExtraFields]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testRejectsWrongUserExpiredWindowAndCloudPurpose]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerCloseoutApprovalTests testRejectsWrongUserExpiredWindowAndCloudPurpose]' passed (0.002 seconds).
+Test Suite 'OwnerCloseoutApprovalTests' passed at 2026-11-08 19:00:55.884.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.013 (0.013) seconds
+Test Suite 'OwnerExecutionApprovalTests' started at 2026-11-08 19:00:55.884.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testCanonicalDecisionIsOnlyAWindowNotRuntimeQualification]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testCanonicalDecisionIsOnlyAWindowNotRuntimeQualification]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testFrozenWallClockCannotExtendRemainingSecond]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testFrozenWallClockCannotExtendRemainingSecond]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testLaterClockRollbackCannotReopenWindow]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testLaterClockRollbackCannotReopenWindow]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testPlanAndArtifactInputsRemainBound]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testPlanAndArtifactInputsRemainBound]' passed (0.004 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testTemplateUnknownPurposeAndMissingDecisionRejectEvenWithNewHash]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testTemplateUnknownPurposeAndMissingDecisionRejectEvenWithNewHash]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnboundedWindowOrRootIdentityReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnboundedWindowOrRootIdentityReject]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnknownFieldsAndNoncanonicalBytesReject]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testUnknownFieldsAndNoncanonicalBytesReject]' passed (0.001 seconds).
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testWindowStartInclusiveEndExclusiveAndWrongUser]' started.
+Test Case '-[FormalDevelopmentSDKTests.OwnerExecutionApprovalTests testWindowStartInclusiveEndExclusiveAndWrongUser]' passed (0.004 seconds).
+Test Suite 'OwnerExecutionApprovalTests' passed at 2026-11-08 19:00:55.897.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.013 (0.014) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 19:00:55.897.
+	 Executed 22 tests, with 0 failures (0 unexpected) in 0.037 (0.038) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 19:00:55.897.
+	 Executed 22 tests, with 0 failures (0 unexpected) in 0.037 (0.038) seconds

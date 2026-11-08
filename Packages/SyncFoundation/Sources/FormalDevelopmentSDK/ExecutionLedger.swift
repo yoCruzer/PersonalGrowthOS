@@ -21,6 +21,7 @@ private struct LedgerAnchor: Codable, Equatable {
 }
 private enum LedgerTerminal: Codable {
     case qualificationCompleted(accountSHA256: String), batchCompleted, remoteOutcomeUnknown(LedgerStopReason)
+    case ownerClosedUnknown(approvalSHA256: String)
 }
 private enum LedgerEvent: Codable {
     case consumed(permission: LedgerPermission, binding: ExecutionBinding, clock: LedgerTime)
@@ -78,6 +79,7 @@ private struct LedgerExecution {
     private var anchorBytes: Data
     private var executions: [UUID: LedgerExecution] = [:]
     private var poisoned = false
+    private var hasAppendedSinceOpening = false
     var hasUnresolvedExecutions: Bool { executions.values.contains { $0.terminal == nil } }
     private static var productionRoot: URL {
         // OS supplies the current user's (sandbox-aware) Application Support root.
@@ -179,6 +181,7 @@ private struct LedgerExecution {
     }
     private func append(_ event: LedgerEvent, id: UUID) throws {
         try integrity(); guard anchor.sequence < 2_048 else { throw LedgerFailure.capacity }
+        hasAppendedSinceOpening = true
         var prospective = executions
         try apply(event, permitID: id, to: &prospective)
         let body = LedgerBody(sequence: anchor.sequence + 1, previousMAC: anchor.headMAC, permitID: id, wallMS: clock.now().wallMS, event: event)
@@ -245,6 +248,32 @@ private struct LedgerExecution {
     func terminateUnknown(reason: LedgerStopReason, permit: ExecutionPermit) throws {
         try append(.terminal(.remoteOutcomeUnknown(reason)), id: permitID(permit))
     }
+    /// Append-only acknowledgement of a previous process's unresolved attempt.
+    /// The dedicated approved entry must freshly open this ledger. Its lifetime
+    /// flock excludes another process/instance; this synchronous MainActor method
+    /// cannot overlap operations on this instance and rejects one that has appended
+    /// (including issued permits). It grants no old or new execution permission.
+    func closeoutUnknown(target: LedgerCloseoutTarget) throws -> LedgerCloseoutSummary {
+        try integrity()
+        guard !hasAppendedSinceOpening else { throw LedgerFailure.busy }
+        guard ledgerHex(target.planSHA256, 64), ledgerHex(target.expectedHeadFileSHA256, 64),
+              ledgerHex(target.approvalSHA256, 64), target.approvalSHA256 != String(repeating: "0", count: 64),
+              target.expectedHeadSequence > 0, target.expectedHeadSequence == anchor.sequence else { throw LedgerFailure.permission }
+        let previousDigest = SHA256.hash(data: try files.read(anchor.sequence)).map { String(format: "%02x", $0) }.joined()
+        guard previousDigest == target.expectedHeadFileSHA256 else { throw LedgerFailure.permission }
+        let unresolved = executions.filter { $0.value.terminal == nil }
+        guard unresolved.count == 1, let (id, execution) = unresolved.first,
+              execution.binding.run == target.run, execution.binding.dataset == target.dataset,
+              execution.binding.planSHA256 == target.planSHA256 else { throw LedgerFailure.permission }
+        // Deliberately no freshness requirement on the OLD execution window: this
+        // closes uncertainty after expiry, without reviving its consumed authority.
+        try append(.terminal(.ownerClosedUnknown(approvalSHA256: target.approvalSHA256)), id: id)
+        try integrity()
+        let appendedDigest = SHA256.hash(data: try files.read(anchor.sequence)).map { String(format: "%02x", $0) }.joined()
+        return LedgerCloseoutSummary(run: target.run, dataset: target.dataset, planSHA256: target.planSHA256,
+            approvalSHA256: target.approvalSHA256, previousHeadSequence: target.expectedHeadSequence,
+            previousHeadFileSHA256: previousDigest, appendedSequence: anchor.sequence, appendedFileSHA256: appendedDigest)
+    }
     func recordObservation(operationID: UUID, event: LedgerObservation, summarySHA256: String, permit: ExecutionPermit) throws {
         try append(.observation(operationID: operationID, event: event, summarySHA256: summarySHA256), id: permitID(permit))
     }
@@ -277,6 +306,8 @@ private struct LedgerExecution {
         if case .terminal(let terminal) = event {
             switch terminal {
             case .remoteOutcomeUnknown: break
+            case .ownerClosedUnknown(let approval):
+                guard ledgerHex(approval, 64), approval != String(repeating: "0", count: 64) else { throw LedgerFailure.permission }
             case .qualificationCompleted(let account):
                 guard execution.permission == .qualificationRead, !execution.failed, execution.position == execution.pattern.count,
                       ledgerHex(account, 64), execution.returns[try operationKey(.userRecordID)]?.account == account else { throw LedgerFailure.transition }

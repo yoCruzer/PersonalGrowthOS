@@ -53,7 +53,7 @@ struct OwnerExecutionApproval: Codable, Equatable {
         let value = try JSONDecoder().decode(Self.self, from: bytes)
         guard try value.encoded() == bytes, value.version == 1,
               value.disposition == "OWNER_APPROVED_DEVELOPMENT_WINDOW",
-              ["LOCAL_GUARD_ENROLLMENT", "FIXED_SYNTHETIC_DEVELOPMENT_BATCH"].contains(value.purpose),
+              ["LOCAL_GUARD_ENROLLMENT", "FIXED_SYNTHETIC_DEVELOPMENT_BATCH", "LOCAL_GUARD_CLOSEOUT_UNKNOWN"].contains(value.purpose),
               [value.ownerDecisionSHA256, value.ownerSessionSHA256, value.planSHA256, value.schemaSHA256]
                 .allSatisfy({ RuntimeSigningInspector.isHex($0, bytes: 32) && $0 != String(repeating: "0", count: 64) }),
               value.osUserID > 0, value.startsAt > 0, value.expiresAt > value.startsAt,

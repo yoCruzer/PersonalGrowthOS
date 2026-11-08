@@ -71,7 +71,8 @@ def main():
               and not runtime_report['signatureProfileDeviceVerified'] and not runtime_report['p0Passed']
               and runtime_report['accountQualification'] == 'NOT_RUN' and runtime_report['actualServiceAccess'] == 'NOT_RUN')
         command('guarded-cli-requires-complete-input', [binary, 'run-approved', 'unused'], 64)
-        for verb in ('enroll-guard', 'run-approved'):
+        command('closeout-cli-requires-complete-input', [binary, 'closeout-unknown', 'unused'], 64)
+        for verb in ('enroll-guard', 'run-approved', 'closeout-unknown'):
             command(verb + '-rejects-missing-approval', [binary, verb, base64.b64encode(b'{}').decode(), hashlib.sha256(b'{}').hexdigest()], 1)
         check('internal-fixture-report-redacted-locked', self_report['mode'] == 'OFFLINE_ONLY'
               and self_report['status'] == 'NOT_READY' and self_report['failure'] == 'EXTERNAL_GATE_NOT_COMPLETE'
