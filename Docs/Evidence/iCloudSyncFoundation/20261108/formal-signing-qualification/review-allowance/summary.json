@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "uniqueXCTestCount": 3,
+  "serviceEnvironmentCrossProduct": 272,
+  "crossProductAssertionsPerCombination": 2,
+  "serializedRoundTrips": 8,
+  "signingEvidencePositiveCases": 1,
+  "signingEvidenceNegativeCases": 11,
+  "sourceBinding": "source-hashes.json records implementation before independent test injection; inspect-fixture changes are a later separate review.",
+  "command": "swift test --disable-sandbox --build-system swiftbuild --scratch-path /private/tmp/PGOS-AllowanceReview-kfqxq1vr/swift-build --filter IndependentAllowanceReviewTests",
+  "exitCode": 0,
+  "priorAttempts": [
+    {
+      "log": "test.log",
+      "exit": 66,
+      "reason": "Reviewer invoked xcodebuild in Swift package directory; no test execution."
+    },
+    {
+      "log": "test-swift.log",
+      "exit": 1,
+      "reason": "Swift standard library module cache blocked by sandbox; no test execution."
+    }
+  ],
+  "actualSignedArtifactReviewedSeparately": true,
+  "p0Passed": false,
+  "cloudOperations": 0
+}

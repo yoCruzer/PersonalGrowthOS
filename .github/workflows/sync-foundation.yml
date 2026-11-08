@@ -1,7 +1,7 @@
 name: Sync foundation candidate
 on:
   pull_request:
-    paths: ['Packages/SyncFoundation/**', 'Scripts/SyncSchemaAudit/**', 'Scripts/FormalDevelopmentHost/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py', 'Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
+    paths: ['Packages/SyncFoundation/**', 'Scripts/SyncSchemaAudit/**', 'Scripts/FormalDevelopmentHost/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py', 'Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-allowance/IndependentAllowanceReviewTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-host/*.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
 permissions:
   contents: read
 concurrency:
@@ -93,6 +93,17 @@ jobs:
           python3 Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py Scripts/SyncSchemaAudit/audit.py "$RUNNER_TEMP/sync-foundation-evidence/schema/schema.json" "$RUNNER_TEMP/sync-foundation-evidence/schema-independent" | tee "$RUNNER_TEMP/sync-foundation-evidence/schema-independent.log"
           cp Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/IndependentSDKTests.swift"
           swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter IndependentSDKTests 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/sdk-independent.log"
+      - name: Independent provisioning allowance regressions
+        run: |
+          set -o pipefail
+          cp Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-allowance/IndependentAllowanceReviewTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalProbeCoreTests/IndependentAllowanceReviewTests.swift"
+          swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter IndependentAllowanceReviewTests 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/profile-allowance-independent.log"
+      - name: Independent sandbox directory and locked fixture regressions
+        run: |
+          set -o pipefail
+          cp Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-host/IndependentDirectoryReviewTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalProbeCoreTests/IndependentDirectoryReviewTests.swift"
+          cp Docs/Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/review-host/IndependentFixtureReviewTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/IndependentFixtureReviewTests.swift"
+          swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter 'IndependentDirectoryReviewTests|IndependentFixtureReviewTests' 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/locked-host-independent.log"
       - name: Package and inspect the isolated unprovisioned Mac host
         run: |
           set -o pipefail

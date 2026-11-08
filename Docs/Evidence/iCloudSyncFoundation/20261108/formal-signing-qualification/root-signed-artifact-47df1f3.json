@@ -1,0 +1,14 @@
+{
+  "checks": {
+    "strictSignature": true,
+    "actualEntitlementsExact": true,
+    "actualLeafInProfile": true,
+    "actualLeafMatchesExistingIdentity": true,
+    "infoUnchanged": true,
+    "embeddedProfileExact": true
+  },
+  "signedExecutableSHA256": "8cb8dede6c7e5b8f478841eef4e9dc5a657bc39a83f37641ee8798f8fd2b572f",
+  "unsignedExecutableSHA256": "850e08fe6ecb6afa1de96f39db29db101d85c8027094b591ebc97da3a77f35c4",
+  "signedEnvironment": "Development",
+  "networkOperations": 0
+}

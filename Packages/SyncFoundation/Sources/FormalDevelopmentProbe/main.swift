@@ -97,8 +97,8 @@ func inspect(_ artifact: URL) -> (ProbeSigningEvidence, String?, String?, [Strin
         profileApplicationIdentifier: (pe["com.apple.application-identifier"] ?? pe["application-identifier"]) as? String,
         profileTeam: pe["com.apple.developer.team-identifier"] as? String,
         profileContainers: pe["com.apple.developer.icloud-container-identifiers"] as? [String] ?? [],
-        profileServices: pe["com.apple.developer.icloud-services"] as? [String] ?? [],
-        profileEnvironment: pe["com.apple.developer.icloud-container-environment"] as? String,
+        profileServices: pe["com.apple.developer.icloud-services"],
+        profileEnvironment: pe["com.apple.developer.icloud-container-environment"],
         profileUnexpired: (profile["ExpirationDate"] as? Date).map { $0 > Date() } ?? false)
     return (evidence, field("CDHash", in: details), profileHash, rejection)
 }
@@ -112,7 +112,7 @@ struct PreflightReport: Encodable {
     let container: String
     let environment: String
     let candidateBundle: String
-    let candidateRegistration = "PROPOSED_NOT_REGISTERED_OR_VERIFIED"
+    let candidateRegistration = "NOT_VERIFIED_BY_PREFLIGHT"
     let signatureVerified: Bool
     let codeDirectoryHash: String?
     let profileSHA256: String?

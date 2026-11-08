@@ -1,0 +1,20 @@
+{
+  "exitCode": 2,
+  "signedExecutableSHA256": "5708bd5bd9b4bfcb81937310c535b590965047bdab19833e521213be380ca7cf",
+  "report": {
+    "container": "iCloud.com.yocruzer.PersonalGrowthOS",
+    "dataset": "91A12415-E6FA-4ABB-97E9-88A38B3659D0",
+    "environment": "Development",
+    "failure": "EXTERNAL_GATE_NOT_COMPLETE",
+    "missingFactory": "SIGNING_ACCOUNT_ENVIRONMENT_AND_OWNER_WINDOW_AUTHORITY",
+    "mode": "OFFLINE_ONLY",
+    "networkAuthorized": false,
+    "networkOperations": 0,
+    "p0Passed": false,
+    "planSHA256": "65587771e3eb639917a5ee4e2677a6f764f00570a68cf13cb9ff9286957cef33",
+    "run": "D5784265-4991-4310-B8A2-F6AE5B3873E4",
+    "status": "NOT_READY"
+  },
+  "stdoutHasNoPaths": true,
+  "stderrEmpty": true
+}

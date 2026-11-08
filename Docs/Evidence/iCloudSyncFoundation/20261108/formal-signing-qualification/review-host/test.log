@@ -1,0 +1,79 @@
+Building for debugging...
+[Pre-planning 1 / 356]
+[Planning deferred tasks]
+[79 / 178]
+[80 / 179] SyncFoundation
+[92 / 226]
+[99 / 226]
+[100 / 226]
+[105 / 226]
+[109 / 226]
+[113 / 226]
+[115 / 226]
+[116 / 226]
+[122 / 226]
+[127 / 226] SyncFoundation
+[142 / 229] SyncPayloadProbe-product
+[151 / 238] FormalProbeCore
+[165 / 240]
+[168 / 246] FormalDevelopmentProbe-product
+[169 / 246] FormalDevelopmentSDK
+[176 / 246] FormalDevelopmentSDK
+[183 / 247] SyncSchema-product
+[199 / 249] SyncPayloadProbe-product
+[207 / 251] FormalDevelopmentHost-product
+[215 / 252] FormalDevelopmentProbe-product
+[228 / 290]
+[236 / 290]
+[239 / 295]
+[241 / 295]
+[244 / 295]
+[247 / 295]
+[248 / 295]
+[261 / 295] FormalProbeCoreTests-product
+[277 / 295] FormalProbeCoreTests-product
+[277 / 295] FormalDevelopmentSDKTests-product
+[281 / 295] FormalDevelopmentSDKTests-product
+[283 / 295] FormalProbeCoreTests-product
+[292 / 295]
+Build complete! (8.09秒)
+Test Suite 'Selected tests' started at 2026-11-08 13:27:35.079.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 13:27:35.081.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 13:27:35.081.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 13:27:35.081.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.002) seconds
+Test Suite 'Selected tests' started at 2026-11-08 13:27:35.176.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 13:27:35.177.
+Test Suite 'IndependentDirectoryReviewTests' started at 2026-11-08 13:27:35.177.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testAncestorReplacementDetectedAndWritesStayOnHeldFD]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testAncestorReplacementDetectedAndWritesStayOnHeldFD]' passed (0.004 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testExistingOutputAndFileStayImmutable]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testExistingOutputAndFileStayImmutable]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSearchAncestorsAndReadableLeafRoundTrip]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSearchAncestorsAndReadableLeafRoundTrip]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkAncestorCannotBeFollowed]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkAncestorCannotBeFollowed]' passed (0.000 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkLeafAndFileCannotBeFollowed]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testSymlinkLeafAndFileCannotBeFollowed]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testTraversalAndSpecialFilesReject]' started.
+Test Case '-[FormalProbeCoreTests.IndependentDirectoryReviewTests testTraversalAndSpecialFilesReject]' passed (0.001 seconds).
+Test Suite 'IndependentDirectoryReviewTests' passed at 2026-11-08 13:27:35.186.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.008 (0.009) seconds
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 13:27:35.186.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.008 (0.009) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 13:27:35.186.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.008 (0.010) seconds
+Test Suite 'Selected tests' started at 2026-11-08 13:27:35.311.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 13:27:35.312.
+Test Suite 'IndependentFixtureReviewTests' started at 2026-11-08 13:27:35.312.
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testFixedFixtureReportsClosedGatesWithoutPrivatePaths]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testFixedFixtureReportsClosedGatesWithoutPrivatePaths]' passed (0.022 seconds).
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testTwoInvocationsCreateDistinctSyntheticIdentities]' started.
+Test Case '-[FormalDevelopmentSDKTests.IndependentFixtureReviewTests testTwoInvocationsCreateDistinctSyntheticIdentities]' passed (0.015 seconds).
+Test Suite 'IndependentFixtureReviewTests' passed at 2026-11-08 13:27:35.350.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.038 (0.038) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 13:27:35.350.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.038 (0.038) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 13:27:35.350.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.038 (0.039) seconds

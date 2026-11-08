@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "uniqueXCTestCount": 8,
+  "directoryTests": 6,
+  "fixtureTests": 2,
+  "cliInvocationCount": 7,
+  "cliChecks": 8,
+  "command": "swift test --disable-sandbox --build-system swiftbuild --scratch-path /private/tmp/PGOS-FinalHostReview-64u0q0m3/build --filter IndependentDirectoryReviewTests|IndependentFixtureReviewTests",
+  "testExit": 0,
+  "sourceBinding": "source-hashes.json is the complete copied Package.swift/Sources/Tests before reviewer test injection",
+  "reviewFindings": {
+    "ancestorAccess": "O_SEARCH | O_DIRECTORY | O_NOFOLLOW; leaf retains O_RDONLY | O_DIRECTORY | O_NOFOLLOW",
+    "temporaryRoot": "Only system process temporary directory is canonicalized; fixed synthetic UUID child is exclusively created. No caller data is read. Foundation temporary directory may reflect process environment; no custom override option added.",
+    "reports": "NOT_READY, OFFLINE_ONLY, networkAuthorized false, networkOperations 0, p0 false; no private paths in stdout.",
+    "sourceInspection": "No CKContainer, live flag, transport factory, or Production route introduced."
+  },
+  "limitations": [
+    "Independent executable is not the final provisioned App Sandbox app; signed runtime validation is separate.",
+    "File path binding does not promise arbitrary hostile same-privilege ABA resistance.",
+    "No actual CloudKit operation or account eligibility query."
+  ],
+  "cloudOperations": 0,
+  "p0Passed": false
+}

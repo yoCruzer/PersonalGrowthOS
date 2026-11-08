@@ -59,6 +59,14 @@ def main():
         preflight = json.loads((evidence / 'preflight/report.json').read_text())
         check('preflight-real-unprovisioned-rejection', preflight['status'] == 'NOT_READY' and 'PROFILE_MISSING' in preflight['rejectionCodes']
               and 'CODE_IDENTITY_MISMATCH' in preflight['rejectionCodes'] and not preflight['networkAuthorized'] and not preflight['p0Passed'])
+        self_check = command('internal-fixture-locked', [binary, 'inspect-fixture'], 2)
+        self_report = json.loads(self_check.stdout)
+        check('internal-fixture-report-redacted-locked', self_report['mode'] == 'OFFLINE_ONLY'
+              and self_report['status'] == 'NOT_READY' and self_report['failure'] == 'EXTERNAL_GATE_NOT_COMPLETE'
+              and self_report['networkOperations'] == 0 and not self_report['networkAuthorized'] and not self_report['p0Passed']
+              and self_report['environment'] == 'Development' and '/' not in self_check.stdout)
+        command('internal-fixture-extra-path-rejected', [binary, 'inspect-fixture', evidence / 'forbidden-path'], 64)
+        check('internal-fixture-cannot-create-caller-output', not (evidence / 'forbidden-path').exists())
         command('live-option-rejected', [binary, 'live', plan, plan_hash, evidence / 'live'], 64)
         command('wrong-plan-hash-rejected', [binary, 'inspect', plan, '0' * 64, evidence / 'wrong-hash'], 1)
         before = sha(output / 'packaging.json')

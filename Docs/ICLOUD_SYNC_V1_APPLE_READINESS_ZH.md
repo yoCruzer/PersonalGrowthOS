@@ -1,3 +1,5 @@
+2026-11-08最新证据：[独立Mac配置、签名及离线资格已完成](Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/README.md)。Owner明确配置授权已执行，实际签名与真实沙盒离线自检通过；真实Development/P0、Production/P1/P2未通过。下文旧“待配置/未注册”依此更新，实际云/发布边界不变。
+
 2026-11-08证据更新：正式App能力/容器关联已由Owner只读确认；两环境schema原件已本机审计，独立Mac未配置开发签名产物已验证。见[当前状态](CURRENT_STATE.md)及[具体配置清单](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)。下文2026-11-05的UNVERIFIED是当时观察，不覆盖最新证据；门禁与外部操作授权规则仍适用，P0/P1/P2仍未通过。
 
 # iCloud Sync V1：Apple 环境及 Production 就绪门禁

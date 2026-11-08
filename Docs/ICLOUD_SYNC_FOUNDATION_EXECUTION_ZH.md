@@ -1,3 +1,15 @@
+# 2026-11-08 独立Mac配置、签名与离线资格已完成
+
+Owner明确批准“按清单配置和预检”。独立App ID `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 已创建并回读确认仅关联正式容器，Mac Development profile已生成下载，复用既有开发证书及已登记Mac。没有改正式App/SyncLab、新建证书或注册设备，原始profile/证书/设备值仅本机保留。
+
+真实profile暴露服务/环境允许值类型兼容问题，已修复并保留旧preflight失败；实际签名仍严格CloudKit/Development。真实App Sandbox的外部计划访问失败已通过固定内部合成`inspect-fixture`和仅搜索祖先目录的`O_SEARCH`修复，未关闭sandbox或授予额外磁盘权限。完整包62、实际打包32、独立CLI22、允许值独立3、目录/fixture独立8通过；iOS17共享SDK编译通过、运行NOT_RUN。最终新签名独立31项通过；实际preflight匹配，实际沙盒运行exit2/NOT_READY/EXTERNAL_GATE_NOT_COMPLETE，云操作0。
+
+[本轮证据](Evidence/iCloudSyncFoundation/20261108/formal-signing-qualification/README.md)包含源码/编译快照/产物绑定、修复前后结果及未验证边界。当前候选远端CI待稳定提交；旧47df1f3定向与产品成功保留，不代替新候选。下一步按[执行保护设计](ICLOUD_SYNC_FORMAL_EXECUTION_GUARD_DESIGN_ZH.md)继续代码侧真实资格factory、持久单次执行及账户/取消保护的实现准备；当前host仍无真实云入口。
+
+本次配置/签名授权已完成，不再等待该回复。真实Development执行及其schema副作用尚未授权/未执行；P0/P1/P2未通过，Production/Archive/TestFlight/merge边界保持。手机/数据线0，G1接受范围、CK_2例外不变；原项目三项未提交改动未动。以下是保留历史，旧“待配置许可/未注册”已被本节取代。
+
+---
+
 # 2026-11-08 后续接续：正式关联确认与Mac签名前准备
 
 Owner确认正式App四项能力/容器关联，旧“仍待关联”已关闭。固定47df1f3完成独立Mac未配置开发签名App打包、源码及编译快照绑定、本机28项与独立20项；[定向CI42438147024](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42438147024)通过，新增实际打包28检查及既有包回归全部成功。构建快照来源缺口的真实红绿证据保留，Swift核心/正式工程未改。

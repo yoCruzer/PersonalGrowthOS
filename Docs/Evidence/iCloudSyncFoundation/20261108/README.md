@@ -1,3 +1,5 @@
+本轮新增：[独立Mac配置、签名及真实沙盒离线资格验证](formal-signing-qualification/README.md)。Owner授权已执行，原profile等仅本机保留；P0/P1/P2仍未通过。
+
 # 2026-11-08 正式结构输入与隔离SDK准备
 
 接续代码72f5d3d、上一文档交付668ca91；工作树codex/icloud-sync-foundation，Draft PR17。没有真实CloudKit操作、签名、安装、Apple能力变更或Production部署。

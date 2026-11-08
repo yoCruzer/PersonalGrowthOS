@@ -11,11 +11,13 @@ public final class ProbeDirectory {
         guard url.isFileURL, url.path.hasPrefix("/"), !url.pathComponents.contains(".."), !url.pathComponents.contains(".") else { throw FormalProbeError.invalidPath }
         let parts = Array(url.pathComponents.dropFirst())
         guard let leaf = parts.last, !leaf.isEmpty else { throw FormalProbeError.invalidPath }
-        var parent = open("/", O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+        // Ancestors need search permission only, not directory listing access.
+        // O_EVTONLY still requests read-data access under App Sandbox.
+        var parent = open("/", O_SEARCH | O_DIRECTORY | O_NOFOLLOW)
         guard parent >= 0 else { throw FormalProbeError.invalidPath }
         defer { close(parent) }
         for part in parts.dropLast() {
-            let next = openat(parent, part, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+            let next = openat(parent, part, O_SEARCH | O_DIRECTORY | O_NOFOLLOW)
             guard next >= 0 else { throw FormalProbeError.invalidPath }
             close(parent); parent = next
         }

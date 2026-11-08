@@ -1,0 +1,18 @@
+{
+  "checks": {
+    "macOSOnly": true,
+    "applicationIdentifier": true,
+    "team": true,
+    "containers": true,
+    "cloudKitAllowed": true,
+    "developmentAllowed": true,
+    "unexpired": true,
+    "currentDevice": true,
+    "oneExistingCertificate": true,
+    "oneExistingDevice": true
+  },
+  "passed": 10,
+  "profileSHA256": "4456877adea83b7a24f71d198265ae48408821474f6ee56fb492c9f54e5df754",
+  "signedEnvironmentRequired": "Development",
+  "cloudOperations": 0
+}

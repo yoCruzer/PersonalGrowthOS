@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "case": "fixture-a",
+      "exit": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "case": "fixture-b",
+      "exit": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "case": "extra-path",
+      "exit": 64,
+      "expected": 64,
+      "pass": true
+    },
+    {
+      "case": "live",
+      "exit": 64,
+      "expected": 64,
+      "pass": true
+    },
+    {
+      "case": "production",
+      "exit": 64,
+      "expected": 64,
+      "pass": true
+    },
+    {
+      "case": "missing",
+      "exit": 64,
+      "expected": 64,
+      "pass": true
+    },
+    {
+      "case": "cloud",
+      "exit": 64,
+      "expected": 64,
+      "pass": true
+    },
+    {
+      "case": "fresh-identities",
+      "pass": true
+    }
+  ],
+  "binarySHA256": "5d1bb78b8f87179f10ae136de5f190ae3b02d42dc0b0dae8eb8fd2daa397ca01",
+  "artifactKind": "Independent compiled executable, not provisioned App Sandbox app",
+  "cloudOperations": 0,
+  "p0Passed": false
+}
