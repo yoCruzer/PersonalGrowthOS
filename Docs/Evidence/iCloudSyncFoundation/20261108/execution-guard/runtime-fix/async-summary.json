@@ -1,0 +1,41 @@
+{
+  "exit": 0,
+  "seconds": 0.039253041999999995,
+  "status": "SELF_QUALIFICATION_PASS",
+  "networkOperations": 0,
+  "keychainOperations": 0,
+  "observations": [
+    {
+      "phase": "async-entry",
+      "onMainThread": true,
+      "status": "SELF_QUALIFICATION_PASS",
+      "operatingSystemCodeStatus": 1644184065,
+      "evidenceVersion": 2,
+      "exactProfileDeviceMembership": "NOT_RECHECKED_AT_RUNTIME"
+    },
+    {
+      "phase": "after-yield",
+      "onMainThread": true,
+      "status": "SELF_QUALIFICATION_PASS",
+      "operatingSystemCodeStatus": 1644184065,
+      "evidenceVersion": 2,
+      "exactProfileDeviceMembership": "NOT_RECHECKED_AT_RUNTIME"
+    },
+    {
+      "phase": "continuation",
+      "onMainThread": true,
+      "status": "SELF_QUALIFICATION_PASS",
+      "operatingSystemCodeStatus": 1644184065,
+      "evidenceVersion": 2,
+      "exactProfileDeviceMembership": "NOT_RECHECKED_AT_RUNTIME"
+    },
+    {
+      "phase": "after-continuation",
+      "onMainThread": true,
+      "status": "SELF_QUALIFICATION_PASS",
+      "operatingSystemCodeStatus": 1644184065,
+      "evidenceVersion": 2,
+      "exactProfileDeviceMembership": "NOT_RECHECKED_AT_RUNTIME"
+    }
+  ]
+}

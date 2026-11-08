@@ -36,14 +36,14 @@ private struct GuardedFatalMarker: Encodable {
     let operationEnqueuePrevented: Bool
     let sdkEnqueuesAdmitted: Int
 }
-private func guardedCode(_ error: Error) -> String {
+func guardedCode(_ error: Error) -> String {
     if let value = error as? GuardedBatchFailure { return "GUARDED_" + value.rawValue }
     if let value = error as? GuardedAccountError { return "ACCOUNT_" + value.rawValue }
     if let value = error as? OwnerWindowError { return "WINDOW_" + value.rawValue }
     if let value = error as? RuntimeSigningDiagnosticFailure { return "RUNTIME_" + value.stage.rawValue + "_" + String(value.status) }
     if let value = error as? RuntimeSigningError { return "RUNTIME_" + value.rawValue }
     if let value = error as? GuardedEntryError { return "ENTRY_" + value.rawValue }
-    if error is LedgerFailure { return "LEDGER_REJECTED" }
+    if let value = error as? LedgerFailure { return "LEDGER_" + String(describing: value) }
     return code(error)
 }
 private struct GuardedSummary: Encodable {

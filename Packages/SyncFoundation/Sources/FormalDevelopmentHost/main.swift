@@ -6,10 +6,11 @@ import FormalDevelopmentSDK
 let arguments = Array(CommandLine.arguments.dropFirst())
 let fixtureOnly = arguments == ["inspect-fixture"]
 let runtimeOnly = arguments.count == 2 && arguments.first == "inspect-runtime"
+let runtimeAsyncOnly = arguments.count == 2 && arguments.first == "inspect-runtime-async"
 let exportOnly = arguments.count == 2 && arguments.first == "export-run"
 let guarded = arguments.count == 3 && ["enroll-guard", "run-approved", "closeout-unknown"].contains(arguments[0])
-guard exportOnly || guarded || fixtureOnly || runtimeOnly || (arguments.count == 4 && arguments.first == "inspect") else {
-    FileHandle.standardError.write(Data("usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA | closeout-unknown BASE64_APPROVAL EXPECTED_SHA\n".utf8)); exit(64)
+guard exportOnly || guarded || fixtureOnly || runtimeOnly || runtimeAsyncOnly || (arguments.count == 4 && arguments.first == "inspect") else {
+    FileHandle.standardError.write(Data("usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | inspect-runtime-async BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA | closeout-unknown BASE64_APPROVAL EXPECTED_SHA\n".utf8)); exit(64)
 }
 do {
     if exportOnly {
@@ -29,9 +30,9 @@ do {
             }
         }
         FileHandle.standardOutput.write(report + Data([10])); exit(0)
-    } else if runtimeOnly {
+    } else if runtimeOnly || runtimeAsyncOnly {
         guard arguments[1].utf8.count <= 180_000, let bytes = Data(base64Encoded: arguments[1]) else { exit(64) }
-        let report = try FormalDevelopmentRuntimeInspection.inspect(bytes)
+        let report = runtimeAsyncOnly ? try await FormalDevelopmentRuntimeInspection.inspectAsync(bytes) : try FormalDevelopmentRuntimeInspection.inspect(bytes)
         FileHandle.standardOutput.write(report + Data([10]))
         let value = try JSONSerialization.jsonObject(with: report) as? [String: Any]
         exit(value?["status"] as? String == "SELF_QUALIFICATION_PASS" ? 0 : 2)
@@ -45,5 +46,10 @@ do {
     }
     exit(2)
 } catch {
-    FileHandle.standardError.write(Data((guarded ? "GUARDED_EXECUTION_FAILED\n" : "OFFLINE_VALIDATION_FAILED\n").utf8)); exit(1)
+    if guarded, let report = try? FormalDevelopmentFailureDiagnostics.report(error) {
+        FileHandle.standardError.write(report + Data([10]))
+    } else {
+        FileHandle.standardError.write(Data((guarded ? "GUARDED_EXECUTION_FAILED\n" : "OFFLINE_VALIDATION_FAILED\n").utf8))
+    }
+    exit(1)
 }

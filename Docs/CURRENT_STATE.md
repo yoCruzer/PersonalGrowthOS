@@ -1,3 +1,13 @@
+## 2026-11-08 当前：真实失败已定位，运行时检查修复进入验证交付
+
+Owner已批准并执行b3cd013窗口：旧批次本地closeout成功追加第6条未知terminal；新run在资格检查阶段exit1、尚未消费新ledger，两次只读导出成功。系统日志确认硬件报告子进程5秒超时并返回空项；旧顶层错误码缺失保留，不推断首次107963d同因。旧入口已停用，不重跑、不重新enrollment、不再要求Owner用云批次诊断。
+
+已移除生产路径system_profiler依赖，改用实际进程的OS受限entitlements验证状态，并保留签名/profile/证书/hash检查；v2明确不再运行时独立证明精确profile的当前UDID membership。新增只读异步四阶段诊断与白名单顶层错误。完整包187、打包46、iOS17编译、实际签名同步及四异步阶段通过；独立审查和保留边界回归见[修复记录](ICLOUD_SYNC_RUNTIME_REPAIR_ZH.md)。当前新源远端CI待完成，haha新产物/云验证NOT_RUN，无新的云窗口授权；P0/P1/P2和完整产品同步仍未完成。
+
+此前b3cd013产品CI42474881346已SUCCESS：Unit598PASS/1SKIP、Smoke5/5、Release3个unsigned bundle，ZIP/checkout核验。原项目三项未提交改动不动，G1手机接受范围/CK_2例外保持，Production/发布/合并未授权。当前无需要Owner立即操作的事项；先完成本修复交付，不再次发出试云命令。以下为历史，旧“审批未到/尚未执行/产品CI运行”已被上述实际结果替代。
+
+---
+
 ## 2026-11-08 最新：追加收口及最终定向CI已完成，待一次固定窗口审批
 
 最终代码`b3cd0136e1f18c0994908c59a8e5e59e8817ca2a`已推送PR18。[定向CI42474881433](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42474881433) SUCCESS，原ZIP摘要、308成员、merge checkout `75739e054431d5b60ee810f94e0772d82b9436c0`与47源指纹核验通过；178原生、35独立边界、40打包均通过。本机/独立/签名/脚本验证均完成，固定交付包CI marker已设置但Owner审批仍未启用，真实操作未执行。

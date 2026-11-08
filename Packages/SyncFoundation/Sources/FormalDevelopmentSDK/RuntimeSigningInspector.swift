@@ -4,7 +4,6 @@ import CryptoKit
 import FormalProbeCore
 #if os(macOS)
 import Security
-import Darwin
 #endif
 
 enum RuntimeSigningError: String, Error {
@@ -13,6 +12,7 @@ enum RuntimeSigningError: String, Error {
     case artifactPathInvalid, artifactChanged, binaryMismatch, codeDirectoryMismatch
     case profileMismatch, profileSignatureInvalid, profileTrustUnavailable, profileExpired
     case certificateMismatch, deviceEvidenceUnavailable, deviceNotProvisioned
+    case operatingSystemStatusUnavailable, operatingSystemEntitlementsUnvalidated
 }
 
 /// Bounded diagnostics only: no CFError, certificate, account, device or path values.
@@ -57,8 +57,10 @@ final class RuntimeSigningQualification {
     let binding: RuntimeSigningExpectation
     let observedAt: Date
     let profileExpiresAt: Date
-    fileprivate init(binding: RuntimeSigningExpectation, observedAt: Date, profileExpiresAt: Date) {
+    let operatingSystemCodeStatus: UInt32
+    fileprivate init(binding: RuntimeSigningExpectation, observedAt: Date, profileExpiresAt: Date, operatingSystemCodeStatus: UInt32) {
         self.binding = binding; self.observedAt = observedAt; self.profileExpiresAt = profileExpiresAt
+        self.operatingSystemCodeStatus = operatingSystemCodeStatus
     }
 }
 
@@ -104,8 +106,9 @@ enum RuntimeSigningInspector {
               info["CFBundleExecutable"] as? String == executable,
               NSDictionary(dictionary: info).isEqual(to: before.info) else { throw RuntimeSigningError.artifactChanged }
         let profile = try trustedProfile(profileBytes)
-        let device = try currentProvisioningUDID()
-        let expires = try validateProfile(profile, signingLeaf: before.leaf, provisioningUDID: device, now: Date())
+        // OS authorization of this live process replaces a hardware-report subprocess.
+        // It does NOT attest current UDID membership in this exact embedded profile.
+        let expires = try validateProfileMetadata(profile, signingLeaf: before.leaf, now: Date())
         // A second dynamic validation binds the disk metadata back to this running process.
         try validateSelf(code, requirement)
         let after = try codeObservation(code)
@@ -115,7 +118,8 @@ enum RuntimeSigningInspector {
         try app.requirePathBinding(); try contents.requirePathBinding(); try binaries.requirePathBinding()
         let observed = Date()
         guard observed < expires else { throw RuntimeSigningError.profileExpired }
-        return RuntimeSigningQualification(binding: expected, observedAt: observed, profileExpiresAt: expires)
+        return RuntimeSigningQualification(binding: expected, observedAt: observed, profileExpiresAt: expires,
+            operatingSystemCodeStatus: after.operatingSystemCodeStatus)
         #else
         throw RuntimeSigningError.unsupportedPlatform
         #endif
@@ -143,9 +147,9 @@ enum RuntimeSigningInspector {
         else { throw RuntimeSigningError.entitlementMismatch }
     }
 
-    /// Pure metadata validation is testable but cannot mint a qualification.
-    static func validateProfile(_ profile: [String: Any], signingLeaf: Data,
-                                provisioningUDID: String, now: Date) throws -> Date {
+    /// Pure profile metadata validation cannot mint a qualification or prove that
+    /// this device is a member of this exact profile's allowlist.
+    static func validateProfileMetadata(_ profile: [String: Any], signingLeaf: Data, now: Date) throws -> Date {
         guard profile["Platform"] as? [String] == ["OSX"], profile["TeamIdentifier"] as? [String] == [team],
               let ent = profile["Entitlements"] as? [String: Any],
               ent["com.apple.application-identifier"] as? String == team + "." + bundle,
@@ -158,10 +162,40 @@ enum RuntimeSigningInspector {
         guard now < expires else { throw RuntimeSigningError.profileExpired }
         guard let certificates = profile["DeveloperCertificates"] as? [Data], !signingLeaf.isEmpty,
               !certificates.isEmpty, certificates.count <= 16, certificates.contains(signingLeaf) else { throw RuntimeSigningError.certificateMismatch }
-        guard !provisioningUDID.isEmpty, let devices = profile["ProvisionedDevices"] as? [String],
+        guard let devices = profile["ProvisionedDevices"] as? [String],
               !devices.isEmpty, devices.count <= 1_000, Set(devices).count == devices.count,
-              devices.contains(provisioningUDID), profile["ProvisionsAllDevices"] == nil else { throw RuntimeSigningError.deviceNotProvisioned }
+              devices.allSatisfy({ !$0.isEmpty && $0.utf8.count <= 128 && !$0.utf8.contains(0) }),
+              profile["ProvisionsAllDevices"] == nil else { throw RuntimeSigningError.deviceNotProvisioned }
         return expires
+    }
+    /// Explicit membership remains available for independent offline auditing only.
+    /// The runtime qualification intentionally makes no exact-UDID-match claim.
+    static func validateProfile(_ profile: [String: Any], signingLeaf: Data,
+                                provisioningUDID: String, now: Date) throws -> Date {
+        let expires = try validateProfileMetadata(profile, signingLeaf: signingLeaf, now: now)
+        guard !provisioningUDID.isEmpty, let devices = profile["ProvisionedDevices"] as? [String],
+              devices.contains(provisioningUDID) else { throw RuntimeSigningError.deviceNotProvisioned }
+        return expires
+    }
+
+    /// Pure status decoding does not establish its provenance and cannot mint a
+    /// qualification. Production calls it only on dynamic information for SecCodeCopySelf.
+    static func validateOperatingSystemCodeStatus(_ value: Any?) throws -> UInt32 {
+        guard let number = value as? NSNumber, CFGetTypeID(number) == CFNumberGetTypeID() else {
+            throw RuntimeSigningError.operatingSystemStatusUnavailable
+        }
+        let cfNumber = unsafeBitCast(number, to: CFNumber.self)
+        var integer: Int64 = 0
+        guard !CFNumberIsFloatType(cfNumber), CFNumberGetValue(cfNumber, .sInt64Type, &integer),
+              integer >= 0, integer <= Int64(UInt32.max) else { throw RuntimeSigningError.operatingSystemStatusUnavailable }
+        let status = UInt32(integer)
+        // Apple XNU osfmk/kern/cs_blobs.h: live CS_VALID (1) and
+        // CS_ENTITLEMENTS_VALIDATED (0x4000), never static CodeDirectory flags.
+        // ADHOC (2) and LINKER_SIGNED (0x20000) cannot qualify this Apple-signed probe.
+        guard status & 0x00004001 == 0x00004001, status & 0x00020002 == 0 else {
+            throw RuntimeSigningError.operatingSystemEntitlementsUnvalidated
+        }
+        return status
     }
 
     struct ReceiptFacts { let infoSHA256: String }
@@ -207,9 +241,11 @@ enum RuntimeSigningInspector {
 extension RuntimeSigningInspector {
     private struct CodeObservation {
         let identifier: String; let team: String; let cdHash: String; let leaf: Data
+        let operatingSystemCodeStatus: UInt32
         let appURL: URL; let executableURL: URL; let entitlements: [String: Any]; let info: [String: Any]
         func same(as other: Self) -> Bool {
             identifier == other.identifier && team == other.team && cdHash == other.cdHash && leaf == other.leaf &&
+            operatingSystemCodeStatus == other.operatingSystemCodeStatus &&
             appURL == other.appURL && executableURL == other.executableURL &&
             NSDictionary(dictionary: entitlements).isEqual(to: other.entitlements) && NSDictionary(dictionary: info).isEqual(to: other.info)
         }
@@ -240,9 +276,12 @@ extension RuntimeSigningInspector {
               let entitlements = values[kSecCodeInfoEntitlementsDict as String] as? [String: Any],
               let info = values[kSecCodeInfoPList as String] as? [String: Any],
               let executableURL = values[kSecCodeInfoMainExecutable as String] as? URL else { throw RuntimeSigningError.selfSignatureUnavailable }
+        // SecCodeCopySigningInformation only supplies this key for live SecCode
+        // with kSecCSDynamicInformation. Validate before AND after disk inspection.
+        let operatingSystemCodeStatus = try validateOperatingSystemCodeStatus(values[kSecCodeInfoStatus as String])
         try validateCodeSignerChain(certificates)
         return CodeObservation(identifier: identifier, team: team, cdHash: cdHash.map { String(format: "%02x", $0) }.joined(),
-            leaf: SecCertificateCopyData(first) as Data, appURL: path as URL, executableURL: executableURL, entitlements: entitlements, info: info)
+            leaf: SecCertificateCopyData(first) as Data, operatingSystemCodeStatus: operatingSystemCodeStatus, appURL: path as URL, executableURL: executableURL, entitlements: entitlements, info: info)
     }
     static func trustedProfile(_ bytes: Data) throws -> [String: Any] {
         guard !bytes.isEmpty else { throw RuntimeSigningError.profileSignatureInvalid }
@@ -313,36 +352,6 @@ extension RuntimeSigningInspector {
               let chain = SecTrustCopyCertificateChain(trust) as? [SecCertificate], validAppleRoot(chain)
         else { throw RuntimeSigningError.codeTrustUnavailable }
     }
-    private static func currentProvisioningUDID() throws -> String {
-        let task = Process(); let pipe = Pipe()
-        task.executableURL = URL(fileURLWithPath: "/usr/sbin/system_profiler")
-        task.arguments = ["SPHardwareDataType", "-json", "-timeout", "5"]
-        task.environment = ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin", "LANG": "C", "LC_ALL": "C"]
-        task.standardOutput = pipe; task.standardError = FileHandle.nullDevice
-        let fd = pipe.fileHandleForReading.fileDescriptor
-        guard fcntl(fd, F_SETFL, O_NONBLOCK) == 0 else { throw RuntimeSigningDiagnosticFailure(stage: .deviceReadConfiguration, status: errno) }
-        do { try task.run() } catch { throw RuntimeSigningDiagnosticFailure(stage: .deviceLaunch, status: Int32(clamping: (error as NSError).code)) }
-        defer {
-            if task.isRunning { task.terminate(); _ = kill(task.processIdentifier, SIGKILL) }
-            try? pipe.fileHandleForReading.close(); try? pipe.fileHandleForWriting.close()
-        }
-        try? pipe.fileHandleForWriting.close()
-        let deadline = ProcessInfo.processInfo.systemUptime + 8
-        var data = Data(); var buffer = [UInt8](repeating: 0, count: 8_192)
-        while true {
-            let count = read(fd, &buffer, buffer.count)
-            if count > 0 {
-                guard data.count + count <= 262_144 else { throw RuntimeSigningDiagnosticFailure(stage: .deviceOutputLimit, status: 1) }
-                data.append(contentsOf: buffer.prefix(count))
-            } else if count == 0 { break }
-            else if errno != EAGAIN && errno != EINTR { throw RuntimeSigningDiagnosticFailure(stage: .deviceRead, status: errno) }
-            guard ProcessInfo.processInfo.systemUptime < deadline else { throw RuntimeSigningDiagnosticFailure(stage: .deviceTimeout, status: 1) }
-            if count < 0 { Thread.sleep(forTimeInterval: 0.01) }
-        }
-        while task.isRunning && ProcessInfo.processInfo.systemUptime < deadline { Thread.sleep(forTimeInterval: 0.01) }
-        guard !task.isRunning else { throw RuntimeSigningDiagnosticFailure(stage: .deviceTimeout, status: 2) }
-        guard task.terminationStatus == 0 else { throw RuntimeSigningDiagnosticFailure(stage: .deviceExit, status: task.terminationStatus) }
-        return try provisioningUDID(from: data)
-    }
+
 }
 #endif

@@ -1,0 +1,43 @@
+{
+  "run": 42474881346,
+  "head": "b3cd0136e1f18c0994908c59a8e5e59e8817ca2a",
+  "checkout": "75739e054431d5b60ee810f94e0772d82b9436c0",
+  "conclusion": "SUCCESS",
+  "artifacts": [
+    {
+      "name": "ios-release-1.zip",
+      "sha256": "58b486e0b6d947b3b0009d1d2ad2a9367bf4166f796b4fe070a15c5d87be94c8",
+      "members": 8,
+      "unsignedBundles": [
+        "PersonalGrowthOS.app",
+        "PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+        "PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex"
+      ]
+    },
+    {
+      "name": "ios-unit-1.zip",
+      "sha256": "c937468039e05b64ba5f1c0a9bd6f31f422eb15205fca1b8ffbe000a7d8295c6",
+      "members": 12,
+      "totalTestCount": 599,
+      "passedTests": 598,
+      "failedTests": 0,
+      "skippedTests": 1,
+      "runtimeWarnings": []
+    },
+    {
+      "name": "ios-smoke-1.zip",
+      "sha256": "fa8a0f565f13e8937d48704ec0ece13977f91ee6dab39734f6a6576b47f9e539",
+      "members": 12,
+      "totalTestCount": 5,
+      "passedTests": 5,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "runtimeWarnings": []
+    }
+  ],
+  "limitations": [
+    "Unit low-space image prerequisite absent: one skipped",
+    "Optional extended UI not run",
+    "Earlier cancelled smoke and original failures retained"
+  ]
+}

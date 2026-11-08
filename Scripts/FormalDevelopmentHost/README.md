@@ -92,3 +92,12 @@ immutable source/output leases are still required: URL-based compiler paths cann
 claim protection against a malicious same-user ABA replacement. This is a repeatable
 build workflow with source hashes, not a promise of bit-for-bit builds across Xcode,
 architectures, directory paths or compiler versions.
+
+Runtime evidence v2 validates restricted entitlements using the live process OS status;
+it no longer launches system_profiler or independently rechecks current UDID membership
+in the exact pinned embedded profile. Signature/profile authenticity and OS admission
+are separate facts. The legacy signatureProfileDeviceVerified is always false.
+inspect-runtime-async uses the same canonical request for four bounded MainActor/
+continuation observations, stopping on first failure, without Keychain or cloud access.
+Guarded top-level rejections retain whitelisted causes and never infer side effects.
+See Docs/ICLOUD_SYNC_RUNTIME_REPAIR_ZH.md for actual failures and validation limits.

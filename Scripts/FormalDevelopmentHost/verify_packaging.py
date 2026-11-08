@@ -70,10 +70,20 @@ def main():
               and not runtime_report['networkAuthorized'] and not runtime_report['ownerApprovalVerified']
               and not runtime_report['signatureProfileDeviceVerified'] and not runtime_report['p0Passed']
               and runtime_report['accountQualification'] == 'NOT_RUN' and runtime_report['actualServiceAccess'] == 'NOT_RUN')
-        command('guarded-cli-requires-complete-input', [binary, 'run-approved', 'unused'], 64)
+        command('runtime-async-invalid-base64-rejected', [binary, 'inspect-runtime-async', '%%%'], 64)
+        async_rejected = command('runtime-async-input-rejected', [binary, 'inspect-runtime-async', base64.b64encode(b'{}').decode()], 2)
+        async_report = json.loads(async_rejected.stdout)
+        check('runtime-async-rejection-is-offline-first-failure', async_report['status'] == 'NOT_READY'
+              and len(async_report['observations']) == 1 and async_report['networkOperations'] == 0
+              and async_report['keychainOperations'] == 0 and not async_report['p0Passed'])
+        command('guarded-cli-requires-complete-input' , [binary, 'run-approved', 'unused'], 64)
         command('closeout-cli-requires-complete-input', [binary, 'closeout-unknown', 'unused'], 64)
         for verb in ('enroll-guard', 'run-approved', 'closeout-unknown'):
-            command(verb + '-rejects-missing-approval', [binary, verb, base64.b64encode(b'{}').decode(), hashlib.sha256(b'{}').hexdigest()], 1)
+            rejected = command(verb + '-rejects-missing-approval', [binary, verb, base64.b64encode(b'{}').decode(), hashlib.sha256(b'{}').hexdigest()], 1)
+            rejection = json.loads(rejected.stderr)
+            check(verb + '-retains-safe-top-level-cause', rejection['status'] == 'GUARDED_EXECUTION_FAILED'
+                  and rejection['failure'] and rejection['sideEffects'] == 'NOT_INFERRED_FROM_ERROR'
+                  and not rejection['p0Passed'])
         check('internal-fixture-report-redacted-locked', self_report['mode'] == 'OFFLINE_ONLY'
               and self_report['status'] == 'NOT_READY' and self_report['failure'] == 'EXTERNAL_GATE_NOT_COMPLETE'
               and self_report['networkOperations'] == 0 and not self_report['networkAuthorized'] and not self_report['p0Passed']
