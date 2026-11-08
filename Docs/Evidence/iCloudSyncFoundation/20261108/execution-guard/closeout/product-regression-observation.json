@@ -1,0 +1,25 @@
+{
+  "code": "dd450994f6dca0073678719a60ae8941c417065b",
+  "run": 42473375956,
+  "release": "SUCCESS_3_UNSIGNED_BUNDLES",
+  "unit": {
+    "totalTestCount": 599,
+    "passedTests": 598,
+    "failedTests": 0,
+    "skippedTests": 1,
+    "runtimeWarnings": []
+  },
+  "smoke": "CANCELLED_ON_NEW_COMMIT_WHILE_THIRD_TEST_RUNNING",
+  "smokeCompletedTests": 2,
+  "smokeTestSummaryAvailable": false,
+  "cancelReason": "Repository concurrency cancel-in-progress on b3cd013 push, not a test success",
+  "artifactSHA256": {
+    "unit": "335cdc5e0c287e75890ef7bd7fbb8d43b5276cdd404af99d281e6d385ce4bd13",
+    "release": "dcc033b23d3a2b93ab7ad3174e6634fb152ff1b7266924272939a91032fea746",
+    "smoke": "ac825d743734802e2334db8d3225e17b7676f5e6e4ad5e29874340ae9f4549c6"
+  },
+  "latestCompleteProductRegression": "107963d / 42467777172: release SUCCESS, unit598PASS+1SKIP, smoke5PASS",
+  "productGitObjectsUnchangedFrom107963d": true,
+  "currentRun": 42474881346,
+  "currentStatus": "IN_PROGRESS_NOT_CLAIMED_PASS"
+}

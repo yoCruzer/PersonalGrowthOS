@@ -1,0 +1,379 @@
+[
+  {
+    "case": "actual-binary-hash",
+    "passed": true
+  },
+  {
+    "case": "info-hash",
+    "passed": true
+  },
+  {
+    "case": "entitlements-hash",
+    "passed": true
+  },
+  {
+    "case": "independent-mac-identity",
+    "passed": true
+  },
+  {
+    "case": "candidate-only-no-profile-signature-resource",
+    "passed": true
+  },
+  {
+    "case": "no-appgroups-production-push",
+    "passed": true
+  },
+  {
+    "case": "source-snapshot-hashes",
+    "passed": true
+  },
+  {
+    "case": "make-fixed-synthetic-plan",
+    "command": [
+      "/Users/runner/work/_temp/sync-foundation-build/out/Products/Debug/FormalDevelopmentProbe",
+      "plan",
+      "/Users/runner/work/_temp/locked-host-checks/plan"
+    ],
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "stdout": "OFFLINE_ONLY plan SHA256 87c21db9977ebd0b7bced1dfb722e30c57be8b285fcae24ab2ddf26179913d18\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "actual-app-executable-locked",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect",
+      "/Users/runner/work/_temp/locked-host-checks/plan",
+      "87c21db9977ebd0b7bced1dfb722e30c57be8b285fcae24ab2ddf26179913d18",
+      "/Users/runner/work/_temp/locked-host-checks/inspect"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "NOT_READY EXTERNAL_GATE_NOT_COMPLETE; networkOperations=0\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "inspect-never-authorizes",
+    "passed": true
+  },
+  {
+    "case": "actual-app-preflight-rejects",
+    "command": [
+      "/Users/runner/work/_temp/sync-foundation-build/out/Products/Debug/FormalDevelopmentProbe",
+      "preflight",
+      "/Users/runner/work/_temp/locked-host-checks/plan",
+      "87c21db9977ebd0b7bced1dfb722e30c57be8b285fcae24ab2ddf26179913d18",
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app",
+      "/Users/runner/work/_temp/locked-host-checks/preflight"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "NOT_READY; no signing, installation, account change or network operation.\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "preflight-real-unprovisioned-rejection",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-locked",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-fixture"
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "{\"container\":\"iCloud.com.yocruzer.PersonalGrowthOS\",\"dataset\":\"D39A8B7A-5674-4945-85A5-D4922EE66823\",\"environment\":\"Development\",\"failure\":\"EXTERNAL_GATE_NOT_COMPLETE\",\"missingFactory\":\"SIGNING_ACCOUNT_ENVIRONMENT_AND_OWNER_WINDOW_AUTHORITY\",\"mode\":\"OFFLINE_ONLY\",\"networkAuthorized\":false,\"networkOperations\":0,\"p0Passed\":false,\"planSHA256\":\"ec14ed213ea24a11f4c53d08061c225a4733b92c6b75d8fabf129b825863200a\",\"run\":\"2CA424C6-3BD5-4858-99E1-C42271E81EF5\",\"status\":\"NOT_READY\"}\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "runtime-invalid-base64-rejected",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-runtime",
+      "%%%"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "runtime-unqualified-input-rejected",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-runtime",
+      "e30="
+    ],
+    "exitCode": 2,
+    "expectedExitCode": 2,
+    "stdout": "{\"accountQualification\":\"NOT_RUN\",\"actualServiceAccess\":\"NOT_RUN\",\"applicationSupportParentVerified\":false,\"mode\":\"OFFLINE_ONLY\",\"networkAuthorized\":false,\"networkOperations\":0,\"operation\":\"RUNNING_SELF_QUALIFICATION\",\"osSessionVerified\":false,\"ownerApprovalVerified\":false,\"p0Passed\":false,\"rejection\":\"OFFLINE_RUNTIME_INPUT_REJECTED\",\"signatureProfileDeviceVerified\":false,\"status\":\"NOT_READY\"}\n",
+    "stderr": "",
+    "passed": true
+  },
+  {
+    "case": "runtime-rejection-never-authorizes",
+    "passed": true
+  },
+  {
+    "case": "guarded-cli-requires-complete-input",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "run-approved",
+      "unused"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA | closeout-unknown BASE64_APPROVAL EXPECTED_SHA\n",
+    "passed": true
+  },
+  {
+    "case": "closeout-cli-requires-complete-input",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "closeout-unknown",
+      "unused"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA | closeout-unknown BASE64_APPROVAL EXPECTED_SHA\n",
+    "passed": true
+  },
+  {
+    "case": "enroll-guard-rejects-missing-approval",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "enroll-guard",
+      "e30=",
+      "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "GUARDED_EXECUTION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "run-approved-rejects-missing-approval",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "run-approved",
+      "e30=",
+      "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "GUARDED_EXECUTION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "closeout-unknown-rejects-missing-approval",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "closeout-unknown",
+      "e30=",
+      "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "GUARDED_EXECUTION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-report-redacted-locked",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-extra-path-rejected",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect-fixture",
+      "/Users/runner/work/_temp/locked-host-checks/forbidden-path"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA | closeout-unknown BASE64_APPROVAL EXPECTED_SHA\n",
+    "passed": true
+  },
+  {
+    "case": "internal-fixture-cannot-create-caller-output",
+    "passed": true
+  },
+  {
+    "case": "live-option-rejected",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "live",
+      "/Users/runner/work/_temp/locked-host-checks/plan",
+      "87c21db9977ebd0b7bced1dfb722e30c57be8b285fcae24ab2ddf26179913d18",
+      "/Users/runner/work/_temp/locked-host-checks/live"
+    ],
+    "exitCode": 64,
+    "expectedExitCode": 64,
+    "stdout": "",
+    "stderr": "usage: FormalDevelopmentHost inspect PLAN_DIR EXPECTED_SHA NEW_OUTPUT_DIR | inspect-fixture | inspect-runtime BASE64_REQUEST | export-run RUN_UUID | enroll-guard BASE64_APPROVAL EXPECTED_SHA | run-approved BASE64_APPROVAL EXPECTED_SHA | closeout-unknown BASE64_APPROVAL EXPECTED_SHA\n",
+    "passed": true
+  },
+  {
+    "case": "wrong-plan-hash-rejected",
+    "command": [
+      "/Users/runner/work/_temp/locked-host-package/FormalSyncProbe.app/Contents/MacOS/FormalDevelopmentHost",
+      "inspect",
+      "/Users/runner/work/_temp/locked-host-checks/plan",
+      "0000000000000000000000000000000000000000000000000000000000000000",
+      "/Users/runner/work/_temp/locked-host-checks/wrong-hash"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "OFFLINE_VALIDATION_FAILED\n",
+    "passed": true
+  },
+  {
+    "case": "existing-output-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-package"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: FileExistsError\n",
+    "passed": true
+  },
+  {
+    "case": "existing-output-preserved",
+    "passed": true
+  },
+  {
+    "case": "output-symlink-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-checks/output-link"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: FileExistsError\n",
+    "passed": true
+  },
+  {
+    "case": "parent-symlink-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-checks/parent-link/new"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: NotADirectoryError\n",
+    "passed": true
+  },
+  {
+    "case": "dotdot-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/PersonalGrowthOS/PersonalGrowthOS/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-checks/../escaped"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: PATH_REJECTED\n",
+    "passed": true
+  },
+  {
+    "case": "symlinks-did-not-create-output",
+    "passed": true
+  },
+  {
+    "case": "source-symlink-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/_temp/locked-host-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-checks/source-link-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: SOURCE_SYMLINK\n",
+    "passed": true
+  },
+  {
+    "case": "source-rejected-before-output",
+    "passed": true
+  },
+  {
+    "case": "unreviewed-swift-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/_temp/locked-host-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-checks/changed-source-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: UNREVIEWED_SWIFT_SOURCE\n",
+    "passed": true
+  },
+  {
+    "case": "swift-rejected-before-output",
+    "passed": true
+  },
+  {
+    "case": "output-inside-package-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/_temp/locked-host-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-checks/repo-fixture/Packages/SyncFoundation/new-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: OUTPUT_INSIDE_SOURCE_PACKAGE\n",
+    "passed": true
+  },
+  {
+    "case": "no-source-self-mutation",
+    "passed": true
+  },
+  {
+    "case": "unreviewed-manifest-rejected",
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "/Users/runner/work/_temp/locked-host-checks/repo-fixture/Scripts/FormalDevelopmentHost/package_locked_host.py",
+      "--output",
+      "/Users/runner/work/_temp/locked-host-checks/changed-manifest-output"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "stdout": "",
+    "stderr": "PACKAGING_REJECTED: UNREVIEWED_PACKAGE_MANIFEST\n",
+    "passed": true
+  },
+  {
+    "case": "manifest-rejected-before-output",
+    "passed": true
+  }
+]

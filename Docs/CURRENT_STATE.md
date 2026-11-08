@@ -1,4 +1,8 @@
-## 2026-11-08 最新：追加收口已实现，待最终定向CI与固定窗口审批
+## 2026-11-08 最新：追加收口及最终定向CI已完成，待一次固定窗口审批
+
+最终代码`b3cd0136e1f18c0994908c59a8e5e59e8817ca2a`已推送PR18。[定向CI42474881433](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42474881433) SUCCESS，原ZIP摘要、308成员、merge checkout `75739e054431d5b60ee810f94e0772d82b9436c0`与47源指纹核验通过；178原生、35独立边界、40打包均通过。本机/独立/签名/脚本验证均完成，固定交付包CI marker已设置但Owner审批仍未启用，真实操作未执行。
+
+产品源码/测试/工程/CI与完整全绿107963d无差异。dd45099产品CI的Release/Unit成功（598PASS/1SKIP），Smoke在新提交触发的concurrency取消前仅2项通过、第三项执行中，原日志保留，不算成功。当前b3cd013产品CI42474881346继续自动运行；本次隔离探针窗口使用其精确源码定向CI作为门禁，产品自动回归单独报告。以下实现细节保留，旧“待最终定向CI”已完成。
 
 Owner已完成haha的4次离线资格检查，全部PASS，原拒绝未复现。未结束的旧qualification记录正确阻止新批次；已实现独立审批的`closeout-unknown`：认证既有anchor/ledger、精确核对旧head/run/plan，仅追加含完整审批摘要的未知结果terminal，保留所有原件。新旧目的隔离，不恢复旧run、不重新enrollment、不删除记录。
 
