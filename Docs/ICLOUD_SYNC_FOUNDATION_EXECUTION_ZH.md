@@ -1,3 +1,11 @@
+# 2026-11-08 后续接续：正式关联确认与Mac签名前准备
+
+Owner确认正式App四项能力/容器关联，旧“仍待关联”已关闭。固定47df1f3完成独立Mac未配置开发签名App打包、源码及编译快照绑定、本机28项与独立20项；[定向CI42438147024](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42438147024)通过，新增实际打包28检查及既有包回归全部成功。构建快照来源缺口的真实红绿证据保留，Swift核心/正式工程未改。
+
+现有目标Team开发身份1个，当前Mac有既有macOS profile设备列表覆盖；精确独立候选profile缺失，不推断门户无Identifier。已准备[具体配置清单](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)并请求仅独立ID/容器关联/Mac Development profile/本机签名预检的授权，尚未执行。无新证书/设备注册默认要求，无CloudKit写入或Production。完整CI计数及交付提交以CURRENT最新节与[证据](Evidence/iCloudSyncFoundation/20261108/README.md)为准；下文历史保持。
+
+---
+
 # 2026-11-08 接续：正式导出核验与隔离SDK准备
 
 Owner已提供Development/Production导出和相应截图，本机核验仅Users7字段、候选缺3类型/11字段；不再等待重复导出。原件保存在仓库外私有目录，公开来源摘要和结构结论。正式App能力关联仍待只读确认。新增严格schema审计、带证据绑定的内部Development SDK适配准备和无网络入口的锁定host，已完成本机实现与独立复核；固定d508ae4的定向与产品远端验证均成功，详见[本轮结构审查](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md)和[证据](Evidence/iCloudSyncFoundation/20261108/README.md)。P0/P1/P2仍未通过，真实容器操作与发布边界不变。下文是既有交付历史，其中“尚待导出”状态已被本段替代。

@@ -1,0 +1,9 @@
+{
+  "source": "release.log",
+  "sourceSHA256": "17f9cfb388cc6f1e75dc51741e8149241e460d922c21adf4bbb655f9e80debfd",
+  "pathRedaction": "CI checkout prefix only",
+  "lines": [
+    "2026-11-08 02:21:51.747 appintentsmetadataprocessor[4715:17807] warning: Metadata extraction skipped, no AppIntents.framework dependency found"
+  ],
+  "buildSucceeded": true
+}

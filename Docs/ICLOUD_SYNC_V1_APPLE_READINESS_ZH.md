@@ -1,3 +1,5 @@
+2026-11-08证据更新：正式App能力/容器关联已由Owner只读确认；两环境schema原件已本机审计，独立Mac未配置开发签名产物已验证。见[当前状态](CURRENT_STATE.md)及[具体配置清单](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)。下文2026-11-05的UNVERIFIED是当时观察，不覆盖最新证据；门禁与外部操作授权规则仍适用，P0/P1/P2仍未通过。
+
 # iCloud Sync V1：Apple 环境及 Production 就绪门禁
 
 2026-11-05。此文件是配置/验收规范，**不是已完成配置的证明**。本轮没有登录 Apple 后台，所有门户/设备/生产部署状态为 UNVERIFIED/NOT_RUN。

@@ -1,4 +1,4 @@
-# 2026-11-08 正式App关联已确认，独立Mac客户端签名前准备
+# 2026-11-08 正式App关联已确认，Mac签名前准备验证交付
 
 Owner确认正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/Push启用，并关联`iCloud.com.yocruzer.PersonalGrowthOS`；[来源记录](Evidence/iCloudSyncFoundation/20261108/formal-app-association-owner.json)。这是Owner只读核对结果，不冒称agent门户复验；已关闭该输入缺项，无需重复导出或截图。
 
@@ -6,9 +6,9 @@ Owner确认正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/
 
 已新增隔离Mac `.app` 打包器与实际产物验证：固定受审源码完整hash、构建快照、外置候选entitlements及产物摘要；不签名、不嵌profile、不注册、不安装，不改正式工程/G1/Swift核心。链接器ad-hoc签名保留但不视为开发签名。28项本机检查通过，实际inspect和preflight均正确返回NOT_READY；独立发现的编译输入快照绑定缺口已修，红例保留。完整结果见[签名前准备证据](Evidence/iCloudSyncFoundation/20261108/formal-host-preparation/README.md)。
 
-本轮固定候选待提交远端定向验证；既有Swift核心与产品Git对象未变，前轮d508ae4的51项原生及产品Release/Unit/Smoke成功证据保留，不替代新增打包器验证。
+固定代码`47df1f3cad80270bded407078fab86d26be6f46b`已推送。[定向CI42438147024](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42438147024) SUCCESS：51原生、11分块、22CLI、16schema自测、20schema独立、11SDK独立及新增28打包检查通过；实际PR合并checkout `55aef2cf3152843079971ff82024c114e2f0542e`。原ZIP摘要/源码清单/实际NOT_READY报告核验通过。[产品CI42438147022](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42438147022) SUCCESS：Release三个unsigned bundle检查通过，Unit599=598PASS/0FAIL/1SKIP，iPhone13mini/iOS27.2 Smoke5/5，runtimeWarnings均为空。低空间测试因缺隔离32MB HFS+镜像跳过，optional extended UI按PR条件未运行；既有AppIntents/异步wait编译警告保留。正式产品/测试/工程/产品CI Git对象与d508ae4相同，本次仅仓库自动触发，没有手动重跑。最后只补文档/证据，使用`[skip ci]`，不是发布候选。
 
-[集中配置清单](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)已具体到Team/独立AppID/既有容器/Mac Development profile，先查复用已有Identifier和证书，缺项才在获批后创建/配置；约10–15分钟，手机/数据线0。新增永久Identifier及关联配置仍需Owner明确授权，收到正式App只读结果不自动授权新Identifier。当前host没有真实authority factory；持久单次执行、账号/环境绑定和真实云往返仍未实现。P0/P1/P2未通过，Production/Archive/TestFlight/merge未授权、未执行。
+[集中配置清单](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)已具体到Team/独立AppID/既有容器/Mac Development profile，先查复用已有Identifier和证书，缺项才在获批后创建/配置；约10–15分钟，手机/数据线0。新增永久Identifier及关联配置仍需Owner明确授权，已发出范围限定的配置/本机签名预检请求并等待回复，尚未执行外部动作。收到正式App只读结果不自动授权新Identifier。当前host没有真实authority factory；持久单次执行、账号/环境绑定和真实云往返仍未实现。P0/P1/P2未通过，Production/Archive/TestFlight/merge未授权、未执行。
 
 工作树与Draft PR17保持，原项目d72c016及三项未提交改动未动，G1手机接受范围与CK_2非阻塞例外保持。以下为已验证的前轮历史。
 

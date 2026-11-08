@@ -1,0 +1,108 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 356]
+[Planning deferred tasks]
+[52 / 178] FormalDevelopmentSDKTests-product
+[79 / 178]
+[80 / 179] SyncFoundation
+[86 / 225]
+[90 / 225]
+[95 / 225]
+[99 / 225]
+[100 / 225]
+[104 / 225]
+[106 / 225]
+[109 / 225]
+[113 / 225]
+[115 / 225]
+[116 / 225]
+[120 / 225]
+[122 / 225]
+[126 / 225] SyncFoundation
+[127 / 225] SyncFoundation
+[142 / 227]
+[143 / 228]
+[147 / 236] FormalProbeCore
+[150 / 236] SyncSchema-product
+[154 / 236] FormalProbeCore
+[162 / 236] SyncSchema-product
+[169 / 237] SyncFoundationTests-product
+[174 / 237]
+[176 / 238]
+[179 / 239]
+[181 / 243] FormalDevelopmentSDK
+[183 / 280] FormalDevelopmentProbe-product
+[195 / 280]
+[198 / 280]
+[201 / 280]
+[203 / 280]
+[206 / 280]
+[209 / 280]
+[211 / 280]
+[215 / 280] FormalDevelopmentSDKTests-product
+[218 / 280]
+[223 / 280]
+[225 / 281] FormalProbeCoreTests-product
+[226 / 281]
+[231 / 284]
+[237 / 286] FormalDevelopmentHost-product
+[240 / 288] FormalDevelopmentHost-product
+[241 / 288] FormalDevelopmentHost-product
+[243 / 288]
+[243 / 291] FormalDevelopmentHost-product
+[245 / 291]
+[246 / 291]
+[247 / 291]
+[248 / 291]
+[252 / 291] SyncFoundationTests-product
+[269 / 291] FormalProbeCoreTests-product
+[271 / 291] FormalDevelopmentSDKTests-product
+[275 / 291] SyncFoundationTests-product
+[275 / 291] AllIncludingTests
+[277 / 291] AllIncludingTests
+[283 / 291] FormalProbeCoreTests-product
+[287 / 291] FormalDevelopmentSDKTests-product
+Build complete! (22.18 sec)
+Test Suite 'Selected tests' started at 2026-11-08 02:22:16.196.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 02:22:16.197.
+Test Suite 'IndependentChunkTests' started at 2026-11-08 02:22:16.197.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testChunkRecordRoutingTypesIntegrityAndVersionAreStrict]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testChunkRecordRoutingTypesIntegrityAndVersionAreStrict]' passed (0.003 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testExpectedDescriptorRejectsSourceChangedBeforePreparation]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testExpectedDescriptorRejectsSourceChangedBeforePreparation]' passed (0.013 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testManifestTotalsAndIndexShapeAreStrict]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testManifestTotalsAndIndexShapeAreStrict]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testOrderedChunksMissingDuplicateAndExtraAreRejected]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testOrderedChunksMissingDuplicateAndExtraAreRejected]' passed (0.020 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSameSizeSourceRewriteDuringEmit]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSameSizeSourceRewriteDuringEmit]' passed (0.023 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceGrowthDuringEmit]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceGrowthDuringEmit]' passed (0.011 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceTruncatedDuringEmit]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testPrepareRejectsSourceTruncatedDuringEmit]' passed (0.016 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testRepeatedEqualChunksAtDifferentPositionsAreLegal]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testRepeatedEqualChunksAtDifferentPositionsAreLegal]' passed (0.021 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamingOneChunkMemoryBaseline]' passed (0.022 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testStreamPreparesMaximumPayloadWithoutAssemblingIt]' passed (0.350 seconds).
+Test Case '-[SyncFoundationTests.IndependentChunkTests testValidChunkHashesCannotHideWrongWholeHash]' started.
+Test Case '-[SyncFoundationTests.IndependentChunkTests testValidChunkHashesCannotHideWrongWholeHash]' passed (0.010 seconds).
+Test Suite 'IndependentChunkTests' passed at 2026-11-08 02:22:16.687.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.488 (0.490) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 02:22:16.687.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.488 (0.490) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 02:22:16.687.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.488 (0.491) seconds
+Test Suite 'Selected tests' started at 2026-11-08 02:22:16.811.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 02:22:16.812.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 02:22:16.812.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 02:22:16.812.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 02:22:16.923.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 02:22:16.924.
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 02:22:16.924.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 02:22:16.924.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds

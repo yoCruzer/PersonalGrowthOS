@@ -111,5 +111,40 @@
     "actualSigning": "NOT_RUN",
     "privateKeyReadOrExported": false,
     "certificateNamesBytesAndFingerprintsPublished": false
+  },
+  "currentMacProfileCoverage": {
+    "method": "Read the explicit system_profiler provisioning UDID field and compare in memory with same-Team unexpired device-limited macOS profile device lists; profile development type remains unclassified.",
+    "readOnly": true,
+    "deviceIdentifierPublished": false,
+    "serialOrMachineNamePublished": false,
+    "portalQueried": false,
+    "deviceRegisteredOrProfilesChanged": false,
+    "hardwareUUIDNotUsedAsSubstitute": true,
+    "explicitProvisioningUDIDAvailable": true,
+    "hardwareMetadataCommandExit": 0,
+    "profileDecodeFailures": 0,
+    "status": "LOCAL_MAC_PROFILE_DEVICE_COVERAGE_CONFIRMED_DEVELOPMENT_TYPE_NOT_INDEPENDENTLY_PROVEN",
+    "limits": [
+      "Local profile metadata only; current Developer portal device status not queried",
+      "Coverage by another app profile does not qualify the FormalSyncProbe candidate profile or app signature",
+      "CMS trust-chain verification and real signing not performed",
+      "Matching macOS device-limited profile lacks explicit get-task-allow classification; only UDID coverage is confirmed, not authoritative portal profile type"
+    ],
+    "currentMacCoveredByExistingUnexpiredMacProfile": true,
+    "strictDevelopmentFlagClassificationDidNotEstablishAbsence": true,
+    "additionalBoundedMetadataCheck": {
+      "sameTeamMacProfilesChecked": 1,
+      "unexpiredMacProfilesContainingCurrentProvisioningUDID": 1,
+      "matchedProfilesWithExplicitDevelopmentFlag": 0,
+      "matchedDeviceLimitedProfilesWithoutExplicitDevelopmentFlag": 1,
+      "matchedProfilesWithAllDevicesFlag": 0,
+      "privateDeviceValuesEmitted": false
+    },
+    "initialStrictDevelopmentFlagClassification": {
+      "sameTeamMacDevelopmentProfilesChecked": 0,
+      "matchingUnexpiredProfileCount": 0,
+      "macProfilesWithUnclassifiedDevelopmentStatus": 1,
+      "currentMacCoveredByExistingUnexpiredMacDevelopmentProfile": null
+    }
   }
 }

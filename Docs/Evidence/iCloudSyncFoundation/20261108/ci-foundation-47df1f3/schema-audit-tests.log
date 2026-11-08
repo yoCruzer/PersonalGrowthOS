@@ -1,0 +1,21 @@
+test_all_known_scalar_and_list_types_are_consumed (test_audit.SchemaAuditTests.test_all_known_scalar_and_list_types_are_consumed) ... ok
+test_changed_grant_and_extra_type_are_preserved_not_guessed (test_audit.SchemaAuditTests.test_changed_grant_and_extra_type_are_preserved_not_guessed) ... ok
+test_duplicate_type_field_and_grant_rejected (test_audit.SchemaAuditTests.test_duplicate_type_field_and_grant_rejected) ... ok
+test_exact_candidate_fields_still_do_not_pass_gates (test_audit.SchemaAuditTests.test_exact_candidate_fields_still_do_not_pass_gates) ... ok
+test_leaf_and_ancestor_symlinks_rejected (test_audit.SchemaAuditTests.test_leaf_and_ancestor_symlinks_rejected) ... ok
+test_output_ancestor_replacement_is_not_reported_as_success (test_audit.SchemaAuditTests.test_output_ancestor_replacement_is_not_reported_as_success) ... ok
+test_output_exclusive_and_cli_inputs_unchanged (test_audit.SchemaAuditTests.test_output_exclusive_and_cli_inputs_unchanged) ... ok
+test_same_byte_rewrite_during_read_is_detected (test_audit.SchemaAuditTests.test_same_byte_rewrite_during_read_is_detected) ... ok
+test_special_files_and_size_limit_fail_without_blocking (test_audit.SchemaAuditTests.test_special_files_and_size_limit_fail_without_blocking) ... ok
+test_synthetic_schema_preserves_users_permissions_and_missing_business_types (test_audit.SchemaAuditTests.test_synthetic_schema_preserves_users_permissions_and_missing_business_types) ... ok
+test_traversal_and_invalid_input_leave_no_output (test_audit.SchemaAuditTests.test_traversal_and_invalid_input_leave_no_output) ... ok
+test_two_cli_publishers_have_one_winner (test_audit.SchemaAuditTests.test_two_cli_publishers_have_one_winner) ... ok
+test_unknown_or_ambiguous_grammar_rejected_even_with_new_hash (test_audit.SchemaAuditTests.test_unknown_or_ambiguous_grammar_rejected_even_with_new_hash) ... ok
+test_whitespace_and_order_equality_are_distinct_from_byte_identity (test_audit.SchemaAuditTests.test_whitespace_and_order_equality_are_distinct_from_byte_identity) ... ok
+test_wrong_hash_and_changed_candidate_never_produce_report (test_audit.SchemaAuditTests.test_wrong_hash_and_changed_candidate_never_produce_report) ... ok
+test_wrong_type_and_extra_field_report_complete_differences (test_audit.SchemaAuditTests.test_wrong_type_and_extra_field_report_complete_differences) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.195s
+
+OK

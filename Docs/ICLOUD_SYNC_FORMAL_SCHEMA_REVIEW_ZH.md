@@ -34,7 +34,7 @@ Development和Production文件均为356字节，SHA256均为`60fec48392126eab598
 
 两份结构导出已收到，不要求重复。Owner随后确认正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/Push均启用，关联正式容器，见[文字核对来源](Evidence/iCloudSyncFoundation/20261108/formal-app-association-owner.json)。此项不再缺失；签名产物/profile及独立客户端资格另行检查。
 
-关联确认后，才能根据实际缺项准备独立客户端标识/能力/profile及具体Development执行窗口。新增Apple永久Identifier、变更正式App能力及实际云写入不因收到schema文件自动获批；Production部署/写入、merge、Archive、TestFlight及发布边界继续保持。G1手机侧接受范围与Mac CK_2例外不变，不借本轮只读材料重启整套G1。
+关联确认后已完成隔离Mac未配置开发签名产物及本机/远端验证；现有开发身份可复用，精确候选profile缺失，下一项为[限定配置及签名预检授权](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)。真实Development执行窗口仍须另行完成实际资格与执行控制。新增Apple永久Identifier、变更正式App能力及实际云写入不因收到schema文件自动获批；Production部署/写入、merge、Archive、TestFlight及发布边界继续保持。G1手机侧接受范围与Mac CK_2例外不变，不借本轮只读材料重启整套G1。
 
 
 ## 本机实现与独立复核结果

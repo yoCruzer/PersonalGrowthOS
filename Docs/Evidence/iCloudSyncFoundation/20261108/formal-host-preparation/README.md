@@ -6,4 +6,4 @@ Owner已确认正式App四项关联，见同级上层`formal-app-association-own
 
 本机实际构建与28项检查通过：产物/源码/hash、独立身份、实际inspect exit2/NOT_READY、实际preflight exit2/NOT_READY、live/wronghash拒绝、既有输出不覆盖、源码/输出symlink、未审源码和package内部输出等。构建快照缺少重新绑定的独立红例已修，独立复核另存review。原输入、失败及初始日志保留，不与最终计数相加。
 
-候选自身Swift代码及测试未变，原d508ae4定向51项及产品回归证据仍成立；新增打包工具与工作流将在固定新提交上独立验证。P0/P1/P2仍未通过。下一外部项为[独立客户端配置清单](../../../../ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)，先查复用候选Identifier，再按获批范围补Mac Development profile及实际签名静态预检；不授权live或Production。
+候选自身Swift代码及测试未变，原d508ae4定向51项及产品回归证据仍成立；新增打包工具与工作流已在固定47df1f3的[定向CI](../ci-foundation-47df1f3/README.md)通过，包含远端实际打包与28项检查。P0/P1/P2仍未通过。下一外部项为[独立客户端配置清单](../../../../ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)，先查复用候选Identifier，再按获批范围补Mac Development profile及实际签名静态预检；不授权live或Production。

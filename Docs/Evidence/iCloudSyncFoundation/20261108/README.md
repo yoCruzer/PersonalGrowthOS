@@ -14,3 +14,5 @@
 固定代码d508ae4的[定向CI](ci-foundation-d508ae4/README.md)及独立产物复核已通过，原始ZIP摘要匹配。完整计数为51原生、11分块、22CLI、16schema自测、20schema独立及11SDK独立；源码与实际checkout精确绑定。
 
 [产品CI42435822140](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42435822140) SUCCESS：Release三个unsigned bundle检查通过，Unit599=598PASS/1SKIP/0FAIL，iPhone13mini/iOS27.2 Smoke5/5通过，两个测试lane的runtimeWarnings均为空。唯一Unit跳过需要隔离32MB HFS+低空间镜像；optional extended UI条件未执行。既有测试的Swift6异步上下文wait编译警告及AppIntents metadata警告如实保留，未称零编译警告。产品/测试/工程/产品CI与72f5d3d逐Git对象相同；此次由PR工作流自动触发，无手动重跑。旧G1 smoke失败不改写。 见[产品证据](ci-product-d508ae4/README.md)。最后仅文档/证据收口，不修改已验证源码。
+
+后续Owner已确认正式App四项能力/关联，来源见`formal-app-association-owner.json`。新增[独立Mac签名前准备](formal-host-preparation/README.md)、[47df1f3定向CI](ci-foundation-47df1f3/README.md)与[同提交产品CI](ci-product-47df1f3/README.md)。新打包器本机28项、独立20项，远端28项及既有回归均通过；各轮不叠加。仅未配置开发签名产物，无CloudKit/实际开发签名资格。下一步集中配置授权仍待Owner回复。

@@ -6,7 +6,7 @@
 
 Owner已确认正式App `com.yocruzer.PersonalGrowthOS` 的iCloud、Include CloudKit support、Push Notifications启用，并关联`iCloud.com.yocruzer.PersonalGrowthOS`。正式两环境schema已收取并比较。无需再次修改正式App或重新导出当前schema。
 
-本机两个标准profile目录检查了6份可解析profile，没有精确匹配独立候选的profile；现有覆盖名称的通配profile不适用于macOS且没有CloudKit配置。这是本机可用性结论，不能证明门户尚未注册候选Identifier。另以证书subject OU匹配Team并与有效codesigning身份交叉核验，本机找到1个现有Apple Development身份，应优先复用，不要求新建证书；最初仅按显示名筛选得到0的结果已被准确核验取代。原始profile、设备标识、证书及个人姓名不进入仓库。
+本机两个标准profile目录检查了6份可解析profile，没有精确匹配独立候选的profile；现有覆盖名称的通配profile不适用于macOS且没有CloudKit配置。这是本机可用性结论，不能证明门户尚未注册候选Identifier。另以证书subject OU匹配Team并与有效codesigning身份交叉核验，本机找到1个现有Apple Development身份，应优先复用，不要求新建证书；最初仅按显示名筛选得到0的结果已被准确核验取代。当前Mac的明确provisioning UDID被1份同Team、未过期的macOS profile设备列表覆盖，应先在门户核对并复用既有当前Mac，不默认重新注册。该覆盖不证明候选profile资格。原始profile、设备标识、证书及个人姓名不进入仓库。
 
 ## 本次拟配置的精确对象
 

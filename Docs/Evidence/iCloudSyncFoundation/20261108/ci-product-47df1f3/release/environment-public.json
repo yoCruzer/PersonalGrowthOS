@@ -1,0 +1,9 @@
+{
+  "lane": "release",
+  "checkoutSHA": "55aef2cf3152843079971ff82024c114e2f0542e",
+  "headSHA": "47df1f3cad80270bded407078fab86d26be6f46b",
+  "event": "pull_request",
+  "xcode": "Xcode 27.0\nBuild version 27A266a\n",
+  "arch": "ARM64",
+  "image": "20261104.0337.1"
+}

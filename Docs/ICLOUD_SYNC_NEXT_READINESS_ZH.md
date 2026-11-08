@@ -2,7 +2,9 @@
 
 Owner回复确认正式App `com.yocruzer.PersonalGrowthOS`：iCloud已启用、Include CloudKit support已勾选、已关联`iCloud.com.yocruzer.PersonalGrowthOS`、Push Notifications已启用。[来源记录](Evidence/iCloudSyncFoundation/20261108/formal-app-association-owner.json)。此项只读输入已完成，不再要求重复截图、导出或核对。
 
-这是一份Owner文字核对结果，不是agent重新登录门户的独立观察，也不验证当前profile、签名产物、账户或Development访问资格。正在准备独立Mac客户端 `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 的未配置开发签名App产物；它与正式App/既有SyncLab安装和数据隔离。真实签名/Development执行与P0/P1/P2保持未通过。
+这是一份Owner文字核对结果，不是agent重新登录门户的独立观察，也不验证当前profile、签名产物、账户或Development访问资格。已完成独立Mac客户端 `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 的未配置开发签名App产物、本机28项与独立20项检查，以及47df1f3远端定向验证；它与正式App/既有SyncLab安装和数据隔离。真实签名/Development执行与P0/P1/P2保持未通过。
+
+下一实际外部项见[独立Mac客户端配置清单](ICLOUD_SYNC_FORMAL_HOST_PROVISIONING_ZH.md)，现有开发身份和当前Mac优先复用，候选Identifier先查存在性，缺项获批后才创建/关联及生成Mac Development profile。配置和本机签名预检授权请求已发出，未收到回复前不执行外部操作。
 
 以下为收到本次回复前的准备记录，其中“剩余正式App关联”已被本段关闭。
 

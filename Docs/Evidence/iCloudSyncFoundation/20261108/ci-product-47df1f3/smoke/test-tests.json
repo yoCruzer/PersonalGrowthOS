@@ -1,0 +1,89 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "7E65DDB8-C948-4004-AECC-079609CDC792",
+      "deviceName" : "PGOS-CI-smoke",
+      "modelName" : "iPhone 13 mini",
+      "osBuildNumber" : "24B8117",
+      "osVersion" : "27.2",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "duration" : "26s",
+                  "durationInSeconds" : 26.108398914337158,
+                  "name" : "testCoreShellRemainsOperableAtLargestAccessibilityTextSize()",
+                  "nodeIdentifier" : "AppLaunchSmokeTests/testCoreShellRemainsOperableAtLargestAccessibilityTextSize()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests/testCoreShellRemainsOperableAtLargestAccessibilityTextSize",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "1m 8s",
+                  "durationInSeconds" : 68.09849905967712,
+                  "name" : "testRepeatableHabitCounterIncrementsDecrementsAndPersists()",
+                  "nodeIdentifier" : "AppLaunchSmokeTests/testRepeatableHabitCounterIncrementsDecrementsAndPersists()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests/testRepeatableHabitCounterIncrementsDecrementsAndPersists",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "2m 22s",
+                  "durationInSeconds" : 142.77358496189117,
+                  "name" : "testUIReadabilityChineseDefaultAndLargerText()",
+                  "nodeIdentifier" : "AppLaunchSmokeTests/testUIReadabilityChineseDefaultAndLargerText()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests/testUIReadabilityChineseDefaultAndLargerText",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "1m 5s",
+                  "durationInSeconds" : 65.5266250371933,
+                  "name" : "testUIReadabilityEnglishDefault()",
+                  "nodeIdentifier" : "AppLaunchSmokeTests/testUIReadabilityEnglishDefault()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests/testUIReadabilityEnglishDefault",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "7s",
+                  "durationInSeconds" : 7.993041038513184,
+                  "name" : "testUITestingLaunchShowsAppShell()",
+                  "nodeIdentifier" : "AppLaunchSmokeTests/testUITestingLaunchShowsAppShell()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests/testUITestingLaunchShowsAppShell",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "AppLaunchSmokeTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "PersonalGrowthOSUITests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests",
+          "nodeType" : "UI test bundle",
+          "result" : "Passed"
+        }
+      ],
+      "name" : "PersonalGrowthOS",
+      "nodeType" : "Test Plan",
+      "result" : "Passed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}

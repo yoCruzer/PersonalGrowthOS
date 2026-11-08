@@ -1,0 +1,18 @@
+{
+  "source": "tests.log",
+  "sourceSHA256": "f4c4188bbec404563ce96db37b26ac435339db23375f2715cdf04081a553f0f9",
+  "pathRedaction": "CI checkout prefix only",
+  "lines": [
+    "2026-11-08 02:27:42.924 appintentsmetadataprocessor[19300:56311] warning: Metadata extraction skipped, no AppIntents.framework dependency found",
+    "<CI_CHECKOUT>/PersonalGrowthOSTests/ImportExportRecoveryTests.swift:3324:32: warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "     |                                `- warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "<CI_CHECKOUT>/PersonalGrowthOSTests/ImportExportRecoveryTests.swift:3338:33: warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "     |                                 `- warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "<CI_CHECKOUT>/PersonalGrowthOSTests/ImportExportRecoveryTests.swift:3480:32: warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "     |                                `- warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "<CI_CHECKOUT>/PersonalGrowthOSTests/ImportExportRecoveryTests.swift:3483:33: warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "     |                                 `- warning: instance method 'wait' is unavailable from asynchronous contexts; Await a Task handle instead; this is an error in the Swift 6 language mode",
+    "2026-11-08 02:31:02.109 appintentsmetadataprocessor[28079:77956] warning: Metadata extraction skipped, no AppIntents.framework dependency found"
+  ],
+  "runtimeWarnings": []
+}
