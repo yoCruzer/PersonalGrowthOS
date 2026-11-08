@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "public_fixture_origin": "Original ReviewFixture record with three invented fields and invented roles, not a transformed Owner export",
+  "current_checks": 20,
+  "cli_calls": 19,
+  "publication_api_checks": 1,
+  "current_script_sha256": "a2c105194b034ecb3a918257cd48dcae7c41b94b89ae6cb94a9d72118a73a184",
+  "audit_sha256": "d175b24b2380c2dc3d41e24f734cf0523e96975d6348b4168891fcda4e9a7123",
+  "old_review_preservation": "Complete earlier review retained outside repository in a private local directory with per-file hash manifest; not uploaded or used in CI",
+  "reason": "Earlier fixture reproduced the supplied default schema. Replaced with independently authored schema after upload rejection; no original content is wrapped or re-encoded as a synthetic fixture",
+  "prior_output_ancestor_failure": {
+    "result": "FAIL_RETAINED_PRIVATELY",
+    "source_sha256": "ba6a56c022668f447513a48e08d1ca02bd055c8a3239e7a1d3f5fb2613225de5",
+    "observed": "write_new returned success after output parent replacement and requested output was absent"
+  },
+  "current_output_ancestor_failure_control": "PASS_REJECTED_AND_PARTIAL_EVIDENCE_RETAINED",
+  "sdk_changed": false,
+  "owner_original_audit": "LOCAL_PRIVATE_ONLY_NOT_REPLAYED_BY_CI",
+  "networkOperations": 0,
+  "p0Passed": false
+}

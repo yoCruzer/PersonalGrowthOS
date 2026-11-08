@@ -1,0 +1,306 @@
+{
+  "actions": "REVIEW_ONLY_NO_DDL_NO_IMPORT_NO_DEPLOY_NO_DELETION_RECOMMENDATION",
+  "candidate": {
+    "customIndexes": [],
+    "customPermissions": "NOT_SPECIFIED",
+    "permissionsCopiedFromUsers": false,
+    "recordTypes": {
+      "PGMutationV2": {
+        "manifest": "BYTES",
+        "sha256": "STRING",
+        "wireVersion": "INT64"
+      },
+      "PGOriginalV2": {
+        "byteCount": "INT64",
+        "original": "ASSET",
+        "sha256": "STRING",
+        "wireVersion": "INT64"
+      },
+      "PGPayloadChunkV2": {
+        "byteCount": "INT64",
+        "chunk": "ASSET",
+        "sha256": "STRING",
+        "wireVersion": "INT64"
+      }
+    },
+    "systemFields": "NOT_SPECIFIED",
+    "wireVersion": 2
+  },
+  "deployable": false,
+  "development": {
+    "diff": {
+      "counts": {
+        "extraFieldsOnCandidateTypes": 0,
+        "fieldTypeMismatches": 0,
+        "missingFields": 11,
+        "missingRecordTypes": 3
+      },
+      "extraFieldsOnCandidateTypes": [],
+      "extraRecordTypes": [
+        "ReviewFixture",
+        "SystemTypeProbe"
+      ],
+      "fieldTypeMismatches": [],
+      "missingFields": [
+        {
+          "candidateType": "BYTES",
+          "field": "manifest",
+          "recordType": "PGMutationV2"
+        },
+        {
+          "candidateType": "STRING",
+          "field": "sha256",
+          "recordType": "PGMutationV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "wireVersion",
+          "recordType": "PGMutationV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "byteCount",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "ASSET",
+          "field": "original",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "STRING",
+          "field": "sha256",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "wireVersion",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "byteCount",
+          "recordType": "PGPayloadChunkV2"
+        },
+        {
+          "candidateType": "ASSET",
+          "field": "chunk",
+          "recordType": "PGPayloadChunkV2"
+        },
+        {
+          "candidateType": "STRING",
+          "field": "sha256",
+          "recordType": "PGPayloadChunkV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "wireVersion",
+          "recordType": "PGPayloadChunkV2"
+        }
+      ],
+      "missingRecordTypes": [
+        "PGMutationV2",
+        "PGOriginalV2",
+        "PGPayloadChunkV2"
+      ],
+      "observedGrantsByType": {
+        "ReviewFixture": [
+          {
+            "permission": "READ",
+            "role": "ReviewObservers"
+          },
+          {
+            "permission": "WRITE",
+            "role": "ReviewEditors"
+          }
+        ],
+        "SystemTypeProbe": []
+      },
+      "systemFieldTypeMismatches": [
+        {
+          "field": "___etag",
+          "knownSystemType": "STRING",
+          "observedType": "INT64",
+          "recordType": "SystemTypeProbe"
+        }
+      ],
+      "systemFieldsByType": {
+        "ReviewFixture": {},
+        "SystemTypeProbe": {
+          "___etag": "INT64"
+        }
+      },
+      "users": null
+    },
+    "observedSchema": {
+      "ReviewFixture": {
+        "fields": {
+          "displayLabel": "STRING",
+          "sampleValue": "DOUBLE",
+          "syntheticTags": "LIST<STRING>"
+        },
+        "grants": [
+          {
+            "permission": "READ",
+            "role": "ReviewObservers"
+          },
+          {
+            "permission": "WRITE",
+            "role": "ReviewEditors"
+          }
+        ]
+      },
+      "SystemTypeProbe": {
+        "fields": {
+          "___etag": "INT64"
+        },
+        "grants": []
+      }
+    }
+  },
+  "developmentProduction": {
+    "byteIdentical": false,
+    "structureIdentical": false
+  },
+  "gatesPassed": {
+    "P0": false,
+    "P1": false,
+    "P2": false
+  },
+  "inputs": {
+    "candidate": {
+      "bytes": 1032,
+      "sha256": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003"
+    },
+    "development": {
+      "bytes": 273,
+      "sha256": "36075897a9ce52ff82006a804d35b51949c6f8a7ee59fd87d552c806655f6738"
+    },
+    "production": {
+      "bytes": 226,
+      "sha256": "449f60ab8affc5ae3901cf6224fd3c048a1aa00943b5b3af5508a43ef6da0059"
+    }
+  },
+  "networkOperations": 0,
+  "production": {
+    "diff": {
+      "counts": {
+        "extraFieldsOnCandidateTypes": 0,
+        "fieldTypeMismatches": 0,
+        "missingFields": 11,
+        "missingRecordTypes": 3
+      },
+      "extraFieldsOnCandidateTypes": [],
+      "extraRecordTypes": [
+        "ReviewFixture"
+      ],
+      "fieldTypeMismatches": [],
+      "missingFields": [
+        {
+          "candidateType": "BYTES",
+          "field": "manifest",
+          "recordType": "PGMutationV2"
+        },
+        {
+          "candidateType": "STRING",
+          "field": "sha256",
+          "recordType": "PGMutationV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "wireVersion",
+          "recordType": "PGMutationV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "byteCount",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "ASSET",
+          "field": "original",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "STRING",
+          "field": "sha256",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "wireVersion",
+          "recordType": "PGOriginalV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "byteCount",
+          "recordType": "PGPayloadChunkV2"
+        },
+        {
+          "candidateType": "ASSET",
+          "field": "chunk",
+          "recordType": "PGPayloadChunkV2"
+        },
+        {
+          "candidateType": "STRING",
+          "field": "sha256",
+          "recordType": "PGPayloadChunkV2"
+        },
+        {
+          "candidateType": "INT64",
+          "field": "wireVersion",
+          "recordType": "PGPayloadChunkV2"
+        }
+      ],
+      "missingRecordTypes": [
+        "PGMutationV2",
+        "PGOriginalV2",
+        "PGPayloadChunkV2"
+      ],
+      "observedGrantsByType": {
+        "ReviewFixture": [
+          {
+            "permission": "READ",
+            "role": "ReviewObservers"
+          },
+          {
+            "permission": "WRITE",
+            "role": "ReviewEditors"
+          }
+        ]
+      },
+      "systemFieldTypeMismatches": [],
+      "systemFieldsByType": {
+        "ReviewFixture": {}
+      },
+      "users": null
+    },
+    "observedSchema": {
+      "ReviewFixture": {
+        "fields": {
+          "displayLabel": "STRING",
+          "sampleValue": "DOUBLE",
+          "syntheticTags": "LIST<STRING>"
+        },
+        "grants": [
+          {
+            "permission": "READ",
+            "role": "ReviewObservers"
+          },
+          {
+            "permission": "WRITE",
+            "role": "ReviewEditors"
+          }
+        ]
+      }
+    }
+  },
+  "recordCountAssessment": "NOT_INFERRED_FROM_SCHEMA",
+  "sourceBinding": {
+    "container": null,
+    "environmentVerified": false,
+    "method": "OWNER_SUPPLIED_FILE_ASSOCIATION_NOT_ATTESTED_BY_CONTENT",
+    "team": null
+  },
+  "status": "REVIEW_ONLY_NOT_DEPLOYABLE"
+}

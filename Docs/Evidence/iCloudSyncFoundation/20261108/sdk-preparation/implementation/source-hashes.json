@@ -1,0 +1,9 @@
+{
+  "Packages/SyncFoundation/FORMAL_DEVELOPMENT_SDK.md": "92a4befc2562e9a2f535f2fd504af42802ec8143ce1a0cb4295adfeba588fc02",
+  "Packages/SyncFoundation/Package.swift": "0e382fc3909736e6158093989a48cd67ba19c0f07967bb2b89b87f6c5cce6955",
+  "Packages/SyncFoundation/Sources/FormalDevelopmentHost/main.swift": "ac26d613165dc746324e5906c2fc5af75d1f88bc9fcc91ab0ce2218faec23dbf",
+  "Packages/SyncFoundation/Sources/FormalDevelopmentSDK/BatchRunner.swift": "bf7327d1fc8af712660dca8b14a9e283f303643a67557c83a77c84ced88b385a",
+  "Packages/SyncFoundation/Sources/FormalDevelopmentSDK/LockedHost.swift": "936605bb9eea2c812e997eed690c1abc1f120e497ed583365d6b15f15585029f",
+  "Packages/SyncFoundation/Sources/FormalDevelopmentSDK/Transport.swift": "2c8cdfb0113db1d466603a98a15597328c2b083a25e29e707eab47b57d437a50",
+  "Packages/SyncFoundation/Tests/FormalDevelopmentSDKTests/BatchRunnerTests.swift": "50ba249a08184009b8a6c92b63b2305b3ad051e84d0d099638cdb660a15af740"
+}

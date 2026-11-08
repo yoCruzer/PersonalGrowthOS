@@ -1,0 +1,172 @@
+warning: 'syncfoundation': Source files for target FormalDevelopmentSDKTests should be located under 'Tests/FormalDevelopmentSDKTests', or a custom sources path can be set with the 'path' property in Package.swift
+warning: 'syncfoundation': Source files for target FormalDevelopmentSDKTests should be located under 'Tests/FormalDevelopmentSDKTests', or a custom sources path can be set with the 'path' property in Package.swift
+Building for debugging...
+[Pre-planning 1 / 327]
+[Constructing 107 / 704]
+[70 / 154]
+[71 / 155] SyncFoundation
+[81 / 202]
+[89 / 202]
+[91 / 202]
+[96 / 202]
+[100 / 202]
+[104 / 202]
+[106 / 202]
+[107 / 202]
+[113 / 202]
+[118 / 202] SyncFoundation
+[133 / 205] SyncPayloadProbe-product
+[143 / 214] SyncPayloadProbe-product
+[156 / 216]
+[159 / 222] FormalDevelopmentProbe-product
+[160 / 222] FormalDevelopmentSDK
+[169 / 222] FormalDevelopmentProbe-product
+[188 / 225] FormalDevelopmentProbe-product
+[196 / 227] FormalDevelopmentSDK
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentSDK/BatchRunner.swift:39:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 37 | }
+ 38 | struct BatchReport: Codable {
+ 39 |     let mode = "INJECTED_TRANSPORT_ONLY"
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'mode' case to silence this warning
+    |         `- note: make the property mutable instead
+ 40 |     let realAuthorityVerified = false
+ 41 |     let p0Passed = false
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentSDK/BatchRunner.swift:40:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 38 | struct BatchReport: Codable {
+ 39 |     let mode = "INJECTED_TRANSPORT_ONLY"
+ 40 |     let realAuthorityVerified = false
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'realAuthorityVerified' case to silence this warning
+    |         `- note: make the property mutable instead
+ 41 |     let p0Passed = false
+ 42 |     let zoneCreationAtomic = false
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentSDK/BatchRunner.swift:41:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 39 |     let mode = "INJECTED_TRANSPORT_ONLY"
+ 40 |     let realAuthorityVerified = false
+ 41 |     let p0Passed = false
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'p0Passed' case to silence this warning
+    |         `- note: make the property mutable instead
+ 42 |     let zoneCreationAtomic = false
+ 43 |     let planSHA256: String
+
+/private/tmp/PersonalGrowthOS-icloud-foundation/Packages/SyncFoundation/Sources/FormalDevelopmentSDK/BatchRunner.swift:42:9: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+ 40 |     let realAuthorityVerified = false
+ 41 |     let p0Passed = false
+ 42 |     let zoneCreationAtomic = false
+    |         |- warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+    |         |- note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'zoneCreationAtomic' case to silence this warning
+    |         `- note: make the property mutable instead
+ 43 |     let planSHA256: String
+ 44 |     let run: UUID
+[203 / 227] SyncFoundationTests-product
+[218 / 263]
+[225 / 263]
+[228 / 263]
+[230 / 263]
+[233 / 263]
+[234 / 263]
+[251 / 263] SyncFoundationTests-product
+[255 / 263] SyncFoundationTests-product
+Build complete! (7.42秒)
+Test Suite 'All tests' started at 2026-11-08 09:26:11.550.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 09:26:11.552.
+Test Suite 'PayloadChunkTests' started at 2026-11-08 09:26:11.552.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkBoundaryAndBudgetRejectBeforeUnboundedRead]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkBoundaryAndBudgetRejectBeforeUnboundedRead]' passed (0.014 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkSDKRoutingTruncationAndUnknownFieldsReject]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testChunkSDKRoutingTruncationAndUnknownFieldsReject]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testFortyMiBPlusTenThousandRowShapeStreamsThroughRealSDKChunks]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testFortyMiBPlusTenThousandRowShapeStreamsThroughRealSDKChunks]' passed (0.463 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testMissingReorderedDuplicateAndExtraIndicesReject]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testMissingReorderedDuplicateAndExtraIndicesReject]' passed (0.013 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testRepeatedContentAtDistinctPositionsIsLegal]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testRepeatedContentAtDistinctPositionsIsLegal]' passed (0.012 seconds).
+Test Case '-[SyncFoundationTests.PayloadChunkTests testWholeDigestAndPerChunkDigestAreBothRequired]' started.
+Test Case '-[SyncFoundationTests.PayloadChunkTests testWholeDigestAndPerChunkDigestAreBothRequired]' passed (0.001 seconds).
+Test Suite 'PayloadChunkTests' passed at 2026-11-08 09:26:12.057.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.504 (0.505) seconds
+Test Suite 'SyncFoundationTests' started at 2026-11-08 09:26:12.057.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testAssetPathValidationAndMutationAfterEncodingDetected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testCrossDatasetRecordTypeNameAndZoneRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDependenciesAndMediaIdentityAreStrict]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testDuplicateSelfAndUnsortedParentsRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testEpochFenceRejectsOldCallbacksAndReopenedBinding]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testFractionalAndBooleanIntegersRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testHistoryBeyond512DoesNotGrowCurrentRecord]' passed (0.030 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testIdentityReplayAcceptsExactAndRejectsChangedBytes]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testLimitsRejectInsteadOfTruncating]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testManifestAndSDKRecordRoundTripPreserveExactBytes]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testMediaMissingTruncatedAndWrongHashAreNotComplete]' passed (0.000 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testOriginalRecordIntegrityAndRouting]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTamperedManifestDigestExtraFieldsAndPayloadRejected]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTenThousandLineSnapshotUsesAssetNotInlineRecordBytes]' passed (0.014 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTombstoneRoundTripNeedsNoDeletedDependenciesOrAssets]' passed (0.001 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testTwentyFiveMiBOriginalRoundTripAndCompleteNineImageManifest]' passed (0.037 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testUnknownVersionUnknownKeysAndNoncanonicalBytesRejected]' passed (0.002 seconds).
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' started.
+Test Case '-[SyncFoundationTests.SyncFoundationTests testWireContainsNoLocalAccountOrEngineState]' passed (0.002 seconds).
+Test Suite 'SyncFoundationTests' passed at 2026-11-08 09:26:12.150.
+	 Executed 18 tests, with 0 failures (0 unexpected) in 0.093 (0.094) seconds
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 09:26:12.151.
+	 Executed 24 tests, with 0 failures (0 unexpected) in 0.598 (0.599) seconds
+Test Suite 'All tests' passed at 2026-11-08 09:26:12.151.
+	 Executed 24 tests, with 0 failures (0 unexpected) in 0.598 (0.600) seconds
+CHUNK_CAPACITY totalBytes=49210071 chunkCount=12 maxCallbackBytes=4194304
+Test Suite 'All tests' started at 2026-11-08 09:26:12.664.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 09:26:12.665.
+Test Suite 'FormalProbeCoreTests' started at 2026-11-08 09:26:12.665.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testCandidateSchemaPinAndPNGDecode]' passed (0.023 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testChangedIdentityEnvironmentSchemaAndExtraFieldRejectEvenWithRehashedPlan]' passed (0.006 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testExistingOutputsRemainUnchanged]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testFreshPlanExactSDKReplayAndDeleteChain]' passed (0.007 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testHashAndFixtureByteTamperingRejectAndRetainFailureReport]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testMissingExtraDuplicatedAndReorderedRecordsReject]' passed (0.005 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testOpenedDirectoryNeverMixesReplacementPath]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testPlansHaveDistinctFreshRunAndDatasetWithStableSchema]' passed (0.003 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSigningPureMetadataPositiveAndProductionMismatchAreNotActualSignatureProof]' passed (0.001 seconds).
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' started.
+Test Case '-[FormalProbeCoreTests.FormalProbeCoreTests testSymlinksAndTraversalRejected]' passed (0.003 seconds).
+Test Suite 'FormalProbeCoreTests' passed at 2026-11-08 09:26:12.721.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.055 (0.056) seconds
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 09:26:12.721.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.055 (0.056) seconds
+Test Suite 'All tests' passed at 2026-11-08 09:26:12.721.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.055 (0.056) seconds
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

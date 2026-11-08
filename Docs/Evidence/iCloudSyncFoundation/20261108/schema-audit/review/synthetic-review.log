@@ -1,0 +1,92 @@
+{
+  "fixtureOrigin": "ORIGINAL_SYNTHETIC_REVIEW_FIXTURE_NOT_OWNER_EXPORT",
+  "status": "PASS",
+  "checks": [
+    {
+      "case": "baseline",
+      "exit": 0
+    },
+    {
+      "case": "existing-output-unchanged",
+      "exit": 2
+    },
+    {
+      "case": "wrong-source-hash",
+      "exit": 2
+    },
+    {
+      "case": "unknown-type",
+      "exit": 2
+    },
+    {
+      "case": "unknown-system-field",
+      "exit": 2
+    },
+    {
+      "case": "unknown-permission",
+      "exit": 2
+    },
+    {
+      "case": "duplicate-grant",
+      "exit": 2
+    },
+    {
+      "case": "duplicate-field",
+      "exit": 2
+    },
+    {
+      "case": "duplicate-record",
+      "exit": 2
+    },
+    {
+      "case": "second-schema",
+      "exit": 2
+    },
+    {
+      "case": "trailing-token",
+      "exit": 2
+    },
+    {
+      "case": "unknown-index",
+      "exit": 2
+    },
+    {
+      "case": "comment-injection",
+      "exit": 2
+    },
+    {
+      "case": "extra-type-preserved",
+      "exit": 0
+    },
+    {
+      "case": "candidate-conflict-preserved",
+      "exit": 0
+    },
+    {
+      "case": "changed-grants-preserved",
+      "exit": 0
+    },
+    {
+      "case": "wrong-system-type-reported",
+      "exit": 0
+    },
+    {
+      "case": "changed-candidate",
+      "exit": 2
+    },
+    {
+      "case": "candidate-symlink",
+      "exit": 2
+    },
+    {
+      "case": "output-ancestor-replacement",
+      "rejected": true,
+      "error": "AuditError: Output ancestor changed during publication"
+    }
+  ],
+  "count": 20,
+  "audit_sha256": "d175b24b2380c2dc3d41e24f734cf0523e96975d6348b4168891fcda4e9a7123",
+  "candidate_sha256": "6fcf5478c3307685f8a45154b44eeeaec6a907c33412a2c388a6cb8831f04003",
+  "networkOperations": 0,
+  "p0Passed": false
+}

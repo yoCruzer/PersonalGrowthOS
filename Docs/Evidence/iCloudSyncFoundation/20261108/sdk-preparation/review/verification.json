@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "native_distinct_tests": 11,
+  "prior_pre_binding_tests": 10,
+  "prior_count_not_added": true,
+  "source_code_test_manifest_mismatches": [],
+  "snapshot": "/private/tmp/PGOS-SchemaSDKReview.J9Wddi/Candidate",
+  "command": "swift test --package-path /private/tmp/PGOS-SchemaSDKReview.J9Wddi/Candidate --scratch-path /private/tmp/PGOS-SchemaSDKReview.J9Wddi/build --filter IndependentSDKTests",
+  "test_transport": "injected synthetic local only; actual CKDatabase adapter never instantiated",
+  "networkOperations": 0,
+  "realAuthorityVerified": false,
+  "p0Passed": false
+}

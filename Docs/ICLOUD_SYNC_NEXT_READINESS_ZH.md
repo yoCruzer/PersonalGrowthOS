@@ -1,3 +1,13 @@
+# 2026-11-08 更新：两环境导出已收到，正式App关联仍待核对
+
+Owner刚提供两份原始CKDB及对应正式容器截图。两文件逐字节相同、各356B，SHA256均为`60fec48392126eab598a05dbe0f7f9557494a992df8fb62295ccd3752a7768db`，仅Users7fields。与实际v2 SDK候选的差异是新增3种业务类型/11个业务字段，系统字段与权限仍单独审查，不生成可部署DDL。详见[本轮正式结构审查](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md)及[原始来源记录](Evidence/iCloudSyncFoundation/20261108/formal-schema-intake/receipt.json)。
+
+**不需要重复导出。** 现在只缺正式App `com.yocruzer.PersonalGrowthOS` 的iCloud/CloudKit support/Push和已关联容器的只读结果；两张Console截图不能替代App ID能力关联。云数据未查询，P0/P1/P2保持未通过。正在完成离线比较与锁定的Development SDK适配准备，实际执行仍待后续具体门禁。
+
+下面保留2026-11-07准备记录，其中“待导出/Production未查看”描述的是当时状态，以本段新证据为准；原导出步骤仅作复现说明，不是要求Owner再做一遍。
+
+---
+
 # iCloud Sync 后续开发：正式 wire 与 Apple 门禁准备
 
 日期：2026-11-07（Asia/Shanghai）。只读评估基线：`e57fe3503995771a89754fbc4077ea16627c15be`，后续工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`。本文件区分仓库事实、已有 Owner 确认与尚未完成的外部验证；不是 Production 部署批准单。

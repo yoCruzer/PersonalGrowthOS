@@ -1,0 +1,62 @@
+Building for debugging...
+[Planning 1 / 356]
+[Constructing 396 / 777]
+[15 / 36] FormalDevelopmentSDK
+[17 / 38] FormalDevelopmentSDK
+[26 / 44] FormalDevelopmentHost-product
+[29 / 45] FormalDevelopmentSDK
+[35 / 47] FormalDevelopmentHost-product
+[37 / 48] FormalDevelopmentSDKTests-product
+[40 / 51] FormalDevelopmentSDKTests-product
+[45 / 51] FormalDevelopmentSDKTests-product
+[47 / 51] FormalDevelopmentSDKTests-product
+Build complete! (1.95秒)
+Test Suite 'Selected tests' started at 2026-11-08 09:27:16.613.
+Test Suite 'SyncFoundationTests.xctest' started at 2026-11-08 09:27:16.614.
+Test Suite 'SyncFoundationTests.xctest' passed at 2026-11-08 09:27:16.614.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 09:27:16.614.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 09:27:16.665.
+Test Suite 'FormalProbeCoreTests.xctest' started at 2026-11-08 09:27:16.665.
+Test Suite 'FormalProbeCoreTests.xctest' passed at 2026-11-08 09:27:16.665.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 09:27:16.665.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'Selected tests' started at 2026-11-08 09:27:16.704.
+Test Suite 'FormalDevelopmentSDKTests.xctest' started at 2026-11-08 09:27:16.705.
+Test Suite 'BatchRunnerTests' started at 2026-11-08 09:27:16.705.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testCancellationAfterAcknowledgmentStops]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testCancellationAfterAcknowledgmentStops]' passed (0.010 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testEpochChangedDuringEveryAwaitStopsFollowingOperation]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testEpochChangedDuringEveryAwaitStopsFollowingOperation]' passed (0.039 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExactSixRecordRoundtripAndNoAuthorityClaim]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExactSixRecordRoundtripAndNoAuthorityClaim]' passed (0.013 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingOutputPreservedTicketStillConsumed]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingOutputPreservedTicketStillConsumed]' passed (0.002 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingZoneStopsBeforeWrites]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testExistingZoneStopsBeforeWrites]' passed (0.006 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testFetchRequiresExactSetAndBytes]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testFetchRequiresExactSetAndBytes]' passed (0.037 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testLockedHostNeverAuthorizes]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testLockedHostNeverAuthorizes]' passed (0.003 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testMissingAndExtraSaveResultsFail]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testMissingAndExtraSaveResultsFail]' passed (0.018 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPartialSavePreservesReturnedEvidenceAndStops]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPartialSavePreservesReturnedEvidenceAndStops]' passed (0.009 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPlanAndLeaseChangesDuringAwaitStop]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testPlanAndLeaseChangesDuringAwaitStop]' passed (0.017 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testSingleFlightAndTicketCannotBeReusedInNewOutput]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testSingleFlightAndTicketCannotBeReusedInNewOutput]' passed (0.013 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testThrownCloudErrorRetainedAndNoRetry]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testThrownCloudErrorRetainedAndNoRetry]' passed (0.008 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testTicketInvalidationDuringAwait]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testTicketInvalidationDuringAwait]' passed (0.005 seconds).
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testWrongZoneStopsBeforeRecords]' started.
+Test Case '-[FormalDevelopmentSDKTests.BatchRunnerTests testWrongZoneStopsBeforeRecords]' passed (0.007 seconds).
+Test Suite 'BatchRunnerTests' passed at 2026-11-08 09:27:16.892.
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.186 (0.187) seconds
+Test Suite 'FormalDevelopmentSDKTests.xctest' passed at 2026-11-08 09:27:16.892.
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.186 (0.187) seconds
+Test Suite 'Selected tests' passed at 2026-11-08 09:27:16.892.
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.186 (0.187) seconds

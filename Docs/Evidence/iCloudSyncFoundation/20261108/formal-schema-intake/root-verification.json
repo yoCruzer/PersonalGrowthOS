@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "oracle": "Explicit seven-field Users dictionary and fixed missing field counts independently checked by root; both original files rehashed after tooling",
+  "source_originals_unchanged": true,
+  "audit_report_sha256": "5fa5740e46ee8a20a4dcb78af36d29c76bf97bb9304869cef2662e7ac22f2677",
+  "networkOperations": 0,
+  "gatesPassed": false,
+  "audit_report_sha256_scope": "Full original local-only audit report; public audit-result.json is a reduced summary with a different hash."
+}

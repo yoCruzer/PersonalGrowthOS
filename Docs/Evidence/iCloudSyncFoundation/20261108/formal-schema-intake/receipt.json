@@ -1,0 +1,74 @@
+{
+  "received_and_verified_at_utc": "2026-11-08T01:23:33.909769+00:00",
+  "client_timezone": "Asia/Shanghai",
+  "source": "Owner supplied original exported files and screenshots in this conversation",
+  "owner_export_time_statement": "都是刚才截图和导出的",
+  "precise_server_export_timestamp": "NOT_EMBEDDED_NOT_INDEPENDENTLY_VERIFIED",
+  "files": [
+    {
+      "role": "development",
+      "owner_original_basename": "cloudkit-development.ckdb",
+      "bytes": 356,
+      "sha256": "60fec48392126eab598a05dbe0f7f9557494a992df8fb62295ccd3752a7768db",
+      "copy_is_byte_identical": true,
+      "owner_original_unchanged_after_copy": true,
+      "preservation": "LOCAL_PRIVATE_ONLY_NOT_INCLUDED_IN_REPOSITORY"
+    },
+    {
+      "role": "production",
+      "owner_original_basename": "cloudkit-production.ckdb",
+      "bytes": 356,
+      "sha256": "60fec48392126eab598a05dbe0f7f9557494a992df8fb62295ccd3752a7768db",
+      "copy_is_byte_identical": true,
+      "owner_original_unchanged_after_copy": true,
+      "preservation": "LOCAL_PRIVATE_ONLY_NOT_INCLUDED_IN_REPOSITORY"
+    },
+    {
+      "role": "development_screenshot",
+      "owner_original_basename": "codex-clipboard-d1b9eaf9-141c-4b86-9bab-dfde2da981f8.png",
+      "bytes": 53118,
+      "sha256": "57d1d8e6e72cc7cb48f2eb66d3bd3f05105010a12627731cf518ddde8a12f91d",
+      "copy_is_byte_identical": true,
+      "owner_original_unchanged_after_copy": true,
+      "preservation": "LOCAL_PRIVATE_ONLY_NOT_INCLUDED_IN_REPOSITORY"
+    },
+    {
+      "role": "production_screenshot",
+      "owner_original_basename": "codex-clipboard-e48f8899-d921-4568-954f-dbe536b19a1e.png",
+      "bytes": 63889,
+      "sha256": "4ba85534c478ca8fee6356dcbd8439510b7b3fd693de2aeab55f056088994fcb",
+      "copy_is_byte_identical": true,
+      "owner_original_unchanged_after_copy": true,
+      "preservation": "LOCAL_PRIVATE_ONLY_NOT_INCLUDED_IN_REPOSITORY"
+    }
+  ],
+  "schema_files_byte_identical": true,
+  "screenshots_observed": {
+    "container": "iCloud.com.yocruzer.PersonalGrowthOS",
+    "environments": [
+      "Development",
+      "Production"
+    ],
+    "both_record_type_lists": [
+      "Users"
+    ],
+    "both_displayed_field_count": 7,
+    "team_id_visible": false,
+    "app_capability_association_visible": false
+  },
+  "expected_team_from_repository_and_prior_observation": "83SKX2PM7B",
+  "formal_app_association": "AWAITING_OWNER_READ_ONLY_RESULT",
+  "schema_source_binding": "Owner attestation + corresponding UI screenshots; CKDB files have no embedded container/environment/team",
+  "p0Passed": false,
+  "p1Passed": false,
+  "p2Passed": false,
+  "not_claimed": [
+    "no business records",
+    "signed client eligibility",
+    "Development write permission",
+    "Production deployment approval"
+  ],
+  "agent_records_queried": false,
+  "agent_cloudkit_network_operations": 0,
+  "public_artifact_scope": "Structural audit findings and source hashes only; original exports and screenshots retained locally outside repository."
+}

@@ -8,9 +8,13 @@ let package = Package(
                .executable(name: "SyncSchema", targets: ["SyncSchema"]),
                .executable(name: "SyncPayloadProbe", targets: ["SyncPayloadProbe"]),
                .library(name: "FormalProbeCore", targets: ["FormalProbeCore"]),
-               .executable(name: "FormalDevelopmentProbe", targets: ["FormalDevelopmentProbe"])],
+               .executable(name: "FormalDevelopmentProbe", targets: ["FormalDevelopmentProbe"]),
+               .executable(name: "FormalDevelopmentHost", targets: ["FormalDevelopmentHost"])],
     targets: [.target(name: "SyncFoundation"),
               .target(name: "FormalProbeCore", dependencies: ["SyncFoundation"]),
+              .target(name: "FormalDevelopmentSDK", dependencies: ["FormalProbeCore", "SyncFoundation"]),
+              .executableTarget(name: "FormalDevelopmentHost", dependencies: ["FormalDevelopmentSDK"]),
+              .testTarget(name: "FormalDevelopmentSDKTests", dependencies: ["FormalDevelopmentSDK", "FormalProbeCore", "SyncFoundation"]),
               .executableTarget(name: "FormalDevelopmentProbe", dependencies: ["FormalProbeCore", "SyncFoundation"]),
               .testTarget(name: "FormalProbeCoreTests", dependencies: ["FormalProbeCore", "SyncFoundation"]), .executableTarget(name: "SyncSchema", dependencies: ["SyncFoundation"]), .executableTarget(name: "SyncPayloadProbe", dependencies: ["SyncFoundation"]), .testTarget(name: "SyncFoundationTests", dependencies: ["SyncFoundation"])]
 )

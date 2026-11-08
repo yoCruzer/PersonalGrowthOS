@@ -1,3 +1,17 @@
+# 2026-11-08 正式两环境schema已收到：差异核验与Development适配准备本机通过，待远端验证
+
+Owner提交刚导出的Development/Production原件和两张正式容器截图。两文件各356字节、逐字节相同，SHA256均为`60fec48392126eab598a05dbe0f7f9557494a992df8fb62295ccd3752a7768db`；仅Users共7字段，系统字段和既有权限保留。不能由此断言无业务记录。原件与截图逐字节留在仓库外本机私有目录；仓库仅保存[来源摘要](Evidence/iCloudSyncFoundation/20261108/formal-schema-intake/receipt.json)和结构审计结果，没有查询云记录或修改下载文件。
+
+截图分别显示正式容器`iCloud.com.yocruzer.PersonalGrowthOS`及Development/Production，但不显示Team或正式App关联；CKDB本身也不内嵌这些身份。来源绑定为Owner说明+截图，不冒称独立服务端签名证明。已请求补充正式App的iCloud/CloudKit support/Push及已关联容器文字结果，当前仍待核对，不要求重复导出。
+
+与72f5d3d实际SDK候选相比，缺少PGMutationV2（三字段）、PGPayloadChunkV2（四字段）、PGOriginalV2（四字段）。无已有业务字段需要迁移/删除；Users系统字段和GRANT不得复制为业务权限模板。已实现严格离线schema比较器（16自测+20独立检查）和Development SDK适配器/锁定入口（17本机+11独立异步测试）；完整包初次冻结51项通过，末尾绑定强化后定向与iOS17编译通过。独立发现的输出路径替换误报成功已修复并保留红例；无剩余must-fix。SDK真实transport仅编译，所有运行使用本机合成fake，host没有live入口或真实授权factory。所有云操作仍为NOT_RUN，P0/P1/P2未通过，无Production分支或外部执行授权。
+
+工作树与分支保持`/private/tmp/PersonalGrowthOS-icloud-foundation` / `codex/icloud-sync-foundation`，[Draft PR #17](https://github.com/yoCruzer/PersonalGrowthOS/pull/17)本轮固定候选尚待提交远端；原项目d72c016及三项未提交改动未动。G1手机侧接受范围、CK_2非阻塞例外和未覆盖矩阵保持。以下为上一交付节点，待本轮验证后更新，不重复其已通过测试或手机批次。
+
+[本轮结构审查与完整边界](ICLOUD_SYNC_FORMAL_SCHEMA_REVIEW_ZH.md) · [本轮证据](Evidence/iCloudSyncFoundation/20261108/README.md)。
+
+---
+
 # 2026-11-08 后续分块协议、V16基线与正式Development批次准备：验证完成，待正式结构输入
 
 工作树 `/private/tmp/PersonalGrowthOS-icloud-foundation`，分支 `codex/icloud-sync-foundation`，[Draft PR #17](https://github.com/yoCruzer/PersonalGrowthOS/pull/17)，base保持G1。Owner已授权连续后续开发；旧G1仅实验/停批次限制不再阻挡本轮，外部部署和发布边界保留。原项目仍在d72c016，原三项未提交改动未动。

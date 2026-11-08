@@ -1,7 +1,7 @@
 name: Sync foundation candidate
 on:
   pull_request:
-    paths: ['Packages/SyncFoundation/**', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
+    paths: ['Packages/SyncFoundation/**', 'Scripts/SyncSchemaAudit/**', 'Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py', 'Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/review-v2/IndependentChunkTests.swift', 'Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py', '.github/workflows/sync-foundation.yml']
 permissions:
   contents: read
 concurrency:
@@ -65,6 +65,34 @@ jobs:
           set -o pipefail
           probe_bin=$(swift build --package-path Packages/SyncFoundation --scratch-path "$RUNNER_TEMP/sync-foundation-build" --show-bin-path)/FormalDevelopmentProbe
           python3 Docs/Evidence/iCloudSyncFoundation/20261107/formal-probe/review/review_cli.py "$probe_bin" "$RUNNER_TEMP/sync-foundation-evidence/formal-independent" | tee "$RUNNER_TEMP/sync-foundation-evidence/formal-independent.log"
+      - name: Synthetic schema tests and locked Development host
+        run: |
+          set -o pipefail
+          probe_root=$(cd "$RUNNER_TEMP" && pwd -P)
+          evidence="$probe_root/sync-foundation-evidence"
+          python3 -m unittest discover -s Scripts/SyncSchemaAudit -p 'test_*.py' -v 2>&1 | tee "$evidence/schema-audit-tests.log"
+          host_bin=$(swift build --package-path Packages/SyncFoundation --scratch-path "$probe_root/sync-foundation-build" --show-bin-path)/FormalDevelopmentHost
+          plan_sha=$(cat "$evidence/formal-plan/plan.sha256")
+          set +e
+          "$host_bin" inspect "$evidence/formal-plan" "$plan_sha" "$evidence/locked-host"
+          host_exit=$?
+          set -e
+          test "$host_exit" -eq 2
+          python3 - "$evidence" <<'PY'
+          import json, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          host = json.loads((root / 'locked-host/report.json').read_text())
+          assert host['mode'] == 'OFFLINE_ONLY' and host['status'] == 'NOT_READY'
+          assert host['networkOperations'] == 0 and not host['networkAuthorized'] and not host['p0Passed']
+          assert host['failure'] == 'EXTERNAL_GATE_NOT_COMPLETE'
+          print('Development host remains locked without network operations; schema parser inputs are synthetic only.')
+          PY
+      - name: Independent schema and SDK boundary regressions
+        run: |
+          set -o pipefail
+          python3 Docs/Evidence/iCloudSyncFoundation/20261108/schema-audit/review/review_schema.py Scripts/SyncSchemaAudit/audit.py "$RUNNER_TEMP/sync-foundation-evidence/schema/schema.json" "$RUNNER_TEMP/sync-foundation-evidence/schema-independent" | tee "$RUNNER_TEMP/sync-foundation-evidence/schema-independent.log"
+          cp Docs/Evidence/iCloudSyncFoundation/20261108/sdk-preparation/review/IndependentSDKTests.swift "$RUNNER_TEMP/sync-review-package/Tests/FormalDevelopmentSDKTests/IndependentSDKTests.swift"
+          swift test --package-path "$RUNNER_TEMP/sync-review-package" --scratch-path "$RUNNER_TEMP/sync-review-build" --filter IndependentSDKTests 2>&1 | tee "$RUNNER_TEMP/sync-foundation-evidence/sdk-independent.log"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

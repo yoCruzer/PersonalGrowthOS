@@ -1,0 +1,36 @@
+{
+  "baseHEAD": "668ca91d35c24866b957978ba6505f47dbc9cd86",
+  "environment": "macOS-27.0.1-arm64-arm-64bit",
+  "date": "2026-11-08",
+  "networkOperations": 0,
+  "actualSDKTransport": "NOT_RUN",
+  "actualSigning": "NOT_RUN",
+  "p0Passed": false,
+  "commands": [
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-sdk-build --filter BatchRunnerTests",
+      "log": "pgos-sdk-tests-id-filter.log",
+      "exitCode": 0,
+      "tests": 17
+    },
+    {
+      "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-sdk-build",
+      "log": "pgos-sdk-all51.log",
+      "exitCode": 0,
+      "tests": 51
+    },
+    {
+      "command": "swift build --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-sync-sdk-ios17 --sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk --triple arm64-apple-ios17.0-simulator --target FormalDevelopmentSDK",
+      "log": "pgos-sdk-ios17.log",
+      "exitCode": 0,
+      "simulatorLaunched": false
+    }
+  ],
+  "limits": [
+    "SDK network calls compile checked only; fake transport is not Apple service verification",
+    "No signing/account/environment/Owner execution authority factory",
+    "No cross-process or durable one-shot gate; no atomic zone create-if-absent",
+    "Error evidence intentionally retains numeric technical fields only; unknown identifiers redacted",
+    "Initial build warnings retained; final frozen build no compiler warnings"
+  ]
+}

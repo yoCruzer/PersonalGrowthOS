@@ -1,0 +1,1 @@
+SCHEMA_AUDIT_REJECTED: OSError: [Errno 62] Too many levels of symbolic links: 'candidate-link'
