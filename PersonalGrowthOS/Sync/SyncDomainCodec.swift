@@ -215,8 +215,12 @@ enum SyncDomainCodec {
         let habits=Dictionary(uniqueKeysWithValues:d.habits.map{($0.id,$0)})
         let logs=Dictionary(uniqueKeysWithValues:d.habitLogs.map{($0.id,$0)})
         for c in s.habitConfigurations {
-            guard let h=habits[c.habitID],HabitRecordingMode(rawValue:c.recordingModeRawValue) != nil,
-                  c.recordingModeRawValue==h.recordingMode,c.dailyTargetCount==h.dailyTargetCount,
+            // Backup transfer exposes effective settings; the supplement preserves raw row
+            // identity and values. Once-per-day plans legitimately persist target=1 while
+            // HabitSettingsResolver omits that inactive field from the flattened transfer.
+            guard let h=habits[c.habitID],let mode=HabitRecordingMode(rawValue:c.recordingModeRawValue),
+                  c.recordingModeRawValue==h.recordingMode,
+                  (mode == .multiplePerDay ? c.dailyTargetCount : nil)==h.dailyTargetCount,
                   c.updatedAt.timeIntervalSinceReferenceDate.isFinite else {throw SyncDomainCodecError.missingSupplement}
         }
         for m in s.habitLogMetadata {

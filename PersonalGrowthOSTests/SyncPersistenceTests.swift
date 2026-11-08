@@ -23,6 +23,23 @@ import SyncFoundation
         XCTAssertEqual(try context.fetchCount(FetchDescriptor<ProductSyncDataset>()), 0)
         XCTAssertEqual(try context.fetchCount(FetchDescriptor<ProductSyncOutbox>()), 0)
     }
+    func testOnceDailyInitializationAndRepeatedCallsDoNotDuplicateRevisions() throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), c = container.mainContext
+        c.autosaveEnabled = false
+        let habit = try HabitService(context: c).create(name: "Once daily initial", plan: .legacy(mode: .oncePerDay, target: nil))
+        let original = try SyncDomainSupplement.capture(context: c)
+        let dataset = ProductSyncDataset(); c.insert(dataset)
+        try ProductSyncCommit.initialize(c, dataset: dataset)
+        let first = try c.fetch(FetchDescriptor<ProductSyncMutation>()).map(\.id).sorted { $0.uuidString < $1.uuidString }
+        XCTAssertFalse(first.isEmpty)
+        for _ in 0..<2 { try ProductSyncCommit.initialize(c, dataset: dataset) }
+        let read = ModelContext(container)
+        XCTAssertTrue(try XCTUnwrap(read.fetch(FetchDescriptor<ProductSyncDataset>()).first).initialized)
+        XCTAssertEqual(try read.fetch(FetchDescriptor<ProductSyncMutation>()).map(\.id).sorted { $0.uuidString < $1.uuidString }, first)
+        XCTAssertEqual(try read.fetchCount(FetchDescriptor<ProductSyncOutbox>()), first.count)
+        XCTAssertEqual(try SyncDomainSupplement.capture(context: read), original)
+        XCTAssertEqual(try read.fetch(FetchDescriptor<Habit>()).map(\.id), [habit.id])
+    }
     func testFactsMutationAndOutboxCommitTogether() throws {
         let (container, dataset) = try fixture(); let context = container.mainContext
         let entry = Entry(body: "synthetic revision", createdAt: Date()); context.insert(entry)

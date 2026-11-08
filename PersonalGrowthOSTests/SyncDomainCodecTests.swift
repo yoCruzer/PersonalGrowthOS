@@ -144,6 +144,37 @@ import SwiftData
             XCTAssertEqual(error as? EntryValidationError, .emptyContent)
         }
     }
+    func testServiceCreatedOnceDailyHabitRetainsRawConfigurationThroughSync() throws {
+        let source = try store(), target = try store(), c = source.mainContext
+        let habit = try HabitService(context: c, now: { self.now }).create(
+            name: "Once daily synthetic", plan: .legacy(mode: .oncePerDay, target: nil))
+        let raw = try SyncDomainSupplement.capture(context: c)
+        XCTAssertEqual(raw.habitConfigurations.first?.dailyTargetCount, 1)
+        let truth = try TransferSnapshot.make(context: c)
+        XCTAssertNil(truth.habits.first?.dailyTargetCount)
+        let documents = try SyncDomainCodec.capture(context: c)
+        let projection = try SyncDomainCodec.reconstruct(completeDocuments: documents)
+        XCTAssertEqual(projection.transfer, truth)
+        XCTAssertEqual(projection.supplement, raw)
+        try SyncDomainInstaller.install(projection, affectedKeys: [.init(kind: .habit, id: habit.id)], in: target.mainContext)
+        try target.mainContext.save()
+        XCTAssertEqual(try SyncDomainSupplement.capture(context: target.mainContext), raw)
+        XCTAssertEqual(try SyncDomainCodec.capture(context: target.mainContext), documents)
+    }
+    func testEffectiveSettingsComparisonStillRejectsActiveTargetAndModeMismatch() throws {
+        let source = try store(), c = source.mainContext
+        _ = try HabitService(context: c, now: { self.now }).create(
+            name: "Multiple synthetic", plan: .legacy(mode: .multiplePerDay, target: 3))
+        let data = try TransferSnapshot.make(context: c)
+        let raw = try XCTUnwrap(SyncDomainSupplement.capture(context: c).habitConfigurations.first)
+        for (mode, target) in [(HabitRecordingMode.multiplePerDay.rawValue, 4), (HabitRecordingMode.oncePerDay.rawValue, 3), ("unknown", 3)] {
+            let supplement = SyncDomainSupplement(habitConfigurations: [.init(id: raw.id, habitID: raw.habitID,
+                recordingModeRawValue: mode, dailyTargetCount: target, updatedAt: raw.updatedAt)], habitLogMetadata: [])
+            XCTAssertThrowsError(try SyncDomainCodec.documents(from: data, supplement: supplement)) {
+                XCTAssertEqual($0 as? SyncDomainCodecError, .missingSupplement)
+            }
+        }
+    }
     func testSupplementLossAndOrphanChildrenFailClosed() throws {
         let container = try fixture(), c = ModelContext(container)
         let data = try TransferSnapshot.make(context: c)
