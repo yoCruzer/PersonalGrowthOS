@@ -296,7 +296,10 @@ enum ProductSyncCommit {
             actions.append(try prepare(context, dataset: dataset, key: document.key, bytes: bytes, document: document,
                        prior: prior, transaction: transaction))
         }
-        for (key, prior) in states where !prior.deleted {
+        // Only a fingerprint installed in the business store is a deletion baseline.
+        // Remote pending/conflict heads can exist before this device has ever published
+        // the object. Its absence is not a user deletion (including while sync is off).
+        for (key, prior) in states where !prior.deleted && prior.fingerprint != "unpublished" {
             actions.append(try prepare(context, dataset: dataset, key: key, bytes: nil, document: nil, prior: prior, transaction: transaction))
         }
         // No metadata changes occur until the entire transaction is representable.

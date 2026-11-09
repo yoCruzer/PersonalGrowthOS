@@ -40,8 +40,11 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.launchArguments = base; app.launch(); openSync()
         XCTAssertEqual(app.staticTexts["sync-status"].label, "iCloud 同步已关闭")
         XCTAssertEqual(app.buttons["sync-enable"].label, "启用 iCloud 同步")
+        let copy = app.buttons["sync-copy-diagnostics"]
+        XCTAssertEqual(copy.label, "复制同步诊断"); copy.tap()
+        XCTAssertEqual(copy.label, "诊断已复制")
         app.buttons["sync-enable"].tap()
-        XCTAssertTrue(app.alerts["将此工作区上传至 iCloud？"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.alerts["将此工作区连接到 iCloud？"].waitForExistence(timeout: 3))
         app.alerts.buttons["取消"].tap()
         let off = XCTAttachment(screenshot: app.screenshot()); off.name = "icloud-chinese-default-off"; off.lifetime = .keepAlways; add(off)
         app.terminate()
@@ -71,7 +74,7 @@ final class AppLaunchSmokeTests: XCTestCase {
         let status = app.staticTexts["sync-status"]
         XCTAssertTrue(status.waitForExistence(timeout: 5)); XCTAssertTrue(status.label.contains("off"))
         app.buttons["sync-enable"].tap()
-        XCTAssertTrue(app.alerts["Upload this workspace to iCloud?"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.alerts["Connect this workspace to iCloud?"].waitForExistence(timeout: 3))
         app.alerts.buttons["Cancel"].tap()
         XCTAssertTrue(status.label.contains("off")); XCTAssertTrue(app.buttons["sync-enable"].exists)
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "iCloud-default-off-consent"; shot.lifetime = .keepAlways; add(shot)

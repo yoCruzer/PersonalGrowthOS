@@ -330,5 +330,235 @@ import SyncFoundation
         XCTAssertEqual(allowed.status, off)
         XCTAssertFalse(allowed.busy)
     }
+    private func schedulingFixture() throws -> (ModelContainer, SyncProductCoordinator, SyntheticSyncDriver) {
+        let media = try root()
+        try FileManager.default.createDirectory(at: media.appendingPathComponent("Store"), withIntermediateDirectories: true)
+        let container = try PersistenceContainerFactory.makeOnDisk(at: media.appendingPathComponent("Store/synthetic.sqlite"))
+        container.mainContext.autosaveEnabled = false
+        let dataset = ProductSyncDataset()
+        dataset.accountHash = String(repeating: "a", count: 64); dataset.enabled = true; dataset.zoneEstablished = true
+        container.mainContext.insert(dataset); try ProductSyncCommit.initialize(container.mainContext, dataset: dataset)
+        let driver = SyntheticSyncDriver(); driver.acknowledgeUploads = true
+        let coordinator = SyncProductCoordinator(container: container, mediaRoot: media, environment: .development, automaticSync: true,
+            accountReader: { String(repeating: "a", count: 64) }, transportFactory: { persistence in driver.persistence = persistence; return driver })
+        return (container, coordinator, driver)
+    }
+    private func eventually(_ condition: () -> Bool) async throws {
+        for _ in 0..<1_000 {
+            if condition() { return }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTFail("Synthetic scheduler did not make progress within 10 seconds")
+        throw SyncCloudTransportError.notStarted
+    }
+    private func push(scope: Int = 1, container: String = SyncProductCoordinator.containerID,
+                      zone: CKRecordZone.ID? = nil) -> [AnyHashable: Any] {
+        var details: [String: Any] = ["dbs": scope, "sid": "synthetic-subscription"]
+        if let zone { details["zid"] = zone.zoneName; details["zoid"] = zone.ownerName }
+        return ["ck": ["ce": 2, "cid": container, zone == nil ? "met" : "fet": details]]
+    }
+    func testBusyLocalCommitAloneTriggersNextUploadWithoutOverlappingDrivers() async throws {
+        let (container, coordinator, driver) = try schedulingFixture()
+        let seed = Entry(body: "sent before fetch", createdAt: Date())
+        container.mainContext.insert(seed); try ProductSyncCommit.save(container.mainContext)
+        var gate: CheckedContinuation<Void, Never>?
+        driver.onFetch = { value in
+            if value.cycles == 1 { await withCheckedContinuation { gate = $0 } }
+        }
+        let start = Task { await coordinator.enable() }
+        try await eventually { gate != nil }
+        let write = ModelContext(container)
+        try XCTUnwrap(write.fetch(FetchDescriptor<Entry>()).first { $0.id == seed.id }).body = "changed during fetch"
+        write.insert(Entry(body: "created during fetch", createdAt: Date()))
+        try ProductSyncCommit.save(write)
+        // Local commit notification is the only new wake; no foreground/manual/push help.
+        await Task.yield()
+        XCTAssertEqual(driver.cycles, 1)
+        XCTAssertEqual(try coordinator.pendingRecordIDs(session: XCTUnwrap(driver.session)).count, 4)
+        gate?.resume(); gate = nil
+        await start.value
+        try await eventually { driver.cycles >= 2 && coordinator.pendingCount == 0 && !coordinator.busy }
+        XCTAssertEqual(driver.starts, 1); XCTAssertEqual(driver.cycles, 2); XCTAssertEqual(driver.maxActiveCycles, 1)
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<ProductSyncMutation>()), 3)
+        XCTAssertTrue(try ModelContext(container).fetch(FetchDescriptor<ProductSyncOutbox>()).allSatisfy(\.completed))
+        XCTAssertNotNil(try ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess)
+        await coordinator.disable()
+    }
+    func testRetryAfterSurvivesForegroundNetworkWakeAndNewCommitsThenCompletesAutomatically() async throws {
+        let (container, coordinator, driver) = try schedulingFixture()
+        var failedAt: Date?, retriedAt: Date?
+        driver.onFetch = { value in
+            if value.cycles == 1 {
+                failedAt = Date()
+                throw CKError(.requestRateLimited, userInfo: [CKErrorRetryAfterKey: 2.4])
+            }
+            retriedAt = Date()
+        }
+        await coordinator.enable()
+        XCTAssertFalse(coordinator.requiresAttention); XCTAssertTrue(coordinator.canAutomaticallySync)
+        let write = ModelContext(container)
+        let entry = Entry(body: "offline saved", createdAt: Date()); write.insert(entry); try ProductSyncCommit.save(write)
+        await coordinator.resumeIfEnabled()
+        coordinator.networkChanged(connected: false); coordinator.networkChanged(connected: true)
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(driver.cycles, 1)
+        try await eventually { driver.cycles >= 2 && coordinator.pendingCount == 0 && !coordinator.busy }
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(retriedAt).timeIntervalSince(XCTUnwrap(failedAt)), 2.4)
+        XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<Entry>()).map(\.id), [entry.id])
+        XCTAssertTrue(try ModelContext(container).fetch(FetchDescriptor<ProductSyncOutbox>()).allSatisfy(\.completed))
+        XCTAssertFalse(coordinator.requiresAttention)
+        await coordinator.disable()
+    }
+    func testPushScopeAndDisablePreventUnrelatedOrLateWakes() async throws {
+        let (_, coordinator, driver) = try schedulingFixture()
+        await coordinator.enable()
+        let binding = try XCTUnwrap(driver.session).binding
+        let zone = CloudRecordCodec.zone(dataset: binding.dataset)
+        XCTAssertTrue(coordinator.acceptsPush(try XCTUnwrap(CKNotification(fromRemoteNotificationDictionary: push()))))
+        XCTAssertTrue(coordinator.acceptsPush(try XCTUnwrap(CKNotification(fromRemoteNotificationDictionary: push(zone: zone)))))
+        SyncPushBridge.coordinator = coordinator
+        defer { SyncPushBridge.coordinator = nil }
+        for notification in [push(scope: 2), push(scope: 3), push(container: "iCloud.com.synthetic.other"),
+                             push(zone: CKRecordZone.ID(zoneName: "unrelated")), [:]] {
+            let result = await SyncPushBridge.receive(notification)
+            XCTAssertEqual(result, .noData)
+        }
+        XCTAssertEqual(driver.cycles, 1)
+        let old = try XCTUnwrap(driver.session)
+        await coordinator.disable()
+        coordinator.didPause(.zoneMissing, binding: old.binding)
+        coordinator.networkChanged(connected: false); coordinator.networkChanged(connected: true)
+        let result = await SyncPushBridge.receive(push())
+        XCTAssertEqual(result, .noData)
+        await coordinator.resumeIfEnabled()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(driver.cycles, 1); XCTAssertFalse(old.active); XCTAssertFalse(coordinator.enabled)
+    }
+    func testRetryPolicyKeepsIntegrityAccountAndMixedPartialErrorsProtected() {
+        for code in [CKError.Code.networkUnavailable, .networkFailure, .serviceUnavailable, .requestRateLimited, .zoneBusy, .serverResponseLost] {
+            XCTAssertEqual(SyncCloudRetry.delay(for: CKError(code), attempt: 0), 2)
+            XCTAssertEqual(SyncCloudRetry.delay(for: CKError(code), attempt: 99), 300)
+        }
+        for code in [CKError.Code.notAuthenticated, .permissionFailure, .zoneNotFound, .userDeletedZone, .unknownItem, .serverRecordChanged, .invalidArguments, .operationCancelled] {
+            XCTAssertNil(SyncCloudRetry.delay(for: CKError(code), attempt: 0))
+        }
+        let limited = CKError(.serviceUnavailable, userInfo: [CKErrorRetryAfterKey: 600])
+        XCTAssertEqual(SyncCloudRetry.delay(for: limited, attempt: 99), 600)
+        XCTAssertEqual(SyncCloudRetry.delay(for: CKError(.partialFailure, userInfo: [CKPartialErrorsByItemIDKey: ["a": limited, "b": CKError(.networkFailure)]]), attempt: 0), 600)
+        XCTAssertNil(SyncCloudRetry.delay(for: CKError(.partialFailure, userInfo: [CKPartialErrorsByItemIDKey: ["a": limited, "b": CKError(.permissionFailure)]]), attempt: 0))
+    }
+    func testDiagnosticSnapshotIsBoundedRedactedAndKeepsFirstCauseAcrossReopenAndPartialAck() async throws {
+        let (container, coordinator, session) = try fixture()
+        let mutation = try mutation(dataset: session.binding.dataset, object: UUID(), content: "PRIVATE_BODY_SENTINEL")
+        try queue([mutation], in: container)
+        try await coordinator.acknowledge([.mutation(id: mutation.id, manifestSHA256: mutation.manifestHash)], session: session)
+        let privateText = "PRIVATE_ACCOUNT_PATH_RECORD_SENTINEL"
+        let nested = NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: privateText])
+        let first = CKError(.partialFailure, userInfo: [
+            NSLocalizedDescriptionKey: privateText,
+            NSUnderlyingErrorKey: nested,
+            CKPartialErrorsByItemIDKey: [privateText: CKError(.permissionFailure, userInfo: [NSLocalizedDescriptionKey: privateText])]])
+        coordinator.recordDiagnostic(.init(phase: "uploading", recordTypes: [CloudRecordCodec.mutationType, privateText],
+            succeeded: 1, failed: 1, error: first), binding: session.binding)
+        for _ in 0..<24 {
+            coordinator.recordDiagnostic(.init(phase: "cycle", error: CKError(.operationCancelled)), binding: session.binding)
+        }
+        let media = coordinator.mediaRoot
+        let reopened = SyncProductCoordinator(container: container, mediaRoot: media, environment: .development, automaticSync: false)
+        let text = reopened.diagnosticText()
+        XCTAssertLessThanOrEqual(text.utf8.count, 32_768)
+        for secret in [privateText, "PRIVATE_BODY_SENTINEL", mutation.id.uuidString, session.binding.accountHash, session.binding.dataset.uuidString] {
+            XCTAssertFalse(text.contains(secret), secret)
+        }
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any])
+        let firstSaved = try XCTUnwrap(object["firstFailure"] as? [String: Any])
+        XCTAssertEqual(firstSaved["succeeded"] as? Int, 1); XCTAssertEqual(firstSaved["failed"] as? Int, 1)
+        XCTAssertEqual(firstSaved["recordTypes"] as? [String], [CloudRecordCodec.mutationType])
+        let failure = try XCTUnwrap(firstSaved["failure"] as? [String: Any])
+        XCTAssertEqual(failure["domain"] as? String, CKErrorDomain)
+        XCTAssertEqual(failure["code"] as? Int, CKError.Code.partialFailure.rawValue)
+        XCTAssertEqual((failure["children"] as? [[String: Any]])?.count, 2)
+        XCTAssertEqual((object["events"] as? [Any])?.count, 8)
+        let row = try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<ProductSyncOutbox>()).first)
+        XCTAssertFalse(row.completed)
+        XCTAssertEqual(try JSONDecoder().decode([String].self, from: row.acknowledgedRecords).count, 1)
+        let before = (object["events"] as? [Any])?.count
+        coordinator.recordDiagnostic(.init(phase: "cycle", error: first), binding: try cloned(session.binding, generation: UUID()).binding)
+        let after = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(coordinator.diagnosticText().utf8)) as? [String: Any])
+        XCTAssertEqual((after["events"] as? [Any])?.count, before)
+    }
+    func testUnsupportedDownloadedHistoryRemainsProtectivelyPaused() async throws {
+        let (_, coordinator, session) = try fixture()
+        let manifest = try MutationManifest(dataset: session.binding.dataset, mutation: UUID(),
+            object: SyncObject(kind: "FutureAggregate", id: UUID()), payloadVersion: 99, payload: PayloadManifest(bytes: Data([1])))
+        try await coordinator.durableInbox([.mutation(manifest)], session: session)
+        try await coordinator.applyDurableInbox(session: session)
+        XCTAssertTrue(coordinator.requiresAttention); XCTAssertFalse(coordinator.canAutomaticallySync)
+    }
+
+    func testColdStartAccountNetworkFailureRetriesBeforeTransportCreationAndKeepsIdentity() async throws {
+        let (container, initial, _) = try schedulingFixture()
+        let original = try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        let originalID = original.id, originalAccount = original.accountHash
+        var reads = 0
+        let driver = SyntheticSyncDriver(); driver.acknowledgeUploads = true
+        let replay = SyncProductCoordinator(container: container, mediaRoot: initial.mediaRoot, environment: .development, automaticSync: true,
+            accountReader: {
+                reads += 1
+                if reads == 1 { throw CKError(.networkUnavailable) }
+                return String(repeating: "a", count: 64)
+            }, transportFactory: { persistence in driver.persistence = persistence; return driver })
+        await replay.resumeIfEnabled()
+        XCTAssertEqual(driver.starts, 0); XCTAssertFalse(replay.requiresAttention)
+        try await eventually { driver.cycles == 1 && !replay.busy }
+        XCTAssertEqual(reads, 2); XCTAssertEqual(driver.starts, 1)
+        let final = try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<ProductSyncDataset>()).first)
+        XCTAssertEqual(final.id, originalID); XCTAssertEqual(final.accountHash, originalAccount)
+        XCTAssertNotNil(final.lastSuccess)
+        await replay.disable()
+    }
+    func testTemporaryAccountStatusCanRetryButUnavailableAccountStaysProtected() throws {
+        XCTAssertNoThrow(try SyncCloudTransport.validateAccountStatus(.available))
+        for status in [CKAccountStatus.temporarilyUnavailable, .couldNotDetermine] {
+            XCTAssertThrowsError(try SyncCloudTransport.validateAccountStatus(status)) {
+                XCTAssertNotNil(SyncCloudRetry.delay(for: $0, attempt: 0))
+            }
+        }
+        for status in [CKAccountStatus.noAccount, .restricted] {
+            XCTAssertThrowsError(try SyncCloudTransport.validateAccountStatus(status)) {
+                XCTAssertEqual($0 as? SyncCloudTransportError, .paused(.accountUnavailable))
+                XCTAssertNil(SyncCloudRetry.delay(for: $0, attempt: 0))
+            }
+        }
+    }
+
+    func testDatabasePushDuringBusyCycleSchedulesExactlyOneFollowingFetch() async throws {
+        let (_, coordinator, driver) = try schedulingFixture()
+        var gate: CheckedContinuation<Void, Never>?
+        driver.onFetch = { value in if value.cycles == 1 { await withCheckedContinuation { gate = $0 } } }
+        let start = Task { await coordinator.enable() }
+        try await eventually { gate != nil }
+        SyncPushBridge.coordinator = coordinator
+        defer { SyncPushBridge.coordinator = nil }
+        for _ in 0..<3 {
+            let result = await SyncPushBridge.receive(push())
+            XCTAssertEqual(result, .newData)
+        }
+        XCTAssertEqual(driver.cycles, 1)
+        gate?.resume(); gate = nil; await start.value
+        try await eventually { driver.cycles == 2 && !coordinator.busy }
+        XCTAssertEqual(driver.maxActiveCycles, 1); XCTAssertEqual(driver.starts, 1)
+        await coordinator.disable()
+    }
+    func testDisableCancelsAnAlreadyScheduledNetworkRetry() async throws {
+        let (_, coordinator, driver) = try schedulingFixture()
+        driver.onFetch = { _ in throw CKError(.networkUnavailable) }
+        await coordinator.enable()
+        XCTAssertTrue(coordinator.canAutomaticallySync)
+        await coordinator.disable()
+        coordinator.networkChanged(connected: false); coordinator.networkChanged(connected: true)
+        try await Task.sleep(nanoseconds: 2_200_000_000)
+        XCTAssertEqual(driver.cycles, 1); XCTAssertFalse(coordinator.enabled)
+    }
 
 }

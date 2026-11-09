@@ -1,6 +1,160 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Sync will retry automatically. Local data is kept.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sync will retry automatically. Local data is kept."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "同步将自动重试，本地数据已保留。"
+        }
+      }
+    }
+  },
+  "Sync is waiting for missing versions or photos. Local data is kept.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sync is waiting for missing versions or photos. Local data is kept."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "正在等待尚未到齐的版本或照片，本地数据已保留。"
+        }
+      }
+    }
+  },
+  "Downloaded sync data needs review. Local data and pending revisions are kept.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Downloaded sync data needs review. Local data and pending revisions are kept."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "下载的同步数据需要检查，本地数据和待同步版本已保留。"
+        }
+      }
+    }
+  },
+  "Copy sync diagnostics": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Copy sync diagnostics"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "复制同步诊断"
+        }
+      }
+    }
+  },
+  "Diagnostics copied": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Diagnostics copied"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "诊断已复制"
+        }
+      }
+    }
+  },
+  "Sync is being validated in daily use. Complete content, original photos, background delivery and two-device behavior still need acceptance. Keep an exported backup of important data.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sync is being validated in daily use. Complete content, original photos, background delivery and two-device behavior still need acceptance. Keep an exported backup of important data."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "同步正在日常使用中验证。完整内容、原图、后台传递和双设备行为仍需验收，请保留重要数据的导出备份。"
+        }
+      }
+    }
+  },
+  "Connect this workspace to iCloud?": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Connect this workspace to iCloud?"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "将此工作区连接到 iCloud？"
+        }
+      }
+    }
+  },
+  "Connects this workspace to the current account’s production iCloud database: existing local records and original photos upload, and available cloud content downloads to this device. Development cloud data and sync history stay separate. Concurrent edits are kept for review.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Connects this workspace to the current account’s production iCloud database: existing local records and original photos upload, and available cloud content downloads to this device. Development cloud data and sync history stay separate. Concurrent edits are kept for review."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "将此工作区连接到当前账户的正式 iCloud 数据库：上传本地已有记录和原图，并将可用的云端内容下载到本机。开发环境的云端数据和同步历史保持独立。并发修改会保留待审核。"
+        }
+      }
+    }
+  },
+  "Connects this workspace to the signed-in iCloud account: existing local records and original photos upload, and available cloud content downloads to this device. Other installations using this workspace can receive changes. Concurrent edits are kept for review.": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Connects this workspace to the signed-in iCloud account: existing local records and original photos upload, and available cloud content downloads to this device. Other installations using this workspace can receive changes. Concurrent edits are kept for review."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "将此工作区连接到已登录的 iCloud 账户：上传本地已有记录和原图，并将可用的云端内容下载到本机。使用此工作区的其他安装可接收变化。并发修改会保留待审核。"
+        }
+      }
+    }
+  }
+,
   "Production": {
     "extractionState": "manual",
     "localizations": {

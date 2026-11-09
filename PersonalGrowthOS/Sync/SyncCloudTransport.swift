@@ -98,6 +98,10 @@ enum SyncCloudUpload {
     func didSaveZone(session: SyncCloudSession) async throws
     func saveEngineState(_ bytes: Data, session: SyncCloudSession) async throws
     func didPause(_ reason: SyncCloudPauseReason, binding: SyncBinding)
+    func recordDiagnostic(_ event: SyncDiagnosticEvent, binding: SyncBinding)
+}
+extension SyncCloudPersistence {
+    func recordDiagnostic(_ event: SyncDiagnosticEvent, binding: SyncBinding) {}
 }
 
 /// Cloud-independent ordered commit seam. The SDK delivers events serially; this additional
@@ -134,6 +138,7 @@ enum SyncCloudUpload {
                 try session.check()
             } catch {
                 if session.active {
+                    persistence.recordDiagnostic(.init(phase: "applying", failed: 1, error: error), binding: session.binding)
                     session.pause(.persistenceFailure); persistence.didPause(.persistenceFailure, binding: session.binding)
                 }
                 throw error
@@ -144,9 +149,102 @@ enum SyncCloudUpload {
     }
 }
 
+/// Only allowlisted metadata leaves the error object. Descriptions, userInfo values,
+/// record IDs, account identifiers, paths, URLs and CKRecords are never serialized.
+struct SyncDiagnosticEvent: Codable, Equatable {
+    struct Failure: Codable, Equatable {
+        let domain: String
+        let code: Int
+        let reason: String
+        let children: [Failure]
+        static func capture(_ error: Error, depth: Int = 0) -> Failure {
+            let ns = error as NSError
+            let domains = [CKErrorDomain, NSCocoaErrorDomain, NSURLErrorDomain, NSPOSIXErrorDomain]
+            let domain = domains.contains(ns.domain) ? ns.domain : "application"
+            let reason: String
+            if let cloud = error as? CKError { reason = String(describing: cloud.code) }
+            else if case SyncCloudTransportError.paused(let pause) = error { reason = String(describing: pause) }
+            else if let validation = error as? SyncValidationError { reason = String(describing: validation) }
+            else if error is StorePublicationFailure { reason = "Local store busy" }
+            else { reason = "Operation failed" }
+            var children: [Failure] = []
+            if depth < 2 {
+                if let underlying = ns.userInfo[NSUnderlyingErrorKey] as? Error {
+                    children.append(capture(underlying, depth: depth + 1))
+                }
+                if let cloud = error as? CKError {
+                    // Sort safe summaries, never stringify the dictionary's record keys.
+                    let partial = (cloud.partialErrorsByItemID ?? [:]).values.prefix(4 - children.count).map { capture($0, depth: depth + 1) }
+                    children += partial.sorted { ($0.domain, $0.code) < ($1.domain, $1.code) }.prefix(4 - children.count)
+                }
+            }
+            return Failure(domain: domain, code: ns.code, reason: reason, children: children)
+        }
+    }
+    let time: Date
+    let phase: String
+    let recordTypes: [String]
+    let succeeded: Int
+    let failed: Int
+    let failure: Failure?
+    init(phase: String, recordTypes: [String] = [], succeeded: Int = 0, failed: Int = 0, error: Error? = nil) {
+        time = Date()
+        self.phase = ["checking", "uploading", "downloading", "applying", "paused", "cycle"].contains(phase) ? phase : "cycle"
+        let allowed = [CloudRecordCodec.mutationType, CloudRecordCodec.chunkType, CloudRecordCodec.originalType]
+        self.recordTypes = Array(Set(recordTypes.filter { allowed.contains($0) })).sorted()
+        self.succeeded = max(0, succeeded); self.failed = max(0, failed)
+        failure = error.map { Failure.capture($0) }
+    }
+}
+
+struct SyncDiagnosticHistory: Codable {
+    var firstFailure: SyncDiagnosticEvent?
+    var events: [SyncDiagnosticEvent] = []
+    var episodeOpen = false
+    mutating func append(_ event: SyncDiagnosticEvent) {
+        if event.failure != nil {
+            if !episodeOpen { firstFailure = event; episodeOpen = true }
+        }
+        events.append(event)
+        events = Array(events.suffix(8))
+    }
+}
+
+/// The production driver and synthetic transports share the same startup/scheduling path.
+@MainActor protocol SyncCloudDriving: AnyObject {
+    var session: SyncCloudSession? { get }
+    func start(binding: SyncBinding, signedEnvironment: CloudEnvironment, createZone: Bool) async throws
+    func synchronize() async throws
+    func stop() async
+}
+
+/// Fail closed for identity/integrity; only explicitly temporary service errors retry.
+enum SyncCloudRetry {
+    static func delay(for error: Error, attempt: Int) -> TimeInterval? {
+        var budget = 128
+        return delay(for: error, attempt: attempt, budget: &budget)
+    }
+    private static func delay(for error: Error, attempt: Int, budget: inout Int) -> TimeInterval? {
+        guard budget > 0 else { return nil }; budget -= 1
+        guard let cloud = error as? CKError else { return nil }
+        if cloud.code == .partialFailure {
+            let values = (cloud.partialErrorsByItemID ?? [:]).values
+            guard !values.isEmpty, values.count <= budget else { return nil }
+            let errors = Array(values)
+            let delays = errors.compactMap { delay(for: $0, attempt: attempt, budget: &budget) }
+            return delays.count == errors.count ? delays.max() : nil
+        }
+        guard [.networkUnavailable, .networkFailure, .serviceUnavailable, .requestRateLimited,
+               .zoneBusy, .serverResponseLost, .batchRequestFailed].contains(cloud.code) else { return nil }
+        let backoff = min(300, 2 * pow(2, Double(min(max(0, attempt), 8))))
+        let server = cloud.retryAfterSeconds ?? (cloud.userInfo[CKErrorRetryAfterKey] as? NSNumber)?.doubleValue ?? 0
+        return max(backoff, server.isFinite ? max(0, server) : 0)
+    }
+}
+
 /// Opt-in iOS 17 driver. Initialization performs no account request and creates no container.
 /// CloudKit's environment comes from signing; it is NOT selected by CKContainer(identifier:).
-@MainActor final class SyncCloudTransport: CKSyncEngineDelegate {
+@MainActor final class SyncCloudTransport: SyncCloudDriving, CKSyncEngineDelegate {
     private let persistence: any SyncCloudPersistence
     private(set) var session: SyncCloudSession?
     private var events: SyncCloudDurableEvents?
@@ -155,9 +253,18 @@ enum SyncCloudUpload {
     private var admitted: [CKRecord.ID: (SyncCloudUpload, CKRecord)] = [:]
     private var synchronizingSession: SyncCloudSession?
     private var allowsInitialZoneCreation = false
+    private var retryableFailure: Error?
+    private var phase = "checking"
 
     init(persistence: any SyncCloudPersistence) { self.persistence = persistence }
 
+    static func validateAccountStatus(_ status: CKAccountStatus) throws {
+        switch status {
+        case .available: return
+        case .couldNotDetermine, .temporarilyUnavailable: throw CKError(.serviceUnavailable)
+        default: throw SyncCloudTransportError.paused(.accountUnavailable)
+        }
+    }
     static func accountFingerprint(recordID: CKRecord.ID) -> String {
         syncDigest(Data(recordID.recordName.utf8))
     }
@@ -179,7 +286,7 @@ enum SyncCloudUpload {
             let container = CKContainer(identifier: binding.container)
             let status = try await container.accountStatus()
             try active.check()
-            guard status == .available else { throw SyncCloudTransportError.paused(.accountUnavailable) }
+            try Self.validateAccountStatus(status)
             let user = try await container.userRecordID()
             try active.check()
             guard Self.accountFingerprint(recordID: user) == binding.accountHash else {
@@ -200,7 +307,7 @@ enum SyncCloudUpload {
             if createZone { created.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: binding.dataset)))]) }
             try refreshOutbox(engine: created, session: active)
         } catch {
-            if active.active { pause(reason(for: error), session: active) }
+            if active.active { handleFailure(error, session: active) }
             throw active.observeFailure(error)
         }
     }
@@ -218,20 +325,25 @@ enum SyncCloudUpload {
         try session.check()
         guard synchronizingSession !== session else { return }
         synchronizingSession = session
+        retryableFailure = nil
         defer { if synchronizingSession === session { synchronizingSession = nil } }
         do {
             try refreshOutbox(engine: engine, session: session)
             let zone = CloudRecordCodec.zone(dataset: session.binding.dataset)
+            phase = "uploading"
             try Self.reportActivity(.uploading, session: session, persistence: persistence)
             try await engine.sendChanges(.init(scope: .zoneIDs([zone])))
             try session.check()
+            if let retryableFailure { throw retryableFailure }
             // Old ACKs may have coincided with newer local edits. Re-read durable outbox.
             try refreshOutbox(engine: engine, session: session)
+            phase = "downloading"
             try Self.reportActivity(.downloading, session: session, persistence: persistence)
             try await engine.fetchChanges(.init(scope: .zoneIDs([zone])))
             try session.check()
+            if let retryableFailure { throw retryableFailure }
         } catch {
-            if session.active { pause(reason(for: error), session: session) }
+            if session.active { handleFailure(error, session: session) }
             throw session.observeFailure(error)
         }
     }
@@ -295,9 +407,14 @@ enum SyncCloudUpload {
                 }
                 // Store precise successes even if other records in this batch failed.
                 try await events.accept(.acknowledged(acknowledgements))
+                persistence.recordDiagnostic(.init(phase: "uploading",
+                    recordTypes: changes.savedRecords.map(\.recordType),
+                    succeeded: changes.savedRecords.count), binding: session.binding)
                 try session.check()
                 for saved in changes.savedRecords { admitted.removeValue(forKey: saved.recordID) }
                 var unresolved: CKError?
+                var failedCount = 0
+                var firstFailure: CKError?
                 for failed in changes.failedRecordSaves {
                     try session.check()
                     if failed.error.code == .serverRecordChanged, let server = failed.error.serverRecord {
@@ -314,9 +431,19 @@ enum SyncCloudUpload {
                         try session.check()
                         admitted.removeValue(forKey: failed.record.recordID)
                         syncEngine.state.remove(pendingRecordZoneChanges: [.saveRecord(failed.record.recordID)])
-                    } else if unresolved == nil { unresolved = failed.error }
+                    } else {
+                        failedCount += 1
+                        if firstFailure == nil { firstFailure = failed.error }
+                        if unresolved == nil || (SyncCloudRetry.delay(for: unresolved!, attempt: 0) != nil && SyncCloudRetry.delay(for: failed.error, attempt: 0) == nil) {
+                            unresolved = failed.error
+                        }
+                    }
                 }
-                if let unresolved { pause(reason(for: unresolved), session: session) }
+                if let firstFailure {
+                    persistence.recordDiagnostic(.init(phase: "uploading", recordTypes: changes.failedRecordSaves.map { $0.record.recordType },
+                        failed: failedCount, error: firstFailure), binding: session.binding)
+                }
+                if let unresolved { handleFailure(unresolved, session: session) }
             case .sentDatabaseChanges(let changes):
                 if changes.savedZones.contains(where: { $0.zoneID == zone }) {
                     try await events.accept(.zoneSaved)
@@ -325,13 +452,13 @@ enum SyncCloudUpload {
                 }
                 if !changes.deletedZoneIDs.isEmpty || !changes.failedZoneDeletes.isEmpty {
                     pause(.zoneMissing, session: session)
-                } else if let failure = changes.failedZoneSaves.first { pause(reason(for: failure.error), session: session) }
+                } else if let failure = changes.failedZoneSaves.first { handleFailure(failure.error, session: session) }
             case .didFetchRecordZoneChanges(let fetched):
-                if let error = fetched.error { pause(reason(for: error), session: session) }
+                if let error = fetched.error { handleFailure(error, session: session) }
             default: break
             }
         } catch {
-            if session.active { pause(reason(for: error), session: session) }
+            if session.active { handleFailure(error, session: session) }
             else { cancelLater(syncEngine) }
         }
     }
@@ -369,7 +496,7 @@ enum SyncCloudUpload {
             admitted[id] = (upload, record)
             return record
         } catch {
-            if session.active { pause(reason(for: error), session: session) }
+            if session.active { handleFailure(error, session: session) }
             return nil
         }
     }
@@ -511,6 +638,16 @@ enum SyncCloudUpload {
         return true
     }
 
+    private func handleFailure(_ error: Error, session: SyncCloudSession) {
+        guard session.active else { return }
+        persistence.recordDiagnostic(.init(phase: phase, failed: 1, error: error), binding: session.binding)
+        if SyncCloudRetry.delay(for: error, attempt: 0) != nil {
+            // Keep the same engine, pending records, checkpoint and exact successes.
+            // The outer serialized cycle reports this failure to the retry scheduler.
+            if retryableFailure == nil { retryableFailure = error }
+        } else { pause(reason(for: error), session: session) }
+    }
+
     private func reason(for error: Error) -> SyncCloudPauseReason {
         if case SyncCloudTransportError.paused(let reason) = error { return reason }
         if error is SyncValidationError { return .invalidRecord }
@@ -525,6 +662,7 @@ enum SyncCloudUpload {
     }
     private func pause(_ reason: SyncCloudPauseReason, session: SyncCloudSession) {
         guard session.active else { return }
+        persistence.recordDiagnostic(.init(phase: "paused", failed: 1, error: SyncCloudTransportError.paused(reason)), binding: session.binding)
         session.pause(reason); persistence.didPause(reason, binding: session.binding)
         if let engine { cancelLater(engine) }
     }

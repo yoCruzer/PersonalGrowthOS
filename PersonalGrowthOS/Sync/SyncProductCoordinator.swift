@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import CloudKit
 import Combine
+import Network
 import UIKit
 import SyncFoundation
 
@@ -60,14 +61,36 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     @Published private(set) var canConfirmInitialZoneCreation = false
     private var initialZoneConsent: SyncBinding?
     private var activation = UUID()
-    private var driver: SyncCloudTransport?
+    private var driver: (any SyncCloudDriving)?
+    private let accountReader: (() async throws -> String)?
+    private let transportFactory: @MainActor (any SyncCloudPersistence) -> any SyncCloudDriving
+    private var pendingWake = false
+    private var retryAttempt = 0
+    private var retryNotBefore: Date?
+    private var pathMonitor: NWPathMonitor?
+    private var previouslyConnected: Bool?
+    private static let retryPrefix = "Sync retry scheduled|"
+    private static let waitingReason = "Sync is waiting for missing versions or photos. Local data is kept."
+    private static let editingReason = "Downloaded changes are not yet applied. Finish the current edit, then sync again."
+    private static let legacyWaitingReason = "Sync is incomplete: some versions or photos have not arrived or cannot be read. Local data is kept."
+    private static func isWaiting(_ reason: String) -> Bool {
+        reason.hasPrefix(retryPrefix) || [waitingReason, editingReason, legacyWaitingReason].contains(reason)
+    }
+    private static func retryDate(_ reason: String?) -> Date? {
+        guard let reason, reason.hasPrefix(retryPrefix),
+              let seconds = Double(reason.dropFirst(retryPrefix.count)), seconds.isFinite else { return nil }
+        return Date(timeIntervalSince1970: seconds)
+    }
     private var wakeTask: Task<Void, Never>?
     private var observer: NSObjectProtocol?
     private let environment: CloudEnvironment?
     private let automaticSync: Bool
 
-    init(container: ModelContainer, mediaRoot: URL, environment: CloudEnvironment? = nil, automaticSync: Bool = true) {
+    init(container: ModelContainer, mediaRoot: URL, environment: CloudEnvironment? = nil, automaticSync: Bool = true,
+         accountReader: (() async throws -> String)? = nil,
+         transportFactory: (@MainActor (any SyncCloudPersistence) -> any SyncCloudDriving)? = nil) {
         self.container = container; self.mediaRoot = mediaRoot; self.automaticSync = automaticSync
+        self.accountReader = accountReader; self.transportFactory = transportFactory ?? { SyncCloudTransport(persistence: $0) }
         self.environment = environment ?? SyncBuildConfiguration.environment()
         refreshStatus()
         observer = NotificationCenter.default.addObserver(forName: .productSyncLocalCommit, object: nil, queue: .main) { [weak self] notification in
@@ -77,8 +100,16 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 self.refreshStatus(); self.scheduleSync()
             }
         }
+        if automaticSync {
+            let monitor = NWPathMonitor(); pathMonitor = monitor
+            monitor.pathUpdateHandler = { [weak self] path in
+                let connected = path.status == .satisfied
+                Task { @MainActor [weak self] in self?.networkChanged(connected: connected) }
+            }
+            monitor.start(queue: DispatchQueue(label: "ProductSyncReachability"))
+        }
     }
-    deinit { if let observer { NotificationCenter.default.removeObserver(observer) }; wakeTask?.cancel() }
+    deinit { pathMonitor?.cancel(); if let observer { NotificationCenter.default.removeObserver(observer) }; wakeTask?.cancel() }
 
     private func dataset(in context: ModelContext) throws -> ProductSyncDataset? {
         try ProductSyncStoreSelection.selectedDataset(in: context)
@@ -95,7 +126,8 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 status = String(localized: "iCloud sync is off"); return
             }
             enabled = dataset.enabled
-            requiresAttention = dataset.needsReconciliation || dataset.blockedReason != nil
+            requiresAttention = dataset.needsReconciliation || (dataset.blockedReason.map { !Self.isWaiting($0) } ?? false)
+            retryNotBefore = Self.retryDate(dataset.blockedReason)
             let id = dataset.id
             conflicts = try context.fetch(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == id }))
                 .filter { $0.projectionState == "conflict" }.compactMap { state in
@@ -103,8 +135,10 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                     return SyncConflictSummary(key: .init(kind: kind, id: state.businessID), heads: heads)
                 }
             pendingCount = try context.fetch(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id && !$0.completed })).count
-            if let reason = dataset.blockedReason { status = Self.localizedStoredStatus(reason) }
-            else if !enabled { status = String(localized: "iCloud sync is off") }
+            if !enabled { status = String(localized: "iCloud sync is off") }
+            else if let reason = dataset.blockedReason {
+                status = reason.hasPrefix(Self.retryPrefix) ? String(localized: "Sync will retry automatically. Local data is kept.") : Self.localizedStoredStatus(reason)
+            }
             else if pendingCount > 0 {
                 status = String.localizedStringWithFormat(String(localized: "%lld local revisions waiting"), Int64(pendingCount))
             } else if let completed = dataset.lastSuccess {
@@ -126,18 +160,16 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     }
     private func activate(initialZoneConsent consent: SyncBinding?) async {
         guard !busy else { return }; busy = true; activity = .checking
-        defer { busy = false; activity = nil }
+        defer { finishCycle() }
+        wakeTask?.cancel(); wakeTask = nil; pendingWake = false
         let attempt = UUID(); activation = attempt
         _ = takeInitialZoneConsent()
         var consentAccepted = false
         var failureBinding: SyncBinding?
+        var transportStarted = false
         do {
             guard let environment else { throw SyncCloudTransportError.paused(.environmentMismatch) }
-            let cloud = CKContainer(identifier: Self.containerID)
-            let accountStatus = try await cloud.accountStatus()
-            guard activation == attempt else { throw SyncCloudTransportError.staleSession }
-            guard accountStatus == .available else { throw SyncCloudTransportError.paused(.accountUnavailable) }
-            let account = SyncCloudTransport.accountFingerprint(recordID: try await cloud.userRecordID())
+            let account = try await readAccount()
             guard activation == attempt else { throw SyncCloudTransportError.staleSession }
             let context = ModelContext(container); context.autosaveEnabled = false
             let binding = try StorePublication.perform(at: mediaRoot) {
@@ -169,7 +201,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             failureBinding = binding
             if let driver { await driver.stop() }
             guard activation == attempt else { throw SyncCloudTransportError.staleSession }
-            let transport = SyncCloudTransport(persistence: self); driver = transport
+            let transport = transportFactory(self); driver = transport
             var value = try requireDataset(binding)
             if !value.zoneEstablished && value.zoneCreationAttempted {
                 // A prior attempted creation is not permission to recreate a deleted zone.
@@ -178,8 +210,8 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                     check: { [self] in
                         guard activation == attempt else { throw SyncCloudTransportError.staleSession }
                         _ = try requireDataset(binding)
-                    }, account: { SyncCloudTransport.accountFingerprint(recordID: try await cloud.userRecordID()) },
-                    fetch: { try await cloud.privateCloudDatabase.recordZone(for: $0) })
+                    }, account: { [self] in try await readAccount() },
+                    fetch: { try await CKContainer(identifier: Self.containerID).privateCloudDatabase.recordZone(for: $0) })
                 guard activation == attempt else { throw SyncCloudTransportError.staleSession }
                 if exists {
                     try StorePublication.perform(at: mediaRoot) {
@@ -206,6 +238,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 }
             }
             try await transport.start(binding: binding, signedEnvironment: environment, createZone: createZone)
+            transportStarted = true
             guard activation == attempt else { throw SyncCloudTransportError.staleSession }
             enabled = true
             if automaticSync { UIApplication.shared.registerForRemoteNotifications() }
@@ -215,13 +248,22 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             try markSuccessful(binding)
         } catch {
             guard activation == attempt else { return }
+            if SyncCloudRetry.delay(for: error, attempt: 0) != nil {
+                if !transportStarted { if let driver { await driver.stop() }; driver = nil }
+                if failureBinding == nil, let prior = try? dataset(in: ModelContext(container)), prior.enabled,
+                   let account = prior.accountHash, let realm = CloudEnvironment(rawValue: prior.environment) {
+                    failureBinding = try? SyncBinding(container: Self.containerID, environment: realm,
+                        accountHash: account, dataset: prior.id, generation: prior.generation)
+                }
+            }
+            guard activation == attempt else { return }
             presentFailure(error, binding: failureBinding)
         }
     }
     func disable() async {
         activity = nil
         _ = takeInitialZoneConsent()
-        activation = UUID(); wakeTask?.cancel(); wakeTask = nil
+        activation = UUID(); wakeTask?.cancel(); wakeTask = nil; pendingWake = false; retryNotBefore = nil; retryAttempt = 0
         driver?.session?.invalidate()
         do {
             try StorePublication.perform(at: mediaRoot) {
@@ -233,10 +275,12 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         enabled = false; requiresAttention = false; status = String(localized: "iCloud sync is off. Local data and pending revisions are kept.")
     }
     func synchronize() async {
-        guard !busy, enabled else { return }
+        guard enabled else { return }
+        if busy { pendingWake = true; return }
+        if let retryNotBefore, retryNotBefore > Date() { scheduleSync(); return }
         guard let driver, let session = driver.session, session.active else { await enable(); return }
         let attempt = activation
-        busy = true; defer { busy = false; activity = nil }
+        busy = true; pendingWake = false; defer { finishCycle() }
         do {
             try await applyDurableInbox(session: session)
             try await driver.synchronize()
@@ -302,20 +346,66 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 guard binding.container == Self.containerID, let value = try dataset(in: ModelContext(container)),
                       value.id == binding.dataset, value.generation == binding.generation,
                       value.accountHash == binding.accountHash, value.environment == binding.environment.rawValue else { return }
+                recordDiagnostic(.init(phase: activity.map { String(describing: $0) } ?? "cycle", failed: 1, error: error), binding: binding)
+                if value.blockedReason == nil || Self.isWaiting(value.blockedReason!) {
+                    if let delay = SyncCloudRetry.delay(for: error, attempt: retryAttempt) {
+                        retryAttempt += 1
+                        let deadline = Date().addingTimeInterval(delay)
+                        try StorePublication.perform(at: mediaRoot) {
+                            let write = ModelContext(container); let current = try requireDataset(binding, context: write)
+                            current.blockedReason = Self.retryPrefix + String(deadline.timeIntervalSince1970)
+                            try write.save()
+                        }
+                        activity = nil; refreshStatus(); pendingWake = true; scheduleSync(); return
+                    }
+                }
                 activity = nil; refreshStatus(); requiresAttention = true
                 if let first = value.blockedReason { status = Self.localizedStoredStatus(first); return }
             } catch { status = String(localized: "Sync metadata needs attention; local data is preserved."); requiresAttention = true; return }
         } else { activity = nil; refreshStatus(); requiresAttention = true }
         status = message(error)
     }
-    var canAutomaticallySync: Bool { automaticSync && enabled && !requiresAttention && !busy }
-    func resumeIfEnabled() async { if canAutomaticallySync { await synchronize() } }
-    private func scheduleSync() {
-        guard canAutomaticallySync else { return }; wakeTask?.cancel()
+    var canAutomaticallySync: Bool { automaticSync && enabled && !requiresAttention }
+    func resumeIfEnabled() async {
+        refreshStatus()
+        if canAutomaticallySync { await synchronize() }
+    }
+    func networkChanged(connected: Bool) {
+        defer { previouslyConnected = connected }
+        if previouslyConnected == false && connected { scheduleSync() }
+    }
+    private func readAccount() async throws -> String {
+        if let accountReader { return try await accountReader() }
+        let cloud = CKContainer(identifier: Self.containerID)
+        try SyncCloudTransport.validateAccountStatus(try await cloud.accountStatus())
+        return SyncCloudTransport.accountFingerprint(recordID: try await cloud.userRecordID())
+    }
+    private func finishCycle() {
+        busy = false; activity = nil
+        guard canAutomaticallySync else { pendingWake = false; return }
+        let reason = try? dataset(in: ModelContext(container))?.blockedReason
+        let waiting = reason.map(Self.isWaiting) ?? false
+        let waitingForPieces = waiting && Self.retryDate(reason) == nil
+        if waitingForPieces { retryAttempt += 1 }
+        if pendingWake || waiting || pendingCount > 0 {
+            let delay = waitingForPieces ? min(300, 2 * pow(2, Double(min(retryAttempt, 7)))) : (waiting ? 0 : 1)
+            scheduleSync(after: delay)
+        }
+    }
+    private func scheduleSync(after delay: TimeInterval = 1) {
+        guard canAutomaticallySync else { return }
+        pendingWake = true
+        guard !busy else { return }
+        // Coalesce requests without moving an existing deadline later.
+        guard wakeTask == nil else { return }
+        let wait = max(delay, retryNotBefore?.timeIntervalSinceNow ?? 0)
+        let attempt = activation
         wakeTask = Task { @MainActor [weak self] in
-            do { try await Task.sleep(nanoseconds: 1_000_000_000); try Task.checkCancellation() }
+            do { try await Task.sleep(nanoseconds: UInt64(min(max(0, wait), 86_400) * 1_000_000_000)); try Task.checkCancellation() }
             catch { return }
-            await self?.synchronize()
+            guard let self, self.activation == attempt else { return }
+            self.wakeTask = nil
+            await self.synchronize()
         }
     }
     private func message(_ error: Error) -> String {
@@ -504,6 +594,8 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
             guard value.blockedReason == nil,
                   try context.fetchCount(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id && !$0.completed })) == 0 else { return }
             value.lastSuccess = completedAt; try context.save()
+            retryAttempt = 0
+            var history = diagnosticHistory(); history.episodeOpen = false; saveDiagnosticHistory(history)
         }
         refreshStatus()
     }
@@ -524,7 +616,7 @@ extension SyncProductCoordinator {
             projectionPassCount += 1
             #endif
             guard !container.mainContext.hasChanges else {
-                value.blockedReason = "Downloaded changes are not yet applied. Finish the current edit, then sync again."
+                value.blockedReason = Self.editingReason
                 try context.save(); status = Self.localizedStoredStatus(value.blockedReason!)
                 return
             }
@@ -543,6 +635,7 @@ extension SyncProductCoordinator {
                 } catch { row.quarantinedReason = "Invalid immutable manifest" }
             }
             let assets = SyncAssetStore(root: mediaRoot)
+            var invalidContent = false
             var verified = Set<UUID>()
             var documents: [UUID: SyncDomainDocument] = [:]
             for (id, manifest) in manifests {
@@ -567,8 +660,8 @@ extension SyncProductCoordinator {
                         context.insert(row); records[id] = row
                     }
                 } catch {
-                    // Missing chunks/originals and unsupported domain data remain durable but
-                    // unpublishable. They never release dependencies or an older live revision.
+                    // Missing pieces can arrive later. Corrupt/unsupported bytes need review.
+                    if case SyncValidationError.missingAsset = error {} else { invalidContent = true }
                 }
             }
             let result = try CausalProjection.project(manifestBytes: manifests.values.map { try $0.encoded() }, dataset: datasetID,
@@ -629,7 +722,17 @@ extension SyncProductCoordinator {
                 try SyncDomainInstaller.install(projection, affectedKeys: affected, in: context)
                 value.blockedReason = nil
             } else {
-                value.blockedReason = conflicts.isEmpty ? "Sync is incomplete: some versions or photos have not arrived or cannot be read. Local data is kept." : "Concurrent versions need review. Local data is kept; no version was silently overwritten."
+                let invalidGraph = result.contains { item in item.pendingReasons.contains { reason in
+                    switch reason {
+                    case .crossObjectParent, .causalCycle, .unsupportedPayload, .dependencyCycle: return true
+                    default: return false
+                    }
+                } }
+                if !conflicts.isEmpty {
+                    value.blockedReason = "Concurrent versions need review. Local data is kept; no version was silently overwritten."
+                } else if invalidContent || invalidGraph || inbox.contains(where: { $0.quarantinedReason != nil }) {
+                    value.blockedReason = "Downloaded sync data needs review. Local data and pending revisions are kept."
+                } else { value.blockedReason = Self.waitingReason }
             }
             do {
                 _ = try checked(session, context: context)
@@ -694,10 +797,80 @@ struct SyncConflictVersion: Identifiable {
     static weak var coordinator: SyncProductCoordinator?
     static func receive(_ userInfo: [AnyHashable: Any]) async -> UIBackgroundFetchResult {
         guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo),
-              notification.containerIdentifier == SyncProductCoordinator.containerID,
-              notification.notificationType == .recordZone,
-              let coordinator, coordinator.canAutomaticallySync else { return .noData }
-        await coordinator.synchronize()
+              let coordinator, coordinator.acceptsPush(notification), coordinator.canAutomaticallySync else { return .noData }
+        await coordinator.resumeIfEnabled()
         return coordinator.requiresAttention ? .failed : .newData
+    }
+}
+
+extension SyncProductCoordinator {
+    func acceptsPush(_ notification: CKNotification) -> Bool {
+        guard notification.containerIdentifier == Self.containerID,
+              let value = try? dataset(in: ModelContext(container)), value.enabled,
+              value.environment == environment?.rawValue else { return false }
+        if let database = notification as? CKDatabaseNotification {
+            return database.databaseScope == .private
+        }
+        if let zone = notification as? CKRecordZoneNotification {
+            return zone.databaseScope == .private && zone.recordZoneID == CloudRecordCodec.zone(dataset: value.id)
+        }
+        return false
+    }
+}
+
+extension SyncProductCoordinator {
+    private var diagnosticURL: URL? {
+        guard let value = try? dataset(in: ModelContext(container)) else { return nil }
+        let scope = [value.environment, value.id.uuidString, value.accountHash ?? "unbound"].joined(separator: "/")
+        return mediaRoot.appendingPathComponent("Sync/Diagnostics-" + syncDigest(Data(scope.utf8)) + ".json")
+    }
+    private func diagnosticHistory() -> SyncDiagnosticHistory {
+        guard let url = diagnosticURL, let bytes = try? Data(contentsOf: url), bytes.count <= 32_768,
+              let history = try? JSONDecoder().decode(SyncDiagnosticHistory.self, from: bytes) else { return .init() }
+        return history
+    }
+    private func saveDiagnosticHistory(_ history: SyncDiagnosticHistory) {
+        guard let url = diagnosticURL else { return }
+        var bounded = history
+        while let bytes = try? JSONEncoder().encode(bounded), bytes.count > 24_576, !bounded.events.isEmpty {
+            bounded.events.removeFirst()
+        }
+        guard let bytes = try? JSONEncoder().encode(bounded), bytes.count <= 24_576 else { return }
+        do {
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try bytes.write(to: url, options: .atomic)
+        } catch { /* Diagnostics never alter business persistence or synchronization ACKs. */ }
+    }
+    func recordDiagnostic(_ event: SyncDiagnosticEvent, binding: SyncBinding) {
+        guard binding.container == Self.containerID, let value = try? dataset(in: ModelContext(container)),
+              value.enabled, value.id == binding.dataset, value.generation == binding.generation,
+              value.accountHash == binding.accountHash, value.environment == binding.environment.rawValue else { return }
+        var history = diagnosticHistory(); history.append(event); saveDiagnosticHistory(history)
+    }
+    func diagnosticText() -> String {
+        struct Snapshot: Encodable {
+            let format: Int, time: Date, build: String, appVersion: String, appBuild: String, source: String, dirty: Bool, environment: String
+            let enabled: Bool, busy: Bool, requiresAttention: Bool
+            let pendingUploads: Int, pendingApplications: Int, historyRevisions: Int, historyLimit: Int
+            let historyNearLimit: Bool, retryNotBefore: Date?
+            let firstFailure: SyncDiagnosticEvent?, events: [SyncDiagnosticEvent]
+        }
+        let context = ModelContext(container), value = try? dataset(in: context), provenance = BuildProvenance()
+        let id = value?.id ?? UUID()
+        let historyCount = (try? context.fetchCount(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == id }))) ?? 0
+        let pending = (try? context.fetch(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == id })).filter { !["ready", "deleted"].contains($0.projectionState) }.count) ?? 0
+        let history = diagnosticHistory()
+        let version = AppVersionInformation()
+        let uploads = (try? context.fetchCount(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id && !$0.completed }))) ?? 0
+        let snapshot = Snapshot(format: 1, time: Date(), build: provenance.commit ?? "unknown", appVersion: version.version, appBuild: version.build, source: provenance.source,
+            dirty: provenance.isDirty, environment: value?.environment ?? environment?.rawValue ?? "unavailable",
+            enabled: enabled, busy: busy, requiresAttention: requiresAttention,
+            pendingUploads: uploads, pendingApplications: pending, historyRevisions: historyCount, historyLimit: 10_000,
+            historyNearLimit: historyCount >= 8_000, retryNotBefore: retryNotBefore,
+            firstFailure: history.firstFailure, events: history.events)
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]; encoder.dateEncodingStrategy = .iso8601
+        guard let bytes = try? encoder.encode(snapshot), bytes.count <= 32_768,
+              let text = String(data: bytes, encoding: .utf8) else { return "Sync diagnostics unavailable" }
+        return text
     }
 }

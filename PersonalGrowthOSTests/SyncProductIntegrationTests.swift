@@ -27,7 +27,7 @@ import SyncFoundation
         container.mainContext.autosaveEnabled=false
         let context=ModelContext(container);context.autosaveEnabled=false
         let dataset=ProductSyncDataset(id:datasetID)
-        dataset.accountHash=String(repeating:"a",count:64);dataset.enabled=true
+        dataset.accountHash=String(repeating:"a",count:64);dataset.enabled=true;dataset.zoneEstablished=true
         context.insert(dataset);try ProductSyncCommit.initialize(context,dataset:dataset)
         let binding=try SyncBinding(container:SyncProductCoordinator.containerID,environment:.development,
             accountHash:try XCTUnwrap(dataset.accountHash),dataset:dataset.id,generation:dataset.generation)
@@ -137,6 +137,31 @@ import SyncFoundation
         XCTAssertEqual(try SyncDomainCodec.capture(context:ModelContext(a.container)),try SyncDomainCodec.capture(context:ModelContext(b.container)))
     }
 
+    func testMissingParentWaitAutomaticallyFetchesLaterParentWithoutEchoOrAttentionBlock() async throws {
+        let a = try device(), b = try device(), id = try createEntry(a, body: "parent")
+        let parent = try head(a, id: id)
+        try edit(a, id: id, body: "later child"); let child = try head(a, id: id)
+        let childPackets = try packets(child, from: a), parentPackets = try packets(parent, from: a)
+        let driver = SyntheticSyncDriver()
+        driver.onFetch = { value in
+            try await value.persistence!.durableInbox(value.cycles == 1 ? childPackets : parentPackets, session: XCTUnwrap(value.session))
+        }
+        let live = SyncProductCoordinator(container: b.container, mediaRoot: b.root, environment: .development, automaticSync: true,
+            accountReader: { String(repeating: "a", count: 64) }, transportFactory: { persistence in driver.persistence = persistence; return driver })
+        await live.resumeIfEnabled()
+        XCTAssertNil(try body(b, id: id)); XCTAssertFalse(live.requiresAttention)
+        XCTAssertNil(try ModelContext(b.container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess)
+        for _ in 0..<800 {
+            if try body(b, id: id) == "later child" { break }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertEqual(try body(b, id: id), "later child")
+        XCTAssertEqual(driver.cycles, 2); XCTAssertEqual(driver.maxActiveCycles, 1)
+        XCTAssertEqual(try outboxCount(b), 0)
+        XCTAssertNotNil(try ModelContext(b.container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess)
+        await live.disable()
+    }
+
     func testConcurrentEditsRemainAsTwoHeadsUntilExplicitAllParentResolution() async throws {
         let a=try device(),b=try device(),id=try createEntry(a,body:"base")
         try await deliver(try allPackets(a),to:b)
@@ -147,6 +172,10 @@ import SyncFoundation
         let expected:Set<UUID>=[branchA.manifest.mutation,branchB.manifest.mutation]
         XCTAssertEqual(try headIDs(a,id:id),expected);XCTAssertEqual(try headIDs(b,id:id),expected)
         XCTAssertEqual(try body(a,id:id),"branch A");XCTAssertEqual(try body(b,id:id),"branch B")
+        XCTAssertThrowsError(try edit(a, id: id, body: "implicit resolution")) {
+            guard case ProductSyncFailure.unresolvedConflict = $0 else { return XCTFail("Expected unresolved conflict: \($0)") }
+        }
+        XCTAssertEqual(try body(a, id: id), "branch A")
         XCTAssertEqual(try revisions(a).count,3);XCTAssertEqual(try revisions(b).count,3)
         let conflict=try XCTUnwrap(a.coordinator.conflicts.first{$0.key.id==id})
         XCTAssertEqual(Set(conflict.heads),expected)
@@ -167,7 +196,8 @@ import SyncFoundation
     }
 
     func testOriginalBytesGatePublicationAndDeletionWaitsForRelationshipTombstone() async throws {
-        let a=try device(),b=try device(),entryID=UUID(),imageID=UUID(),tagID=UUID(),linkID=UUID()
+        let a=try device(),entryID=UUID(),imageID=UUID(),tagID=UUID(),linkID=UUID()
+        var b = try device()
         let png=UIGraphicsImageRenderer(size:.init(width:8,height:8)).pngData {context in
             UIColor.blue.setFill();context.fill(.init(x:0,y:0,width:8,height:8))
         }
@@ -187,7 +217,29 @@ import SyncFoundation
         XCTAssertEqual(originals.count,1)
         try await deliver(Array(withoutOriginal.reversed()),to:b)
         XCTAssertNil(try body(b,id:entryID));XCTAssertEqual(try outboxCount(b),0)
-        try await deliver(originals,to:b)
+        // R1: an unseen remote entry is not a local deletion baseline.
+        let independentID = try createEntry(b, body: "independent local")
+        try edit(b, id: independentID, body: "independent edited")
+        XCTAssertEqual(try body(b, id: independentID), "independent edited")
+        XCTAssertFalse(try revisions(b).contains { $0.manifest.object.id == entryID && $0.manifest.deleted })
+        await b.coordinator.disable()
+        try edit(b, id: independentID, body: "saved with sync off")
+        XCTAssertFalse(try revisions(b).contains { $0.manifest.object.id == entryID && $0.manifest.deleted })
+        // Reopen the disk store and use real enable -> initialize -> transport -> apply.
+        // The fake transport supplies only the missing original, never bypassing startup.
+        let reopened = try PersistenceContainerFactory.makeOnDisk(at: b.root.appendingPathComponent("Store/PersonalGrowthOS.sqlite"))
+        reopened.mainContext.autosaveEnabled = false
+        let scripted = SyntheticSyncDriver()
+        scripted.onFetch = { driver in
+            try await driver.persistence!.durableInbox(originals, session: XCTUnwrap(driver.session))
+        }
+        let replay = SyncProductCoordinator(container: reopened, mediaRoot: b.root, environment: .development, automaticSync: false,
+            accountReader: { String(repeating: "a", count: 64) }, transportFactory: { persistence in scripted.persistence = persistence; return scripted })
+        await replay.enable()
+        XCTAssertEqual(scripted.starts, 1); XCTAssertEqual(scripted.cycles, 1)
+        XCTAssertFalse(replay.requiresAttention)
+        b = Device(root: b.root, container: reopened, coordinator: replay, session: try XCTUnwrap(scripted.session))
+        XCTAssertEqual(try body(b, id: independentID), "saved with sync off")
         XCTAssertEqual(try body(b,id:entryID),"photo")
         let remoteImage=try XCTUnwrap(ModelContext(b.container).fetch(FetchDescriptor<ImageMetadata>()).first)
         XCTAssertEqual(remoteImage.id,imageID)
@@ -204,11 +256,11 @@ import SyncFoundation
         try await deliver(try packets(linkDelete,from:a),to:b)
         try await deliver(originalRecords,to:b) // Old immutable revisions must not resurrect either object.
         let read=ModelContext(b.container)
-        XCTAssertEqual(try read.fetchCount(FetchDescriptor<Entry>()),0)
+        XCTAssertEqual(try read.fetch(FetchDescriptor<Entry>()).map(\.id), [independentID])
         XCTAssertEqual(try read.fetchCount(FetchDescriptor<ImageMetadata>()),0)
         XCTAssertEqual(try read.fetchCount(FetchDescriptor<ObjectLink>()),0)
         XCTAssertEqual(try read.fetch(FetchDescriptor<Tag>()).map(\.id),[tagID])
-        XCTAssertEqual(try outboxCount(b),0)
+        XCTAssertEqual(try outboxCount(b),3)
         XCTAssertEqual(try SyncAssetStore(root:b.root).read(AssetDescriptor(bytes:png)),png)
     }
 
@@ -238,4 +290,35 @@ import SyncFoundation
         let local=try read.fetch(FetchDescriptor<ProductSyncMutation>()).filter(\.local)
         XCTAssertEqual(try local.map{try MutationManifest.decode($0.manifest).object.kind},[SyncDomainKind.weight.rawValue])
     }
+}
+
+/// Controlled send/fetch boundary, using the production persistence and ACK contracts.
+@MainActor final class SyntheticSyncDriver: SyncCloudDriving {
+    weak var persistence: (any SyncCloudPersistence)?
+    var session: SyncCloudSession?
+    var starts = 0, cycles = 0, activeCycles = 0, maxActiveCycles = 0
+    var acknowledgeUploads = false
+    var onFetch: ((SyntheticSyncDriver) async throws -> Void)?
+    func start(binding: SyncBinding, signedEnvironment: CloudEnvironment, createZone: Bool) async throws {
+        XCTAssertEqual(binding.environment, signedEnvironment)
+        starts += 1; session = SyncCloudSession(binding: binding)
+    }
+    func synchronize() async throws {
+        let session = try XCTUnwrap(session), persistence = try XCTUnwrap(persistence)
+        try session.check(); cycles += 1; activeCycles += 1; maxActiveCycles = max(maxActiveCycles, activeCycles)
+        defer { activeCycles -= 1 }
+        try persistence.didChangeActivity(.uploading, session: session)
+        if acknowledgeUploads {
+            let records = try persistence.pendingRecordIDs(session: session)
+            for id in records {
+                if let upload = try await persistence.uploadRecord(id: id, session: session) {
+                    try await persistence.acknowledge([upload.acknowledgement()], session: session)
+                }
+            }
+        }
+        try persistence.didChangeActivity(.downloading, session: session)
+        try await onFetch?(self)
+        try session.check()
+    }
+    func stop() async { session?.invalidate(); session = nil }
 }

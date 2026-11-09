@@ -1,7 +1,9 @@
 import SwiftUI
+import UIKit
 
 struct SyncSettingsView: View {
     @ObservedObject var coordinator: SyncProductCoordinator
+    @State private var copiedDiagnostics = false
     @State private var confirmsEnable = false
     @State private var confirmsInitialSetup = false
     @State private var selectedConflict: SyncConflictSummary?
@@ -21,6 +23,9 @@ struct SyncSettingsView: View {
                 }
                 LabeledContent("Pending revisions", value: "\(coordinator.pendingCount)")
                 LabeledContent("iCloud environment", value: coordinator.environmentLabel)
+                Button(copiedDiagnostics ? "Diagnostics copied" : "Copy sync diagnostics") {
+                    UIPasteboard.general.string = coordinator.diagnosticText(); copiedDiagnostics = true
+                }.accessibilityIdentifier("sync-copy-diagnostics")
             } header: { Text("iCloud sync") }
             footer: { Text("Sync uses your iCloud private database. Turning it off keeps local data and queued changes. Photos may use additional iCloud storage.") }
             if coordinator.metadataRealm == .production && coordinator.hasRetainedOtherRealm {
@@ -41,17 +46,17 @@ struct SyncSettingsView: View {
                 }
             }
             Section {
-                Text("This development version has local validation. Real iCloud and Production acceptance are not yet complete. Keep an exported backup before using sync with important data.")
+                Text("Sync is being validated in daily use. Complete content, original photos, background delivery and two-device behavior still need acceptance. Keep an exported backup of important data.")
             }
         }
         .navigationTitle("iCloud sync")
-        .alert("Upload this workspace to iCloud?", isPresented: $confirmsEnable) {
+        .alert("Connect this workspace to iCloud?", isPresented: $confirmsEnable) {
             Button("Cancel", role: .cancel) {}
             Button("Enable") { Task { await coordinator.enable() } }
         } message: {
             Text(coordinator.metadataRealm == .production
-                ? String(localized: "Existing records and original photos will be uploaded to the current account’s production iCloud database. Development cloud data and sync history are not transferred. Concurrent edits are kept for review.")
-                : String(localized: "Existing records and original photos will be uploaded to the currently signed-in iCloud account. Other installations using that account can receive them. Concurrent edits are kept for review."))
+                ? String(localized: "Connects this workspace to the current account’s production iCloud database: existing local records and original photos upload, and available cloud content downloads to this device. Development cloud data and sync history stay separate. Concurrent edits are kept for review.")
+                : String(localized: "Connects this workspace to the signed-in iCloud account: existing local records and original photos upload, and available cloud content downloads to this device. Other installations using this workspace can receive changes. Concurrent edits are kept for review."))
         }
         .alert("Set up this iCloud workspace?", isPresented: $confirmsInitialSetup) {
             Button("Cancel", role: .cancel) { _ = coordinator.takeInitialZoneConsent() }

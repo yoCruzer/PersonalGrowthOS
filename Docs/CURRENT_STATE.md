@@ -1,3 +1,15 @@
+## 2026-11-09 最新连续目标：Production成功后的R1–R5可靠性收尾（进行中）
+
+Owner新指令取代以下旧停点：手动部署Production schema后，现有Build19 / `4d4fc812739fb51394364f4c5e629ff7cd42ea4f`点击立即同步成功；系统删除App和本地数据后重新安装，观察到云端数据返回。仅记 `OWNER_REPORTED_SUCCESS` / `OWNER_REPORTED_RECOVERY_OBSERVED`，全量内容、关系、原图、真实双设备/后台传播仍未验收。本轮无需再次部署、删装、Mac探针、清库/队列/token、改身份或删云数据。
+
+交接输入为固定提交 `47fe200e515a82ddad9ba16f5666ceb4329ee108` 的 `Docs/ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md`。已拉取并阅读，核对原Draft PR19仍OPEN/Draft，base为`codex/icloud-sync-foundation`，产品分支与远端起点均`ddc5af8b91fcf9d3cde7434bb7bda074d859ad4a`，原产品工作树干净；主项目待办分支三项改动保持。
+
+R1–R5实现及本机门已完成；当前提交为普通非skip候选，后续Release、独立复核/必要CI、普通推送/原PR更新及TestFlight标签仍待完成。R1指定原图缺件用例实跑1FAIL（`unresolvedConflict`）后最小修复；最终定向104/104PASS，含关闭同步、磁盘重开实际enable/补原图、缺父自动续传、独立busy本地提交/数据库推送、retry-after/网络/前台、冷启账户查询、旧epoch和诊断隐私/首因/部分ACK。完整Unit709执行=708PASS/0FAIL/1SKIP、同步UI3/3PASS；最终定向及Unit/UI的runtimeWarnings均为空。低空间隔离镜像测试仍SKIP。Xcode27.2(27B52)/macOS27.0.1/iOS27.0，仅合成隔离库，原失败/编译失败/数值桥接失败保留。真实完整性与双设备门不补写通过。详见[本轮修复与证据](ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md)。
+
+K1独立ZIP恢复工作区再发现、K2跨UUID自然键冲突处理、K3历史上限/整理保持后续边界。既有TestFlight授权继续有效；本轮结束集中给一次覆盖安装验收清单，不merge或公开上架。详细证据收口将追加至`ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md`。
+
+---
+
 ## 2026-11-09 接续：TestFlight标签已推送，Production部署待明确确认
 
 Owner已解锁Mac，并进一步明确“不需要核验现有Xcode Cloud流程，只需要发送testflight-前缀tag”。按此新指令跳过流程配置核验，已普通推送testflight-icloud-sync-v1-20261109，远端annotated tag对象846052972774744825ebc0a148960394cb87bf3a、解引用源码4d4fc812739fb51394364f4c5e629ff7cd42ea4f均已回读核实。标签精确指向已通过两条CI的非skip源码，未给后续文档提交打标签；实际Apple构建/上传/TestFlight可用尚未观察，不能写完成。
