@@ -1,3 +1,13 @@
+## 2026-11-09 接续：TestFlight标签已推送，Production部署待明确确认
+
+Owner已解锁Mac，并进一步明确“不需要核验现有Xcode Cloud流程，只需要发送testflight-前缀tag”。按此新指令跳过流程配置核验，已普通推送testflight-icloud-sync-v1-20261109，远端annotated tag对象846052972774744825ebc0a148960394cb87bf3a、解引用源码4d4fc812739fb51394364f4c5e629ff7cd42ea4f均已回读核实。标签精确指向已通过两条CI的非skip源码，未给后续文档提交打标签；实际Apple构建/上传/TestFlight可用尚未观察，不能写完成。
+
+重新导出正式Dev/Prod并保留原件：Dev1949B、SHA6ba50154…；Prod356B、SHA60fec483…，结构与先前证据一致。Deployment Diff View核实仅添加3类/11字段/21索引标记及新类型的原有默认grants，Users不变，无记录查询、写入或删除。最终Deploy点击被自动审批拒绝，理由为此前明确授权覆盖代码推送/TestFlight标签，但未明确覆盖此次Production schema持久部署；尚未执行部署。已向Owner发出准确范围的单次确认，不绕过拦截，等待明确回复；无手机/数据线占用。此前“Mac锁屏/标签尚未推送/必须先核验工作流”的状态已由本节取代。
+
+[testflight标签证据](Evidence/iCloudProduct/20261109/testflight-tag.json) · [原交付证据](Evidence/iCloudProduct/20261109/README.md)
+
+---
+
 ## 2026-11-09 最新授权：性能/中文修复后自主推进TestFlight
 
 Owner已自愿在build11完成Create workspace，报告正式Development新types、Pending429→0、约5分钟Latest sync completed；非双设备/Production验收。重进Waiting、发热及中文遗漏已修复。Owner进一步明确授权睡后继续，包括代码普通推送、testflight-*标签及TestFlight测试；不重复询问这些许可，手机陪测不作前提。

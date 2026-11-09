@@ -1,8 +1,10 @@
+> 最新执行结果：testflight-icloud-sync-v1-20261109已推送并回读绑定4d4fc81；不核验既有XcodeCloud流程。正式schema差异已审，但Production最终Deploy被自动审批拒绝并要求明确授权，已发单次准确范围确认，尚未执行部署。实际TestFlight可用未观察。以下未完成步骤须服从本段与最新Owner指令。
+
 # iCloud同步：已授权TestFlight执行范围
 
 Owner于2026-11-09明确授权：“我要去睡觉了，明确授权你接下来的操作（包括将代码推送到GitHub，以及打testflight-前缀的tag进行test flight测试等）”。这覆盖代码推送及既有流程所需的Archive/TestFlight测试分发，不再请求重复许可；公开App Store上架、merge、强推、删除/重置数据、退出系统账户及凭据/安全设置变更仍不在范围内。
 
-本轮解释为通过TestFlight推进正式环境测试：P2/P4可在获批测试分发后验收，不能提前写通过或称公开发布就绪。Production schema须先具体核对差异再处理，不能给已知缺正式schema的候选打分发标签。遇新法律条款或安全敏感权限操作仍遵循其动作时边界。
+本轮解释为通过TestFlight推进正式环境测试：P2/P4可在获批测试分发后验收，不能提前写通过或称公开发布就绪。Owner接续明确要求跳过既有XcodeCloud流程核验，直接推送testflight前缀标签；已执行，此新指令取代原先先核验workflow/先部署再推标签的安排。Production schema仍须具体核对并取得该操作明确授权后部署，未通过时不能宣称Production同步就绪。遇新法律条款或安全敏感权限操作仍遵循其动作时边界。
 
 ## 已完成的代码与本机门
 

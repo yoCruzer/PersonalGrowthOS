@@ -69,3 +69,9 @@ Safari只读到上述结构和既有ASC会话；随后Mac锁屏，CUA自动解�
 本轮代码、独立审查、本机与远端门以及精确来源Release unsigned Archive已完成；PR19保持Draft，未merge。当前原项目仍d72c016及原三项未提交改动，不覆盖或误提交。最终收口仅文档/证据使用[skip ci]；未来已授权TestFlight标签必须精确指向4d4fc81非skip源码，不能指向该文档提交。
 
 外部执行仍受Mac锁屏阻塞，解锁请求已集中发出；没有绕过锁屏或读取凭据。Production只读结构尚缺3类/11字段，未部署，既有XcodeCloud流程/分发组/构建号还需门户核验，因此尚未推本轮testflight标签或声称可安装。Owner醒后只需解锁Mac并保留Safari会话（本人10–30秒，手机前台/数据线0）；此前授权保持有效，agent后续继续精确schema部署及既有TestFlight流程，无需再次索取同类许可。Production真实同步、推送、双设备及完整故障矩阵仍未验证；本轮不再占用手机补测。
+
+## 解锁后接续与标签结果
+
+Owner明确要求跳过既有XcodeCloud流程核验、直接推送testflight前缀标签；已完成并回读远端精确源码绑定，见[testflight-tag.json](testflight-tag.json)。这取代此前先核验workflow/先部署再推标签的执行安排，不冒称实际Apple构建/上传已成功。
+
+重新取得两端导出，私有原件在/private/tmp/PGOS-TestFlight-20261109/production-deployment，hash与原结构一致。Apple部署Diff View：PRODUCTION version12fb77d1-d905-11f1-bf5f-a936fa18f849 → DEVELOPMENT version7f624c60-db93-11f1-8fb9-3d027727cadd，只有3类新增/11字段/21索引标记和对应grants，Users不变。仅打开并审核预览；最终Deploy被自动审批以“此前授权未明确包含Production部署”拒绝，已集中请求明确授权。早一次跨弹窗点击也被拒绝，改为完整刷新当前AX并逐步确认后成功打开只读预览；两次拦截均未造成部署。没有绕过审批、查业务record或删除/重置。授权待回复，TestFlight标签不受影响。

@@ -1,0 +1,28 @@
+{
+  "tag": "testflight-icloud-sync-v1-20261109",
+  "tagObjectSHA": "846052972774744825ebc0a148960394cb87bf3a",
+  "sourceCommit": "4d4fc812739fb51394364f4c5e629ff7cd42ea4f",
+  "remoteVerified": true,
+  "ownerInstruction": "Push testflight-prefix tag directly; do not inspect existing Xcode Cloud workflow.",
+  "workflowConfigurationInspected": false,
+  "actualTestFlightAvailability": "NOT_YET_OBSERVED",
+  "productionSchemaDeployment": "NOT_PERFORMED: automatic approval rejected final Deploy action; explicit scoped Owner confirmation requested.",
+  "productionBeforeSHA256": "60fec48392126eab598a05dbe0f7f9557494a992df8fb62295ccd3752a7768db",
+  "developmentBeforeSHA256": "6ba50154c75b3780dbe114a0c8bfb3db251fc5f70985fee14f4304c042ec53d5",
+  "observedProductionSchemaVersion": "12fb77d1-d905-11f1-bf5f-a936fa18f849",
+  "observedDevelopmentSchemaVersion": "7f624c60-db93-11f1-8fb9-3d027727cadd",
+  "previewReviewed": {
+    "newRecordTypes": [
+      "PGMutationV2",
+      "PGOriginalV2",
+      "PGPayloadChunkV2"
+    ],
+    "newBusinessFields": 11,
+    "indexFlags": 21,
+    "usersChanged": false,
+    "recordQueries": 0,
+    "recordWrites": 0,
+    "recordDeletion": 0
+  },
+  "remoteTagVerifiedAtUTC": "2026-11-09T01:04:11Z"
+}
