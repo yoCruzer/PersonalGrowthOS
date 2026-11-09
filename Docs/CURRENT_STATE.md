@@ -1,3 +1,13 @@
+## 2026-11-09 真机故障独立分析交接（文档分支）
+
+本节仅记录 `plan/icloud-production-incident-20261109` 的分析交接，不代表产品修复完成。用户提供的约36.6秒录屏确认随心log 1.0 (Build 19)、源码 `4d4fc812739fb51394364f4c5e629ff7cd42ea4f`、标签 `testflight-icloud-sync-v1-20261109`；正式环境待同步429，立即同步及关闭同步后重新启用均返回 `cloudFailure(12)`。此次运行证据补充了历史“TestFlight可用/安装未观察”的状态，未证明Production同步成功。
+
+完整时间线、源码定位、已知Production部署缺项、最小修复与定向验收见 [故障分析与Codex交接](ICLOUD_PRODUCTION_FAILURE_20261109_ZH.md)。产品分支基线仍为 `codex/icloud-product` / `ddc5af8b91fcf9d3cde7434bb7bda074d859ad4a`，其后续两次提交相对安装源码只改文档。历史记录明确最终Deploy未执行；本次未实时读取Apple后台，不将旧记录当作当前服务端状态。下一步先核当前schema，保留现有队列，同包完成收尾与一条增量，同时补最小可复制错误诊断；不能把raw12直接判成缺schema。
+
+本次只增加文档与交接入口，未修改产品、部署Production或运行原生/真云测试。报告附录是供Owner随后亲自发送的授权草稿，存入仓库不使其许可生效。实际执行沿原Draft PR #19，并遵循Owner后续明确指令；所有历史失败与未验证项保留。
+
+---
+
 ## 2026-11-09 接续：TestFlight标签已推送，Production部署待明确确认
 
 Owner已解锁Mac，并进一步明确“不需要核验现有Xcode Cloud流程，只需要发送testflight-前缀tag”。按此新指令跳过流程配置核验，已普通推送testflight-icloud-sync-v1-20261109，远端annotated tag对象846052972774744825ebc0a148960394cb87bf3a、解引用源码4d4fc812739fb51394364f4c5e629ff7cd42ea4f均已回读核实。标签精确指向已通过两条CI的非skip源码，未给后续文档提交打标签；实际Apple构建/上传/TestFlight可用尚未观察，不能写完成。
