@@ -8,9 +8,11 @@
   "foundationCI": 42630679938,
   "independentReview": "PASS_AFTER_FIX",
   "xcodeCloudBuild": "59018cf0-c866-4b25-92c5-8a6052eb6272",
-  "archiveCheckID": 129221074403,
-  "archiveStatus": "in_progress",
-  "archiveConclusion": null,
+  "archiveCheckID": 129226708955,
+  "archiveStatus": "completed",
+  "archiveConclusion": "success",
   "testFlightAvailable": "NOT_OBSERVED",
-  "observedAt": "2026-11-09T14:30:22.233077+00:00"
+  "observedAt": "2026-11-09T14:43:38.688639+00:00",
+  "workflowState": "success",
+  "archiveWarnings": 35
 }

@@ -1,16 +1,20 @@
 # iCloud定向可靠性收尾（2026-11-09）
 
-当前：R1–R5修复、独立复核与新源码CI已完成；Xcode Cloud TestFlight Archive进行中。最终非skip源码`59104222b0ca654ca5cffa8faed3e2f208e91b2e`，原分支/原Draft PR19保持。
+当前：本轮R1–R5修复、独立复核、新源码CI、原PR/文档/新标签及Xcode Cloud结果跟踪完成；停一次新包覆盖验收门。最终非skip源码`59104222b0ca654ca5cffa8faed3e2f208e91b2e`，原分支/原Draft PR19保持。
 
 - 独立只读审查发现最长retry-after丢失P2，已修复批内/跨callback及外层throw三出口，永久错误与诊断首因保护不变；复核无其余must-fix。实际本机61/61与最终28/28通过，干净Release三Bundle/production pin/中文/源码绑定通过。
 - [产品CI42630679905](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679905)：Unit715=714PASS/0FAIL/1SKIP，Smoke8/8，Release三个unsigned Bundle成功；runtimeWarnings空。[定向CI42630679938](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679938)SUCCESS，完整检查计数见JSON。
 - 四份官方ZIP SHA256/CRC匹配；实际checkout280327a包含5910422，生产/测试/工程/包/脚本/CI输入一致，24个package源码摘要匹配。Unit树计数与摘要逐项核对，新聚合测试确实PASS；聚合策略测试不冒称SDK callback E2E。
 - 唯一SKIP需要隔离32MB HFS+镜像；optional extended UI未跑；远端独立分块未跑旧49MB最大案例，其本机历史证据保留。所有旧红测/编译/数值桥接失败保留，不能称零编译warning。
-- Owner明确授权后普通推送新源码；新annotated tag`testflight-icloud-reliability-20261109`远端对象031e8eb3678b37ffb89fa02a46aa8073297b776c，解引用精确5910422。标签不指向文档提交，旧标签未改。实际Xcode Cloud Archive已启动，尚未观察TestFlight可用/安装。
+- Owner明确授权后普通推送新源码；新annotated tag`testflight-icloud-reliability-20261109`远端对象031e8eb3678b37ffb89fa02a46aa8073297b776c，解引用精确5910422。标签不指向文档提交，旧标签未改。实际Xcode Cloud Archive及TestFlight-workflow总状态均SUCCESS；Archive为0 errors/0 test failures/35 warnings。没有直接核验发行包或观察TestFlight可用/安装，不能由构建成功扩写设备验收通过。详见[Xcode Cloud结果](Evidence/iCloudReliability20261109/xcode-cloud-result.json)。
 
 [证据索引](Evidence/iCloudReliability20261109/README.md) · [独立审查](Evidence/iCloudReliability20261109/independent-review.md) · [新包一次验收清单](Evidence/iCloudReliability20261109/owner-acceptance.md)。以下为保留的执行历史，旧待授权/旧候选/未完成门均由上方最新节点替代。
 
 ---
+
+## 最终批次边界
+
+明确授权后剩余必需工作均已完成；原PR仍Draft/原base，无merge或公开上架。新TestFlight构建可用后按一次清单覆盖安装，检查带图新增/修改自动同步、离线重开及联网续传、旧内容和原图抽查；失败复制诊断，不清队列或重建身份。真实双设备/后台传播与全量内容关系原图未验，K1–K3后置。原项目三项改动未动，最终文档提交保持源码与5910422相同。
 
 ## 历史执行记录
 

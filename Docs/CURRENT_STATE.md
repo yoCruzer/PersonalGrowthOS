@@ -1,10 +1,13 @@
-## 2026-11-09 当前：R1–R5修复/独立复核/新CI完成，新TestFlight Archive进行中
+## 2026-11-09 当前：R1–R5修复/独立复核/新CI完成，新TestFlight工作流成功，停覆盖验收门
 
-状态：`SOURCE_GATES_PASSED / TESTFLIGHT_BUILD_IN_PROGRESS`。Owner已明确授权精确原仓库/分支/PR19/TestFlight标签及只读独立子代理；原授权阻塞结束。最终非skip源码`59104222b0ca654ca5cffa8faed3e2f208e91b2e`已普通推送原分支，PR保持OPEN Draft/原base。独立审查发现最长服务retry-after归并P2，已补修并复核关闭，无其余must-fix；本机同步三类61/61、最终transport28/28、干净Release/三Bundle溯源通过。
+状态：`DELIVERY_COMPLETE / OWNER_OVERLAY_ACCEPTANCE_PENDING`。Owner已明确授权精确原仓库/分支/PR19/TestFlight标签及只读独立子代理；原授权阻塞结束。最终非skip源码`59104222b0ca654ca5cffa8faed3e2f208e91b2e`已普通推送原分支，PR保持OPEN Draft/原base。独立审查发现最长服务retry-after归并P2，已补修并复核关闭，无其余must-fix；本机同步三类61/61、最终transport28/28、干净Release/三Bundle溯源通过。
 
 新[产品CI42630679905](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679905)与[定向CI42630679938](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679938)均SUCCESS。产品Unit715执行=714PASS/0FAIL/1SKIP、Smoke8/8、三个unsigned Release Bundle；runtimeWarnings均为空。唯一低空间测试需隔离32MB HFS+镜像，optional extended UI未执行。四份官方ZIP摘要/CRC、实际merge checkout280327a/输入一致及定向24个源码pin已核验，不用旧CI覆盖。
 
-新不可移动标签`testflight-icloud-reliability-20261109`已推送回读，tag对象031e8eb、源码精确5910422；Xcode Cloud TestFlight-workflow实际Archive已启动（build59018cf0-c866-4b25-92c5-8a6052eb6272），正在跟踪。未观察发行包可用/安装；云端全量内容关系原图、双设备/后台传播仍未验。[证据/一次覆盖验收清单](Evidence/iCloudReliability20261109/README.md)。Owner先前Build19成功/恢复观察保持原限定。K1–K3后置，主项目三项改动保持；不清库/队列、不改身份、不重部署schema、不merge或公开上架。以下保留历史。
+新不可移动标签`testflight-icloud-reliability-20261109`已推送回读，tag对象031e8eb、源码精确5910422；Xcode Cloud TestFlight-workflow实际Archive与工作流总状态均SUCCESS（build59018cf0-c866-4b25-92c5-8a6052eb6272）；Archive报告0 errors/0 test failures/35 warnings，原警告保留。没有直接核验发行包或观察TestFlight可用/安装；云端全量内容关系原图、双设备/后台传播仍未验。[证据/一次覆盖验收清单](Evidence/iCloudReliability20261109/README.md)。Owner先前Build19成功/恢复观察保持原限定。K1–K3后置，主项目三项改动保持；不清库/队列、不改身份、不重部署schema、不merge或公开上架。以下保留历史。
+
+
+本轮授权开发/提交/普通推送/原PR更新/新标签及构建结果跟踪完成；停一次新包覆盖验收门，不要求Owner重复删装。新源码之外的后续提交只有文档，不重跑已通过源码门。
 
 ---
 

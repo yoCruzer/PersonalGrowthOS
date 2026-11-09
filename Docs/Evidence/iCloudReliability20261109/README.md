@@ -6,7 +6,7 @@
 
 [新定向CI42630679938](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679938)成功，[官方ZIP/源码/检查计数核验](foundation-verification.json)通过。实际merge checkout280327a包含5910422，相关生产/测试/构建输入一致，24个package源码pin匹配；只使用原创合成数据，云操作0。[新产品CI42630679905](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679905)成功，[完整官方ZIP/测试树/源码核验](product-verification.json)：Unit715=714PASS/0FAIL/1SKIP，Smoke8/8，三个unsigned Release Bundle；两个runtimeWarnings为空。保留[Unit原始摘要](remote-unit-summary.json)与[Smoke原始摘要](remote-smoke-summary.json)。唯一SKIP低空间镜像缺失，optional extended UI未执行。
 
-[新包一次验收清单](owner-acceptance.md)：新构建可用后覆盖安装，无需再删装。[新标签回读及Xcode Cloud进度](testflight-tag.json)：标签已推送、精确指向5910422，Archive实际进行中，TestFlight可用/安装尚未观察。[官方产物获取器](fetch_artifacts.py)与[产品核验脚本](verify_product.py)保留固定run/source及临时目录，需gh只读连接；原ZIP/日志仍在本机/private/tmp/PGOS-ICloud-Reliability-CI。完整历史如下。
+[新包一次验收清单](owner-acceptance.md)：新构建可用后覆盖安装，无需再删装。[新标签回读及Xcode Cloud进度](testflight-tag.json)：标签已推送、精确指向5910422，[Archive与工作流总结果](xcode-cloud-result.json)均SUCCESS，0 errors/0 test failures/35 warnings；发行包未直接检查，TestFlight可用/安装尚未观察。[官方产物获取器](fetch_artifacts.py)与[产品核验脚本](verify_product.py)保留固定run/source及临时目录，需gh只读连接；原ZIP/日志仍在本机/private/tmp/PGOS-ICloud-Reliability-CI。完整历史如下。
 
 ---
 
