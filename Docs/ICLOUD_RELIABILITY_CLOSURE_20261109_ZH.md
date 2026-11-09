@@ -30,13 +30,22 @@ Owner已手动部署Production schema；现有Build19 / `4d4fc812739fb51394364f4
 | PGOS-ICloud-R5-Compile.xcresult | coordinator/集成25/25PASS，exit0，包含retry-after修复与实际冷启补原图 |
 | PGOS-ICloud-Reliability-Focused1.xcresult | 同步核心/事务/资产/领域codec与installer100/100PASS，exit0；缺父自动续传、诊断首因/隐私/部分ACK已覆盖 |
 | PGOS-ICloud-Reliability-UnitUI1.xcresult | 完整Unit709执行=708PASS/0FAIL/1SKIP + 中英同步/暂停导航UI3/3PASS，exit0；runtimeWarnings为空。此后仅对应路径收紧由Focused2覆盖 |
+| PGOS-ICloud-Reliability-Focused2.xcresult | 最终定向104/104PASS，exit0，runtimeWarnings为空；增加独立本地提交/独立busy推送、冷启账户网络重试及关闭取消计时器；源码hash清单与结果摘要见Evidence/iCloudReliability20261109 |
+| PGOS-ICloud-Reliability-CompletionWake.xcresult | coordinator/集成32/32PASS，busy推送排队期间不推进lastSuccess |
+| PGOS-ICloud-Reliability-ProtectivePause.xcresult | coordinator/集成33/33PASS；增加不可重试应用错误刷新/重开仍保护性暂停 |
 
 额外系统SDK通知字典解析：`met`→CKDatabaseNotification、`fet`→CKRecordZoneNotification；wire dbs1/2/3分别解析为private/public/shared。首个原创探查错误ce4触发SDK异常，随后使用有效ce2独立核对三种scope，未访问CloudKit。生产代码始终使用SDK对象的scope，不依赖wire数字。
 
-| PGOS-ICloud-Reliability-Focused2.xcresult | 最终定向104/104PASS，exit0，runtimeWarnings为空；增加独立本地提交/独立busy推送、冷启账户网络重试及关闭取消计时器；源码hash清单与结果摘要见Evidence/iCloudReliability20261109 |
 
 唯一Unit跳过为缺少隔离32MB HFS+镜像的低空间测试。日志中合成坏库/非法升级错误是负例输出，不列为测试失败；既有编译warning保留，不称零编译警告。
 
 ## 尚未完成的交付门
 
 最终受影响构建、完整Unit/UI结果核验、独立复核、必要CI、普通提交/推送、原PR更新与精确非skip源码TestFlight标签待完成。真实后台时延/设备耗时、原图全量一致与双设备冲突未验；不以合成或CI代替。完成后集中给Owner一次新包覆盖安装验收清单，不要求删除重装。
+
+
+## 本地候选与远端审批状态
+
+普通非skip候选`09493137b29e8e8967ccd5f76972a300578fbbb8`已提交但未推送。其干净来源的Release普通unsigned build成功，三Bundle待核对；随后补的完成/持久暂停保护另有33/33定向通过。新修复将继续普通提交，不改已提交历史。原Release日志`/private/tmp/PGOS-ICloud-Reliability-Release-0949313.log`，不是签名或TestFlight可用证明。
+
+对原`git@github.com:yoCruzer/PersonalGrowthOS.git` / `codex/icloud-product`普通push被自动审批拒绝两次。已只读核实remote与原Draft PR19完全匹配，使用本轮明确指令重新提交同一动作仍被拒；理由为未识别到可信用户内容明确授权此精确私有目的地与push。没有改用其他通道。已集中请求精确目的地/原PR/TestFlight标签确认；独立只读审查子代理也按当前执行限制请求明确授权，均待回复。该输入不阻止本机验证，但远端CI尚无本次run，标签未创建；不得把旧CI用于本次修复。

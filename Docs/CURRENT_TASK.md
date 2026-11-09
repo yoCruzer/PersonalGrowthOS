@@ -6,6 +6,8 @@ Owner新指令取代以下旧停点：手动部署Production schema后，现有B
 
 R1–R5实现及本机门已完成；当前提交为普通非skip候选，后续Release、独立复核/必要CI、普通推送/原PR更新及TestFlight标签仍待完成。R1指定原图缺件用例实跑1FAIL（`unresolvedConflict`）后最小修复；最终定向104/104PASS，含关闭同步、磁盘重开实际enable/补原图、缺父自动续传、独立busy本地提交/数据库推送、retry-after/网络/前台、冷启账户查询、旧epoch和诊断隐私/首因/部分ACK。完整Unit709执行=708PASS/0FAIL/1SKIP、同步UI3/3PASS；最终定向及Unit/UI的runtimeWarnings均为空。低空间隔离镜像测试仍SKIP。Xcode27.2(27B52)/macOS27.0.1/iOS27.0，仅合成隔离库，原失败/编译失败/数值桥接失败保留。真实完整性与双设备门不补写通过。详见[本轮修复与证据](ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md)。
 
+本地候选0949313已普通提交、Release unsigned build成功，后续完成状态/持久暂停收紧33/33定向通过。原仓库普通push被自动审批连续两次拒绝，理由是未识别到精确私有目标的可信明确授权；remote与原PR已核对一致，未绕过。已发精确授权请求及只读独立审查子代理请求，均待回复。远端CI/PR更新/TestFlight标签尚未执行；完整目标保持进行中。
+
 K1独立ZIP恢复工作区再发现、K2跨UUID自然键冲突处理、K3历史上限/整理保持后续边界。既有TestFlight授权继续有效；本轮结束集中给一次覆盖安装验收清单，不merge或公开上架。详细证据收口将追加至`ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md`。
 
 ---

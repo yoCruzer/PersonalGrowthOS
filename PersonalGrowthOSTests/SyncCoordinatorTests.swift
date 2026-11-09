@@ -546,6 +546,8 @@ import SyncFoundation
         }
         XCTAssertEqual(driver.cycles, 1)
         gate?.resume(); gate = nil; await start.value
+        XCTAssertNil(try ModelContext(coordinator.container).fetch(FetchDescriptor<ProductSyncDataset>()).first?.lastSuccess,
+            "A queued remote wake must be fetched before advancing completion")
         try await eventually { driver.cycles == 2 && !coordinator.busy }
         XCTAssertEqual(driver.maxActiveCycles, 1); XCTAssertEqual(driver.starts, 1)
         await coordinator.disable()
@@ -559,6 +561,17 @@ import SyncFoundation
         coordinator.networkChanged(connected: false); coordinator.networkChanged(connected: true)
         try await Task.sleep(nanoseconds: 2_200_000_000)
         XCTAssertEqual(driver.cycles, 1); XCTAssertFalse(coordinator.enabled)
+    }
+
+    func testNonretryableApplicationFailureStaysPausedAfterRefreshAndReopen() throws {
+        let (container, coordinator, session) = try fixture()
+        coordinator.presentFailure(SyncValidationError.invalidManifest, binding: session.binding)
+        coordinator.refreshStatus()
+        XCTAssertTrue(coordinator.requiresAttention)
+        let reopened = SyncProductCoordinator(container: container, mediaRoot: coordinator.mediaRoot, environment: .development, automaticSync: true,
+            accountReader: { XCTFail("Protective pause must not activate CloudKit"); return session.binding.accountHash })
+        XCTAssertTrue(reopened.requiresAttention); XCTAssertFalse(reopened.canAutomaticallySync)
+        XCTAssertTrue(reopened.diagnosticText().contains("invalidManifest"))
     }
 
 }

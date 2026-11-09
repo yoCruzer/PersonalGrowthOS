@@ -359,8 +359,19 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                         activity = nil; refreshStatus(); pendingWake = true; scheduleSync(); return
                     }
                 }
+                if let first = value.blockedReason, !Self.isWaiting(first) {
+                    activity = nil; refreshStatus(); requiresAttention = true
+                    status = Self.localizedStoredStatus(first); return
+                }
+                // Domain/install/integrity failures must remain protective after a local
+                // commit or foreground refresh, rather than losing an in-memory gate.
+                try StorePublication.perform(at: mediaRoot) {
+                    let write = ModelContext(container); let current = try requireDataset(binding, context: write)
+                    current.blockedReason = "Sync metadata needs attention; local data is preserved."
+                    try write.save()
+                }
                 activity = nil; refreshStatus(); requiresAttention = true
-                if let first = value.blockedReason { status = Self.localizedStoredStatus(first); return }
+                return
             } catch { status = String(localized: "Sync metadata needs attention; local data is preserved."); requiresAttention = true; return }
         } else { activity = nil; refreshStatus(); requiresAttention = true }
         status = message(error)
@@ -591,7 +602,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         try StorePublication.perform(at: mediaRoot) {
             let context = ModelContext(container); let value = try requireDataset(binding, context: context)
             let id = binding.dataset
-            guard value.blockedReason == nil,
+            guard !pendingWake, value.blockedReason == nil,
                   try context.fetchCount(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id && !$0.completed })) == 0 else { return }
             value.lastSuccess = completedAt; try context.save()
             retryAttempt = 0
