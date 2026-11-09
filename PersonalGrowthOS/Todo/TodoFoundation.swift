@@ -296,7 +296,7 @@ final class TodoTaskService {
     init(context: ModelContext, now: @escaping () -> Date = Date.init,
          timeZone: @escaping () -> TimeZone = { .current }, save: (() throws -> Void)? = nil) {
         self.context = context; self.now = now; self.timeZone = timeZone
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
     private func transaction<T>(onlyIfChanged: Bool = false,_ operation: () throws -> T) throws -> T {
         do {
@@ -427,7 +427,7 @@ final class TodoTaskService {
     func rescheduleReminder(id: UUID,to fireAt: Date,channel: TodoReminderChannel? = nil,
                             expectedRevision: Int? = nil,commit: ((ModelContext) throws -> Void)? = nil) throws {
         let write=ModelContext(context.container);write.autosaveEnabled=false
-        let writer=TodoTaskService(context:write,now:now,timeZone:timeZone,save:{try (commit ?? {try $0.save()})(write)})
+        let writer=TodoTaskService(context:write,now:now,timeZone:timeZone,save:{try (commit ?? {try ProductSyncCommit.save($0)})(write)})
         try writer.rescheduleOwnedReminder(id:id,to:fireAt,channel:channel,expectedRevision:expectedRevision)
     }
     private func rescheduleOwnedReminder(id: UUID,to fireAt: Date,channel: TodoReminderChannel?,expectedRevision: Int?) throws {

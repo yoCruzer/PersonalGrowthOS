@@ -298,6 +298,20 @@ enum PersonalGrowthSchemaV16: VersionedSchema {
     static var models: [any PersistentModel.Type] { PersonalGrowthSchemaV15.models + [NetWorthItem.self, NetWorthSnapshot.self] }
 }
 
+enum PersonalGrowthSchemaV17: VersionedSchema {
+    static let versionIdentifier = Schema.Version(17, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        PersonalGrowthSchemaV16.models + [ProductSyncDataset.self, ProductSyncObjectState.self,
+            ProductSyncMutation.self, ProductSyncOutbox.self, ProductSyncInbox.self,
+            ProductSyncEngineState.self, ProductSyncMediaLease.self]
+    }
+}
+
+enum PersonalGrowthSchemaV18: VersionedSchema {
+    static let versionIdentifier = Schema.Version(18, 0, 0)
+    static var models: [any PersistentModel.Type] { PersonalGrowthSchemaV17.models + [ProductSyncSelection.self] }
+}
+
 enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
@@ -317,7 +331,9 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             PersonalGrowthSchemaV13.self,
             PersonalGrowthSchemaV14.self,
             PersonalGrowthSchemaV15.self,
-            PersonalGrowthSchemaV16.self
+            PersonalGrowthSchemaV16.self,
+            PersonalGrowthSchemaV17.self,
+            PersonalGrowthSchemaV18.self
         ]
     }
 
@@ -365,7 +381,9 @@ enum PersonalGrowthMigrationPlan: SchemaMigrationPlan {
             MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV12.self, toVersion: PersonalGrowthSchemaV13.self),
             MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV13.self, toVersion: PersonalGrowthSchemaV14.self),
             MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV14.self, toVersion: PersonalGrowthSchemaV15.self),
-            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV15.self, toVersion: PersonalGrowthSchemaV16.self)
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV15.self, toVersion: PersonalGrowthSchemaV16.self),
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV16.self, toVersion: PersonalGrowthSchemaV17.self),
+            MigrationStage.lightweight(fromVersion: PersonalGrowthSchemaV17.self, toVersion: PersonalGrowthSchemaV18.self)
         ]
     }
 }
@@ -374,7 +392,7 @@ enum PersistenceContainerFactory {
     static func makeInMemory() throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV16.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV18.self),
             isStoredInMemoryOnly: true,
             cloudKitDatabase: .none
         ))
@@ -383,7 +401,7 @@ enum PersistenceContainerFactory {
     static func makeOnDisk(at storeURL: URL, allowsSave: Bool = true) throws -> ModelContainer {
         try make(configuration: ModelConfiguration(
             "PersonalGrowthOSV1",
-            schema: Schema(versionedSchema: PersonalGrowthSchemaV16.self),
+            schema: Schema(versionedSchema: PersonalGrowthSchemaV18.self),
             url: storeURL,
             allowsSave: allowsSave,
             cloudKitDatabase: .none
@@ -392,7 +410,7 @@ enum PersistenceContainerFactory {
 
     private static func make(configuration: ModelConfiguration) throws -> ModelContainer {
         try ModelContainer(
-            for: Schema(versionedSchema: PersonalGrowthSchemaV16.self),
+            for: Schema(versionedSchema: PersonalGrowthSchemaV18.self),
             migrationPlan: PersonalGrowthMigrationPlan.self,
             configurations: [configuration]
         )
@@ -409,11 +427,11 @@ final class EntryRepository {
 
     func save(_ entry: Entry) throws {
         context.insert(entry)
-        try context.save()
+        try ProductSyncCommit.save(context)
     }
 
     func saveChanges() throws {
-        try context.save()
+        try ProductSyncCommit.save(context)
     }
 
     func fetchAll() throws -> [Entry] {
@@ -455,7 +473,7 @@ final class ModelContextEntryPersistence: EntryPersisting {
     }
 
     func save() throws {
-        try context.save()
+        try ProductSyncCommit.save(context)
     }
 
     func rollback() {
@@ -597,7 +615,7 @@ final class ReviewCreationService {
         self.context = context
         self.mediaStore = mediaStore
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func create(_ draft: ReviewCreationDraft) throws -> Entry {
@@ -1050,7 +1068,7 @@ final class EntryContinuationService {
     init(context: ModelContext, now: @escaping () -> Date = Date.init, save: (() throws -> Void)? = nil) {
         self.context = context
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     private func requireEditable(_ entryID: UUID) throws {

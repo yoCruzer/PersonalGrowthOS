@@ -1,0 +1,16 @@
+{
+  "sourceHead": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+  "archiveCheckID": 129226708955,
+  "archiveStatus": "completed",
+  "archiveConclusion": "success",
+  "archiveStartedAt": "2026-11-09T14:28:54Z",
+  "archiveCompletedAt": "2026-11-09T14:38:46Z",
+  "archiveURL": "https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/ci/builds/59018cf0-c866-4b25-92c5-8a6052eb6272/action/4ce0c89c-dc63-4856-90b8-f6b7309e8e69",
+  "archiveSummary": "|Report Summary||\n|-------------|-------------|\n|Errors|0|\n|Test Failures|0|\n|Analysis Issues|0|\n|Warnings|35|\n",
+  "archiveWarnings": 35,
+  "workflowState": "success",
+  "workflowURL": "https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/ci/builds/59018cf0-c866-4b25-92c5-8a6052eb6272",
+  "testFlightAvailable": "NOT_OBSERVED",
+  "distributionPackageInspected": false,
+  "ownerOverlayAcceptance": "PENDING"
+}

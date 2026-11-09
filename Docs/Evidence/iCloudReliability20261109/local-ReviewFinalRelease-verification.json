@@ -1,0 +1,35 @@
+{
+  "source": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+  "provenance": {
+    "Commit": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+    "Dirty": false,
+    "Source": "localGit",
+    "Tag": ""
+  },
+  "cloudRuntimePin": "production",
+  "bundles": [
+    {
+      "identifier": "com.yocruzer.PersonalGrowthOS",
+      "version": "1.0",
+      "build": "12",
+      "binarySHA256": "db503fc8c8c1bea9fd1fb2d560bf91b50129ce389f6c5cccd499e2ad8534e2a7"
+    },
+    {
+      "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "version": "1.0",
+      "build": "12",
+      "binarySHA256": "64f95f2825703fb513ec9ff422f56ebe9a9b9d99fcce0b4020245935f670da8d"
+    },
+    {
+      "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "version": "1.0",
+      "build": "12",
+      "binarySHA256": "31ee38fa6887a2a29949179f277d58037c176a6f52b6761b8b3660bce4b0f369"
+    }
+  ],
+  "diagnosticChineseResources": "PASS",
+  "sourceBytePins": "PASS",
+  "buildResult": "PASS",
+  "signing": "NOT_RUN_UNSIGNED_BUILD",
+  "testFlight": "NOT_OBSERVED_TAG_PENDING_CI"
+}

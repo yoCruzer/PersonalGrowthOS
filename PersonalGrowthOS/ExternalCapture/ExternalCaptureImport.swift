@@ -29,7 +29,18 @@ enum StorePublication {
         } else {lock.lock()}
         defer { lock.unlock() }
         try Task.checkCancellation()
+        let ownershipKey = "PGOS.StorePublication." + key
+        Thread.current.threadDictionary[ownershipKey] = true
+        defer { Thread.current.threadDictionary.removeObject(forKey: ownershipKey) }
         return try operation()
+    }
+    // Joins only the same thread's synchronous lease; ordinary public operations
+    // still use the non-recursive lock. No await or unrelated callback is permitted.
+    static func performCommit<T>(at root: URL, _ operation: () throws -> T) throws -> T {
+        if Thread.current.threadDictionary["PGOS.StorePublication." + key(for: root)] as? Bool == true {
+            return try operation()
+        }
+        return try perform(at: root, operation)
     }
     static func root(for container:ModelContainer) -> URL {
         let parent=container.configurations.first!.url.deletingLastPathComponent()
@@ -387,7 +398,7 @@ private struct CaptureImportWorker {
             stage = .importSave
             try checkpoint?("beforeSave")
             try Task.checkCancellation()
-            try context.save()
+            try ProductSyncCommit.save(context)
         } catch {
             context.rollback()
             reconcileCopies()

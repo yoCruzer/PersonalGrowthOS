@@ -1,0 +1,18 @@
+{
+  "tag": "testflight-icloud-reliability-20261109",
+  "tagObject": "031e8eb3678b37ffb89fa02a46aa8073297b776c",
+  "source": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+  "remoteReadback": "PASS",
+  "sourceNonSkip": true,
+  "productCI": 42630679905,
+  "foundationCI": 42630679938,
+  "independentReview": "PASS_AFTER_FIX",
+  "xcodeCloudBuild": "59018cf0-c866-4b25-92c5-8a6052eb6272",
+  "archiveCheckID": 129226708955,
+  "archiveStatus": "completed",
+  "archiveConclusion": "success",
+  "testFlightAvailable": "NOT_OBSERVED",
+  "observedAt": "2026-11-09T14:43:38.688639+00:00",
+  "workflowState": "success",
+  "archiveWarnings": 35
+}

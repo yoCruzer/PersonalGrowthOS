@@ -1,0 +1,29 @@
+{
+  "baseline": "ddc5af8b91fcf9d3cde7434bb7bda074d859ad4a",
+  "environment": {
+    "xcode": "27.2",
+    "xcodeBuild": "27B52",
+    "macOS": "27.0.1",
+    "simulatorOS": "iOS 27.0",
+    "simulator": "83B81BAE-2074-4763-8D51-4F9E2C130389"
+  },
+  "sourceSHA256": {
+    "PersonalGrowthOS/Localizable.xcstrings": "676f1140fa69733c094ed138caa083e3866e68db9dfb421a7191035c9e2056f7",
+    "PersonalGrowthOS/Sync/SyncCloudTransport.swift": "1a77275e92bdea3c1f2cbd82b93d4137cafb8d79d45f0a664e40e6d947bc26ce",
+    "PersonalGrowthOS/Sync/SyncPersistence.swift": "02e82e40c2d41c3b00d43324c61d96a87cf43b27f172b7873cc2fab8dfb2c486",
+    "PersonalGrowthOS/Sync/SyncProductCoordinator.swift": "a9803be2894b832d8a9258bdd374e6a6b0af85fffbe7bc6889503c5e18641ae0",
+    "PersonalGrowthOS/Sync/SyncSettingsView.swift": "a61d3550d1f3ce9705cb0946c4bd0d71fb7178f9b535d9f998674940c7aface1",
+    "PersonalGrowthOSTests/SyncCoordinatorTests.swift": "860db06d6a7d29d9a94eebd65c08f73985f53d7e3aaafacb73b9da10a6a5fcec",
+    "PersonalGrowthOSTests/SyncProductIntegrationTests.swift": "d04a741bcdb13a86d1d13f974cddeb9a7ae619a1b5fe5faef6892ec11ef8a27a",
+    "PersonalGrowthOSUITests/AppLaunchSmokeTests.swift": "868be3622e885f27f900850d774cf27d1493deee5961df8a42de015eecdadebe"
+  },
+  "resultBundle": "/private/tmp/PGOS-ICloud-Reliability-Focused2.xcresult",
+  "status": "PASS",
+  "counts": {
+    "total": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0
+  },
+  "runtimeWarnings": []
+}

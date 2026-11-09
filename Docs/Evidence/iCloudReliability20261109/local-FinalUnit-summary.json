@@ -1,0 +1,11 @@
+{
+  "result": "Passed",
+  "totalTestCount": 714,
+  "passedTests": 713,
+  "failedTests": 0,
+  "skippedTests": 1,
+  "runtimeWarnings": [],
+  "testFailures": [],
+  "source": "04b516f534e644fcf4080776fb3177da01b3f24f",
+  "originalResultBundle": "/private/tmp/PGOS-ICloud-Reliability-FinalUnit.xcresult"
+}

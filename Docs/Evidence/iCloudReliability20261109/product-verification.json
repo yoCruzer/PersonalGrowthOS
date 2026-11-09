@@ -1,0 +1,94 @@
+{
+  "sourceHead": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+  "runID": 42630679905,
+  "conclusion": "success",
+  "checkoutSHA": "280327a64e85b149c0ec5fb47f76681420cf61ea",
+  "checkoutRelevantInputsMatch": "PASS",
+  "lanes": [
+    {
+      "lane": "release",
+      "name": "ios-release-1",
+      "artifactID": 13679454946,
+      "zipSHA256": "efdca984a9bf48c2cd5a612019d6cf8b5a790ab15c145f42cf81760de566cee5",
+      "officialDigest": "PASS",
+      "zipCRC": "PASS",
+      "headSHA": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+      "checkoutSHA": "280327a64e85b149c0ec5fb47f76681420cf61ea",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "conclusion": "success",
+      "unsignedBundles": [
+        "PersonalGrowthOS.app",
+        "PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+        "PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex"
+      ]
+    },
+    {
+      "lane": "unit",
+      "name": "ios-unit-1",
+      "artifactID": 13682213852,
+      "zipSHA256": "9b9064c3caa328df27384dcd66e71624ac2076d916c5d868a666932b19df1dbc",
+      "officialDigest": "PASS",
+      "zipCRC": "PASS",
+      "headSHA": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+      "checkoutSHA": "280327a64e85b149c0ec5fb47f76681420cf61ea",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "conclusion": "success",
+      "totalTestCount": 715,
+      "passedTests": 714,
+      "failedTests": 0,
+      "skippedTests": 1,
+      "runtimeWarnings": [],
+      "device": {
+        "name": "iPhone 13 mini",
+        "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-13-mini"
+      },
+      "runtime": {
+        "version": "27.2",
+        "buildversion": "24B8117"
+      },
+      "skippedTestNames": [
+        "testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure()"
+      ],
+      "skipReason": "Requires isolated 32MB HFS+ image; primary volume never filled."
+    },
+    {
+      "lane": "smoke",
+      "name": "ios-smoke-1",
+      "artifactID": 13681094159,
+      "zipSHA256": "21c8bb77de97cb33163296c85b6d09382a57339df3330d0543cb834805760850",
+      "officialDigest": "PASS",
+      "zipCRC": "PASS",
+      "headSHA": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+      "checkoutSHA": "280327a64e85b149c0ec5fb47f76681420cf61ea",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "conclusion": "success",
+      "totalTestCount": 8,
+      "passedTests": 8,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "runtimeWarnings": [],
+      "device": {
+        "name": "iPhone 13 mini",
+        "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-13-mini"
+      },
+      "runtime": {
+        "version": "27.2",
+        "buildversion": "24B8117"
+      },
+      "testNames": [
+        "testCoreShellRemainsOperableAtLargestAccessibilityTextSize()",
+        "testICloudSettingsStartOffAndRequireExplicitConsent()",
+        "testICloudSyncChineseConsentCompletionAndProgressAreLocalized()",
+        "testPausedSyncKeepsEveryTabAndSettingsOperable()",
+        "testRepeatableHabitCounterIncrementsDecrementsAndPersists()",
+        "testUIReadabilityChineseDefaultAndLargerText()",
+        "testUIReadabilityEnglishDefault()",
+        "testUITestingLaunchShowsAppShell()"
+      ]
+    }
+  ],
+  "optionalExtendedUI": "NOT_RUN: workflow_dispatch condition not selected",
+  "distributionSigned": false,
+  "testFlightAvailable": "NOT_OBSERVED",
+  "realTwoDeviceBackgroundAndFullIntegrity": "NOT_RUN"
+}

@@ -3,6 +3,83 @@ import Network
 import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testPausedSyncKeepsEveryTabAndSettingsOperable() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        for large in [false, true] {
+            app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSSyncPausedNavigationTest", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+            if large { app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge"] }
+            app.launch()
+            for tab in ["Timeline", "Record", "Growth", "Library", "Today"] {
+                let button = app.tabBars.buttons[tab]
+                XCTAssertTrue(button.waitForExistence(timeout: 5)); XCTAssertTrue(button.isHittable)
+                button.tap(); XCTAssertTrue(button.isSelected, "Paused sync must not intercept \(tab)")
+            }
+            let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = large ? "paused-sync-tabs-largest-text" : "paused-sync-tabs-default"; shot.lifetime = .keepAlways; add(shot)
+            app.buttons["Settings"].tap()
+            let sync = app.buttons["settings-icloud-sync"]
+            XCTAssertTrue(sync.waitForExistence(timeout: 5)); sync.tap()
+            let status = app.staticTexts["sync-status"]
+            XCTAssertTrue(status.waitForExistence(timeout: 5)); XCTAssertTrue(status.label.contains("accountChanged"))
+            XCTAssertTrue(app.buttons["Sync now"].exists)
+            app.terminate()
+        }
+    }
+
+    func testICloudSyncChineseConsentCompletionAndProgressAreLocalized() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        let base = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
+        func openSync() {
+            XCTAssertTrue(app.buttons["设置"].waitForExistence(timeout: 10)); app.buttons["设置"].tap()
+            let link = app.buttons["settings-icloud-sync"]
+            XCTAssertTrue(link.waitForExistence(timeout: 5)); link.tap()
+            XCTAssertTrue(app.navigationBars["iCloud 同步"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts["待同步版本"].exists)
+        }
+        app.launchArguments = base; app.launch(); openSync()
+        XCTAssertEqual(app.staticTexts["sync-status"].label, "iCloud 同步已关闭")
+        XCTAssertEqual(app.buttons["sync-enable"].label, "启用 iCloud 同步")
+        let copy = app.buttons["sync-copy-diagnostics"]
+        XCTAssertEqual(copy.label, "复制同步诊断"); copy.tap()
+        XCTAssertEqual(copy.label, "诊断已复制")
+        app.buttons["sync-enable"].tap()
+        XCTAssertTrue(app.alerts["将此工作区连接到 iCloud？"].waitForExistence(timeout: 3))
+        app.alerts.buttons["取消"].tap()
+        let off = XCTAttachment(screenshot: app.screenshot()); off.name = "icloud-chinese-default-off"; off.lifetime = .keepAlways; add(off)
+        app.terminate()
+        app.launchArguments = base + ["-PGOSSyncStatusLocalizationTest"]; app.launch(); openSync()
+        XCTAssertTrue(app.staticTexts["sync-status"].label.contains("上次同步完成于"))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["settings-icloud-sync"].tap()
+        XCTAssertTrue(app.staticTexts["sync-status"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["sync-status"].label.contains("上次同步完成于"))
+        app.terminate()
+        app.launchArguments = base + ["-PGOSSyncStatusLocalizationTest", "-PGOSSyncDownloadingTest"]
+        app.launch(); openSync()
+        XCTAssertEqual(app.staticTexts["sync-status"].label, "正在从 iCloud 下载…")
+        let active = XCTAttachment(screenshot: app.screenshot()); active.name = "icloud-chinese-downloading"; active.lifetime = .keepAlways; add(active)
+        app.terminate()
+    }
+
+    func testICloudSettingsStartOffAndRequireExplicitConsent() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 10))
+        app.buttons["Settings"].tap()
+        let sync = app.buttons["settings-icloud-sync"]
+        XCTAssertTrue(sync.waitForExistence(timeout: 5)); sync.tap()
+        let status = app.staticTexts["sync-status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 5)); XCTAssertTrue(status.label.contains("off"))
+        app.buttons["sync-enable"].tap()
+        XCTAssertTrue(app.alerts["Connect this workspace to iCloud?"].waitForExistence(timeout: 3))
+        app.alerts.buttons["Cancel"].tap()
+        XCTAssertTrue(status.label.contains("off")); XCTAssertTrue(app.buttons["sync-enable"].exists)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "iCloud-default-off-consent"; shot.lifetime = .keepAlways; add(shot)
+    }
+
     func testUsageHabitDailyFourAndTwoFactsExpandAndOpenExactOriginal() {
         continueAfterFailure = false
         let app = XCUIApplication()

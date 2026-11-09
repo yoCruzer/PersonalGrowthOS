@@ -1,0 +1,33 @@
+{
+  "source": {
+    "Commit": "4d4fc812739fb51394364f4c5e629ff7cd42ea4f",
+    "Dirty": false,
+    "Source": "localGit",
+    "Tag": ""
+  },
+  "configuration": "Release",
+  "purpose": "UNSIGNED_ARCHIVE_PREFLIGHT_NOT_DISTRIBUTION_SIGNING",
+  "runtimePin": "production",
+  "minimumOS": "17.0",
+  "bundles": [
+    {
+      "bundleIdentifier": "com.yocruzer.PersonalGrowthOS",
+      "build": "12",
+      "executableSHA256": "6ce0904ab1007df7d5c8b5f1371e45c2d74cc50beaed22655fb47bdb1e7764fe"
+    },
+    {
+      "bundleIdentifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "build": "12",
+      "executableSHA256": "02eca410a382a5283f58a7b8bdf2c11a5ae09a9ff149eb4ae72a865012f65f48"
+    },
+    {
+      "bundleIdentifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "build": "12",
+      "executableSHA256": "3371c1a36ec69372b55aa6bd2a7811838f441b76cdcfb93148b486f546802191"
+    }
+  ],
+  "compiledChineseResources": "PASS",
+  "distributionSigned": false,
+  "archiveUploaded": false,
+  "productionCloudExecution": false
+}

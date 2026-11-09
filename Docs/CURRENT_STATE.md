@@ -1,3 +1,98 @@
+## 2026-11-09 当前：R1–R5修复/独立复核/新CI完成，新TestFlight工作流成功，停覆盖验收门
+
+状态：`DELIVERY_COMPLETE / OWNER_OVERLAY_ACCEPTANCE_PENDING`。Owner已明确授权精确原仓库/分支/PR19/TestFlight标签及只读独立子代理；原授权阻塞结束。最终非skip源码`59104222b0ca654ca5cffa8faed3e2f208e91b2e`已普通推送原分支，PR保持OPEN Draft/原base。独立审查发现最长服务retry-after归并P2，已补修并复核关闭，无其余must-fix；本机同步三类61/61、最终transport28/28、干净Release/三Bundle溯源通过。
+
+新[产品CI42630679905](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679905)与[定向CI42630679938](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42630679938)均SUCCESS。产品Unit715执行=714PASS/0FAIL/1SKIP、Smoke8/8、三个unsigned Release Bundle；runtimeWarnings均为空。唯一低空间测试需隔离32MB HFS+镜像，optional extended UI未执行。四份官方ZIP摘要/CRC、实际merge checkout280327a/输入一致及定向24个源码pin已核验，不用旧CI覆盖。
+
+新不可移动标签`testflight-icloud-reliability-20261109`已推送回读，tag对象031e8eb、源码精确5910422；Xcode Cloud TestFlight-workflow实际Archive与工作流总状态均SUCCESS（build59018cf0-c866-4b25-92c5-8a6052eb6272）；Archive报告0 errors/0 test failures/35 warnings，原警告保留。没有直接核验发行包或观察TestFlight可用/安装；云端全量内容关系原图、双设备/后台传播仍未验。[证据/一次覆盖验收清单](Evidence/iCloudReliability20261109/README.md)。Owner先前Build19成功/恢复观察保持原限定。K1–K3后置，主项目三项改动保持；不清库/队列、不改身份、不重部署schema、不merge或公开上架。以下保留历史。
+
+
+本轮授权开发/提交/普通推送/原PR更新/新标签及构建结果跟踪完成；停一次新包覆盖验收门，不要求Owner重复删装。新源码之外的后续提交只有文档，不重跑已通过源码门。
+
+---
+
+## 2026-11-09 明确授权后继续：独立复核与远端交付进行中
+
+Owner已明确回复“明确授权”，覆盖已请求的原`git@github.com:yoCruzer/PersonalGrowthOS.git` / `codex/icloud-product`普通快进、原Draft PR19更新、通过门禁的非skip源码TestFlight标签，以及只读独立审查子代理。此前待授权/blocked状态由本节取代，不再重复请求。
+
+恢复只读核验：原PR19仍OPEN Draft、base=`codex/icloud-sync-foundation`、远端head=`ddc5af8`；本地干净候选04b516f及最终本机证据保持。已启动只读独立审查，发现同批或跨回调的暂时错误可能忽略较长服务retry-after，正在补最严格错误归并与正反向测试；独立首因及永久错误保护保持。独立复核P2已关闭、无其余must-fix；同步三类61/61及最终transport28/28通过，runtimeWarnings为空。新源码候选将固定，先推非skip源码再观察实际CI，文档后推；未声称新CI或TestFlight可用。
+
+---
+
+## 2026-11-09 当前：R1–R5本机修复完成，远端与独立复核待明确授权
+
+状态：`LOCAL_GATES_PASSED / BLOCKED_PENDING_EXPLICIT_APPROVAL`。完整目标未完成；同一明确授权条件连续三轮仍未满足，已达到blocked审计阈值。输入为固定`47fe200e515a82ddad9ba16f5666ceb4329ee108`中的`ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md`；沿原`codex/icloud-product` / Draft PR19 / 原base。起点`ddc5af8`产品工作树干净，主项目待办分支三项改动保持。
+
+Owner已手动部署Production schema，现有Build19 / `4d4fc81`立即同步成功；系统删除App和本地数据、重装后观察到云端数据返回。只记`OWNER_REPORTED_SUCCESS` / `OWNER_REPORTED_RECOVERY_OBSERVED`，全量内容/关系/原图与双设备/后台传播未验，不再要求重复删装或schema部署。
+
+本地普通非skip修复`0949313`→`04b516f534e644fcf4080776fb3177da01b3f24f`：R1先实跑指定红测后过滤未发布对象删除推导，保留真冲突保护；R2–R4等待/暂时错误续传、持久retry-after/有界退避、busy尾部续跑、private database/当前zone推送验证；R5有界脱敏复制诊断、首因/部分ACK、双向文案及待获取时不误记完成，不可重试应用错误刷新/重开仍暂停。V17/V18 schema和工程/身份不变。
+
+最终干净源码本机Unit714执行=713PASS/0FAIL/1SKIP、Release unsigned三Bundle成功；104项定向及后续33项状态保护通过，UI3/3及中英截图视觉检查通过（页面与最终源码一致）。runtimeWarnings为空；低空间隔离镜像SKIP、optional extended UI NOT_RUN。源码SHA/Dirty=false、三Bundle1.0(12)、production pin及中文资源已核验；unsigned不代表发行签名。所有原红测/编译/数值桥接失败保留。[详细修复和实际命令](ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md) · [证据](Evidence/iCloudReliability20261109/README.md)。
+
+原仓库普通push被自动审批连续两次拒绝，称未识别精确私有目标的可信明确授权。已核实remote=`git@github.com:yoCruzer/PersonalGrowthOS.git`、原PR19 head=`codex/icloud-product`/`ddc5af8`匹配；没有绕过。已集中请求精确push/原PR更新/修复non-skip源码TestFlight标签确认，以及只读独立审查子代理授权，均待回复。新远端CI、独立审查、PR更新和TestFlight标签尚未完成，旧CI不覆盖本次修复；最终新包清单待这些门完成后集中给出。
+
+续接只读核验：原PR仍ddc5af8/OPEN Draft，无本次CI。授权后必须先快进原分支到已审非skip源码（当前候选04b516f），等实际CI通过再补推[skip ci]文档；不得首次直接push文档HEAD跳过验证。源码变更则重新固定候选。[精确发布顺序](ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md#授权后固定发布顺序未执行)已记录，尚未执行任何远端写入，未绕过审批。
+
+最新阻塞复核：本地工作树干净，产品/测试/工程/Packages/Scripts/CI与04b516f没有后续差异，原PR19仍OPEN Draft、head为ddc5af8、无本次CI。最终本机Unit713PASS/1SKIP及Release源码绑定保持。本机必要工作已收口，不能以重复测试、文档提交或原样继续指令视为精确授权。后续必须收到对原私有仓库普通push/PR更新/已验证non-skip源码TestFlight标签，以及只读独立审查子代理的明确回复；没有重试被拒动作或替代通道。
+
+K1 ZIP独立恢复工作区再发现、K2跨UUID自然键冲突、K3历史整理后置。不重建Mac探针，不清库/队列/token/ACK，不改工作区身份，不删云端数据，不merge或公开上架。以下保留历史不覆盖本节。
+
+---
+
+## 2026-11-09 接续：TestFlight标签已推送，Production部署待明确确认
+
+Owner已解锁Mac，并进一步明确“不需要核验现有Xcode Cloud流程，只需要发送testflight-前缀tag”。按此新指令跳过流程配置核验，已普通推送testflight-icloud-sync-v1-20261109，远端annotated tag对象846052972774744825ebc0a148960394cb87bf3a、解引用源码4d4fc812739fb51394364f4c5e629ff7cd42ea4f均已回读核实。标签精确指向已通过两条CI的非skip源码，未给后续文档提交打标签；实际Apple构建/上传/TestFlight可用尚未观察，不能写完成。
+
+重新导出正式Dev/Prod并保留原件：Dev1949B、SHA6ba50154…；Prod356B、SHA60fec483…，结构与先前证据一致。Deployment Diff View核实仅添加3类/11字段/21索引标记及新类型的原有默认grants，Users不变，无记录查询、写入或删除。最终Deploy点击被自动审批拒绝，理由为此前明确授权覆盖代码推送/TestFlight标签，但未明确覆盖此次Production schema持久部署；尚未执行部署。已向Owner发出准确范围的单次确认，不绕过拦截，等待明确回复；无手机/数据线占用。此前“Mac锁屏/标签尚未推送/必须先核验工作流”的状态已由本节取代。
+
+[testflight标签证据](Evidence/iCloudProduct/20261109/testflight-tag.json) · [原交付证据](Evidence/iCloudProduct/20261109/README.md)
+
+---
+
+## 2026-11-09 最新授权：性能/中文修复后自主推进TestFlight
+
+Owner已自愿在build11完成Create workspace，报告正式Development新types、Pending429→0、约5分钟Latest sync completed；非双设备/Production验收。重进Waiting、发热及中文遗漏已修复。Owner进一步明确授权睡后继续，包括代码普通推送、testflight-*标签及TestFlight测试；不重复询问这些许可，手机陪测不作前提。
+
+当前源码候选build12/V18：去逐条全库投影、四阶段/历史完成时间、中文200条、Release Production配置与双realm隔离及保留旧metadata已实现并独立复核。本机全Unit702=701PASS/0FAIL/1SKIP、UI8/8PASS；旧V17模型声明保持字节一致，迁移/恢复/回转及事务门通过。最终非skip源码4d4fc812739fb51394364f4c5e629ff7cd42ea4f已普通推送；Release无签名Archive绑定同SHA/Dirty=false，三Bundle版本12/中文资源/production pin核对成功，未作为发行签名证明。首轮定向CI的旧checker负例问题已修，原失败保留；最终定向CI42507643926成功，官方ZIP摘要、实际checkout8832002f及24个源码pin已核验。最终产品CI42507643991成功：Release三unsigned bundle、Unit702=701PASS/0FAIL/1SKIP、Smoke8/8PASS；三官方ZIP摘要/CRC/相同实际checkout及headSHA已核验，两个runtimeWarnings为空。唯一Unit跳过需隔离32MB HFS+镜像，optional extended UI未跑。源码、本机与远端验证及unsigned Archive节点已完成；仅文档收口，不重复全量测试。未来TestFlight标签必须仍指向非skip源码4d4fc81，不能指向本次文档提交。见[执行范围](ICLOUD_SYNC_TESTFLIGHT_EXECUTION_20261109_ZH.md)与[证据](Evidence/iCloudProduct/20261109/README.md)。
+
+正式Dev当前结构已比对匹配3类/11字段并完整保留索引/grants；Production当前只读预览仍Users，尚未部署。Mac已锁屏且自动解锁失败，因此部署/既有Cloud workflow核验及最终TestFlight标签受实际外部阻塞；不在schema缺项时触发已知不可同步分发。醒后只需解锁Mac，无手机/数据线或重复授权。Production真实收发、TestFlight可用/安装及公开发布均不能冒称通过。原项目三项未提交工作仍不动。
+
+以下为历史，不以旧“仅恢复导航/无TF授权/Release恒关闭”等状态覆盖本节。
+
+---
+
+## 2026-11-09 最新Owner边界：停止真机协助，仅收口导航修复
+
+Owner报告build10的底部同步错误提示遮挡Tab，随后明确不再继续陪测。本轮停止主动请求安装/点击/截图和真实云操作，不把旧流程的待复测安排当作继续要求。截图中的accountChanged为保留状态，没有新一次Sync now成功执行证据。
+
+已移除全局底部错误提示，详情保留同步设置页；build11只恢复导航，不改身份、429队列或同步状态。合成paused状态UI回归1/1通过，包含两次启动/10次Tab选中断言/两次设置访问；截图已视觉核对，加入现有Smoke列表。签名修复包已绑定源码36ad76f/Dirty=false，位于`/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev11-36ad76f`；原包/ZIP解包验签及三二进制hash通过，未替Owner安装。新源码CI定向运行中/产品排队中，不提前判通过。真实云验收暂停、不能宣称同步已完成。详见[持续证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。不卸载/清库/恢复覆盖/切换账户，不merge/Production/Archive/TestFlight/发布。原项目三项未提交工作不动。后续真实云阶段等待Owner重新安排，本轮不再发人工请求。
+
+---
+
+## 2026-11-09 真机反馈继续修复：同账户首次signIn误暂停
+
+Owner已备份、确认build8和build9覆盖后的本地检查通过；build8 missingSupplement已修复，build9初始化生成429待同步版本，但真实启用先显示CK20，重新进入页面读回持久accountChanged。Owner确认iCloud账户始终未变。原始失败与截图来源保留，不声称已上传成功。
+
+build9源码1e4fdca的定向和产品CI均SUCCESS（Unit671PASS/1SKIP/0FAIL，Smoke6/6，Release通过），但不覆盖此次真实SDK事件。build10已修复同账户signIn处理、首因保留/旧回调保护、严格显式首次setup恢复及旧建区意图撤销；最终源码9882c28、本机50/50(44核心+6UI)、独立审查、签名/解包验签、定向CI及Release通过，Unit/Smoke运行中。详见[持续修复证据](Evidence/iCloudProduct/20261108/first-activation-fix.md)。保留429队列、身份及原数据，不自动重建已丢失zone，不需Mac探针、清库、恢复覆盖或账户切换。
+
+已集中安排Owner一次build10覆盖更新和原入口复测，当前等待状态。build10真实云验证仍未完成；Production/Archive/TestFlight/发布/merge边界保持。以下旧build8交付记录为历史。
+
+---
+
+## 2026-11-08 最新交付：正式App同步代码与Development build8已完成
+
+Owner要求停止Mac双用户/tmp探针试错、优先完成正式产品代码与可安装构建，本轮已按此顺序交付。默认关闭同步，显式确认后才允许上传；真实云/Production验收后移且仍未通过。旧历史的“探针前置/未接入正式App/待签名”等状态不再代表当前任务。
+
+独立持久工作树`/Users/himini/Development/Projects/PersonalGrowthOS-icloud-product`，分支`codex/icloud-product`，[Draft PR #19](https://github.com/yoCruzer/PersonalGrowthOS/pull/19)基于PR17/07c1bcf，不依赖PR18执行器。最终运行代码`a52e24b166cd2c4969dbecf45955924ad6a35b81`，最后文档提交不改变该代码。V17、38实体/23聚合、同事务outbox、因果冲突/删除、媒体闭合、持久inbox/ACK、账户与dataset隔离及设置/推送桥已实现并独立复核。
+
+[定向CI42491840398](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491840398)与[产品CI42491840354](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/42491840354)均SUCCESS。最终产品Unit669执行=668PASS/0FAIL/1SKIP，Smoke6/6，Release三个unsigned bundle；低空间隔离镜像测试与optional extended UI未跑。实际checkout384ad041、官方产物digest/源码绑定与测试摘要已核验；本机双库合成集成4/4及相邻路径通过。原始失败保留，详情见[真实测试记录](Evidence/iCloudProduct/20261108/README.md)。
+
+Development build8已签名并解包验签，源码a52e24b/Dirty=false；本机私有目录`/Users/himini/Development/Builds/PersonalGrowthOS-iCloud-Dev8-a52e24b`含app、ZIP、receipt和安装步骤。未实际安装或启用云同步；原项目三项未提交工作、日常业务数据、SyncLab均未改动。安装会更新同bundle正式App，Owner可按[交付说明](ICLOUD_SYNC_PRODUCT_DELIVERY_ZH.md)先备份再自行选择安装，当前无需人工操作。
+
+真实CloudKit端到端/账号切换/后台推送、完整故障矩阵和Production仍NOT_RUN；容量越界保留本地并暂停、自然键冲突不自动吞并。G1手机接受范围与CK_2非阻塞例外保持，PR18失败留在原分支，不重跑Mac探针。Release编译门仍关闭同步；Production部署、Archive、TestFlight、公开发布与merge均未授权/未执行。
+
+---
+
 # 2026-11-08 独立Mac配置、签名与离线资格已完成
 
 Owner明确批准“按清单配置和预检”。独立App ID `com.yocruzer.PersonalGrowthOS.FormalSyncProbe` 已创建并回读确认仅关联正式容器，Mac Development profile已生成下载，复用既有开发证书及已登记Mac。没有改正式App/SyncLab、新建证书或注册设备，原始profile/证书/设备值仅本机保留。

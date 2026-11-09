@@ -1,3 +1,5 @@
+> 2026-11-08 Owner新决定：P0/P1/P2真实服务验收后移，不再阻塞正式App代码接入；未验证状态与Production/发布授权边界保留。以[当前实现范围](ICLOUD_SYNC_PRODUCT_IMPLEMENTATION_ZH.md)为准。
+
 # G2 写入接缝与基线准备
 
 2026-11-07。基线产品 `96f72339a1a3082c43018e06d6115dd93df1df97`，接续 G1 `e57fe35`。本表来自现有代码，不代表已经接上 outbox。正式 App 仍 V16/v12、CloudKit `.none`；不改历史 schema，不开启自动镜像。

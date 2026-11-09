@@ -1,0 +1,81 @@
+{
+  "sourceHead": "4d4fc812739fb51394364f4c5e629ff7cd42ea4f",
+  "runID": 42507643991,
+  "conclusion": "success",
+  "checkoutSHA": "8832002fece75c1371c993dfc7ccd0a469311e8a",
+  "lanes": [
+    {
+      "lane": "release",
+      "artifactID": 13628855158,
+      "zipSHA256": "b38af64f695fbb992f80fbfc14e1c95967b9e113fccea00fca41b5db60ccbcf6",
+      "zipCRC": "PASS",
+      "headSHA": "4d4fc812739fb51394364f4c5e629ff7cd42ea4f",
+      "checkoutSHA": "8832002fece75c1371c993dfc7ccd0a469311e8a",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "conclusion": "success",
+      "unsignedBundles": [
+        "PersonalGrowthOS.app",
+        "PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+        "PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex"
+      ]
+    },
+    {
+      "lane": "unit",
+      "artifactID": 13628656545,
+      "zipSHA256": "09740f4cadad65ab6dec5127997f3b2ae50b4fb00ca4d5cf24a9017a16565356",
+      "zipCRC": "PASS",
+      "headSHA": "4d4fc812739fb51394364f4c5e629ff7cd42ea4f",
+      "checkoutSHA": "8832002fece75c1371c993dfc7ccd0a469311e8a",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "conclusion": "success",
+      "totalTestCount": 702,
+      "passedTests": 701,
+      "failedTests": 0,
+      "skippedTests": 1,
+      "runtimeWarnings": [],
+      "device": {
+        "modelName": "iPhone 13 mini",
+        "osVersion": "27.2",
+        "osBuildNumber": "24B8117"
+      },
+      "skippedTestNames": [
+        "testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure()"
+      ],
+      "skipReason": "Requires isolated 32MB HFS+ test image; primary volume never filled."
+    },
+    {
+      "lane": "smoke",
+      "artifactID": 13628104479,
+      "zipSHA256": "b0466cef34ed4ae2f833cf1ff0fe9df4735a9cd56fb831c6accbe201644a0553",
+      "zipCRC": "PASS",
+      "headSHA": "4d4fc812739fb51394364f4c5e629ff7cd42ea4f",
+      "checkoutSHA": "8832002fece75c1371c993dfc7ccd0a469311e8a",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "conclusion": "success",
+      "totalTestCount": 8,
+      "passedTests": 8,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "runtimeWarnings": [],
+      "device": {
+        "modelName": "iPhone 13 mini",
+        "osVersion": "27.2",
+        "osBuildNumber": "24B8117"
+      },
+      "testNames": [
+        "testCoreShellRemainsOperableAtLargestAccessibilityTextSize()",
+        "testICloudSettingsStartOffAndRequireExplicitConsent()",
+        "testICloudSyncChineseConsentCompletionAndProgressAreLocalized()",
+        "testPausedSyncKeepsEveryTabAndSettingsOperable()",
+        "testRepeatableHabitCounterIncrementsDecrementsAndPersists()",
+        "testUIReadabilityChineseDefaultAndLargerText()",
+        "testUIReadabilityEnglishDefault()",
+        "testUITestingLaunchShowsAppShell()"
+      ]
+    }
+  ],
+  "optionalExtendedUI": "NOT_RUN: workflow_dispatch-only condition not selected",
+  "distributionSigned": false,
+  "testFlightAvailable": false,
+  "productionSyncAccepted": false
+}

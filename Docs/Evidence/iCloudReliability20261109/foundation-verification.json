@@ -1,0 +1,30 @@
+{
+  "sourceHead": "59104222b0ca654ca5cffa8faed3e2f208e91b2e",
+  "checkoutSHA": "280327a64e85b149c0ec5fb47f76681420cf61ea",
+  "runID": 42630679938,
+  "conclusion": "success",
+  "environment": "Xcode 27.1\nBuild version 27A9275",
+  "name": "sync-foundation-candidate",
+  "artifactID": 13681096140,
+  "zipSHA256": "0698b05201e844821a5243581a010526db34314e85e9d2d63ddc9c9b63ab7881",
+  "officialDigest": "PASS",
+  "zipCRC": "PASS",
+  "checks": {
+    "nativeProtocol": 44,
+    "nativeProbeCore": 17,
+    "nativeSDK": 21,
+    "independentChunks": 11,
+    "independentCLI": 22,
+    "syntheticSchema": 21,
+    "independentSchema": 23,
+    "independentSDK": 11,
+    "independentAllowance": 3,
+    "independentDirectoryAndFixture": 8,
+    "packaging": 32,
+    "sourcePinsVerified": 24,
+    "offlineReplay": 6
+  },
+  "realCloudOperations": 0,
+  "checkoutRelevantInputsMatch": "PASS",
+  "excludedMaximumPayloadCase": "Local 49MB V16 evidence retained; excluded from remote chunk filter"
+}

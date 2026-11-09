@@ -723,7 +723,7 @@ final class ImportExportService {
             try InvestmentIntegrity.validate(context: publicationContext)
             try UsagePreferencesIntegrity.validate(context:publicationContext)
             try Task.checkCancellation()
-            try publicationContext.save()
+            try ProductSyncCommit.save(publicationContext, origin: .restoreNewDataset)
             didSave = true
         } catch {
             publicationContext.rollback()
@@ -1124,38 +1124,45 @@ private enum Hasher {
 }
 
 enum TransferSnapshot {
-    static func make(context: ModelContext, investmentClock: InvestmentClock? = nil) throws -> TransferData {
+    static func make(context: ModelContext, investmentClock: InvestmentClock? = nil,
+                     includedSyncKinds: Set<SyncDomainKind>? = nil) throws -> TransferData {
+        // nil is the unchanged complete v12 backup. Sync capture can fetch only dirty
+        // aggregate kinds; the returned partial value is not a complete import package.
+        func fetch<T: PersistentModel>(_ type: T.Type, kinds: [SyncDomainKind]) throws -> [T] {
+            guard includedSyncKinds == nil || kinds.contains(where: { includedSyncKinds!.contains($0) }) else { return [] }
+            return try context.fetch(FetchDescriptor<T>())
+        }
         try Task.checkCancellation()
-        let entries = try context.fetch(FetchDescriptor<Entry>())
+        let entries = try fetch(Entry.self, kinds: [.entry])
         try Task.checkCancellation()
-        let images = try context.fetch(FetchDescriptor<ImageMetadata>())
+        let images = try fetch(ImageMetadata.self, kinds: [.entry])
         try Task.checkCancellation()
-        let tags = try context.fetch(FetchDescriptor<Tag>())
+        let tags = try fetch(Tag.self, kinds: [.tag])
         try Task.checkCancellation()
-        let links = try context.fetch(FetchDescriptor<ObjectLink>())
+        let links = try fetch(ObjectLink.self, kinds: [.objectLink])
         try Task.checkCancellation()
-        let habits = try context.fetch(FetchDescriptor<Habit>())
+        let habits = try fetch(Habit.self, kinds: [.habit])
         try Task.checkCancellation()
-        let habitConfigurations = try context.fetch(FetchDescriptor<HabitConfiguration>())
+        let habitConfigurations = try fetch(HabitConfiguration.self, kinds: [.habit])
         try Task.checkCancellation()
-        let logs = try context.fetch(FetchDescriptor<HabitLog>())
+        let logs = try fetch(HabitLog.self, kinds: [.habitLog])
         try Task.checkCancellation()
-        let logDayMetadata = try context.fetch(FetchDescriptor<HabitLogDayMetadata>())
+        let logDayMetadata = try fetch(HabitLogDayMetadata.self, kinds: [.habitLog])
         try Task.checkCancellation()
-        let goals = try context.fetch(FetchDescriptor<Goal>())
+        let goals = try fetch(Goal.self, kinds: [.goal])
         try Task.checkCancellation()
-        let events = try context.fetch(FetchDescriptor<GoalLifecycleEvent>())
+        let events = try fetch(GoalLifecycleEvent.self, kinds: [.goal])
         try Task.checkCancellation()
-        let weightRecords = try context.fetch(FetchDescriptor<WeightRecord>())
+        let weightRecords = try fetch(WeightRecord.self, kinds: [.weight])
         try Task.checkCancellation()
-        let weeklyReviews = try context.fetch(FetchDescriptor<WeeklyReview>())
-        let entrySources = try context.fetch(FetchDescriptor<EntryExternalSource>())
-        let entryPins = try context.fetch(FetchDescriptor<EntryPin>())
-        let entryFollowUps = try context.fetch(FetchDescriptor<EntryFollowUp>())
+        let weeklyReviews = try fetch(WeeklyReview.self, kinds: [.weeklyReview])
+        let entrySources = try fetch(EntryExternalSource.self, kinds: [.entry])
+        let entryPins = try fetch(EntryPin.self, kinds: [.entry])
+        let entryFollowUps = try fetch(EntryFollowUp.self, kinds: [.entry])
         try Task.checkCancellation()
-        let habitPlans = try context.fetch(FetchDescriptor<HabitPlanRevision>())
+        let habitPlans = try fetch(HabitPlanRevision.self, kinds: [.habit])
         try Task.checkCancellation()
-        let habitLifecycleEvents = try context.fetch(FetchDescriptor<HabitLifecycleEvent>())
+        let habitLifecycleEvents = try fetch(HabitLifecycleEvent.self, kinds: [.habit])
         let metadataByLogID = HabitLogDayResolver.metadataByLogID(logDayMetadata)
         let sortUUID: (UUID, UUID) -> Bool = { $0.uuidString < $1.uuidString }
         return try TransferData(
@@ -1322,27 +1329,27 @@ enum TransferSnapshot {
                 EntryFollowUpTransfer(id: $0.id, entryID: $0.entryID, body: $0.body,
                                       createdAt: $0.createdAt, updatedAt: $0.updatedAt)
             }.sorted { sortUUID($0.id, $1.id) },
-            todoTasks: try cancellableMap(context.fetch(FetchDescriptor<TodoTask>())) { TodoTaskTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            todoEvents: try cancellableMap(context.fetch(FetchDescriptor<TodoTaskEvent>())) { TodoTaskEventTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            todoLists: try cancellableMap(context.fetch(FetchDescriptor<TodoList>())) { TodoListTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            todoSeries: try cancellableMap(context.fetch(FetchDescriptor<TodoSeries>())) { TodoSeriesTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            todoSources: try cancellableMap(context.fetch(FetchDescriptor<TodoTaskSource>())) { TodoTaskSourceTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            importantDays: try cancellableMap(context.fetch(FetchDescriptor<ImportantDay>())) { try ImportantDayTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            importantDayEntryLinks: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayEntryLink>())) { ImportantDayEntryLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            importantDayTodoLinks: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayTodoLink>())) { ImportantDayTodoLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            importantDayCovers: try cancellableMap(context.fetch(FetchDescriptor<ImportantDayCover>())) { ImportantDayCoverTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            sleepRecords: try cancellableMap(context.fetch(FetchDescriptor<SleepRecord>())) { try SleepRecordTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            sleepGoals: try cancellableMap(context.fetch(FetchDescriptor<SleepGoalRule>())) { SleepGoalTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            captureReceipts: try cancellableMap(context.fetch(FetchDescriptor<CaptureImportReceipt>())) { CaptureReceiptTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            investmentParticipants: try cancellableMap(context.fetch(FetchDescriptor<InvestmentParticipant>())) { InvestmentParticipantTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            investmentActivities: try cancellableMap(context.fetch(FetchDescriptor<InvestmentActivity>())) { InvestmentActivityTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            investmentSessions: try cancellableMap(context.fetch(FetchDescriptor<InvestmentSession>())) { try InvestmentSessionTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
-            investmentOperations: try cancellableMap(context.fetch(FetchDescriptor<InvestmentOperation>())) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) },
-            todoSeriesPreferences:try cancellableMap(context.fetch(FetchDescriptor<TodoSeriesPreferences>())) {TodoSeriesPreferencesTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
-            todoReminderIntents:try cancellableMap(context.fetch(FetchDescriptor<TodoReminderIntent>())) {TodoReminderIntentTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
-            bodyReferenceSettings:try cancellableMap(context.fetch(FetchDescriptor<BodyReferenceSettings>())) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
-            netWorthItems: try cancellableMap(context.fetch(FetchDescriptor<NetWorthItem>())) { try $0.value() }.sorted { sortUUID($0.id, $1.id) },
-            netWorthSnapshots: try cancellableMap(context.fetch(FetchDescriptor<NetWorthSnapshot>())) { try $0.value() }.sorted { sortUUID($0.id, $1.id) }
+            todoTasks: try cancellableMap(fetch(TodoTask.self, kinds: [.todoTask, .todoSeries, .importantDayTodoLink])) { TodoTaskTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoEvents: try cancellableMap(fetch(TodoTaskEvent.self, kinds: [.todoTask, .todoSeries])) { TodoTaskEventTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoLists: try cancellableMap(fetch(TodoList.self, kinds: [.todoList])) { TodoListTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoSeries: try cancellableMap(fetch(TodoSeries.self, kinds: [.todoSeries])) { TodoSeriesTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            todoSources: try cancellableMap(fetch(TodoTaskSource.self, kinds: [.todoTask, .todoSeries])) { TodoTaskSourceTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDays: try cancellableMap(fetch(ImportantDay.self, kinds: [.importantDay])) { try ImportantDayTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDayEntryLinks: try cancellableMap(fetch(ImportantDayEntryLink.self, kinds: [.importantDayEntryLink])) { ImportantDayEntryLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDayTodoLinks: try cancellableMap(fetch(ImportantDayTodoLink.self, kinds: [.importantDayTodoLink])) { ImportantDayTodoLinkTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            importantDayCovers: try cancellableMap(fetch(ImportantDayCover.self, kinds: [.importantDay])) { ImportantDayCoverTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            sleepRecords: try cancellableMap(fetch(SleepRecord.self, kinds: [.sleepRecord])) { try SleepRecordTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            sleepGoals: try cancellableMap(fetch(SleepGoalRule.self, kinds: [.sleepGoal])) { SleepGoalTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            captureReceipts: try cancellableMap(fetch(CaptureImportReceipt.self, kinds: [.captureReceipt])) { CaptureReceiptTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentParticipants: try cancellableMap(fetch(InvestmentParticipant.self, kinds: [.investmentParticipant])) { InvestmentParticipantTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentActivities: try cancellableMap(fetch(InvestmentActivity.self, kinds: [.investmentActivity])) { InvestmentActivityTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentSessions: try cancellableMap(fetch(InvestmentSession.self, kinds: [.investmentRecord])) { try InvestmentSessionTransfer($0) }.sorted { sortUUID($0.id, $1.id) },
+            investmentOperations: try cancellableMap(fetch(InvestmentOperation.self, kinds: [.investmentRecord])) { try InvestmentOperationTransfer($0, clock: investmentClock) }.sorted { sortUUID($0.id, $1.id) },
+            todoSeriesPreferences:try cancellableMap(fetch(TodoSeriesPreferences.self, kinds: [.todoSeries])) {TodoSeriesPreferencesTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            todoReminderIntents:try cancellableMap(fetch(TodoReminderIntent.self, kinds: [.todoTask, .todoSeries])) {TodoReminderIntentTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            bodyReferenceSettings:try cancellableMap(fetch(BodyReferenceSettings.self, kinds: [.bodyReference])) {BodyReferenceSettingsTransfer($0)}.sorted {sortUUID($0.id,$1.id)},
+            netWorthItems: try cancellableMap(fetch(NetWorthItem.self, kinds: [.netWorthItem])) { try $0.value() }.sorted { sortUUID($0.id, $1.id) },
+            netWorthSnapshots: try cancellableMap(fetch(NetWorthSnapshot.self, kinds: [.netWorthSnapshot])) { try $0.value() }.sorted { sortUUID($0.id, $1.id) }
         ).redactingConsumedInvestmentContent()
     }
 

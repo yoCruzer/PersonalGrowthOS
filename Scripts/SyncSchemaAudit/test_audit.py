@@ -1,4 +1,5 @@
 import json
+import itertools
 import os
 from pathlib import Path
 import shutil
@@ -118,7 +119,7 @@ class SchemaAuditTests(unittest.TestCase):
             "nested-list": SYNTHETIC_SCHEMA.replace(b"LIST<DOUBLE>", b"LIST<LIST<INT64>>"),
             "unknown-system": SYNTHETIC_SCHEMA.replace(b"auditSyntheticLabel", b"___future"),
             "unknown-grant": SYNTHETIC_SCHEMA.replace(b"GRANT READ", b"GRANT ADMIN"),
-            "index-clause": SYNTHETIC_SCHEMA.replace(b"auditSyntheticScores LIST<DOUBLE>", b"auditSyntheticScores LIST<DOUBLE> QUERYABLE"),
+            "index-clause": SYNTHETIC_SCHEMA.replace(b"auditSyntheticScores LIST<DOUBLE>", b"auditSyntheticScores LIST<DOUBLE> FUTURE_INDEX"),
             "trailing-comma": SYNTHETIC_SCHEMA.replace(b'"SyntheticAuditReader"\n)', b'"SyntheticAuditReader",\n)'),
             "missing-semicolon": SYNTHETIC_SCHEMA.rstrip()[:-1],
             "invalid-utf8": SYNTHETIC_SCHEMA + b"\xff",
@@ -129,6 +130,79 @@ class SchemaAuditTests(unittest.TestCase):
             with self.subTest(label=label):
                 self.dev.write_bytes(data)
                 with self.assertRaises(audit.AuditError): self.run_audit()
+
+    def test_index_modifier_permutations_have_canonical_set_semantics(self):
+        expected = {"SyntheticIndexProbe": {
+            "fields": {"alpha": "STRING", "beta": "LIST<DOUBLE>", "plain": "BYTES"},
+            "grants": [{"permission": "READ", "role": "SyntheticIndexReader"}],
+            "fieldIndexes": {"alpha": ["QUERYABLE", "SEARCHABLE", "SORTABLE"],
+                             "beta": ["QUERYABLE", "SORTABLE"]}}}
+        for flags in itertools.permutations(["QUERYABLE", "SEARCHABLE", "SORTABLE"]):
+            for list_flags in ["QUERYABLE SORTABLE", "SORTABLE QUERYABLE"]:
+                with self.subTest(flags=flags, list_flags=list_flags):
+                    source = ("DEFINE SCHEMA RECORD TYPE SyntheticIndexProbe ("
+                              "beta LIST<DOUBLE> " + list_flags + ", plain BYTES, "
+                              "alpha STRING " + " ".join(flags) + ", "
+                              "GRANT READ TO SyntheticIndexReader);").encode()
+                    self.assertEqual(audit.Parser(source).parse(), expected)
+
+    def test_index_only_difference_survives_report_and_remains_review_only(self):
+        source = b"DEFINE SCHEMA RECORD TYPE SyntheticIndexProbe (label STRING QUERYABLE SEARCHABLE, scores LIST<DOUBLE> SORTABLE);"
+        self.dev.write_bytes(source)
+        self.prod.write_bytes(source.replace(b"QUERYABLE SEARCHABLE", b"SEARCHABLE QUERYABLE"))
+        result = self.run_audit()
+        self.assertEqual(result["developmentProduction"], {"byteIdentical": False, "structureIdentical": True})
+        self.assertEqual(result["development"]["observedSchema"]["SyntheticIndexProbe"]["fieldIndexes"],
+                         {"label": ["QUERYABLE", "SEARCHABLE"], "scores": ["SORTABLE"]})
+        self.prod.write_bytes(source.replace(b" QUERYABLE", b""))
+        result = self.run_audit()
+        self.assertFalse(result["developmentProduction"]["structureIdentical"])
+        self.assertEqual(result["production"]["observedSchema"]["SyntheticIndexProbe"]["fieldIndexes"]["label"], ["SEARCHABLE"])
+        self.assertFalse(result["deployable"])
+        self.assertFalse(any(result["gatesPassed"].values()))
+        self.assertEqual(result["candidate"]["customIndexes"], [])
+
+    def test_duplicate_unknown_and_misplaced_modifiers_fail_closed(self):
+        clauses = ["label STRING QUERYABLE QUERYABLE", "label STRING SEARCHABLE SEARCHABLE",
+                   "label STRING SORTABLE SORTABLE", "label STRING QUERYABLE SORTABLE QUERYABLE",
+                   "label STRING INDEXED", "label STRING queryable", 'label STRING "QUERYABLE"',
+                   "label STRING QUERYABLE FUTURE_INDEX", "label QUERYABLE STRING",
+                   "label LIST<DOUBLE QUERYABLE>", "label STRING, QUERYABLE",
+                   "label STRING GRANT READ TO SyntheticReader",
+                   "label STRING, GRANT READ TO SyntheticReader SORTABLE"]
+        for clause in clauses:
+            with self.subTest(clause=clause):
+                self.dev.write_bytes(("DEFINE SCHEMA RECORD TYPE SyntheticIndexProbe (" + clause + ");").encode())
+                with self.assertRaises(audit.AuditError):
+                    self.run_audit()
+        output = self.base / "invalid-index-report.json"
+        result = subprocess.run(self.cli(output), capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 2)
+        self.assertFalse(output.exists())
+
+    def test_unindexed_report_shape_unchanged_and_system_index_preserved(self):
+        legacy = audit.Parser(SYNTHETIC_SCHEMA).parse()
+        self.assertEqual(set(legacy["Users"]), {"fields", "grants"})
+        # Single reserved system field in an invented type, not an Owner export fixture.
+        parsed = audit.Parser(b"DEFINE SCHEMA RECORD TYPE SyntheticSystemIndex (___recordID REFERENCE QUERYABLE);").parse()
+        self.assertEqual(parsed["SyntheticSystemIndex"]["fieldIndexes"], {"___recordID": ["QUERYABLE"]})
+        self.assertEqual(parsed["SyntheticSystemIndex"]["fields"], {"___recordID": "REFERENCE"})
+
+    def test_candidate_fields_with_indexes_do_not_assert_server_readiness(self):
+        source = b"DEFINE SCHEMA "
+        for name, fields in audit.EXPECTED_TYPES.items():
+            source += ("RECORD TYPE " + name + " (" + ", ".join(
+                field + " " + kind + (" QUERYABLE SORTABLE" if field == "wireVersion" else "")
+                for field, kind in fields.items()) + ");").encode()
+        self.dev.write_bytes(source)
+        report = self.run_audit()
+        self.assertEqual(report["development"]["diff"]["missingFields"], [])
+        self.assertEqual(report["development"]["diff"]["fieldTypeMismatches"], [])
+        for name in audit.EXPECTED_TYPES:
+            self.assertEqual(report["development"]["observedSchema"][name]["fieldIndexes"],
+                             {"wireVersion": ["QUERYABLE", "SORTABLE"]})
+        self.assertFalse(report["deployable"])
+        self.assertEqual(report["gatesPassed"], {"P0": False, "P1": False, "P2": False})
 
     def test_duplicate_type_field_and_grant_rejected(self):
         for data in [SYNTHETIC_SCHEMA + b"RECORD TYPE Users (x INT64);",

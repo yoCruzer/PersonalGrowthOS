@@ -518,7 +518,7 @@ enum HabitAnalyticsMigrationBootstrap {
                 changed = true
             }
         }
-        if changed && saveChanges { try context.save() }
+        if changed && saveChanges { try ProductSyncCommit.save(context, origin: .migrationBaseline) }
         return changed
     }
 }
@@ -536,7 +536,7 @@ final class HabitService {
     ) {
         self.context = context
         self.now = now
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func create(
@@ -907,7 +907,7 @@ final class HabitCheckInService {
         self.now = now
         self.calendar = calendar
         self.duplicatePreventionInterval = duplicatePreventionInterval
-        self.save = save ?? { try context.save() }
+        self.save = save ?? { try ProductSyncCommit.save(context) }
     }
 
     func checkIn(_ habit: Habit, draft: HabitLogDraft = HabitLogDraft()) throws -> HabitLog {

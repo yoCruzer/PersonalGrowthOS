@@ -1,0 +1,15 @@
+{
+  "baseline": "09493137b29e8e8967ccd5f76972a300578fbbb8",
+  "sourceSHA256": {
+    "PersonalGrowthOS/Sync/SyncProductCoordinator.swift": "7ccd866f5fb901353cd03bb08dcd88d2c1052e5a83c2d8ef684264d33e405c04",
+    "PersonalGrowthOSTests/SyncCoordinatorTests.swift": "74be8632cd33ca0ed6fe47300cbf292c520a758a56df1c0bab8ad0071c590aac"
+  },
+  "resultBundle": "/private/tmp/PGOS-ICloud-Reliability-ProtectivePause.xcresult",
+  "status": "PASS",
+  "counts": {
+    "total": 33,
+    "passed": 33,
+    "failed": 0,
+    "skipped": 0
+  }
+}
