@@ -80,3 +80,12 @@ Owner已手动部署Production schema；现有Build19 / `4d4fc812739fb51394364f4
 原始执行轮及随后两次自动续接均因同一明确授权条件未满足而无法完成远端/独立门。第三轮只读复核：工作树干净，产品源码保持04b516f，原PR19仍OPEN Draft/head ddc5af8、statusCheckRollup为空。本机证据不变，不重跑测试，不再新增外围工作。达到三轮阈值，目标标记blocked而非complete/paused。
 
 恢复所需：明确允许原`git@github.com:yoCruzer/PersonalGrowthOS.git` / `codex/icloud-product`普通快进、原PR19更新及通过独立/CI门后的non-skip源码TestFlight标签；明确允许只读独立审查子代理。两项请求已经发出，不新增第三项许可。本次没有推送、改PR、创建标签、启动CI或子代理；没有绕过原两次自动审批拒绝。收到明确回复后重新读取实际head，按上一节顺序继续，保留原目标全部范围。
+
+
+## 明确授权后的恢复与独立发现（进行中）
+
+Owner明确回复“明确授权”，上述两个授权请求均已满足；旧blocked记录保留为历史。只读复核原PR19仍ddc5af8/OPEN Draft，未改变base。已启动独立只读审查。
+
+独立审查发现：failedRecordSaves只保留第一个暂时错误时，后续较长retry-after丢失；handleFailure跨回调也有相同首错选择。修复将调度错误归并与诊断首因分开：永久错误优先，否则保留最大服务等待。补三种顺序、600秒/高attempt、永久错误前后混合及诊断首因用例，正在运行实际三个同步测试类。新候选将替代04b516f作为首次推送和标签候选，尚未发布。
+
+独立复核最终结论：一项P2已关闭，无其他must-fix，详见[审查记录](Evidence/iCloudReliability20261109/independent-review.md)。三个同步类61/61PASS；随后outer catch最终修改后transport类28/28PASS，runtimeWarnings均为空。命令沿通用xcodebuild分别only-testing三类及transport类，原件`PGOS-ICloud-Reliability-ReviewRetry[Final].xcresult`/`.log`；聚合测试为生产策略接缝测试，未称SDK回调E2E。最终源码将普通非skip提交，完整Unit和Smoke由新CI执行；无新证据前不重复本机完整套件。

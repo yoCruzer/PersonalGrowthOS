@@ -220,6 +220,15 @@ struct SyncDiagnosticHistory: Codable {
 
 /// Fail closed for identity/integrity; only explicitly temporary service errors retry.
 enum SyncCloudRetry {
+    /// Scheduling chooses the strictest failure; diagnostics retain their own first cause.
+    /// All transient backoffs share the same attempt, so comparing at zero preserves the
+    /// maximum server deadline at every later attempt as well.
+    static func combining(_ current: Error?, with incoming: Error) -> Error {
+        guard let current else { return incoming }
+        guard let previousDelay = delay(for: current, attempt: 0) else { return current }
+        guard let nextDelay = delay(for: incoming, attempt: 0) else { return incoming }
+        return nextDelay > previousDelay ? incoming : current
+    }
     static func delay(for error: Error, attempt: Int) -> TimeInterval? {
         var budget = 128
         return delay(for: error, attempt: attempt, budget: &budget)
@@ -344,7 +353,8 @@ enum SyncCloudRetry {
             if let retryableFailure { throw retryableFailure }
         } catch {
             if session.active { handleFailure(error, session: session) }
-            throw session.observeFailure(error)
+            // A direct SDK throw must not discard a longer deadline seen by its delegate.
+            throw session.observeFailure(retryableFailure ?? error)
         }
     }
 
@@ -412,7 +422,7 @@ enum SyncCloudRetry {
                     succeeded: changes.savedRecords.count), binding: session.binding)
                 try session.check()
                 for saved in changes.savedRecords { admitted.removeValue(forKey: saved.recordID) }
-                var unresolved: CKError?
+                var unresolved: Error?
                 var failedCount = 0
                 var firstFailure: CKError?
                 for failed in changes.failedRecordSaves {
@@ -434,9 +444,7 @@ enum SyncCloudRetry {
                     } else {
                         failedCount += 1
                         if firstFailure == nil { firstFailure = failed.error }
-                        if unresolved == nil || (SyncCloudRetry.delay(for: unresolved!, attempt: 0) != nil && SyncCloudRetry.delay(for: failed.error, attempt: 0) == nil) {
-                            unresolved = failed.error
-                        }
+                        unresolved = SyncCloudRetry.combining(unresolved, with: failed.error)
                     }
                 }
                 if let firstFailure {
@@ -644,7 +652,7 @@ enum SyncCloudRetry {
         if SyncCloudRetry.delay(for: error, attempt: 0) != nil {
             // Keep the same engine, pending records, checkpoint and exact successes.
             // The outer serialized cycle reports this failure to the retry scheduler.
-            if retryableFailure == nil { retryableFailure = error }
+            retryableFailure = SyncCloudRetry.combining(retryableFailure, with: error)
         } else { pause(reason(for: error), session: session) }
     }
 

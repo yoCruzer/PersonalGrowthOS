@@ -63,6 +63,29 @@ import SyncFoundation
         throw SyncCloudTransportError.notStarted
     }
 
+    func testBatchAndCallbackFailuresKeepLongestRetryAndProtectiveErrors() throws {
+        let network = CKError(.networkFailure)
+        let limited = CKError(.requestRateLimited, userInfo: [CKErrorRetryAfterKey: 600])
+        let shorter = CKError(.zoneBusy, userInfo: [CKErrorRetryAfterKey: 30])
+        for failures in [[network, limited, shorter], [limited, shorter, network], [shorter, network, limited]] {
+            var accumulated: Error?
+            for failure in failures { accumulated = SyncCloudRetry.combining(accumulated, with: failure) }
+            let selected = try XCTUnwrap(accumulated)
+            XCTAssertEqual(SyncCloudRetry.delay(for: selected, attempt: 0), 600)
+            XCTAssertEqual(SyncCloudRetry.delay(for: selected, attempt: 99), 600)
+            for errors in [[selected, CKError(.permissionFailure)], [CKError(.permissionFailure), selected]] {
+                let protective = errors.reduce(nil as Error?) { SyncCloudRetry.combining($0, with: $1) }
+                XCTAssertNil(SyncCloudRetry.delay(for: try XCTUnwrap(protective), attempt: 0))
+                XCTAssertEqual((protective as? CKError)?.code, .permissionFailure)
+            }
+        }
+        // Selection for scheduling must not rewrite the diagnostic episode's first cause.
+        var history = SyncDiagnosticHistory()
+        history.append(.init(phase: "uploading", error: network))
+        history.append(.init(phase: "uploading", error: limited))
+        XCTAssertEqual(history.firstFailure?.failure?.code, CKError.Code.networkFailure.rawValue)
+    }
+
     func testInitDoesNotStartACloudSession() {
         let transport = SyncCloudTransport(persistence: Store())
         XCTAssertNil(transport.session)
