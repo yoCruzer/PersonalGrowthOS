@@ -1,6 +1,6 @@
 ## 2026-11-09 当前：R1–R5本机修复完成，远端与独立复核待明确授权
 
-状态：`LOCAL_GATES_PASSED / REMOTE_AND_INDEPENDENT_REVIEW_PENDING`。完整目标仍active，未称最终交付。输入为固定`47fe200e515a82ddad9ba16f5666ceb4329ee108`中的`ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md`；沿原`codex/icloud-product` / Draft PR19 / 原base。起点`ddc5af8`产品工作树干净，主项目待办分支三项改动保持。
+状态：`LOCAL_GATES_PASSED / BLOCKED_PENDING_EXPLICIT_APPROVAL`。完整目标未完成；同一明确授权条件连续三轮仍未满足，已达到blocked审计阈值。输入为固定`47fe200e515a82ddad9ba16f5666ceb4329ee108`中的`ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md`；沿原`codex/icloud-product` / Draft PR19 / 原base。起点`ddc5af8`产品工作树干净，主项目待办分支三项改动保持。
 
 Owner已手动部署Production schema，现有Build19 / `4d4fc81`立即同步成功；系统删除App和本地数据、重装后观察到云端数据返回。只记`OWNER_REPORTED_SUCCESS` / `OWNER_REPORTED_RECOVERY_OBSERVED`，全量内容/关系/原图与双设备/后台传播未验，不再要求重复删装或schema部署。
 
@@ -11,6 +11,8 @@ Owner已手动部署Production schema，现有Build19 / `4d4fc81`立即同步成
 原仓库普通push被自动审批连续两次拒绝，称未识别精确私有目标的可信明确授权。已核实remote=`git@github.com:yoCruzer/PersonalGrowthOS.git`、原PR19 head=`codex/icloud-product`/`ddc5af8`匹配；没有绕过。已集中请求精确push/原PR更新/修复non-skip源码TestFlight标签确认，以及只读独立审查子代理授权，均待回复。新远端CI、独立审查、PR更新和TestFlight标签尚未完成，旧CI不覆盖本次修复；最终新包清单待这些门完成后集中给出。
 
 续接只读核验：原PR仍ddc5af8/OPEN Draft，无本次CI。授权后必须先快进原分支到已审非skip源码（当前候选04b516f），等实际CI通过再补推[skip ci]文档；不得首次直接push文档HEAD跳过验证。源码变更则重新固定候选。[精确发布顺序](ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md#授权后固定发布顺序未执行)已记录，尚未执行任何远端写入，未绕过审批。
+
+最新阻塞复核：本地工作树干净，产品/测试/工程/Packages/Scripts/CI与04b516f没有后续差异，原PR19仍OPEN Draft、head为ddc5af8、无本次CI。最终本机Unit713PASS/1SKIP及Release源码绑定保持。本机必要工作已收口，不能以重复测试、文档提交或原样继续指令视为精确授权。后续必须收到对原私有仓库普通push/PR更新/已验证non-skip源码TestFlight标签，以及只读独立审查子代理的明确回复；没有重试被拒动作或替代通道。
 
 K1 ZIP独立恢复工作区再发现、K2跨UUID自然键冲突、K3历史整理后置。不重建Mac探针，不清库/队列/token/ACK，不改工作区身份，不删云端数据，不merge或公开上架。以下保留历史不覆盖本节。
 
