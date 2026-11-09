@@ -1,14 +1,16 @@
-## 2026-11-09 最新连续目标：Production成功后的R1–R5可靠性收尾（进行中）
+## 2026-11-09 当前：R1–R5本机修复完成，远端与独立复核待明确授权
 
-Owner新指令取代以下旧停点：手动部署Production schema后，现有Build19 / `4d4fc812739fb51394364f4c5e629ff7cd42ea4f`点击立即同步成功；系统删除App和本地数据后重新安装，观察到云端数据返回。仅记 `OWNER_REPORTED_SUCCESS` / `OWNER_REPORTED_RECOVERY_OBSERVED`，全量内容、关系、原图、真实双设备/后台传播仍未验收。本轮无需再次部署、删装、Mac探针、清库/队列/token、改身份或删云数据。
+状态：`LOCAL_GATES_PASSED / REMOTE_AND_INDEPENDENT_REVIEW_PENDING`。完整目标仍active，未称最终交付。输入为固定`47fe200e515a82ddad9ba16f5666ceb4329ee108`中的`ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md`；沿原`codex/icloud-product` / Draft PR19 / 原base。起点`ddc5af8`产品工作树干净，主项目待办分支三项改动保持。
 
-交接输入为固定提交 `47fe200e515a82ddad9ba16f5666ceb4329ee108` 的 `Docs/ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md`。已拉取并阅读，核对原Draft PR19仍OPEN/Draft，base为`codex/icloud-sync-foundation`，产品分支与远端起点均`ddc5af8b91fcf9d3cde7434bb7bda074d859ad4a`，原产品工作树干净；主项目待办分支三项改动保持。
+Owner已手动部署Production schema，现有Build19 / `4d4fc81`立即同步成功；系统删除App和本地数据、重装后观察到云端数据返回。只记`OWNER_REPORTED_SUCCESS` / `OWNER_REPORTED_RECOVERY_OBSERVED`，全量内容/关系/原图与双设备/后台传播未验，不再要求重复删装或schema部署。
 
-R1–R5实现及本机门已完成；当前提交为普通非skip候选，后续Release、独立复核/必要CI、普通推送/原PR更新及TestFlight标签仍待完成。R1指定原图缺件用例实跑1FAIL（`unresolvedConflict`）后最小修复；最终定向104/104PASS，含关闭同步、磁盘重开实际enable/补原图、缺父自动续传、独立busy本地提交/数据库推送、retry-after/网络/前台、冷启账户查询、旧epoch和诊断隐私/首因/部分ACK。完整Unit709执行=708PASS/0FAIL/1SKIP、同步UI3/3PASS；最终定向及Unit/UI的runtimeWarnings均为空。低空间隔离镜像测试仍SKIP。Xcode27.2(27B52)/macOS27.0.1/iOS27.0，仅合成隔离库，原失败/编译失败/数值桥接失败保留。真实完整性与双设备门不补写通过。详见[本轮修复与证据](ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md)。
+本地普通非skip修复`0949313`→`04b516f534e644fcf4080776fb3177da01b3f24f`：R1先实跑指定红测后过滤未发布对象删除推导，保留真冲突保护；R2–R4等待/暂时错误续传、持久retry-after/有界退避、busy尾部续跑、private database/当前zone推送验证；R5有界脱敏复制诊断、首因/部分ACK、双向文案及待获取时不误记完成，不可重试应用错误刷新/重开仍暂停。V17/V18 schema和工程/身份不变。
 
-本地候选0949313已普通提交、Release unsigned build成功，后续完成状态/持久暂停收紧33/33定向通过。原仓库普通push被自动审批连续两次拒绝，理由是未识别到精确私有目标的可信明确授权；remote与原PR已核对一致，未绕过。已发精确授权请求及只读独立审查子代理请求，均待回复。远端CI/PR更新/TestFlight标签尚未执行；完整目标保持进行中。
+最终干净源码本机Unit714执行=713PASS/0FAIL/1SKIP、Release unsigned三Bundle成功；104项定向及后续33项状态保护通过，UI3/3及中英截图视觉检查通过（页面与最终源码一致）。runtimeWarnings为空；低空间隔离镜像SKIP、optional extended UI NOT_RUN。源码SHA/Dirty=false、三Bundle1.0(12)、production pin及中文资源已核验；unsigned不代表发行签名。所有原红测/编译/数值桥接失败保留。[详细修复和实际命令](ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md) · [证据](Evidence/iCloudReliability20261109/README.md)。
 
-K1独立ZIP恢复工作区再发现、K2跨UUID自然键冲突处理、K3历史上限/整理保持后续边界。既有TestFlight授权继续有效；本轮结束集中给一次覆盖安装验收清单，不merge或公开上架。详细证据收口将追加至`ICLOUD_RELIABILITY_CLOSURE_20261109_ZH.md`。
+原仓库普通push被自动审批连续两次拒绝，称未识别精确私有目标的可信明确授权。已核实remote=`git@github.com:yoCruzer/PersonalGrowthOS.git`、原PR19 head=`codex/icloud-product`/`ddc5af8`匹配；没有绕过。已集中请求精确push/原PR更新/修复non-skip源码TestFlight标签确认，以及只读独立审查子代理授权，均待回复。新远端CI、独立审查、PR更新和TestFlight标签尚未完成，旧CI不覆盖本次修复；最终新包清单待这些门完成后集中给出。
+
+K1 ZIP独立恢复工作区再发现、K2跨UUID自然键冲突、K3历史整理后置。不重建Mac探针，不清库/队列/token/ACK，不改工作区身份，不删云端数据，不merge或公开上架。以下保留历史不覆盖本节。
 
 ---
 

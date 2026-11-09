@@ -49,3 +49,14 @@ Owner已手动部署Production schema；现有Build19 / `4d4fc812739fb51394364f4
 普通非skip候选`09493137b29e8e8967ccd5f76972a300578fbbb8`已提交但未推送。其干净来源的Release普通unsigned build成功，三Bundle待核对；随后补的完成/持久暂停保护另有33/33定向通过。新修复将继续普通提交，不改已提交历史。原Release日志`/private/tmp/PGOS-ICloud-Reliability-Release-0949313.log`，不是签名或TestFlight可用证明。
 
 对原`git@github.com:yoCruzer/PersonalGrowthOS.git` / `codex/icloud-product`普通push被自动审批拒绝两次。已只读核实remote与原Draft PR19完全匹配，使用本轮明确指令重新提交同一动作仍被拒；理由为未识别到可信用户内容明确授权此精确私有目的地与push。没有改用其他通道。已集中请求精确目的地/原PR/TestFlight标签确认；独立只读审查子代理也按当前执行限制请求明确授权，均待回复。该输入不阻止本机验证，但远端CI尚无本次run，标签未创建；不得把旧CI用于本次修复。
+
+
+## 最终本机节点（远端交付仍未完成）
+
+最终非skip修复源码`04b516f534e644fcf4080776fb3177da01b3f24f`干净状态复验：完整Unit714执行=713PASS/0FAIL/1SKIP（低空间隔离镜像缺失），runtimeWarnings为空；Release普通unsigned build成功。三个Bundle均1.0(12)，BuildProvenance精确04b516f/Dirty=false，主Appproduction runtime pin与新中文诊断/双向连接资源逐值核验，三个二进制hash已保留。源码本地Build12不等于未来XcodeCloud/TestFlight构建号。此前UI3/3截图逐张视觉检查正常；后续状态保护未改UI/字符串/相应测试，Git对象一致。详见[本机证据索引](Evidence/iCloudReliability20261109/README.md)。
+
+命令：完整Unit沿上述通用命令仅选择`-only-testing:PersonalGrowthOSTests`，结果`/private/tmp/PGOS-ICloud-Reliability-FinalUnit.xcresult`；Release为`xcodebuild build -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -destination 'generic/platform=iOS' -derivedDataPath /private/tmp/PGOS-ICloud-Reliability-DD CODE_SIGNING_ALLOWED=NO`，日志`/private/tmp/PGOS-ICloud-Reliability-FinalRelease.log`。两个命令顺序执行且exit0。没有Archive、发行签名、上传或安装。编译warning保留，不称零warning。
+
+远端普通push两次被拒后没有重试或替代通道；原PR远端head仍`ddc5af8`。需要Owner明确回复精确原仓库push/原PR更新/修复后non-skip标签，以及只读独立审查子代理授权。请求均已发出；完整目标保持active，不能声明R1–R5独立复核/必要CI/新包交付全部完成。最终收口文档提交不是发行源码；以后标签必须选通过剩余门的非skip修复源码，不能标文档提交。
+
+新包可用后再集中给一次覆盖安装清单：带图新增/修改后的自动收尾，离线保存/重开/网络恢复后的自动收尾，抽查旧内容与原图；无需再次删除App。忙碌、缺件与冷启时序由以上自动测试承担。K1–K3、真实双设备/后台传播、完整内容/关系/原图对照继续保留。
