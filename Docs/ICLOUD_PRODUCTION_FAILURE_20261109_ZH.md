@@ -1,3 +1,5 @@
+> **2026-11-09 最新进展：** Owner已报告人工部署 schema 后现有 TestFlight同步成功，并在系统删除/重装后观察到云端数据返回。完整性尚未逐项核验。以下保留当时的故障/计划状态；最新评价和具体剩余代码问题见 [成功后的独立审查](ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md)，不要继续把历史 NOT_RUN或未修复状态当作当前结论。
+
 # 2026-11-09 TestFlight iCloud 故障分析与 Codex 交接
 
 **状态：ANALYSIS_COMPLETE / REMEDIATION_SPEC_READY；故障尚未修复或复验。** 本文依据用户附件、固定源码和仓库交付记录进行只读审查，提供下一轮执行规格。本次未读取实时 Apple 后台、未部署 Production、未改产品代码、未运行本机 iOS 测试；本文不构成用户已经批准具体部署的证据。

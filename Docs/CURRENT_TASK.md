@@ -1,3 +1,13 @@
+## 2026-11-09 Production 已获成功反馈，进入定向可靠性收尾
+
+Owner最新反馈：手动 Deploy Schema Changes 后，现有 TestFlight Build 19 / 4d4fc8127 点击立即同步显示成功；系统删除 App和本地数据后重新安装，观察到之前同步的数据返回。部署与同步记为 OWNER_REPORTED_SUCCESS，恢复记为 OWNER_REPORTED_RECOVERY_OBSERVED，保留“好像”的完整性限定；未逐项核对数量、关系和原图。本节取代下方历史中“Production始终未跑通”的当前状态，不改写当时失败证据。
+
+[成功后的独立审查与限定修复规格](ICLOUD_POST_SUCCESS_REVIEW_20261109_ZH.md) 固定运行源码4d4fc812739fb51394364f4c5e629ff7cd42ea4f；本轮远端产品头仍ddc5af8b91fcf9d3cde7434bb7bda074d859ad4a，差异仅两次文档提交。核心架构保留；新审查确认R1：远端未发布pending对象会被当成本地删除候选，阻断无关同kind本地保存，关闭同步亦不能可靠规避，冷启动还有先stage后fetch的恢复卡点。另有R2可恢复错误/缺件暂停无自动续传、R3忙碌期间丢后续唤醒、R4默认database推送被recordZone过滤、R5原始诊断缺失。建议原PR19集中定向修补，不重复Owner删装。
+
+ZIP随机工作区发现、跨UUID唯一键冲突处理和历史容量/投影成本列为K1–K3后续边界，不否定本次成功。本轮只做静态审查、官方契约核实和文档交接，未执行新原生测试或修改产品；R1已交叉复核但须修复前补实际红测。下一轮规格须由Owner实际发送执行指令，不因本文件被读取而新增云端操作权限。
+
+---
+
 ## 2026-11-09 人工部署与真机恢复验收 SOP（文档分支）
 
 Owner追问能否自行部署、同包如何复测及删除重装能否验收恢复。新增 [Production 与真机测试 SOP](ICLOUD_PRODUCTION_DEVICE_TEST_SOP_20261109_ZH.md)，覆盖当前差异核对、Build 19 原队列收尾、一条新增/修改，以及有外部备份保护的可选重装恢复。当前最后手机证据仍为 cloudFailure(12) / 429；本轮未操作 Apple后台或手机，各真实步骤保持 NOT_RUN。
