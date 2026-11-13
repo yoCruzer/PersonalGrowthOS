@@ -6,10 +6,10 @@
 
 | 项目 | 真实状态 |
 | --- | --- |
-| 已提交候选 | `741a00e53b0e0069cbb84f49b5f335aed0005bc3`；新增获准公开邮箱、网页链接与定向UI验证尚未提交，最终上传不能沿用旧SHA |
+| 已提交候选 | **`321219f61fd2dedf3be69d6f49c3af23896cccd4`**，已普通push，包含获准公开邮箱与网页入口；无skip构建标记 |
 | 分支 / PR | `codex/app-store-free-release-20261110`；[Draft PR20](https://github.com/yoCruzer/PersonalGrowthOS/pull/20)，base `codex/icloud-product` / `4ec39f7`；未合并其他PR |
 | 当前工作树 | `/private/tmp/pgos-app-store-release-20261110`；原主工作区三项他人改动完整保留 |
-| 独立CI | [43341685409](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43341685409)，head741a00e，Release/Unit/Smoke全部SUCCESS，optional extended UI按原条件SKIP；Unit714PASS/1SKIP，Smoke8PASS |
+| 独立CI | [43341685409](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43341685409)，前候选head741a00e，Release/Unit/Smoke全部SUCCESS，optional extended UI按原条件SKIP；Unit714PASS/1SKIP，Smoke8PASS。新候选321219f [CI43347067614](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43347067614)整体SUCCESS：Release SUCCESS、Unit714PASS/0FAIL/1SKIP、Smoke8PASS/0FAIL/0SKIP。三份官方ZIP摘要/CRC、完整tree及独立测试节点计数均核验；optional extended UI按原条件SKIP |
 | 源码版本 | App与两扩展1.0(12)；这是源码默认号，不能当作上传build号 |
 | 最新实际TestFlight | **1.0(20)**，2026-11-09 22:34上传，二进制“已验证”，带“内部”标记；版本“添加构建版本”中20–16禁选，12及更旧可选。20不能用于本次送审 |
 | Apple正式版本 | **1.0 准备提交**。手动发布回读已保留；尚未Add for Review或Submit for Review |
@@ -40,7 +40,7 @@
 
 - [双语商店字段](../Release/AppStore/Metadata/README.md)、[数据流/问卷依据](../Release/AppStore/QUESTIONNAIRES.md)、[十张真实截图](../Release/AppStore/Screenshots/README.md)、[一轮真机清单](../Release/AppStore/Review/DEVICE_SMOKE.md)、[网页源码](../Release/AppStore/Website/dist/index.html)。
 - [本机与CI证据](Evidence/AppStoreRelease20261113/README.md)：隔离模拟器E1E2C997-C665-4CCE-968B-B90B9FC61A3E，未登录真实iCloud；演示fixture仅DEBUG+UITesting+Reset，automaticSync=false。10张1206×2622原始RGB PNG，无alpha，逐张查看；未虚构界面或使用私人记录。
-- 干净741a00e本机Release来源/三个Bundle及资源通过；CI实际merge checkout a84f98c与741a00e完整tree相同。Unit唯一SKIP需隔离32MB HFS+镜像，未将SKIP当PASS。新增联系代码须通过新的候选验证。
+- 干净321219f本机Release来源/三个Bundle与四份政策资源逐字核验通过（clean-release-source-321219f.json），不是签名/上传证据；旧741a00e本机Release也通过。CI实际merge checkout a84f98c与741a00e完整tree相同。Unit唯一SKIP需隔离32MB HFS+镜像，未将SKIP当PASS。新增联系双语UI1PASS，新的候选Release/Unit/Smoke已全部通过。
 - 已有5910422 Xcode Cloud成功Archive记录与Build20真实TestFlight状态保留，不能冒充本轮新代码签名/上传证据。
 
 ## 仅本人可提供/确认的事项
@@ -56,11 +56,17 @@
 
 ## 接下来持续执行
 
-1. 获准联系与URL的双语定向UI已通过，更新当前证据与文档后普通commit/push，接受原required CI；不重复无变化本机全量715。
+1. 获准联系与URL的双语定向UI、干净Release已通过，321219f已普通commit/push，原required CI已整体SUCCESS；不重复无变化本机全量715。
 2. 保留当前版本页编辑，等审核电话后保存并重新回读；补英文版本/截图/支持URL，核实免费价0与5区准入，年龄/隐私/备案/DSA逐项有实证。
 3. 检查现有Xcode Cloud `TestFlight-workflow` 的testflight-*标签触发与发行配置，将新Archive设为可App Store送审而非Internal Only；固定唯一无skip标签与精确最终候选，确认云端实际产生构建，不反复推tag试探。
 4. 观察上传/处理/版本匹配/商店可选；把少量真机步骤绑定实际新build，再集中处理Owner事实与验证。材料与阻塞关闭后Add for Review并真正Submit for Review，记录实际状态。
 5. 审核中如不能持续监控，记录下次检查入口，不能声称后台等待。审核通过仍人工发布，需Owner最后明确确认；未公开可下载前不写已发布。
+
+价格页另已读到默认开启Apple芯片Mac和Vision兼容分发（Vision当前不兼容）；本次iPhone首发须在后台明确收窄到已验证iPhone设备，尚未修改/保存。
+
+拟用唯一标签`testflight-appstore-free-1.0-20261113`已只读ls-remote确认不存在，尚未创建。候选321219f完整提交消息无skip；最终tag必须指向该通过验证的非skip代码提交，不指向后续文档提交。Apple现有流程/发行准备尚需界面核实。[发行配置操作依据](../Release/AppStore/Review/XCODE_CLOUD_UPLOAD.md)。
+
+本轮可独立完成项已收尾：候选321219f本机定向UI/干净Release及新独立CI全部通过；最后文档提交仅记录证据，不作为新发行候选。当前外部等待为Mac解锁、审核电话、DSA/版权本人事实及备案情况。继续执行入口为首发版本页与XCODE_CLOUD_UPLOAD.md；没有常驻监控Apple或声称后台等待审核。
 
 2026-11-13后续Computer Use在“添加定价”时再次返回Mac已锁定；已请Owner解锁，代码/素材/台账同步继续。没有将本次锁屏当作Owner要求暂停Goal。
 

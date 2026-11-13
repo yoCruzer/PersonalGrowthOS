@@ -38,5 +38,19 @@
       "sha256": "9e498c379b8ea2e3f757dee1f406c7cd6e283931b91444b6534a104c3ca1f9fe",
       "matchesSource": true
     }
-  ]
+  ],
+  "desktopVisualQA": {
+    "browser": "Safari via Computer Use",
+    "pages": [
+      "index.html",
+      "privacy-zh.html",
+      "privacy-en.html",
+      "support-zh.html",
+      "support-en.html"
+    ],
+    "contactEmailVisible": "justincookiec@outlook.com",
+    "languageNavigation": "PASS",
+    "mobileViewport": "NOT_RUN",
+    "mainlandNetworkReachability": "NOT_RUN"
+  }
 }

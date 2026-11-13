@@ -1,6 +1,6 @@
-## 2026-11-13 免费首发后台配置进行中
+## 2026-11-13 免费首发：代码/素材验证完成，后台待解锁与本人事实
 
-已提交候选741a00e / Draft PR20；独立CI Release/Unit/Smoke全部SUCCESS（Unit714PASS/1SKIP、Smoke8/8）。Owner已登录并批准GitHub Pages＋Issues、公开支持邮箱及大陆/港澳台/美国目标地区。双语网页已公开HTTP200并完成桌面视觉QA；新增App内公开联系与网页入口正在定向验证、尚未提交。Apple真实最新为1.0(20)已验证但内部专用、商店禁选；正式版本1.0准备提交，手动发布已回读。App信息副标题/生活＋效率分类与9+年龄问卷已保存，隐私政策URL与未收集数据答复已发布（不是App上架）。版本页审核联系人/支持URL保存被必填审核电话拦截，五张中文截图已上传；免费价与5区尚未保存。DSA/版权与审核电话已集中请Owner确认，ICP字段当前空白需继续准入核查。后续仍须最终候选、新可送审构建与实际Submit for Review；未上传新构建、未送审或公开发布。原工作区改动保留。唯一续接台账：[APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)。
+当前非skip候选321219f61fd2dedf3be69d6f49c3af23896cccd4 / Draft PR20。新CI43347067614整体SUCCESS：Release成功、Unit714PASS/0FAIL/1SKIP、Smoke8/8，三份官方ZIP摘要/CRC、源码tree与独立计数均核实。干净本机Release/三个Bundle与四份政策exact；公开邮箱/网页入口双语定向UI1PASS。Owner已批准GitHub Pages＋Issues、公开邮箱与大陆/港澳台/美国目标地区；网页已公开HTTP200和桌面视觉QA。Apple正式1.0准备提交、手动发布已回读；实际最新1.0(20)内部专用且商店禁选。副标题/生活＋效率分类、9+分级与隐私URL/未收集数据答复已保存，五张中文截图已上传；版本页其他编辑被必填审核电话阻止保存。Mac再次锁屏，已请Owner解锁并集中确认审核电话、DSA、版权、备案真实情况；免费价/地区/英文上传/可送审XcodeCloud配置仍待执行。尚未新标签/上传/送审/公开发布，目标未完成。原工作区改动保留。唯一续接入口：[APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)。
 
 ---
 

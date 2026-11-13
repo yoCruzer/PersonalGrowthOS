@@ -84,5 +84,12 @@
   "newUpload": false,
   "addForReview": false,
   "submitForReview": false,
-  "observationMethod": "Computer Use Safari AX; private account address and tax identifiers deliberately not persisted"
+  "observationMethod": "Computer Use Safari AX; private account address and tax identifiers deliberately not persisted",
+  "macAndVisionCompatibility": {
+    "macDefaultAvailable": true,
+    "visionDefaultAvailable": true,
+    "visionVersionIncompatible": true,
+    "plannedScope": "verified iPhone only",
+    "changedOrSaved": false
+  }
 }
