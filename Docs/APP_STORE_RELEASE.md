@@ -1,6 +1,18 @@
 # App Store 免费首发执行台账
 
-更新时间：2026-11-13；状态：**IN_PROGRESS / APPLE_CONFIGURATION_AND_FINAL_BUILD**。Owner已恢复执行并完成Apple登录。下列当前快照优先于后附历史日志；整个首发Goal尚未完成。
+更新时间：2026-11-13；状态：**IN_PROGRESS / BUILD21_CLOUD_SUCCESS / NATIVE_UI_UNLOCK_REQUIRED**。Owner已恢复执行并完成Apple登录。下列当前快照优先于后附历史日志；整个首发Goal尚未完成。
+
+## 2026-11-13 晚间续接（以本节覆盖旧待办）
+
+Owner已回复“已解锁”“已填电话”，并确认本次无欧盟分发计划；指定公开版权显示“2026 随心log”；明确尚无备案。21时左右Computer Use实际可访问Safari，Apple会话有效。审核电话已在Apple私密字段回读，未复制到公开文件；免登录/审核备注/中文支持URL和五张截图均回读到，保存按钮disabled。版权显示已填写并保存。
+
+英文版本资料已填写、五张英文原始截图上传后观察5/10；刷新持久化回读时Apple页面加载缓慢，尚不能把英文全部字段视为最终回读通过。将优先处理XcodeCloud可送审Archive配置，等待后台页面加载时继续台账。DSA已具备Owner事实确认，可保存“非交易商或无EU分发计划”；大陆尚无备案，不擅自移除/编造。Owner后续明确确认具备代码/图标/素材的分发权利，且不提供第三方内容服务，此人工事项已关闭。
+
+21:05通过Xcode原生编辑器将既有Archive发行准备由Internal Only改为App Store Connect；重新打开确认已保存，Restrict Editing/原仓库/项目/iOS scheme/testflight-前缀任意文件触发保持。Latest Release环境保持，当前原生界面未暴露Clean选项，不冒称已改。唯一tag `testflight-appstore-free-1.0-20261113`已推送并回读：对象fed76bc6a95d43b1b187574a9ebc845dd832b663 → 非skip源码321219f。实际**Build21已在21:08启动并Running**，Xcode27.2/27B52、macOS27.2/26B123；尚未观察Archive成功/上传/处理或商店可选。
+
+DSA已按Owner无EU计划保存；商务页显示“目前已完成所有监管要求”，DSA行状态有效（仅该商务页结论，不替代大陆App准入）。
+
+已准备[大陆准入/备案成品技术材料](../Release/AppStore/Review/CHINA_MAINLAND.md)，含名称/Bundle/团队技术ID/功能说明/公开URL/图标截图与本人实名边界。尚无备案不能自动豁免；Owner已明确选择先港澳台美，大陆待准入后开放；待后台页面恢复后保存这四区，不自动选全球。
 
 ## 当前快照
 
@@ -11,19 +23,21 @@
 | 当前工作树 | `/private/tmp/pgos-app-store-release-20261110`；原主工作区三项他人改动完整保留 |
 | 独立CI | [43341685409](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43341685409)，前候选head741a00e，Release/Unit/Smoke全部SUCCESS，optional extended UI按原条件SKIP；Unit714PASS/1SKIP，Smoke8PASS。新候选321219f [CI43347067614](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43347067614)整体SUCCESS：Release SUCCESS、Unit714PASS/0FAIL/1SKIP、Smoke8PASS/0FAIL/0SKIP。三份官方ZIP摘要/CRC、完整tree及独立测试节点计数均核验；optional extended UI按原条件SKIP |
 | 源码版本 | App与两扩展1.0(12)；这是源码默认号，不能当作上传build号 |
-| 最新实际TestFlight | **1.0(20)**，2026-11-09 22:34上传，二进制“已验证”，带“内部”标记；版本“添加构建版本”中20–16禁选，12及更旧可选。20不能用于本次送审 |
-| Apple正式版本 | **1.0 准备提交**。手动发布回读已保留；尚未Add for Review或Submit for Review |
-| 版本字段 | 中文描述/推广/关键词已保存；审核联系人、免登录/备注、支持网址本轮编辑但保存被必填审核电话拦截，不能称已落库。中文截图5/10已上传，未将页面有值等同完整保存 |
-| App信息 | 名称沿用随心log；中文副标题“记录生活、习惯与每一步成长”；主分类生活/次分类效率，已观察“已保存” |
-| 年龄分级 | 完整7步问卷复核；健康/保健主题由否改是，医疗/治疗信息无，其余无；Apple计算**9+**，非儿童类，已保存。较旧OS/地区按Apple计算展示 |
-| App Privacy | 隐私网址已保存；按实际数据流填写“未收集数据”，已观察后台“几秒钟前…发布”。这是隐私答复发布，**不是App公开上架** |
-| 协议与身份 | 免费App协议有效（2026-10-29至2027-07-27）；付费协议未签，本次免费且无IAP无需为此签署。DSA尚未声明，已向Owner确认本次无EU计划的选项 |
-| 价格与地区 | 免费0已授权，尚未后台保存/回读。Owner确认目标大陆/香港/澳门/台湾/美国，须核实准入后保存，未静默排除大陆或选全球 |
-| 大陆备案 | App信息ICP字段当前空白；仍须核实适用准入与真实备案事实，不能编造或因本地优先直接豁免 |
-| 公共网页 | **已上线并验证** [主页](https://yocruzer.github.io/PersonalGrowthOS/)、双语政策与支持；gh-pages commit `54df17e`，6文件HTTP200且与源码逐字一致；Safari桌面视觉QA已完成 |
-| 公开联系 | Owner明确批准 `justincookiec@outlook.com`，已入网页/离线正文；GitHub Issues用于公开脱敏反馈；审核电话不进入公开仓库 |
-| 构建与送审 | 本机Debug/Release/保存重开/截图通过；加入公开联系后的双语定向UI验证ContactUI3为1PASS/0FAIL/0SKIP。尚未新TestFlight标签/上传/处理/送审 |
-| 公开上线 | **未发布**。审核通过后展示版本、免费价、地区和商店页面，等Owner一次明确确认再公开发布 |
+| 最新实际TestFlight | 本轮前最新1.0(20)已验证但内部专用、商店禁选；新**Build21**已通过唯一标签实际启动，来源321219f，Archive与TestFlight后处理均SUCCESS，35条均Warnings；上传/处理/商店可选待读 |
+| Apple正式版本 | **1.0 准备提交**。手动发布已保留；尚未Add for Review或Submit for Review |
+| 版本字段 | Owner审核电话已在Apple私密字段回读，免登录/备注/中文支持URL、五张中文截图均回读且保存disabled；版权按Owner填写“2026 随心log”并保存。英文文案与五截图已填写/上传观察5/10，刷新完整持久化回读因后台加载停滞尚未完成 |
+| App信息 | 名称沿用随心log；中文副标题“记录生活、习惯与每一步成长”；主生活/次效率已保存。英文名称随心log/副标题Journal, habits, small steps已观察“已保存” |
+| 年龄分级 | 7步问卷复核，健康主题是、医疗治疗信息无，其余无；Apple计算**9+**，非儿童类，已保存 |
+| App Privacy | 中文隐私URL与“未收集数据”答复已保存并发布。英文URL已保存并回读privacy-en.html；隐私答复发布不等于App上架 |
+| 协议与DSA | 免费App协议有效；付费协议本次无需签。Owner确认无EU计划后DSA已实际保存，商务页监管完成提示及DSA行“有效”已回读 |
+| 内容权利/版权 | Owner已明确确认代码/图标/素材分发权利且无第三方内容服务；版权显示指定“2026 随心log”，不改变AGPL-3.0 |
+| 价格与地区 | **当前价格时间表**popover实际回读美国(USD)$0.00，不用通用价格计算器冒充当前值；四区已保存，澳门/美国/台湾/香港均“App发布时供应”，其他171区未供应。大陆待准入后开放 |
+| 大陆备案 | Owner明确尚无备案；已完成备案技术材料成品。根据Owner新决定列为大陆开放前待办，不阻止继续四区材料/构建 |
+| 公共网页 | 已上线并HTTP200/源码exact/桌面QA：主页与双语隐私、支持，gh-pages54df17e；公开邮箱已获准 |
+| 公开联系 | justincookiec@outlook.com可公开；Apple审核电话仅在Apple私密字段，不进入仓库/网页/截图证据 |
+| 构建与送审 | 本机定向UI/干净Release、新required CI均通过；testflight-appstore-free-1.0-20261113对象fed76bc6→321219f，Xcode原生确认Build21 Archive/后处理SUCCESS，35 warnings。17.1MB Archive/10.6MB app-store包下载已启动但未取得完整文件，锁屏后不能继续原生界面；尚未读到TestFlight处理/商店可选，未送审 |
+| 当前浏览器能力 | Safari应用页通过列表重新进入后恢复，继续保存后台；备用内置浏览器官方登录页已打开，但登录不再是必需事项，已告知Owner。原生Xcode已完成Build21工作流；不转移Safari凭据 |
+| 公开上线 | 未发布。审核通过后展示版本、免费价、四区与店页，等Owner一次明确确认再公开上线 |
 
 ## 授权、身份和数据边界
 
@@ -43,22 +57,18 @@
 - 干净321219f本机Release来源/三个Bundle与四份政策资源逐字核验通过（clean-release-source-321219f.json），不是签名/上传证据；旧741a00e本机Release也通过。CI实际merge checkout a84f98c与741a00e完整tree相同。Unit唯一SKIP需隔离32MB HFS+镜像，未将SKIP当PASS。新增联系双语UI1PASS，新的候选Release/Unit/Smoke已全部通过。
 - 已有5910422 Xcode Cloud成功Archive记录与Build20真实TestFlight状态保留，不能冒充本轮新代码签名/上传证据。
 
-## 仅本人可提供/确认的事项
+## 当前仅本人事项
 
-| 页面/字段 | 已给推荐/缺项 | 后续 |
-| --- | --- | --- |
-| 版本1.0 → App审核信息 → 电话 | Apple实际返回必填及+国家代码格式错误；请Owner提供允许交给Apple的电话或直接在页面填写 | 只在Apple私密审核字段使用，补齐后保存并重新回读全部版本字段 |
-| 商务 → DSA合规 | 目标5区均非EU，建议“我不是DSA交易商，或者没有EU分发计划”；未替Owner声明 | 收到本次无EU计划事实确认后保存并回读 |
-| 版本1.0 → 版权；App信息 → 内容版权 | 建议2026 Guangzong Cai，需确认拥有/获授权代码图标素材、无第三方内容服务；现有内容版权字段已经为否 | 按Owner确认填写，保持AGPL |
-| 大陆ICP备案 | 当前空白，适用性和是否有真实备案仍待核实 | 不编造、不静默移除大陆；如确有缺项单列具体处理/地区决定 |
-
-已确认事项不再询问：已登录、GitHub Pages＋Issues、公开邮箱、目标5区。身份验证/本人协议/无法从代码证明的法律事实由Owner处理。
+- 当前没有新的必填本人事实缺项。英文隐私URL保存后Mac再次锁屏，已请Owner手动解锁；我未修改锁屏/密码设置。备用浏览器可以读到未登录页，但焦点交互失败，未视为已验证可替代原生界面。后续必要真机步骤只绑定实际处理成功的发行包。
+- 已关闭人工事项：Mac解锁、审核电话、无EU计划的DSA事实、版权显示、代码图标素材分发权利/无第三方内容服务、四区首发决定；不重复询问。
+- 大陆后续：Owner尚无备案，已明确四区先发/大陆待准入后开。本人实名/备案按[成品材料](../Release/AppStore/Review/CHINA_MAINLAND.md)后续办理，当前不购买服务或提交私人资料。
+- 公开发布仍需审核通过后Owner最后一次明确确认；当前尚未到该阶段。
 
 ## 接下来持续执行
 
 1. 获准联系与URL的双语定向UI、干净Release已通过，321219f已普通commit/push，原required CI已整体SUCCESS；不重复无变化本机全量715。
-2. 保留当前版本页编辑，等审核电话后保存并重新回读；补英文版本/截图/支持URL，核实免费价0与5区准入，年龄/隐私/备案/DSA逐项有实证。
-3. 检查现有Xcode Cloud `TestFlight-workflow` 的testflight-*标签触发与发行配置，将新Archive设为可App Store送审而非Internal Only；固定唯一无skip标签与精确最终候选，确认云端实际产生构建，不反复推tag试探。
+2. 后台恢复/备用浏览器登录后回读中英文版本和截图、补英文副标题/隐私URL，保存免费价0与Owner明确四区；确认Mac/Vision兼容分发与已验证设备范围一致。
+3. Cloud配置、唯一tag及Build21 Archive/后处理成功已完成；解锁后先恢复下载并读取TestFlight处理/商店可选，完成发行包来源/签名/版本核验。不能再推第二个tag试探。
 4. 观察上传/处理/版本匹配/商店可选；把少量真机步骤绑定实际新build，再集中处理Owner事实与验证。材料与阻塞关闭后Add for Review并真正Submit for Review，记录实际状态。
 5. 审核中如不能持续监控，记录下次检查入口，不能声称后台等待。审核通过仍人工发布，需Owner最后明确确认；未公开可下载前不写已发布。
 
@@ -66,9 +76,17 @@
 
 拟用唯一标签`testflight-appstore-free-1.0-20261113`已只读ls-remote确认不存在，尚未创建。候选321219f完整提交消息无skip；最终tag必须指向该通过验证的非skip代码提交，不指向后续文档提交。Apple现有流程/发行准备尚需界面核实。[发行配置操作依据](../Release/AppStore/Review/XCODE_CLOUD_UPLOAD.md)。
 
-本轮可独立完成项已收尾：候选321219f本机定向UI/干净Release及新独立CI全部通过；最后文档提交仅记录证据，不作为新发行候选。当前外部等待为Mac解锁、审核电话、DSA/版权本人事实及备案情况。继续执行入口为首发版本页与XCODE_CLOUD_UPLOAD.md；没有常驻监控Apple或声称后台等待审核。
+本轮可独立完成项已收尾：候选321219f本机定向UI/干净Release及新独立CI全部通过；最后文档提交仅记录证据，不作为新发行候选。旧外部等待在晚间Owner回复后已关闭；Build21现已Archive与后处理SUCCESS，35 issues详情/处理状态仍需核对；Safari恢复后已继续完成四区/零价/英文副标题与政策URL；之后Mac又锁屏，目前需解锁再续接。继续执行入口为首发版本页与XCODE_CLOUD_UPLOAD.md；没有常驻监控Apple或声称后台等待审核。
 
 2026-11-13后续Computer Use在“添加定价”时再次返回Mac已锁定；已请Owner解锁，代码/素材/台账同步继续。没有将本次锁屏当作Owner要求暂停Goal。
+
+## 当前精确续接入口
+
+1. 解锁Mac后读取原生Xcode：已打开的发布工作树 → Reports → Cloud → PersonalGrowthOS → TestFlight-workflow → testflight-appstore-free-1.0-20261113 → Build21 → Archive → Artifacts。Archive及app-store下载已开始，先观察完成/失败，不盲目重复下载或重推tag。可取得完整发行包后核验BuildProvenance、版本、签名/生产entitlements、Manifest与政策资源。
+2. Safari当前已进入正式1.0版本页，尚未关联构建。先查看“添加构建版本”中实际新包是否可选；若未可选，进入TestFlight读取新包实际build号、处理/加密状态与内部标记。不能把Cloud build21编号直接当成已核实的TestFlight编号。
+3. 中文/英文元数据与各5张截图已保存/观察；英文首轮被异步locale加载覆盖，已在加载稳定后重填保存。最终回读时等字段加载完，再确认描述/关键词/支持URL无回退。英文名称/副标题已观察“已保存”，双语政策URL已回读。
+4. 已保存当前价美国USD$0.00；已保存澳门/美国/台湾/香港四区“App发布时供应”，其它171未供应；Mac与Vision可用性均0且保存完成。保持手动发布，最终公开仍等Owner明确确认。
+5. Xcode此次自动生成xcshareddata/xcodecloud/manifest.json，产品ID65882429/target543C8892与既有记录一致；这是非运行时云产品绑定元数据，不改变发行候选321219f。主工作区原有同名未提交文件不触碰。
 
 ## 历史执行日志（不代表当前状态）
 

@@ -1,17 +1,21 @@
 # 本次可送审构建上传步骤
 
-当前非skip候选：321219f61fd2dedf3be69d6f49c3af23896cccd4；新required CI43347067614整体SUCCESS（Release成功、Unit714PASS/1SKIP、Smoke8PASS）。拟用唯一标签testflight-appstore-free-1.0-20261113，已只读确认远端不存在，尚未创建。旧不可移动标签不移动。
+## 2026-11-13 21时实际进度
 
-实际后台1.0(20)二进制已验证，带内部标记，在正式版本构建选择器中20–16禁选；12及更旧可选。旧包不能覆盖新隐私/支持入口，也不能用于本次送审。
+- 非skip候选321219f61fd2dedf3be69d6f49c3af23896cccd4，required CI43347067614整体SUCCESS，本机双语联系UI/干净Release与三Bundle资源exact。
+- Xcode27.2原生 Reports → Cloud → PersonalGrowthOS → TestFlight-workflow：Restrict Editing已开，仓库/项目正确；Tag Changes为“tags beginning with testflight-”，Any File Changes，Auto-cancel开；Xcode/macOS Latest Release保持，当前编辑器无Clean选项，不虚构已修改。
+- Archive-iOS/PersonalGrowthOS的发行准备原为TestFlight Internal Testing Only，已改为当前UI名称**App Store Connect**（eligible for all testers and customers），Save后重新打开，Last Modified 21:05且选项仍选中。
+- 原TestFlight Internal Testing post-action与空Groups表保持，没有添加测试人员。
+- 唯一annotated tag testflight-appstore-free-1.0-20261113已普通push并ls-remote回读；对象fed76bc6a95d43b1b187574a9ebc845dd832b663 → 源码321219f，无skip标记。不要再推新tag试探。
+- 原生Xcode已出现该tag下**Build21**；详情Started21:08，Commit321219f，Xcode27.2/27B52、macOS27.2/26B123。Archive Running，TestFlight post-action等待。尚未观察成功Archive/上传/处理/商店可选。
+- Safari后台应用页加载间歇停滞；商务页已完成DSA。备用内置浏览器已打开官方登录页，Owner登录待完成。不导出/搬运Safari凭据。
 
-按Apple官方配置说明，内部专用Archive不能转为App Store发行，需要新的Archive。解锁后在已有TestFlight-workflow最小调整并回读：
+## 剩余执行
 
-1. General沿用原product/项目/仓库；启用或保留Apple要求的Restrict Editing（正式发行要求），不新增访问者。
-2. Start Conditions核对原testflight-*标签、分支/文件条件，确保唯一新tag精确源码能触发；不反复推tag试探。
-3. Environment按Apple发行工作流要求Clean，沿用验证过的Xcode/SDK配置。
-4. Archive沿用iOS/PersonalGrowthOS scheme/Release，将Deployment Preparation设为**TestFlight and App Store**，不是TestFlight Internal Testing Only。保持应用身份/自动签名/原组，不增加外部测试人员。
-5. 回读Workflow保存结果与触发条件；CI通过后，对精确非skip候选创建annotated tag并普通push，立即记录tag对象和解引用SHA。
-6. 实际观察新XcodeCloud run对应tag和SHA、Archive/上传/处理及实际build号；源码默认12不作为云端编号。核对App和扩展版本一致、真实签名/entitlements/Production CK/APS及打包资源。
-7. 在正式1.0选择器确认新build可选，保存关联，执行一次绑定该包的真机冒烟；不将Archive成功、上传成功、Add for Review混称Submit for Review。
+1. 从上述Xcode Reports入口观察Build21 Archive/后处理真实结果，失败时先分析日志，不重推tag。
+2. 可取得发行Archive时核对三个Bundle版本、BuildProvenance精确321219f/tag/Dirty=false、生产entitlements、签名、三个Privacy Manifest及四份政策；源码12不当作实际云端编号。
+3. TestFlight读取1.0(21)处理与内部专用标记，正式1.0构建选择器确认可选后保存关联。不把Archive成功、上传成功、Add for Review和Submit for Review混为一谈。
+4. 继续免费价0、Owner新确认香港/澳门/台湾/美国供应范围、中英文资料回读；大陆待准入后开放。必要真机清单只绑定实际新包，沿用旧数据与CloudKit证据，不卸载/清库。
+5. 材料/构建/必要人工事项关闭后按授权真正Submit for Review，手动发布模式保持，最终公开仍需Owner确认。
 
 依据：[Archive发行准备选项](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions)、[正式发行工作流](https://developer.apple.com/documentation/xcode/creating-a-workflow-that-builds-your-app-for-distribution)、[内部标记含义](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)。2026-11-13查阅。这里只记录成品步骤，尚未声称已保存工作流或触发新构建。

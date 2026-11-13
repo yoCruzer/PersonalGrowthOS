@@ -1,0 +1,36 @@
+{
+  "tag": "testflight-appstore-free-1.0-20261113",
+  "tagObject": "fed76bc6a95d43b1b187574a9ebc845dd832b663",
+  "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "sourceCommitContainsSkipMarker": false,
+  "remoteReadbackVerified": true,
+  "workflowPreparationReadback": "App Store Connect",
+  "newBuildObserved": true,
+  "uploaded": false,
+  "appStoreReady": false,
+  "buildNumber": 21,
+  "buildStartedLocal": "2026-11-13 21:08 Asia/Shanghai",
+  "status": "Success",
+  "sourceReadback": "321219f",
+  "xcodeVersion": "27.2 (27B52)",
+  "macOSVersion": "27.2 (26B123)",
+  "archiveStatus": "Completed with 35 issues",
+  "postActionStatus": "Completed",
+  "uploadOrProcessing": "workflow post-action success observed; TestFlight processing/readiness not yet observed",
+  "runDuration": "14min plus 55sec queued",
+  "issuesTypeAndCountDetails": {
+    "warnings": 35,
+    "errorGroupObserved": false,
+    "examples": [
+      "actor isolated containerID reference, warning in current language mode",
+      "unnecessary try in SyncDomainInstaller",
+      "variable result never mutated in SyncDomainInstaller"
+    ],
+    "newSourceFixRequired": false,
+    "notes": "same untouched sync files as previous successful archive; not claiming zero output warnings"
+  },
+  "artifactDownloads": {
+    "archive": "started via Xcode, 17.1 MB; incomplete",
+    "appStoreIPA": "started via Xcode, 10.6 MB; incomplete"
+  }
+}

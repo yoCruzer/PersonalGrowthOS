@@ -36,7 +36,12 @@
     "subtitle": "记录生活、习惯与每一步成长",
     "primaryCategory": "生活",
     "secondaryCategory": "效率",
-    "saved": true
+    "saved": true,
+    "english": {
+      "name": "随心log",
+      "subtitle": "Journal, habits, small steps",
+      "savedAndObserved": "已保存"
+    }
   },
   "age": {
     "healthWellness": true,
@@ -49,7 +54,12 @@
     "url": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
     "answer": "Data Not Collected",
     "publishedAnswer": true,
-    "appPubliclyReleased": false
+    "appPubliclyReleased": false,
+    "localizedURLs": {
+      "zh-Hans": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
+      "en-US": "https://yocruzer.github.io/PersonalGrowthOS/privacy-en.html"
+    },
+    "englishURLSavedReadback": true
   },
   "screenshots": {
     "locale": "zh-Hans",
@@ -61,35 +71,86 @@
       "04-growth.png",
       "05-library.png"
     ],
-    "pageSaveBlockedByReviewPhone": true
+    "pageSaveBlockedByReviewPhone": false,
+    "englishUploadedCount": 5
   },
   "versionEditor": {
     "supportURL": "https://yocruzer.github.io/PersonalGrowthOS/support-zh.html",
     "reviewSignInRequired": false,
     "reviewContactFilled": true,
-    "reviewPhoneMissing": true,
-    "saveResult": "FAILED: phone mandatory and +country-code format; unsaved fields must be re-read after owner supplies phone"
+    "reviewPhoneMissing": false,
+    "saveResult": "Owner phone filled and initial save disabled readback; copyright display entered and saved; English metadata and screenshots uploaded, full refresh readback pending",
+    "copyright": "2026 随心log",
+    "englishMetadata": "refilled after stable locale load; remaining counts correct; saved and Save disabled; five screenshots persisted after navigating away/back"
   },
-  "pricing": "not set; Computer Use locked when opening Add Pricing",
+  "pricing": {
+    "base": "US USD",
+    "selectedPrice": "$0.00",
+    "wizardConfirmed": true,
+    "matrixReadbackPending": false,
+    "currentSchedulePopoverReadback": "美国 (USD) $0.00",
+    "pricingMatrixCalculatorUsedAsProof": false,
+    "currentScheduleCountries": 175
+  },
   "targetTerritoriesOwnerApproved": [
-    "CN",
     "HK",
     "MO",
     "TW",
     "US"
   ],
-  "territoriesSaved": false,
-  "dsa": "pending owner factual declaration",
+  "territoriesSaved": true,
+  "dsa": {
+    "selection": "not a trader or no EU distribution plan",
+    "basis": "owner explicitly confirms no EU distribution plan",
+    "saved": true,
+    "businessComplianceStatus": "有效",
+    "allRegulatoryRequirementsCompleteBanner": "observed on Business page only"
+  },
   "icp": "blank; applicability/entry pending",
   "newUpload": false,
   "addForReview": false,
   "submitForReview": false,
   "observationMethod": "Computer Use Safari AX; private account address and tax identifiers deliberately not persisted",
   "macAndVisionCompatibility": {
-    "macDefaultAvailable": true,
-    "visionDefaultAvailable": true,
-    "visionVersionIncompatible": true,
-    "plannedScope": "verified iPhone only",
-    "changedOrSaved": false
-  }
+    "macAvailable": false,
+    "visionAvailable": false,
+    "savedAndObserved": "已保存",
+    "scope": "verified iPhone launch"
+  },
+  "ownerFacts20261113Evening": {
+    "reviewPhone": "owner directly filled Apple private field; verified present, intentionally omitted",
+    "dsaNoEUDistributionPlanConfirmed": true,
+    "copyrightDisplay": "2026 随心log",
+    "contentDistributionRightsConfirmed": true,
+    "noThirdPartyContentServiceConfirmed": true,
+    "icpFiling": "none",
+    "macUnlockedAndSafariAccessible": true
+  },
+  "newBuild": {
+    "number": 21,
+    "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+    "status": "Running",
+    "startedLocal": "2026-11-13 21:08 Asia/Shanghai",
+    "archiveUploaded": false
+  },
+  "mainlandDeferredByExplicitOwnerDecision": true,
+  "alternateBrowser": {
+    "type": "Codex in-app browser",
+    "loginPageObserved": true,
+    "ownerLoginPending": false,
+    "reason": "Safari recovered; login request no longer mandatory, owner informed",
+    "interactionStatus": "DOM/AX read works but click/keyboard focus failed; not treated as a working authenticated fallback"
+  },
+  "availabilityReadback": {
+    "heading": "供应情况（4 个国家或地区）",
+    "rows": {
+      "澳门": "App 发布时供应",
+      "美国": "App 发布时供应",
+      "台湾": "App 发布时供应",
+      "香港": "App 发布时供应"
+    },
+    "allOtherCountries": "未供应",
+    "preorder": "not enabled"
+  },
+  "nativeUIBlock": "Mac locked again after English privacy URL saved; manual unlock requested"
 }

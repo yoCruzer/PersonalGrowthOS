@@ -50,3 +50,11 @@ CI43341685409：head741a00e，Release/Unit/Smoke均SUCCESS；merge checkout a84f
 最终Smoke检查及run43347067614均SUCCESS。官方artifact14003641240，SHA256 f6ba4f902d8209a6f8e48bcaa277abe6e518495899f0c3c0faef280f64eada0c与CRC通过；summary与独立8个Test Case节点均8PASS/0FAIL/0SKIP，runtimeWarnings/testFailures为空；head321219f/checkout e30c26e均精确。见ci-smoke-321219f.json，保留所有8个测试标识。新源码验证已完成，不重复启动第三轮全量CI。
 
 最后文档提交只记录321219f已通过结果，不变更产品/测试/构建脚本。发行标签必须指向无skip的321219f，而非后续[skip ci]文档提交。Mac锁屏和Owner字段未完成，未推新TestFlight标签、未上传或提交审核。
+
+## 晚间 Apple 执行实证
+
+Owner已填审核电话，私密字段回读只记录存在而不公开值；DSA无EU计划和代码/图标/素材分发权利/无第三方服务均获Owner确认，版权显示2026 随心log。DSA保存后Business行有效、监管完成提示回读。Owner尚无备案并明确四区先发/大陆待准入后开，供应管理页显示4区且澳门/美国/台湾/香港均App发布时供应，其余171未供应；当前价时间表popover实际回读美国USD$0.00，不把通用价格计算器当当前价格。Mac/Vision兼容分发均关闭并观察已保存。英文名称/副标题观察已保存；英文隐私URLprivacy-en.html保存回读。版本双语各5张原始截图保留；英文文案首轮被异步locale加载覆盖后稳定重填，计数正常并保存，最终版本回读继续。
+
+原生Xcode workflow实际保存/回读与唯一tag/build来源见xcode-cloud-workflow.json和xcode-cloud-tag.json。Build21 Archive/后处理SUCCESS，35条均Warnings（未改变原同步代码）；17.1MB Archive与10.6MB app-store包下载启动，但完整文件尚未取得，未声称发行签名/资源二进制验证通过。Mac再次锁屏后已请求解锁，未改锁屏或密码设置、未清数据。备用内置浏览器可读未登录页但点击/焦点失败，未视为有效登录或可用替代。
+
+NOT_OBSERVED仍包括：实际新TestFlight编号/处理状态/商店可选、最终签名包内容、正式版本构建关联、必要真机覆盖、Add for Review和真正Submit for Review。当前未送审/公开发布。

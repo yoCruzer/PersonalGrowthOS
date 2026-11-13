@@ -53,13 +53,13 @@
 ## 内容权利与市场准入（需本人事实）
 
 - Demo插图由本仓库UIKit几何绘制，文案为原创合成内容；不含私人记录、授权未知照片、虚构用户评价。不得冒充真实用户数据。
-- Owner须确认拥有或获得本App及所分发内容所需权利；无法凭源码替本人作法律保证。
-- DSA：后台应用列表已观察到交易商状态提示；登录后查Business → Agreements → Compliance。经营身份由Owner按真实情况判断，个人/免费不自动等于非交易商，不为隐藏联系方式猜选。
+- Owner晚间已明确确认具备代码/图标/素材分发权利，且不提供第三方内容服务；版权显示按Owner为2026 随心log，许可证不改。
+- DSA：Owner明确本次无EU分发计划后，已实际选择“非交易商或无EU分发计划”并完成；Business表格状态有效、监管完成提示已回读。没有因个人/免费自动推断身份。
 - 中国大陆：后台ICP字段实际为空；需核对ICP备案适用性和平台准入是否要求、备案主体/名称/标识匹配。未确认时不静默排除大陆，也不擅自全球发行。
-- Owner已确认目标地区：大陆、香港、澳门、台湾、美国，核实准入后保存。免费价0已授权，尚未后台回读。
+- Owner晚间明确决定香港、澳门、台湾、美国先首发，大陆待准入后开放；四区尚未后台保存。免费价0已授权，定价页面加载停滞，尚未保存回读。
 
 [大陆App信息要求](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information/)、[DSA指导](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/)。
 
 ## 已有代码许可证
 
-仓库根 `LICENSE` 为AGPL-3.0，保留原样；当前工程仅链接Apple框架和本仓库本地包，未新增第三方SDK。公开仓库可取得对应源码，不能把“源码公开”写成无版权限制或自动改成闭源许可。App Store发行所需的版权主体、全部分发权利及任何额外授权，需要Owner确认；本轮没有替Owner更改许可或签署新协议。
+仓库根 `LICENSE` 为AGPL-3.0，保留原样；当前工程仅链接Apple框架和本仓库本地包，未新增第三方SDK。公开仓库可取得对应源码，不能把“源码公开”写成无版权限制或自动改成闭源许可。App Store发行所需的版权主体、全部分发权利及任何额外授权，已获Owner明确事实确认；本轮没有更改许可或签署新协议。

@@ -1,6 +1,8 @@
-## 2026-11-13 免费首发：代码/素材验证完成，后台待解锁与本人事实
+## 2026-11-13 晚间免费首发：Build21云构建成功，四区零价已保存
 
-当前非skip候选321219f61fd2dedf3be69d6f49c3af23896cccd4 / Draft PR20。新CI43347067614整体SUCCESS：Release成功、Unit714PASS/0FAIL/1SKIP、Smoke8/8，三份官方ZIP摘要/CRC、源码tree与独立计数均核实。干净本机Release/三个Bundle与四份政策exact；公开邮箱/网页入口双语定向UI1PASS。Owner已批准GitHub Pages＋Issues、公开邮箱与大陆/港澳台/美国目标地区；网页已公开HTTP200和桌面视觉QA。Apple正式1.0准备提交、手动发布已回读；实际最新1.0(20)内部专用且商店禁选。副标题/生活＋效率分类、9+分级与隐私URL/未收集数据答复已保存，五张中文截图已上传；版本页其他编辑被必填审核电话阻止保存。Mac再次锁屏，已请Owner解锁并集中确认审核电话、DSA、版权、备案真实情况；免费价/地区/英文上传/可送审XcodeCloud配置仍待执行。尚未新标签/上传/送审/公开发布，目标未完成。原工作区改动保留。唯一续接入口：[APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)。
+非skip发行候选仍321219f / tag testflight-appstore-free-1.0-20261113（对象fed76bc6）；新required CI整体SUCCESS、Unit714PASS/1SKIP、Smoke8PASS、本机联系入口UI与干净Release资源exact不变。原生Xcode将原工作流Archive发行准备改为App Store Connect并回读，原testflight-触发/Restrict Editing/环境与组保持；实际Build21来源321219f，21:08启动，Archive及TestFlight后处理均SUCCESS，35 issues已核实均Warnings。Archive/app-store IPA下载核验中，未把工作流成功等同TestFlight处理或正式商店可选。
+
+Owner已填审核电话（Apple私密字段回读，不入仓库），确认DSA无EU计划与内容分发权利/无第三方服务，指定版权显示2026 随心log，以上后台已保存/核对。Owner尚无备案，明确改为香港/澳门/台湾/美国先首发、大陆待准入后开；Apple供应管理页四区均App发布时供应、其他171未供应，当前价格时间表美国USD$0.00已回读。Mac/Vision兼容分发均关闭并保存，维持已验证iPhone首发。英文副标题已保存；双语各五张截图在后台，英文元数据首轮被异步语言加载覆盖后已稳定重填保存，最终版本回读继续；双语隐私URL已保存回读。Safari应用页先停滞后经应用列表恢复；英文政策URL保存后Mac再次锁屏，已请求手动解锁。备用内置浏览器未登录且交互焦点错误，不冒称可用替代通道。下一步完成签名包核验、1.0(21)处理/可选、版本关联及资料最终检查后推进真正Submit for Review；尚未送审/公开发布，最终公开仍需Owner确认。唯一台账：[APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)。
 
 ---
 
