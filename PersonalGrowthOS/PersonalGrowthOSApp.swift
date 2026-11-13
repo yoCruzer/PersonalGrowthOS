@@ -24,6 +24,10 @@ struct PersonalGrowthOSApp: App {
             SyncPushBridge.coordinator = container.syncCoordinator
             #if DEBUG
             if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
+               ProcessInfo.processInfo.arguments.contains("-PGOSAppStoreDemo") {
+                try AppStoreDemoFixture.seed(container)
+            }
+            if configuration.launchMode == .uiTesting, configuration.resetDataOnLaunch,
                ProcessInfo.processInfo.arguments.contains("-PGOSSyncStatusLocalizationTest") {
                 let dataset = ProductSyncDataset()
                 dataset.enabled = true; dataset.initialized = true
@@ -223,3 +227,41 @@ struct PersonalGrowthOSApp: App {
         }
     }
 }
+
+#if DEBUG
+/// Synthetic content only, in the existing isolated UI-testing store. Sync stays off.
+@MainActor private enum AppStoreDemoFixture {
+    static func seed(_ container: AppContainer) throws {
+        let context = container.modelContainer.mainContext
+        let zh = Locale.preferredLanguages.first?.hasPrefix("zh") == true
+        func copy(_ chinese: String, _ english: String) -> String { zh ? chinese : english }
+        let now = Date(), earlier = now.addingTimeInterval(-7 * 86400)
+        let habits = HabitService(context: context, now: { earlier })
+        _ = try habits.create(name: copy("读书二十分钟", "Read for twenty minutes"), recordingMode: .oncePerDay)
+        _ = try habits.create(name: copy("出门走一走", "Take a walk outside"), recordingMode: .oncePerDay)
+        _ = try habits.create(name: copy("喝一杯水", "Drink a glass of water"), recordingMode: .multiplePerDay, dailyTargetCount: 6)
+        _ = try GoalService(context: context, now: { earlier }).create(title: copy("读完一本喜欢的书", "Finish a book I enjoy"), kind: .standard)
+        let tasks = TodoTaskService(context: context)
+        _ = try tasks.create(TodoDraft(title: copy("整理周末散步的照片", "Organize weekend walk photos"), plannedDay: TodoDay(date: now).description))
+        _ = try tasks.create(TodoDraft(title: copy("给下周留一点空白", "Leave some room for next week")))
+        let imageURL = container.mediaStore.rootURL.appendingPathComponent("app-store-demo-illustration.png")
+        let bytes = UIGraphicsImageRenderer(size: CGSize(width: 1000, height: 650)).pngData { renderer in
+            UIColor(red: 0.89, green: 0.94, blue: 0.88, alpha: 1).setFill(); renderer.fill(CGRect(x: 0, y: 0, width: 1000, height: 650))
+            UIColor(red: 0.93, green: 0.72, blue: 0.36, alpha: 1).setFill(); UIBezierPath(ovalIn: CGRect(x: 680, y: 70, width: 140, height: 140)).fill()
+            UIColor(red: 0.40, green: 0.63, blue: 0.49, alpha: 1).setFill(); UIBezierPath(ovalIn: CGRect(x: -160, y: 300, width: 900, height: 650)).fill()
+            UIColor(red: 0.25, green: 0.48, blue: 0.40, alpha: 1).setFill(); UIBezierPath(ovalIn: CGRect(x: 400, y: 340, width: 900, height: 650)).fill()
+            (copy("演示插图 · 午后", "Demo illustration · Afternoon") as NSString).draw(at: CGPoint(x: 50, y: 50), withAttributes: [.font: UIFont.systemFont(ofSize: 30, weight: .medium), .foregroundColor: UIColor.darkGray])
+        }
+        try bytes.write(to: imageURL); defer { try? FileManager.default.removeItem(at: imageURL) }
+        let creation = EntryCreationService(persistence: ModelContextEntryPersistence(context: context), mediaStore: container.mediaStore, now: { now.addingTimeInterval(-300) })
+        _ = try creation.create(.init(title: copy("午后，慢慢走", "A slower afternoon"), body: copy("演示记录：走过熟悉的小路，发现树叶已经换了颜色。今天没有赶时间。", "Demo entry: Along a familiar path, the leaves have changed color. Today I let myself slow down."), image: .init(url: imageURL, originalFilename: "demo-illustration.png", contentType: "image/png")))
+        context.insert(Entry(title: copy("留住一个小想法", "Keep a small thought"), body: copy("演示记录：每天留十分钟，做一点自己喜欢的事。", "Demo entry: Leave ten minutes each day for something I enjoy."), createdAt: now.addingTimeInterval(-86400)))
+        context.insert(Entry(title: copy("本周的一点收获", "A small lesson this week"), body: copy("演示记录：比起一次做很多，更想把喜欢的事情慢慢做下去。", "Demo entry: I would rather keep doing what matters than do everything at once."), createdAt: now.addingTimeInterval(-172800)))
+        for index in 0..<5 {
+            let at = now.addingTimeInterval(-Double(index) * 86400)
+            context.insert(WeightRecord(weightKilograms: 68.2 + Double(index) * 0.1, recordedAt: at, createdAt: at))
+        }
+        try context.save()
+    }
+}
+#endif

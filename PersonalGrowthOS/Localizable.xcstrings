@@ -1,6 +1,74 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "Privacy and Support": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Privacy and Support"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "隐私与支持"
+        }
+      }
+    }
+  },
+  "Privacy Policy": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Privacy Policy"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "隐私政策"
+        }
+      }
+    }
+  },
+  "Support": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Support"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "技术支持"
+        }
+      }
+    }
+  },
+  "GitHub Issues (public)": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "GitHub Issues (public)"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "GitHub 问题反馈（公开）"
+        }
+      }
+    }
+  },
   "Sync will retry automatically. Local data is kept.": {
     "extractionState": "manual",
     "localizations": {

@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "en-US": {
+      "name": 5,
+      "subtitle": 28,
+      "promotionalText": 109,
+      "description": 1707,
+      "keywordsBytes": 100,
+      "reviewNotesBytes": 1619
+    },
+    "zh-Hans": {
+      "name": 5,
+      "subtitle": 13,
+      "promotionalText": 42,
+      "description": 587,
+      "keywordsBytes": 91,
+      "reviewNotesBytes": 1619
+    }
+  },
+  "manifests": {
+    "PersonalGrowthOS": [
+      {
+        "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+        "NSPrivacyAccessedAPITypeReasons": [
+          "CA92.1"
+        ]
+      },
+      {
+        "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+        "NSPrivacyAccessedAPITypeReasons": [
+          "C617.1",
+          "3B52.1"
+        ]
+      },
+      {
+        "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+        "NSPrivacyAccessedAPITypeReasons": [
+          "E174.1"
+        ]
+      },
+      {
+        "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+        "NSPrivacyAccessedAPITypeReasons": [
+          "35F9.1"
+        ]
+      }
+    ],
+    "ShareExtension": [],
+    "ImportantDaysWidget": [
+      {
+        "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+        "NSPrivacyAccessedAPITypeReasons": [
+          "C617.1"
+        ]
+      }
+    ]
+  },
+  "pages": {
+    "index.html": {
+      "localLinksValid": true,
+      "sha256": "593d086401f6ea5e69bd564722d1d78b114bfd680d39d55a2c8b3b47b2311b2b"
+    },
+    "privacy-en.html": {
+      "localLinksValid": true,
+      "sha256": "a21b6c3c6e00ce959b4e6454196dfe5fef6a04fb111d9a7ead5e8227c0ce0985"
+    },
+    "privacy-zh.html": {
+      "localLinksValid": true,
+      "sha256": "27375e7833a26748ec8fa5b170b09d3501295c8dadde431a5fd9792b6552472d"
+    },
+    "support-en.html": {
+      "localLinksValid": true,
+      "sha256": "b2cc76c251edfb92b91353cd446d815789752b21e6ed378894a01e6efe49e705"
+    },
+    "support-zh.html": {
+      "localLinksValid": true,
+      "sha256": "e3a3d38cc0c81509386d03ad77b0440df37b41dcab4861eae1dfcb70841d2104"
+    }
+  },
+  "policies": {
+    "privacy-en": {
+      "offlineAndWebTextEqual": true,
+      "sha256": "b96339ca26e1bbb623df5fb922afd188a781d0941239918eefb83c08deb20960"
+    },
+    "privacy-zh": {
+      "offlineAndWebTextEqual": true,
+      "sha256": "5f37b4bcb45eff14b3d356595c1b018c20886de9cb5f14883350d4db251bb619"
+    },
+    "support-en": {
+      "offlineAndWebTextEqual": true,
+      "sha256": "daccf0f123486643be3e3bd4c662dc5a6fd823252d6be38a7db4c96d19958c51"
+    },
+    "support-zh": {
+      "offlineAndWebTextEqual": true,
+      "sha256": "1859aa747a74a8b19a10f905026c87c68ea6bf7cdc97ab003f6a64859b253002"
+    }
+  }
+}

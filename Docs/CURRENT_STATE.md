@@ -1,3 +1,15 @@
+## 2026-11-13 免费首发恢复执行
+
+Owner回复“继续”，旧暂停结束。独立发布分支新增离线隐私/支持入口、三个Bundle的Privacy Manifest、原创隔离演示截图夹具与中英文上架网页/字段成品。Debug与本地保存重开冒烟通过；双语截图补验及Release三Bundle资源核对通过，10张原始商店截图已导出并逐张查看；前两轮截图测试失败原件保留。Apple详情因会话失效需Owner在Safari重新登录；托管、公开联系方式、地区与本人声明等待集中确认。进度与证据唯一入口：[APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)。尚未上传新构建、送审或公开发布，原工作区改动保留。
+
+---
+
+## 2026-11-10 App Store 免费首发 Goal（Owner已暂停）
+
+Owner已授权免费首发收尾、素材、后台配置、上传与满足条件后的送审，公开上线仍需最后一次明确确认。当前仅完成真实基线核对：发布工作树 `/private/tmp/pgos-app-store-release-20261110` / `codex/app-store-free-release-20261110`，基于 `4ec39f7`；现有已验证源码/TestFlight标签指向 `5910422`，实际云端build号及处理状态未读。Mac锁屏阻塞Apple后台读取，Owner随后明确要求暂停；未改产品代码、未上传/送审/发布，未推送本轮台账。原主工作区三项未提交修改保留。完整进度、证据与恢复入口见 [APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)。Owner回到电脑并明确继续后再恢复执行；旧批次停点不替代本次授权。
+
+---
+
 ## 2026-11-09 当前：R1–R5修复/独立复核/新CI完成，新TestFlight工作流成功，停覆盖验收门
 
 状态：`DELIVERY_COMPLETE / OWNER_OVERLAY_ACCEPTANCE_PENDING`。Owner已明确授权精确原仓库/分支/PR19/TestFlight标签及只读独立子代理；原授权阻塞结束。最终非skip源码`59104222b0ca654ca5cffa8faed3e2f208e91b2e`已普通推送原分支，PR保持OPEN Draft/原base。独立审查发现最长服务retry-after归并P2，已补修并复核关闭，无其余must-fix；本机同步三类61/61、最终transport28/28、干净Release/三Bundle溯源通过。

@@ -142,6 +142,13 @@ E9A7759A79ECDE4AF3FCEC67 = {isa = PBXBuildFile; fileRef = F3BCFD372935E01B53550A
 8E90139A70EDCBE6A8C10513 = {isa = PBXBuildFile; fileRef = E6E00EA7EEC92C262F5BE071; };
 5A5C5E3C350F30DF528BF1B0 = {isa = PBXBuildFile; fileRef = 0A0F5F32558CA5E1660A5759; };
 A6A3889D8A176ACEAF630B3A = {isa = PBXBuildFile; fileRef = E366E7EC8D7B082E7CCDC395; };
+BF1300000000000000000000 = {isa = PBXBuildFile; fileRef = AF1300000000000000000000; };
+BF1300000000000000000001 = {isa = PBXBuildFile; fileRef = AF1300000000000000000001; };
+BF1300000000000000000002 = {isa = PBXBuildFile; fileRef = AF1300000000000000000002; };
+BF1300000000000000000003 = {isa = PBXBuildFile; fileRef = AF1300000000000000000003; };
+BF1300000000000000000004 = {isa = PBXBuildFile; fileRef = AF1300000000000000000004; };
+BF1300000000000000000005 = {isa = PBXBuildFile; fileRef = AF1300000000000000000005; };
+BF1300000000000000000006 = {isa = PBXBuildFile; fileRef = AF1300000000000000000006; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -292,6 +299,13 @@ F3BCFD372935E01B53550A45 = {isa = PBXFileReference; lastKnownFileType = sourceco
 E6E00EA7EEC92C262F5BE071 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOS/ImportantDays/ImportantDayInteraction.swift"; sourceTree = SOURCE_ROOT; };
 0A0F5F32558CA5E1660A5759 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSTests/ImportantDayReviewFixTests.swift"; sourceTree = SOURCE_ROOT; };
 E366E7EC8D7B082E7CCDC395 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PersonalGrowthOSUITests/ImportantDayReviewFixUITests.swift"; sourceTree = SOURCE_ROOT; };
+AF1300000000000000000000 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "PersonalGrowthOS/PrivacyInfo.xcprivacy"; sourceTree = SOURCE_ROOT; };
+AF1300000000000000000001 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "ShareExtension/PrivacyInfo.xcprivacy"; sourceTree = SOURCE_ROOT; };
+AF1300000000000000000002 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "ImportantDaysWidget/PrivacyInfo.xcprivacy"; sourceTree = SOURCE_ROOT; };
+AF1300000000000000000003 = {isa = PBXFileReference; lastKnownFileType = text; path = "PersonalGrowthOS/ReleaseInformation/privacy-zh.txt"; sourceTree = SOURCE_ROOT; };
+AF1300000000000000000004 = {isa = PBXFileReference; lastKnownFileType = text; path = "PersonalGrowthOS/ReleaseInformation/privacy-en.txt"; sourceTree = SOURCE_ROOT; };
+AF1300000000000000000005 = {isa = PBXFileReference; lastKnownFileType = text; path = "PersonalGrowthOS/ReleaseInformation/support-zh.txt"; sourceTree = SOURCE_ROOT; };
+AF1300000000000000000006 = {isa = PBXFileReference; lastKnownFileType = text; path = "PersonalGrowthOS/ReleaseInformation/support-en.txt"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -717,7 +731,12 @@ CA0000000000000000000020,
 		D00000000000000000000003 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (
+			files = (BF1300000000000000000006,
+BF1300000000000000000005,
+BF1300000000000000000004,
+BF1300000000000000000003,
+BF1300000000000000000000,
+
 TD4000000000000000000002,
 				B00000000000000000000003 /* Assets.xcassets in Resources */,
 				B00000000000000000000033 /* Localizable.xcstrings in Resources */,
@@ -745,8 +764,10 @@ RV1000000000000000000001,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-CA0000000000000000000011 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (CA0000000000000000000104, CA0000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
-2F3AD19101A65448AE429449 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (FE29425B30F989F0D460B90D, ); runOnlyForDeploymentPostprocessing = 0; };
+CA0000000000000000000011 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (BF1300000000000000000001,
+CA0000000000000000000104, CA0000000000000000000107, ); runOnlyForDeploymentPostprocessing = 0; };
+2F3AD19101A65448AE429449 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (BF1300000000000000000002,
+FE29425B30F989F0D460B90D, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */

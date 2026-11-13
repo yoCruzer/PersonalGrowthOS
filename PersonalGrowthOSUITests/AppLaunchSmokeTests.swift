@@ -3,6 +3,45 @@ import Network
 import UIKit
 
 final class AppLaunchSmokeTests: XCTestCase {
+    func testAppStoreScreenshotsAndOfflinePolicies() {
+        continueAfterFailure = false
+        for zh in [true, false] {
+            let app = XCUIApplication()
+            app.launchArguments = ["-PGOSUITesting", "-PGOSResetData", "-PGOSAppStoreDemo", "-AppleLanguages", zh ? "(zh-Hans)" : "(en)", "-AppleLocale", zh ? "zh_CN" : "en_US", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryL"]
+            app.launch()
+            let tabs = zh ? ["今天", "时间线", "记录", "成长", "资料库"] : ["Today", "Timeline", "Record", "Growth", "Library"]
+            for (index, tab) in tabs.enumerated() {
+                let button = app.tabBars.buttons[tab]
+                XCTAssertTrue(button.waitForExistence(timeout: 10), app.debugDescription)
+                button.tap(); XCTAssertTrue(button.isSelected)
+                if index == 1 { XCTAssertTrue(app.staticTexts[zh ? "午后，慢慢走" : "A slower afternoon"].waitForExistence(timeout: 5)) }
+                if index == 2 {
+                    let body = app.textViews["capture-body"]
+                    XCTAssertTrue(body.waitForExistence(timeout: 5)); body.tap()
+                    body.typeText(zh ? "演示草稿：今天，想记住什么？" : "Demo draft: What would I like to remember today?")
+                }
+                let shot = XCTAttachment(screenshot: app.screenshot())
+                shot.name = "AppStore-\(zh ? "zh-Hans" : "en-US")-0\(index + 1)"
+                shot.lifetime = .keepAlways; add(shot)
+                if index == 2 {
+                    app.buttons["capture-save"].tap()
+                    XCTAssertTrue(app.textViews["capture-body"].waitForNonExistence(timeout: 10))
+                    XCTAssertTrue(app.staticTexts[zh ? "演示草稿：今天，想记住什么？" : "Demo draft: What would I like to remember today?"].waitForExistence(timeout: 5))
+                }
+            }
+            app.tabBars.buttons[tabs[0]].tap()
+            app.buttons[zh ? "设置" : "Settings"].tap()
+            for (id, marker) in [("settings-privacy-policy", zh ? "随心log 隐私政策" : "Suixinlog Privacy Policy"), ("settings-support", zh ? "随心log 技术支持" : "Suixinlog Support")] {
+                let row = app.buttons[id]
+                for _ in 0..<10 where !row.isHittable { app.swipeUp() }
+                XCTAssertTrue(row.isHittable, app.debugDescription); row.tap()
+                XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", marker)).firstMatch.waitForExistence(timeout: 5), app.debugDescription)
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+            }
+            app.terminate()
+        }
+    }
+
     func testPausedSyncKeepsEveryTabAndSettingsOperable() {
         continueAfterFailure = false
         let app = XCUIApplication()
