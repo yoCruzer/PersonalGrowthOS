@@ -1,0 +1,12 @@
+{
+  "source": {
+    "Commit": "741a00e53b0e0069cbb84f49b5f335aed0005bc3",
+    "Dirty": false,
+    "Source": "localGit",
+    "Tag": ""
+  },
+  "commandLog": "/private/tmp/PGOS-AppStore-CleanRelease-741a00e.log",
+  "exitCode": 0,
+  "unsigned": true,
+  "policyResourcesExact": true
+}

@@ -36,6 +36,12 @@ final class AppLaunchSmokeTests: XCTestCase {
                 for _ in 0..<10 where !row.isHittable { app.swipeUp() }
                 XCTAssertTrue(row.isHittable, app.debugDescription); row.tap()
                 XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", marker)).firstMatch.waitForExistence(timeout: 5), app.debugDescription)
+                let email = app.links["release-email"]
+                for _ in 0..<14 where !email.isHittable { app.swipeUp() }
+                XCTAssertTrue(email.isHittable, app.debugDescription)
+                XCTAssertEqual(email.label, zh ? "邮件联系支持" : "Email Support")
+                XCTAssertTrue(app.links["release-online"].exists)
+                XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "justincookiec@outlook.com")).firstMatch.exists)
                 app.navigationBars.buttons.element(boundBy: 0).tap()
             }
             app.terminate()

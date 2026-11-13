@@ -1,6 +1,57 @@
 {
   "sourceLanguage": "en",
   "strings": {
+  "View Privacy Policy Online": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "View Privacy Policy Online"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "在线查看隐私政策"
+        }
+      }
+    }
+  },
+  "Support Website": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Support Website"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "技术支持网站"
+        }
+      }
+    }
+  },
+  "Email Support": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Email Support"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "邮件联系支持"
+        }
+      }
+    }
+  },
   "Privacy and Support": {
     "extractionState": "manual",
     "localizations": {

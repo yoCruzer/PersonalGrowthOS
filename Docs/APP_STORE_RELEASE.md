@@ -1,44 +1,70 @@
 # App Store 免费首发执行台账
 
-更新时间：2026-11-13；状态：**IN_PROGRESS / APPLE_LOGIN_REQUIRED**。Owner已回复“继续”，暂停指令撤销。发布实现与素材继续；Apple后台详情需重新登录。
+更新时间：2026-11-13；状态：**IN_PROGRESS / APPLE_CONFIGURATION_AND_FINAL_BUILD**。Owner已恢复执行并完成Apple登录。下列当前快照优先于后附历史日志；整个首发Goal尚未完成。
 
-## 授权与发布边界
+## 当前快照
 
-目标为现有“随心log”免费（0）首发，无新增广告、内购、订阅。已授权必要修复、定向验证、普通提交/推送、独立分支/Draft PR、素材与后台填写、构建上传及满足条件后提交审核。沿用身份；首发采用 Manually release this version，审核通过后必须等待 Owner 一次明确确认公开上线。身份验证、协议、真实法律/经营身份声明由 Owner 处理。
+| 项目 | 真实状态 |
+| --- | --- |
+| 已提交候选 | `741a00e53b0e0069cbb84f49b5f335aed0005bc3`；新增获准公开邮箱、网页链接与定向UI验证尚未提交，最终上传不能沿用旧SHA |
+| 分支 / PR | `codex/app-store-free-release-20261110`；[Draft PR20](https://github.com/yoCruzer/PersonalGrowthOS/pull/20)，base `codex/icloud-product` / `4ec39f7`；未合并其他PR |
+| 当前工作树 | `/private/tmp/pgos-app-store-release-20261110`；原主工作区三项他人改动完整保留 |
+| 独立CI | [43341685409](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43341685409)，head741a00e，Release/Unit/Smoke全部SUCCESS，optional extended UI按原条件SKIP；Unit714PASS/1SKIP，Smoke8PASS |
+| 源码版本 | App与两扩展1.0(12)；这是源码默认号，不能当作上传build号 |
+| 最新实际TestFlight | **1.0(20)**，2026-11-09 22:34上传，二进制“已验证”，带“内部”标记；版本“添加构建版本”中20–16禁选，12及更旧可选。20不能用于本次送审 |
+| Apple正式版本 | **1.0 准备提交**。手动发布回读已保留；尚未Add for Review或Submit for Review |
+| 版本字段 | 中文描述/推广/关键词已保存；审核联系人、免登录/备注、支持网址本轮编辑但保存被必填审核电话拦截，不能称已落库。中文截图5/10已上传，未将页面有值等同完整保存 |
+| App信息 | 名称沿用随心log；中文副标题“记录生活、习惯与每一步成长”；主分类生活/次分类效率，已观察“已保存” |
+| 年龄分级 | 完整7步问卷复核；健康/保健主题由否改是，医疗/治疗信息无，其余无；Apple计算**9+**，非儿童类，已保存。较旧OS/地区按Apple计算展示 |
+| App Privacy | 隐私网址已保存；按实际数据流填写“未收集数据”，已观察后台“几秒钟前…发布”。这是隐私答复发布，**不是App公开上架** |
+| 协议与身份 | 免费App协议有效（2026-10-29至2027-07-27）；付费协议未签，本次免费且无IAP无需为此签署。DSA尚未声明，已向Owner确认本次无EU计划的选项 |
+| 价格与地区 | 免费0已授权，尚未后台保存/回读。Owner确认目标大陆/香港/澳门/台湾/美国，须核实准入后保存，未静默排除大陆或选全球 |
+| 大陆备案 | App信息ICP字段当前空白；仍须核实适用准入与真实备案事实，不能编造或因本地优先直接豁免 |
+| 公共网页 | **已上线并验证** [主页](https://yocruzer.github.io/PersonalGrowthOS/)、双语政策与支持；gh-pages commit `54df17e`，6文件HTTP200且与源码逐字一致；Safari桌面视觉QA已完成 |
+| 公开联系 | Owner明确批准 `justincookiec@outlook.com`，已入网页/离线正文；GitHub Issues用于公开脱敏反馈；审核电话不进入公开仓库 |
+| 构建与送审 | 本机Debug/Release/保存重开/截图通过；加入公开联系后的双语定向UI验证ContactUI3为1PASS/0FAIL/0SKIP。尚未新TestFlight标签/上传/处理/送审 |
+| 公开上线 | **未发布**。审核通过后展示版本、免费价、地区和商店页面，等Owner一次明确确认再公开发布 |
 
-## 已核实事实
+## 授权、身份和数据边界
 
-- 仓库：`yoCruzer/PersonalGrowthOS`。原工作区 `/Users/himini/Development/Projects/PersonalGrowthOS` 位于旧 `codex/todo-v1-personal-actions` / `d72c016dd34c8114cf44744d0e061b95bd312091`，有原有未提交 project.pbxproj、本地化和 xcodecloud manifest 修改；全部保留，未改动。
-- 远端连接器与实际 SSH ls-remote 均核实最新产品分支 `codex/icloud-product` / `4ec39f7435812f0ad891b846f527e6d55c497409`；[Draft PR #19](https://github.com/yoCruzer/PersonalGrowthOS/pull/19) OPEN，base `codex/icloud-sync-foundation` / `07c1bcff2d2fae1f1a2d17271e36266aadb97d6a`。main 仍是旧 `dd09975d3a3736b24f8646fa4f197cc883ab1796`，不能作为最新候选。
-- 现有已验证代码候选：`59104222b0ca654ca5cffa8faed3e2f208e91b2e`。不可移动 annotated tag `testflight-icloud-reliability-20261109` 对象 `031e8eb3678b37ffb89fa02a46aa8073297b776c` 精确解引用该代码；分支后续提交仅文档。
-- 发布工作树已建立：`/private/tmp/pgos-app-store-release-20261110`，分支 `codex/app-store-free-release-20261110`，起点 `4ec39f7`。未提交/推送，未建新 PR。同机 `/private/tmp/pfos-app-store-release` 属于其他 PersonalFinanceOS 仓库，不能混用。
-- 代码身份：显示名称“随心log”；Bundle ID `com.yocruzer.PersonalGrowthOS`；App Group `group.com.yocruzer.PersonalGrowthOS`；CloudKit `iCloud.com.yocruzer.PersonalGrowthOS`；Team `83SKX2PM7B`；iPhone-only / iOS17+；主App/分享扩展/重要日子Widget均为源码版本1.0(12)。**云端实际build号尚未读取，不能把源码12当作TestFlight build号。**
-- App Store Connect记录ID `6796425674`、team路径 `e47fce78-79c8-4993-88a4-32f833bc1936`，来自既有构建证据，尚未本轮后台复验。
-- 已有证据 [xcode-cloud-result.json](Evidence/iCloudReliability20261109/xcode-cloud-result.json)：5910422 的 Archive 与工作流 SUCCESS，0 errors/0 test failures/35 warnings；[构建入口](https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/ci/builds/59018cf0-c866-4b25-92c5-8a6052eb6272)。TestFlight可用、处理成功及商店可选状态仍 NOT_OBSERVED。
-- PR19与既有文档记录本地保存受阻、可恢复错误续传、busy尾部续跑、推送过滤均已修复。已有最新产品CI Unit715=714PASS/1SKIP、Smoke8/8及三unsigned Release Bundle；本机61/61、最终transport28/28。本轮只读取证据摘要，未重新验证源码或测试，不重复冒称通过；后续需核对当前实现及证据适用性。
-- Owner 2026-11-09 已手动部署 Production schema，当时 Build19 立即同步成功；删App/本地数据后重新安装观察到云端数据返回。仅为用户报告的成功/恢复观察，不代表全量关系、原图、双设备、后台或所有同步场景通过。不要求重复部署相同schema或常规删装。
+已授权必要代码修复、定向测试、普通提交/推送、独立分支/Draft PR、素材与后台保存、满足材料/构建/人工事项后提交审核及常规技术返修。免费0，无广告、IAP或订阅。本次沿用现有应用，不重写同步系统，不操作真实云库、不常规卸载或重复部署schema。
 
-## 能力检查与实际操作
+- 正式名称：随心log；Bundle `com.yocruzer.PersonalGrowthOS`；App Group `group.com.yocruzer.PersonalGrowthOS`；CloudKit `iCloud.com.yocruzer.PersonalGrowthOS`；Team `83SKX2PM7B`。
+- App Store ID `6796425674`；[首发版本入口](https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/inflight)。iPhone-only，iOS17+，简体中文/英语。签名TestFlight元数据已与源码身份核对。
+- 最新产品线为 `codex/icloud-product` / `4ec39f7`，原Draft PR19 base `codex/icloud-sync-foundation`。main `dd09975`陈旧；原主工作区 `codex/todo-v1-personal-actions` / `d72c016`不充当发布候选。
+- 用户2026-11-09手动部署Production schema后，在当时Build19“立即同步”成功，删除App/本地数据再安装观察到云端恢复。仅记录OWNER_REPORTED成功与恢复观察，不代表关系/原图/双设备/后台等全部场景通过。
+- R1–R5本地保存、可恢复续传、busy尾部唤醒、推送过滤修复已存在于5910422；本轮真实代码复核和 `git diff --exit-code 5910422 -- PersonalGrowthOS/Sync PersonalGrowthOS/Persistence Packages SharedCapture`通过，未修改同步与schema。复用仍适用的61/61、transport28/28及既有迁移证据。
+- 原工作区原有project.pbxproj、Localizable.xcstrings、xcodecloud目录修改未触碰；仓库AGPL-3.0许可证保持。私人联系方式/账户地址/税务标识不写公开证据。
 
-- 已按主工作区 AGENTS 阅读 Foundation、Development Contract、CURRENT；最新产品工作树 INDEX/CURRENT 与 Foundation 增量已读取。续接后按最新工作树约束补齐相关文档再修改产品。
-- 本机 Xcode27.2 / 27B52。`gh auth status` 报现有token无效；GitHub连接器具备仓库push/admin权限。沙箱内网络解析失败；获批提权的 `git ls-remote --heads --tags origin` 与 `git fetch origin codex/icloud-product --tags` 成功，不需要因此先要求Owner重新登录gh。
-- 独立 `git worktree add -b codex/app-store-free-release-20261110 /private/tmp/pgos-app-store-release-20261110 4ec39f7...` 成功，未触及原有修改。
-- Computer Use可发现Safari，无已连接浏览器。读取Safari时返回 **Mac已锁定，自动解锁失败**；未读取Apple后台、未填写、上传或提交。
-- 已通知Owner手动解锁；Owner选择暂停整个任务。无构建/测试/上传/送审/公开发布。本轮仅状态核对，无产品代码改动。
+## 成品、证据与实际限制
 
-## 下一步（Owner恢复后）
+- [双语商店字段](../Release/AppStore/Metadata/README.md)、[数据流/问卷依据](../Release/AppStore/QUESTIONNAIRES.md)、[十张真实截图](../Release/AppStore/Screenshots/README.md)、[一轮真机清单](../Release/AppStore/Review/DEVICE_SMOKE.md)、[网页源码](../Release/AppStore/Website/dist/index.html)。
+- [本机与CI证据](Evidence/AppStoreRelease20261113/README.md)：隔离模拟器E1E2C997-C665-4CCE-968B-B90B9FC61A3E，未登录真实iCloud；演示fixture仅DEBUG+UITesting+Reset，automaticSync=false。10张1206×2622原始RGB PNG，无alpha，逐张查看；未虚构界面或使用私人记录。
+- 干净741a00e本机Release来源/三个Bundle及资源通过；CI实际merge checkout a84f98c与741a00e完整tree相同。Unit唯一SKIP需隔离32MB HFS+镜像，未将SKIP当PASS。新增联系代码须通过新的候选验证。
+- 已有5910422 Xcode Cloud成功Archive记录与Build20真实TestFlight状态保留，不能冒充本轮新代码签名/上传证据。
 
-1. Owner回到Mac并解锁，明确回复继续；恢复Goal，复验工作树/远端未发生变化。
-2. 优先检查已有App Store Connect权限、协议、TestFlight最新build、版本1.0状态、价格、地区、必填项、DSA与大陆备案；可用API优先，界面访问经Computer Use。不得根据Archive成功假设上传处理完成。
-3. 完成当前代码与数据流审查、隐私Manifest/权限、真实功能文案和双语字段限制核验；复用仍适用的CI证据，必要修复只做定向验证。
-4. 隔离演示环境真实候选界面截图4–6张；制作隐私/支持网页成品；核实获准托管位置及可公开联系方式，不将私人联系方式自动公开。
-5. 统一列出地区/大陆备案/DSA/内容权利/加密等必要本人事实确认，继续其他可办事项；材料与实际build齐备后提交审核，人工发布模式保持。
-6. 证据/素材写入仓库适当目录；普通推送本发布分支及Draft PR。暂停前尚未执行GitHub同步，恢复后补做，不声称已同步。
+## 仅本人可提供/确认的事项
 
-## 当前人工事项
+| 页面/字段 | 已给推荐/缺项 | 后续 |
+| --- | --- | --- |
+| 版本1.0 → App审核信息 → 电话 | Apple实际返回必填及+国家代码格式错误；请Owner提供允许交给Apple的电话或直接在页面填写 | 只在Apple私密审核字段使用，补齐后保存并重新回读全部版本字段 |
+| 商务 → DSA合规 | 目标5区均非EU，建议“我不是DSA交易商，或者没有EU分发计划”；未替Owner声明 | 收到本次无EU计划事实确认后保存并回读 |
+| 版本1.0 → 版权；App信息 → 内容版权 | 建议2026 Guangzong Cai，需确认拥有/获授权代码图标素材、无第三方内容服务；现有内容版权字段已经为否 | 按Owner确认填写，保持AGPL |
+| 大陆ICP备案 | 当前空白，适用性和是否有真实备案仍待核实 | 不编造、不静默移除大陆；如确有缺项单列具体处理/地区决定 |
 
-仅：回到Mac后手动解锁并回复继续。其余字段尚未后台核对，不预先假设缺项。当前不是已上传、已提交审核或已发布状态。
+已确认事项不再询问：已登录、GitHub Pages＋Issues、公开邮箱、目标5区。身份验证/本人协议/无法从代码证明的法律事实由Owner处理。
 
+## 接下来持续执行
+
+1. 获准联系与URL的双语定向UI已通过，更新当前证据与文档后普通commit/push，接受原required CI；不重复无变化本机全量715。
+2. 保留当前版本页编辑，等审核电话后保存并重新回读；补英文版本/截图/支持URL，核实免费价0与5区准入，年龄/隐私/备案/DSA逐项有实证。
+3. 检查现有Xcode Cloud `TestFlight-workflow` 的testflight-*标签触发与发行配置，将新Archive设为可App Store送审而非Internal Only；固定唯一无skip标签与精确最终候选，确认云端实际产生构建，不反复推tag试探。
+4. 观察上传/处理/版本匹配/商店可选；把少量真机步骤绑定实际新build，再集中处理Owner事实与验证。材料与阻塞关闭后Add for Review并真正Submit for Review，记录实际状态。
+5. 审核中如不能持续监控，记录下次检查入口，不能声称后台等待。审核通过仍人工发布，需Owner最后明确确认；未公开可下载前不写已发布。
+
+2026-11-13后续Computer Use在“添加定价”时再次返回Mac已锁定；已请Owner解锁，代码/素材/台账同步继续。没有将本次锁屏当作Owner要求暂停Goal。
+
+## 历史执行日志（不代表当前状态）
 
 ## 2026-11-13 恢复执行
 
@@ -60,3 +86,18 @@
 最终Screenshots3为1PASS/0FAIL/0SKIP（exit0），双语各5张原始RGB PNG、1206×2622、无alpha已导出到`Release/AppStore/Screenshots`并逐张视觉检查。第一轮本地保存/编辑/重开1PASS；第一、二轮截图测试失败原件保留，不改标成功。第二轮因测试在键盘显示时尝试切Tab，最终改为先正常保存并确认入时间线，再继续；未改产品或放宽断言。
 
 Release三unsigned Bundle构建PASS，各自Manifest及四份政策资源逐字核对，source=4ec39f7/Dirty=true如实保留；不是签名/上传证明。详细实际命令、结果和NOT_RUN见[本机证据](Evidence/AppStoreRelease20261113/README.md)。没有重复本机全量Unit。此稳定节点将普通提交/推送并建立独立Draft PR，沿现有CI接受独立验证；不合并旧PR。
+
+
+### GitHub交付与续接顺序
+
+741a00e已普通push并创建/附加Draft PR20；实际CI43341685409运行中，未把空checks或排队当通过。`git diff --exit-code 5910422 -- PersonalGrowthOS/Sync PersonalGrowthOS/Persistence Packages SharedCapture`通过，复核四项同步修复仍在且未变化。当前发布分支干净，原工作区原有修改保持；主工作区台账副本同步供原入口查看。
+
+Owner最小待办已集中发出：Safari官方App Store Connect完成登录/身份验证；确认拟用GitHub Pages＋Issues及公开支持联系方式；确认目标地区（推荐大陆/港澳台/美国，大陆准入待核实）。没有回复不视为确认。协议/DSA/备案/审核联系人/版权事实须登录后按实际缺项一次整理，当前不编造。
+
+收到输入后：核对Apple真实最新build与Internal Only标记；将经确认的公开联系/托管信息合入成品并部署公开访问验证；最后固定候选、复用CI和适用验证，再用唯一testflight标签触发现有XcodeCloud并核实真实构建/处理。将[一轮集中真机清单](../Release/AppStore/Review/DEVICE_SMOKE.md)绑定实际build后使用，不现在重复要求陪测。全部满足后按已授权完成Add for Review及真正Submit for Review；不等同于公开发布。
+
+
+干净候选增量Release复验：`PGOS-AppStore-CleanRelease-741a00e.log` exit0，BuildProvenance精确741a00e/Dirty=false，四份正文仍逐字一致（`clean-release-source.json`）。此次只为将已验证资源绑定普通提交，不重跑无变化全量测试。回环网页预览HTTP200，Codex浏览器预览请求queued，未冒称浏览器视觉QA已通过。
+
+
+原正式图标已核对：`PersonalGrowthOS/Assets.xcassets/AppIcon.appiconset/PersonalGrowthOS-AppIcon-1024.png`存在，1024×1024、无alpha；已实际查看并确认编译App的CFBundleIcons/AppIcon资源存在。沿用既有图标，不重制品牌。

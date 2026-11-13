@@ -21,3 +21,6 @@ This is a personal recording app. Weight, sleep and adult BMI references are not
 Report an issue or privacy concern
 Use the GitHub Issues link below for a redacted report. Include app version/build, iOS version, minimal steps, expected and actual behavior, and reviewed copied sync diagnostics if relevant. Never include Apple accounts, passwords, verification codes, journal text, health/financial values, original photos, full backups or private paths.
 GitHub issues are public. Submit only non-sensitive descriptions. The developer will not ask you to erase your real cloud database for routine troubleshooting.
+
+Contact the developer
+Public support email: justincookiec@outlook.com. You may also use the public GitHub Issues link for non-sensitive reports. Prefer email for privacy requests; do not attach passwords, verification codes or full personal backups.

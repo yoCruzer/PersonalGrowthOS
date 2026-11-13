@@ -62,37 +62,37 @@
     },
     "privacy-en.html": {
       "localLinksValid": true,
-      "sha256": "a21b6c3c6e00ce959b4e6454196dfe5fef6a04fb111d9a7ead5e8227c0ce0985"
+      "sha256": "54f46b2ebd321834a34a544d5f9302a5150a9789c2a8642289047a1c8cfaa6ce"
     },
     "privacy-zh.html": {
       "localLinksValid": true,
-      "sha256": "27375e7833a26748ec8fa5b170b09d3501295c8dadde431a5fd9792b6552472d"
+      "sha256": "5832498c017eca445e59f0132ffaf86e07cd6410803cb9c33a3fb5503c11fd4b"
     },
     "support-en.html": {
       "localLinksValid": true,
-      "sha256": "b2cc76c251edfb92b91353cd446d815789752b21e6ed378894a01e6efe49e705"
+      "sha256": "d002e382c7d5b2eef3681047b7fbd75aae18778bc4fccbaf3838d510a4aff5b2"
     },
     "support-zh.html": {
       "localLinksValid": true,
-      "sha256": "e3a3d38cc0c81509386d03ad77b0440df37b41dcab4861eae1dfcb70841d2104"
+      "sha256": "9e498c379b8ea2e3f757dee1f406c7cd6e283931b91444b6534a104c3ca1f9fe"
     }
   },
   "policies": {
     "privacy-en": {
       "offlineAndWebTextEqual": true,
-      "sha256": "b96339ca26e1bbb623df5fb922afd188a781d0941239918eefb83c08deb20960"
+      "sha256": "6c477de1f5249d0e82b992bcf3e3e691499fda4cd91ac83efa4a4dec7f2601dc"
     },
     "privacy-zh": {
       "offlineAndWebTextEqual": true,
-      "sha256": "5f37b4bcb45eff14b3d356595c1b018c20886de9cb5f14883350d4db251bb619"
+      "sha256": "aef51ceb16db40aae47664ebbe301ee20897612c6326a13dcf68baf1d69c1cdb"
     },
     "support-en": {
       "offlineAndWebTextEqual": true,
-      "sha256": "daccf0f123486643be3e3bd4c662dc5a6fd823252d6be38a7db4c96d19958c51"
+      "sha256": "9dc54bf471a2b9aa301c1fd04f5e220e16adaf0a93b8c91d174551ad7384a145"
     },
     "support-zh": {
       "offlineAndWebTextEqual": true,
-      "sha256": "1859aa747a74a8b19a10f905026c87c68ea6bf7cdc97ab003f6a64859b253002"
+      "sha256": "760523f486a56b96e388318615e3149afc5977c95333a7251780836142ae27c1"
     }
   }
 }

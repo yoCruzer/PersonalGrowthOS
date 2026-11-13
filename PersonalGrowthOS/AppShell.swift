@@ -1884,6 +1884,12 @@ private struct ReleaseInformationView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text(verbatim: content).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                Link(destination: URL(string: "https://yocruzer.github.io/PersonalGrowthOS/\(kind)-\(language).html")!) {
+                    Text(kind == "privacy" ? "View Privacy Policy Online" : "Support Website")
+                }
+                .accessibilityIdentifier("release-online")
+                Link("Email Support", destination: URL(string: "mailto:justincookiec@outlook.com")!)
+                    .accessibilityIdentifier("release-email")
                 Link("GitHub Issues (public)", destination: URL(string: "https://github.com/yoCruzer/PersonalGrowthOS/issues")!)
             }.padding()
         }

@@ -1,0 +1,88 @@
+{
+  "observedDate": "2026-11-13",
+  "appId": "6796425674",
+  "appName": "随心log",
+  "versionStatus": "1.0 准备提交",
+  "manualRelease": "saved and read back",
+  "latestTestFlight": {
+    "version": "1.0",
+    "build": "20",
+    "binaryStatus": "已验证",
+    "uploadLocal": "2026-11-09 22:34 Asia/Shanghai",
+    "internalBadge": true,
+    "appStoreSelectionEnabled": false
+  },
+  "buildSelector": {
+    "disabled": [
+      "20",
+      "19",
+      "18",
+      "17",
+      "16"
+    ],
+    "enabled": [
+      "12",
+      "9",
+      "8",
+      "7",
+      "1"
+    ],
+    "selected": null
+  },
+  "freeAgreement": "有效 2026-10-29 to 2027-07-27",
+  "paidAgreement": "unsigned; unnecessary for free/no-IAP launch",
+  "appInfo": {
+    "name": "随心log",
+    "subtitle": "记录生活、习惯与每一步成长",
+    "primaryCategory": "生活",
+    "secondaryCategory": "效率",
+    "saved": true
+  },
+  "age": {
+    "healthWellness": true,
+    "medicalTreatment": "none",
+    "appleComputedRating": "9+",
+    "kids": false,
+    "saved": true
+  },
+  "privacy": {
+    "url": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
+    "answer": "Data Not Collected",
+    "publishedAnswer": true,
+    "appPubliclyReleased": false
+  },
+  "screenshots": {
+    "locale": "zh-Hans",
+    "count": 5,
+    "filenames": [
+      "01-today.png",
+      "02-timeline.png",
+      "03-capture.png",
+      "04-growth.png",
+      "05-library.png"
+    ],
+    "pageSaveBlockedByReviewPhone": true
+  },
+  "versionEditor": {
+    "supportURL": "https://yocruzer.github.io/PersonalGrowthOS/support-zh.html",
+    "reviewSignInRequired": false,
+    "reviewContactFilled": true,
+    "reviewPhoneMissing": true,
+    "saveResult": "FAILED: phone mandatory and +country-code format; unsaved fields must be re-read after owner supplies phone"
+  },
+  "pricing": "not set; Computer Use locked when opening Add Pricing",
+  "targetTerritoriesOwnerApproved": [
+    "CN",
+    "HK",
+    "MO",
+    "TW",
+    "US"
+  ],
+  "territoriesSaved": false,
+  "dsa": "pending owner factual declaration",
+  "icp": "blank; applicability/entry pending",
+  "newUpload": false,
+  "addForReview": false,
+  "submitForReview": false,
+  "observationMethod": "Computer Use Safari AX; private account address and tax identifiers deliberately not persisted"
+}

@@ -1,0 +1,25 @@
+{
+  "sourceHead": "741a00e53b0e0069cbb84f49b5f335aed0005bc3",
+  "actualCheckout": "a84f98c9b773cc14db71733680354a6acbb41c37",
+  "run": 43341685409,
+  "artifact": {
+    "id": 13999759296,
+    "sha256": "c80ce2f50c718dc1ae395564cefb983c56fa1163f48fbf580085edc881989c1b",
+    "crcValid": true
+  },
+  "total": 715,
+  "passed": 714,
+  "failed": 0,
+  "skipped": 1,
+  "testTreeCounts": {
+    "Passed": 714,
+    "Skipped": 1
+  },
+  "skippedNames": [
+    "testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure()"
+  ],
+  "runtimeWarnings": [],
+  "xcode": "Xcode 27.0\nBuild version 27A266a\n",
+  "deviceType": "iPhone 13 mini",
+  "runtime": "27.2"
+}

@@ -26,3 +26,6 @@ Edit or delete records, manage reminders and disable sync in the app. Keep sync 
 
 Changes and contact
 This policy describes the first-release implementation. Changes to data handling will be reflected here and in store disclosures. For privacy questions or support, contact developer yoCruzer through GitHub Issues linked from our support page. Remove private information before posting.
+
+Contact the developer
+Public support email: justincookiec@outlook.com. You may also use the public GitHub Issues link for non-sensitive reports. Prefer email for privacy requests; do not attach passwords, verification codes or full personal backups.
