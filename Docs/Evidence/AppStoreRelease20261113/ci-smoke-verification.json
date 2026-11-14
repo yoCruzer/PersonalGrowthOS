@@ -1,0 +1,16 @@
+{
+  "run": 43341685409,
+  "job": 131611245188,
+  "artifact": 14000689022,
+  "artifactSHA256": "634bb39e8b65b9d120c5091901042b52d5a4a18e3719c064ae9dd8ff20ae419f",
+  "zipCRC": "PASS",
+  "headSHA": "741a00e53b0e0069cbb84f49b5f335aed0005bc3",
+  "checkoutSHA": "a84f98c9b773cc14db71733680354a6acbb41c37",
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "skipped": 0,
+  "runtimeWarnings": [],
+  "testFailures": [],
+  "localEvidenceDirectory": "/private/tmp/PGOS-AppStore-CI-smoke"
+}

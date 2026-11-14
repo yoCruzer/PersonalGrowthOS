@@ -1,0 +1,16 @@
+{
+  "sourceHead": "741a00e53b0e0069cbb84f49b5f335aed0005bc3",
+  "actualCheckout": "a84f98c9b773cc14db71733680354a6acbb41c37",
+  "tree": "1cfce1f750676e92fa9382f9f85a8bdc6efdabed",
+  "sourceTree": "1cfce1f750676e92fa9382f9f85a8bdc6efdabed",
+  "exactTreeMatch": true,
+  "releaseJob": 131611244901,
+  "run": 43341685409,
+  "artifact": {
+    "id": 14000471841,
+    "sha256": "994640585f75f5fc5534e3133b816ce762e97c54e283cd0362e19245d839a289",
+    "crcValid": true
+  },
+  "buildSucceeded": true,
+  "signing": "unsigned"
+}

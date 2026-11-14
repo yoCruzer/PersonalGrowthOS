@@ -1,0 +1,26 @@
+Suixinlog Support
+
+Capture, then reflect
+Use Record to save text or selected images. Revisit, search and organize in Timeline and Library. Growth includes habits, goals, weight, sleep, time investment, important dates and household net worth. Core local features require no registration or iCloud sign-in.
+
+If saving fails
+Keep your draft and note the error message and available storage. Do not uninstall, erase cloud data or delete recovery copies as a troubleshooting step. If the app offers a retained-data export, save it securely. It may contain personal content; never upload it publicly.
+
+Using iCloud
+Open Settings → iCloud Sync, read the explanation and explicitly connect a workspace. Devices need the same iCloud account, a network connection and sufficient storage. The status page distinguishes uploading, downloading, pending application and protective pauses. After the network returns, allow automatic retry or choose Sync now. Disabling sync does not delete existing copies. Preserve conflicts or integrity errors and copy diagnostics for support; avoid repeated uninstalls or workspace recreation.
+
+Backups and recovery
+Use Settings → Data Transfer → Export Full Backup and save it somewhere you trust. ZIP and CSV exports are not encrypted. Full backup import is available only for an empty database; it does not merge or erase existing records. Do not clear your everyday database for routine testing.
+
+Reminders and widgets
+Reminders require permission you actively enable. Denying permission does not block normal recording. Important-date widgets show content you select; system refreshes may be delayed. Alarms depend on OS support and permission.
+
+Scope and limitations
+This is a personal recording app. Weight, sleep and adult BMI references are not medical diagnosis. Household net worth uses manual CNY balance snapshots, with no bank connection or investment advice. Manage iCloud, backups and exported copies separately; real-time sync and recovery of every deleted item are not guaranteed.
+
+Report an issue or privacy concern
+Use the GitHub Issues link below for a redacted report. Include app version/build, iOS version, minimal steps, expected and actual behavior, and reviewed copied sync diagnostics if relevant. Never include Apple accounts, passwords, verification codes, journal text, health/financial values, original photos, full backups or private paths.
+GitHub issues are public. Submit only non-sensitive descriptions. The developer will not ask you to erase your real cloud database for routine troubleshooting.
+
+Contact the developer
+Public support email: justincookiec@outlook.com. You may also use the public GitHub Issues link for non-sensitive reports. Prefer email for privacy requests; do not attach passwords, verification codes or full personal backups.

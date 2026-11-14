@@ -1,0 +1,21 @@
+{
+  "run": 43347067614,
+  "releaseJob": 131628870905,
+  "sourceHead": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "actualCheckout": "e30c26e57d1d37384467bc9d6261c1362c721af9",
+  "tree": "cc320dedb707e6f520ed9e4dff03b9924e24e591",
+  "sourceTree": "cc320dedb707e6f520ed9e4dff03b9924e24e591",
+  "exactTreeMatch": true,
+  "artifact": {
+    "id": 14002885181,
+    "sha256": "aab80bdb2b82fcc54ab074a3a7e9c2be0546c7c3f44f9670a1a6fa9aff496bc4",
+    "crcValid": true
+  },
+  "buildSucceeded": true,
+  "bundles": [
+    "PersonalGrowthOS.app",
+    "PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+    "PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex"
+  ],
+  "signing": "unsigned"
+}

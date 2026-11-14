@@ -1,0 +1,36 @@
+{
+  "observedLocalTime": "2026-11-13 21:05 Asia/Shanghai",
+  "method": "Native Xcode 27.2 Computer Use; Safari ASC page remained loading",
+  "name": "TestFlight-workflow",
+  "enabled": true,
+  "primaryRepository": "https://github.com/yoCruzer/PersonalGrowthOS.git",
+  "project": "PersonalGrowthOS.xcodeproj",
+  "restrictEditing": true,
+  "startCondition": {
+    "customTags": "beginning with testflight-",
+    "files": "any file changes",
+    "autoCancel": true
+  },
+  "environment": {
+    "xcode": "Latest Release",
+    "macOS": "Latest Release",
+    "environmentVariables": "none visible",
+    "cleanSetting": "not exposed in current native editor; no unobserved claim"
+  },
+  "archive": {
+    "platform": "iOS",
+    "scheme": "PersonalGrowthOS",
+    "previous": "TestFlight (Internal Testing Only)",
+    "saved": "App Store Connect",
+    "eligibilityText": "Eligible for distribution to all testers and customers. Recommended for release branches."
+  },
+  "postAction": {
+    "type": "TestFlight Internal Testing - iOS",
+    "artifact": "Archive - iOS",
+    "groups": "table displayed empty; left unchanged; no recipients added"
+  },
+  "saveVerified": true,
+  "readbackLastModified": "Today at 21:05 by Guangzong Cai",
+  "readbackArchiveAppStoreConnectSelected": true,
+  "tagCreated": true
+}

@@ -1,0 +1,87 @@
+{
+  "tag": "testflight-appstore-free-1.0-20261113",
+  "tagObject": "fed76bc6a95d43b1b187574a9ebc845dd832b663",
+  "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "sourceCommitContainsSkipMarker": false,
+  "remoteReadbackVerified": true,
+  "workflowPreparationReadback": "App Store Connect",
+  "newBuildObserved": true,
+  "uploaded": true,
+  "appStoreReady": true,
+  "buildNumber": 21,
+  "buildStartedLocal": "2026-11-13 21:08 Asia/Shanghai",
+  "status": "Success",
+  "sourceReadback": "321219f",
+  "xcodeVersion": "27.2 (27B52)",
+  "macOSVersion": "27.2 (26B123)",
+  "archiveStatus": "Completed with 35 issues",
+  "postActionStatus": "Completed",
+  "uploadOrProcessing": "TestFlight 1.0(21) metadata: binary validated; enabled in App Store build selector. Selected and Save disabled observed Nov13; fresh server association check pending Nov14.",
+  "runDuration": "14min plus 55sec queued",
+  "issuesTypeAndCountDetails": {
+    "warnings": 35,
+    "errorGroupObserved": false,
+    "examples": [
+      "actor isolated containerID reference, warning in current language mode",
+      "unnecessary try in SyncDomainInstaller",
+      "variable result never mutated in SyncDomainInstaller"
+    ],
+    "newSourceFixRequired": false,
+    "notes": "same untouched sync files as previous successful archive; not claiming zero output warnings"
+  },
+  "artifactDownloads": {
+    "archive": "started via Xcode, 17.1 MB; incomplete",
+    "appStoreIPA": "same Build21 artifact restarted via Xcode; no new build/tag",
+    "retryEvidence": "app-store download fixed at 37%, partial size 3882493 bytes unchanged about 24min; owner unlock at22h, cancelled that download and re-requested same artifact once",
+    "webFallback": "Safari same app-store artifact1fcc1358-a318-4fa8-a7b9-95510d0c1378: official download allowed, failed at835KB with network connection interrupted; resume showed stopped; no complete file",
+    "checkedLocal": "2026-11-14 09:05 Asia/Shanghai",
+    "currentFiles": {
+      "SafariPartialBytes": 835069,
+      "XcodePartialBytes": 6159323,
+      "XcodeArchivePartialBytes": 0,
+      "allIncomplete": true
+    }
+  },
+  "actualAppStoreVersion": "1.0",
+  "actualAppStoreBuild": "21",
+  "appStoreSelectorBuild21Enabled": true,
+  "oldBuilds20to16Disabled": true,
+  "selectedAndSavedForVersion1_0": true,
+  "manualReleaseReadback": true,
+  "buildURL": "https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/ci/builds/4ef1895e-3551-4cd4-98b9-2050d779abbf",
+  "canonicalSummaryURL": "https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/xcode-cloud/products/543C8892-7DD6-4620-B16C-B4F7DFE0255E/builds/4ef1895e-3551-4cd4-98b9-2050d779abbf/summary",
+  "testFlightMetadata": {
+    "observedDate": "2026-11-13",
+    "version": "1.0",
+    "build": "21",
+    "binaryStatus": "已验证",
+    "internalBadge": false,
+    "uploadedLocal": "2026-11-13 21:20 Asia/Shanghai",
+    "bundleId": "com.yocruzer.PersonalGrowthOS",
+    "minimumOS": "17.0",
+    "deviceFamily": "iPhone",
+    "architecture": "arm64",
+    "includesSymbols": true,
+    "nonExemptEncryption": false,
+    "languages": [
+      "Simplified Chinese",
+      "English"
+    ],
+    "metadataURL": "https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/testflight/ios/c3af9b4a-278d-429d-ad12-4367e654d8f5/metadata",
+    "groupsCount": null,
+    "fullEntitlements": "NOT_EXPORTED: UI copy succeeded but TextEdit export timed out; truncated AX only confirms Widget group/team/get-task-allow false. Main production entitlements not independently verified.",
+    "priorZeroGroupCount": "Earlier detail transient 0 not final; existing group fresh page confirms Build21 installations."
+  },
+  "signedBinaryInspection": "NOT_RUN: no complete ZIP/IPA; do not infer PASS from unsigned build.",
+  "internalTestGroupObservation20261114": {
+    "existingGroup": "测试内部群组",
+    "existingTesters": 3,
+    "installedBuild21Devices": 2,
+    "installationDate": "2026-11-14",
+    "crashesDisplayed": "– (not evidence of no possible crashes)",
+    "noTestersAdded": true,
+    "focusedOwnerSmoke": "OWNER_REPORTED_PASS: 测试完没问题",
+    "privateTesterIdentities": "deliberately omitted"
+  },
+  "appReview": "Submitted 2026-11-14 09:37 Asia/Shanghai; waiting for review; ba1b52ad-7773-426f-997f-6bac1671795e"
+}

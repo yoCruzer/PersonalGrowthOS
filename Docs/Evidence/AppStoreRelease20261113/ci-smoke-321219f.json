@@ -1,0 +1,33 @@
+{
+  "run": 43347067614,
+  "smokeJob": 131628871421,
+  "sourceHead": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "actualCheckout": "e30c26e57d1d37384467bc9d6261c1362c721af9",
+  "artifact": {
+    "id": 14003641240,
+    "sha256": "f6ba4f902d8209a6f8e48bcaa277abe6e518495899f0c3c0faef280f64eada0c",
+    "crcValid": true
+  },
+  "summary": {
+    "result": "Passed",
+    "totalTestCount": 8,
+    "passedTests": 8,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "runtimeWarnings": [],
+    "testFailures": []
+  },
+  "independentTestNodeCounts": {
+    "Passed": 8
+  },
+  "testCases": [
+    "AppLaunchSmokeTests/testCoreShellRemainsOperableAtLargestAccessibilityTextSize()",
+    "AppLaunchSmokeTests/testICloudSettingsStartOffAndRequireExplicitConsent()",
+    "AppLaunchSmokeTests/testICloudSyncChineseConsentCompletionAndProgressAreLocalized()",
+    "AppLaunchSmokeTests/testPausedSyncKeepsEveryTabAndSettingsOperable()",
+    "AppLaunchSmokeTests/testRepeatableHabitCounterIncrementsDecrementsAndPersists()",
+    "AppLaunchSmokeTests/testUIReadabilityChineseDefaultAndLargerText()",
+    "AppLaunchSmokeTests/testUIReadabilityEnglishDefault()",
+    "AppLaunchSmokeTests/testUITestingLaunchShowsAppShell()"
+  ]
+}

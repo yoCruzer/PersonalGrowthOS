@@ -1,0 +1,28 @@
+{
+  "run": 43347067614,
+  "unitJob": 131628871185,
+  "sourceHead": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "actualCheckout": "e30c26e57d1d37384467bc9d6261c1362c721af9",
+  "artifact": {
+    "id": 14002009073,
+    "sha256": "5cee08da4a369154b6f3978cd5c0a4bc123a045f5f095bd4458ab3a05379fdaf",
+    "crcValid": true
+  },
+  "summary": {
+    "result": "Passed",
+    "totalTestCount": 715,
+    "passedTests": 714,
+    "failedTests": 0,
+    "skippedTests": 1,
+    "runtimeWarnings": [],
+    "testFailures": []
+  },
+  "independentTestNodeCounts": {
+    "Passed": 714,
+    "Skipped": 1
+  },
+  "skippedTests": [
+    "TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure()"
+  ],
+  "skipLimitation": "Requires an isolated 32MB HFS+ image; not counted as pass"
+}

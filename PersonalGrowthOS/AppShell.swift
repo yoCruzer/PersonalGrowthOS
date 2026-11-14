@@ -1204,6 +1204,12 @@ struct MediaStorageView: View {
                     }
                     .accessibilityIdentifier("settings-pending-shares")
                 }
+                Section("Privacy and Support") {
+                    NavigationLink("Privacy Policy") { ReleaseInformationView(kind: "privacy") }
+                        .accessibilityIdentifier("settings-privacy-policy")
+                    NavigationLink("Support") { ReleaseInformationView(kind: "support") }
+                        .accessibilityIdentifier("settings-support")
+                }
                 Section("About") {
                     Button {
                         UIPasteboard.general.string = BuildProvenance().copyText(version: AppVersionInformation())
@@ -1862,5 +1868,33 @@ private struct CaptureInboxView: View {
             catch { recordFailure(error) }
             await refresh()
         }
+    }
+}
+
+/// Bundled policies remain readable offline; public URLs are added after hosting is verified.
+private struct ReleaseInformationView: View {
+    let kind: String
+    private var language: String { Locale.preferredLanguages.first?.hasPrefix("zh") == true ? "zh" : "en" }
+    private var content: String {
+        guard let url = Bundle.main.url(forResource: "\(kind)-\(language)", withExtension: "txt"),
+              let text = try? String(contentsOf: url, encoding: .utf8) else { return "" }
+        return text
+    }
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text(verbatim: content).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                Link(destination: URL(string: "https://yocruzer.github.io/PersonalGrowthOS/\(kind)-\(language).html")!) {
+                    Text(kind == "privacy" ? "View Privacy Policy Online" : "Support Website")
+                }
+                .accessibilityIdentifier("release-online")
+                Link("Email Support", destination: URL(string: "mailto:justincookiec@outlook.com")!)
+                    .accessibilityIdentifier("release-email")
+                Link("GitHub Issues (public)", destination: URL(string: "https://github.com/yoCruzer/PersonalGrowthOS/issues")!)
+            }.padding()
+        }
+        .navigationTitle(kind == "privacy" ? Text("Privacy Policy") : Text("Support"))
+        .navigationBarTitleDisplayMode(.inline)
+        .accessibilityIdentifier("release-information")
     }
 }

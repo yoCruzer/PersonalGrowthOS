@@ -1,0 +1,36 @@
+{
+  "checkedDate": "2026-11-14",
+  "sandboxAttempt": "DNS unavailable in restricted sandbox; repeated with authorized network access",
+  "files": {
+    "index.html": {
+      "http": 200,
+      "sha256": "593d086401f6ea5e69bd564722d1d78b114bfd680d39d55a2c8b3b47b2311b2b",
+      "sourceExact": true
+    },
+    "privacy-en.html": {
+      "http": 200,
+      "sha256": "54f46b2ebd321834a34a544d5f9302a5150a9789c2a8642289047a1c8cfaa6ce",
+      "sourceExact": true
+    },
+    "privacy-zh.html": {
+      "http": 200,
+      "sha256": "5832498c017eca445e59f0132ffaf86e07cd6410803cb9c33a3fb5503c11fd4b",
+      "sourceExact": true
+    },
+    "style.css": {
+      "http": 200,
+      "sha256": "6c2408bd2fe9c7e62b1a08a10112bba9c82562b311006826506117e78336413e",
+      "sourceExact": true
+    },
+    "support-en.html": {
+      "http": 200,
+      "sha256": "d002e382c7d5b2eef3681047b7fbd75aae18778bc4fccbaf3838d510a4aff5b2",
+      "sourceExact": true
+    },
+    "support-zh.html": {
+      "http": 200,
+      "sha256": "9e498c379b8ea2e3f757dee1f406c7cd6e283931b91444b6534a104c3ca1f9fe",
+      "sourceExact": true
+    }
+  }
+}

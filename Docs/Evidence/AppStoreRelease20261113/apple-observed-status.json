@@ -1,0 +1,255 @@
+{
+  "observedDate": "2026-11-14",
+  "appId": "6796425674",
+  "appName": "随心log",
+  "versionStatus": "1.0 正在等待审核",
+  "manualRelease": "2026-11-14 fresh session radio1 observed",
+  "latestTestFlight": {
+    "version": "1.0",
+    "build": "21",
+    "binaryStatus": "已验证",
+    "uploadLocal": "2026-11-13 21:20 Asia/Shanghai",
+    "internalBadge": false,
+    "appStoreSelectionEnabled": true,
+    "observedDate": "2026-11-13"
+  },
+  "buildSelector": {
+    "disabled": [
+      "20",
+      "19",
+      "18",
+      "17",
+      "16"
+    ],
+    "enabled": [
+      "21",
+      "12",
+      "9",
+      "8",
+      "7"
+    ],
+    "selected": "21",
+    "saved": true,
+    "freshReadbackPending": false,
+    "freshReadback": "2026-11-14 reauthenticated session: table21/1.0 and Save disabled"
+  },
+  "freeAgreement": "有效 2026-10-29 to 2027-07-27",
+  "paidAgreement": "unsigned; unnecessary for free/no-IAP launch",
+  "appInfo": {
+    "name": "随心log",
+    "subtitle": "记录生活、习惯与每一步成长",
+    "primaryCategory": "生活",
+    "secondaryCategory": "效率",
+    "saved": true,
+    "english": {
+      "name": "随心log",
+      "subtitle": "Journal, habits, small steps",
+      "savedAndObserved": "已保存"
+    }
+  },
+  "age": {
+    "healthWellness": true,
+    "medicalTreatment": "none",
+    "appleComputedRating": "9+",
+    "kids": false,
+    "saved": true
+  },
+  "privacy": {
+    "url": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
+    "answer": "Data Not Collected",
+    "publishedAnswer": true,
+    "appPubliclyReleased": false,
+    "localizedURLs": {
+      "zh-Hans": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
+      "en-US": "https://yocruzer.github.io/PersonalGrowthOS/privacy-en.html"
+    },
+    "englishURLSavedReadback": true
+  },
+  "screenshots": {
+    "locale": "zh-Hans",
+    "count": 5,
+    "filenames": [
+      "01-today.png",
+      "02-timeline.png",
+      "03-capture.png",
+      "04-growth.png",
+      "05-library.png"
+    ],
+    "pageSaveBlockedByReviewPhone": false,
+    "englishUploadedCount": 5
+  },
+  "versionEditor": {
+    "supportURL": "https://yocruzer.github.io/PersonalGrowthOS/support-zh.html",
+    "reviewSignInRequired": false,
+    "reviewContactFilled": true,
+    "reviewPhoneMissing": false,
+    "saveResult": "Private review contact saved; copyright saved; English final 14 description paragraphs, keywords, support URL, five screenshots and Save disabled read back Nov13.",
+    "copyright": "2026 随心log",
+    "englishMetadata": "refilled after stable locale load; remaining counts correct; saved and Save disabled; five screenshots persisted after navigating away/back",
+    "englishFinalReadback": {
+      "missingDescriptionParagraphs": [],
+      "expectedParagraphCount": 14,
+      "keywordsExact": true,
+      "supportURLExact": true,
+      "screenshotsFive": true,
+      "saveDisabled": true,
+      "manualRelease": true
+    }
+  },
+  "pricing": {
+    "base": "US USD",
+    "selectedPrice": "$0.00",
+    "wizardConfirmed": true,
+    "matrixReadbackPending": false,
+    "currentSchedulePopoverReadback": "美国 (USD) $0.00",
+    "pricingMatrixCalculatorUsedAsProof": false,
+    "currentScheduleCountries": 175,
+    "freshReadbackDate": "2026-11-14"
+  },
+  "targetTerritoriesOwnerApproved": [
+    "HK",
+    "MO",
+    "TW",
+    "US"
+  ],
+  "territoriesSaved": true,
+  "dsa": {
+    "selection": "not a trader or no EU distribution plan",
+    "basis": "owner explicitly confirms no EU distribution plan",
+    "saved": true,
+    "businessComplianceStatus": "有效",
+    "allRegulatoryRequirementsCompleteBanner": "observed on Business page only"
+  },
+  "icp": "blank; applicability/entry pending",
+  "newUpload": true,
+  "addForReview": true,
+  "submitForReview": true,
+  "observationMethod": "Computer Use Safari AX; private account address and tax identifiers deliberately not persisted",
+  "macAndVisionCompatibility": {
+    "macAvailable": false,
+    "visionAvailable": false,
+    "savedAndObserved": "已保存",
+    "scope": "verified iPhone launch",
+    "freshReadbackDate": "2026-11-14"
+  },
+  "ownerFacts20261113Evening": {
+    "reviewPhone": "owner directly filled Apple private field; verified present, intentionally omitted",
+    "dsaNoEUDistributionPlanConfirmed": true,
+    "copyrightDisplay": "2026 随心log",
+    "contentDistributionRightsConfirmed": true,
+    "noThirdPartyContentServiceConfirmed": true,
+    "icpFiling": "none",
+    "macUnlockedAndSafariAccessible": true
+  },
+  "newBuild": {
+    "number": 21,
+    "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+    "status": "Archive and post-action Success; App Store selection enabled and saved for 1.0",
+    "startedLocal": "2026-11-13 21:08 Asia/Shanghai",
+    "archiveUploaded": true,
+    "actualAppStoreBuild": "21"
+  },
+  "mainlandDeferredByExplicitOwnerDecision": true,
+  "alternateBrowser": {
+    "type": "Codex in-app browser",
+    "loginPageObserved": true,
+    "ownerLoginPending": false,
+    "reason": "Safari recovered; login request no longer mandatory, owner informed",
+    "interactionStatus": "DOM/AX read works but click/keyboard focus failed; not treated as a working authenticated fallback"
+  },
+  "availabilityReadback": {
+    "heading": "供应情况（4 个国家或地区）",
+    "rows": {
+      "澳门": "App 发布时供应",
+      "美国": "App 发布时供应",
+      "台湾": "App 发布时供应",
+      "香港": "App 发布时供应"
+    },
+    "allOtherCountries": "未供应",
+    "preorder": "not enabled",
+    "freshReadbackDate": "2026-11-14"
+  },
+  "nativeUIBlock": "none: Mac accessible; expired Safari session reauthenticated by Owner and target version loaded",
+  "previousTestFlight": {
+    "version": "1.0",
+    "build": "20",
+    "binaryStatus": "已验证",
+    "uploadLocal": "2026-11-09 22:34 Asia/Shanghai",
+    "internalBadge": true,
+    "appStoreSelectionEnabled": false
+  },
+  "internalTestGroupObservation20261114": {
+    "existingGroup": "测试内部群组",
+    "existingTesters": 3,
+    "installedBuild21Devices": 2,
+    "installationDate": "2026-11-14",
+    "crashesDisplayed": "– (not evidence of no possible crashes)",
+    "noTestersAdded": true,
+    "focusedOwnerSmoke": "OWNER_REPORTED_PASS: 测试完没问题",
+    "privateTesterIdentities": "deliberately omitted"
+  },
+  "ownerBuild21Smoke": {
+    "reportedDate": "2026-11-14",
+    "reportedLocalTime": "09:36 Asia/Shanghai",
+    "version": "1.0",
+    "build": "21",
+    "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+    "classification": "OWNER_REPORTED_PASS",
+    "ownerExactReply": "测试完没问题",
+    "requestedChecks": [
+      "existing record/original photo, save-edit-relaunch, privacy/support",
+      "offline save and relaunch",
+      "restore network and sync if already enabled, at most one manual sync",
+      "share nonprivate photo or webpage and verify single complete record"
+    ],
+    "scope": "Owner reports requested one-round smoke had no problems; not independently instrumented, no device logs/OS version supplied, no claim every sync case passed",
+    "destructiveTestRequested": false,
+    "schemaRedeploymentRequested": false
+  },
+  "addForReviewAttempt": {
+    "localTime": "2026-11-14 09:36 Asia/Shanghai",
+    "clicked": true,
+    "lastObserved": "正在处理",
+    "completed": true
+  },
+  "submitForReviewAttempt": {
+    "clicked": true,
+    "localTime": "2026-11-14 09:37 Asia/Shanghai",
+    "draftItems": [
+      "iOS App 1.0 (21)"
+    ],
+    "lastObserved": "已提交 1 个项目; 草稿提交(0); 正式版本正在等待审核",
+    "completed": true
+  },
+  "submission": {
+    "appId": "6796425674",
+    "appName": "随心log",
+    "version": "1.0",
+    "build": "21",
+    "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+    "submittedLocal": "2026-11-14 09:37 Asia/Shanghai",
+    "submissionId": "ba1b52ad-7773-426f-997f-6bac1671795e",
+    "submissionURL": "https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions/details/ba1b52ad-7773-426f-997f-6bac1671795e",
+    "addForReviewCompleted": true,
+    "submitForReviewCompleted": true,
+    "confirmation": "已提交 1 个项目",
+    "draftSubmissionCount": 0,
+    "submittedItemsCount": 1,
+    "itemReadback": "iOS App 1.0 / 1.0 (21)",
+    "versionStatus": "正在等待审核",
+    "submissionDetailStatus": "等待审核",
+    "manualReleasePreviouslyReadback": true,
+    "publiclyReleased": false,
+    "releaseConfirmationStillRequired": true,
+    "observedVia": "Computer Use / Safari AX plus review detail screenshot",
+    "privateReviewPhonePersisted": false,
+    "ownerSmoke": "OWNER_REPORTED_PASS: 测试完没问题",
+    "monitoring": "Last observed Nov14 09:38; no resident background monitoring or scheduled automation created. Continue via this submission URL; do not submit duplicate.",
+    "nextStates": {
+      "waitingOrInReview": "Record actual state; await Apple without claiming approval.",
+      "technicalRejection": "Read exact feedback; fix narrowly, validate scope, preserve tag and create new unique tag only if code needs new build; resubmit under existing authority.",
+      "legalOrProductChange": "Consolidate exact new owner facts/approval required by actual feedback.",
+      "pendingDeveloperRelease": "Verify1.0(21), free price, HK/MO/TW/US and store page, then ask Owner once for explicit public release confirmation."
+    }
+  }
+}

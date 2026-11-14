@@ -1,0 +1,102 @@
+[
+  {
+    "file": "Release/AppStore/Screenshots/en-US/01-today.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "669d48345d023fdb96a7d57eb724b5c56b6b1f11ce19beb2e2b5577cc962d977",
+    "attachment": "AppStore-en-US-01_0_486780FB-031D-4ADC-B40E-89BA6D6130D1.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/en-US/02-timeline.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "851f891be429f3aacd222d6d6a058679003a5c82775f20f4b8a4eb8e29038fee",
+    "attachment": "AppStore-en-US-02_0_C6FC9FE3-EF7D-456A-9DD5-C23FD7F17821.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/en-US/03-capture.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "2c2ab5a01dda6d58bc7358fed6820229af98e9db61528d926e69349a365dada0",
+    "attachment": "AppStore-en-US-03_0_4DA25CD3-72C9-4457-B45D-3455A6D2E81D.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/en-US/04-growth.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "6621e1ca72cc97ea2306d30efd1941b88560ce9f8e28019178f6f65d24f34a89",
+    "attachment": "AppStore-en-US-04_0_86C92F2B-5ECC-42C2-B3BD-9A97DD76FE61.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/en-US/05-library.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "24a8a182cc91d728926f49243f8810d51031733fe016defc24d81ee52c9dcf77",
+    "attachment": "AppStore-en-US-05_0_49B25398-C166-4832-8548-746E4DC3DDEC.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/zh-Hans/01-today.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "42dd83cb93fbb357eaca9d80eac77dfa97b807deb2bf2f1ef9ac5c39f2d448b7",
+    "attachment": "AppStore-zh-Hans-01_0_6B3CFCE1-87EC-4D56-87A3-CD0B831F3905.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/zh-Hans/02-timeline.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "f5fd11a88d1b7d6be2313da31b29e40879594a008f2fcf9628d0a2e2639652b6",
+    "attachment": "AppStore-zh-Hans-02_0_B35C00E6-EC7C-4472-BE51-B87CA6CDE4A3.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/zh-Hans/03-capture.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "0222291c4294d2d0d0dda59ea87b24a0a851491c332609ae97403687156645be",
+    "attachment": "AppStore-zh-Hans-03_0_5F39883B-634C-4589-864C-F10A2761489D.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/zh-Hans/04-growth.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "3236df25dbb8bf6bbb75d2f3a064f2973c90fa86b3b11c6e8652f93743fa09e7",
+    "attachment": "AppStore-zh-Hans-04_0_C22D0E51-43D9-4405-8447-C77C747B2448.png"
+  },
+  {
+    "file": "Release/AppStore/Screenshots/zh-Hans/05-library.png",
+    "dimensions": [
+      1206,
+      2622
+    ],
+    "pngColorType": 2,
+    "sha256": "7781a62c458a887e758b0d6c8cf192ff2d2ecbcd5a1f233fad482c82424994fc",
+    "attachment": "AppStore-zh-Hans-05_0_6DA2EA66-5578-42A7-89EE-57D32FF3EB31.png"
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "source": {
+    "Commit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+    "Dirty": false,
+    "Source": "localGit",
+    "Tag": ""
+  },
+  "bundles": {
+    "PersonalGrowthOS": {
+      "bundleID": "com.yocruzer.PersonalGrowthOS",
+      "version": "1.0",
+      "sourceBuild": "12",
+      "manifestExact": true
+    },
+    "ShareExtension": {
+      "bundleID": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "version": "1.0",
+      "sourceBuild": "12",
+      "manifestExact": true
+    },
+    "ImportantDaysWidget": {
+      "bundleID": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "version": "1.0",
+      "sourceBuild": "12",
+      "manifestExact": true
+    }
+  },
+  "commandLog": "/private/tmp/PGOS-AppStore-CleanRelease-321219f.log",
+  "exitCode": 0,
+  "unsigned": true,
+  "policyResourcesExact": true
+}

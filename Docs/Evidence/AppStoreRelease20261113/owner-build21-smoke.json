@@ -1,0 +1,18 @@
+{
+  "reportedDate": "2026-11-14",
+  "reportedLocalTime": "09:36 Asia/Shanghai",
+  "version": "1.0",
+  "build": "21",
+  "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "classification": "OWNER_REPORTED_PASS",
+  "ownerExactReply": "测试完没问题",
+  "requestedChecks": [
+    "existing record/original photo, save-edit-relaunch, privacy/support",
+    "offline save and relaunch",
+    "restore network and sync if already enabled, at most one manual sync",
+    "share nonprivate photo or webpage and verify single complete record"
+  ],
+  "scope": "Owner reports requested one-round smoke had no problems; not independently instrumented, no device logs/OS version supplied, no claim every sync case passed",
+  "destructiveTestRequested": false,
+  "schemaRedeploymentRequested": false
+}
