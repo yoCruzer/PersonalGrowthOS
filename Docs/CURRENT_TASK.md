@@ -1,8 +1,6 @@
-## 2026-11-13 晚间免费首发：Build21云构建成功，四区零价已保存
+## 2026-11-14 免费首发：1.0 (21) 已验证并关联，送审前收尾
 
-非skip发行候选仍321219f / tag testflight-appstore-free-1.0-20261113（对象fed76bc6）；新required CI整体SUCCESS、Unit714PASS/1SKIP、Smoke8PASS、本机联系入口UI与干净Release资源exact不变。原生Xcode将原工作流Archive发行准备改为App Store Connect并回读，原testflight-触发/Restrict Editing/环境与组保持；实际Build21来源321219f，21:08启动，Archive及TestFlight后处理均SUCCESS，35 issues已核实均Warnings。Archive/app-store IPA下载核验中，未把工作流成功等同TestFlight处理或正式商店可选。
-
-Owner已填审核电话（Apple私密字段回读，不入仓库），确认DSA无EU计划与内容分发权利/无第三方服务，指定版权显示2026 随心log，以上后台已保存/核对。Owner尚无备案，明确改为香港/澳门/台湾/美国先首发、大陆待准入后开；Apple供应管理页四区均App发布时供应、其他171未供应，当前价格时间表美国USD$0.00已回读。Mac/Vision兼容分发均关闭并保存，维持已验证iPhone首发。英文副标题已保存；双语各五张截图在后台，英文元数据首轮被异步语言加载覆盖后已稳定重填保存，最终版本回读继续；双语隐私URL已保存回读。Safari应用页先停滞后经应用列表恢复；英文政策URL保存后Mac再次锁屏，已请求手动解锁。备用内置浏览器未登录且交互焦点错误，不冒称可用替代通道。下一步完成签名包核验、1.0(21)处理/可选、版本关联及资料最终检查后推进真正Submit for Review；尚未送审/公开发布，最终公开仍需Owner确认。唯一台账：[APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)。
+候选321219f / 唯一tag testflight-appstore-free-1.0-20261113不变；本机定向UI/干净Release与required CI43347067614已通过（Unit714PASS/1SKIP、Smoke8PASS）。Cloud Build21 Archive/后处理成功，实际TestFlight 1.0(21)已验证、非Internal、正式版本可选；11月14日新登录后表格回读21/1.0、Save disabled及手动发布选中。零价、港澳台美4区、双语材料/隐私、DSA及Owner事实已保存；大陆待准入后开。签名包下载网络停滞，完整二进制检查NOT_RUN，不冒称通过；一次必要真机覆盖结果待取得。Mac当前可用，Owner已重新登录，未改锁屏设置。接续既有内部群组/必要真机、最终字段检查与实际Submit for Review；尚未送审/公开发布，公开仍需审核后Owner明确确认。[唯一台账](APP_STORE_RELEASE.md)。以下保留历史，不覆盖本段。
 
 ---
 

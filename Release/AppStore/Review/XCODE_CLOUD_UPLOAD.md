@@ -7,8 +7,8 @@
 - Archive-iOS/PersonalGrowthOS的发行准备原为TestFlight Internal Testing Only，已改为当前UI名称**App Store Connect**（eligible for all testers and customers），Save后重新打开，Last Modified 21:05且选项仍选中。
 - 原TestFlight Internal Testing post-action与空Groups表保持，没有添加测试人员。
 - 唯一annotated tag testflight-appstore-free-1.0-20261113已普通push并ls-remote回读；对象fed76bc6a95d43b1b187574a9ebc845dd832b663 → 源码321219f，无skip标记。不要再推新tag试探。
-- 原生Xcode已出现该tag下**Build21**；详情Started21:08，Commit321219f，Xcode27.2/27B52、macOS27.2/26B123。Archive Running，TestFlight post-action等待。尚未观察成功Archive/上传/处理/商店可选。
-- Safari后台应用页加载间歇停滞；商务页已完成DSA。备用内置浏览器已打开官方登录页，Owner登录待完成。不导出/搬运Safari凭据。
+- 原生Xcode已出现该tag下**Build21**；详情Started21:08，Commit321219f，Xcode27.2/27B52、macOS27.2/26B123。Archive与TestFlight后处理SUCCESS，35条Warnings；实际1.0(21)已验证、无Internal徽标且商店可选，已保存关联并于11月14日新会话回读。
+- Safari后台应用页加载间歇停滞；商务页已完成DSA。备用内置浏览器已打开官方登录页，Owner已重新登录Safari，内置浏览器不作为必需通道。不导出/搬运Safari凭据。
 
 ## 剩余执行
 
@@ -18,4 +18,4 @@
 4. 继续免费价0、Owner新确认香港/澳门/台湾/美国供应范围、中英文资料回读；大陆待准入后开放。必要真机清单只绑定实际新包，沿用旧数据与CloudKit证据，不卸载/清库。
 5. 材料/构建/必要人工事项关闭后按授权真正Submit for Review，手动发布模式保持，最终公开仍需Owner确认。
 
-依据：[Archive发行准备选项](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions)、[正式发行工作流](https://developer.apple.com/documentation/xcode/creating-a-workflow-that-builds-your-app-for-distribution)、[内部标记含义](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)。2026-11-13查阅。这里只记录成品步骤，尚未声称已保存工作流或触发新构建。
+依据：[Archive发行准备选项](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions)、[正式发行工作流](https://developer.apple.com/documentation/xcode/creating-a-workflow-that-builds-your-app-for-distribution)、[内部标记含义](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)。2026-11-13查阅。工作流保存、唯一tag触发、Build21成功及正式关联均已观察；签名包完整下载/独立字节核验NOT_RUN，送审尚未执行。

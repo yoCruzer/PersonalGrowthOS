@@ -58,3 +58,7 @@ Owner已填审核电话，私密字段回读只记录存在而不公开值；DSA
 原生Xcode workflow实际保存/回读与唯一tag/build来源见xcode-cloud-workflow.json和xcode-cloud-tag.json。Build21 Archive/后处理SUCCESS，35条均Warnings（未改变原同步代码）；17.1MB Archive与10.6MB app-store包下载启动，但完整文件尚未取得，未声称发行签名/资源二进制验证通过。Mac再次锁屏后已请求解锁，未改锁屏或密码设置、未清数据。备用内置浏览器可读未登录页但点击/焦点失败，未视为有效登录或可用替代。
 
 NOT_OBSERVED仍包括：实际新TestFlight编号/处理状态/商店可选、最终签名包内容、正式版本构建关联、必要真机覆盖、Add for Review和真正Submit for Review。当前未送审/公开发布。
+
+## 2026-11-14 最新Apple状态（覆盖上面的未观察项）
+
+实际TestFlight1.0(21)已验证，无Internal徽标，上传11月13日21:20，正式版本21可选；11月14日Owner重新登录后表格21/1.0、Save disabled及手动发布1回读，关联已持久化。英文最终14段/关键词/support-en/5截图已逐项回读；双语截图/材料已保存。Apple元数据和下载限制见xcode-cloud-tag.json；尚未取得完整签名包，字节签名/生产entitlements/资源独立核验NOT_RUN。TextEdit导出工具长时间超时，无成功导出或新构建。一次新包真机覆盖结果待Owner执行，Add for Review/Submit for Review均尚未发生。
