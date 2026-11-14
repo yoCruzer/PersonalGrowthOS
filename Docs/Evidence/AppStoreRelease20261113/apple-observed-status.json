@@ -1,8 +1,8 @@
 {
-  "observedDate": "2026-11-13",
+  "observedDate": "2026-11-14",
   "appId": "6796425674",
   "appName": "随心log",
-  "versionStatus": "1.0 准备提交",
+  "versionStatus": "1.0 正在等待审核",
   "manualRelease": "2026-11-14 fresh session radio1 observed",
   "latestTestFlight": {
     "version": "1.0",
@@ -122,8 +122,8 @@
   },
   "icp": "blank; applicability/entry pending",
   "newUpload": true,
-  "addForReview": false,
-  "submitForReview": false,
+  "addForReview": true,
+  "submitForReview": true,
   "observationMethod": "Computer Use Safari AX; private account address and tax identifiers deliberately not persisted",
   "macAndVisionCompatibility": {
     "macAvailable": false,
@@ -185,7 +185,71 @@
     "installationDate": "2026-11-14",
     "crashesDisplayed": "– (not evidence of no possible crashes)",
     "noTestersAdded": true,
-    "focusedOwnerSmoke": "requested; pending",
+    "focusedOwnerSmoke": "OWNER_REPORTED_PASS: 测试完没问题",
     "privateTesterIdentities": "deliberately omitted"
+  },
+  "ownerBuild21Smoke": {
+    "reportedDate": "2026-11-14",
+    "reportedLocalTime": "09:36 Asia/Shanghai",
+    "version": "1.0",
+    "build": "21",
+    "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+    "classification": "OWNER_REPORTED_PASS",
+    "ownerExactReply": "测试完没问题",
+    "requestedChecks": [
+      "existing record/original photo, save-edit-relaunch, privacy/support",
+      "offline save and relaunch",
+      "restore network and sync if already enabled, at most one manual sync",
+      "share nonprivate photo or webpage and verify single complete record"
+    ],
+    "scope": "Owner reports requested one-round smoke had no problems; not independently instrumented, no device logs/OS version supplied, no claim every sync case passed",
+    "destructiveTestRequested": false,
+    "schemaRedeploymentRequested": false
+  },
+  "addForReviewAttempt": {
+    "localTime": "2026-11-14 09:36 Asia/Shanghai",
+    "clicked": true,
+    "lastObserved": "正在处理",
+    "completed": true
+  },
+  "submitForReviewAttempt": {
+    "clicked": true,
+    "localTime": "2026-11-14 09:37 Asia/Shanghai",
+    "draftItems": [
+      "iOS App 1.0 (21)"
+    ],
+    "lastObserved": "已提交 1 个项目; 草稿提交(0); 正式版本正在等待审核",
+    "completed": true
+  },
+  "submission": {
+    "appId": "6796425674",
+    "appName": "随心log",
+    "version": "1.0",
+    "build": "21",
+    "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+    "submittedLocal": "2026-11-14 09:37 Asia/Shanghai",
+    "submissionId": "ba1b52ad-7773-426f-997f-6bac1671795e",
+    "submissionURL": "https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions/details/ba1b52ad-7773-426f-997f-6bac1671795e",
+    "addForReviewCompleted": true,
+    "submitForReviewCompleted": true,
+    "confirmation": "已提交 1 个项目",
+    "draftSubmissionCount": 0,
+    "submittedItemsCount": 1,
+    "itemReadback": "iOS App 1.0 / 1.0 (21)",
+    "versionStatus": "正在等待审核",
+    "submissionDetailStatus": "等待审核",
+    "manualReleasePreviouslyReadback": true,
+    "publiclyReleased": false,
+    "releaseConfirmationStillRequired": true,
+    "observedVia": "Computer Use / Safari AX plus review detail screenshot",
+    "privateReviewPhonePersisted": false,
+    "ownerSmoke": "OWNER_REPORTED_PASS: 测试完没问题",
+    "monitoring": "Last observed Nov14 09:38; no resident background monitoring or scheduled automation created. Continue via this submission URL; do not submit duplicate.",
+    "nextStates": {
+      "waitingOrInReview": "Record actual state; await Apple without claiming approval.",
+      "technicalRejection": "Read exact feedback; fix narrowly, validate scope, preserve tag and create new unique tag only if code needs new build; resubmit under existing authority.",
+      "legalOrProductChange": "Consolidate exact new owner facts/approval required by actual feedback.",
+      "pendingDeveloperRelease": "Verify1.0(21), free price, HK/MO/TW/US and store page, then ask Owner once for explicit public release confirmation."
+    }
   }
 }

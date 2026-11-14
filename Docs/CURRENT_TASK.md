@@ -1,6 +1,6 @@
-## 2026-11-14 免费首发：1.0 (21) 已验证并关联，送审前收尾
+## 2026-11-14 免费首发：1.0 (21) 已真正提交审核，等待Apple
 
-候选321219f / 唯一tag testflight-appstore-free-1.0-20261113不变；本机定向UI/干净Release与required CI43347067614已通过（Unit714PASS/1SKIP、Smoke8PASS）。Cloud Build21 Archive/后处理成功，实际TestFlight 1.0(21)已验证、非Internal、正式版本可选；11月14日新登录后表格回读21/1.0、Save disabled及手动发布选中。零价、港澳台美4区、双语材料/隐私、DSA及Owner事实已保存；大陆待准入后开。签名包下载网络停滞，完整二进制检查NOT_RUN，不冒称通过；一次必要真机覆盖结果待取得。Mac当前可用，Owner已重新登录，未改锁屏设置。接续既有内部群组/必要真机、最终字段检查与实际Submit for Review；尚未送审/公开发布，公开仍需审核后Owner明确确认。[唯一台账](APP_STORE_RELEASE.md)。以下保留历史，不覆盖本段。
+候选321219f / 唯一tag testflight-appstore-free-1.0-20261113保持；本机定向UI/干净Release与required CI43347067614通过（Unit714PASS/1SKIP、Smoke8PASS）。Cloud Build21成功，实际1.0(21)已验证、正式版本关联持久化。Owner回复这轮真机“测试完没问题”，记录OWNER_REPORTED_PASS。09:36 Add for Review成功，09:37真正Submit for Review成功；Apple确认已提交1项目、草稿0、版本正在等待审核，详情提交ID ba1b52ad-7773-426f-997f-6bac1671795e。零价、港澳台美四区、手动发布与双语材料保持；大陆待准入后开。签名包网络下载限制/独立字节检查NOT_RUN保留，不冒称全量同步验证。当前无本人待填或待测事项，等待Apple审核；尚未公开发布，批准后仍需Owner明确公开确认。最近实际观察11月14日09:38，无常驻后台监控；优先续接精确提交URL，不重提相同版本或重推tag。[唯一台账](APP_STORE_RELEASE.md)。以下保留历史，不覆盖本段。
 
 ---
 

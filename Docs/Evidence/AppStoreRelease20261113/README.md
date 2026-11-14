@@ -62,3 +62,7 @@ NOT_OBSERVED仍包括：实际新TestFlight编号/处理状态/商店可选、�
 ## 2026-11-14 最新Apple状态（覆盖上面的未观察项）
 
 实际TestFlight1.0(21)已验证，无Internal徽标，上传11月13日21:20，正式版本21可选；11月14日Owner重新登录后表格21/1.0、Save disabled及手动发布1回读，关联已持久化。英文最终14段/关键词/support-en/5截图已逐项回读；双语截图/材料已保存。Apple元数据和下载限制见xcode-cloud-tag.json；尚未取得完整签名包，字节签名/生产entitlements/资源独立核验NOT_RUN。TextEdit导出工具长时间超时，无成功导出或新构建。一次新包真机覆盖结果待Owner执行，Add for Review/Submit for Review均尚未发生。
+
+## 2026-11-14 09:37 实际送审成功
+
+Owner回复Build21本轮真机“测试完没问题”，记OWNER_REPORTED_PASS（owner-build21-smoke.json）。Add for Review先产生可供审核/草稿1.0(21)，真正Submit for Review后确认已提交1项目、草稿0、版本正在等待审核；详情再次回读1.0(21)、等待审核、提交日期11月14日09:37与ID ba1b52ad-7773-426f-997f-6bac1671795e。见app-review-submission.json。免费四区/手动发布保持，尚未公开上线；当前无本人待填/待测事项。09:38最后观察，非持续后台监控；按精确提交URL续接，审核通过后仍需Owner最终公开确认。签名包独立检查NOT_RUN限制继续保留。

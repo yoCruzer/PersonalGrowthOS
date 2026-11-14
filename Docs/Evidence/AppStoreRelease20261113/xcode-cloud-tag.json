@@ -80,7 +80,8 @@
     "installationDate": "2026-11-14",
     "crashesDisplayed": "– (not evidence of no possible crashes)",
     "noTestersAdded": true,
-    "focusedOwnerSmoke": "requested; pending",
+    "focusedOwnerSmoke": "OWNER_REPORTED_PASS: 测试完没问题",
     "privateTesterIdentities": "deliberately omitted"
-  }
+  },
+  "appReview": "Submitted 2026-11-14 09:37 Asia/Shanghai; waiting for review; ba1b52ad-7773-426f-997f-6bac1671795e"
 }

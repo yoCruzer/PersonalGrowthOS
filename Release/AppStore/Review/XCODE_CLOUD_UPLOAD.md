@@ -10,12 +10,12 @@
 - 原生Xcode已出现该tag下**Build21**；详情Started21:08，Commit321219f，Xcode27.2/27B52、macOS27.2/26B123。Archive与TestFlight后处理SUCCESS，35条Warnings；实际1.0(21)已验证、无Internal徽标且商店可选，已保存关联并于11月14日新会话回读。
 - Safari后台应用页加载间歇停滞；商务页已完成DSA。备用内置浏览器已打开官方登录页，Owner已重新登录Safari，内置浏览器不作为必需通道。不导出/搬运Safari凭据。
 
-## 剩余执行
+## 当前已完成与续接
 
-1. 从上述Xcode Reports入口观察Build21 Archive/后处理真实结果，失败时先分析日志，不重推tag。
-2. 可取得发行Archive时核对三个Bundle版本、BuildProvenance精确321219f/tag/Dirty=false、生产entitlements、签名、三个Privacy Manifest及四份政策；源码12不当作实际云端编号。
-3. TestFlight读取1.0(21)处理与内部专用标记，正式1.0构建选择器确认可选后保存关联。不把Archive成功、上传成功、Add for Review和Submit for Review混为一谈。
-4. 继续免费价0、Owner新确认香港/澳门/台湾/美国供应范围、中英文资料回读；大陆待准入后开放。必要真机清单只绑定实际新包，沿用旧数据与CloudKit证据，不卸载/清库。
-5. 材料/构建/必要人工事项关闭后按授权真正Submit for Review，手动发布模式保持，最终公开仍需Owner确认。
+- 实际1.0(21)已验证、商店可选、正式关联新会话回读；同一内部群组两台设备安装21，Owner本轮真机回复“测试完没问题”。
+- 2026-11-14 09:37真正Submit for Review成功，非仅Add for Review；[提交ba1b52ad-7773-426f-997f-6bac1671795e](https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions/details/ba1b52ad-7773-426f-997f-6bac1671795e)为等待审核，1项目1.0(21)、草稿0。
+- 零价、港澳台美四区、双语材料/URL已核实；手动发布保持。当前无本人待填/待测事项。审核通过后Owner明确确认才公开。
+- 完整发行包下载网络停滞，独立签名/包内字节检查NOT_RUN。Apple处理与来源证据不冒充此检查通过，不重推tag试探。
+- 下一步按精确提交入口读审核结果；技术反馈按既有授权修复/重提，新的法律/产品事实再集中询问。没有常驻后台监控，不重复送审相同提交。
 
-依据：[Archive发行准备选项](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions)、[正式发行工作流](https://developer.apple.com/documentation/xcode/creating-a-workflow-that-builds-your-app-for-distribution)、[内部标记含义](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)。2026-11-13查阅。工作流保存、唯一tag触发、Build21成功及正式关联均已观察；签名包完整下载/独立字节核验NOT_RUN，送审尚未执行。
+依据：[Archive发行准备选项](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions)、[正式发行工作流](https://developer.apple.com/documentation/xcode/creating-a-workflow-that-builds-your-app-for-distribution)、[内部标记含义](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)。2026-11-13查阅。工作流保存、唯一tag触发、Build21成功、正式关联及真正送审成功均已观察；签名包完整下载/独立字节核验NOT_RUN，尚未公开发布。
