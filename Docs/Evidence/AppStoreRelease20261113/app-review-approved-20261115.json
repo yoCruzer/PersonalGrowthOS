@@ -1,0 +1,57 @@
+{
+  "observedLocal": "2026-11-15 15:17 Asia/Shanghai",
+  "appId": "6796425674",
+  "appName": "随心log",
+  "version": "1.0",
+  "build": "21",
+  "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "submissionId": "ba1b52ad-7773-426f-997f-6bac1671795e",
+  "submissionURL": "https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions/details/ba1b52ad-7773-426f-997f-6bac1671795e",
+  "submissionState": "已完成审核",
+  "itemStatus": "已批准",
+  "lastUpdatedBy": "Apple",
+  "appleMessageRequiringReplyVisible": false,
+  "versionState": "等待开发者发布",
+  "releaseButtonVisible": "发布此版本",
+  "releaseButtonClicked": false,
+  "manualReleaseRadio": 1,
+  "autoReleaseRadio": 0,
+  "currentPriceScheduleReadback": "美国 (USD) $0.00",
+  "availableTerritories": [
+    "MO",
+    "US",
+    "TW",
+    "HK"
+  ],
+  "otherTerritoriesUnavailable": 171,
+  "mainlandDeferredByOwner": true,
+  "appleSiliconMacAvailable": false,
+  "visionAvailable": false,
+  "storePreview": {
+    "type": "App Store Connect device preview / product page",
+    "locale": "Simplified Chinese",
+    "name": "随心log",
+    "subtitle": "记录生活、习惯与每一步成长",
+    "cta": "获取",
+    "screenshots": [
+      "01-today.png",
+      "02-timeline.png",
+      "03-capture.png",
+      "04-growth.png",
+      "05-library.png"
+    ],
+    "descriptionReadback": true,
+    "copyright": "2026 随心log",
+    "privacyURL": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
+    "previewDisclaimer": "Apple preview is illustrative; some fields temporarily placeholders, not proof of public availability.",
+    "entryURL": "https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/inflight"
+  },
+  "publicStoreURLProbe": {
+    "url": "https://apps.apple.com/app/id6796425674",
+    "result": "web tool inaccessible; not evidence of public download availability"
+  },
+  "publiclyReleasedByAgent": false,
+  "ownerFinalPublicReleaseConfirmation": "PENDING; original instruction explicitly requires one confirmation after approval",
+  "requiredTechnicalActions": [],
+  "nextAction": "Show approved version/free price/four territories/Apple preview; obtain Owner explicit confirmation to publish, then click release and verify store availability. No new code/build needed."
+}
