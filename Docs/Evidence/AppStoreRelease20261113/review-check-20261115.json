@@ -1,0 +1,13 @@
+{
+  "checkedLocal": "2026-11-15 11:03 Asia/Shanghai",
+  "version": "1.0",
+  "build": "21",
+  "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "submissionId": "ba1b52ad-7773-426f-997f-6bac1671795e",
+  "currentAppleStatus": "NOT_OBSERVED",
+  "reason": "Computer Use inventory: Mac locked and automatic unlock failed; manual unlock requested",
+  "lastVerifiedAppleState": "2026-11-14 09:38 Waiting for Review",
+  "actionsTakenOnApple": [],
+  "publiclyReleasedByAgent": false,
+  "nextAction": "Owner unlock, then read exact review submission and feedback. Do not resubmit blindly."
+}
