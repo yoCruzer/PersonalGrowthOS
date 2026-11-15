@@ -91,6 +91,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["sync-enable"].tap()
         XCTAssertTrue(app.alerts["将此工作区连接到 iCloud？"].waitForExistence(timeout: 3))
         app.alerts.buttons["取消"].tap()
+        let discovery = app.buttons["sync-find-workspaces"]
+        for _ in 0..<4 where !discovery.isHittable { app.swipeUp() }
+        XCTAssertTrue(discovery.isHittable)
+        XCTAssertEqual(discovery.label, "查找已有工作区")
         let off = XCTAttachment(screenshot: app.screenshot()); off.name = "icloud-chinese-default-off"; off.lifetime = .keepAlways; add(off)
         app.terminate()
         app.launchArguments = base + ["-PGOSSyncStatusLocalizationTest"]; app.launch(); openSync()

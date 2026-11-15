@@ -1,3 +1,5 @@
+> 2026-11-15 同步加固批次：跨 UUID 冲突闭环、恢复工作区发现/空库连接、历史投影与发送容量修复完成。本机完整 735/735＋新增恢复 E2E 1/1、UI 3/3、基础包 87/87、unsigned Release 通过。待稳定源码提交与独立 CI，尚未发布。详见 [SYNC_RESILIENCE_20261115_ZH.md](SYNC_RESILIENCE_20261115_ZH.md)；下方上一批结论保留为历史。
+
 ## 2026-11-15 Build21风险审计完成：修复候选与门禁已验证
 
 状态：`AUDIT_COMPLETE / CANDIDATE_VERIFIED / NOT_RELEASED`。已审计已发布1.0(21)/321219f，修复旧草稿覆盖远端内容、远端提交未通知业务消费者、媒体复制后完整性元数据错误三类风险。源码候选 `d1f8c76865548ce23a41231863dd83f6fcf24f17` 已普通推送，见 [Draft PR21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21)。后续提交仅证据与文档。

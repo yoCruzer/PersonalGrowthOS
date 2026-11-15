@@ -3,6 +3,9 @@ import Foundation
 /// Bounds the entire invocation, including duplicate input and graph traversal work.
 /// Exhaustion throws; no partially publishable projection is returned.
 public struct CausalProjectionLimits: Sendable {
+    /// Product working-set budget after linear graph traversal and head-only asset verification.
+    /// This is a bounded local index, not permission to prune immutable cloud history.
+    public static let productHistory = CausalProjectionLimits(manifests: 100_000, encodedBytes: 128 * 1_024 * 1_024, graphSteps: 8_000_000)
     public let manifests: Int
     public let encodedBytes: Int
     public let graphSteps: Int
@@ -52,12 +55,14 @@ public enum CausalProjection {
         var byteBudget = limits.encodedBytes
         var work = limits.graphSteps
         func step(_ count: Int = 1) throws {
+            try Task.checkCancellation()
             guard count <= work else { throw SyncValidationError.limitExceeded }
             work -= count
         }
         var bytesByID: [UUID: Data] = [:]
         var mutations: [UUID: MutationManifest] = [:]
         for bytes in manifestBytes {
+            try Task.checkCancellation()
             guard bytes.count <= byteBudget else { throw SyncValidationError.limitExceeded }
             byteBudget -= bytes.count
             let value = try MutationManifest.decode(bytes)
@@ -140,20 +145,42 @@ public enum CausalProjection {
                 if remainingDependencies[dependent] == 0 { ready.insert(dependent); queue.append(dependent) }
             }
         }
+        // Strongly connected components identify actual cycle members in O(V + E).
+        // Repeating a reachability search from every blocked object made a long chain
+        // ending at one missing dependency exhaust the graph budget quadratically.
+        let blocked = Set(uniqueLive.keys).subtracting(ready)
+        var visited = Set<SyncObject>(), finish: [SyncObject] = []
+        for root in objects where blocked.contains(root) && !visited.contains(root) {
+            var stack: [(SyncObject, Bool)] = [(root, false)]
+            while let (next, leaving) = stack.popLast() {
+                try step()
+                if leaving { finish.append(next); continue }
+                guard visited.insert(next).inserted else { continue }
+                stack.append((next, true))
+                for dependency in uniqueLive[next]!.dependencies where blocked.contains(dependency) {
+                    try step(); if !visited.contains(dependency) { stack.append((dependency, false)) }
+                }
+            }
+        }
+        visited = []
+        var cyclic = Set<SyncObject>()
+        for root in finish.reversed() where !visited.contains(root) {
+            var component: [SyncObject] = [], stack = [root]
+            while let next = stack.popLast() {
+                try step(); guard visited.insert(next).inserted else { continue }
+                component.append(next)
+                for dependent in dependents[next, default: []] where blocked.contains(dependent) {
+                    try step(); if !visited.contains(dependent) { stack.append(dependent) }
+                }
+            }
+            if component.count > 1 { cyclic.formUnion(component) }
+        }
         for object in objects {
             guard let value = uniqueLive[object], !ready.contains(object) else { continue }
             for dependency in value.dependencies where !ready.contains(dependency) {
-                reasons[object, default: []].append(.dependencyNotReady(dependency))
+                try step(); reasons[object, default: []].append(.dependencyNotReady(dependency))
             }
-            // Iterative, bounded reachability distinguishes a cycle from a merely missing target.
-            var seen: Set<SyncObject> = []
-            var stack = value.dependencies
-            while let next = stack.popLast() {
-                try step()
-                if next == object { reasons[object, default: []].append(.dependencyCycle); break }
-                guard seen.insert(next).inserted, let linked = uniqueLive[next] else { continue }
-                try step(linked.dependencies.count); stack.append(contentsOf: linked.dependencies)
-            }
+            if cyclic.contains(object) { reasons[object, default: []].append(.dependencyCycle) }
         }
 
         func ancestors(of id: UUID) throws -> Set<UUID> {
@@ -182,9 +209,11 @@ public enum CausalProjection {
                     var common = try ancestors(of: current[0])
                     for head in current.dropFirst() { common.formIntersection(try ancestors(of: head)) }
                     var nearest = common
-                    for candidate in common.sorted(by: { $0.wire < $1.wire }) {
-                        var prior = try ancestors(of: candidate); prior.remove(candidate)
-                        nearest.subtract(prior)
+                    // Common ancestors are closed under ancestry. Every non-nearest
+                    // common ancestor is an immediate parent of another common ancestor.
+                    for candidate in common {
+                        let parents = mutations[candidate]!.parents
+                        try step(parents.count); nearest.subtract(parents)
                     }
                     if nearest.count == 1, let id = nearest.first, let baseline = mutations[id], !baseline.deleted {
                         if !verifiedMutationAssets.contains(id) { issues.append(.unavailableAssets(mutation: id)) }

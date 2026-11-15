@@ -596,6 +596,53 @@ enum SyncDomainCodec {
         return lines.joined(separator: "\n")
     }
 
+    /// Natural identities are additional domain constraints, never replacements for UUIDs.
+    static func identityToken(_ document: SyncDomainDocument) throws -> String? {
+        let value: String
+        switch try unpack(document) {
+        case .tag(let a): value = a.normalizedName
+        case .weeklyReview(let a): value = a.weekIdentifier
+        case .sleepRecord(let a): value = a.wakeDay
+        case .sleepGoal(let a): value = a.effectiveDay
+        case .objectLink(let a): value = a.deduplicationKey
+        case .importantDayEntryLink(let a): value = "\(a.dayID):\(a.entryID)"
+        case .importantDayTodoLink(let a): value = "\(a.dayID):\(a.taskID)"
+        case .investmentParticipant(let a): guard a.isDefault else { return nil }; value = "default"
+        case .netWorthSnapshot(let a): value = a.confirmed ? a.day : "draft"
+        default: return nil
+        }
+        return document.key.kind.rawValue + ":" + value
+    }
+
+    static func identityGroups(_ documents: [SyncDomainDocument]) throws -> [[SyncDomainDocument]] {
+        var groups: [String: [SyncDomainDocument]] = [:]
+        for document in documents {
+            if let token = try identityToken(document) { groups[token, default: []].append(document) }
+        }
+        return groups.keys.sorted().compactMap { token in
+            let group = groups[token]!.sorted { $0.key < $1.key }
+            return group.count > 1 ? group : nil
+        }
+    }
+
+    /// Tag disambiguation keeps its UUID and all incoming relationships. Default participant
+    /// disambiguation keeps both people and their records, changing only the default preference.
+    static func disambiguate(_ document: SyncDomainDocument, tagName: String? = nil) throws -> SyncDomainDocument {
+        let value: SyncDomainValue
+        switch try unpack(document) {
+        case .tag(let a):
+            guard let tagName else { throw SyncDomainCodecError.malformed }
+            let name = tagName.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !name.isEmpty, name.count <= 100 else { throw SyncDomainCodecError.malformed }
+            value = .tag(TagTransfer(id: a.id, displayName: name, normalizedName: TextSearchNormalizer.normalize(name),
+                                     createdAt: a.createdAt, updatedAt: a.updatedAt))
+        case .investmentParticipant(var a): a.isDefault = false; value = .investmentParticipant(a)
+        default: throw SyncDomainCodecError.identity
+        }
+        return SyncDomainDocument(version: document.version, key: document.key, payload: try bytes(value),
+                                  dependencies: document.dependencies, media: document.media)
+    }
+
     static func reconstruct(completeDocuments documents:[SyncDomainDocument]) throws -> SyncDomainProjection {
         guard documents.count<=ZIPImportLimits.production.maximumObjectCount else {throw SyncDomainCodecError.resourceLimit}
         guard Set(documents.map(\.key)).count==documents.count else {throw SyncDomainCodecError.duplicate}
