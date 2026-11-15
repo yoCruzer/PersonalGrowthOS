@@ -2,7 +2,7 @@
 
 输入：已发布 1.0 (21) / `321219f`，承接审计分支 `aa3aa20`。Owner 本轮授权处理 K1/K2/K3，并要求保留原始数据、回归通过后提交。继续使用隔离工作树 `/private/tmp/PersonalGrowthOS-release21-audit` 与现有分支 `codex/release-21-risk-audit`，不增加分支，原开发工作树不动。
 
-**当前：产品修复 `440197d` 已在回归后提交并推送。首次独立基础包 CI 揭示旧源码摘要白名单未更新；已完成精确复核和 32 项离线打包验证，待更新验证清单并跑新 CI。** 未合并、未签名发行、未发布，未访问真实 CloudKit 账户或日常私库。
+**当前：`FIX_COMPLETE / CANDIDATE_VERIFIED / NOT_RELEASED`。产品修复 `440197d` 在本机回归后提交；验证摘要维护 `776cc4c` 已通过两套独立 CI，官方产物和源码身份核验完成。后续仅提交交付证据。** 未合并、未签名发行、未发布，未访问真实 CloudKit 账户或日常私库。
 
 ## 按风险排序的结果
 
@@ -80,4 +80,20 @@
 
 本机 `package_locked_host.py` 未签名打包通过；`verify_packaging.py` **32/32**，包括未审查源码/清单、符号链接、live 参数拒绝、真实缺 profile/identity 的 NOT_READY。无开发签名、无 CloudKit 调用。初次验证因假定旧 SwiftPM 可执行文件目录失败；改用实际 `out/Products/Debug/FormalDevelopmentProbe` 后通过，原失败保留。详见 [精确变更与验证](Evidence/SyncResilience20261115/locked-host-pin-review.json)。
 
-App 生产代码及测试与已通过的本机回归一致；干净 Release 绑定 `440197d` / Dirty=false，见 [干净构建证据](Evidence/SyncResilience20261115/local-clean-release-verification.json)。后续提交仅调整验证摘要/文档，仍需跟踪新 CI，不能借旧绿灯替代。
+App 生产代码及测试与已通过的本机回归一致；干净 Release 绑定 `440197d` / Dirty=false，见 [干净构建证据](Evidence/SyncResilience20261115/local-clean-release-verification.json)。`776cc4c` 仅更新上述两项验证摘要与文档，App/基础包生产源码及测试与 `440197d` 一致。新 CI 已独立完成，详见下节。
+
+
+## 最终独立 CI 与交付边界
+
+验证候选 `776cc4c36ef5c82d66ebf546edadc07f33d581a4`：
+
+- [iOS regression 43702571587](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43702571587) **SUCCESS**：unsigned Release 三 Bundle；Unit **735 PASS / 0 FAIL / 1 SKIP（共 736）**；Smoke **8/8**。Unit/Smoke 的 `runtimeWarnings=[]`，原始测试树的叶子计数与 summary 一致。
+- CI 唯一跳过 `testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure`，本机 fullUnit8 已在隔离 32 MB HFS+ 卷执行通过，未用跳过替代验证。本机共覆盖最终 736 个不同原生用例（完整 735＋后补恢复 1）。可选扩展 UI 按工作流条件未运行。
+- [Sync foundation candidate 43702571928](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43702571928) **SUCCESS**：87 个测试、32 项 locked-host 打包防护检查通过，相关离线独立回归步骤成功。
+- CI iOS 环境：arm64、Xcode 27.0 (27A266a)、iOS 27.2 模拟器 / iPhone 13 mini。跨 UUID 原文/关系保留、相反选择、恢复原图无回声及超万条历史用例均通过；超万条用例在该远端环境约 11 s，不能与本机耗时直接视为相同硬件对照。
+- 四份官方 ZIP 已核对 API 公布的 SHA256、字节数与 ZIP CRC；三个 iOS 环境文件及基础包 `checkout-sha.txt` 均绑定实际 merge checkout `be621a04672d4e5ca27502d5e89bf5257d0daccf`。读取实际 Git 对象后，完整 tree 与候选一致：`7ea6ed214896e3cd61d70974909ede34e2b9b9e3`。216 项输入 SHA256 再次核对无漂移。
+- 首轮源码 `440197d` 的基础包失败及旧 iOS 被新提交替代取消的记录保留；不用它们声称最终通过。最终结论来自上面的新运行。
+
+完整摘要、产物 ID/摘要、测试源文件摘要及源码树证明见 [ci-final-verification.json](Evidence/SyncResilience20261115/ci-final-verification.json)，Unit/Smoke 原始 summary 同目录保留。原始日志、官方 ZIP 和结果树保留于 `/private/tmp/pgos-sync-resilience-evidence`；本机 xcresult 仍保留。专用测试模拟器已关闭，低空间镜像已卸载，合成库不删除。
+
+[Draft PR21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21) 承载本批交付，继续使用原审计分支。原主工作区四项未提交路径保持，未增加清理或触碰真实数据。停在代码审阅/发行验收边界；真实双设备与签名发布等 NOT_RUN 项仍按上节保留，不将模拟器与离线接缝测试包装成真实云验收。
