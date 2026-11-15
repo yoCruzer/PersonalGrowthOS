@@ -1,14 +1,16 @@
 # App Store 免费首发执行台账
 
-更新时间：2026-11-15 15:17（Asia/Shanghai）。**IN_PROGRESS / APPROVED / PENDING_DEVELOPER_RELEASE：1.0 (21) 已获Apple批准，等待开发者发布；尚未公开发布。** 当前只待Owner按原约定最后一次明确确认公开上线，未点击“发布此版本”。
+更新时间：2026-11-15 15:23（Asia/Shanghai）。**IN_PROGRESS / RELEASE_ACCEPTED / PUBLIC_PROPAGATION_PENDING：Owner已明确确认公开上线，Apple发布操作成功、1.0(21)可分发且四区可供应；公开商店尚未核验可下载。** 不再等待Owner确认，不重复发布；Goal尚未完成。
 
-## 2026-11-15 审核通过与最终上线确认
+## 2026-11-15 审核通过、确认上线与传播核验
 
-11:03曾因Mac锁屏未能读取；Owner随后解锁，15:15–15:17实际打开精确提交，显示“已完成审核”，项目iOS App1.0 / 1.0(21)为**已批准**、最后更新者Apple，未见需回复的审核留言。正式版本显示**等待开发者发布**及“发布此版本”按钮，手动发布1/自动发布0；未点击发布。
+15:15–15:17实际提交“已完成审核”、1.0(21)已批准、最后更新者Apple，无需回复留言；发布前免费0/港澳台美四区/手动发布及Apple产品页面预览均核对并展示。
 
-发布前新回读：当前价格时间表popover美国USD**$0.00**；4区清单**澳门、美国、台湾、香港**，其他171区未供应；Mac/Vision可用性均0。已批准中文五截图、完整文案和支持URL保持；打开Apple“设备预览→产品页面”，实际见随心log/副标题“记录生活、习惯与每一步成长”/获取/简体中文及英语/隐私政策/版权2026 随心log，界面已展示给Owner。预览非公开下载页，部分年龄等显示占位；公开apps.apple.com/id6796425674通过web工具当前不可访问，不据此声称已上线。
+Owner随后明确回复**“确认公开上线”**。15:20按授权点击版本“发布此版本”，在Apple确认弹窗再次核对澳门/美国/台湾/香港4区并确认发布；随后版本状态变为**1.0可分发**，发布按钮消失、构建21保持。供应详情四区分别**可供应**，其它171未供应。无需再次人工确认或重复点击。
 
-[通过审核及最终配置凭证](Evidence/AppStoreRelease20261113/app-review-approved-20261115.json)。无技术返修/补充材料任务，无需新代码或构建。**当前唯一人工事项：Owner明确确认是否将已批准1.0(21)按免费价在港澳台和美国公开上线。** 确认前保持等待开发者发布；确认后按原授权发布并核验真实公开可下载。本次“需要处理的按之前授权推进”不代替原约定的最终公开确认。
+当前公开传播核验：无登录Apple iTunes Lookup API四区首查及15:23复查均resultCount0；Safari美国公开页显示“The page you're looking for can't be found.”。因此只记录发布动作已接受，不声称已公开可下载。[Apple官方说明](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/select-an-app-store-version-release-option/)手动发布后可能需要最多24小时才显示于App Store；这是平台窗口，不是完成承诺。若到11月16日15:20仍未出现，核对四区供应状态并按[Apple状态说明](https://developer.apple.com/help/app-store-connect/reference/app-information/app-and-submission-statuses/)联系支持（按实际情况，不预先提交重复请求）。
+
+[批准凭证](Evidence/AppStoreRelease20261113/app-review-approved-20261115.json)、[公开确认及发布动作](Evidence/AppStoreRelease20261113/public-release-20261115.json)、[四区公开查询](Evidence/AppStoreRelease20261113/public-store-checks-20261115.json)。当前没有Owner待办或技术返修，只剩实际公开传播与下载入口核验；Goal未完成，没有常驻后台自动任务。
 
 ## 候选、身份与交付
 
@@ -28,8 +30,8 @@
 | --- | --- |
 | 构建 | **1.0 (21)**，TestFlight元数据“已验证”，无Internal徽标；11月13日21:20上传。版本选择器21可选、20–16禁选；11月14日重新登录后正式版本表格回读21 / 1.0，Save disabled，构建关联已持久化 |
 | 云构建 | 原工作流发行准备已保存为App Store Connect；原testflight-触发条件保持。Build21来源321219f，Archive及后处理SUCCESS，35条Warnings，非零warnings；Xcode27.2/27B52，云macOS27.2/26B123 |
-| 正式版本 | **1.0 等待开发者发布**；11月15日实际回读本次1.0(21)已批准；原提交ID `ba1b52ad-7773-426f-997f-6bac1671795e`，未点击发布 |
-| 发布方式 | **Manually release this version**，11月14日新会话回读选中；审核通过后仍须Owner最终明确确认才公开 |
+| 正式版本 | **1.0可分发**；11月15日Owner明确确认后已点击并确认四区发布，构建21保持；公开商店传播待验证 |
+| 发布方式 | 手动发布；Owner最终确认已收到，15:20发布动作完成，不再重复询问 |
 | 价格与供应 | 当前价格时间表实际回读美国USD **$0.00**；香港、澳门、台湾、美国4区“App发布时供应”，其余171区未供应；Mac/Vision兼容分发关闭。11月15日审核通过后再次展开当前价popover及四区清单确认 |
 | 名称与类别 | 随心log；中文副标题“记录生活、习惯与每一步成长”；英文“Journal, habits, small steps”；生活为主、效率为次，已保存 |
 | 文案与截图 | 中英文各5张真实候选界面原始截图，1206×2622/RGB无alpha。英文曾被异步locale加载覆盖，稳定重填后完整14段描述、关键词、support-en URL、5截图、Save disabled全部回读；中文文案11月14日新会话再次读到 |
@@ -52,18 +54,17 @@ Apple已验证的21元数据：Bundle正确、最低iOS17、arm64/iPhone、双�
 
 原生Xcode/官方下载同一app-store产物多次网络停滞；11月14日09:05文件仍不完整：Safari835069字节、Xcode6159323字节、Archive0字节，均非完整ZIP。未取得完整签名包，签名/包内资源逐字核验**NOT_RUN**，不以unsigned构建冒充通过。权限导出启动TextEdit发生工具长时间超时，未导出成功；未重建、未重推标签、未导出会话凭据。后续优先使用已验证Apple元数据/来源及已有资源证据，下载如恢复再补独立二进制核验，不把反复下载当成必然发布门。
 
-## 送审凭证、本人事项与下一步
+## 本人事项与下一步
 
-1. Owner于11月14日回复Build21一轮真机清单“测试完没问题”，记为**OWNER_REPORTED_PASS**。此前两台设备已安装21；不外推全部同步场景，不要求重复删装、清库或schema部署。[原话与范围](Evidence/AppStoreRelease20261113/owner-build21-smoke.json)。
-2. 11月14日09:37真正Submit for Review成功，1项目1.0(21)、草稿0；11月15日已批准。[原送审凭证](Evidence/AppStoreRelease20261113/app-review-submission.json)保留当时状态，[新批准记录](Evidence/AppStoreRelease20261113/app-review-approved-20261115.json)覆盖当前状态。
-3. **当前仅待最后一次明确公开上线确认**：随心log1.0(21)、免费0、香港/澳门/台湾/美国、iPhone。Apple已批准产品页面可在正式版本“App预览和截屏→预览”查看；尚未公开下载。Owner确认后才点击“发布此版本”，读取Apple新状态并核验公开商店页/价格/地区；不以点击成功等同全球可下载。
-4. 没有当前技术拒审或需回复的Apple留言。无新代码/新构建，不取消或重复送审、不改标签。Goal未完成，不能标已发布；没有常驻后台监控。
-
-其余人工事实已关闭：公开托管/邮箱、审核电话、DSA无EU计划、版权显示、内容分发权利/无第三方服务、四区决定及Build21真机。AGPL-3.0保留，不重复询问。原开发分支/他人修改不动，不处理无关PR或改写远端历史。
+- 当前**没有Owner待填/待测/待确认事项**。本轮真机“测试完没问题”和最后“确认公开上线”均已记录，不重复询问。
+- 接下来只读核验四区公开条目/产品页面/免费价格/版本1.0；后台可分发、四区可供应不代替实际公开验证。不重推标签、不重建或重复发布。
+- 公开可用后保存canonical商店URL与四区结果，更新GitHub台账并关闭本次Goal。未核实前保持IN_PROGRESS，不把传播等待写成已公开发布；不能持续运行时保留最后检查时间与下次入口，不声称后台监控。
+- 大陆仍按Owner决定待准入后开放；AGPL-3.0、原应用身份与原开发分支/他人改动保持。
 
 ## 精确续接入口
 
-- **优先：[本次实际审核提交](https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions/details/ba1b52ad-7773-426f-997f-6bac1671795e)**。
+- **优先：[四区供应状态](https://appstoreconnect.apple.com/apps/6796425674/distribution/pricing/availability)**；[可分发版本](https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/deliverable)；公开美国页面 `https://apps.apple.com/us/app/id6796425674`；Apple Lookup按HK/MO/TW/US查询6796425674。
+- [本次实际审核提交](https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions/details/ba1b52ad-7773-426f-997f-6bac1671795e)**。
 - [正式1.0版本](https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/inflight)；[App审核](https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions)；[价格与销售范围](https://appstoreconnect.apple.com/apps/6796425674/distribution/pricing)。
 - [Build21元数据](https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/testflight/ios/c3af9b4a-278d-429d-ad12-4367e654d8f5/metadata)；[既有内部群组](https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/testflight/groups/b8156fe6-1389-471b-be34-59d81bf20fd8)。
 - [Cloud Build21](https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/xcode-cloud/products/543C8892-7DD6-4620-B16C-B4F7DFE0255E/builds/4ef1895e-3551-4cd4-98b9-2050d779abbf/summary)；[上传执行记录](../Release/AppStore/Review/XCODE_CLOUD_UPLOAD.md)。

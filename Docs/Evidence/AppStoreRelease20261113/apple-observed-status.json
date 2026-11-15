@@ -2,7 +2,7 @@
   "observedDate": "2026-11-15",
   "appId": "6796425674",
   "appName": "随心log",
-  "versionStatus": "1.0 等待开发者发布",
+  "versionStatus": "1.0 可分发",
   "manualRelease": "2026-11-14 fresh session radio1 observed",
   "latestTestFlight": {
     "version": "1.0",
@@ -308,5 +308,61 @@
     "ownerFinalPublicReleaseConfirmation": "PENDING; original instruction explicitly requires one confirmation after approval",
     "requiredTechnicalActions": [],
     "nextAction": "Show approved version/free price/four territories/Apple preview; obtain Owner explicit confirmation to publish, then click release and verify store availability. No new code/build needed."
+  },
+  "publicRelease20261115": {
+    "ownerExplicitConfirmation": "确认公开上线",
+    "confirmedDate": "2026-11-15",
+    "authorizedRelease": {
+      "app": "随心log",
+      "version": "1.0",
+      "build": "21",
+      "sourceCommit": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+      "free": true,
+      "territories": [
+        "HK",
+        "MO",
+        "TW",
+        "US"
+      ]
+    },
+    "releaseClickCompleted": true,
+    "publicAvailabilityVerified": false,
+    "releaseActions": {
+      "localTime": "2026-11-15 15:20 Asia/Shanghai",
+      "clickedVersionReleaseButton": true,
+      "confirmationModal": "在4个国家或地区的App Store中发布iOS App？",
+      "modalTerritories": [
+        "澳门",
+        "美国",
+        "台湾",
+        "香港"
+      ],
+      "clickedModalReleaseButton": true,
+      "latestObserved": "Apple version link 1.0 可分发; release button absent; Build21 still associated"
+    },
+    "backendStatus": "可分发",
+    "backendVersionURL": "https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/deliverable",
+    "firstPublicLookup": {
+      "allFourCountriesResultCount": 0,
+      "method": "unauthenticated Apple iTunes Lookup API",
+      "detailFile": "public-store-lookup-20261115.json"
+    },
+    "state": "RELEASE_ACCEPTED_PUBLIC_PROPAGATION_PENDING",
+    "countryAvailabilityAfterRelease": {
+      "澳门": "可供应",
+      "美国": "可供应",
+      "台湾": "可供应",
+      "香港": "可供应",
+      "other171": "未供应"
+    },
+    "publicWebProbe": {
+      "url": "https://apps.apple.com/us/app/id6796425674",
+      "result": "The page you're looking for can't be found.",
+      "observedLocal": "2026-11-15 15:22 Asia/Shanghai"
+    },
+    "latestPublicLookupLocal": "2026-11-15 15:23 Asia/Shanghai",
+    "latestPublicLookupResult": "all four country resultCount0",
+    "applePropagationDocumentation": "https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/select-an-app-store-version-release-option/",
+    "appleDocumentedWindow": "May take up to24h after manual release to appear; no guarantee of exact completion time."
   }
 }

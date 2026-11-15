@@ -1,0 +1,89 @@
+{
+  "method": "unauthenticated Apple iTunes Lookup API",
+  "observations": [
+    {
+      "checkedUTC": "2026-11-15T07:23:42.641160+00:00",
+      "appId": 6796425674,
+      "countries": {
+        "hk": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:23:42 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86258"
+          },
+          "results": []
+        },
+        "mo": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:23:42 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86258"
+          },
+          "results": []
+        },
+        "tw": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:23:42 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86258"
+          },
+          "results": []
+        },
+        "us": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:23:42 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86259"
+          },
+          "results": []
+        }
+      }
+    },
+    {
+      "checkedUTC": "2026-11-15T07:24:54.843670+00:00",
+      "appId": 6796425674,
+      "countries": {
+        "hk": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:24:54 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86186"
+          },
+          "results": []
+        },
+        "mo": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:24:54 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86186"
+          },
+          "results": []
+        },
+        "tw": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:24:54 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86186"
+          },
+          "results": []
+        },
+        "us": {
+          "resultCount": 0,
+          "headers": {
+            "Date": "Sun, 15 Nov 2026 07:24:54 GMT",
+            "Age": null,
+            "Cache-Control": "max-age=86187"
+          },
+          "results": []
+        }
+      }
+    }
+  ]
+}

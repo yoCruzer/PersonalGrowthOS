@@ -1,0 +1,27 @@
+{
+  "checkedUTC": "2026-11-15T07:21:21.036834+00:00",
+  "appId": 6796425674,
+  "method": "Unauthenticated Apple iTunes Lookup API; public store metadata, no account credentials",
+  "countries": {
+    "hk": {
+      "resultCount": 0,
+      "results": [],
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=hk"
+    },
+    "mo": {
+      "resultCount": 0,
+      "results": [],
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=mo"
+    },
+    "tw": {
+      "resultCount": 0,
+      "results": [],
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=tw"
+    },
+    "us": {
+      "resultCount": 0,
+      "results": [],
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=us"
+    }
+  }
+}
