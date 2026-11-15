@@ -74,3 +74,7 @@ Owner回复Build21本轮真机“测试完没问题”，记OWNER_REPORTED_PASS�
 ## 2026-11-15 15:20 已获公开确认并执行发布
 
 Owner“确认公开上线”后已点击并确认港澳台美4区发布；版本可分发、Build21关联保持、发布按钮消失，四区可供应。15:23公开Lookup仍四区resultCount0，美国公开页未找到，传播验证未完成，不声称已公开可下载。Apple手动发布说明可能最多24小时显示。结构化证据public-release-20261115.json及public-store-checks-20261115.json。无需Owner再确认/重测，无新构建或重复发布。
+
+## 2026-11-15 15:30 公开上线核验完成
+
+public-four-storefronts-20261115.json四区明确software类型查得1条同一App/Bundle/1.0/price0；Apple当前版本发行时间07:20:37Z。Safari实际canonical美国公开页渲染正式图标、五截图、Free、9+、iPhone、双语/政策与版权。早期普通查询缓存空结果，max-age约24h，保留但不作为当前结果。旧Lookup年龄4+与现代网页9+差异如实记录，未更改问卷。public-release-20261115.json记录Owner明确确认、四区弹窗确认、后台可分发及最终公开核验。无剩余Owner事项，Goal已达成；未做agent商店版真机安装，不冒称该测试通过。

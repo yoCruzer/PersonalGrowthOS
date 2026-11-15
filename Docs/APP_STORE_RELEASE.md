@@ -1,16 +1,24 @@
 # App Store 免费首发执行台账
 
-更新时间：2026-11-15 15:23（Asia/Shanghai）。**IN_PROGRESS / RELEASE_ACCEPTED / PUBLIC_PROPAGATION_PENDING：Owner已明确确认公开上线，Apple发布操作成功、1.0(21)可分发且四区可供应；公开商店尚未核验可下载。** 不再等待Owner确认，不重复发布；Goal尚未完成。
+更新时间：2026-11-15 15:30（Asia/Shanghai）。**COMPLETE / PUBLIC_RELEASE_VERIFIED：随心log 1.0 (21) 已获审核通过、经Owner明确确认并发布；港澳台及美国四区公开商店记录、版本1.0与免费价格均已核验，实际公开产品页面已打开。** 本次免费首发Goal已完成，无剩余本人事项。
 
-## 2026-11-15 审核通过、确认上线与传播核验
+## 最终上线结果与公开入口
 
-15:15–15:17实际提交“已完成审核”、1.0(21)已批准、最后更新者Apple，无需回复留言；发布前免费0/港澳台美四区/手动发布及Apple产品页面预览均核对并展示。
+- 已发布：**随心log 1.0 (21)**；非skip代码候选**321219f61fd2dedf3be69d6f49c3af23896cccd4**；沿用Bundle、App Group、CloudKit及Team身份。
+- 发布授权：Owner在核对已批准版本/免费价格/四区/Apple产品页面预览后，明确回复**“确认公开上线”**。15:20点击并确认四区发布，Apple currentVersionReleaseDate为**2026-11-15T07:20:37Z（北京时间15:20:37）**；后台变为可分发、构建21保持。
+- 公开核验：15:29–15:30 Apple公共API四区均返回唯一6796425674、正确Bundle、**1.0**、**price0**；Safari实际公开美国店页完整显示正式图标、五张截图、英文副标题、Only for iPhone、**Free**、**9+**、隐私链接及©2026 随心log。
+- 首发范围仅**香港、澳门、台湾、美国**，后台四区均可供应，其余171区未供应；Mac/Vision分发关闭。大陆按Owner决定仍待备案/准入后开放，不是本次首发遗留阻塞。
 
-Owner随后明确回复**“确认公开上线”**。15:20按授权点击版本“发布此版本”，在Apple确认弹窗再次核对澳门/美国/台湾/香港4区并确认发布；随后版本状态变为**1.0可分发**，发布按钮消失、构建21保持。供应详情四区分别**可供应**，其它171未供应。无需再次人工确认或重复点击。
+| 公开商店 | 免费价格（公开API） | 产品页面 |
+| --- | --- | --- |
+| 香港 | HKD 0 / 免費 | [随心log 香港](https://apps.apple.com/hk/app/%E9%9A%8F%E5%BF%83log/id6796425674) |
+| 澳门 | USD 0 / 免費 | [随心log 澳门](https://apps.apple.com/mo/app/%E9%9A%8F%E5%BF%83log/id6796425674) |
+| 台湾 | TWD 0 / 免費 | [随心log 台湾](https://apps.apple.com/tw/app/%E9%9A%8F%E5%BF%83log/id6796425674) |
+| 美国 | USD 0 / Free | [随心log 美国](https://apps.apple.com/us/app/%E9%9A%8F%E5%BF%83log/id6796425674) |
 
-当前公开传播核验：无登录Apple iTunes Lookup API四区首查及15:23复查均resultCount0；Safari美国公开页显示“The page you're looking for can't be found.”。因此只记录发布动作已接受，不声称已公开可下载。[Apple官方说明](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/select-an-app-store-version-release-option/)手动发布后可能需要最多24小时才显示于App Store；这是平台窗口，不是完成承诺。若到11月16日15:20仍未出现，核对四区供应状态并按[Apple状态说明](https://developer.apple.com/help/app-store-connect/reference/app-information/app-and-submission-statuses/)联系支持（按实际情况，不预先提交重复请求）。
+[批准凭证](Evidence/AppStoreRelease20261113/app-review-approved-20261115.json)、[Owner确认/发布/公开核验](Evidence/AppStoreRelease20261113/public-release-20261115.json)、[四区最终记录](Evidence/AppStoreRelease20261113/public-four-storefronts-20261115.json)。没有当前需回复的Apple留言、技术返修或Owner待办。
 
-[批准凭证](Evidence/AppStoreRelease20261113/app-review-approved-20261115.json)、[公开确认及发布动作](Evidence/AppStoreRelease20261113/public-release-20261115.json)、[四区公开查询](Evidence/AppStoreRelease20261113/public-store-checks-20261115.json)。当前没有Owner待办或技术返修，只剩实际公开传播与下载入口核验；Goal未完成，没有常驻后台自动任务。
+早期公开Lookup返回0和页面未找到均按原样保留。普通id-only查询头max-age约24小时，缓存了首发前空结果；明确entity=software后四区返回记录，实际canonical页面也已显示。旧空结果不再代表当前状态。Lookup旧contentAdvisoryRating为4+，现代公开店页与后台问卷为9+，未为消除差异而更改任何问卷。Agent未做商店版真机安装，核验范围为公开商店提供获取及既有Build21 Owner功能冒烟；不宣称完成新的安装测试。
 
 ## 候选、身份与交付
 
@@ -30,8 +38,8 @@ Owner随后明确回复**“确认公开上线”**。15:20按授权点击版本
 | --- | --- |
 | 构建 | **1.0 (21)**，TestFlight元数据“已验证”，无Internal徽标；11月13日21:20上传。版本选择器21可选、20–16禁选；11月14日重新登录后正式版本表格回读21 / 1.0，Save disabled，构建关联已持久化 |
 | 云构建 | 原工作流发行准备已保存为App Store Connect；原testflight-触发条件保持。Build21来源321219f，Archive及后处理SUCCESS，35条Warnings，非零warnings；Xcode27.2/27B52，云macOS27.2/26B123 |
-| 正式版本 | **1.0可分发**；11月15日Owner明确确认后已点击并确认四区发布，构建21保持；公开商店传播待验证 |
-| 发布方式 | 手动发布；Owner最终确认已收到，15:20发布动作完成，不再重复询问 |
+| 正式版本 | **1.0可分发，四区公开记录与实际产品页面已验证**；11月15日Owner确认后发布，构建21保持 |
+| 发布方式 | 手动发布已执行；Owner最终确认已收到，15:20发布、15:30公开核验完成 |
 | 价格与供应 | 当前价格时间表实际回读美国USD **$0.00**；香港、澳门、台湾、美国4区“App发布时供应”，其余171区未供应；Mac/Vision兼容分发关闭。11月15日审核通过后再次展开当前价popover及四区清单确认 |
 | 名称与类别 | 随心log；中文副标题“记录生活、习惯与每一步成长”；英文“Journal, habits, small steps”；生活为主、效率为次，已保存 |
 | 文案与截图 | 中英文各5张真实候选界面原始截图，1206×2622/RGB无alpha。英文曾被异步locale加载覆盖，稳定重填后完整14段描述、关键词、support-en URL、5截图、Save disabled全部回读；中文文案11月14日新会话再次读到 |
@@ -54,16 +62,16 @@ Apple已验证的21元数据：Bundle正确、最低iOS17、arm64/iPhone、双�
 
 原生Xcode/官方下载同一app-store产物多次网络停滞；11月14日09:05文件仍不完整：Safari835069字节、Xcode6159323字节、Archive0字节，均非完整ZIP。未取得完整签名包，签名/包内资源逐字核验**NOT_RUN**，不以unsigned构建冒充通过。权限导出启动TextEdit发生工具长时间超时，未导出成功；未重建、未重推标签、未导出会话凭据。后续优先使用已验证Apple元数据/来源及已有资源证据，下载如恢复再补独立二进制核验，不把反复下载当成必然发布门。
 
-## 本人事项与下一步
+## 完成、后续边界与续接
 
-- 当前**没有Owner待填/待测/待确认事项**。本轮真机“测试完没问题”和最后“确认公开上线”均已记录，不重复询问。
-- 接下来只读核验四区公开条目/产品页面/免费价格/版本1.0；后台可分发、四区可供应不代替实际公开验证。不重推标签、不重建或重复发布。
-- 公开可用后保存canonical商店URL与四区结果，更新GitHub台账并关闭本次Goal。未核实前保持IN_PROGRESS，不把传播等待写成已公开发布；不能持续运行时保留最后检查时间与下次入口，不声称后台监控。
-- 大陆仍按Owner决定待准入后开放；AGPL-3.0、原应用身份与原开发分支/他人改动保持。
+- **本次Goal完成，当前无本人待填/待测/待确认事项。** 1.0(21)已审核批准、确认公开、发布并核验四区公开零价；不再重复请求确认、推tag、构建或提交同一版本。
+- 未来常规版本、一般体验优化、大陆备案后开放不并入本次首发扩大开发。按新任务边界推进；App身份、AGPL-3.0与Owner已确认事实保持。
+- 仍保留真实测试限制：签名包独立字节核验NOT_RUN、同步复杂场景非全覆盖、没有agent商店版真机安装。它们不是被伪记为PASS的发布门；Apple已验证构建、本机/CI、Owner Build21冒烟及公开记录证据各自限定。
+- 原主工作区三项修改保留，Draft PR20保持原base且不擅自合并；发布素材/源码/证据均已普通推送独立发布分支。没有改写远端历史、处理无关PR、清生产数据或重复部署schema。
 
 ## 精确续接入口
 
-- **优先：[四区供应状态](https://appstoreconnect.apple.com/apps/6796425674/distribution/pricing/availability)**；[可分发版本](https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/deliverable)；公开美国页面 `https://apps.apple.com/us/app/id6796425674`；Apple Lookup按HK/MO/TW/US查询6796425674。
+- **优先公开入口：上表四区App Store链接。** 后台[四区供应状态](https://appstoreconnect.apple.com/apps/6796425674/distribution/pricing/availability)**；[可分发版本](https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/deliverable)；公开美国页面 `https://apps.apple.com/us/app/id6796425674`；Apple Lookup按HK/MO/TW/US查询6796425674。
 - [本次实际审核提交](https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions/details/ba1b52ad-7773-426f-997f-6bac1671795e)**。
 - [正式1.0版本](https://appstoreconnect.apple.com/apps/6796425674/distribution/ios/version/inflight)；[App审核](https://appstoreconnect.apple.com/apps/6796425674/distribution/reviewsubmissions)；[价格与销售范围](https://appstoreconnect.apple.com/apps/6796425674/distribution/pricing)。
 - [Build21元数据](https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/testflight/ios/c3af9b4a-278d-429d-ad12-4367e654d8f5/metadata)；[既有内部群组](https://appstoreconnect.apple.com/teams/e47fce78-79c8-4993-88a4-32f833bc1936/apps/6796425674/testflight/groups/b8156fe6-1389-471b-be34-59d81bf20fd8)。

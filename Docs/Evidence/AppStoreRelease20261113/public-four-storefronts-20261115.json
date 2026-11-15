@@ -1,0 +1,131 @@
+{
+  "checkedUTC": "2026-11-15T07:29:31.670640+00:00",
+  "method": "Apple public iTunes Lookup with entity=software; ordinary id-only lookup cached prelaunch empty result for24h, retained as historical evidence",
+  "allFourVersionIdentityAndFreePriceVerified": true,
+  "countries": {
+    "hk": {
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=hk&entity=software",
+      "resultCount": 1,
+      "results": [
+        {
+          "trackId": 6796425674,
+          "trackName": "随心log",
+          "bundleId": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "price": 0.0,
+          "formattedPrice": "免費",
+          "currency": "HKD",
+          "trackViewUrl": "https://apps.apple.com/hk/app/%E9%9A%8F%E5%BF%83log/id6796425674?uo=4",
+          "minimumOsVersion": "17.0",
+          "currentVersionReleaseDate": "2026-11-15T07:20:37Z",
+          "primaryGenreName": "Lifestyle",
+          "contentAdvisoryRating": "4+",
+          "screenshotUrls": [
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/47/55/56/47555609-0c96-fd1f-2750-71c9a26e3966/01-today.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/29/f0/d9/29f0d925-ddcb-9336-2e65-2faac3eaea81/02-timeline.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/79/d1/de/79d1debc-4b4b-222d-8e47-4d5f2839017c/03-capture.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/e8/09/b2/e809b234-28c8-c796-ca8f-c090da0a4e1c/04-growth.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/97/30/d4/9730d444-c1cc-aad6-b71c-1d2cc052469a/05-library.png/320x480bb.jpg"
+          ],
+          "languageCodesISO2A": [
+            "EN",
+            "ZH"
+          ]
+        }
+      ]
+    },
+    "mo": {
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=mo&entity=software",
+      "resultCount": 1,
+      "results": [
+        {
+          "trackId": 6796425674,
+          "trackName": "随心log",
+          "bundleId": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "price": 0.0,
+          "formattedPrice": "免費",
+          "currency": "USD",
+          "trackViewUrl": "https://apps.apple.com/mo/app/%E9%9A%8F%E5%BF%83log/id6796425674?uo=4",
+          "minimumOsVersion": "17.0",
+          "currentVersionReleaseDate": "2026-11-15T07:20:37Z",
+          "primaryGenreName": "Lifestyle",
+          "contentAdvisoryRating": "4+",
+          "screenshotUrls": [
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/47/55/56/47555609-0c96-fd1f-2750-71c9a26e3966/01-today.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/29/f0/d9/29f0d925-ddcb-9336-2e65-2faac3eaea81/02-timeline.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/79/d1/de/79d1debc-4b4b-222d-8e47-4d5f2839017c/03-capture.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/e8/09/b2/e809b234-28c8-c796-ca8f-c090da0a4e1c/04-growth.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/97/30/d4/9730d444-c1cc-aad6-b71c-1d2cc052469a/05-library.png/320x480bb.jpg"
+          ],
+          "languageCodesISO2A": [
+            "EN",
+            "ZH"
+          ]
+        }
+      ]
+    },
+    "tw": {
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=tw&entity=software",
+      "resultCount": 1,
+      "results": [
+        {
+          "trackId": 6796425674,
+          "trackName": "随心log",
+          "bundleId": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "price": 0.0,
+          "formattedPrice": "免費",
+          "currency": "TWD",
+          "trackViewUrl": "https://apps.apple.com/tw/app/%E9%9A%8F%E5%BF%83log/id6796425674?uo=4",
+          "minimumOsVersion": "17.0",
+          "currentVersionReleaseDate": "2026-11-15T07:20:37Z",
+          "primaryGenreName": "Lifestyle",
+          "contentAdvisoryRating": "4+",
+          "screenshotUrls": [
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/47/55/56/47555609-0c96-fd1f-2750-71c9a26e3966/01-today.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/29/f0/d9/29f0d925-ddcb-9336-2e65-2faac3eaea81/02-timeline.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/79/d1/de/79d1debc-4b4b-222d-8e47-4d5f2839017c/03-capture.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/e8/09/b2/e809b234-28c8-c796-ca8f-c090da0a4e1c/04-growth.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/97/30/d4/9730d444-c1cc-aad6-b71c-1d2cc052469a/05-library.png/320x480bb.jpg"
+          ],
+          "languageCodesISO2A": [
+            "EN",
+            "ZH"
+          ]
+        }
+      ]
+    },
+    "us": {
+      "apiURL": "https://itunes.apple.com/lookup?id=6796425674&country=us&entity=software",
+      "resultCount": 1,
+      "results": [
+        {
+          "trackId": 6796425674,
+          "trackName": "随心log",
+          "bundleId": "com.yocruzer.PersonalGrowthOS",
+          "version": "1.0",
+          "price": 0.0,
+          "formattedPrice": "Free",
+          "currency": "USD",
+          "trackViewUrl": "https://apps.apple.com/us/app/%E9%9A%8F%E5%BF%83log/id6796425674?uo=4",
+          "minimumOsVersion": "17.0",
+          "currentVersionReleaseDate": "2026-11-15T07:20:37Z",
+          "primaryGenreName": "Lifestyle",
+          "contentAdvisoryRating": "4+",
+          "screenshotUrls": [
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/23/09/6d/23096dc4-4b6b-ab69-fe23-edf192664638/01-today.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/47/aa/77/47aa779f-d1f4-766e-beb5-cd5572ca5d4d/02-timeline.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/d5/c8/03/d5c803cf-d253-cc06-cecd-132fc62aeb83/03-capture.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/ee/78/29/ee782914-61ba-d90b-8862-7ca932bce99f/04-growth.png/320x480bb.jpg",
+            "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/4e/f3/44/4ef344c9-65b7-774b-acd2-296638d9cc8c/05-library.png/320x480bb.jpg"
+          ],
+          "languageCodesISO2A": [
+            "EN",
+            "ZH"
+          ]
+        }
+      ]
+    }
+  }
+}

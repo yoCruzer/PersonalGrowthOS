@@ -2,7 +2,7 @@
   "observedDate": "2026-11-15",
   "appId": "6796425674",
   "appName": "随心log",
-  "versionStatus": "1.0 可分发",
+  "versionStatus": "1.0 可分发 / public store verified",
   "manualRelease": "2026-11-14 fresh session radio1 observed",
   "latestTestFlight": {
     "version": "1.0",
@@ -58,7 +58,7 @@
     "url": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
     "answer": "Data Not Collected",
     "publishedAnswer": true,
-    "appPubliclyReleased": false,
+    "appPubliclyReleased": true,
     "localizedURLs": {
       "zh-Hans": "https://yocruzer.github.io/PersonalGrowthOS/privacy-zh.html",
       "en-US": "https://yocruzer.github.io/PersonalGrowthOS/privacy-en.html"
@@ -326,7 +326,7 @@
       ]
     },
     "releaseClickCompleted": true,
-    "publicAvailabilityVerified": false,
+    "publicAvailabilityVerified": true,
     "releaseActions": {
       "localTime": "2026-11-15 15:20 Asia/Shanghai",
       "clickedVersionReleaseButton": true,
@@ -347,7 +347,7 @@
       "method": "unauthenticated Apple iTunes Lookup API",
       "detailFile": "public-store-lookup-20261115.json"
     },
-    "state": "RELEASE_ACCEPTED_PUBLIC_PROPAGATION_PENDING",
+    "state": "PUBLIC_RELEASE_VERIFIED",
     "countryAvailabilityAfterRelease": {
       "澳门": "可供应",
       "美国": "可供应",
@@ -363,6 +363,26 @@
     "latestPublicLookupLocal": "2026-11-15 15:23 Asia/Shanghai",
     "latestPublicLookupResult": "all four country resultCount0",
     "applePropagationDocumentation": "https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/select-an-app-store-version-release-option/",
-    "appleDocumentedWindow": "May take up to24h after manual release to appear; no guarantee of exact completion time."
+    "appleDocumentedWindow": "May take up to24h after manual release to appear; no guarantee of exact completion time.",
+    "publiclyReleased": true,
+    "publicVerifiedLocal": "2026-11-15 15:30 Asia/Shanghai",
+    "publicVersion": "1.0",
+    "freePriceVerifiedAllFour": true,
+    "publicStoreURLs": {
+      "hk": "https://apps.apple.com/hk/app/%E9%9A%8F%E5%BF%83log/id6796425674",
+      "mo": "https://apps.apple.com/mo/app/%E9%9A%8F%E5%BF%83log/id6796425674",
+      "tw": "https://apps.apple.com/tw/app/%E9%9A%8F%E5%BF%83log/id6796425674",
+      "us": "https://apps.apple.com/us/app/%E9%9A%8F%E5%BF%83log/id6796425674"
+    },
+    "ownerFinalConfirmationComplete": true,
+    "requiredRemainingActions": [],
+    "publicVersionReleaseDateFromApple": "2026-11-15T07:20:37Z",
+    "publicEvidence": {
+      "allFourCountries": "Apple public Lookup entity=software returns exactly same app6796425674 / Bundle / version1.0 / price0",
+      "browser": "Safari actual public US product page renders icon, five English screenshots, name随心log, subtitle, Only for iPhone, Free, modern rating9+, privacy-en and copyright",
+      "ordinaryLookupCache": "Prior id-only query cached resultCount0 with max-age about24h. Retained as historical evidence, superseded by explicit software query plus live product page.",
+      "legacyRatingDifference": "Lookup legacy contentAdvisoryRating4+ differs from actual modern product page9+; questionnaire and live page remain9+. No questionnaire changed.",
+      "onDeviceAppStoreInstallation": "NOT_RUN by agent; public store offer verified, prior build21 device functional smoke is OWNER_REPORTED_PASS."
+    }
   }
 }
