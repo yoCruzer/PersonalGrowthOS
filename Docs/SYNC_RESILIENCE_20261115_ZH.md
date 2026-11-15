@@ -2,7 +2,7 @@
 
 输入：已发布 1.0 (21) / `321219f`，承接审计分支 `aa3aa20`。Owner 本轮授权处理 K1/K2/K3，并要求保留原始数据、回归通过后提交。继续使用隔离工作树 `/private/tmp/PersonalGrowthOS-release21-audit` 与现有分支 `codex/release-21-risk-audit`，不增加分支，原开发工作树不动。
 
-**当前：三项代码修复与本机回归完成，待提交稳定源码及独立 CI。** 未合并、未签名发行、未发布，未访问真实 CloudKit 账户或日常私库。
+**当前：产品修复 `440197d` 已在回归后提交并推送。首次独立基础包 CI 揭示旧源码摘要白名单未更新；已完成精确复核和 32 项离线打包验证，待更新验证清单并跑新 CI。** 未合并、未签名发行、未发布，未访问真实 CloudKit 账户或日常私库。
 
 ## 按风险排序的结果
 
@@ -70,3 +70,14 @@
 - 有引用的重复事实不能直接丢弃；未处理冲突期间保持完整发布门。云端内容预览、非空本地跨工作区合流未实现。
 - 真实双设备/不同客户端版本互操作、真实 CloudKit zone 发现、后台/通知、真机大规模内存、发布包签名验收为 **NOT_RUN**。本轮没有真实云操作、Production schema 部署、Archive、TestFlight/App Store 发布。
 - 没有启动子代理；依据当前禁止主动委派的指令，以独立真值测试、人工代码复核与后续 CI 作为本批验证。
+
+
+## 首次 CI 的真实失败与修正
+
+[基础包 CI 43701959742](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43701959742) 的 native、保留分块/SDK/schema/目录等独立回归步骤成功，最后 locked-host packaging 因 `UNREVIEWED_SWIFT_SOURCE` 拒绝。官方 artifact SHA256/ZIP CRC 已核对，不能把整轮称为通过。
+
+复核 `Scripts/FormalDevelopmentHost/README.md` 要求后，确认白名单差异**恰好两项**：本轮修改的 `CausalProjection.swift` 及其测试。实际源码与独立真值/回归均已审阅，只更新这两项摘要；其余文件、Package.swift 固定摘要、权限/路径/签名/live 阻断逻辑均未改变。不是取消校验或盲目刷新全清单。
+
+本机 `package_locked_host.py` 未签名打包通过；`verify_packaging.py` **32/32**，包括未审查源码/清单、符号链接、live 参数拒绝、真实缺 profile/identity 的 NOT_READY。无开发签名、无 CloudKit 调用。初次验证因假定旧 SwiftPM 可执行文件目录失败；改用实际 `out/Products/Debug/FormalDevelopmentProbe` 后通过，原失败保留。详见 [精确变更与验证](Evidence/SyncResilience20261115/locked-host-pin-review.json)。
+
+App 生产代码及测试与已通过的本机回归一致；干净 Release 绑定 `440197d` / Dirty=false，见 [干净构建证据](Evidence/SyncResilience20261115/local-clean-release-verification.json)。后续提交仅调整验证摘要/文档，仍需跟踪新 CI，不能借旧绿灯替代。

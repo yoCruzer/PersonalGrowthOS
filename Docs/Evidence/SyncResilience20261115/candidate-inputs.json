@@ -190,7 +190,7 @@
   "Scripts/Fixtures/README.md": "3654d5698558c61812986d43776a9b2a8c6c655d41ba7a7d4a61eceef613115d",
   "Scripts/FormalDevelopmentHost/README.md": "51fa39885a33805a6b7da85ddada5a8751017d5a9a858fa6d3af2d07a62e0022",
   "Scripts/FormalDevelopmentHost/package_locked_host.py": "a591393b35a93e969aa25849b5d180b9d766944b4cebc8e3e3198886001999e7",
-  "Scripts/FormalDevelopmentHost/trusted-source-sha256.json": "7cde3409e74fe98829cb1244b59e1620af1d8a1adf43c49de7125388318dcca8",
+  "Scripts/FormalDevelopmentHost/trusted-source-sha256.json": "f546d36c8cc9fb3e4c3d7db716d1ad1aeae120e62cc4ec4e7908dc4040a10dff",
   "Scripts/FormalDevelopmentHost/verify_packaging.py": "f172cf42355de81cf35f410fc58576237bad9fe9b802d8de0a69738d0237b983",
   "Scripts/SyncSchemaAudit/README.md": "ae9f7fe78dd5acee9ddb6de2bb1b017ac094f863a359a0073c633fb6a2aaafcd",
   "Scripts/SyncSchemaAudit/audit.py": "45a3b46cf08bc2a96bb7b6ad269f06f8b6d855028d1ba4edc2cd72004bbcbf5d",

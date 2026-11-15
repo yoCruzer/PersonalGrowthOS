@@ -1,0 +1,35 @@
+{
+  "command": "xcodebuild build -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -jobs 3 -destination generic/platform=iOS -derivedDataPath /private/tmp/pgos-release21-release-dd CODE_SIGNING_ALLOWED=NO (clean committed source rebuild)",
+  "result": "BUILD SUCCEEDED",
+  "signed": false,
+  "archiveOrPublish": false,
+  "provenance": {
+    "Commit": "440197d1af937addf76888b6a3608f7bc948caf6",
+    "Dirty": false,
+    "Source": "localGit",
+    "Tag": ""
+  },
+  "bundles": [
+    {
+      "bundle": "com.yocruzer.PersonalGrowthOS",
+      "version": "1.0",
+      "build": "12",
+      "environment": "production",
+      "binarySHA256": "bb7e88a59f67705c22fb27a8b229771543d157aa908b2c19aa3f542a158c46c5"
+    },
+    {
+      "bundle": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "version": "1.0",
+      "build": "12",
+      "environment": null,
+      "binarySHA256": "f17dbce41f04c4a32d63f6992ae61a3848aa8ebe4ec72655e8936296c18f7a99"
+    },
+    {
+      "bundle": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "version": "1.0",
+      "build": "12",
+      "environment": null,
+      "binarySHA256": "82603a6975b5cb926a6f1bba27351049b4e57e1d03751003ae7c1df39785a094"
+    }
+  ]
+}
