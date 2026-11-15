@@ -1,0 +1,92 @@
+[
+  {
+    "baseRefName": "codex/icloud-product",
+    "headRefName": "codex/app-store-free-release-20261110",
+    "number": 20
+  },
+  {
+    "baseRefName": "codex/icloud-sync-foundation",
+    "headRefName": "codex/icloud-product",
+    "number": 19
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "codex/icloud-formal-execution-guard",
+    "number": 18
+  },
+  {
+    "baseRefName": "codex/icloud-sync-g1",
+    "headRefName": "codex/icloud-sync-foundation",
+    "number": 17
+  },
+  {
+    "baseRefName": "codex/icloud-sync-v1-audit",
+    "headRefName": "codex/icloud-sync-g1",
+    "number": 16
+  },
+  {
+    "baseRefName": "codex/household-net-worth-v1",
+    "headRefName": "codex/icloud-sync-v1-audit",
+    "number": 15
+  },
+  {
+    "baseRefName": "codex/usage-remediation-20261017",
+    "headRefName": "codex/household-net-worth-v1",
+    "number": 14
+  },
+  {
+    "baseRefName": "codex/time-investment-v1",
+    "headRefName": "codex/usage-remediation-20261017",
+    "number": 13
+  },
+  {
+    "baseRefName": "codex/sleep-routine-v1",
+    "headRefName": "codex/time-investment-v1",
+    "number": 12
+  },
+  {
+    "baseRefName": "codex/important-days-v1",
+    "headRefName": "codex/sleep-routine-v1",
+    "number": 11
+  },
+  {
+    "baseRefName": "codex/quiet-wins-on-d72",
+    "headRefName": "codex/important-days-v1",
+    "number": 10
+  },
+  {
+    "baseRefName": "codex/todo-v1-personal-actions",
+    "headRefName": "codex/quiet-wins-on-d72",
+    "number": 9
+  },
+  {
+    "baseRefName": "codex/external-capture-v1",
+    "headRefName": "codex/todo-v1-personal-actions",
+    "number": 8
+  },
+  {
+    "baseRefName": "feature/build9-today-entry-followups",
+    "headRefName": "codex/external-capture-v1",
+    "number": 7
+  },
+  {
+    "baseRefName": "feature/build8-habit-analytics-dashboard",
+    "headRefName": "feature/build9-today-entry-followups",
+    "number": 6
+  },
+  {
+    "baseRefName": "fix/build7-owner-feedback-round2",
+    "headRefName": "feature/build8-habit-analytics-dashboard",
+    "number": 5
+  },
+  {
+    "baseRefName": "fix/build6-owner-feedback-round1",
+    "headRefName": "fix/build7-owner-feedback-round2",
+    "number": 4
+  },
+  {
+    "baseRefName": "feature/usability-s2-review-loop",
+    "headRefName": "fix/build6-owner-feedback-round1",
+    "number": 3
+  }
+]

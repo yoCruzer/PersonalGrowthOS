@@ -1,0 +1,5 @@
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:133: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testValueDraftCannotSilentlyOverwriteRemoteEntryEvenWithUnchangedTimestamp] : XCTAssertThrowsError failed: did not throw an error
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:134: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testValueDraftCannotSilentlyOverwriteRemoteEntryEvenWithUnchangedTimestamp] : XCTAssertEqual failed: ("Optional("local unsaved draft")") is not equal to ("Optional("remote same-clock edit")")
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:135: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testValueDraftCannotSilentlyOverwriteRemoteEntryEvenWithUnchangedTimestamp] : XCTAssertEqual failed: ("1") is not equal to ("0")
+Test Case '-[PersonalGrowthOSTests.SyncProductIntegrationTests testValueDraftCannotSilentlyOverwriteRemoteEntryEvenWithUnchangedTimestamp]' failed (0.847 seconds).
+** TEST FAILED **

@@ -1,6 +1,40 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "This item changed while you were editing. Your draft is kept here. Copy your changes, then reopen the item to review the latest version.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This item changed while you were editing. Your draft is kept here. Copy your changes, then reopen the item to review the latest version."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此内容在编辑期间发生了变化，草稿仍保留在当前页面。请先复制你的修改，再重新打开并核对最新版本。"
+          }
+        }
+      }
+    },
+    "This entry changed while you were editing. Your draft is kept. Copy your text, then reopen the entry to review the latest version.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This entry changed while you were editing. Your draft is kept. Copy your text, then reopen the entry to review the latest version."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这条记录在编辑期间发生了变化，草稿仍保留。请复制你的文字，再重新打开记录查看最新版本。"
+          }
+        }
+      }
+    },
   "View Privacy Policy Online": {
     "extractionState": "manual",
     "localizations": {

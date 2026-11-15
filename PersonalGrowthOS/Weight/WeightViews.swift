@@ -325,6 +325,7 @@ struct WeightEditorView: View {
     @FocusState private var isWeightFocused: Bool
     @State private var didRequestFocus = false
     @State private var previous: WeightMeasurement?
+    @State private var syncBaseline: SyncEditorBaseline?
     @State private var weightText: String
     @State private var recordedAt: Date
     @State private var errorMessage: String?
@@ -332,6 +333,7 @@ struct WeightEditorView: View {
     init(record: WeightRecord?, didSave: @escaping () -> Void) {
         self.record = record
         self.didSave = didSave
+        _syncBaseline = State(initialValue: record.map { .capture($0, key: .init(kind: .weight, id: $0.id)) })
         _weightText = State(initialValue: record.map {
             WeightRules.editingKilograms($0.weightKilograms)
         } ?? "")
@@ -398,6 +400,7 @@ struct WeightEditorView: View {
     private func save() {
         do {
             let kilograms = try WeightRules.kilograms(from: weightText)
+            try syncBaseline?.validate(modelContext.container)
             let service = WeightRecordService(context: modelContext)
             if let record {
                 try service.update(
@@ -413,6 +416,8 @@ struct WeightEditorView: View {
             }
             didSave()
             dismiss()
+        } catch let conflict as SyncEditorConflict {
+            errorMessage = conflict.localizedDescription
         } catch WeightValidationError.invalidWeight {
             errorMessage = String(localized: "Enter a valid weight in kilograms.")
         } catch {

@@ -1,0 +1,19 @@
+{
+  "PersonalGrowthOS/AppShell.swift": "786f4bed2635fee18918e59a5de9f436ee50a76032df721f4b5cef03cf700efd",
+  "PersonalGrowthOS/Capture/EntryDetailView.swift": "94e0f55c15a3f0c51d6785f2a0fb1887e9917591502ae8e7bbedc608d143adda",
+  "PersonalGrowthOS/Growth/GoalViews.swift": "818972e361d62de9081bbe1b7f2e2782123781cc19a2a0b4b0cee9597a8b124c",
+  "PersonalGrowthOS/Growth/HabitViews.swift": "32104ca134fc816038aa6d07320e1de5d2ce3c83ef2469d898ad402d88cb926c",
+  "PersonalGrowthOS/ImportantDays/ImportantDayViews.swift": "f96083645acc04681bc788960837cc493743109c94c2f96c95dc898917ebb3ed",
+  "PersonalGrowthOS/Localizable.xcstrings": "12cc7c3eb13f92fa584fc7b396ec01bd3ebb9f7bb3623dbc6f08feaf60e635ca",
+  "PersonalGrowthOS/Media/MediaStore.swift": "06e84cc7ca2dc9a05c6f983ac060abba10da334de640bd7ac77561754e0902c5",
+  "PersonalGrowthOS/Persistence/PersistenceFoundation.swift": "e7c8632a4b8b2a84fc4a20a37870fa2958f2cd6d9c5d604ff898d4a6c200efcd",
+  "PersonalGrowthOS/Review/WeeklyReviewViews.swift": "cb84d2d22c3a1b65ce6c2b8d4bf8a9125f49aa88ce6f9750431925b42d8a5f49",
+  "PersonalGrowthOS/Sync/SyncPersistence.swift": "dde2eddcc446bc13e2429a30f88c2f9bb1d9e26f008dc6bdb72aa5645b2c54cc",
+  "PersonalGrowthOS/Sync/SyncProductCoordinator.swift": "0453d06ae75364ea5aa3b4f0658ceb1146a0428dfc521e9fd4552720bf53ea29",
+  "PersonalGrowthOS/Todo/TodoFoundation.swift": "db67227423b943d39ece9e68a2e244bd0eea59cde0305ffff20d39699918ef22",
+  "PersonalGrowthOS/Todo/TodoViews.swift": "5dbcfde27f2e0e2cd41295f5cd2bb40c25904954bb2ba889b99ebb0eaa49443f",
+  "PersonalGrowthOS/Weight/WeightViews.swift": "53366938e6e40b3dcf0dde78491cc07c8ba328a8971335d5efc6039a80935aa2",
+  "PersonalGrowthOSTests/PersistenceMediaFoundationTests.swift": "c2836960a97e0073776f3e7b10eb51f894561796264be7821fb41938329f1a82",
+  "PersonalGrowthOSTests/SyncProductIntegrationTests.swift": "feedbb2cfadc1b85d8828dcbdfde670d51eec994a83321bb06879f54dc054eb2",
+  "PersonalGrowthOSUITests/AppLaunchSmokeTests.swift": "afc934faa8fed92eb6123cbd0c3e652825078deb14145e955ddb4cabd0353dab"
+}

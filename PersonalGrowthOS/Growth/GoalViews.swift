@@ -261,6 +261,7 @@ private struct GoalEditorView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @State private var syncBaseline: SyncEditorBaseline
     @State private var title: String
     @State private var kind: GoalKind
     @State private var errorMessage: String?
@@ -268,6 +269,7 @@ private struct GoalEditorView: View {
     init(goal: Goal, didSave: @escaping () -> Void) {
         self.goal = goal
         self.didSave = didSave
+        _syncBaseline = State(initialValue: .capture(goal, key: .init(kind: .goal, id: goal.id)))
         _title = State(initialValue: goal.title)
         _kind = State(initialValue: goal.kind)
     }
@@ -309,9 +311,12 @@ private struct GoalEditorView: View {
 
     private func save() {
         do {
+            try syncBaseline.validate(modelContext.container)
             try GoalService(context: modelContext).update(goal, title: title, kind: kind)
             didSave()
             dismiss()
+        } catch let conflict as SyncEditorConflict {
+            errorMessage = conflict.localizedDescription
         } catch GoalValidationError.emptyTitle {
             errorMessage = String(localized: "Title cannot be empty.")
         } catch {

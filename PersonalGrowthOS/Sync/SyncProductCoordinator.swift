@@ -620,7 +620,7 @@ struct SyncConflictSummary: Identifiable {
 
 extension SyncProductCoordinator {
     private func project(_ session: SyncCloudSession) throws {
-        try StorePublication.perform(at: mediaRoot) {
+        let published: Set<SyncDomainKey> = try StorePublication.perform(at: mediaRoot) {
             let context = ModelContext(container); context.autosaveEnabled = false
             let value = try checked(session, context: context)
             #if DEBUG
@@ -629,7 +629,7 @@ extension SyncProductCoordinator {
             guard !container.mainContext.hasChanges else {
                 value.blockedReason = Self.editingReason
                 try context.save(); status = Self.localizedStoredStatus(value.blockedReason!)
-                return
+                return []
             }
             let datasetID = value.id
             let inbox = try context.fetch(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.dataset == datasetID }))
@@ -750,6 +750,23 @@ extension SyncProductCoordinator {
                 try ProductSyncCommit.save(context, origin: .remoteProjection)
             } catch { context.rollback(); throw error }
             refreshStatus()
+            return complete ? affected : []
+        }
+        // Invalidate consumers only after a committed publication and after releasing
+        // the store lease. Their refreshes may acquire the lease or read fresh contexts.
+        // Inbox receipts, pending graphs, failed installs and exact replays publish nothing.
+        let kinds = Set(published.map(\.kind))
+        if !kinds.isDisjoint(with: [.todoTask, .todoSeries, .todoList, .importantDayTodoLink]) {
+            NotificationCenter.default.post(name: .todoTasksChanged, object: container)
+        }
+        if !kinds.isDisjoint(with: [.importantDay, .importantDayEntryLink, .importantDayTodoLink]) {
+            NotificationCenter.default.post(name: .importantDaysChanged, object: container)
+        }
+        if !kinds.isDisjoint(with: [.sleepRecord, .sleepGoal]) {
+            NotificationCenter.default.post(name: .sleepRecordsChanged, object: container)
+        }
+        if !kinds.isDisjoint(with: [.investmentRecord, .investmentActivity, .investmentParticipant]) {
+            InvestmentChanges.publish(.all, container: container)
         }
     }
 

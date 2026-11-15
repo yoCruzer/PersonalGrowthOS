@@ -2835,7 +2835,15 @@ extension AppLaunchSmokeTests {
         app.buttons["todo-dismiss-keyboard"].tap()
         for _ in 0..<5 where !app.buttons["todo-repeat"].isHittable { app.swipeUp() }
         app.buttons["todo-repeat"].tap(); app.buttons["Every Week"].tap()
-        XCTAssertTrue(app.staticTexts["todo-repeat-needs-day"].waitForExistence(timeout: 5))
+        let needsDay = app.staticTexts["todo-repeat-needs-day"]
+        if !needsDay.exists {
+            let attachment = XCTAttachment(screenshot: app.screenshot())
+            attachment.name = "repeat-warning-before-scroll"; attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+        // Expanding the repeat explanation can leave this lazy Form row below the viewport.
+        for _ in 0..<3 where !needsDay.exists { app.swipeUp() }
+        XCTAssertTrue(needsDay.waitForExistence(timeout: 5))
         app.buttons["todo-save"].tap()
         XCTAssertTrue(app.staticTexts["todo-editor-error"].waitForExistence(timeout: 5))
         for _ in 0..<5 where !app.switches["todo-planned-toggle"].isHittable { app.swipeDown() }

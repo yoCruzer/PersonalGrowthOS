@@ -92,6 +92,192 @@ import SyncFoundation
         try ModelContext(device.container).fetchCount(FetchDescriptor<ProductSyncOutbox>())
     }
 
+    func testRemoteTodoPublicationNotifiesReminderConsumersOnlyAfterCommitAndNotOnReplay() async throws {
+        let a = try device(), b = try device()
+        let context = ModelContext(a.container)
+        let service = TodoTaskService(context: context, now: { self.instant })
+        let task = try service.create(TodoDraft(title: "Remote reminder"))
+        var observedTitles: [[String]] = []
+        let token = NotificationCenter.default.addObserver(forName: .todoTasksChanged, object: nil, queue: .main) { notification in
+            guard notification.object as? ModelContainer === b.container else { return }
+            MainActor.assumeIsolated {
+                observedTitles.append((try? ModelContext(b.container).fetch(FetchDescriptor<TodoTask>()).map(\.title)) ?? [])
+            }
+        }
+        defer { NotificationCenter.default.removeObserver(token) }
+        let packets = try allPackets(a)
+        try await b.coordinator.durableInbox(packets, session: b.session)
+        XCTAssertTrue(observedTitles.isEmpty)
+        try await b.coordinator.applyDurableInbox(session: b.session)
+        XCTAssertEqual(observedTitles, [[task.title]])
+        try await deliver(packets, to: b)
+        XCTAssertEqual(observedTitles.count, 1)
+        XCTAssertEqual(try outboxCount(b), 0)
+    }
+
+    func testValueDraftCannotSilentlyOverwriteRemoteEntryEvenWithUnchangedTimestamp() async throws {
+        let a = try device(), b = try device(), id = try createEntry(a, body: "base")
+        try await deliver(try allPackets(a), to: b)
+        let editing = try XCTUnwrap(b.container.mainContext.fetch(FetchDescriptor<Entry>()).first)
+        let baseline = EntryEditingSnapshot(editing)
+        let draft = EntryEditingDraft(title: nil, body: "local unsaved draft", occurredAt: editing.occurredAt,
+                                      retainedImageIDs: [], addedImages: [])
+        // SwiftUI stores these fields in @State, so mainContext.hasChanges remains false.
+        XCTAssertFalse(b.container.mainContext.hasChanges)
+        try write(a) { context in
+            try XCTUnwrap(context.fetch(FetchDescriptor<Entry>()).first).body = "remote same-clock edit"
+        }
+        try await deliver(try allPackets(a), to: b)
+        XCTAssertEqual(try body(b, id: id), "remote same-clock edit")
+        let service = EntryEditingService(persistence: ModelContextEntryPersistence(context: b.container.mainContext), mediaStore: MediaStore(rootURL: b.root))
+        XCTAssertThrowsError(try service.update(editing, with: draft, expected: baseline)) {
+            XCTAssertEqual($0 as? EntryEditingFailure, .changedSinceEditing)
+        }
+        XCTAssertEqual(try body(b, id: id), "remote same-clock edit")
+        XCTAssertEqual(try outboxCount(b), 0)
+        XCTAssertEqual(draft.body, "local unsaved draft")
+    }
+
+    func testEntryDraftStillSavesAfterUnrelatedRemoteEditButRejectsRemoteDeletion() async throws {
+        let a = try device(), b = try device()
+        let id = try createEntry(a, body: "editable"), other = try createEntry(a, body: "unrelated")
+        try await deliver(try allPackets(a), to: b)
+        let editing = try XCTUnwrap(b.container.mainContext.fetch(FetchDescriptor<Entry>()).first { $0.id == id })
+        let cachedOther = try XCTUnwrap(b.container.mainContext.fetch(FetchDescriptor<Entry>()).first { $0.id == other })
+        let baseline = EntryEditingSnapshot(editing)
+        try edit(a, id: other, body: "remote unrelated change")
+        try await deliver(try allPackets(a), to: b)
+        let service = EntryEditingService(persistence: ModelContextEntryPersistence(context: b.container.mainContext), mediaStore: MediaStore(rootURL: b.root))
+        let draft = EntryEditingDraft(title: nil, body: "saved local draft", occurredAt: editing.occurredAt, retainedImageIDs: [], addedImages: [])
+        try service.update(editing, with: draft, expected: baseline)
+        XCTAssertEqual(try body(b, id: id), "saved local draft")
+        XCTAssertEqual(try body(b, id: other), "remote unrelated change")
+        XCTAssertEqual(try outboxCount(b), 1, "Saving A must not republish a cached old B")
+        _ = cachedOther.body // Keep the pre-projection model alive as a mounted @Query would.
+        // Return B's edit to A so deletion causally follows it; no fabricated conflict.
+        try await deliver(try allPackets(b), to: a)
+        let editedBaseline = EntryEditingSnapshot(editing)
+        try write(a) { context in
+            context.delete(try XCTUnwrap(context.fetch(FetchDescriptor<Entry>()).first { $0.id == id }))
+        }
+        try await deliver(try allPackets(a), to: b)
+        XCTAssertNil(try body(b, id: id))
+        XCTAssertThrowsError(try service.update(editing, with: draft, expected: editedBaseline)) {
+            XCTAssertEqual($0 as? EntryEditingFailure, .changedSinceEditing)
+        }
+        XCTAssertNil(try body(b, id: id))
+    }
+
+    func testRemoteDayAndSleepChangesPublishAfterLeaseAndDoNotEcho() async throws {
+        let a = try device(), b = try device()
+        try write(a) { context in
+            context.insert(try ImportantDay(title: "Remote day", rule: .init(), createdAt: instant))
+            var values = SleepValues(); values.feeling = 3
+            context.insert(try SleepRecord(wakeDay: "2023-11-14", timeZoneID: "UTC", values: values, createdAt: instant))
+        }
+        var notifications: [Notification.Name] = []
+        let tokens = [Notification.Name.importantDaysChanged, .sleepRecordsChanged].map { name in
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { notification in
+                guard notification.object as? ModelContainer === b.container else { return }
+                MainActor.assumeIsolated {
+                    do { try StorePublication.perform(at: b.root) {} }
+                    catch { XCTFail("Consumer notified before publication lease released: \(error)") }
+                    notifications.append(name)
+                }
+            }
+        }
+        defer { tokens.forEach(NotificationCenter.default.removeObserver) }
+        let packets = try allPackets(a)
+        // A complete valid graph must be present before consumers receive any event.
+        try await deliver(packets.filter { if case .mutation = $0 { return true }; return false }, to: b)
+        XCTAssertTrue(notifications.isEmpty)
+        try await deliver(packets, to: b)
+        XCTAssertEqual(Set(notifications), [.importantDaysChanged, .sleepRecordsChanged])
+        XCTAssertEqual(notifications.count, 2)
+        try await deliver(packets, to: b)
+        XCTAssertEqual(notifications.count, 2)
+        XCTAssertEqual(try outboxCount(b), 0)
+    }
+
+    func testTodoValueDraftCannotOverwriteRemoteEdit() async throws {
+        let a = try device(), b = try device()
+        let first = TodoTaskService(context: ModelContext(a.container), now: { self.instant })
+        let task = try first.create(TodoDraft(title: "base task"))
+        try await deliver(try allPackets(a), to: b)
+        let local = try XCTUnwrap(ModelContext(b.container).fetch(FetchDescriptor<TodoTask>()).first)
+        let expected = TodoTaskTransfer(local)
+        var draft = TodoDraft(local); draft.notes = "local unsaved notes"
+        try first.edit(id: task.id, draft: TodoDraft(title: "remote latest title"))
+        try await deliver(try allPackets(a), to: b)
+        let editor = TodoTaskService(context: ModelContext(b.container))
+        XCTAssertThrowsError(try editor.edit(id: task.id, draft: draft, expected: expected)) {
+            guard case TodoFailure.staleTask = $0 else { return XCTFail("Expected stale draft rejection: \($0)") }
+        }
+        XCTAssertEqual(try ModelContext(b.container).fetch(FetchDescriptor<TodoTask>()).first?.title, "remote latest title")
+        XCTAssertEqual(try outboxCount(b), 0)
+        let latest = try editor.task(id: task.id)
+        let refreshedBaseline = TodoTaskTransfer(latest)
+        var reviewedDraft = TodoDraft(latest); reviewedDraft.notes = draft.notes
+        try editor.edit(id: task.id, draft: reviewedDraft, expected: refreshedBaseline)
+        let saved = try XCTUnwrap(ModelContext(b.container).fetch(FetchDescriptor<TodoTask>()).first)
+        XCTAssertEqual(saved.title, "remote latest title"); XCTAssertEqual(saved.notes, "local unsaved notes")
+        XCTAssertEqual(try outboxCount(b), 1)
+    }
+
+    func testSyncEditorBaselineFencesOnlyChangedPublishedObjectAndSurvivesClockRollback() async throws {
+        let a = try device(), b = try device()
+        let id = UUID(), other = try createEntry(a, body: "unrelated")
+        try write(a) { $0.insert(WeightRecord(id: id, weightKilograms: 70, recordedAt: instant, createdAt: instant)) }
+        try await deliver(try allPackets(a), to: b)
+        let reader = ModelContext(b.container)
+        let weight = try XCTUnwrap(reader.fetch(FetchDescriptor<WeightRecord>()).first)
+        let baseline = SyncEditorBaseline.capture(weight, key: .init(kind: .weight, id: id))
+        XCTAssertNoThrow(try baseline.validate(b.container))
+        try edit(a, id: other, body: "unrelated updated")
+        try await deliver(try allPackets(a), to: b)
+        XCTAssertNoThrow(try baseline.validate(b.container))
+        try write(a) { context in
+            let remote = try XCTUnwrap(context.fetch(FetchDescriptor<WeightRecord>()).first)
+            remote.weightKilograms = 71 // Keep the same timestamp deliberately.
+        }
+        try await deliver(try allPackets(a), to: b)
+        XCTAssertThrowsError(try baseline.validate(b.container))
+        // Reopening from a cached SwiftData model must not pair old values with a
+        // newly published fingerprint and authorize an overwrite.
+        XCTAssertEqual(weight.weightKilograms, 70)
+        let reopenedFromCache = SyncEditorBaseline.capture(weight, key: .init(kind: .weight, id: id))
+        XCTAssertThrowsError(try reopenedFromCache.validate(b.container))
+        let freshReader = ModelContext(b.container)
+        let fresh = try XCTUnwrap(freshReader.fetch(FetchDescriptor<WeightRecord>()).first)
+        let freshBaseline = SyncEditorBaseline.capture(fresh, key: .init(kind: .weight, id: id))
+        XCTAssertNoThrow(try freshBaseline.validate(b.container))
+        XCTAssertEqual(try ModelContext(b.container).fetch(FetchDescriptor<WeightRecord>()).first?.weightKilograms, 71)
+        try write(a) { context in
+            context.delete(try XCTUnwrap(context.fetch(FetchDescriptor<WeightRecord>()).first))
+        }
+        try await deliver(try allPackets(a), to: b)
+        XCTAssertThrowsError(try freshBaseline.validate(b.container))
+        XCTAssertTrue(try ModelContext(b.container).fetch(FetchDescriptor<WeightRecord>()).isEmpty)
+        XCTAssertEqual(try outboxCount(b), 0)
+    }
+
+    func testRemoteInvestmentPublicationInvalidatesCachedWorkspaceWithoutReplayEcho() async throws {
+        let a = try device(), b = try device()
+        let workspace = InvestmentWorkspace()
+        workspace.refresh(b.container.mainContext)
+        XCTAssertTrue(workspace.participants.isEmpty)
+        try write(a) { $0.insert(InvestmentParticipant(name: "Remote participant", isDefault: true)) }
+        let packets = try allPackets(a)
+        let prior = InvestmentChanges.version(b.container).sequence
+        try await deliver(packets, to: b)
+        XCTAssertEqual(InvestmentChanges.version(b.container).sequence, prior + 1)
+        workspace.refresh(b.container.mainContext)
+        XCTAssertEqual(workspace.participants.map(\.name), ["Remote participant"])
+        try await deliver(packets, to: b)
+        XCTAssertEqual(InvestmentChanges.version(b.container).sequence, prior + 1)
+        XCTAssertEqual(try outboxCount(b), 0)
+    }
+
     func testManyDownloadedRecordsStayDurableWithoutPerRecordProjectionThenApplyOnceAfterReopen() async throws {
         let a = try device(), b = try device(), count = 64
         try write(a) { context in

@@ -1,3 +1,9 @@
+## 2026-11-15 Build21主动风险审计与分支整理进行中
+
+Owner新授权：梳理合并清理分支，并深审已发布1.0(21)/321219f与修复风险。独立工作树 `/private/tmp/PersonalGrowthOS-release21-audit`，分支 `codex/release-21-risk-audit`；原主目录未提交修改不动。main已无重写地快进至发布交付a58848f；Owner确认具体范围后，34条已吸收远端分支已删除、19个历史PR已关闭，独立PR18保留并改base至main。三类风险已修复，完整原生单元724/724与SyncFoundation82/82通过；补充边界、关键UI与Release/CI验证进行中，不操作私人库，不扩大产品范围或发布新包。详情与清理逐项SHA见 [本轮审计](RELEASE21_RISK_AUDIT_ZH.md)。下方全部为历史交接。
+
+---
+
 ## 2026-11-15 免费首发完成：1.0 (21) 已公开上线并核验
 
 Owner明确“确认公开上线”后，15:20执行并确认港澳台美四区发布，Apple版本1.0可分发/Build21关联保持、各区可供应。15:29–15:30四区公共Lookup明确software类型均返回同一6796425674/Bundle/1.0/price0，Safari实际公开美国产品页显示正式图标、五截图、Free、iPhone、9+及双语隐私信息。早期id-only空结果有约24h缓存，已被公开有效记录和页面覆盖，原证据保留。候选321219f与唯一tag不变；Goal COMPLETE / PUBLIC_RELEASE_VERIFIED，无Owner待办或Apple技术反馈。原本机/CI/Owner冒烟通过，独立签名包字节检查及agent商店真机安装NOT_RUN限制如实保留。大陆待备案/准入后开为后续范围；原分支/他人修改、AGPL不动。[最终台账及四区链接](APP_STORE_RELEASE.md)。以下保留历史，不覆盖本段。

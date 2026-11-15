@@ -784,12 +784,17 @@ extension ModelContextEntryPersistence: EntryDeletingPersistence {
 
 @MainActor
 protocol EntryEditingPersistence: AnyObject {
+    func persistedSnapshot(id: UUID) throws -> EntryEditingSnapshot?
     func delete(_ image: ImageMetadata)
     func save() throws
     func rollback()
 }
 
 extension ModelContextEntryPersistence: EntryEditingPersistence {
+    func persistedSnapshot(id: UUID) throws -> EntryEditingSnapshot? {
+        let reader = ModelContext(context.container)
+        return try reader.fetch(FetchDescriptor<Entry>(predicate: #Predicate { $0.id == id })).first.map(EntryEditingSnapshot.init)
+    }
     func delete(_ image: ImageMetadata) {
         context.delete(image)
     }
@@ -799,6 +804,34 @@ enum EntryEditingImage {
     case retained(UUID)
     case added(MediaSource)
 }
+
+/// Value copy taken when an editor opens; timestamps alone cannot detect same-clock edits.
+struct EntryEditingSnapshot: Equatable {
+    struct Image: Equatable {
+        let id: UUID
+        let path: String
+        let checksum: String
+        let order: Int
+        init(_ image: ImageMetadata) {
+            id = image.id; path = image.relativePath; checksum = image.checksum; order = image.sortOrder
+        }
+    }
+    let id: UUID
+    let title: String?
+    let body: String?
+    let occurredAt: Date
+    let updatedAt: Date
+    let kind: String
+    let status: String
+    let images: [Image]
+    init(_ entry: Entry) {
+        id = entry.id; title = entry.title; body = entry.body; occurredAt = entry.occurredAt
+        updatedAt = entry.updatedAt; kind = entry.kindRawValue; status = entry.statusRawValue
+        images = entry.images.map(Image.init).sorted { $0.id.uuidString < $1.id.uuidString }
+    }
+}
+
+enum EntryEditingFailure: Error, Equatable { case changedSinceEditing }
 
 struct EntryEditingDraft {
     let title: String?
@@ -852,7 +885,18 @@ final class EntryEditingService {
         self.thumbnailCleanup = thumbnailCleanup
     }
 
-    func update(_ entry: Entry, with draft: EntryEditingDraft) throws {
+    func update(_ entry: Entry, with draft: EntryEditingDraft, expected: EntryEditingSnapshot? = nil) throws {
+        try StorePublication.perform(at: mediaStore.rootURL) {
+            if let expected {
+                guard expected.id == entry.id, try persistence.persistedSnapshot(id: entry.id) == expected else {
+                    throw EntryEditingFailure.changedSinceEditing
+                }
+            }
+            try updateWhileHoldingLease(entry, with: draft)
+        }
+    }
+
+    private func updateWhileHoldingLease(_ entry: Entry, with draft: EntryEditingDraft) throws {
         let imagesByID = Dictionary(
             entry.images.map { ($0.id, $0) },
             uniquingKeysWith: { first, _ in first }

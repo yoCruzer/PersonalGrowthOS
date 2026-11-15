@@ -1,0 +1,3 @@
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:249: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testSyncEditorBaselineFencesOnlyChangedPublishedObjectAndSurvivesClockRollback] : XCTAssertThrowsError failed: did not throw an error
+Test Case '-[PersonalGrowthOSTests.SyncProductIntegrationTests testSyncEditorBaselineFencesOnlyChangedPublishedObjectAndSurvivesClockRollback]' failed (0.104 seconds).
+** TEST FAILED **

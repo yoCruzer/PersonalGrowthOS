@@ -514,9 +514,18 @@ final class TodoTaskService {
         task.remindAt = reminder; task.reminderLocalDay = day.description
         task.reminderMinutes = minutes; task.reminderTimeZoneID = timeZone().identifier
     }
-    func edit(id: UUID, draft: TodoDraft, futureSeries: Bool = false) throws {
+    func edit(id: UUID, draft: TodoDraft, futureSeries: Bool = false, expected: TodoTaskTransfer? = nil) throws {
+        func checkBaseline() throws {
+            guard let expected else { return }
+            let reader = ModelContext(context.container)
+            guard expected.id == id,
+                  let latest = try reader.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == id })).first,
+                  TodoTaskTransfer(latest) == expected else { throw TodoFailure.staleTask }
+        }
+        try checkBaseline()
         try draft.validate(); try requireList(draft.listID)
         let task = try task(id: id)
+        if let expected, TodoTaskTransfer(task) != expected { throw TodoFailure.staleTask }
         if let frequency = draft.frequency {
             guard task.state == .open else { throw TodoFailure.conversionRequiresOpen }
             if let seriesID = task.seriesID {
@@ -549,6 +558,7 @@ final class TodoTaskService {
         }
         let retainOverride=previousIntent?.isInstanceOverride == true && !reminderChanged && !futureSeries && draft.remindAt != nil
         try transaction {
+            try checkBaseline()
             if !futureSeries && (reminderChanged || previousIntent?.isInstanceOverride == true) {try preserveLegacyReminderOffset(task)}
             let before = try TodoEventValue(task)
             if draft.frequency != nil {

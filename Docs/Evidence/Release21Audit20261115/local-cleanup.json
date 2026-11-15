@@ -1,0 +1,94 @@
+[
+  {
+    "path": "/Users/himini/Development/Projects/PersonalGrowthOS",
+    "branch": "refs/heads/codex/todo-v1-personal-actions",
+    "result": "retained-dirty"
+  },
+  {
+    "path": "/private/tmp/PersonalGrowthOS-icloud-foundation",
+    "branch": "refs/heads/codex/icloud-sync-foundation",
+    "result": "retained-dirty"
+  },
+  {
+    "path": "/private/tmp/PersonalGrowthOS-icloud-g1",
+    "branch": "refs/heads/codex/icloud-sync-g1",
+    "result": "retained-dirty"
+  },
+  {
+    "path": "/private/tmp/pgos-app-store-release-20261110",
+    "branch": "refs/heads/codex/app-store-free-release-20261110",
+    "result": "retained-dirty"
+  },
+  {
+    "path": "/Users/himini/.codex/worktrees/quiet-wins-on-d72/PersonalGrowthOS",
+    "branch": "refs/heads/codex/quiet-wins-on-d72",
+    "result": "detached-clean-history-preserved"
+  },
+  {
+    "path": "/Users/himini/.codex/worktrees/sleep-routine-v1/PersonalGrowthOS",
+    "branch": "refs/heads/codex/sleep-routine-v1",
+    "result": "retained-dirty"
+  },
+  {
+    "path": "/Users/himini/.codex/worktrees/time-investment-v1/PersonalGrowthOS",
+    "branch": "refs/heads/codex/time-investment-v1",
+    "result": "detached-clean-history-preserved"
+  },
+  {
+    "path": "/Users/himini/Development/Projects/PersonalGrowthOS-icloud-product",
+    "branch": "refs/heads/codex/icloud-product",
+    "result": "detached-clean-history-preserved"
+  },
+  {
+    "branch": "codex/app-store-free-release-20261110",
+    "result": "error: cannot delete branch 'codex/app-store-free-release-20261110' used by worktree at '/private/tmp/pgos-app-store-release-20261110'\n"
+  },
+  {
+    "branch": "codex/household-net-worth-v1",
+    "result": "error: the branch 'codex/household-net-worth-v1' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/household-net-worth-v1'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  },
+  {
+    "branch": "codex/icloud-product",
+    "result": "error: the branch 'codex/icloud-product' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/icloud-product'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  },
+  {
+    "branch": "codex/icloud-sync-foundation",
+    "result": "error: cannot delete branch 'codex/icloud-sync-foundation' used by worktree at '/private/tmp/PersonalGrowthOS-icloud-foundation'\n"
+  },
+  {
+    "branch": "codex/icloud-sync-g1",
+    "result": "error: cannot delete branch 'codex/icloud-sync-g1' used by worktree at '/private/tmp/PersonalGrowthOS-icloud-g1'\n"
+  },
+  {
+    "branch": "codex/icloud-sync-v1-audit",
+    "result": "error: the branch 'codex/icloud-sync-v1-audit' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/icloud-sync-v1-audit'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  },
+  {
+    "branch": "codex/important-days-v1",
+    "result": "error: the branch 'codex/important-days-v1' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/important-days-v1'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  },
+  {
+    "branch": "codex/quiet-wins-on-d72",
+    "result": "error: the branch 'codex/quiet-wins-on-d72' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/quiet-wins-on-d72'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  },
+  {
+    "branch": "codex/sleep-routine-v1",
+    "result": "error: cannot delete branch 'codex/sleep-routine-v1' used by worktree at '/Users/himini/.codex/worktrees/sleep-routine-v1/PersonalGrowthOS'\n"
+  },
+  {
+    "branch": "codex/time-investment-v1",
+    "result": "error: the branch 'codex/time-investment-v1' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/time-investment-v1'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  },
+  {
+    "branch": "codex/todo-v1-personal-actions",
+    "result": "error: cannot delete branch 'codex/todo-v1-personal-actions' used by worktree at '/Users/himini/Development/Projects/PersonalGrowthOS'\n"
+  },
+  {
+    "branch": "codex/ui-readability-localization-20261020",
+    "result": "error: the branch 'codex/ui-readability-localization-20261020' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/ui-readability-localization-20261020'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  },
+  {
+    "branch": "codex/usage-remediation-20261017",
+    "result": "error: the branch 'codex/usage-remediation-20261017' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D codex/usage-remediation-20261017'\nhint: Disable this message with \"git config set advice.forceDeleteBranch false\"\n"
+  }
+]

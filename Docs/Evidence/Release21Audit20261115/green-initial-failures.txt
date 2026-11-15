@@ -1,0 +1,3 @@
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:173:17: error: call can throw, but it is not marked with 'try' and the error is not handled
+    |                 `- error: call can throw, but it is not marked with 'try' and the error is not handled
+** TEST FAILED **

@@ -129,6 +129,16 @@ final class MediaStore {
             storeCopyCount += 1
             try beforeStoreCopy?(storeCopyCount)
             try fileManager.copyItem(at: source.url, to: stagingURL)
+            // The provider can replace/grow its file after preflight. Only our private
+            // staged copy is authoritative for limits and persisted integrity metadata.
+            let stagedAttributes = try fileManager.attributesOfItem(atPath: stagingURL.path)
+            guard stagedAttributes[.type] as? FileAttributeType == .typeRegular else {
+                throw MediaStoreError.invalidImage
+            }
+            let stagedByteCount = (stagedAttributes[.size] as? NSNumber)?.int64Value ?? 0
+            guard stagedByteCount <= Self.maximumOriginalByteCount else {
+                throw MediaStoreError.originalTooLarge(maximumBytes: Self.maximumOriginalByteCount)
+            }
             let data = try Data(contentsOf: stagingURL, options: .mappedIfSafe)
             let dimensions = try validatedDimensions(at: stagingURL, declaredContentType: source.contentType)
             let checksum = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
@@ -136,7 +146,7 @@ final class MediaStore {
             return StoredMediaFile(
                 id: id,
                 relativePath: relativePath,
-                byteCount: byteCount,
+                byteCount: Int64(data.count),
                 checksum: checksum,
                 pixelWidth: dimensions.width,
                 pixelHeight: dimensions.height

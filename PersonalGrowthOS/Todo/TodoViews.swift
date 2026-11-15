@@ -186,6 +186,7 @@ struct TodoEditorView: View {
     @Environment(TodoReminderCoordinator.self) private var reminders
     @Query(sort: \TodoList.createdAt) private var lists: [TodoList]
     @State private var draft = TodoDraft()
+    @State private var editingBaseline: TodoTaskTransfer?
     @State private var submissionID = UUID()
     @State private var loaded = false
     @State private var futureSeries = false
@@ -301,7 +302,11 @@ struct TodoEditorView: View {
             .task {
                 guard !loaded else { return }; loaded = true
                 if let task {
-                    do {draft=try TodoTaskService(context:context).draft(id:task.id)}
+                    do {
+                        let reader = TodoTaskService(context: ModelContext(context.container))
+                        draft = try reader.draft(id: task.id)
+                        editingBaseline = TodoTaskTransfer(try reader.task(id: task.id))
+                    }
                     catch {self.error=error.localizedDescription}
                 }
                 else if let sourceEntry {
@@ -334,9 +339,12 @@ struct TodoEditorView: View {
         do {
             try draft.validateReminderForSave(now: Date(), existingReminder: task?.remindAt,
                 usesExistingFutureTemplate: futureSeries && task?.seriesID != nil)
-            let service = TodoTaskService(context: context)
+            let service = TodoTaskService(context: ModelContext(context.container))
             let id: UUID
-            if let task { try service.edit(id: task.id, draft: draft, futureSeries: futureSeries); id = task.id }
+            if let task {
+                guard let editingBaseline else { throw TodoFailure.staleTask }
+                try service.edit(id: task.id, draft: draft, futureSeries: futureSeries, expected: editingBaseline); id = task.id
+            }
             else if let importantDayOperation { id = try importantDayOperation.createTodo(draft, id: submissionID, context: context).id }
             else { id = try service.create(draft, sourceEntryID: sourceEntry?.id, id: submissionID, importantDayID: importantDayID, importantDayOccurrence: importantDayOccurrence).id }
             let saved = try service.task(id: id)

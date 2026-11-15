@@ -1,0 +1,8 @@
++ codex/app-store-free-release-20261110 a58848f (/private/tmp/pgos-app-store-release-20261110) [origin/codex/app-store-free-release-20261110: gone] Verify free App Store launch across all four storefronts [skip ci]
++ codex/icloud-formal-execution-guard   290bfc0 (/private/tmp/PersonalGrowthOS-icloud-execution-guard) [origin/codex/icloud-formal-execution-guard] Record CK4 TLS timeout evidence and unresolved launch identity risk [skip ci]
++ codex/icloud-sync-foundation          07c1bcf (/private/tmp/PersonalGrowthOS-icloud-foundation) [origin/codex/icloud-sync-foundation: gone] Record independently verified Mac qualification CI and continuation [skip ci]
++ codex/icloud-sync-g1                  e57fe35 (/private/tmp/PersonalGrowthOS-icloud-g1) [origin/codex/icloud-sync-g1: gone] Close G1 owner-approved phone scope with verified raw evidence
+* codex/release-21-risk-audit           a58848f Verify free App Store launch across all four storefronts [skip ci]
++ codex/sleep-routine-v1                ad0720a (/Users/himini/.codex/worktrees/sleep-routine-v1/PersonalGrowthOS) [origin/codex/sleep-routine-v1: gone] Record external PR11 R1-R3 approval and owner device gate
++ codex/todo-v1-personal-actions        d72c016 (/Users/himini/Development/Projects/PersonalGrowthOS) [origin/codex/todo-v1-personal-actions: gone] fix: canonicalize startup protection paths and locate Cocoa 259 failures
+  main                                  a58848f [origin/main] Verify free App Store launch across all four storefronts [skip ci]

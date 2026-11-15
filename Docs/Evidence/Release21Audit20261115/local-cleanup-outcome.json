@@ -1,0 +1,16 @@
+{
+  "deletedBranches": [
+    "codex/household-net-worth-v1",
+    "codex/icloud-product",
+    "codex/icloud-sync-v1-audit",
+    "codex/important-days-v1",
+    "codex/quiet-wins-on-d72",
+    "codex/time-investment-v1",
+    "codex/ui-readability-localization-20261020",
+    "codex/usage-remediation-20261017"
+  ],
+  "deletedCount": 8,
+  "method": "git branch -d from audit checkout whose HEAD contains all deleted tips; no -D",
+  "initialAttempt": "Preserved in local-cleanup.json; original checkout HEAD was d72c016, so safe-delete correctly refused. Retried from audit checkout after verifying ancestry. Dirty worktrees retained.",
+  "verification": "Every deleted refs/heads name absent; local-branches-after.txt records the eight remaining branches."
+}

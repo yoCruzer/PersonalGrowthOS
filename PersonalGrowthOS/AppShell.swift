@@ -224,8 +224,8 @@ struct AppShell: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .importantDaysChanged)) { notification in
             guard notification.object as? ModelContainer === container.modelContainer else { return }
-            widgetPublisher.rebuild(context: container.modelContainer.mainContext, mediaStore: container.mediaStore)
-            Task { await todoReminders.reconcile(context: container.modelContainer.mainContext) }
+            widgetPublisher.rebuild(context: ModelContext(container.modelContainer), mediaStore: container.mediaStore)
+            Task { await todoReminders.reconcile(context: ModelContext(container.modelContainer)) }
         }
         .modifier(TodoReminderEvents(container:container.modelContainer,coordinator:todoReminders))
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in

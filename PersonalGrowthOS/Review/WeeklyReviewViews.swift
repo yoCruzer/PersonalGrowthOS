@@ -30,6 +30,7 @@ struct WeeklyReviewView: View {
     @State private var focusText = ""
     @State private var isCompleted = false
     @State private var isSaving = false
+    @State private var syncBaseline: SyncEditorBaseline?
     @State private var editState: WeeklyReviewEditState?
     @State private var showsSaveConfirmation = false
     @State private var saveConfirmationTask: Task<Void, Never>?
@@ -132,7 +133,7 @@ struct WeeklyReviewView: View {
                     }
                 }
 
-                if currentReview != nil {
+                if currentReview != nil || isDirty {
                     reflectionSections
                 } else {
                     Section {
@@ -159,8 +160,15 @@ struct WeeklyReviewView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Weekly Review")
         .accessibilityIdentifier("weekly-review-view")
-        .onAppear {loadDraft()}
-        .onChange(of: currentReview?.id) { _, _ in loadDraft() }
+        .onAppear { if editState == nil { loadDraft() } }
+        .onChange(of: currentReview?.id) { _, _ in
+            if isDirty {
+                // A remote deletion must not erase the value draft being edited.
+                errorMessage = SyncEditorConflict.changed.localizedDescription
+            } else {
+                loadDraft()
+            }
+        }
         .onChange(of: draft) { _, _ in draftChanged() }
         .onDisappear {
             saveConfirmationTask?.cancel()
@@ -357,10 +365,12 @@ struct WeeklyReviewView: View {
                 errorMessage = String(localized: "The weekly review was not saved.")
                 return
             }
+            try syncBaseline?.validate(modelContext.container)
             try WeeklyReviewService(context: modelContext).update(
                 review,
                 draft: draftToSave
             )
+            syncBaseline = .capture(review, key: .init(kind: .weeklyReview, id: review.id))
             editState?.markSaved(draftToSave)
             guard draft == draftToSave else { return }
             showsSaveConfirmation = true
@@ -369,6 +379,8 @@ struct WeeklyReviewView: View {
                 guard !Task.isCancelled, draft == draftToSave else { return }
                 showsSaveConfirmation = false
             }
+        } catch let conflict as SyncEditorConflict {
+            errorMessage = conflict.localizedDescription
         } catch {
             errorMessage = String(localized: "The weekly review was not saved.")
         }
@@ -376,6 +388,7 @@ struct WeeklyReviewView: View {
 
     private func loadDraft(from review: WeeklyReview? = nil) {
         let review = review ?? currentReview
+        syncBaseline = review.map { .capture($0, key: .init(kind: .weeklyReview, id: $0.id)) }
         let loadedDraft = WeeklyReviewDraft(review: review)
         rememberedText = loadedDraft.rememberedText
         improvementText = loadedDraft.improvementText

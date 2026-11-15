@@ -1,0 +1,31 @@
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:89: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testRemoteDayAndSleepChangesPublishAfterLeaseAndDoNotEcho] : failed: caught error: "empty"
+Test Case '-[PersonalGrowthOSTests.SyncProductIntegrationTests testRemoteDayAndSleepChangesPublishAfterLeaseAndDoNotEcho]' failed (0.175 seconds).
+2026-11-15 16:12:30.179643+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: failure reading metadata plist with data bytes: {length = 1, bytes = 0x01}
+CoreData: error: failure reading metadata plist with data bytes: {length = 1, bytes = 0x01}
+2026-11-15 16:12:30.184202+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (259)
+CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (259)
+2026-11-15 16:12:30.184264+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: storeType: SQLite
+CoreData: error: storeType: SQLite
+2026-11-15 16:12:30.184293+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: configuration: PersonalGrowthOSV1
+CoreData: error: configuration: PersonalGrowthOSV1
+2026-11-15 16:12:30.184334+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: URL: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite
+CoreData: error: URL: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite
+2026-11-15 16:12:30.186154+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: <NSPersistentStoreCoordinator: 0x126c2bd00>: Attempting recovery from error encountered during addPersistentStore: 0x123dd3cc0 Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。"
+CoreData: error: <NSPersistentStoreCoordinator: 0x126c2bd00>: Attempting recovery from error encountered during addPersistentStore: 0x123dd3cc0 Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。"
+2026-11-15 16:12:30.186255+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: Store failed to load.  <NSPersistentStoreDescription: 0x123dd3900> (type: SQLite, url: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite) with error = Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。" with userInfo {
+CoreData: error: Store failed to load.  <NSPersistentStoreDescription: 0x123dd3900> (type: SQLite, url: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite) with error = Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。" with userInfo {
+2026-11-15 16:12:30.199139+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: failure reading metadata plist with data bytes: {length = 1, bytes = 0x01}
+CoreData: error: failure reading metadata plist with data bytes: {length = 1, bytes = 0x01}
+2026-11-15 16:12:30.199670+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (259)
+CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (259)
+2026-11-15 16:12:30.199708+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: storeType: SQLite
+CoreData: error: storeType: SQLite
+2026-11-15 16:12:30.199739+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: configuration: PersonalGrowthOSV1
+CoreData: error: configuration: PersonalGrowthOSV1
+2026-11-15 16:12:30.199779+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: URL: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite
+CoreData: error: URL: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite
+2026-11-15 16:12:30.199931+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: <NSPersistentStoreCoordinator: 0x126c2b080>: Attempting recovery from error encountered during addPersistentStore: 0x126c049c0 Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。"
+CoreData: error: <NSPersistentStoreCoordinator: 0x126c2b080>: Attempting recovery from error encountered during addPersistentStore: 0x126c049c0 Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。"
+2026-11-15 16:12:30.200033+0800 PersonalGrowthOS[99151:61485722] [error] CoreData: error: Store failed to load.  <NSPersistentStoreDescription: 0x126c06a90> (type: SQLite, url: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite) with error = Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。" with userInfo {
+CoreData: error: Store failed to load.  <NSPersistentStoreDescription: 0x126c06a90> (type: SQLite, url: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite) with error = Error Domain=NSCocoaErrorDomain Code=259 "未能打开该文件，因为它的格式不正确。" with userInfo {
+** TEST FAILED **
