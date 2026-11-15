@@ -1,6 +1,12 @@
-## 2026-11-15 Build21主动风险审计与分支整理进行中
+## 2026-11-15 Build21风险审计完成：修复候选与门禁已验证
 
-Owner新授权：梳理合并清理分支，并深审已发布1.0(21)/321219f与修复风险。独立工作树 `/private/tmp/PersonalGrowthOS-release21-audit`，分支 `codex/release-21-risk-audit`；原主目录未提交修改不动。main已无重写地快进至发布交付a58848f；Owner确认具体范围后，34条已吸收远端分支已删除、19个历史PR已关闭，独立PR18保留并改base至main。三类风险已修复，完整原生单元724/724与SyncFoundation82/82通过；补充边界、关键UI与Release/CI验证进行中，不操作私人库，不扩大产品范围或发布新包。详情与清理逐项SHA见 [本轮审计](RELEASE21_RISK_AUDIT_ZH.md)。下方全部为历史交接。
+状态：`AUDIT_COMPLETE / CANDIDATE_VERIFIED / NOT_RELEASED`。已审计已发布1.0(21)/321219f，修复旧草稿覆盖远端内容、远端提交未通知业务消费者、媒体复制后完整性元数据错误三类风险。源码候选 `d1f8c76865548ce23a41231863dd83f6fcf24f17` 已普通推送，见 [Draft PR21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21)。后续提交仅证据与文档。
+
+本机最终729/729＝724原生Unit＋5编辑器UI、0SKIP、runtimeWarnings=[]；SyncFoundation82/82、其他相关UI与unsigned Release通过。独立 [CI43695200124](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43695200124) 整体SUCCESS：Release成功、Unit723PASS/0FAIL/1SKIP、Smoke8/8，运行时警告为空。CI唯一低空间跳过项已由本机32MB HFS+真实卷覆盖。三个官方ZIP的摘要/CRC、测试叶子计数、实际merge完整tree与候选一致均已核验。
+
+main已无重写地快进至a58848f。Owner确认后删除34条已吸收远端分支、关闭19个历史PR；独立PR18保留并改base至main。远端现7条（含审计分支），本地8条；原主目录和其他脏工作树未提交内容保持。交付工作树 `/private/tmp/PersonalGrowthOS-release21-audit`；[完整审计及恢复证据](RELEASE21_RISK_AUDIT_ZH.md)。未触碰私人库、未移动发行tag、未上传新包。
+
+本批停止：候选待审阅和后续发布验收。真实双设备、系统后台/通知/AlarmKit/Widget、实际发行包仍NOT_RUN；同步历史容量、跨UUID自然键冲突、恢复工作区发现另立协议设计批次。下方保留历史交接。
 
 ---
 

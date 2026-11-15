@@ -1,0 +1,43 @@
+{
+  "sourceCandidate": "d1f8c76865548ce23a41231863dd83f6fcf24f17",
+  "sourceIdentity": "final-source-sha256.json; local build began before candidate commit, so embedded provenance is a58848f+dirty. The CI environment manifest independently records its clean checkout and PR head; signed distribution bytes are NOT_RUN.",
+  "bundles": [
+    {
+      "bundle": "/private/tmp/pgos-release21-release-dd/Build/Products/Release-iphoneos/PersonalGrowthOS.app",
+      "identifier": "com.yocruzer.PersonalGrowthOS",
+      "version": "1.0",
+      "build": "12",
+      "unsigned": true,
+      "executableSHA256": "ab73f5890c82c4dc25f6a0de5584ed4e415c2f832333e198a0d972660eb71977",
+      "provenance": [
+        {
+          "path": "BuildProvenance.plist",
+          "value": {
+            "Commit": "a58848f68484cf3bd85af8bf78c388cf0ce4b6ce",
+            "Dirty": true,
+            "Source": "localGit",
+            "Tag": ""
+          }
+        }
+      ]
+    },
+    {
+      "bundle": "/private/tmp/pgos-release21-release-dd/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+      "identifier": "com.yocruzer.PersonalGrowthOS.ShareExtension",
+      "version": "1.0",
+      "build": "12",
+      "unsigned": true,
+      "executableSHA256": "82603a6975b5cb926a6f1bba27351049b4e57e1d03751003ae7c1df39785a094",
+      "provenance": []
+    },
+    {
+      "bundle": "/private/tmp/pgos-release21-release-dd/Build/Products/Release-iphoneos/PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex",
+      "identifier": "com.yocruzer.PersonalGrowthOS.ImportantDaysWidget",
+      "version": "1.0",
+      "build": "12",
+      "unsigned": true,
+      "executableSHA256": "f17dbce41f04c4a32d63f6992ae61a3848aa8ebe4ec72655e8936296c18f7a99",
+      "provenance": []
+    }
+  ]
+}

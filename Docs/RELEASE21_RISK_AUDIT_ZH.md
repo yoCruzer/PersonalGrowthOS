@@ -93,7 +93,7 @@ MediaStore原先在复制前读取源大小，复制后计算图片哈希/尺寸
 - **ZIP恢复新工作区再发现**：恢复故意建立随机独立dataset，防止旧云工作区覆盖恢复内容；重装后的默认dataset发现机制不能保证自动找到该恢复工作区。现有K1保留，需显式工作区目录/选择协议。
 - 新表单校验主要覆盖后台同步与本轮两个已复现数据丢失入口，并不构成所有未来写入者的通用MVCC。真实双设备、后台系统调度、设备通知/AlarmKit/Widget、发行签名/商店包安装均NOT_RUN；不把合成测试当这些门禁通过。
 
-## 实际验证（进行中）
+## 实际验证
 
 环境：本机arm64、macOS27.0.1(26A434)、Xcode27.2(27B52)、iOS27.0隔离模拟器`502D3BAF-454D-430F-85FE-A3D0FCFBFE38`。日志/xcresult位于 `/private/tmp/pgos-release21-evidence/`；摘要及源码hash保存在本目录Evidence/Release21Audit20261115。首次沙箱内simctl/远端读取不可用，获执行权限后正常；没有破坏性恢复。
 
@@ -112,7 +112,16 @@ MediaStore原先在复制前读取源大小，复制后计算图片哈希/尺寸
 | affected-ui | 11执行：10PASS/1FAIL，runtimeWarnings=[]；Todo重复转换提示在展开后的Form下方，补有限滚动，原断言保留，滚动前截图证实位于视口下方，定向复验通过。其余10项含真实Files恢复通过 |
 | final-unit | 724执行：723PASS/1FAIL/0SKIP；新增“已持有旧对象再打开编辑器”断言复现查询指纹与原对象脱节，已改按ID核对原对象并定向通过；A保存不重发旧B通过 |
 | cache-and-ui | 14/14 PASS：13双库集成（含旧对象/删除/重开正例）＋原失败Todo UI；原断言不变 |
-| verified-regression | 最终完整Unit＋5个受影响编辑器UI运行中 |
+| verified-regression | 729/729 PASS = 724 Unit + 5 UI; 0 SKIP; runtimeWarnings=[] |
+| release-verified | 最终产品源码unsigned Release成功，App/ShareExtension/Widget三个Bundle完整；本机默认1.0(12)，与云发行1.0(21)按既有台账区分，无改号 |
+| provenance-test | 现有版本溯源脚本的clean/dirty、CI SHA及不合法输入测试PASS |\n| remote-ci | Xcode27.0 / iOS27.2 / iPhone13mini：Release成功；Unit723PASS+1SKIP；Smoke8/8；全部必需门禁SUCCESS |
 
-后续：完成最终本机门禁与远端CI，再写最终交接。没有新版本发行授权或执行。
+源码候选已提交并普通推送：`d1f8c76865548ce23a41231863dd83f6fcf24f17`，新 [Draft PR #21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21) 基于main。远端现在7条（含审计分支），历史独立PR18与新PR21共2个打开的PR。独立 [CI 43695200124](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43695200124) 整体SUCCESS：Release成功、Unit723PASS/0FAIL/1SKIP、Smoke8/8，runtimeWarnings均为空。CI低空间跳过由本机真实卷覆盖；optional extended UI按工作流条件未跑。三个官方ZIP摘要/CRC、测试叶子计数及checkout 615a9d6完整tree与候选一致均已核验。本批门禁完成，后续提交仅文档/证据，不重跑未变源码。没有新版本发行授权或执行。
 
+
+## 证据阅读与下一批边界
+
+- [最终本机摘要](Evidence/Release21Audit20261115/verified-regression-summary.json)、[命令与日志哈希](Evidence/Release21Audit20261115/local-runs.json)、[源码哈希](Evidence/Release21Audit20261115/final-source-sha256.json)、[CI源树对齐](Evidence/Release21Audit20261115/ci-source.json)。
+- [Todo提示滚动前截图](Evidence/Release21Audit20261115/todo-warning-below-viewport.png)说明测试为何需要滚动；提示、非法保存、转换身份与唯一后继的断言全部保留。
+- [本机Release三个Bundle](Evidence/Release21Audit20261115/release-bundles.json)未签名且构建在提交前启动，嵌入Git元信息为a58848f/dirty；产品输入与d1f8c76的改动哈希完全一致。该构建不等同已签名发行包。
+- 后续发布验收包括真实双设备传播、系统后台调度、通知/AlarmKit/Widget及实际发行包。历史容量、身份冲突、恢复工作区发现另立协议设计批次。本轮没有上传、送审或发布新版本。

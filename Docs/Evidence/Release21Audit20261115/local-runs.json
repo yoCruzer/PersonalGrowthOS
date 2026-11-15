@@ -162,5 +162,60 @@
       "Executed 1 test, with 0 failures (0 unexpected) in 36.719 (36.727) seconds",
       "** TEST SUCCEEDED **"
     ]
+  },
+  {
+    "name": "release",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -jobs 3 -derivedDataPath /private/tmp/pgos-release21-release-dd -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/release.log",
+    "sha256": "c14bea3a17c806f86b6b90308bd0138eeb6f77612cc93f77ca2ea78257c0effb",
+    "resultLines": [
+      "** BUILD SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "release-final",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -jobs 3 -derivedDataPath /private/tmp/pgos-release21-release-dd -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/release-final.log",
+    "sha256": "db8a92743316bbf362e548b1799da0128950a6c3a66d49af4144b0dddb6a301f",
+    "resultLines": [
+      "** BUILD SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "release-verified",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -jobs 3 -derivedDataPath /private/tmp/pgos-release21-release-dd -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/release-verified.log",
+    "sha256": "bd042d331f0a4a228c58bc0eb07615982d99c64d138fcee1bc1616a57b95e82f",
+    "resultLines": [
+      "** BUILD SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "provenance-test",
+    "command": "python3 Scripts/verify-build-provenance.py",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/provenance-test.log",
+    "sha256": "9f31edb50bd9408ca9835f088888fd7be1d7a5f69f8dbb0d8a78e847ef57fb35",
+    "resultLines": [
+      "PASS: local clean/dirty, CI tagged/untagged, missing Git, invalid/stale SHA and unsafe tag"
+    ]
+  },
+  {
+    "name": "verified-regression",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO -collect-test-diagnostics never \"-only-testing:PersonalGrowthOSTests\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testGoalAndFlagOpenEditAndPersistAcrossRelaunch\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testOncePerDayEditorHidesSelectedDayTargetAndValidatesPeriodMaximum\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeightNoOpAndDateOnlyEditsPreserveFullValueAfterRelaunch\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch\" \"-only-testing:PersonalGrowthOSUITests/ImportantDayUITests/testEditingPresetResetsExplicitPeriodBeforeWritingNewEntry\" -resultBundlePath /private/tmp/pgos-release21-evidence/verified-regression.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/verified-regression.log",
+    "sha256": "644a04cd95707951a9c44dbb3da0e7c6cc3e70fa8d8a77373b0f65bda2b99e37",
+    "resultLines": [
+      "Executed 724 tests, with 0 failures (0 unexpected) in 105.888 (106.080) seconds",
+      "Executed 4 tests, with 0 failures (0 unexpected) in 183.918 (183.924) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 50.208 (50.209) seconds",
+      "Executed 5 tests, with 0 failures (0 unexpected) in 234.126 (234.147) seconds",
+      "Executed 5 tests, with 0 failures (0 unexpected) in 234.126 (234.149) seconds",
+      "** TEST SUCCEEDED **"
+    ]
   }
 ]

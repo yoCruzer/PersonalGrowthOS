@@ -12,5 +12,47 @@
   "deletedCount": 8,
   "method": "git branch -d from audit checkout whose HEAD contains all deleted tips; no -D",
   "initialAttempt": "Preserved in local-cleanup.json; original checkout HEAD was d72c016, so safe-delete correctly refused. Retried from audit checkout after verifying ancestry. Dirty worktrees retained.",
-  "verification": "Every deleted refs/heads name absent; local-branches-after.txt records the eight remaining branches."
+  "verification": "Every deleted refs/heads name absent; local-branches-after.txt records the eight remaining branches.",
+  "deletedRefs": [
+    {
+      "branch": "codex/household-net-worth-v1",
+      "originalSHA": "96f72339a1a3082c43018e06d6115dd93df1df97",
+      "containedInMain": true
+    },
+    {
+      "branch": "codex/icloud-product",
+      "originalSHA": "4ec39f7435812f0ad891b846f527e6d55c497409",
+      "containedInMain": true
+    },
+    {
+      "branch": "codex/icloud-sync-v1-audit",
+      "originalSHA": "e036b01e971de9a9f0538d9a5dedfefc099bfc65",
+      "containedInMain": true
+    },
+    {
+      "branch": "codex/important-days-v1",
+      "originalSHA": "5614246f98ae63732ccd4fd8a6b66f4a425336f2",
+      "containedInMain": true
+    },
+    {
+      "branch": "codex/quiet-wins-on-d72",
+      "originalSHA": "2c9e4ab16bd4ed5f9c69c8a479047b198c1da4af",
+      "containedInMain": true
+    },
+    {
+      "branch": "codex/time-investment-v1",
+      "originalSHA": "5a70f0110b151f8a45ac7c33d3f443823b1cff24",
+      "containedInMain": true
+    },
+    {
+      "branch": "codex/ui-readability-localization-20261020",
+      "originalSHA": "50f726391f4f548647694368ad6378a901667189",
+      "containedInMain": true
+    },
+    {
+      "branch": "codex/usage-remediation-20261017",
+      "originalSHA": "5827c657095945aff30b2250b20bae104c7b0357",
+      "containedInMain": true
+    }
+  ]
 }
