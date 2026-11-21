@@ -1,3 +1,5 @@
+> 2026-11-21 PR #21 最终复核。修复三方同名标签逐个改名，以及删除重复事实前遗漏并发版本引用的问题。当前候选在 Xcode 27.2、iOS 27.0 的 PGOS-Release21-Audit 模拟器完成整个 PersonalGrowthOSTests，737/737 通过，0 跳过，含真实 32 MB 隔离卷。命令为 `xcodebuild test -scheme PersonalGrowthOS -only-testing:PersonalGrowthOSTests -parallel-testing-enabled NO`，结果在 `/private/tmp/pgos-1121-unit.xcresult`。真实双设备 CloudKit 仍待发行验收。合并与最终 CI 结果见 [PR #21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21)。App Store 1.0 (21) 的发行源码为 `321219f61fd2dedf3be69d6f49c3af23896cccd4`。
+
 > 2026-11-15 同步加固完成：`FIX_COMPLETE / CANDIDATE_VERIFIED / NOT_RELEASED`。跨 UUID 冲突保真处理、恢复工作区发现/空库连接、超万条历史投影与发送已修复。本机 735/735＋恢复 E2E 1/1、UI 3/3、基础包 87/87、unsigned Release 通过。产品源码 440197d；验证候选 776cc4c 的独立 CI 全部 SUCCESS：Unit 735 PASS/1 SKIP（低空间本机实跑通过）、Smoke 8/8、Release、基础包及 32 项打包防护。四份官方 ZIP 与完整源码树已核验。后续仅文档证据；停代码审阅/发行验收边界，真实云/双设备仍 NOT_RUN。详见 [SYNC_RESILIENCE_20261115_ZH.md](SYNC_RESILIENCE_20261115_ZH.md) 和 [Draft PR21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21)；下方上一批结论保留为历史。
 
 ## 2026-11-15 Build21风险审计完成：修复候选与门禁已验证

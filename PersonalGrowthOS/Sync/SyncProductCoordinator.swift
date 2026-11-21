@@ -1067,11 +1067,33 @@ extension SyncProductCoordinator {
             }
             let proposed = current.compactMap { removed.contains($0.2.key) ? nil : replacements[$0.2.key] ?? $0.2 }
             let remainingGroups = try SyncDomainCodec.identityGroups(proposed)
-            guard !remainingGroups.contains(where: { $0.contains { members.contains($0.key) } }) else { throw SyncDomainCodecError.duplicate }
+            // Other same-name tags can be renamed in subsequent choices.
+            let changedKeys = Set(replacements.keys)
+            guard !remainingGroups.contains(where: { $0.contains { changedKeys.contains($0.key) } }) else { throw SyncDomainCodecError.duplicate }
             // If the graph is otherwise ready, validate the complete domain before recording
             // a choice. Incomplete independent graphs retain their existing publication gate.
             let datasetID = value.id
             let states = try context.fetch(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == datasetID }))
+            if !removed.isEmpty {
+                // Single-head documents were checked above. A concurrent or still-incomplete
+                // record can also refer to a loser. Check every other head before queueing deletes.
+                let inspected = Set(current.map { $0.1.id })
+                let targets = Set(try removed.map { try SyncObject(kind: $0.kind.rawValue, id: $0.id) })
+                for state in states {
+                    let heads = try JSONDecoder().decode([UUID].self, from: state.heads)
+                    guard !heads.isEmpty else { throw SyncDomainCodecError.dependency }
+                    for head in heads where !inspected.contains(head) {
+                        var query = FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.id == head })
+                        query.fetchLimit = 1
+                        guard let row = try context.fetch(query).first, row.dataset == datasetID,
+                              syncDigest(row.manifest) == row.manifestHash else { throw SyncDomainCodecError.dependency }
+                        let manifest = try MutationManifest.decode(row.manifest)
+                        guard manifest.dataset == datasetID, manifest.mutation == head,
+                              manifest.object.id == state.businessID, manifest.object.kind == state.kind,
+                              targets.isDisjoint(with: manifest.dependencies) else { throw SyncDomainCodecError.dependency }
+                    }
+                }
+            }
             if remainingGroups.isEmpty && states.allSatisfy({ ["ready", "deleted", "identityConflict"].contains($0.projectionState) }) {
                 _ = try SyncDomainCodec.reconstruct(completeDocuments: proposed)
             }

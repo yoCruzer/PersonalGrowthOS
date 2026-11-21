@@ -257,6 +257,27 @@ import SyncFoundation
         XCTAssertEqual(try ModelContext(b.container).fetchCount(FetchDescriptor<Tag>()), 2)
     }
 
+    func testThreeSameNameTagsCanBeRenamedOneAtATime() async throws {
+        let peers = try [device(), device(), device()]
+        let receiver = peers[0]
+        var ids = Set<UUID>()
+        for peer in peers {
+            let tag = Tag(displayName: "Shared", normalizedName: "shared", createdAt: instant)
+            ids.insert(tag.id)
+            try write(peer) { $0.insert(tag) }
+        }
+        for peer in peers.dropFirst() { try await deliver(allPackets(peer), to: receiver) }
+        for count in [3, 2] {
+            let group = try XCTUnwrap(receiver.coordinator.identityConflicts.first)
+            XCTAssertEqual(group.candidates.count, count)
+            try receiver.coordinator.resolveIdentity(group, keeping: group.candidates[0].key, tagName: "Renamed \(count)")
+        }
+        XCTAssertTrue(receiver.coordinator.identityConflicts.isEmpty)
+        let tags = try ModelContext(receiver.container).fetch(FetchDescriptor<Tag>())
+        XCTAssertEqual(Set(tags.map(\.id)), ids)
+        XCTAssertEqual(Set(tags.map(\.normalizedName)), ["shared", "renamed 3", "renamed 2"])
+    }
+
     func testIdentityChoicesSurviveColdActivationWhileAnotherGroupIsUnresolved() async throws {
         let a = try device(), b = try device(), week = try WeeklyReviewPeriod(containing: instant)
         var sleepIDs: [UUID] = [], reviewIDs: [UUID] = []
@@ -312,6 +333,19 @@ import SyncFoundation
         let originalA = try allPackets(a), originalB = try revisions(b)
         try await deliver(originalA, to: b)
         let conflict = try XCTUnwrap(b.coordinator.identityConflicts.first)
+        // A competing root for the editing draft removes it from the single-head
+        // document list. Its reference still forbids deleting the edited snapshot.
+        let forkPeer = try device()
+        try await deliver(originalA + (try allPackets(b)), to: forkPeer)
+        let draft = try XCTUnwrap(revisions(a).first { !$0.manifest.dependencies.isEmpty })
+        let fork = try MutationManifest(dataset: datasetID, mutation: UUID(), object: draft.manifest.object,
+            dependencies: draft.manifest.dependencies, payload: draft.manifest.payload)
+        try await deliver([.mutation(fork)], to: forkPeer)
+        XCTAssertEqual(try headIDs(forkPeer, kind: .netWorthSnapshot, id: draft.manifest.object.id).count, 2)
+        let forkConflict = try XCTUnwrap(forkPeer.coordinator.identityConflicts.first)
+        let priorQueue = try outboxCount(forkPeer)
+        XCTAssertThrowsError(try forkPeer.coordinator.resolveIdentity(forkConflict, keeping: .init(kind: .netWorthSnapshot, id: ids[1])))
+        XCTAssertEqual(try outboxCount(forkPeer), priorQueue)
         let count = try revisions(b).count, queued = try outboxCount(b)
         XCTAssertThrowsError(try b.coordinator.resolveIdentity(conflict, keeping: .init(kind: .netWorthSnapshot, id: ids[1])))
         XCTAssertEqual(try revisions(b).count, count); XCTAssertEqual(try outboxCount(b), queued)
