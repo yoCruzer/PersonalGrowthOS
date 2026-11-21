@@ -1,6 +1,465 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Records with different identities need review. Local data and all versions are kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records with different identities need review. Local data and all versions are kept."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存在身份不同但名称或日期重复的记录，请核对处理。本地数据和所有版本均已保留。"
+          }
+        }
+      }
+    },
+    "Records with matching identities": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records with matching identities"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要核对的重复记录"
+          }
+        }
+      }
+    },
+    "These records were created separately but use the same name, date or unique role. Review every record before choosing. All original versions remain in sync history.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These records were created separately but use the same name, date or unique role. Review every record before choosing. All original versions remain in sync history."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这些记录分别创建，但使用了相同的名称、日期或唯一角色。请选择前逐一核对内容。所有原始版本都会保留在同步历史中。"
+          }
+        }
+      }
+    },
+    "Rename one tag to keep both tags and all their existing connections.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename one tag to keep both tags and all their existing connections."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "为其中一个标签改名，可同时保留两个标签及各自的全部关联。"
+          }
+        }
+      }
+    },
+    "New tag name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New tag name"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新标签名称"
+          }
+        }
+      }
+    },
+    "Rename this tag": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename this tag"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名此标签"
+          }
+        }
+      }
+    },
+    "Keep this record": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep this record"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留此记录"
+          }
+        }
+      }
+    },
+    "Choose the default participant. Both participants and all their records are kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the default participant. Both participants and all their records are kept."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择默认参与人。两位参与人及其全部记录都会保留。"
+          }
+        }
+      }
+    },
+    "Review matching records": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review matching records"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核对重复记录"
+          }
+        }
+      }
+    },
+    "Apply this identity choice?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply this identity choice?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认应用此次选择？"
+          }
+        }
+      }
+    },
+    "Apply choice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply choice"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用选择"
+          }
+        }
+      }
+    },
+    "The choice could not be applied. Sync again and review the latest records; a referenced record cannot be removed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The choice could not be applied. Sync again and review the latest records; a referenced record cannot be removed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法应用此次选择。请重新同步并核对最新记录；仍被其他记录引用的内容不能移除。"
+          }
+        }
+      }
+    },
+    "Both records and their connections are kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both records and their connections are kept."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两条记录及其关联都会保留。"
+          }
+        }
+      }
+    },
+    "Only the selected record will remain in the current workspace. Other matching records are removed from the current view, but their original versions remain in sync history.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the selected record will remain in the current workspace. Other matching records are removed from the current view, but their original versions remain in sync history."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前工作区只保留所选记录。其他重复记录将从当前视图移除，但其原始版本仍保留在同步历史中。"
+          }
+        }
+      }
+    },
+    "Existing iCloud workspaces": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Existing iCloud workspaces"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已有的 iCloud 工作区"
+          }
+        }
+      }
+    },
+    "Workspace identifier": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workspace identifier"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作区标识"
+          }
+        }
+      }
+    },
+    "After restoring a backup, this device uses a separate workspace. On an empty installation, find that workspace and compare its identifier before connecting.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After restoring a backup, this device uses a separate workspace. On an empty installation, find that workspace and compare its identifier before connecting."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复备份后，此设备会使用独立工作区。在空白安装中，可查找该工作区，核对标识后再连接。"
+          }
+        }
+      }
+    },
+    "Find existing workspaces": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find existing workspaces"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查找已有工作区"
+          }
+        }
+      }
+    },
+    "Connect this existing workspace?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect this existing workspace?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接此已有工作区？"
+          }
+        }
+      }
+    },
+    "Select workspace": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select workspace"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择工作区"
+          }
+        }
+      }
+    },
+    "Unable to select this workspace. The local workspace must be empty with no pending history; check the account and search again. Local data is kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to select this workspace. The local workspace must be empty with no pending history; check the account and search again. Local data is kept."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法选择此工作区。本地工作区必须为空，且不能有待处理的同步历史。请核对账户后重新查找。本地数据已保留。"
+          }
+        }
+      }
+    },
+    "This only selects the existing workspace on an empty installation. Then enable iCloud sync to download its contents. Existing local records and pending history cannot be replaced.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This only selects the existing workspace on an empty installation. Then enable iCloud sync to download its contents. Existing local records and pending history cannot be replaced."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此操作仅在空白安装中选择已有工作区。随后启用 iCloud 同步即可下载其中内容。已有本地记录和待处理的同步历史不能被替换。"
+          }
+        }
+      }
+    },
+    "No other iCloud workspaces were found in this account and environment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No other iCloud workspaces were found in this account and environment."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在当前账户和环境中未找到其他 iCloud 工作区。"
+          }
+        }
+      }
+    },
+    "Choose a workspace only on an empty installation. Compare its identifier with the device that contains your restored data.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a workspace only on an empty installation. Compare its identifier with the device that contains your restored data."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只能在空白安装中选择工作区。请与保有恢复数据的设备核对工作区标识。"
+          }
+        }
+      }
+    },
+    "Unable to discover workspaces. Check the account and connection, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to discover workspaces. Check the account and connection, then try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法查找工作区。请核对账户和网络连接后重试。"
+          }
+        }
+      }
+    },
+    "This item changed while you were editing. Your draft is kept here. Copy your changes, then reopen the item to review the latest version.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This item changed while you were editing. Your draft is kept here. Copy your changes, then reopen the item to review the latest version."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此内容在编辑期间发生了变化，草稿仍保留在当前页面。请先复制你的修改，再重新打开并核对最新版本。"
+          }
+        }
+      }
+    },
+    "This entry changed while you were editing. Your draft is kept. Copy your text, then reopen the entry to review the latest version.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This entry changed while you were editing. Your draft is kept. Copy your text, then reopen the entry to review the latest version."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这条记录在编辑期间发生了变化，草稿仍保留。请复制你的文字，再重新打开记录查看最新版本。"
+          }
+        }
+      }
+    },
   "View Privacy Policy Online": {
     "extractionState": "manual",
     "localizations": {

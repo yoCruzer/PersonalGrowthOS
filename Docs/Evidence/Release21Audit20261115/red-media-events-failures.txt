@@ -1,0 +1,9 @@
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/PersistenceMediaFoundationTests.swift:73: error: -[PersonalGrowthOSTests.PersistenceMediaFoundationTests testCopiedMediaMetadataUsesStagedBytesWhenSourceChangesBeforeCopy] : XCTAssertEqual failed: ("324") is not equal to ("4096")
+Test Case '-[PersonalGrowthOSTests.PersistenceMediaFoundationTests testCopiedMediaMetadataUsesStagedBytesWhenSourceChangesBeforeCopy]' failed (0.493 seconds).
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/PersistenceMediaFoundationTests.swift:86: error: -[PersonalGrowthOSTests.PersistenceMediaFoundationTests testSourceGrowthBeyondMediaLimitIsRejectedBeforePublication] : XCTAssertThrowsError failed: did not throw an error
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/PersistenceMediaFoundationTests.swift:90: error: -[PersonalGrowthOSTests.PersistenceMediaFoundationTests testSourceGrowthBeyondMediaLimitIsRejectedBeforePublication] : XCTAssertFalse failed
+Test Case '-[PersonalGrowthOSTests.PersistenceMediaFoundationTests testSourceGrowthBeyondMediaLimitIsRejectedBeforePublication]' failed (1.127 seconds).
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:112: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testRemoteTodoPublicationNotifiesReminderConsumersOnlyAfterCommitAndNotOnReplay] : XCTAssertEqual failed: ("[]") is not equal to ("[["Remote reminder"]]")
+/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:114: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testRemoteTodoPublicationNotifiesReminderConsumersOnlyAfterCommitAndNotOnReplay] : XCTAssertEqual failed: ("0") is not equal to ("1")
+Test Case '-[PersonalGrowthOSTests.SyncProductIntegrationTests testRemoteTodoPublicationNotifiesReminderConsumersOnlyAfterCommitAndNotOnReplay]' failed (0.239 seconds).
+** TEST FAILED **

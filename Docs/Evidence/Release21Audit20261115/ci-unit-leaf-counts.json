@@ -1,0 +1,23 @@
+{
+  "counts": {
+    "Passed": 723,
+    "Skipped": 1
+  },
+  "skipped": [
+    {
+      "children": [
+        {
+          "name": "Test skipped - Requires the isolated 32MB HFS+ test image; never fill the primary volume",
+          "nodeType": "Skip Message"
+        }
+      ],
+      "duration": "0.018s",
+      "durationInSeconds": 0.01788794994354248,
+      "name": "testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure()",
+      "nodeIdentifier": "TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure()",
+      "nodeIdentifierURL": "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSTests/TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure",
+      "nodeType": "Test Case",
+      "result": "Skipped"
+    }
+  ]
+}

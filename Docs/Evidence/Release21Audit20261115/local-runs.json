@@ -1,0 +1,221 @@
+[
+  {
+    "name": "baseline-sync",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests\" -resultBundlePath /private/tmp/pgos-release21-evidence/baseline-sync.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/baseline-sync.log",
+    "sha256": "82396495ac306eef9eff69a68a26927be963e8a8c724bd34daedfa77522fdc05",
+    "resultLines": [
+      "Executed 6 tests, with 0 failures (0 unexpected) in 5.086 (5.088) seconds",
+      "Executed 6 tests, with 0 failures (0 unexpected) in 5.086 (5.088) seconds",
+      "Executed 6 tests, with 0 failures (0 unexpected) in 5.086 (5.089) seconds",
+      "** TEST SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "red-media-events",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests/testRemoteTodoPublicationNotifiesReminderConsumersOnlyAfterCommitAndNotOnReplay\" \"-only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests/testCopiedMediaMetadataUsesStagedBytesWhenSourceChangesBeforeCopy\" \"-only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests/testSourceGrowthBeyondMediaLimitIsRejectedBeforePublication\" -resultBundlePath /private/tmp/pgos-release21-evidence/red-media-events.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/red-media-events.log",
+    "sha256": "2d897369a5c41ac8ffbd1770c5b9323b1208c1be38bc1b390f5a9d044a55a889",
+    "resultLines": [
+      "/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:114: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testRemoteTodoPublicationNotifiesReminderConsumersOnlyAfterCommitAndNotOnReplay] : XCTAssertEqual failed: (\"0\") is not equal to (\"1\")",
+      "Executed 1 test, with 2 failures (0 unexpected) in 0.239 (0.240) seconds",
+      "Executed 3 tests, with 5 failures (0 unexpected) in 1.859 (1.862) seconds",
+      "Executed 3 tests, with 5 failures (0 unexpected) in 1.859 (1.863) seconds",
+      "** TEST FAILED **"
+    ]
+  },
+  {
+    "name": "red-stale-draft",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests/testValueDraftCannotSilentlyOverwriteRemoteEntryEvenWithUnchangedTimestamp\" -resultBundlePath /private/tmp/pgos-release21-evidence/red-stale-draft.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/red-stale-draft.log",
+    "sha256": "fdbb7c68e34e3234e4d31efc9973011292520145f45153c5ad486a07afb7524d",
+    "resultLines": [
+      "/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:135: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testValueDraftCannotSilentlyOverwriteRemoteEntryEvenWithUnchangedTimestamp] : XCTAssertEqual failed: (\"1\") is not equal to (\"0\")",
+      "Executed 1 test, with 3 failures (0 unexpected) in 0.847 (0.848) seconds",
+      "Executed 1 test, with 3 failures (0 unexpected) in 0.847 (0.849) seconds",
+      "Executed 1 test, with 3 failures (0 unexpected) in 0.847 (0.850) seconds",
+      "** TEST FAILED **"
+    ]
+  },
+  {
+    "name": "red-todo-draft",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests/testTodoValueDraftCannotOverwriteRemoteEdit\" -resultBundlePath /private/tmp/pgos-release21-evidence/red-todo-draft.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/red-todo-draft.log",
+    "sha256": "657de326aea6d6df6ccdf63a7700d352336e2c2275dfc448633c64d0277e59aa",
+    "resultLines": [
+      "/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:206: error: -[PersonalGrowthOSTests.SyncProductIntegrationTests testTodoValueDraftCannotOverwriteRemoteEdit] : XCTAssertEqual failed: (\"1\") is not equal to (\"0\")",
+      "Executed 1 test, with 3 failures (0 unexpected) in 0.578 (0.579) seconds",
+      "Executed 1 test, with 3 failures (0 unexpected) in 0.578 (0.580) seconds",
+      "Executed 1 test, with 3 failures (0 unexpected) in 0.578 (0.600) seconds",
+      "** TEST FAILED **"
+    ]
+  },
+  {
+    "name": "green-initial",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests\" \"-only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests\" -resultBundlePath /private/tmp/pgos-release21-evidence/green-initial.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/green-initial.log",
+    "sha256": "9c114894f83964e6f48fccaa233537e77a5ed3cbf2929efad7e2e36da0bbd24f",
+    "resultLines": [
+      "/tmp/PersonalGrowthOS-release21-audit/PersonalGrowthOSTests/SyncProductIntegrationTests.swift:173:17: error: call can throw, but it is not marked with 'try' and the error is not handled",
+      "|                 `- error: call can throw, but it is not marked with 'try' and the error is not handled",
+      "** TEST FAILED **"
+    ]
+  },
+  {
+    "name": "green-expanded",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests\" \"-only-testing:PersonalGrowthOSTests/PersistenceMediaFoundationTests\" \"-only-testing:PersonalGrowthOSTests/TodoFoundationTests\" -resultBundlePath /private/tmp/pgos-release21-evidence/green-expanded.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/green-expanded.log",
+    "sha256": "56967e60b6a7f7dad084bb93625976849206fa8f4068385e0e5bf83edad702bd",
+    "resultLines": [
+      "CoreData: error: Store failed to load.  <NSPersistentStoreDescription: 0x126c06a90> (type: SQLite, url: file:///Users/himini/Library/Developer/CoreSimulator/Devices/502D3BAF-454D-430F-85FE-A3D0FCFBFE38/data/Containers/Data/Application/4AFF0C56-EFA6-4C59-972D-941EA0D78952/tmp/7DF2787F-20E4-455A-A57A-40F45DD85641/Store/PersonalGrowthOS.sqlite) with error = Error Domain=NSCocoaErrorDomain Code=259 \"未能打开该文件，因为它的格式不正确。\" with userInfo {",
+      "Executed 51 tests, with 1 test skipped and 0 failures (0 unexpected) in 7.049 (7.064) seconds",
+      "Executed 99 tests, with 1 test skipped and 1 failure (1 unexpected) in 19.915 (19.956) seconds",
+      "Executed 99 tests, with 1 test skipped and 1 failure (1 unexpected) in 19.915 (19.957) seconds",
+      "** TEST FAILED **"
+    ]
+  },
+  {
+    "name": "green-publication",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests/testRemoteDayAndSleepChangesPublishAfterLeaseAndDoNotEcho\" -resultBundlePath /private/tmp/pgos-release21-evidence/green-publication.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/green-publication.log",
+    "sha256": "19a5808b9536503b518facbea121489dd204ba0dd287409e7b944949845912a8",
+    "resultLines": [
+      "Executed 1 test, with 0 failures (0 unexpected) in 0.206 (0.208) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 0.206 (0.210) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 0.206 (0.213) seconds",
+      "** TEST SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "sync-foundation",
+    "command": "swift test --package-path Packages/SyncFoundation --scratch-path /private/tmp/pgos-release21-swift -j 3",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/sync-foundation.log",
+    "sha256": "aaaf4d5c34f75c3f256b8e577e0c6a9516788ddfd591f71fd46bd417ff3dbb5f",
+    "resultLines": [
+      "Executed 17 tests, with 0 failures (0 unexpected) in 0.061 (0.063) seconds",
+      "Executed 17 tests, with 0 failures (0 unexpected) in 0.273 (0.274) seconds",
+      "Executed 4 tests, with 0 failures (0 unexpected) in 0.013 (0.013) seconds",
+      "Executed 21 tests, with 0 failures (0 unexpected) in 0.286 (0.288) seconds",
+      "Executed 21 tests, with 0 failures (0 unexpected) in 0.286 (0.288) seconds"
+    ]
+  },
+  {
+    "name": "full-unit",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO -collect-test-diagnostics never \"-only-testing:PersonalGrowthOSTests\" -resultBundlePath /private/tmp/pgos-release21-evidence/full-unit.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/full-unit.log",
+    "sha256": "293c9e4913d377020b09e3a00074b8004757397bf913ff623f484e153a94290f",
+    "resultLines": [
+      "Executed 15 tests, with 0 failures (0 unexpected) in 0.318 (0.321) seconds",
+      "Executed 22 tests, with 0 failures (0 unexpected) in 0.797 (0.801) seconds",
+      "Executed 724 tests, with 0 failures (0 unexpected) in 106.836 (106.996) seconds",
+      "Executed 724 tests, with 0 failures (0 unexpected) in 106.836 (106.997) seconds",
+      "** TEST SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "affected-ui",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO -collect-test-diagnostics never \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUITestingLaunchShowsAppShell\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testGoalAndFlagOpenEditAndPersistAcrossRelaunch\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testOncePerDayEditorHidesSelectedDayTargetAndValidatesPeriodMaximum\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeightNoOpAndDateOnlyEditsPreserveFullValueAfterRelaunch\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testUsageEditorListCreationManagementAndCancellationPreserveDraft\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testICloudSettingsStartOffAndRequireExplicitConsent\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPausedSyncKeepsEveryTabAndSettingsOperable\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testPR6FilesPreviewCancelAndRestore\" \"-only-testing:PersonalGrowthOSUITests/ImportantDayUITests/testEditingPresetResetsExplicitPeriodBeforeWritingNewEntry\" -resultBundlePath /private/tmp/pgos-release21-evidence/affected-ui.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/affected-ui.log",
+    "sha256": "8555f1adc3dacd324b55440e80f876bf5c0617f5ff1675530d904d48c66fe888",
+    "resultLines": [
+      "Executed 10 tests, with 1 failure (0 unexpected) in 425.206 (425.229) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 50.258 (50.258) seconds",
+      "Executed 11 tests, with 1 failure (0 unexpected) in 475.463 (475.497) seconds",
+      "Executed 11 tests, with 1 failure (0 unexpected) in 475.463 (475.499) seconds",
+      "** TEST FAILED **"
+    ]
+  },
+  {
+    "name": "final-unit",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO -collect-test-diagnostics never \"-only-testing:PersonalGrowthOSTests\" -resultBundlePath /private/tmp/pgos-release21-evidence/final-unit.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/final-unit.log",
+    "sha256": "57566f27a1a7a888298b6b857b1952a5e86e83b49c805a97d74abf515bf4ac4f",
+    "resultLines": [
+      "Executed 15 tests, with 0 failures (0 unexpected) in 0.454 (0.459) seconds",
+      "Executed 22 tests, with 0 failures (0 unexpected) in 1.245 (1.252) seconds",
+      "Executed 724 tests, with 1 failure (0 unexpected) in 105.272 (105.437) seconds",
+      "Executed 724 tests, with 1 failure (0 unexpected) in 105.272 (105.439) seconds",
+      "** TEST FAILED **"
+    ]
+  },
+  {
+    "name": "cache-and-ui",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO -collect-test-diagnostics never \"-only-testing:PersonalGrowthOSTests/SyncProductIntegrationTests\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor\" -resultBundlePath /private/tmp/pgos-release21-evidence/cache-and-ui.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/cache-and-ui.log",
+    "sha256": "7b339c678fceeee44f05b1438371203037344c8524f4ed8410a096b3a4874ba7",
+    "resultLines": [
+      "Executed 13 tests, with 0 failures (0 unexpected) in 5.800 (5.806) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 36.719 (36.722) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 36.719 (36.725) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 36.719 (36.727) seconds",
+      "** TEST SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "release",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -jobs 3 -derivedDataPath /private/tmp/pgos-release21-release-dd -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/release.log",
+    "sha256": "c14bea3a17c806f86b6b90308bd0138eeb6f77612cc93f77ca2ea78257c0effb",
+    "resultLines": [
+      "** BUILD SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "release-final",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -jobs 3 -derivedDataPath /private/tmp/pgos-release21-release-dd -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/release-final.log",
+    "sha256": "db8a92743316bbf362e548b1799da0128950a6c3a66d49af4144b0dddb6a301f",
+    "resultLines": [
+      "** BUILD SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "release-verified",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -configuration Release -jobs 3 -derivedDataPath /private/tmp/pgos-release21-release-dd -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/release-verified.log",
+    "sha256": "bd042d331f0a4a228c58bc0eb07615982d99c64d138fcee1bc1616a57b95e82f",
+    "resultLines": [
+      "** BUILD SUCCEEDED **"
+    ]
+  },
+  {
+    "name": "provenance-test",
+    "command": "python3 Scripts/verify-build-provenance.py",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/provenance-test.log",
+    "sha256": "9f31edb50bd9408ca9835f088888fd7be1d7a5f69f8dbb0d8a78e847ef57fb35",
+    "resultLines": [
+      "PASS: local clean/dirty, CI tagged/untagged, missing Git, invalid/stale SHA and unsafe tag"
+    ]
+  },
+  {
+    "name": "verified-regression",
+    "command": "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project PersonalGrowthOS.xcodeproj -scheme PersonalGrowthOS -jobs 3 -derivedDataPath /private/tmp/pgos-release21-dd -destination \"platform=iOS Simulator,id=502D3BAF-454D-430F-85FE-A3D0FCFBFE38\" -parallel-testing-enabled NO -collect-test-diagnostics never \"-only-testing:PersonalGrowthOSTests\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testGoalAndFlagOpenEditAndPersistAcrossRelaunch\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testOncePerDayEditorHidesSelectedDayTargetAndValidatesPeriodMaximum\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testSystemWeightNoOpAndDateOnlyEditsPreserveFullValueAfterRelaunch\" \"-only-testing:PersonalGrowthOSUITests/AppLaunchSmokeTests/testWeeklyReviewSavesMultipleFieldsAfterKeyboardDismissalAndPersistsAcrossRelaunch\" \"-only-testing:PersonalGrowthOSUITests/ImportantDayUITests/testEditingPresetResetsExplicitPeriodBeforeWritingNewEntry\" -resultBundlePath /private/tmp/pgos-release21-evidence/verified-regression.xcresult CODE_SIGNING_ALLOWED=NO test",
+    "cwd": "/private/tmp/PersonalGrowthOS-release21-audit",
+    "log": "/private/tmp/pgos-release21-evidence/verified-regression.log",
+    "sha256": "644a04cd95707951a9c44dbb3da0e7c6cc3e70fa8d8a77373b0f65bda2b99e37",
+    "resultLines": [
+      "Executed 724 tests, with 0 failures (0 unexpected) in 105.888 (106.080) seconds",
+      "Executed 4 tests, with 0 failures (0 unexpected) in 183.918 (183.924) seconds",
+      "Executed 1 test, with 0 failures (0 unexpected) in 50.208 (50.209) seconds",
+      "Executed 5 tests, with 0 failures (0 unexpected) in 234.126 (234.147) seconds",
+      "Executed 5 tests, with 0 failures (0 unexpected) in 234.126 (234.149) seconds",
+      "** TEST SUCCEEDED **"
+    ]
+  }
+]

@@ -60,6 +60,36 @@ final class PersistenceMediaFoundationTests: XCTestCase {
         XCTAssertEqual(stored.pixelHeight, 4)
     }
 
+    func testCopiedMediaMetadataUsesStagedBytesWhenSourceChangesBeforeCopy() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        let first = fixturePNG(color: .red)
+        let replacement = pngByPaddingToByteCount(fixturePNG(color: .blue), byteCount: 4096)
+        try first.write(to: fixture.sourceURL)
+        let store = MediaStore(rootURL: fixture.mediaRoot, beforeStoreCopy: { _ in
+            try replacement.write(to: fixture.sourceURL, options: .atomic)
+        })
+        let stored = try store.storeOriginal(.init(url: fixture.sourceURL, originalFilename: "changed.png", contentType: "image/png"))
+        XCTAssertEqual(stored.byteCount, Int64(replacement.count))
+        XCTAssertEqual(try Data(contentsOf: store.fileURL(for: stored.relativePath)), replacement)
+    }
+
+    func testSourceGrowthBeyondMediaLimitIsRejectedBeforePublication() throws {
+        let fixture = try TemporaryFixture()
+        defer { fixture.remove() }
+        try fixturePNG(color: .red).write(to: fixture.sourceURL)
+        let replacement = pngByPaddingToByteCount(fixturePNG(color: .blue), byteCount: Int(MediaStore.maximumOriginalByteCount) + 1)
+        let store = MediaStore(rootURL: fixture.mediaRoot, beforeStoreCopy: { _ in
+            try replacement.write(to: fixture.sourceURL, options: .atomic)
+        })
+        let id = UUID()
+        XCTAssertThrowsError(try store.storeOriginal(.init(url: fixture.sourceURL, originalFilename: "grown.png", contentType: "image/png"), id: id)) {
+            XCTAssertEqual($0 as? MediaStoreError, .originalTooLarge(maximumBytes: MediaStore.maximumOriginalByteCount))
+        }
+        let destination = try store.fileURL(for: store.originalRelativePath(id: id, contentType: "image/png"))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+    }
+
     func testCreationPersistsRelativeMetadataWithoutImageBinary() throws {
         let fixture = try TemporaryFixture()
         defer { fixture.remove() }
@@ -1111,6 +1141,7 @@ private final class FailingDeletionPersistence: EntryDeletingPersistence {
 
 @MainActor
 private final class FailingEditingPersistence: EntryEditingPersistence {
+    func persistedSnapshot(id: UUID) throws -> EntryEditingSnapshot? { nil }
     enum Failure: Error {
         case injected
     }

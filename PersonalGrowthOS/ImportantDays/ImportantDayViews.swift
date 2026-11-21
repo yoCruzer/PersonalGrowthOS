@@ -287,6 +287,7 @@ struct ImportantDayEditorView: View {
     @State private var draft = ImportantDayDraft()
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var externalRouter = ImportantDayExternalRouter.shared
+    @State private var syncBaseline: SyncEditorBaseline?
     @State private var loaded = false
     @State private var submissionID = UUID()
     @State private var confirmedOccurrence = false
@@ -414,7 +415,12 @@ struct ImportantDayEditorView: View {
             .task {
                 guard !loaded else { return }; loaded = true
                 do {
-                    if let day { draft = try ImportantDayDraft(day); submissionID = day.id }
+                    if let day {
+                        let reader = ModelContext(context.container)
+                        let fresh = try ImportantDayService(context: reader, mediaStore: mediaStore).day(id: day.id)
+                        draft = try ImportantDayDraft(fresh); submissionID = day.id
+                        syncBaseline = .capture(fresh, key: .init(kind: .importantDay, id: day.id))
+                    }
                     else {
                         let civil = ImportantCivilDay(sourceEntry?.occurredAt ?? Date())
                         draft.rule.year = civil.year; draft.rule.month = civil.month; draft.rule.day = civil.day
@@ -502,6 +508,8 @@ struct ImportantDayEditorView: View {
     private func save() {
         guard !saving else { return }; saving = true
         do {
+            if day != nil, syncBaseline == nil { throw SyncEditorConflict.changed }
+            try syncBaseline?.validate(context.container)
             var photo = removeCover ? nil : coverSource
             if !removeCover, photo == nil, useEntryPhoto, let image = sourceEntry?.images.sorted(by: { $0.sortOrder < $1.sortOrder }).first {
                 photo = MediaSource(url: try mediaStore.fileURL(for: image.relativePath), originalFilename: image.originalFilename, contentType: image.contentType)
@@ -513,6 +521,8 @@ struct ImportantDayEditorView: View {
             photoSession.end()
             Task { await reminders.reconcile(context: context, requestPermission: ask) }
             dismiss()
+        } catch let conflict as SyncEditorConflict {
+            self.error = conflict.localizedDescription; saving = false
         } catch {
             self.error = String(localized: "The day could not be saved. Your changes are still here."); saving = false
         }

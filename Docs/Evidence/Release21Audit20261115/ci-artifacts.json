@@ -1,0 +1,26 @@
+[
+  {
+    "id": 14154098915,
+    "name": "ios-release-1",
+    "path": "/private/tmp/pgos-release21-evidence/ci-release.zip",
+    "sha256": "de8d6d604ad476cba197ea2aed70c923ab7dd9a6371e45a73af06b658a6a5069",
+    "officialDigestMatched": true,
+    "zipCRCVerified": true
+  },
+  {
+    "id": 14154906617,
+    "name": "ios-unit-1",
+    "path": "/private/tmp/pgos-release21-evidence/ci-unit.zip",
+    "sha256": "35aed7fa6698f879bf68bccf69203c9e989db8bed367c678cc0480675a2656da",
+    "officialDigestMatched": true,
+    "zipCRCVerified": true
+  },
+  {
+    "id": 14155375666,
+    "name": "ios-smoke-1",
+    "path": "/private/tmp/pgos-release21-evidence/ci-smoke.zip",
+    "sha256": "f48b27a75185d08b3c5d5df0612cc256f8ff9951cf480e3bf079b76924db7f1d",
+    "officialDigestMatched": true,
+    "zipCRCVerified": true
+  }
+]

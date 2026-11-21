@@ -374,3 +374,73 @@ enum ProductSyncCommit {
         return kinds
     }
 }
+
+/// Capture alongside a value draft, never when Save is pressed. The persisted publication
+/// fingerprint fences background projections, including deletions and same-clock edits.
+/// Validation and the synchronous domain command run on MainActor without an await between.
+@MainActor struct SyncEditorBaseline {
+    private struct Value: Equatable {
+        let dataset: UUID?
+        let fingerprint: String?
+        let deleted: Bool?
+    }
+    private let key: SyncDomainKey
+    private let value: Value?
+    static func capture(_ model: any PersistentModel, key: SyncDomainKey) -> Self {
+        guard let context = model.modelContext else { return Self(key: key, value: nil) }
+        do {
+            let reader = ModelContext(context.container)
+            guard try matchesPersistedModel(model, key: key, reader: reader) else { return Self(key: key, value: nil) }
+            return Self(key: key, value: try read(context.container, key: key))
+        } catch { return Self(key: key, value: nil) }
+    }
+    // Compare the actual object used to initialize @State, not a re-fetch in its
+    // context: SwiftData can return current query values while that object stays stale.
+    // Fetch only this identity so opening an editor does not scan the whole domain.
+    private static func matchesPersistedModel(_ model: any PersistentModel, key: SyncDomainKey, reader: ModelContext) throws -> Bool {
+        let id = key.id
+        switch model {
+        case let value as WeightRecord where key.kind == .weight && value.id == id:
+            guard let fresh = try reader.fetch(FetchDescriptor<WeightRecord>(predicate: #Predicate { $0.id == id })).first else { return false }
+            return (value.weightKilograms, value.recordedAt, value.createdAt, value.updatedAt)
+                == (fresh.weightKilograms, fresh.recordedAt, fresh.createdAt, fresh.updatedAt)
+        case let value as Goal where key.kind == .goal && value.id == id:
+            guard let fresh = try reader.fetch(FetchDescriptor<Goal>(predicate: #Predicate { $0.id == id })).first else { return false }
+            return (value.title, value.normalizedTitle, value.kindRawValue, value.statusRawValue)
+                == (fresh.title, fresh.normalizedTitle, fresh.kindRawValue, fresh.statusRawValue)
+                && (value.createdAt, value.updatedAt, value.completedAt) == (fresh.createdAt, fresh.updatedAt, fresh.completedAt)
+        case let value as Habit where key.kind == .habit && value.id == id:
+            guard let fresh = try reader.fetch(FetchDescriptor<Habit>(predicate: #Predicate { $0.id == id })).first else { return false }
+            return (value.name, value.normalizedName, value.statusRawValue, value.createdAt, value.updatedAt)
+                == (fresh.name, fresh.normalizedName, fresh.statusRawValue, fresh.createdAt, fresh.updatedAt)
+        case let value as WeeklyReview where key.kind == .weeklyReview && value.id == id:
+            guard let fresh = try reader.fetch(FetchDescriptor<WeeklyReview>(predicate: #Predicate { $0.id == id })).first else { return false }
+            return [value.rememberedText, value.improvementText, value.nextStepText, value.focusText]
+                == [fresh.rememberedText, fresh.improvementText, fresh.nextStepText, fresh.focusText]
+                && (value.weekIdentifier, value.periodStart, value.periodEnd, value.isCompleted, value.createdAt, value.updatedAt)
+                == (fresh.weekIdentifier, fresh.periodStart, fresh.periodEnd, fresh.isCompleted, fresh.createdAt, fresh.updatedAt)
+        case let value as ImportantDay where key.kind == .importantDay && value.id == id:
+            guard let fresh = try reader.fetch(FetchDescriptor<ImportantDay>(predicate: #Predicate { $0.id == id })).first else { return false }
+            return try ImportantDayTransfer(value) == ImportantDayTransfer(fresh)
+        default: return false
+        }
+    }
+    private static func read(_ container: ModelContainer, key: SyncDomainKey) throws -> Value {
+        let reader = ModelContext(container)
+        guard let dataset = try ProductSyncStoreSelection.selectedDataset(in: reader) else {
+            return Value(dataset: nil, fingerprint: nil, deleted: nil)
+        }
+        let stateKey = ProductSyncObjectState.key(dataset: dataset.id, object: key)
+        let state = try reader.fetch(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.key == stateKey })).first
+        return Value(dataset: dataset.id, fingerprint: state?.fingerprint, deleted: state?.deleted)
+    }
+    func validate(_ container: ModelContainer) throws {
+        guard let value, try Self.read(container, key: key) == value else { throw SyncEditorConflict.changed }
+    }
+}
+enum SyncEditorConflict: LocalizedError {
+    case changed
+    var errorDescription: String? {
+        String(localized: "This item changed while you were editing. Your draft is kept here. Copy your changes, then reopen the item to review the latest version.")
+    }
+}

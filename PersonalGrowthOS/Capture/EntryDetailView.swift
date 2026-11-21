@@ -469,6 +469,7 @@ private struct EntryEditorView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @State private var editingBaseline: EntryEditingSnapshot
     @State private var title: String
     @State private var bodyText: String
     @State private var occurredAt: Date
@@ -482,6 +483,7 @@ private struct EntryEditorView: View {
         self.entry = entry
         self.mediaStore = mediaStore
         self.thumbnailStore = thumbnailStore
+        _editingBaseline = State(initialValue: EntryEditingSnapshot(entry))
         _title = State(initialValue: entry.title ?? "")
         _bodyText = State(initialValue: entry.body ?? "")
         _occurredAt = State(initialValue: entry.occurredAt)
@@ -639,12 +641,14 @@ private struct EntryEditorView: View {
                     case .added(_, let source): .added(source)
                     }
                 }
-            ))
+            ), expected: editingBaseline)
             inputSession.end()
             dismiss()
         } catch {
             isSaving = false
             switch error {
+            case EntryEditingFailure.changedSinceEditing:
+                errorMessage = String(localized: "This entry changed while you were editing. Your draft is kept. Copy your text, then reopen the entry to review the latest version.")
             case MediaStoreError.insufficientCapacity:
                 errorMessage = String(localized: "There is not enough storage to add these photos. Your edits were kept.")
             case MediaStoreError.unsupportedContentType:

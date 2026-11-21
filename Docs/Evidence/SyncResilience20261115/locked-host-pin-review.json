@@ -1,0 +1,26 @@
+{
+  "failedRun": 43701959742,
+  "candidate": "440197d1af937addf76888b6a3608f7bc948caf6",
+  "reason": "UNREVIEWED_SWIFT_SOURCE",
+  "reviewedChanges": {
+    "Sources/SyncFoundation/CausalProjection.swift": {
+      "before": "011e438bdf4e53b8f6bf9385f6ec4ff270ba1effa1f88d168696a809ba5b5ef2",
+      "after": "ed6d019181c1bcf220e2b46a5692ab58c8569953c334187fa1869a737535872a"
+    },
+    "Tests/SyncFoundationTests/CausalProjectionTests.swift": {
+      "before": "d3e2c20796033a52e7ad3a55623992e8023634d2e81374ecf21c7eb7e15affca",
+      "after": "e262dbbd3b89cbddeeb0abb93c0f8ff971d13a6f5c7a0a0cf67840936de3571a"
+    }
+  },
+  "review": "Causal graph budget, iterative SCC and nearest-common-ancestor traversal reviewed against retained regressions and independent reachability oracle; no host/live code or package manifest changes.",
+  "localBlackBoxChecks": 32,
+  "allPassed": true,
+  "liveExecutionAuthorized": false,
+  "networkOperations": 0,
+  "signingPerformed": false,
+  "rawChecks": "/private/tmp/pgos-sync-resilience-locked-host-checks2/checks.json",
+  "rawChecksSHA256": "df71c0b899241dc0b88817221dcfc6af5cc485d38e2a5ba069bde2f494323be7",
+  "failedArtifactSHA256": "49c98ec7c8441762b0f7b1e2821655f2323f5dc9cbfc35d159b2dfc8158b929f",
+  "failedArtifactCRCVerified": true,
+  "initialLocalVerifierFailure": "Incorrect assumed executable path; corrected to observed out/Products/Debug path; first evidence retained."
+}

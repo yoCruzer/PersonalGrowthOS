@@ -7,6 +7,9 @@ struct SyncSettingsView: View {
     @State private var confirmsEnable = false
     @State private var confirmsInitialSetup = false
     @State private var selectedConflict: SyncConflictSummary?
+    @State private var selectedIdentity: SyncIdentityConflict?
+    @State private var selectedWorkspace: SyncDiscoveredWorkspace?
+    @State private var workspaceFailure: String?
     var body: some View {
         List {
             Section {
@@ -28,9 +31,34 @@ struct SyncSettingsView: View {
                 }.accessibilityIdentifier("sync-copy-diagnostics")
             } header: { Text("iCloud sync") }
             footer: { Text("Sync uses your iCloud private database. Turning it off keeps local data and queued changes. Photos may use additional iCloud storage.") }
+            Section("Existing iCloud workspaces") {
+                if let identifier = coordinator.workspaceIdentifier {
+                    LabeledContent("Workspace identifier", value: identifier).font(.caption).textSelection(.enabled)
+                }
+                Text("After restoring a backup, this device uses a separate workspace. On an empty installation, find that workspace and compare its identifier before connecting.")
+                Button("Find existing workspaces") {
+                    workspaceFailure = nil
+                    Task { await coordinator.discoverWorkspaces() }
+                }.disabled(coordinator.busy || coordinator.enabled).accessibilityIdentifier("sync-find-workspaces")
+                if let message = coordinator.workspaceDiscoveryMessage { Text(message).font(.caption) }
+                ForEach(coordinator.discoveredWorkspaces) { workspace in
+                    Button(workspace.id.uuidString) { selectedWorkspace = workspace }.font(.caption)
+                        .disabled(coordinator.busy)
+                }
+                if let workspaceFailure { Text(workspaceFailure).foregroundStyle(.red) }
+            }
             if coordinator.metadataRealm == .production && coordinator.hasRetainedOtherRealm {
                 Section {
                     Text("This build uses production iCloud. Local records are kept; development sync history and its cloud data stay separate. Enable sync to upload this device’s local records to production.")
+                }
+            }
+            if !coordinator.identityConflicts.isEmpty {
+                Section("Records with matching identities") {
+                    ForEach(coordinator.identityConflicts) { conflict in
+                        Button { selectedIdentity = conflict } label: {
+                            Text(conflict.kind.displayName + " · " + String(conflict.candidates.count))
+                        }.accessibilityIdentifier("sync-identity-conflict")
+                    }
                 }
             }
             if !coordinator.conflicts.isEmpty {
@@ -64,8 +92,25 @@ struct SyncSettingsView: View {
         } message: {
             Text("The previous setup was not confirmed and iCloud reports no workspace. Create it using the local records and photos kept on this device? This cannot restore anything that existed only in iCloud.")
         }
+        .alert("Connect this existing workspace?", isPresented: Binding(get: { selectedWorkspace != nil }, set: { if !$0 { selectedWorkspace = nil } })) {
+            Button("Cancel", role: .cancel) { selectedWorkspace = nil }
+            Button("Select workspace") {
+                guard let workspace = selectedWorkspace else { return }
+                Task {
+                    do { try await coordinator.connectDiscoveredWorkspace(workspace) }
+                    catch { workspaceFailure = String(localized: "Unable to select this workspace. The local workspace must be empty with no pending history; check the account and search again. Local data is kept.") }
+                }
+                selectedWorkspace = nil
+            }
+        } message: {
+            Text("This only selects the existing workspace on an empty installation. Then enable iCloud sync to download its contents. Existing local records and pending history cannot be replaced.")
+        }
+        .onDisappear { coordinator.cancelWorkspaceDiscovery() }
         .sheet(item: $selectedConflict) { conflict in
             SyncConflictView(coordinator: coordinator, conflict: conflict)
+        }
+        .sheet(item: $selectedIdentity) { conflict in
+            SyncIdentityConflictView(coordinator: coordinator, conflict: conflict)
         }
         .onAppear { coordinator.refreshStatus() }
     }
@@ -147,6 +192,52 @@ extension SyncDomainKind {
         case .bodyReference: return String(localized: "Body reference")
         case .netWorthItem: return String(localized: "Asset or liability")
         case .netWorthSnapshot: return String(localized: "Net worth snapshot")
+        }
+    }
+}
+
+private struct SyncIdentityConflictView: View {
+    @ObservedObject var coordinator: SyncProductCoordinator
+    let conflict: SyncIdentityConflict
+    @Environment(\.dismiss) private var dismiss
+    @State private var selected: SyncIdentityConflict.Candidate?
+    @State private var tagName = ""
+    @State private var failure: String?
+    var body: some View {
+        NavigationStack {
+            List {
+                Text("These records were created separately but use the same name, date or unique role. Review every record before choosing. All original versions remain in sync history.")
+                if conflict.kind == .tag {
+                    Text("Rename one tag to keep both tags and all their existing connections.")
+                    TextField("New tag name", text: $tagName).accessibilityIdentifier("sync-tag-rename")
+                }
+                if conflict.kind == .investmentParticipant {
+                    Text("Choose the default participant. Both participants and all their records are kept.")
+                }
+                ForEach(conflict.candidates) { candidate in
+                    Section {
+                        Text(candidate.preview).textSelection(.enabled)
+                        Text(candidate.key.id.uuidString).font(.caption2).foregroundStyle(.secondary)
+                        Button(conflict.kind == .tag ? String(localized: "Rename this tag") : String(localized: "Keep this record")) { selected = candidate }
+                            .disabled(conflict.kind == .tag && tagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+                if let failure { Text(failure).foregroundStyle(.red) }
+            }
+            .navigationTitle("Review matching records")
+            .toolbar { Button("Done") { dismiss() } }
+            .confirmationDialog("Apply this identity choice?", isPresented: Binding(get: { selected != nil }, set: { if !$0 { selected = nil } })) {
+                Button("Apply choice", role: conflict.kind == .tag || conflict.kind == .investmentParticipant ? nil : .destructive) {
+                    guard let selected else { return }
+                    do { try coordinator.resolveIdentity(conflict, keeping: selected.key, tagName: tagName); dismiss() }
+                    catch { failure = String(localized: "The choice could not be applied. Sync again and review the latest records; a referenced record cannot be removed.") }
+                    self.selected = nil
+                }
+            } message: {
+                Text(conflict.kind == .tag || conflict.kind == .investmentParticipant
+                     ? String(localized: "Both records and their connections are kept.")
+                     : String(localized: "Only the selected record will remain in the current workspace. Other matching records are removed from the current view, but their original versions remain in sync history."))
+            }
         }
     }
 }

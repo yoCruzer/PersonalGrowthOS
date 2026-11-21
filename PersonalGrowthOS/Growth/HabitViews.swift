@@ -1182,6 +1182,7 @@ private struct HabitEditorView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @State private var syncBaseline: SyncEditorBaseline?
     @State private var name: String
     @State private var recordingMode: HabitRecordingMode
     @State private var dailyTarget = ""
@@ -1198,6 +1199,7 @@ private struct HabitEditorView: View {
     ) {
         self.habit = habit
         self.didSave = didSave
+        _syncBaseline = State(initialValue: habit.map { .capture($0, key: .init(kind: .habit, id: $0.id)) })
         _name = State(initialValue: habit?.name ?? "")
         let initialPlan = plan ?? HabitPlan.legacy(
             mode: settings.recordingMode,
@@ -1347,6 +1349,7 @@ private struct HabitEditorView: View {
         }
 
         do {
+            try syncBaseline?.validate(modelContext.container)
             let service = HabitService(context: modelContext)
             let plan = makePlan(target: target)
             if let habit {
@@ -1360,6 +1363,8 @@ private struct HabitEditorView: View {
             }
             didSave()
             dismiss()
+        } catch let conflict as SyncEditorConflict {
+            errorMessage = conflict.localizedDescription
         } catch HabitValidationError.emptyName {
             errorMessage = String(localized: "Habit name cannot be empty.")
         } catch HabitValidationError.invalidDailyTarget {

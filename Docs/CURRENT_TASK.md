@@ -1,3 +1,19 @@
+> 2026-11-21 PR #21 最终复核。修复三方同名标签逐个改名，以及删除重复事实前遗漏并发版本引用的问题。当前候选在 Xcode 27.2、iOS 27.0 的 PGOS-Release21-Audit 模拟器完成整个 PersonalGrowthOSTests，737/737 通过，0 跳过，含真实 32 MB 隔离卷。命令为 `xcodebuild test -scheme PersonalGrowthOS -only-testing:PersonalGrowthOSTests -parallel-testing-enabled NO`，结果在 `/private/tmp/pgos-1121-unit.xcresult`。真实双设备 CloudKit 仍待发行验收。合并与最终 CI 结果见 [PR #21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21)。App Store 1.0 (21) 的发行源码为 `321219f61fd2dedf3be69d6f49c3af23896cccd4`。
+
+> 2026-11-15 同步加固完成：`FIX_COMPLETE / CANDIDATE_VERIFIED / NOT_RELEASED`。跨 UUID 冲突保真处理、恢复工作区发现/空库连接、超万条历史投影与发送已修复。本机 735/735＋恢复 E2E 1/1、UI 3/3、基础包 87/87、unsigned Release 通过。产品源码 440197d；验证候选 776cc4c 的独立 CI 全部 SUCCESS：Unit 735 PASS/1 SKIP（低空间本机实跑通过）、Smoke 8/8、Release、基础包及 32 项打包防护。四份官方 ZIP 与完整源码树已核验。后续仅文档证据；停代码审阅/发行验收边界，真实云/双设备仍 NOT_RUN。详见 [SYNC_RESILIENCE_20261115_ZH.md](SYNC_RESILIENCE_20261115_ZH.md) 和 [Draft PR21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21)；下方上一批结论保留为历史。
+
+## 2026-11-15 Build21风险审计完成：修复候选与门禁已验证
+
+状态：`AUDIT_COMPLETE / CANDIDATE_VERIFIED / NOT_RELEASED`。已审计已发布1.0(21)/321219f，修复旧草稿覆盖远端内容、远端提交未通知业务消费者、媒体复制后完整性元数据错误三类风险。源码候选 `d1f8c76865548ce23a41231863dd83f6fcf24f17` 已普通推送，见 [Draft PR21](https://github.com/yoCruzer/PersonalGrowthOS/pull/21)。后续提交仅证据与文档。
+
+本机最终729/729＝724原生Unit＋5编辑器UI、0SKIP、runtimeWarnings=[]；SyncFoundation82/82、其他相关UI与unsigned Release通过。独立 [CI43695200124](https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43695200124) 整体SUCCESS：Release成功、Unit723PASS/0FAIL/1SKIP、Smoke8/8，运行时警告为空。CI唯一低空间跳过项已由本机32MB HFS+真实卷覆盖。三个官方ZIP的摘要/CRC、测试叶子计数、实际merge完整tree与候选一致均已核验。
+
+main已无重写地快进至a58848f。Owner确认后删除34条已吸收远端分支、关闭19个历史PR；独立PR18保留并改base至main。远端现7条（含审计分支），本地8条；原主目录和其他脏工作树未提交内容保持。交付工作树 `/private/tmp/PersonalGrowthOS-release21-audit`；[完整审计及恢复证据](RELEASE21_RISK_AUDIT_ZH.md)。未触碰私人库、未移动发行tag、未上传新包。
+
+本批停止：候选待审阅和后续发布验收。真实双设备、系统后台/通知/AlarmKit/Widget、实际发行包仍NOT_RUN；同步历史容量、跨UUID自然键冲突、恢复工作区发现另立协议设计批次。下方保留历史交接。
+
+---
+
 ## 2026-11-15 免费首发完成：1.0 (21) 已公开上线并核验
 
 Owner明确“确认公开上线”后，15:20执行并确认港澳台美四区发布，Apple版本1.0可分发/Build21关联保持、各区可供应。15:29–15:30四区公共Lookup明确software类型均返回同一6796425674/Bundle/1.0/price0，Safari实际公开美国产品页显示正式图标、五截图、Free、iPhone、9+及双语隐私信息。早期id-only空结果有约24h缓存，已被公开有效记录和页面覆盖，原证据保留。候选321219f与唯一tag不变；Goal COMPLETE / PUBLIC_RELEASE_VERIFIED，无Owner待办或Apple技术反馈。原本机/CI/Owner冒烟通过，独立签名包字节检查及agent商店真机安装NOT_RUN限制如实保留。大陆待备案/准入后开为后续范围；原分支/他人修改、AGPL不动。[最终台账及四区链接](APP_STORE_RELEASE.md)。以下保留历史，不覆盖本段。

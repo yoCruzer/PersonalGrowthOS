@@ -1,0 +1,228 @@
+{
+  "run": {
+    "workflow_runs": [
+      {
+        "id": 43695200124,
+        "name": "iOS regression",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 35,
+        "jobs_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/runs/43695200124/jobs",
+        "logs_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/runs/43695200124/logs",
+        "workflow_id": 390246302
+      }
+    ]
+  },
+  "jobs": {
+    "jobs": [
+      {
+        "id": 132754073346,
+        "name": "iOS smoke",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43695200124,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run native gate",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Save compact evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          }
+        ]
+      },
+      {
+        "id": 132754073513,
+        "name": "iOS release",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43695200124,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run native gate",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Save compact evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          }
+        ]
+      },
+      {
+        "id": 132754073649,
+        "name": "iOS unit",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 43695200124,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run native gate",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Save compact evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          }
+        ]
+      },
+      {
+        "id": 132754074781,
+        "name": "Optional extended UI",
+        "status": "completed",
+        "conclusion": "skipped",
+        "run_id": 43695200124,
+        "logs_url": null,
+        "steps": null
+      }
+    ]
+  },
+  "artifacts": {
+    "artifacts": [
+      {
+        "id": 14155375666,
+        "name": "ios-smoke-1",
+        "size_in_bytes": 61187,
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/14155375666",
+        "archive_download_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/14155375666/zip",
+        "expired": false,
+        "created_at": "2026-11-15T09:04:08Z",
+        "expires_at": "2026-11-18T09:04:06Z",
+        "updated_at": "2026-11-15T09:04:08Z",
+        "digest": "sha256:f48b27a75185d08b3c5d5df0612cc256f8ff9951cf480e3bf079b76924db7f1d",
+        "workflow_run": {
+          "id": 43695200124,
+          "repository_id": 1301751228,
+          "head_repository_id": 1301751228,
+          "head_branch": "codex/release-21-risk-audit",
+          "head_sha": "d1f8c76865548ce23a41231863dd83f6fcf24f17"
+        }
+      },
+      {
+        "id": 14154906617,
+        "name": "ios-unit-1",
+        "size_in_bytes": 129449,
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/14154906617",
+        "archive_download_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/14154906617/zip",
+        "expired": false,
+        "created_at": "2026-11-15T08:55:47Z",
+        "expires_at": "2026-11-18T08:55:46Z",
+        "updated_at": "2026-11-15T08:55:47Z",
+        "digest": "sha256:35aed7fa6698f879bf68bccf69203c9e989db8bed367c678cc0480675a2656da",
+        "workflow_run": {
+          "id": 43695200124,
+          "repository_id": 1301751228,
+          "head_repository_id": 1301751228,
+          "head_branch": "codex/release-21-risk-audit",
+          "head_sha": "d1f8c76865548ce23a41231863dd83f6fcf24f17"
+        }
+      },
+      {
+        "id": 14154098915,
+        "name": "ios-release-1",
+        "size_in_bytes": 38326,
+        "url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/14154098915",
+        "archive_download_url": "https://api.github.com/repos/yoCruzer/PersonalGrowthOS/actions/artifacts/14154098915/zip",
+        "expired": false,
+        "created_at": "2026-11-15T08:41:43Z",
+        "expires_at": "2026-11-18T08:41:42Z",
+        "updated_at": "2026-11-15T08:41:43Z",
+        "digest": "sha256:de8d6d604ad476cba197ea2aed70c923ab7dd9a6371e45a73af06b658a6a5069",
+        "workflow_run": {
+          "id": 43695200124,
+          "repository_id": 1301751228,
+          "head_repository_id": 1301751228,
+          "head_branch": "codex/release-21-risk-audit",
+          "head_sha": "d1f8c76865548ce23a41231863dd83f6fcf24f17"
+        }
+      }
+    ]
+  }
+}

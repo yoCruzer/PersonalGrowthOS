@@ -49,6 +49,68 @@ import SyncFoundation
             accountHash: account ?? binding.accountHash, dataset: binding.dataset, generation: generation ?? binding.generation))
     }
 
+    func testRestoredRandomWorkspaceCanBeDiscoveredSelectedAndEnabledWithoutCreatingZone() async throws {
+        let source = try PersistenceContainerFactory.makeInMemory()
+        try ProductSyncStoreSelection.isolateRestoredWorkspace(in: source.mainContext)
+        try source.mainContext.save()
+        let restored = try XCTUnwrap(ProductSyncStoreSelection.selectedDataset(in: source.mainContext))
+        XCTAssertNotEqual(restored.id, ProductSyncStoreSelection.defaultDatasetID(for: .development))
+        let container = try PersistenceContainerFactory.makeInMemory(); container.mainContext.autosaveEnabled = false
+        let driver = SyntheticSyncDriver(), account = String(repeating: "a", count: 64)
+        let zone = CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: restored.id))
+        let coordinator = SyncProductCoordinator(container: container, mediaRoot: try root(), environment: .development, automaticSync: false,
+            accountReader: { account }, zoneReader: { [zone, CKRecordZone.default(), zone] },
+            transportFactory: { persistence in driver.persistence = persistence; return driver })
+        await coordinator.discoverWorkspaces()
+        XCTAssertNil(try ProductSyncStoreSelection.selectedDataset(in: ModelContext(container)))
+        XCTAssertEqual(coordinator.discoveredWorkspaces.map(\.id), [restored.id]); XCTAssertEqual(driver.starts, 0)
+        let choice = try XCTUnwrap(coordinator.discoveredWorkspaces.first)
+        try await coordinator.connectDiscoveredWorkspace(choice)
+        let selected = try XCTUnwrap(ProductSyncStoreSelection.selectedDataset(in: ModelContext(container)))
+        XCTAssertEqual(selected.id, restored.id); XCTAssertTrue(selected.zoneEstablished); XCTAssertFalse(selected.enabled)
+        XCTAssertFalse(selected.zoneCreationAttempted); XCTAssertTrue(coordinator.discoveredWorkspaces.isEmpty)
+        await coordinator.enable()
+        XCTAssertEqual(driver.starts, 1); XCTAssertEqual(driver.requestedZoneCreation, [false])
+        XCTAssertEqual(driver.session?.binding.dataset, restored.id)
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<ProductSyncOutbox>()), 0)
+    }
+
+    func testWorkspaceSelectionRejectsLateLocalDataAccountChangeAndMissingZone() async throws {
+        for failure in ["local", "account", "zone"] {
+            let container = try PersistenceContainerFactory.makeInMemory(); container.mainContext.autosaveEnabled = false
+            let id = UUID(), zone = CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: id))
+            var account = String(repeating: "a", count: 64), zones = [zone]
+            let coordinator = SyncProductCoordinator(container: container, mediaRoot: try root(), environment: .development, automaticSync: false,
+                accountReader: { account }, zoneReader: { zones })
+            await coordinator.discoverWorkspaces()
+            let choice = try XCTUnwrap(coordinator.discoveredWorkspaces.first)
+            if failure == "local" { container.mainContext.insert(Entry(body: "must keep", createdAt: Date(timeIntervalSince1970: 1_700_000_000))); try container.mainContext.save() }
+            if failure == "account" { account = String(repeating: "b", count: 64) }
+            if failure == "zone" { zones = [] }
+            do { try await coordinator.connectDiscoveredWorkspace(choice); XCTFail("Must reject \(failure)") } catch {}
+            XCTAssertNil(try ProductSyncStoreSelection.selectedDataset(in: ModelContext(container)))
+            XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<Entry>()), failure == "local" ? 1 : 0)
+            XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<ProductSyncOutbox>()), 0)
+        }
+    }
+
+    func testWorkspaceDiscoveryCancellationAndForeignZonesDoNotOfferConsent() async throws {
+        let container = try PersistenceContainerFactory.makeInMemory(), id = UUID()
+        var coordinator: SyncProductCoordinator!
+        coordinator = SyncProductCoordinator(container: container, mediaRoot: try root(), environment: .development, automaticSync: false,
+            accountReader: { String(repeating: "a", count: 64) }, zoneReader: {
+                coordinator.cancelWorkspaceDiscovery()
+                return [CKRecordZone(zoneID: CloudRecordCodec.zone(dataset: id))]
+            })
+        await coordinator.discoverWorkspaces()
+        XCTAssertTrue(coordinator.discoveredWorkspaces.isEmpty); XCTAssertNil(coordinator.workspaceDiscoveryMessage)
+        XCTAssertNil(try ProductSyncStoreSelection.selectedDataset(in: ModelContext(container)))
+        XCTAssertTrue(SyncProductCoordinator.discoveredDatasetIDs([
+            CKRecordZone(zoneID: .init(zoneName: "PGSyncV2-" + id.uuidString.lowercased(), ownerName: "foreign")),
+            CKRecordZone(zoneName: "PGSyncV2-not-a-uuid"), CKRecordZone.default()
+        ]).isEmpty)
+    }
+
     func testPrimaryDurablePauseSurvivesSecondaryCancellationAndReconciliationFlags() throws {
         for reason in [SyncCloudPauseReason.accountChanged, .zoneMissing, .invalidRecord, .persistenceFailure] {
             let (container, coordinator, session) = try fixture()
@@ -284,6 +346,21 @@ import SyncFoundation
         do { try await coordinator.durableInbox([.original(descriptor,Data("wrong".utf8))], session: session); XCTFail("Corrupt bytes must fail") } catch {}
         XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncInbox>()).first?.bytes, bytes)
     }
+    func testBatchInboxDeduplicatesExactReplayAndRollsBackEquivocationWithinSameCallback() async throws {
+        let (container, coordinator, session) = try fixture()
+        let id = UUID(), object = try SyncObject(kind: "FutureAggregate", id: UUID())
+        let first = try MutationManifest(dataset: session.binding.dataset, mutation: id, object: object,
+            payloadVersion: 99, payload: PayloadManifest(bytes: Data([1])))
+        let other = try MutationManifest(dataset: session.binding.dataset, mutation: id, object: object,
+            payloadVersion: 99, payload: PayloadManifest(bytes: Data([2])))
+        do { try await coordinator.durableInbox([.mutation(first), .mutation(other)], session: session); XCTFail("Batch equivocation must fail") }
+        catch { XCTAssertEqual(error as? SyncValidationError, .identityCollision) }
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<ProductSyncInbox>()), 0)
+        try await coordinator.durableInbox([.mutation(first), .mutation(first)], session: session)
+        XCTAssertEqual(try ModelContext(container).fetchCount(FetchDescriptor<ProductSyncInbox>()), 1)
+        XCTAssertEqual(try ModelContext(container).fetch(FetchDescriptor<ProductSyncInbox>()).first?.bytes, try first.encoded())
+    }
+
     func testManifestIdentityCollisionRetainsFirstDurableInbox() async throws {
         let (container, coordinator, session) = try fixture()
         // Unsupported domain/version is intentionally retained pending, never installed as business data.

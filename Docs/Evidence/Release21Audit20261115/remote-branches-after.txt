@@ -1,0 +1,6 @@
+290bfc0fd547e0b2da9471f0b71601429417b890	refs/heads/codex/icloud-formal-execution-guard
+54df17eb9b2bdc7d2b060e927bf71687ce7dd3ea	refs/heads/gh-pages
+a58848f68484cf3bd85af8bf78c388cf0ce4b6ce	refs/heads/main
+47fe200e515a82ddad9ba16f5666ceb4329ee108	refs/heads/plan/icloud-production-incident-20261109
+d98306f219ed5929d38856216cd9af52fa5c7744	refs/heads/plan/important-days-v1-review-fix-goal
+9e9e29564565a3b6396dc51bb179c29f71bdc726	refs/heads/plan/sleep-routine-v1-review-fix

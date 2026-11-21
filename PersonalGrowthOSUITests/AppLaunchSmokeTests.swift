@@ -91,6 +91,10 @@ final class AppLaunchSmokeTests: XCTestCase {
         app.buttons["sync-enable"].tap()
         XCTAssertTrue(app.alerts["将此工作区连接到 iCloud？"].waitForExistence(timeout: 3))
         app.alerts.buttons["取消"].tap()
+        let discovery = app.buttons["sync-find-workspaces"]
+        for _ in 0..<4 where !discovery.isHittable { app.swipeUp() }
+        XCTAssertTrue(discovery.isHittable)
+        XCTAssertEqual(discovery.label, "查找已有工作区")
         let off = XCTAttachment(screenshot: app.screenshot()); off.name = "icloud-chinese-default-off"; off.lifetime = .keepAlways; add(off)
         app.terminate()
         app.launchArguments = base + ["-PGOSSyncStatusLocalizationTest"]; app.launch(); openSync()
@@ -2835,7 +2839,15 @@ extension AppLaunchSmokeTests {
         app.buttons["todo-dismiss-keyboard"].tap()
         for _ in 0..<5 where !app.buttons["todo-repeat"].isHittable { app.swipeUp() }
         app.buttons["todo-repeat"].tap(); app.buttons["Every Week"].tap()
-        XCTAssertTrue(app.staticTexts["todo-repeat-needs-day"].waitForExistence(timeout: 5))
+        let needsDay = app.staticTexts["todo-repeat-needs-day"]
+        if !needsDay.exists {
+            let attachment = XCTAttachment(screenshot: app.screenshot())
+            attachment.name = "repeat-warning-before-scroll"; attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+        // Expanding the repeat explanation can leave this lazy Form row below the viewport.
+        for _ in 0..<3 where !needsDay.exists { app.swipeUp() }
+        XCTAssertTrue(needsDay.waitForExistence(timeout: 5))
         app.buttons["todo-save"].tap()
         XCTAssertTrue(app.staticTexts["todo-editor-error"].waitForExistence(timeout: 5))
         for _ in 0..<5 where !app.switches["todo-planned-toggle"].isHittable { app.swipeDown() }

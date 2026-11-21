@@ -1,0 +1,52 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "502D3BAF-454D-430F-85FE-A3D0FCFBFE38",
+        "deviceName" : "PGOS-Release21-Audit",
+        "modelName" : "iPhone 18 Pro",
+        "osBuildNumber" : "24A434",
+        "osVersion" : "27.0",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 1,
+      "passedTests" : 10,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "PersonalGrowthOS · Built with macOS 27.0.1",
+  "expectedFailures" : 0,
+  "failedTests" : 1,
+  "finishTime" : 1794731250.44,
+  "passedTests" : 10,
+  "result" : "Failed",
+  "runtimeWarnings" : [
+
+  ],
+  "skippedTests" : 0,
+  "startTime" : 1794730704.411,
+  "statistics" : [
+
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "XCTAssertTrue failed",
+      "targetName" : "PersonalGrowthOSUITests",
+      "testIdentifier" : 1,
+      "testIdentifierString" : "AppLaunchSmokeTests/testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor()",
+      "testIdentifierURL" : "test://com.apple.xcode/PersonalGrowthOS/PersonalGrowthOSUITests/AppLaunchSmokeTests/testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor",
+      "testName" : "testExistingOrdinaryTodoConvertsToWeeklyKeepsIdentityAndRestartsWithSuccessor()"
+    }
+  ],
+  "title" : "Test - PersonalGrowthOS",
+  "topInsights" : [
+
+  ],
+  "totalTestCount" : 11
+}

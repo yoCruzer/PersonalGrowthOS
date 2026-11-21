@@ -1,0 +1,9 @@
+{
+  "path": "/private/tmp/pgos-release21-evidence/branches-before.bundle",
+  "sha256": "9fc87941d4b2540b94028c92c49145e638f221b5eb5135232ae1ad20ccc7dd78",
+  "recovery": "git fetch <bundle> <saved-ref>:refs/heads/<branch>; all deleted remote tips also remain ancestors of main",
+  "publishedSource": "321219f61fd2dedf3be69d6f49c3af23896cccd4",
+  "mainIntegration": "a58848f68484cf3bd85af8bf78c388cf0ce4b6ce",
+  "directoryMode": "0700",
+  "bundleMode": "0600"
+}

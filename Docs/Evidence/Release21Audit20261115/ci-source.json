@@ -1,0 +1,10 @@
+{
+  "runID": 43695200124,
+  "url": "https://github.com/yoCruzer/PersonalGrowthOS/actions/runs/43695200124",
+  "candidate": "d1f8c76865548ce23a41231863dd83f6fcf24f17",
+  "prMergeCommit": "615a9d633344afd8de73dbf0dc20d379893c0e4c",
+  "candidateTree": "f611502bca21c358e8afca60127ce25c9cb2311b",
+  "mergeTree": "f611502bca21c358e8afca60127ce25c9cb2311b",
+  "equalEntireTree": true,
+  "pr": 21
+}

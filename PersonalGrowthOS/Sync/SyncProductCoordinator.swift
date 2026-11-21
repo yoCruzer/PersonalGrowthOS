@@ -22,6 +22,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     @Published private(set) var activity: SyncCloudActivity?
     #if DEBUG
     private(set) var projectionPassCount = 0
+    private(set) var verifiedAssetMutationCount = 0
     #endif
     var displayedStatus: String {
         switch activity {
@@ -58,10 +59,18 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     @Published private(set) var requiresAttention = false
     @Published private(set) var pendingCount = 0
     @Published private(set) var conflicts: [SyncConflictSummary] = []
+    @Published private(set) var identityConflicts: [SyncIdentityConflict] = []
     @Published private(set) var canConfirmInitialZoneCreation = false
     private var initialZoneConsent: SyncBinding?
     private var activation = UUID()
     private var driver: (any SyncCloudDriving)?
+    // Derived from durable outbox only. Always fenced by the complete active binding;
+    // it is a lookup accelerator, never an acknowledgement or publication authority.
+    private var uploadIndex: (binding: SyncBinding, sources: [String: UUID])?
+    @Published private(set) var discoveredWorkspaces: [SyncDiscoveredWorkspace] = []
+    @Published private(set) var workspaceDiscoveryMessage: String?
+    private var discoveryConsent: (token: UUID, account: String, environment: CloudEnvironment, selection: String)?
+    private let zoneReader: (() async throws -> [CKRecordZone])?
     private let accountReader: (() async throws -> String)?
     private let transportFactory: @MainActor (any SyncCloudPersistence) -> any SyncCloudDriving
     private var pendingWake = false
@@ -88,8 +97,10 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
 
     init(container: ModelContainer, mediaRoot: URL, environment: CloudEnvironment? = nil, automaticSync: Bool = true,
          accountReader: (() async throws -> String)? = nil,
+         zoneReader: (() async throws -> [CKRecordZone])? = nil,
          transportFactory: (@MainActor (any SyncCloudPersistence) -> any SyncCloudDriving)? = nil) {
         self.container = container; self.mediaRoot = mediaRoot; self.automaticSync = automaticSync
+        self.zoneReader = zoneReader
         self.accountReader = accountReader; self.transportFactory = transportFactory ?? { SyncCloudTransport(persistence: $0) }
         self.environment = environment ?? SyncBuildConfiguration.environment()
         refreshStatus()
@@ -122,7 +133,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                 $0.initialized && $0.environment != metadataRealm?.rawValue
             }
             guard let dataset = try dataset(in: context) else {
-                enabled = false; pendingCount = 0; requiresAttention = false; conflicts = []
+                enabled = false; pendingCount = 0; requiresAttention = false; conflicts = []; identityConflicts = []
                 status = String(localized: "iCloud sync is off"); return
             }
             enabled = dataset.enabled
@@ -134,6 +145,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                     guard let kind = SyncDomainKind(rawValue: state.kind), let heads = try? JSONDecoder().decode([UUID].self, from: state.heads) else { return nil }
                     return SyncConflictSummary(key: .init(kind: kind, id: state.businessID), heads: heads)
                 }
+            identityConflicts = try currentIdentityConflicts(context: context, dataset: id)
             pendingCount = try context.fetch(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id && !$0.completed })).count
             if !enabled { status = String(localized: "iCloud sync is off") }
             else if let reason = dataset.blockedReason {
@@ -163,6 +175,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         defer { finishCycle() }
         wakeTask?.cancel(); wakeTask = nil; pendingWake = false
         let attempt = UUID(); activation = attempt
+        cancelWorkspaceDiscovery()
         _ = takeInitialZoneConsent()
         var consentAccepted = false
         var failureBinding: SyncBinding?
@@ -262,6 +275,7 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
     }
     func disable() async {
         activity = nil
+        cancelWorkspaceDiscovery()
         _ = takeInitialZoneConsent()
         activation = UUID(); wakeTask?.cancel(); wakeTask = nil; pendingWake = false; retryNotBefore = nil; retryAttempt = 0
         driver?.session?.invalidate()
@@ -449,17 +463,26 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         let context = ModelContext(container); _ = try checked(session, context: context)
         let dataset = session.binding.dataset
         let queue = try context.fetch(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == dataset && !$0.completed }))
-        let mutations = try context.fetch(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == dataset }))
-        let byID = Dictionary(uniqueKeysWithValues: mutations.map { ($0.id, $0) })
-        var pending = Set<String>()
+        var pending = Set<String>(), sources: [String: UUID] = [:]
         for item in queue {
-            guard let mutation = byID[item.mutationID], mutation.manifestHash == item.manifestHash else { throw ProductSyncFailure.corruptState }
+            try Task.checkCancellation()
+            let id = item.mutationID
+            var query = FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.id == id })
+            query.propertiesToFetch = [\.id, \.dataset, \.manifest, \.manifestHash]; query.fetchLimit = 1
+            guard let mutation = try context.fetch(query).first, mutation.dataset == dataset,
+                  mutation.manifestHash == item.manifestHash,
+                  syncDigest(mutation.manifest) == item.manifestHash else { throw ProductSyncFailure.corruptState }
             let manifest = try MutationManifest.decode(mutation.manifest)
+            guard manifest.mutation == id, manifest.dataset == dataset else { throw ProductSyncFailure.corruptState }
             let ack = Set(try JSONDecoder().decode([String].self, from: item.acknowledgedRecords))
-            pending.formUnion(recordNames(manifest).subtracting(ack))
+            let names = recordNames(manifest).subtracting(ack)
+            pending.formUnion(names)
+            for name in names where sources[name] == nil { sources[name] = id }
         }
+        uploadIndex = (session.binding, sources)
         return pending.sorted().map { CKRecord.ID(recordName: $0, zoneID: CloudRecordCodec.zone(dataset: dataset)) }
     }
+
     private func recordNames(_ manifest: MutationManifest) -> Set<String> {
         var names: Set<String> = [CloudRecordCodec.mutationID(manifest.mutation, dataset: manifest.dataset).recordName]
         names.formUnion(manifest.payload?.chunks.map { "chunk-" + $0.sha256 } ?? [])
@@ -469,40 +492,57 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
         let context = ModelContext(container); _ = try checked(session, context: context)
         guard id.zoneID == CloudRecordCodec.zone(dataset: session.binding.dataset) else { throw SyncValidationError.invalidIdentity }
         let dataset = session.binding.dataset
-        let mutations = try context.fetch(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == dataset }))
+        if uploadIndex?.binding != session.binding || uploadIndex?.sources[id.recordName] == nil {
+            _ = try pendingRecordIDs(session: session)
+        }
+        guard let mutationID = uploadIndex?.sources[id.recordName] else { return nil }
+        var query = FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.id == mutationID })
+        query.fetchLimit = 1
+        guard let mutation = try context.fetch(query).first, mutation.dataset == dataset,
+              syncDigest(mutation.manifest) == mutation.manifestHash else { throw ProductSyncFailure.corruptState }
+        let queueID = mutationID
+        guard let outbox = try context.fetch(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.mutationID == queueID })).first,
+              outbox.dataset == dataset, outbox.manifestHash == mutation.manifestHash else { throw ProductSyncFailure.corruptState }
+        let manifest = try MutationManifest.decode(mutation.manifest)
+        guard manifest.mutation == mutationID, manifest.dataset == dataset else { throw ProductSyncFailure.corruptState }
+        if id == CloudRecordCodec.mutationID(mutationID, dataset: dataset) { return .mutation(manifest) }
         let assets = SyncAssetStore(root: mediaRoot)
-        for mutation in mutations {
-            let manifest = try MutationManifest.decode(mutation.manifest)
-            if id == CloudRecordCodec.mutationID(mutation.id, dataset: dataset) { return .mutation(manifest) }
-            for (index, chunk) in (manifest.payload?.chunks ?? []).enumerated() where id.recordName == "chunk-" + chunk.sha256 {
-                guard let payload = mutation.payload else { throw SyncValidationError.missingAsset }
+        for (index, chunk) in (manifest.payload?.chunks ?? []).enumerated() where id.recordName == "chunk-" + chunk.sha256 {
+            if let payload = mutation.payload {
                 try manifest.payload?.verify(bytes: payload)
                 let start = index * SyncLimits.chunkBytes
                 let bytes = payload.subdata(in: start..<min(start + chunk.byteCount, payload.count))
                 return .payloadChunk(chunk, try assets.retain(bytes, as: chunk))
             }
-            for original in manifest.originals where id.recordName == "original-" + original.asset.sha256 {
-                _ = try assets.read(original.asset)
-                return .original(original.asset, try assets.url(for: original.asset))
-            }
+            _ = try assets.read(chunk)
+            return .payloadChunk(chunk, try assets.url(for: chunk))
         }
-        return nil
+        for original in manifest.originals where id.recordName == "original-" + original.asset.sha256 {
+            _ = try assets.read(original.asset)
+            return .original(original.asset, try assets.url(for: original.asset))
+        }
+        throw ProductSyncFailure.corruptState
     }
+
     func durableInbox(_ records: [SyncCloudDownloaded], session: SyncCloudSession) async throws {
         try StorePublication.perform(at: mediaRoot) {
             let context = ModelContext(container); context.autosaveEnabled = false
             _ = try checked(session, context: context)
             do {
+                // Persisted lookups exclude unsaved inserts. Track this callback's inserts
+                // explicitly so N arrivals do not cause N scans of N pending SwiftData rows.
+                var staged: [String: ProductSyncInbox] = [:]
                 for record in records {
+                    try Task.checkCancellation()
                     let name: String, type: String, bytes: Data
                     switch record {
                     case .mutation(let manifest):
                         guard manifest.dataset == session.binding.dataset else { throw SyncValidationError.invalidIdentity }
                         name = "mutation-" + manifest.mutation.uuidString.lowercased(); type = CloudRecordCodec.mutationType; bytes = try manifest.encoded()
                         let id = manifest.mutation
-                        if let old = try context.fetch(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.id == id })).first {
-                            try manifest.verifyReplay(of: old.manifest)
-                        }
+                        var query = FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.id == id })
+                        query.includePendingChanges = false; query.fetchLimit = 1
+                        if let old = try context.fetch(query).first { try manifest.verifyReplay(of: old.manifest) }
                     case .payloadChunk(let descriptor, let content):
                         _ = try SyncAssetStore(root: mediaRoot).retain(content, as: descriptor)
                         name = "chunk-" + descriptor.sha256; type = CloudRecordCodec.chunkType; bytes = content
@@ -511,9 +551,14 @@ extension Notification.Name { static let productSyncLocalCommit = Notification.N
                         name = "original-" + descriptor.sha256; type = CloudRecordCodec.originalType; bytes = content
                     }
                     let key = session.binding.dataset.uuidString.lowercased() + "/" + name
-                    if let previous = try context.fetch(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.key == key })).first {
+                    var query = FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.key == key })
+                    query.includePendingChanges = false; query.fetchLimit = 1
+                    if let previous = try staged[key] ?? context.fetch(query).first {
                         guard previous.recordType == type, previous.bytes == bytes else { throw SyncValidationError.identityCollision }
-                    } else { context.insert(ProductSyncInbox(dataset: session.binding.dataset, recordName: name, recordType: type, bytes: bytes)) }
+                    } else {
+                        let row = ProductSyncInbox(dataset: session.binding.dataset, recordName: name, recordType: type, bytes: bytes)
+                        context.insert(row); staged[key] = row
+                    }
                 }
                 _ = try checked(session, context: context)
                 try context.save()
@@ -620,37 +665,87 @@ struct SyncConflictSummary: Identifiable {
 
 extension SyncProductCoordinator {
     private func project(_ session: SyncCloudSession) throws {
-        try StorePublication.perform(at: mediaRoot) {
+        let published: Set<SyncDomainKey> = try StorePublication.perform(at: mediaRoot) {
             let context = ModelContext(container); context.autosaveEnabled = false
             let value = try checked(session, context: context)
             #if DEBUG
             projectionPassCount += 1
+            verifiedAssetMutationCount = 0
             #endif
             guard !container.mainContext.hasChanges else {
                 value.blockedReason = Self.editingReason
                 try context.save(); status = Self.localizedStoredStatus(value.blockedReason!)
-                return
+                return []
             }
             let datasetID = value.id
-            let inbox = try context.fetch(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.dataset == datasetID }))
-            let persisted = try context.fetch(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == datasetID }))
+            let historyLimits = CausalProjectionLimits.productHistory
+            let mutationType = CloudRecordCodec.mutationType
+            guard try context.fetchCount(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == datasetID })) <= historyLimits.manifests,
+                  try context.fetchCount(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.dataset == datasetID && $0.recordType == mutationType })) <= historyLimits.manifests else { throw SyncValidationError.limitExceeded }
+            let inbox = try context.fetch(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.dataset == datasetID && $0.recordType == mutationType }))
+            var hasQuarantine = try context.fetchCount(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.dataset == datasetID && $0.quarantinedReason != nil })) > 0
+            var historyQuery = FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == datasetID })
+            historyQuery.propertiesToFetch = [\.id, \.manifest, \.manifestHash]
+            let persisted = try context.fetch(historyQuery)
             var records = Dictionary(uniqueKeysWithValues: persisted.map { ($0.id, $0) })
             var manifests: [UUID: MutationManifest] = [:]
-            for row in persisted { manifests[row.id] = try MutationManifest.decode(row.manifest) }
+            var byteBudget = historyLimits.encodedBytes
+            for row in persisted {
+                try Task.checkCancellation()
+                guard row.manifest.count <= byteBudget else { throw SyncValidationError.limitExceeded }
+                byteBudget -= row.manifest.count
+                let manifest = try MutationManifest.decode(row.manifest)
+                guard manifest.mutation == row.id, manifest.dataset == datasetID,
+                      syncDigest(row.manifest) == row.manifestHash else { throw ProductSyncFailure.corruptState }
+                manifests[row.id] = manifest
+            }
             for row in inbox where row.recordType == CloudRecordCodec.mutationType && row.quarantinedReason == nil {
+                try Task.checkCancellation()
                 do {
                     let manifest = try MutationManifest.decode(row.bytes)
-                    guard manifest.dataset == datasetID else { throw SyncValidationError.invalidIdentity }
+                    guard manifest.dataset == datasetID,
+                          row.recordName == CloudRecordCodec.mutationID(manifest.mutation, dataset: datasetID).recordName,
+                          syncDigest(row.bytes) == row.sha256 else { throw SyncValidationError.invalidIdentity }
                     if let previous = manifests[manifest.mutation] { try manifest.verifyReplay(of: previous.encoded()) }
+                    else {
+                        guard row.bytes.count <= byteBudget else { throw SyncValidationError.limitExceeded }
+                        byteBudget -= row.bytes.count
+                    }
                     manifests[manifest.mutation] = manifest
-                } catch { row.quarantinedReason = "Invalid immutable manifest" }
+                } catch SyncValidationError.limitExceeded { throw SyncValidationError.limitExceeded }
+                catch { row.quarantinedReason = "Invalid immutable manifest"; hasQuarantine = true }
+            }
+            // Index and validate bounded history before opening any payload or original.
+            // Only current heads and a conflict preview need content to publish/review.
+            let manifestBytes = try manifests.values.map { try $0.encoded() }
+            let versions = Dictionary(uniqueKeysWithValues: SyncDomainKind.allCases.map { ($0.rawValue, Set([1])) })
+            let structural = try CausalProjection.project(manifestBytes: manifestBytes, dataset: datasetID,
+                supportedPayloadVersions: versions, verifiedMutationAssets: Set(manifests.keys), limits: historyLimits)
+            let required = Set(structural.flatMap { $0.heads + ($0.previewMutation.map { [$0] } ?? []) })
+            var payloadBudget = 256 * 1_024 * 1_024
+            for id in required {
+                let count = manifests[id]?.payload?.total.byteCount ?? 0
+                guard count <= payloadBudget else { throw SyncValidationError.limitExceeded }; payloadBudget -= count
             }
             let assets = SyncAssetStore(root: mediaRoot)
             var invalidContent = false
             var verified = Set<UUID>()
             var documents: [UUID: SyncDomainDocument] = [:]
             for (id, manifest) in manifests {
+                try Task.checkCancellation()
+                if !required.contains(id) {
+                    if records[id] == nil {
+                        // Keep the immutable manifest. Its chunks/originals remain in the asset
+                        // store; absence of an obsolete original cannot gate a newer full head.
+                        let row = try ProductSyncMutation(manifest, payload: nil, transactionID: UUID(), local: false)
+                        context.insert(row); records[id] = row
+                    }
+                    continue
+                }
                 do {
+                    #if DEBUG
+                    verifiedAssetMutationCount += 1
+                    #endif
                     var payload = records[id]?.payload
                     if !manifest.deleted && payload == nil, let descriptor = manifest.payload {
                         var collected = Data(); collected.reserveCapacity(descriptor.total.byteCount)
@@ -675,14 +770,16 @@ extension SyncProductCoordinator {
                     if case SyncValidationError.missingAsset = error {} else { invalidContent = true }
                 }
             }
-            let result = try CausalProjection.project(manifestBytes: manifests.values.map { try $0.encoded() }, dataset: datasetID,
-                supportedPayloadVersions: Dictionary(uniqueKeysWithValues: SyncDomainKind.allCases.map { ($0.rawValue, Set([1])) }),
-                verifiedMutationAssets: verified)
+            let result = required.isSubset(of: verified) ? structural : try CausalProjection.project(
+                manifestBytes: manifestBytes, dataset: datasetID, supportedPayloadVersions: versions,
+                verifiedMutationAssets: verified, limits: historyLimits)
             conflicts = result.filter { $0.state == .conflict }.compactMap {
                 guard let kind = SyncDomainKind(rawValue: $0.object.kind) else { return nil }
                 return SyncConflictSummary(key: .init(kind: kind, id: $0.object.id), heads: $0.heads)
             }
-            let complete = result.allSatisfy(\.complete) && !inbox.contains(where: { $0.quarantinedReason != nil })
+            let currentDocuments = result.compactMap { $0.selectedMutation.flatMap { documents[$0] } }
+            let identityKeys = Set(try SyncDomainCodec.identityGroups(currentDocuments).flatMap { $0.map(\.key) })
+            let complete = result.allSatisfy(\.complete) && identityKeys.isEmpty && !hasQuarantine
             let priorStates = try context.fetch(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == datasetID }))
             var states = Dictionary(uniqueKeysWithValues: priorStates.map { ($0.key, $0) })
             var affected = Set<SyncDomainKey>()
@@ -707,7 +804,8 @@ extension SyncProductCoordinator {
                 state.heads = try JSONEncoder().encode(item.heads)
                 if complete {
                     state.fingerprint = fingerprint; state.deleted = item.state == .deleted; state.projectionState = item.state.rawValue
-                } else if item.state == .conflict { state.projectionState = "conflict" }
+                } else if identityKeys.contains(key) { state.projectionState = "identityConflict" }
+                else if item.state == .conflict { state.projectionState = "conflict" }
                 else if item.complete && old?.fingerprint == fingerprint && old?.deleted == (item.state == .deleted) {
                     state.projectionState = item.state.rawValue
                 } else { state.projectionState = "pending" }
@@ -739,9 +837,11 @@ extension SyncProductCoordinator {
                     default: return false
                     }
                 } }
-                if !conflicts.isEmpty {
+                if !identityKeys.isEmpty {
+                    value.blockedReason = "Records with different identities need review. Local data and all versions are kept."
+                } else if !conflicts.isEmpty {
                     value.blockedReason = "Concurrent versions need review. Local data is kept; no version was silently overwritten."
-                } else if invalidContent || invalidGraph || inbox.contains(where: { $0.quarantinedReason != nil }) {
+                } else if invalidContent || invalidGraph || hasQuarantine {
                     value.blockedReason = "Downloaded sync data needs review. Local data and pending revisions are kept."
                 } else { value.blockedReason = Self.waitingReason }
             }
@@ -750,6 +850,23 @@ extension SyncProductCoordinator {
                 try ProductSyncCommit.save(context, origin: .remoteProjection)
             } catch { context.rollback(); throw error }
             refreshStatus()
+            return complete ? affected : []
+        }
+        // Invalidate consumers only after a committed publication and after releasing
+        // the store lease. Their refreshes may acquire the lease or read fresh contexts.
+        // Inbox receipts, pending graphs, failed installs and exact replays publish nothing.
+        let kinds = Set(published.map(\.kind))
+        if !kinds.isDisjoint(with: [.todoTask, .todoSeries, .todoList, .importantDayTodoLink]) {
+            NotificationCenter.default.post(name: .todoTasksChanged, object: container)
+        }
+        if !kinds.isDisjoint(with: [.importantDay, .importantDayEntryLink, .importantDayTodoLink]) {
+            NotificationCenter.default.post(name: .importantDaysChanged, object: container)
+        }
+        if !kinds.isDisjoint(with: [.sleepRecord, .sleepGoal]) {
+            NotificationCenter.default.post(name: .sleepRecordsChanged, object: container)
+        }
+        if !kinds.isDisjoint(with: [.investmentRecord, .investmentActivity, .investmentParticipant]) {
+            InvestmentChanges.publish(.all, container: container)
         }
     }
 
@@ -876,12 +993,250 @@ extension SyncProductCoordinator {
         let snapshot = Snapshot(format: 1, time: Date(), build: provenance.commit ?? "unknown", appVersion: version.version, appBuild: version.build, source: provenance.source,
             dirty: provenance.isDirty, environment: value?.environment ?? environment?.rawValue ?? "unavailable",
             enabled: enabled, busy: busy, requiresAttention: requiresAttention,
-            pendingUploads: uploads, pendingApplications: pending, historyRevisions: historyCount, historyLimit: 10_000,
-            historyNearLimit: historyCount >= 8_000, retryNotBefore: retryNotBefore,
+            pendingUploads: uploads, pendingApplications: pending, historyRevisions: historyCount, historyLimit: CausalProjectionLimits.productHistory.manifests,
+            historyNearLimit: historyCount >= CausalProjectionLimits.productHistory.manifests * 4 / 5, retryNotBefore: retryNotBefore,
             firstFailure: history.firstFailure, events: history.events)
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]; encoder.dateEncodingStrategy = .iso8601
         guard let bytes = try? encoder.encode(snapshot), bytes.count <= 32_768,
               let text = String(data: bytes, encoding: .utf8) else { return "Sync diagnostics unavailable" }
         return text
+    }
+}
+
+struct SyncIdentityConflict: Identifiable, Equatable {
+    struct Candidate: Identifiable, Equatable {
+        let key: SyncDomainKey
+        let head: UUID
+        let preview: String
+        var id: UUID { key.id }
+    }
+    let id: String
+    let candidates: [Candidate]
+    var kind: SyncDomainKind { candidates[0].key.kind }
+}
+
+extension SyncProductCoordinator {
+    private func identityDocuments(context: ModelContext, dataset: UUID) throws -> [(ProductSyncObjectState, ProductSyncMutation, SyncDomainDocument)] {
+        let rows = try context.fetch(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == dataset }))
+        let byID = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0) })
+        return try context.fetch(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == dataset })).compactMap { state in
+            let heads = try JSONDecoder().decode([UUID].self, from: state.heads)
+            guard heads.count == 1, let row = byID[heads[0]], let payload = row.payload else { return nil }
+            let document = try SyncDomainCodec.decode(payload)
+            guard document.key.id == state.businessID, document.key.kind.rawValue == state.kind else { throw ProductSyncFailure.corruptState }
+            return (state, row, document)
+        }
+    }
+    private func currentIdentityConflicts(context: ModelContext, dataset: UUID) throws -> [SyncIdentityConflict] {
+        guard try context.fetchCount(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == dataset && $0.projectionState == "identityConflict" })) > 0 else { return [] }
+        let current = try identityDocuments(context: context, dataset: dataset)
+        let rows = Dictionary(uniqueKeysWithValues: current.map { ($0.2.key, $0.1) })
+        return try SyncDomainCodec.identityGroups(current.map { $0.2 }).map { group in
+            SyncIdentityConflict(id: try SyncDomainCodec.identityToken(group[0])!, candidates: try group.map {
+                .init(key: $0.key, head: rows[$0.key]!.id, preview: try SyncDomainCodec.conflictPreview($0))
+            })
+        }
+    }
+
+    /// Every choice is fenced by all displayed heads. Opposite choices on two devices create
+    /// ordinary concurrent heads, including on the survivor, rather than deleting both silently.
+    func resolveIdentity(_ conflict: SyncIdentityConflict, keeping selected: SyncDomainKey, tagName: String? = nil) throws {
+        guard !busy else { throw StorePublicationFailure.busy }
+        try StorePublication.perform(at: mediaRoot) {
+            let context = ModelContext(container); context.autosaveEnabled = false
+            guard !container.mainContext.hasChanges, let value = try dataset(in: context), value.enabled,
+                  !value.needsReconciliation, !value.zoneLost else { throw StorePublicationFailure.busy }
+            guard try currentIdentityConflicts(context: context, dataset: value.id).contains(conflict),
+                  conflict.candidates.contains(where: { $0.key == selected }) else { throw SyncCloudTransportError.staleSession }
+            let current = try identityDocuments(context: context, dataset: value.id)
+            let members = Set(conflict.candidates.map(\.key))
+            var replacements: [SyncDomainKey: SyncDomainDocument] = [:]
+            var removed = Set<SyncDomainKey>()
+            for (state, _, document) in current where members.contains(document.key) {
+                guard state.projectionState == "identityConflict" else { throw SyncCloudTransportError.staleSession }
+                if conflict.kind == .tag {
+                    if document.key == selected { replacements[document.key] = try SyncDomainCodec.disambiguate(document, tagName: tagName) }
+                } else if document.key == selected { replacements[document.key] = document }
+                else if conflict.kind == .investmentParticipant { replacements[document.key] = try SyncDomainCodec.disambiguate(document) }
+                else { removed.insert(document.key) }
+            }
+            // A dependent record must never be orphaned by an identity choice. In particular,
+            // a net-worth editing draft referencing an older snapshot requires review first.
+            guard current.allSatisfy({ removed.contains($0.2.key) || Set($0.2.dependencies).isDisjoint(with: removed) }) else {
+                throw SyncDomainCodecError.dependency
+            }
+            let proposed = current.compactMap { removed.contains($0.2.key) ? nil : replacements[$0.2.key] ?? $0.2 }
+            let remainingGroups = try SyncDomainCodec.identityGroups(proposed)
+            // Other same-name tags can be renamed in subsequent choices.
+            let changedKeys = Set(replacements.keys)
+            guard !remainingGroups.contains(where: { $0.contains { changedKeys.contains($0.key) } }) else { throw SyncDomainCodecError.duplicate }
+            // If the graph is otherwise ready, validate the complete domain before recording
+            // a choice. Incomplete independent graphs retain their existing publication gate.
+            let datasetID = value.id
+            let states = try context.fetch(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == datasetID }))
+            if !removed.isEmpty {
+                // Single-head documents were checked above. A concurrent or still-incomplete
+                // record can also refer to a loser. Check every other head before queueing deletes.
+                let inspected = Set(current.map { $0.1.id })
+                let targets = Set(try removed.map { try SyncObject(kind: $0.kind.rawValue, id: $0.id) })
+                for state in states {
+                    let heads = try JSONDecoder().decode([UUID].self, from: state.heads)
+                    guard !heads.isEmpty else { throw SyncDomainCodecError.dependency }
+                    for head in heads where !inspected.contains(head) {
+                        var query = FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.id == head })
+                        query.fetchLimit = 1
+                        guard let row = try context.fetch(query).first, row.dataset == datasetID,
+                              syncDigest(row.manifest) == row.manifestHash else { throw SyncDomainCodecError.dependency }
+                        let manifest = try MutationManifest.decode(row.manifest)
+                        guard manifest.dataset == datasetID, manifest.mutation == head,
+                              manifest.object.id == state.businessID, manifest.object.kind == state.kind,
+                              targets.isDisjoint(with: manifest.dependencies) else { throw SyncDomainCodecError.dependency }
+                    }
+                }
+            }
+            if remainingGroups.isEmpty && states.allSatisfy({ ["ready", "deleted", "identityConflict"].contains($0.projectionState) }) {
+                _ = try SyncDomainCodec.reconstruct(completeDocuments: proposed)
+            }
+            let transaction = UUID()
+            for (state, row, document) in current where replacements[document.key] != nil || removed.contains(document.key) {
+                let old = try MutationManifest.decode(row.manifest)
+                guard old.mutation == row.id, old.dataset == value.id,
+                      old.object.kind == document.key.kind.rawValue, old.object.id == document.key.id,
+                      syncDigest(row.manifest) == row.manifestHash else { throw ProductSyncFailure.corruptState }
+                try old.verifyAssetsComplete(payload: row.payload, originalBytes: { try SyncAssetStore(root: mediaRoot).read($0.asset) })
+                let replacement = replacements[document.key]
+                let bytes = try replacement.map { try SyncDomainCodec.encode($0) }
+                let manifest = try MutationManifest(dataset: value.id, mutation: UUID(), object: old.object, parents: [row.id],
+                    dependencies: replacement == nil ? [] : old.dependencies, deleted: replacement == nil,
+                    payload: try bytes.map { try PayloadManifest(bytes: $0) }, originals: replacement == nil ? [] : old.originals)
+                let revision = try ProductSyncMutation(manifest, payload: bytes, transactionID: transaction, local: true)
+                context.insert(revision); context.insert(ProductSyncOutbox(revision))
+                state.heads = try JSONEncoder().encode([revision.id]); state.projectionState = "pending"
+            }
+            try context.save()
+        }
+        let context = ModelContext(container)
+        if let value = try dataset(in: context), let account = value.accountHash, let realm = CloudEnvironment(rawValue: value.environment) {
+            let binding = try SyncBinding(container: Self.containerID, environment: realm, accountHash: account, dataset: value.id, generation: value.generation)
+            try project(SyncCloudSession(binding: binding))
+        }
+        refreshStatus(); scheduleSync()
+    }
+}
+
+
+struct SyncDiscoveredWorkspace: Identifiable, Equatable {
+    let id: UUID
+    let discovery: UUID
+}
+
+enum SyncWorkspaceDiscoveryError: Error { case localDataPresent, staleDiscovery, retainedWorkspace }
+
+extension SyncProductCoordinator {
+    private func selectionStamp() throws -> String {
+        let context = ModelContext(container)
+        let realm = try ProductSyncStoreSelection.selectedEnvironment(in: context)?.rawValue ?? "none"
+        guard let value = try dataset(in: context) else { return realm + "/none" }
+        return realm + "/" + value.id.uuidString + "/" + value.generation.uuidString
+    }
+    func cancelWorkspaceDiscovery() {
+        discoveryConsent = nil; discoveredWorkspaces = []; workspaceDiscoveryMessage = nil
+    }
+    static func discoveredDatasetIDs(_ zones: [CKRecordZone]) -> [UUID] {
+        Set(zones.compactMap { zone -> UUID? in
+            let name = zone.zoneID.zoneName
+            guard name.hasPrefix("PGSyncV2-"), let id = UUID(uuidString: String(name.dropFirst(9))),
+                  zone.zoneID == CloudRecordCodec.zone(dataset: id) else { return nil }
+            return id
+        }).sorted { $0.uuidString < $1.uuidString }
+    }
+    /// This is an explicit read-only search in the build's existing private database realm.
+    /// It neither creates zones nor changes the local workspace or enables sync.
+    func discoverWorkspaces() async {
+        guard !busy, !enabled else { return }
+        busy = true; defer { finishCycle() }
+        cancelWorkspaceDiscovery()
+        let token = UUID(), attempt = activation
+        do {
+            guard let environment else { throw SyncCloudTransportError.paused(.environmentMismatch) }
+            let stamp = try selectionStamp()
+            discoveryConsent = (token, "", environment, stamp)
+            let account = try await readAccount(); try Task.checkCancellation()
+            guard activation == attempt, discoveryConsent?.token == token else { throw SyncWorkspaceDiscoveryError.staleDiscovery }
+            discoveryConsent = (token, account, environment, stamp)
+            let zones: [CKRecordZone]
+            if let zoneReader { zones = try await zoneReader() }
+            else { zones = try await CKContainer(identifier: Self.containerID).privateCloudDatabase.allRecordZones() }
+            try Task.checkCancellation()
+            let after = try await readAccount(); try Task.checkCancellation()
+            guard activation == attempt, discoveryConsent?.token == token, account == after,
+                  try selectionStamp() == stamp else { throw SyncWorkspaceDiscoveryError.staleDiscovery }
+            let selected = try dataset(in: ModelContext(container))?.id
+            discoveredWorkspaces = Self.discoveredDatasetIDs(zones).filter { $0 != selected }.map { .init(id: $0, discovery: token) }
+            workspaceDiscoveryMessage = discoveredWorkspaces.isEmpty
+                ? String(localized: "No other iCloud workspaces were found in this account and environment.")
+                : String(localized: "Choose a workspace only on an empty installation. Compare its identifier with the device that contains your restored data.")
+        } catch {
+            // Cancellation/disable must not be undone by a late network callback.
+            if activation == attempt, discoveryConsent?.token == token {
+                cancelWorkspaceDiscovery()
+                workspaceDiscoveryMessage = String(localized: "Unable to discover workspaces. Check the account and connection, then try again.")
+            }
+        }
+    }
+    /// Consent selects an existing zone, never the newest/first zone. The final transaction
+    /// rechecks emptiness and the captured selection after all network suspension points.
+    func connectDiscoveredWorkspace(_ workspace: SyncDiscoveredWorkspace) async throws {
+        guard !busy, !enabled, let consent = discoveryConsent, consent.token == workspace.discovery,
+              discoveredWorkspaces.contains(workspace), environment == consent.environment else { throw SyncWorkspaceDiscoveryError.staleDiscovery }
+        busy = true; defer { finishCycle() }
+        let attempt = activation
+        func check() throws {
+            try Task.checkCancellation()
+            guard activation == attempt, discoveryConsent?.token == consent.token,
+                  try selectionStamp() == consent.selection else { throw SyncWorkspaceDiscoveryError.staleDiscovery }
+        }
+        try check()
+        let account = try await readAccount(); try check()
+        guard account == consent.account else { throw SyncCloudTransportError.paused(.accountChanged) }
+        let expected = CloudRecordCodec.zone(dataset: workspace.id)
+        let zone: CKRecordZone
+        if let zoneReader {
+            guard let existing = try await zoneReader().first(where: { $0.zoneID == expected }) else { throw SyncCloudTransportError.paused(.zoneMissing) }
+            zone = existing
+        } else { zone = try await CKContainer(identifier: Self.containerID).privateCloudDatabase.recordZone(for: expected) }
+        try check()
+        let after = try await readAccount(); try check()
+        guard after == consent.account, zone.zoneID == expected else { throw SyncCloudTransportError.paused(.accountChanged) }
+        try StorePublication.perform(at: mediaRoot) {
+            try check()
+            let context = ModelContext(container); context.autosaveEnabled = false
+            guard !container.mainContext.hasChanges, try SyncDomainCodec.capture(context: context).isEmpty else { throw SyncWorkspaceDiscoveryError.localDataPresent }
+            let realm = try ProductSyncStoreSelection.selectedEnvironment(in: context)
+            guard realm == nil || realm == consent.environment else { throw SyncCloudTransportError.paused(.environmentMismatch) }
+            // Even an apparently empty business view can contain deletion history or pending
+            // remote content. Do not strand its sender or hide those durable records.
+            if let old = try dataset(in: context) {
+                let id = old.id
+                guard !old.enabled, !old.needsReconciliation,
+                      try context.fetchCount(FetchDescriptor<ProductSyncMutation>(predicate: #Predicate { $0.dataset == id })) == 0,
+                      try context.fetchCount(FetchDescriptor<ProductSyncInbox>(predicate: #Predicate { $0.dataset == id })) == 0,
+                      try context.fetchCount(FetchDescriptor<ProductSyncObjectState>(predicate: #Predicate { $0.dataset == id })) == 0,
+                      try context.fetchCount(FetchDescriptor<ProductSyncOutbox>(predicate: #Predicate { $0.dataset == id })) == 0 else { throw SyncWorkspaceDiscoveryError.localDataPresent }
+            }
+            let id = workspace.id
+            guard try context.fetchCount(FetchDescriptor<ProductSyncDataset>(predicate: #Predicate { $0.id == id })) == 0 else { throw SyncWorkspaceDiscoveryError.retainedWorkspace }
+            try ProductSyncStoreSelection.prepare(context: context, environment: consent.environment)
+            let value = ProductSyncDataset(id: id)
+            value.environment = consent.environment.rawValue; value.accountHash = consent.account
+            value.zoneEstablished = true // Existing zone only; never permit recreation after loss.
+            try ProductSyncStoreSelection.activate(value, in: context)
+            try context.save()
+        }
+        cancelWorkspaceDiscovery(); refreshStatus()
+        // Selection stays disabled. Existing explicit Enable consent governs cloud transfer.
+    }
+    var workspaceIdentifier: String? {
+        (try? dataset(in: ModelContext(container)))?.id.uuidString
     }
 }

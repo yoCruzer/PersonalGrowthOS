@@ -1,0 +1,135 @@
+{
+  "candidate": "776cc4c36ef5c82d66ebf546edadc07f33d581a4",
+  "sourceVerification": {
+    "candidate": "776cc4c36ef5c82d66ebf546edadc07f33d581a4",
+    "checkout": "be621a04672d4e5ca27502d5e89bf5257d0daccf",
+    "candidateTree": "7ea6ed214896e3cd61d70974909ede34e2b9b9e3",
+    "checkoutTree": "7ea6ed214896e3cd61d70974909ede34e2b9b9e3",
+    "equal": true,
+    "parents": [
+      "a58848f68484cf3bd85af8bf78c388cf0ce4b6ce",
+      "776cc4c36ef5c82d66ebf546edadc07f33d581a4"
+    ]
+  },
+  "foundation": {
+    "runID": 43702571928,
+    "status": "success",
+    "testsPassed": 87,
+    "packagingChecksPassed": 32,
+    "artifact": {
+      "id": 14156868833,
+      "size": 136462,
+      "sha256": "93e1760daa3a0bceca266b89952f22ff2f125c917f9f6fb1efbec07a615e83ff",
+      "zipCRCVerified": true
+    }
+  },
+  "ios": {
+    "runID": 43702571587,
+    "status": "success",
+    "release": {
+      "status": "success",
+      "environment": {
+        "lane": "release",
+        "checkoutSHA": "be621a04672d4e5ca27502d5e89bf5257d0daccf",
+        "headSHA": "776cc4c36ef5c82d66ebf546edadc07f33d581a4",
+        "arch": "ARM64",
+        "xcode": "Xcode 27.0\nBuild version 27A266a\n",
+        "image": "20261104.0337.1"
+      },
+      "bundles": [
+        "PersonalGrowthOS.app",
+        "PersonalGrowthOS.app/PlugIns/ShareExtension.appex",
+        "PersonalGrowthOS.app/PlugIns/ImportantDaysWidget.appex"
+      ],
+      "artifact": {
+        "id": 14156279994,
+        "sha256": "600636c219d28dbc491dea4c5437aad110b2d7fa8d4a7d9c816bc7e8a1e0a43d",
+        "zipCRCVerified": true,
+        "size": 38076
+      }
+    },
+    "unit": {
+      "status": "success",
+      "total": 736,
+      "leafResults": {
+        "Passed": 735,
+        "Skipped": 1
+      },
+      "skippedCases": [
+        "TodoFoundationTests/testRealLowSpaceVolumeHealthyOpenMigrationAndCorruptCopyFailure()"
+      ],
+      "runtimeWarnings": [],
+      "environment": {
+        "lane": "unit",
+        "checkoutSHA": "be621a04672d4e5ca27502d5e89bf5257d0daccf",
+        "headSHA": "776cc4c36ef5c82d66ebf546edadc07f33d581a4",
+        "arch": "ARM64",
+        "xcode": "Xcode 27.0\nBuild version 27A266a\n",
+        "image": "20261104.0337.1",
+        "runtime": {
+          "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-2",
+          "version": "27.2",
+          "buildversion": "24B8117"
+        },
+        "deviceType": "iPhone 13 mini"
+      },
+      "artifact": {
+        "id": 14158535586,
+        "size": 130294,
+        "sha256": "2cde54fc4d31173414c791251db0a58176e27fb3899b3d8718e83cc64670bd3c",
+        "zipCRCVerified": true
+      },
+      "summarySHA256": "4e8d38573980c54ca918d3572f73d16159a9321330ab78f9eaf95f7e8ac46c8b",
+      "testTreeSHA256": "8fc718cf1f0cb3d7d5dd120c4e5cb22494139cde8261fc465adeb36f98f21130",
+      "lowSpaceSkippedCaseCoveredLocally": true
+    },
+    "smoke": {
+      "status": "success",
+      "total": 8,
+      "leafResults": {
+        "Passed": 8
+      },
+      "runtimeWarnings": [],
+      "cases": [
+        "AppLaunchSmokeTests/testCoreShellRemainsOperableAtLargestAccessibilityTextSize()",
+        "AppLaunchSmokeTests/testICloudSettingsStartOffAndRequireExplicitConsent()",
+        "AppLaunchSmokeTests/testICloudSyncChineseConsentCompletionAndProgressAreLocalized()",
+        "AppLaunchSmokeTests/testPausedSyncKeepsEveryTabAndSettingsOperable()",
+        "AppLaunchSmokeTests/testRepeatableHabitCounterIncrementsDecrementsAndPersists()",
+        "AppLaunchSmokeTests/testUIReadabilityChineseDefaultAndLargerText()",
+        "AppLaunchSmokeTests/testUIReadabilityEnglishDefault()",
+        "AppLaunchSmokeTests/testUITestingLaunchShowsAppShell()"
+      ],
+      "environment": {
+        "lane": "smoke",
+        "checkoutSHA": "be621a04672d4e5ca27502d5e89bf5257d0daccf",
+        "headSHA": "776cc4c36ef5c82d66ebf546edadc07f33d581a4",
+        "arch": "ARM64",
+        "xcode": "Xcode 27.0\nBuild version 27A266a\n",
+        "image": "20261104.0337.1",
+        "runtime": {
+          "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-2",
+          "version": "27.2",
+          "buildversion": "24B8117"
+        },
+        "deviceType": "iPhone 13 mini"
+      },
+      "artifact": {
+        "id": 14158156682,
+        "size": 61069,
+        "sha256": "533dda7a840c69068eb69f50951083f59a3691783b614c98114871fa86634a6c",
+        "zipCRCVerified": true
+      },
+      "summarySHA256": "dc099b500c818b4a52ae2d6bffcb18023accfa51ead92e50f6c72572e2421a86",
+      "testTreeSHA256": "b9d4ea7ed2f5b6d03dfdb896b9613663587ed4eb8464ca244b9a409217d76d71"
+    },
+    "optionalExtendedUI": "skipped by workflow condition"
+  },
+  "limits": [
+    "unsigned build only",
+    "optional extended UI not run",
+    "real CloudKit and physical-device interoperability NOT_RUN"
+  ],
+  "verifiedAtUTC": "2026-11-15T10:36:50.935920+00:00",
+  "rawEvidenceRoot": "/private/tmp/pgos-sync-resilience-evidence"
+}

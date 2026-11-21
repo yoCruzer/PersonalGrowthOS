@@ -17,6 +17,58 @@ final class CausalProjectionTests: XCTestCase {
             supportedPayloadVersions: ["Aggregate": [1]],
             verifiedMutationAssets: assets ?? Set(values.map(\.mutation)), limits: limits)
     }
+    func testCycleClassificationMatchesIndependentReachabilityForSmallMixedGraphs() throws {
+        // Fixed arithmetic fixture, independent reachability oracle; no random seed or SCC reuse.
+        for seed in 0..<48 {
+            var adjacency: [Int: [Int]] = [:]
+            for node in 1...8 {
+                adjacency[node] = (1...8).filter { $0 != node && ((seed + 3) * node * 17 + $0 * 13 + node * $0) % 11 < 3 }
+            }
+            let values = try (1...8).map { try mutation($0, object: $0, dependencies: adjacency[$0]!) }
+            let result = try project(values)
+            XCTAssertEqual(try project(values.reversed()), result)
+            for item in result {
+                let node = try XCTUnwrap((1...8).first { id($0) == item.object.id })
+                var visited = Set<Int>(), frontier = adjacency[node]!, reachesSelf = false
+                while let next = frontier.popLast() {
+                    if next == node { reachesSelf = true; break }
+                    if visited.insert(next).inserted { frontier += adjacency[next]! }
+                }
+                XCTAssertEqual(item.pendingReasons.contains(.dependencyCycle), reachesSelf, "seed \(seed), node \(node)")
+            }
+        }
+    }
+    func testProductHistoryRejectsBeyondWorkingSetBeforeReadingInput() throws {
+        XCTAssertThrowsError(try CausalProjection.project(manifestBytes: Array(repeating: Data(), count: 100_001), dataset: dataset,
+            supportedPayloadVersions: ["Aggregate": [1]], verifiedMutationAssets: [], limits: .productHistory)) {
+            XCTAssertEqual($0 as? SyncValidationError, .limitExceeded)
+        }
+    }
+
+    func testHistoryBeyondOldGlobalLimitKeepsExactHeadAndBoundedBudget() throws {
+        let values = try (1...10_001).map { try mutation($0, parents: $0 == 1 ? [] : [$0 - 1]) }
+        XCTAssertThrowsError(try project(values))
+        let result = try project(values, assets: [id(10_001)], limits: .productHistory)
+        XCTAssertEqual(result.count, 1); XCTAssertEqual(result[0].selectedMutation, id(10_001))
+        XCTAssertTrue(result[0].complete)
+        XCTAssertThrowsError(try project(values, limits: .init(manifests: 20_000, encodedBytes: 100, graphSteps: 1_000_000)))
+    }
+    func testDeepForkFindsNearestCommonAncestorWithinLinearBudget() throws {
+        var values = try (1...3_000).map { try mutation($0, parents: $0 == 1 ? [] : [$0 - 1]) }
+        values += try [mutation(3_001, parents: [3_000]), mutation(3_002, parents: [3_000])]
+        let result = try project(values, limits: .init(graphSteps: 60_000))
+        XCTAssertEqual(result[0].state, .conflict); XCTAssertEqual(result[0].previewMutation, id(3_000))
+        XCTAssertEqual(try project(values.reversed(), limits: .init(graphSteps: 60_000)), result)
+    }
+    func testLongMissingDependencyChainIsPendingWithoutFalseCycleOrQuadraticTraversal() throws {
+        let values = try (1...3_000).map { try mutation($0, object: $0, dependencies: [$0 + 1]) }
+        let result = try project(values, limits: .init(graphSteps: 70_000))
+        XCTAssertEqual(result.count, 3_000)
+        XCTAssertTrue(result.allSatisfy { $0.state == .pending && !$0.pendingReasons.contains(.dependencyCycle) })
+        let complete = try project(values + [mutation(3_001, object: 3_001)], limits: .init(graphSteps: 70_000))
+        XCTAssertTrue(complete.allSatisfy(\.complete))
+    }
+
     func testLinearHistorySelectsHeadNotLexicalMaximumAndDeduplicates() throws {
         let old = try mutation(90), next = try mutation(10, parents: [90])
         let actual = try project([old, next, old])
